@@ -1810,3 +1810,8 @@ task: <Task pending name='Task-2872' coro=<Application._handle_exception.<locals
 2026-04-24 12:44:10,213 INFO agent.auxiliary_client: Auxiliary auto-detect: using main provider nous (moonshotai/kimi-k2.6)
 2026-04-24 12:56:00,908 INFO agent.auxiliary_client: Vision auto-detect: using main provider nous (google/gemini-3-flash-preview)
 2026-04-24 12:56:00,960 INFO agent.auxiliary_client: Auxiliary auto-detect: using main provider nous (moonshotai/kimi-k2.6)
+2026-04-24 13:13:15,872 INFO [20260424_123008_e93bad] agent.auxiliary_client: Auxiliary flush_memories: using auto (moonshotai/kimi-k2.6) at https://inference-api.nousresearch.com/v1/
+2026-04-24 13:13:20,489 INFO [20260424_123008_e93bad] agent.auxiliary_client: Auxiliary flush_memories: refreshed Nous runtime credentials after 401, retrying
+2026-04-24 13:14:38,922 INFO [20260424_123008_e93bad] agent.auxiliary_client: Auxiliary compression: using auto (moonshotai/kimi-k2.6) at https://inference-api.nousresearch.com/v1/
+2026-04-24 13:17:17,467 INFO [20260424_123008_e93bad] agent.auxiliary_client: Auxiliary compression: connection error on auto (Connection error.), trying fallback
+2026-04-24 13:17:21,004 INFO [20260424_123008_e93bad] agent.auxiliary_client: Auxiliary compression: connection error on auto — falling back to nous (google/gemini-3-flash-preview)

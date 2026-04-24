@@ -123,3 +123,4 @@ cc81ef7f0246594391ca9313bb9e6299cdb90cae 249e50b7b1e00e6c4d82816481ef62bb90c2ef3
 249e50b7b1e00e6c4d82816481ef62bb90c2ef3e 1965c145f5febd0e1d743083c0fcecf66455e4b0 Hermes Checkpoint <hermes@local> 1776920843 +0800	commit: before patch
 1965c145f5febd0e1d743083c0fcecf66455e4b0 6085c4e96c57e6f41d597085e47320e5880db989 Hermes Checkpoint <hermes@local> 1776920858 +0800	commit: before patch
 6085c4e96c57e6f41d597085e47320e5880db989 46449de1f9b61e7bb41cbc4d65530652595f6793 Hermes Checkpoint <hermes@local> 1776946537 +0800	commit: before terminal: find /Users/charles -maxdepth 4 -iname "*shadow*" -o -iname
+46449de1f9b61e7bb41cbc4d65530652595f6793 47a1e1a923db0f64650ff5d50ba2bb6cffbded92 Hermes Checkpoint <hermes@local> 1777007595 +0800	commit: before terminal: # 修复 J1 测试失败 — 检查实际文件位置
