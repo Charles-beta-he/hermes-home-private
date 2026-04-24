@@ -1,0 +1,1299 @@
+2026-04-16 18:35:22,681 ERROR [20260416_183446_329135] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=5 tokens=~4,960
+2026-04-16 18:36:47,524 ERROR [20260416_183604_b536c7] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=5 tokens=~3,892
+2026-04-16 18:37:14,745 ERROR [20260416_183604_b536c7] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=6 tokens=~3,902
+2026-04-16 18:44:32,956 ERROR [20260416_184356_73caee] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=6 tokens=~4,433
+2026-04-16 18:45:36,731 ERROR [20260416_184459_530b40] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=7 tokens=~10,419
+2026-04-16 19:02:20,453 ERROR [20260416_190133_fa8dd0] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=5 tokens=~4,090
+2026-04-16 19:25:19,721 ERROR [20260416_191327_000ce8] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/scripts)
+2026-04-16 22:42:04,117 ERROR [20260416_191327_000ce8] root: API call failed after 3 retries. [SSL] record layer failure (_ssl.c:2590) | provider=nous model=xiaomi/mimo-v2-pro msgs=246 tokens=~137,408
+2026-04-16 22:54:09,978 ERROR [20260416_191327_000ce8] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=259 tokens=~146,294
+2026-04-17 00:03:28,329 ERROR [20260416_191327_000ce8] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=378 tokens=~181,613
+2026-04-17 11:04:51,558 ERROR [20260416_191327_000ce8] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=499 tokens=~217,708
+2026-04-17 15:17:07,304 ERROR [20260416_191327_000ce8] root: Non-retryable client error: Error code: 400 - {'status': 400, 'message': 'This request is not valid. Check the model name and other parameters. Additional info: Provider returned error'}
+2026-04-17 15:50:56,148 ERROR [20260416_191327_000ce8] root: API call failed after 3 retries. HTTP 502: Application failed to respond | provider=nous model=xiaomi/mimo-v2-pro msgs=652 tokens=~266,676
+2026-04-17 15:54:51,463 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-1' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 694, in read_from_input
+    self.key_processor.process_keys()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/key_binding/key_processor.py", line 286, in process_keys
+    self._start_timeout()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/key_binding/key_processor.py", line 414, in _start_timeout
+    self._flush_wait_task = app.create_background_task(wait())
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 1152, in create_background_task
+    task: asyncio.Task[None] = loop.create_task(coroutine)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 437, in create_task
+    task = tasks.Task(coro, loop=self, name=name, context=context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1954, in get_debug
+    def get_debug(self):
+    
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 9713, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 682, in render
+    layout.container.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 392, in write_to_screen
+    c.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1735, in write_to_screen
+    draw_func()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1875, in _write_to_screen_at_index
+    mouse_handlers.set_mouse_handler_for_range(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/mouse_handlers.py", line 52, in set_mouse_handler_for_range
+    for y in range(y_min, y_max):
+             ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 9713, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-17 17:53:33,722 WARNING tools.mcp_tool: Failed to connect to MCP server 'time' (command=uvx): CancelledError
+2026-04-17 19:40:08,617 ERROR [20260417_185537_0b8e83] root: API call failed after 3 retries. Connection error. | provider=nous model=xiaomi/mimo-v2-pro msgs=85 tokens=~77,558
+2026-04-19 11:38:57,643 ERROR [20260419_113756_9a83e6] tools.checkpoint_manager: Git command failed: git add -A (rc=128) stderr=warning: adding embedded git repository: plugins/cache/claude-plugins-official/vercel/0.40.0
+hint: You've added another git repository inside your current repository.
+hint: Clones of the outer repository will not contain the contents of
+hint: the embedded repository and will not know how to obtain it.
+hint: If you meant to add a submodule, use:
+hint:
+hint: 	git submodule add <url> plugins/cache/claude-plugins-official/vercel/0.40.0
+hint:
+hint: If you added this path by mistake, you can remove it from the
+hint: index with:
+hint:
+hint: 	git rm --cached plugins/cache/claude-plugins-official/vercel/0.40.0
+hint:
+hint: See "git help submodule" for more information.
+hint: Disable this message with "git config set advice.addEmbeddedRepo false"
+warning: adding embedded git repository: plugins/marketplaces/caveman
+warning: adding embedded git repository: plugins/marketplaces/claude-hud
+warning: adding embedded git repository: plugins/marketplaces/claude-notifications-go
+error: open("projects/-Users-charles/8be84248-454b-44c3-8cec-303e32e8dc81.jsonl"): Permission denied
+error: unable to index file 'projects/-Users-charles/8be84248-454b-44c3-8cec-303e32e8dc81.jsonl'
+fatal: adding files failed
+2026-04-20 10:09:28,978 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 97, in read_keys
+    self.vt100_parser.feed(data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100_parser.py", line 193, in feed
+    def feed(self, data: str) -> None:
+    
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 9912, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 697, in render
+    self._cursor_pos, self._last_style = _output_screen_diff(
+                                         ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 214, in _output_screen_diff
+    current_pos = move_cursor(Point(x=c, y=y))
+                              ^^^^^^^^^^^^^^^
+  File "<string>", line 1, in <lambda>
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 9912, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-21 14:13:10,539 WARNING root: Failed to fetch model metadata from OpenRouter: HTTPSConnectionPool(host='openrouter.ai', port=443): Max retries exceeded with url: /api/v1/models (Caused by ProxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 503 Service Unavailable')))
+2026-04-21 14:13:20,580 WARNING root: Failed to fetch model metadata from OpenRouter: HTTPSConnectionPool(host='openrouter.ai', port=443): Read timed out. (read timeout=10)
+2026-04-21 15:21:44,503 WARNING [20260421_151107_cf7f8b] root: Failed to get summary response: Error code: 429 - {'status': 429, 'message': "Hold up for a bit, you've exceeded the rate limit on your API key."}
+2026-04-21 15:21:54,290 WARNING agent.auxiliary_client: resolve_provider_client: nous requested but Nous Portal not configured (run: hermes auth)
+2026-04-21 15:21:54,470 WARNING agent.auxiliary_client: resolve_provider_client: nous requested but Nous Portal not configured (run: hermes auth)
+2026-04-21 15:21:56,194 WARNING agent.auxiliary_client: resolve_provider_client: nous requested but Nous Portal not configured (run: hermes auth)
+2026-04-21 15:21:56,461 WARNING agent.auxiliary_client: Auxiliary auto-detect: no provider available (tried: openrouter, nous, local/custom, openai-codex, api-key). Compression, summarization, and memory flush will not work. Set OPENROUTER_API_KEY or configure a local model in config.yaml.
+2026-04-21 15:23:03,434 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 709, in get_processed_line
+    return cache[i]
+           ~~~~~^^^
+KeyError: 0
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 682, in render
+    layout.container.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 392, in write_to_screen
+    c.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1735, in write_to_screen
+    draw_func()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1759, in _write_to_screen_at_index
+    ui_content = self.content.create_content(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 790, in create_content
+    cursor_position=translate_rowcol(
+                    ^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 773, in translate_rowcol
+    return Point(x=get_processed_line(row).source_to_display(col), y=row)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 711, in get_processed_line
+    processed_line = transform(i, get_line(i), get_line)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 684, in transform
+    transformation = merged_processor.apply_transformation(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/processors.py", line 986, in apply_transformation
+    transformation = p.apply_transformation(
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/processors.py", line 504, in apply_transformation
+    fragments_before = to_formatted_text(self.text, self.style)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/formatted_text/base.py", line 82, in to_formatted_text
+    return to_formatted_text(value(), style=style)
+                             ^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 9230, in get_prompt
+    return cli_ref._get_tui_prompt_fragments()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 8458, in _get_tui_prompt_fragments
+    symbol, state_suffix = self._get_tui_prompt_symbols()
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 8426, in _get_tui_prompt_symbols
+    profile = get_active_profile_name()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/hermes_cli/profiles.py", line 727, in get_active_profile_name
+    default_resolved = _get_default_hermes_home().resolve()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/pathlib.py", line 993, in resolve
+    s = os.path.realpath(self, strict=strict)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 413, in realpath
+  File "<frozen posixpath>", line 461, in _joinrealpath
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-21 23:17:02,197 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1898, in _run_once
+    event_list = self._selector.select(timeout)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/selectors.py", line 578, in select
+    key = self._key_from_fd(fd)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/selectors.py", line 275, in _key_from_fd
+    def _key_from_fd(self, fd):
+    
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 682, in render
+    layout.container.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 392, in write_to_screen
+    c.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2654, in write_to_screen
+    return self.content.write_to_screen(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1735, in write_to_screen
+    draw_func()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1766, in _write_to_screen_at_index
+    self._scroll(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2314, in _scroll
+    func(ui_content, width, height)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2516, in _scroll_without_linewrapping
+    scroll_offset_end=offsets.bottom,
+                      ^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1344, in bottom
+    return to_int(self._bottom)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/utils.py", line 298, in to_int
+    def to_int(value: Callable[[], int] | int) -> int:
+    
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-22 12:30:21,356 ERROR [20260421_234646_27c9ab] root: Non-retryable client error: Error code: 404 - {'status': 404, 'message': "Model 'xiaomi/mimo-v2-pro' is not available on the Free Tier. Upgrade at https://portal.nousresearch.com or pick a free model."}
+2026-04-22 12:32:31,604 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 682, in render
+    layout.container.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 392, in write_to_screen
+    c.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1735, in write_to_screen
+    draw_func()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1759, in _write_to_screen_at_index
+    ui_content = self.content.create_content(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 790, in create_content
+    cursor_position=translate_rowcol(
+                    ^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/controls.py", line 773, in translate_rowcol
+    return Point(x=get_processed_line(row).source_to_display(col), y=row)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/processors.py", line 982, in source_to_display
+    i = f(i)
+    ^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-22 15:44:37,358 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1899, in _run_once
+    self._process_events(event_list)
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/selector_events.py", line 737, in _process_events
+    def _process_events(self, event_list):
+    
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 682, in render
+    layout.container.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 392, in write_to_screen
+    c.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2654, in write_to_screen
+    return self.content.write_to_screen(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1735, in write_to_screen
+    draw_func()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1777, in _write_to_screen_at_index
+    visible_line_to_row_col, rowcol_to_yx = self._copy_body(
+                                            ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2103, in _copy_body
+    copy()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2097, in copy
+    x, y = copy_line(line, lineno, x, y, is_input=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2081, in copy_line
+    x += char_width
+    ^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10181, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-23 14:30:04,444 WARNING [20260423_124934_9aa3fa] root: Failed to get summary response: Connection error.
+2026-04-23 14:35:11,528 ERROR [20260423_143020_2713dd] root: API call failed after 3 retries. Connection error. | provider=nous model=moonshotai/kimi-k2.6 msgs=173 tokens=~100,131
+2026-04-23 14:45:35,751 ERROR [20260423_124934_9aa3fa] root: API call failed after 3 retries. Connection error. | provider=nous model=moonshotai/kimi-k2.6 msgs=173 tokens=~100,010
+2026-04-23 15:00:53,255 ERROR [20260423_124934_9aa3fa] root: API call failed after 3 retries. Connection error. | provider=nous model=moonshotai/kimi-k2.6 msgs=175 tokens=~100,036
+2026-04-23 15:17:36,917 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 87, in read
+    data = os.read(self.stdin_fd, count)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 682, in render
+    layout.container.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 392, in write_to_screen
+    c.write_to_screen(
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2654, in write_to_screen
+    return self.content.write_to_screen(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1735, in write_to_screen
+    draw_func()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 1777, in _write_to_screen_at_index
+    visible_line_to_row_col, rowcol_to_yx = self._copy_body(
+                                            ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2103, in _copy_body
+    copy()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2097, in copy
+    x, y = copy_line(line, lineno, x, y, is_input=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/layout/containers.py", line 2081, in copy_line
+    x += char_width
+    ^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-23 20:23:02,010 ERROR asyncio: unhandled exception during asyncio.run() shutdown
+task: <Task finished name='Task-29' coro=<Application.run_async() done, defined at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:620> exception=OSError(5, 'Input/output error')>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 746, in _run_async
+    result = await f
+             ^^^^^^^
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 751, in _run_async
+    self._redraw(render_as_done=True)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 543, in _redraw
+    self.context.copy().run(run_in_context)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 524, in run_in_context
+    self.renderer.render(self, self.layout, is_done=render_as_done)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 726, in render
+    output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 886, in run_async
+    return await _run_async(f)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 756, in _run_async
+    self.renderer.reset()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/renderer.py", line 429, in reset
+    self.output.flush()
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/vt100.py", line 706, in flush
+    flush_stdout(self.stdout, data)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/output/flush_stdout.py", line 37, in flush_stdout
+    stdout.flush()
+OSError: [Errno 5] Input/output error
+2026-04-23 20:23:02,020 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d240>
+asyncgen: <async_generator object in_terminal at 0x111f1d240>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,023 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d440>
+asyncgen: <async_generator object in_terminal at 0x111f1d440>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,026 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d640>
+asyncgen: <async_generator object in_terminal at 0x111f1d640>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,029 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d840>
+asyncgen: <async_generator object in_terminal at 0x111f1d840>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,031 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1da40>
+asyncgen: <async_generator object in_terminal at 0x111f1da40>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,033 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1dc40>
+asyncgen: <async_generator object in_terminal at 0x111f1dc40>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,035 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d140>
+asyncgen: <async_generator object in_terminal at 0x111f1d140>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,038 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d540>
+asyncgen: <async_generator object in_terminal at 0x111f1d540>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,040 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d340>
+asyncgen: <async_generator object in_terminal at 0x111f1d340>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,042 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111d0af40>
+asyncgen: <async_generator object in_terminal at 0x111d0af40>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,044 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1cf40>
+asyncgen: <async_generator object in_terminal at 0x111f1cf40>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,046 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d740>
+asyncgen: <async_generator object in_terminal at 0x111f1d740>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,047 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1d940>
+asyncgen: <async_generator object in_terminal at 0x111f1d940>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,049 ERROR asyncio: an error occurred during closing of asynchronous generator <async_generator object in_terminal at 0x111f1db40>
+asyncgen: <async_generator object in_terminal at 0x111f1db40>
+Traceback (most recent call last):
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+  File "/Users/charles/.local/share/uv/python/cpython-3.11.15-macos-aarch64-none/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 714, in read_from_input_in_context
+    context.copy().run(read_from_input)
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py", line 690, in read_from_input
+    keys = self.input.read_keys()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/vt100.py", line 94, in read_keys
+    data = self.stdin_reader.read()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/input/posix_utils.py", line 74, in read
+    if not select.select([self.stdin_fd], [], [], 0)[0]:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10682, in _signal_handler
+    time.sleep(_grace)
+  File "/Users/charles/.hermes/hermes-agent/cli.py", line 10685, in _signal_handler
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+RuntimeError: aclose(): asynchronous generator is already running
+2026-04-23 20:23:02,727 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2859' coro=<Application._handle_exception.<locals>.in_term() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:1019> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,727 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2860' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,728 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2861' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,728 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2862' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,728 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2863' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,729 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2864' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,729 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2865' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,729 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2866' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,730 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2867' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,730 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2868' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,730 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2869' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,731 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2870' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,731 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2871' coro=<run_in_terminal.<locals>.run() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/run_in_terminal.py:49> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:23:02,731 ERROR asyncio: Task was destroyed but it is pending!
+task: <Task pending name='Task-2872' coro=<Application._handle_exception.<locals>.in_term() running at /Users/charles/.hermes/hermes-agent/venv/lib/python3.11/site-packages/prompt_toolkit/application/application.py:1019> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+2026-04-23 20:43:13,295 ERROR [20260423_203612_0ea4e7] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/software-development/requirement-clarification)
+2026-04-23 20:43:13,296 ERROR [20260423_203612_0ea4e7] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/software-development/post-deploy-verification)
+2026-04-23 20:43:13,297 ERROR [20260423_203612_0ea4e7] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/software-development/incident-response)
+2026-04-23 21:37:17,458 WARNING cli: Agent thread still alive after interrupt (thread 6236336128). Daemon thread will be cleaned up on exit.
+2026-04-23 22:21:52,866 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/post-deploy-verification/references)
+2026-04-23 22:22:12,862 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/loop/references)
+2026-04-23 22:41:51,615 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/memory/references)
+2026-04-23 22:42:09,946 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/bayesian-agent/references)
+2026-04-23 22:48:19,917 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/incident-response/references)
+2026-04-23 22:54:16,595 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/ooda-agent/references)
+2026-04-23 22:54:35,656 ERROR [20260423_214006_6c7388] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/cognitive-load-agent/references)
+2026-04-24 11:22:05,165 ERROR [20260423_224714_648022] tools.checkpoint_manager: Git command skipped: git init (working directory not found: /Users/charles/.hermes/skills/gsd-bridge/references)

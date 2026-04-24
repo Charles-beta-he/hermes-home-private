@@ -1,0 +1,3 @@
+{"timestamp": "2026-04-24T12:14:28.564244", "trigger": "new_domain", "details": {"task_type": "system-activation"}}
+{"timestamp": "2026-04-24T12:14:28.564343", "trigger": "new_domain", "details": {"task_type": "refactor"}}
+{"timestamp": "2026-04-24T12:36:39.983579", "trigger": "new_domain", "details": {"task_type": "obsidian-setup"}}

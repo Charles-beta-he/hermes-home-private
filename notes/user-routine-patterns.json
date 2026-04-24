@@ -1,0 +1,10 @@
+{
+  "task_types": {
+    "unknown": 2,
+    "system-activation": 1,
+    "refactor": 1,
+    "obsidian-setup": 1
+  },
+  "time_slots": {},
+  "preferences": {}
+}

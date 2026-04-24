@@ -1,0 +1,1 @@
+before terminal: find /Users/charles -maxdepth 4 -iname "*shadow*" -o -iname

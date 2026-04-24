@@ -1,0 +1,12 @@
+{
+  "timestamp": "20260423-224844",
+  "paths_backed_up": [
+    "~/.hermes/skills",
+    "~/.hermes/notes",
+    "~/.hermes/scripts",
+    "~/.hermes/config.yaml",
+    "~/.claude/mcp.json"
+  ],
+  "backup_dir": "/Users/charles/.hermes/backups/20260423-224844",
+  "size_mb": 30.29
+}

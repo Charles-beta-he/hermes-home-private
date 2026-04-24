@@ -1,0 +1,20 @@
+[
+  {
+    "session_id": "proc_14a0a68fd901",
+    "command": "cd /Users/charles/Desktop/folder/gomoku-react && pnpm dev 2>&1 &",
+    "pid": 16584,
+    "pid_scope": "host",
+    "cwd": "/Users/charles",
+    "started_at": 1776586825.2627342,
+    "task_id": "20260419_152656_023096",
+    "session_key": "",
+    "watcher_platform": "",
+    "watcher_chat_id": "",
+    "watcher_user_id": "",
+    "watcher_user_name": "",
+    "watcher_thread_id": "",
+    "watcher_interval": 0,
+    "notify_on_complete": false,
+    "watch_patterns": []
+  }
+]

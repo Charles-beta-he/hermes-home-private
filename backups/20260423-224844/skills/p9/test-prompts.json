@@ -1,0 +1,7 @@
+[
+  {
+    "id": 1,
+    "prompt": "触发 p9 skill",
+    "expected": "按 P9 协议执行相应流程"
+  }
+]

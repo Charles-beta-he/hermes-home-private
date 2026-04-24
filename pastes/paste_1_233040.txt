@@ -1,0 +1,21 @@
+23:30:11.481	Success: Build command completed
+23:30:11.670	Executing user deploy command: npx wrangler deploy --assets=./dist
+23:30:14.077	
+23:30:14.078	 ⛅️ wrangler 3.90.0 (update available 4.83.0)
+23:30:14.078	---------------------------------------------
+23:30:14.078	
+23:30:14.141	▲ [WARNING] The version of Wrangler you are using is now out-of-date.
+23:30:14.142	
+23:30:14.142	  Please update to the latest version to prevent critical errors.
+23:30:14.142	  Run `npm install --save-dev wrangler@4` to update to the latest version.
+23:30:14.142	  After installation, run Wrangler with `npx wrangler`.
+23:30:14.142	
+23:30:14.142	
+23:30:14.150	
+23:30:14.151	✘ [ERROR] It looks like you've run a Workers-specific command in a Pages project.
+23:30:14.151	
+23:30:14.151	  For Pages, please run `wrangler pages deploy` instead.
+23:30:14.151	
+23:30:14.151	
+23:30:14.155	🪵  Logs were written to "/opt/buildhome/.config/.wrangler/logs/wrangler-2026-04-17_15-30-13_269.log"
+23:30:14.264	Failed: error occurred while running deploy command

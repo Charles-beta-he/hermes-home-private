@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	worktree = /Users/charles/.hermes
+	ignorecase = true
+	precomposeunicode = true
+[user]
+	email = hermes@local
+	name = Hermes Checkpoint

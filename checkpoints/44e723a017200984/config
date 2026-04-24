@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	worktree = /Users/charles/Desktop/folder/gomoku-react
+	ignorecase = true
+	precomposeunicode = true
+[user]
+	email = hermes@local
+	name = Hermes Checkpoint
