@@ -1,0 +1,15 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	worktree = /Users/charles/Documents/brain/04-技能生态
+	ignorecase = true
+	precomposeunicode = true
+[user]
+	email = hermes@local
+	name = Hermes Checkpoint
+[commit]
+	gpgsign = false
+[tag]
+	gpgSign = false

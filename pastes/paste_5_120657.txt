@@ -1,0 +1,105 @@
+落地, 5 个跟进项 + 1 个关键缺口                
+
+  ✅ 落地确认 (干得漂亮)                                                                  
+   
+  - 4 补丁全打: drain / retry / 摘要 / 降级 — 都在                                        
+  - summary 461 chars 远低于 8K 上限: 给 Claude Code 留足思考空间 
+  - 10 cron 链层次分明: 监控/进化/审计/GC 全覆盖                                          
+  - Snapshot GC 已自动化: 不会撑爆磁盘                                                    
+  - evolve.log append-only: 审计链完整                                                    
+                                                                                          
+  ---                                                                                     
+  ⚠️  1 个关键缺口: 缺 Canary / 灰度                                                       
+                                                                                          
+  apply-plan.sh 走的是 all-or-nothing:
+  apply → eval pass → keep全量                                                            
+         → eval fail → rollback全量                               
+                                                                                          
+  少了我之前提的 L5 灰度层: 改动通过 eval 后, 先按 10% 流量跑 24h, 再 100%。              
+                                                                                          
+  为什么重要: eval 集是离线回归, 真实流量分布跟回归集不完全一样。eval 通过 ≠ 在线安全。   
+                                                                                          
+  最小补法 (不重写, 一行 hook):                                                           
+  # apply-plan.sh 在 eval pass 后                                 
+  hermes config set "skills.${changed_skill}.canary_ratio" 0.1                            
+  echo "$changed_skill" >> ~/.hermes/canary-active.txt                                    
+  # canary-evaluator.sh (新加 1h cron):                                                   
+  #   24h 后比对 canary vs stable 的 pass_rate, 决定 100% rollout 或 rollback             
+                                                                                          
+  或者: 接受当前激进策略, 知道这一层缺失, 等实际遇到 "eval pass 但生产挂了" 再补。        
+                                                                                          
+  我建议先观察 7 天, 没出过这种事就不补; 出过 1 次立即补 canary。                         
+                                                                                          
+  ---                                                                                     
+  跟进项 (按优先级)                                               
+                   
+  1. 第一次 evolve 必须人工旁观 (今晚 03:00)
+                                                                                          
+  # 今晚 02:55 起, 守 evolve.log 实时观察
+  tail -f ~/.hermes/logs/evolve.log                                                       
+                                                                                          
+  观察:                                                                                   
+  - claude -p 多久返回? (>120s 慢)                                                        
+  - plan steps 数量? risk 分布?                                                           
+  - drain 耗时? (apply-plan 的 600s timeout 实际占用)
+  - eval baseline 数值? delta?                                                            
+                                                                                          
+  第一次最容易暴露 schema 不兼容 / drain race / claude 模型选错。后面跑得稳就半放养。     
+                                                                                          
+  2. 3 连败暂停 cron 的具体机制确认                                                       
+                                                                                          
+  你写的 "3连败 → 暂停cron, 等人审" — 验证实现:                                           
+  hermes cron list | grep self-evolve                             
+  # 看 status 字段; 暂停应有 "disabled" 或 "paused" 标记                                  
+  # 还要看 evolve.log 是否真的写了 "PAUSED — 3 consecutive rejects"
+  如果只是日志写了但 cron 仍在跑, 等于没有 kill switch, 失控风险。                        
+                                                                                          
+  3. 03:00 cron 与 02:00 cron 的依赖检查                                                  
+                                                                                          
+  02:00 夜间审计 + 02:30 现有 self-improvement-pipeline (你之前的) — 三者会不会撞资源?    
+  - 02 审计如果写 memory/skill, 03 evolve 读到的 state 已含改动 → 是不是想要的?           
+  - 02:30 现有 pipeline 还在跑吗? 如果在, 跟 03:00 双脑互相吃对方的改动 → oscillation 风险
+                                                                  
+  建议: 至少明确两种之一:                                                                 
+  - 双脑接管, 02:30 旧 pipeline 关闭                              
+  - 双脑只做 02:30 兜不住的事, 旧 pipeline 仍是主力                                       
+                                                                  
+  不要并存, 不然 evolve.log 里的 baseline 漂移说不清是哪边干的。                          
+                                                                                          
+  4. ROI 没验证就上, 7 天后强制评估                                                       
+                                                                                          
+  我之前推 C → B → A, 你直接上 A。可以, 但埋个 checkpoint:                                
+                                                                  
+  # 7 天后 (03:00 跑了 7 次) 评估:                                                        
+  hermes insights --window 7d --metric pass_rate          # 跟上线前 7d 比                
+  cat ~/.hermes/logs/evolve.log | grep "delta=" | awk '{...}' # 算 delta 平均值           
+                                                                                          
+  如果 7 天 delta 平均 < +1% → claude -p 没比本地强, 关掉双脑回旧 pipeline, 省 $30/月。   
+  如果 ≥ +3% → 留住, 加 canary。                                                          
+                                                                                          
+  没这步就一直跑下去 = 沉没成本陷阱。                                                     
+                                                                                          
+  5. evolve.log 月度归档 (append-only 不等于无限增长)                                     
+                                                                  
+  # 加到 04:00 Sun snapshot GC cron 里:                                                   
+  [ "$(date +%-d)" -le 7 ] && [ "$(date +%u)" = "7" ] && \                                
+    mv ~/.hermes/logs/evolve.log ~/.hermes/logs/evolve-$(date -d '1 month ago' +%Y%m).log 
+  && \                                                                                    
+    touch ~/.hermes/logs/evolve.log                                                       
+                                                                                          
+  每月 1 号自动归档, 当前 evolve.log 永远只有当月。审计追溯时按月份找, 文件操作快。       
+   
+  ---                                                                                     
+  当前体系层级 (确认理解一致)                                     
+                                                                                          
+  L0 task 执行            (Hermes router 现选)        — 秒
+  L1 trace 落 memory      (skill hook)                — 秒                                
+  L2 router bandit 调权   (Hermes 内, route_outcomes) — 秒~分                             
+  L3 双脑进化 03:00       (Claude Code 规划 → 落地)   — 天                                
+  L4 eval gate            (delta -5% 自动回滚)        — 同步随 L3                         
+  L5 ❌ canary 灰度        (缺)                       — 24h                               
+  L6 健康度告警           (00:00, 06h)                — 4-6h                              
+  L7 月度归档/季度复盘    (人触发)                    — 月                                
+                                                                                          
+  L5 是唯一缺口, 其他全齐。                                                               
+                                                                

@@ -1,0 +1,123 @@
+ 整体准备度: 9.5/10。可以今晚跑。但有 6 项必须跑前手动验证 (5 分钟搞定), 任一失败 →      
+  推迟一天。
+                                                                                          
+  ---                                                             
+  🔴 跑前 6 项必验 (现在做)
+                                                                                          
+  1. Dry-run 一次, 不走 cron
+                                                                                          
+  DRY_RUN=1 ~/.hermes/scripts/apply-plan.sh                       
+  # 期望: 输出 "[plan] cron_add ..." 等, 但 hermes 状态零变化                             
+  hermes cron list                    # 应跟 dry-run 前一致                               
+  失败 → 别上, 说明 DRY_RUN 标志没生效。                                                  
+                                                                                          
+  2. 全链路一次 (允许真改, 但用 fake plan 控影响范围)                                     
+                                                                                          
+  # 用一个"零改动"的 plan 跑全链路, 验证 backup→apply→eval→可回滚 都跑通
+  echo '{"diagnosis":"smoke                                                               
+  test","steps":[],"eval_targets":["regression-100"],"stop_if":"never"}' \                
+    > /tmp/hermes-plan.json                                                               
+  ~/.hermes/scripts/apply-plan.sh /tmp/hermes-plan.json                                   
+  ~/.hermes/scripts/eval-after-apply.sh                           
+  # 期望:                                                                                 
+  #   - snapshot 创建在 ~/.hermes/snapshots/pre_*                 
+  #   - eval 跑完, delta ≈ 0 (因为没改)                                                   
+  #   - 退出码 0                                                                          
+  失败 → 别上, 说明 backup 或 eval 链路有 bug。                                           
+                                                                                          
+  3. Restore 路径验证 (能不能真回滚?)                                                     
+                                                                                          
+  # 故意在 ~/.hermes/skills/某skill/SKILL.md 改一行               
+  # 然后 hermes import <最近 snapshot>                                                    
+  # 再 diff 看有没有还原                                                                  
+  没验过的备份 = 没有备份。至少跑一次成功还原, 否则真出事时回不来。                       
+                                                                                          
+  4. claude -p 真能调通 + 出合规 JSON                             
+                                                                                          
+  ~/.hermes/scripts/consult-claude.sh                             
+  cat /tmp/hermes-plan.json | jq -e '.steps' >/dev/null && echo OK || echo FAIL           
+  # 看是否在第 1 轮就过 schema; 若用了 retry → 记下来观察                                 
+  ls /tmp/hermes-plan.degraded 2>/dev/null && echo "❌ 已降级, claude -p 不通"            
+  有 .degraded → 别上, 第一次跑就降级 = 双脑没启动, 等于旧 pipeline + 多余复杂度。        
+                                                                                          
+  5. 3 连败 pause 真能 pause                                                              
+                                                                                          
+  # 模拟 3 次 reject, 看 cron 是不是真停了                        
+  for i in 1 2 3; do                                                                      
+    echo '{"verdict":"reject","ts":"'$(date -u +%FT%TZ)'"}' >>    
+  ~/.hermes/state.db.eval_history  # 或对应表                                             
+  done                                                            
+  ~/.hermes/scripts/eval-after-apply.sh   # 第 3 次后应触发 pause                         
+  hermes cron list | grep self-evolve     # 应显示 paused/disabled                        
+  # 验证后 resume:                                                                        
+  hermes cron resume self-evolve                                                          
+  没 pause → 别上, 这是 唯一的失控保险, 不能没有。                                        
+                                                                                          
+  6. 人工 kill switch 单条命令验证                                
+                                                                                          
+  hermes cron pause self-evolve                  # 应立刻生效     
+  hermes cron list | grep self-evolve | grep -i pause   # 看到 paused                     
+  hermes cron resume self-evolve                                                          
+  凌晨 03:30 万一手机收到告警, 半睡半醒能不能一条命令掐掉? 必须能。                       
+                                                                                          
+  ---                                                             
+  🟡 加 1 个最后保险 (强烈建议)                                                           
+                                                                                          
+  今晚 02:55 起 nohup 守一段时间, 不只是 tail:
+                                                                                          
+  # 02:55 启动                                                    
+  (                                                                                       
+    while true; do                                                
+      date
+      echo "--- evolve.log tail ---"
+      tail -3 ~/.hermes/logs/evolve.log                                                   
+      echo "--- cron status ---"
+      hermes cron list 2>&1 | grep -E "self-evolve|paused"                                
+      echo "--- in-flight ---"                                                            
+      hermes sessions list --status running 2>&1 | head -5                                
+      echo                                                                                
+      sleep 30                                                    
+    done                                                                                  
+  ) > ~/.hermes/logs/first-night-monitor.log 2>&1 &               
+                                                                                          
+  echo $! > /tmp/first-night-watch.pid
+                                                                                          
+  跑 4 小时 (02:55 → 07:00), 把整夜动态留底。第二天 7 点醒了 cat                          
+  ~/.hermes/logs/first-night-monitor.log 复盘, 比 tail 时漏了关键瞬间强得多。
+                                                                                          
+  # 早上看完, 收尾:                                               
+  kill $(cat /tmp/first-night-watch.pid)
+                                                                                          
+  ---
+  🟢 决策矩阵                                                                             
+                                                                  
+  ┌───────────────┬──────────────────────┬────────────────┐
+  │ 6 项验证全过  │       2-5 项过       │    <2 项过     │                               
+  ├───────────────┼──────────────────────┼────────────────┤
+  │ GO 今晚 03:00 │ 修不过的项, 推迟 24h │ 别上, 全面复查 │                               
+  └───────────────┴──────────────────────┴────────────────┘       
+                                                                                          
+  最坏情况: 全过但凌晨炸了 → 早上 hermes cron pause self-evolve + hermes import <last     
+  snapshot> → 周末复盘。有 backup 不会真死。                                              
+                                                                                          
+  ---                                                             
+  跑后 24h 必看的 3 个信号
+                                                                                          
+  ┌─────────────────────────┬─────────────────────┬──────────────────────────────────┐ 
+  │          信号           │        健康         │               告警               │    
+  ├─────────────────────────┼─────────────────────┼──────────────────────────────────┤ 
+  │ evolve.log 末段         │ verdict: pass, kept │ degraded: true 或 PAUSED         │    
+  ├─────────────────────────┼─────────────────────┼──────────────────────────────────┤ 
+  │ in-flight task 当晚     │ 0 (drain 成功) 或   │ ≥5 (drain 失败, 抢占了任务)      │    
+  │ 03:00-03:30 数量        │ 1-2 (低风险)        │                                  │    
+  ├─────────────────────────┼─────────────────────┼──────────────────────────────────┤    
+  │ 早上 8:00 pass_rate     │ ≥ 上线前 7d 平均    │ < 平均 -3% (可能 Claude Code     │    
+  │                         │                     │ 出馊主意, 但 eval 没拦住)        │
+  └─────────────────────────┴─────────────────────┴──────────────────────────────────┘    
+   
+  任 1 项告警 → 立即 hermes cron pause self-evolve, 等周末分析。                          
+                                                                  
+  ---                                                                                     
+  一句话                                                          
+                                                                                          
+  6 项跑前验证 + 整夜监控守护脚本 = 今晚可以放心跑。少任一条 = 推迟。

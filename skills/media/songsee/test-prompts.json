@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "prompt": "Use songsee to process media",
+    "expected": "Media processed"
+  },
+  {
+    "id": 2,
+    "prompt": "Configure songsee settings",
+    "expected": "Settings applied"
+  }
+]

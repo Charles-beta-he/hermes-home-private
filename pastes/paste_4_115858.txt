@@ -1,0 +1,116 @@
+⏺ 确认 + 4 处必加强                               
+
+  你的对照分析准确, 但有 4 个 gap 我之前没强调够, 实施前必须打补丁。                      
+   
+  ---                                                                                     
+  ✅ 准确的判断 (无需调整)                                        
+                                                                                          
+  - 责任分离: 对的, 这是双脑核心价值
+  - 通道 A→B 升级: 对的, 单 turn 够用                                                     
+  - Schema 4 字段 (gain/risk/reversible/stop_if): 对的, 缺一不可                          
+  - 三层安全网: 对的                                                                      
+  - 不变量锁死从"信任→契约": 对的, 这是从软到硬的升级                                     
+                                                                                          
+  ---                                                                                     
+  ⚠️  4 处必加强 (落地前打补丁)                                                            
+                                                                                          
+  1. Claude Code 不可用时的退化路径
+                                                                                          
+  你提的: 跳过本轮, 不进化。                                                              
+  问题: 长期不进化 = 慢性死亡。
+  加强: claude -p 失败时降级到现有 self-improvement-pipeline.py (Hermes 自规划),          
+  当天用低质量 plan, 标记 degraded=true, 不计入 eval baseline。3 连续 degraded → 告警人审 
+  (claude -p 是不是装出问题了)。                                                          
+                                                                                          
+  # consult-claude.sh 末尾                                                                
+  if [ ! -s /tmp/hermes-plan.json ] || ! jq -e . /tmp/hermes-plan.json >/dev/null; then
+    echo "WARN: claude -p degraded, falling back to local planner"                        
+    python3 ~/.hermes/self-improvement-pipeline.py --output /tmp/hermes-plan.json         
+    echo '{"degraded": true}' > /tmp/hermes-plan.degraded                                 
+  fi                                                                                      
+                                                                                          
+  ---                                                                                     
+  2. Schema 不合规 → retry-with-feedback (不是直接跳过)           
+                                                                                          
+  你提的: jq -e . 校验, 不通过本轮跳过。
+  问题: Claude Code 偶发 schema 漂移会让进化停摆。                                        
+  加强: 2 次 retry 带反馈, 把 schema 错误回灌:                                            
+                                                                                          
+  # consult-claude.sh                                                                     
+  for attempt in 1 2 3; do                                                                
+    claude -p ... < $PROMPT_FILE > /tmp/plan.json                                         
+    if validate_against_schema /tmp/plan.json; then break; fi                             
+    echo "Attempt $attempt failed schema. Errors: $(...)" >> $PROMPT_FILE                 
+    echo "Re-output JSON, fix the above." >> $PROMPT_FILE                                 
+  done                                                                                    
+                                                                                          
+  Anthropic 模型对 schema 反馈 retry 收敛极快, 通常第 2 轮过。3 次都失败才走降级路径 #1。 
+                                                                  
+  ---                                                                                     
+  3. state.json 体积 → 摘要而非原始 dump                          
+                                                                                          
+  你提的: 全打包传过去。
+  问题: insights_7d + route_outcomes 可能上 MB, token 爆。                                
+  加强: self-describe.sh 输出两份: full + summary。Claude Code 只读 summary; 它在 plan    
+  里可声明 "需要 full.X 字段细节" → 第二轮用 ACP 模式再传。                               
+                                                                                          
+  # self-describe.sh                                                                      
+  {                                                               
+    "summary": {
+      "skills_count": 12,
+      "cron_count": 5,                                                                    
+      "pass_rate_7d": 0.83,
+      "top_3_failure_modes": [...],   # 聚合, 非原始                                      
+      "biggest_cost_skill": "...",                                                        
+      "stalled_areas": [...]                                                              
+    },                                                                                    
+    "details_pointer": "/tmp/hermes-state-full.json"   # 在文件系统, 不传 token
+  }                                                                                       
+                                                                  
+  控制每次 prompt < 8K tokens。                                                           
+                                                                  
+  ---                                                                                     
+  4. Apply 期 race condition                                      
+                                                                                          
+  你没提的: Hermes 是 24/7 跑的, evolve cron 触发时可能正在执行别的 task。skill_edit
+  中途改 skill 文件 → 正在跑的那条 task 行为未定义。                                      
+                                                                  
+  加强: apply-plan.sh 前置drain 阶段:                                                     
+                                                                  
+  # apply-plan.sh 开头                                                                    
+  hermes config set scheduler.accept_new false   # 拒收新 task                            
+  sleep 30                                                                                
+  WAITED=0                                                                                
+  while [ $(hermes sessions list --status running --json | jq 'length') -gt 0 ]; do       
+    sleep 5                                                                               
+    WAITED=$((WAITED + 5))                                                                
+    if [ $WAITED -gt 600 ]; then                                                          
+      echo "ABORT: drain timeout, in-flight tasks not finishing"  
+      hermes config set scheduler.accept_new true                                         
+      exit 1                                                                              
+    fi                                                                                    
+  done                                                                                    
+  # ... apply changes ...                                         
+  hermes config set scheduler.accept_new true                                             
+   
+  或者更简单: evolve cron 挑凌晨低峰 (3:00 AM), 业务规模小可以接受。                      
+                                                                  
+  ---                                                                                     
+  你列的次要问题, 我的判断                                        
+                                                                                          
+  ┌─────────────────────────┬─────────────────────────────────────────────────────────┐
+  │          问题           │                        我的看法                         │   
+  ├─────────────────────────┼─────────────────────────────────────────────────────────┤
+  │ skill_edit 用 unix      │ ✅ 同意, 改成全文件替换 + snapshot 存原文件             │
+  │ patch 易飘              │                                                         │
+  ├─────────────────────────┼─────────────────────────────────────────────────────────┤   
+  │ eval 集不变 → baseline  │ ⚠️  重要, 但是v1 不修。先用固定集起步, v2 加 rolling     │   
+  │ 漂移                    │ window (按月度归档)                                     │   
+  ├─────────────────────────┼─────────────────────────────────────────────────────────┤   
+  │ snapshot 无 GC          │ 简单加 find ~/.hermes/snapshots -mtime +30 -delete 到   │
+  │                         │ cron                                                    │   
+  ├─────────────────────────┼─────────────────────────────────────────────────────────┤
+  │ 成本 ($30/月)           │ 可接受                                                  │   
+  └─────────────────────────┴─────────────────────────────────────────────────────────┘   
+   
+  ---       

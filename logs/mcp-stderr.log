@@ -1,0 +1,484 @@
+
+===== [2026-04-26 03:38:33] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 03:38:35] starting MCP server 'time' =====
+
+===== [2026-04-26 03:38:36] starting MCP server 'memory' =====
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Downloading cryptography (7.5MiB)
+ Downloaded cryptography
+Installed 32 packages in 40ms
+
+===== [2026-04-26 03:42:45] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 03:42:47] starting MCP server 'time' =====
+
+===== [2026-04-26 03:42:49] starting MCP server 'memory' =====
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 09:22:57] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:22:59] starting MCP server 'time' =====
+
+===== [2026-04-26 09:23:00] starting MCP server 'memory' =====
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:50] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:51] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:52] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'time' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:53] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:54] starting MCP server 'memory' =====
+
+===== [2026-04-26 09:46:54] starting MCP server 'memory' =====
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+
+===== [2026-04-26 10:24:09] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 10:24:11] starting MCP server 'time' =====
+
+===== [2026-04-26 10:24:12] starting MCP server 'memory' =====
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 10:57:59] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 10:58:01] starting MCP server 'time' =====
+
+===== [2026-04-26 10:58:02] starting MCP server 'memory' =====
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 11:51:59] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 11:51:59] starting MCP server 'git' =====
+
+===== [2026-04-26 11:52:00] starting MCP server 'time' =====
+
+===== [2026-04-26 11:52:02] starting MCP server 'memory' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 11:52:03] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 11:52:05] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 11:52:09] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:22:51] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 17:22:51] starting MCP server 'git' =====
+
+===== [2026-04-26 17:22:52] starting MCP server 'memory' =====
+
+===== [2026-04-26 17:22:54] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:22:55] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 17:22:57] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:23:01] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:36:30] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 17:36:30] starting MCP server 'git' =====
+
+===== [2026-04-26 17:36:31] starting MCP server 'memory' =====
+
+===== [2026-04-26 17:36:32] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:36:33] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:36:35] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 17:36:40] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:43:47] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 17:43:47] starting MCP server 'git' =====
+
+===== [2026-04-26 17:43:49] starting MCP server 'memory' =====
+
+===== [2026-04-26 17:43:50] starting MCP server 'time' =====
+/Applications/Xcode.app/Contents/Developer/usr/bin/python3: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:43:51] starting MCP server 'git' =====
+/Applications/Xcode.app/Contents/Developer/usr/bin/python3: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 17:43:53] starting MCP server 'git' =====
+/Applications/Xcode.app/Contents/Developer/usr/bin/python3: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 17:43:57] starting MCP server 'git' =====
+/Applications/Xcode.app/Contents/Developer/usr/bin/python3: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 18:00:07] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 18:00:07] starting MCP server 'git' =====
+
+===== [2026-04-26 18:00:09] starting MCP server 'memory' =====
+
+===== [2026-04-26 18:00:10] starting MCP server 'time' =====
+/Users/charles/.hermes/hermes-agent/venv/bin/python3: can't open file '/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 18:00:11] starting MCP server 'git' =====
+/Users/charles/.hermes/hermes-agent/venv/bin/python3: can't open file '/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Secure MCP Filesystem Server running on stdio
+Knowledge Graph MCP Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 18:00:13] starting MCP server 'git' =====
+/Users/charles/.hermes/hermes-agent/venv/bin/python3: can't open file '/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 18:00:17] starting MCP server 'git' =====
+/Users/charles/.hermes/hermes-agent/venv/bin/python3: can't open file '/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 19:24:03] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 19:24:03] starting MCP server 'git' =====
+
+===== [2026-04-26 19:24:05] starting MCP server 'memory' =====
+
+===== [2026-04-26 19:24:06] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 19:24:07] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 19:24:09] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 19:24:13] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 23:27:06] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 23:27:06] starting MCP server 'git' =====
+
+===== [2026-04-26 23:27:07] starting MCP server 'memory' =====
+
+===== [2026-04-26 23:27:09] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 23:27:10] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+
+===== [2026-04-26 23:27:12] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Installed 32 packages in 45ms
+
+===== [2026-04-26 23:27:16] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 23:52:38] starting MCP server 'filesystem' =====
+
+===== [2026-04-26 23:52:38] starting MCP server 'git' =====
+
+===== [2026-04-26 23:52:40] starting MCP server 'memory' =====
+
+===== [2026-04-26 23:52:41] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 23:52:42] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-26 23:52:44] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-26 23:52:48] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:02:33] starting MCP server 'filesystem' =====
+
+===== [2026-04-27 00:02:33] starting MCP server 'git' =====
+
+===== [2026-04-27 00:02:34] starting MCP server 'memory' =====
+
+===== [2026-04-27 00:02:36] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:02:37] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-27 00:02:39] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:02:43] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:04:04] starting MCP server 'filesystem' =====
+
+===== [2026-04-27 00:04:04] starting MCP server 'git' =====
+
+===== [2026-04-27 00:04:05] starting MCP server 'memory' =====
+
+===== [2026-04-27 00:04:08] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:04:09] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-27 00:04:11] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:04:15] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:06:19] starting MCP server 'filesystem' =====
+
+===== [2026-04-27 00:06:19] starting MCP server 'git' =====
+
+===== [2026-04-27 00:06:20] starting MCP server 'memory' =====
+
+===== [2026-04-27 00:06:22] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:06:23] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+Knowledge Graph MCP Server running on stdio
+
+===== [2026-04-27 00:06:25] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 00:06:29] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/work/uvisa-app/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 11:21:08] starting MCP server 'filesystem' =====
+
+===== [2026-04-27 11:21:08] starting MCP server 'git' =====
+
+===== [2026-04-27 11:21:10] starting MCP server 'memory' =====
+
+===== [2026-04-27 11:21:11] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 11:21:12] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 11:21:14] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-27 11:21:18] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 11:23:29] starting MCP server 'filesystem' =====
+
+===== [2026-04-27 11:23:29] starting MCP server 'git' =====
+
+===== [2026-04-27 11:23:30] starting MCP server 'memory' =====
+
+===== [2026-04-27 11:23:32] starting MCP server 'time' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 11:23:33] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+Knowledge Graph MCP Server running on stdio
+Secure MCP Filesystem Server running on stdio
+Client does not support MCP Roots, using allowed directories set from server args: [ '/Users/charles/Desktop/folder' ]
+
+===== [2026-04-27 11:23:35] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory
+
+===== [2026-04-27 11:23:39] starting MCP server 'git' =====
+/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/charles/Desktop/folder/matrimonial/~/.hermes/scripts/mcp-git-server.py': [Errno 2] No such file or directory

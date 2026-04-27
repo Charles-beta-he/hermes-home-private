@@ -1,0 +1,7 @@
+name: skill-tracker
+version: 1.0.0
+description: "Track skill_view usage counts. Records every skill_view call with timestamp, persists to steward state.json. Feeds Ashby diversity data to the skill ecosystem steward."
+author: "self-diagnosis loop"
+hooks:
+  - post_tool_call
+  - on_session_end

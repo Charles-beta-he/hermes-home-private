@@ -1,0 +1,194 @@
+L0: 执行层                                                 
+                                                                                          
+  每次跑都生成 1 条 trace: {task, route, verdict, duration, tokens, model_chain}。        
+                                                                                   
+核心: cron 拉源 → triage 分类 → router 选 skill → 执行 → verify → 反馈记忆。            
+   
+  每段映射到 hermes 原生能力, 不重造轮子。
+L1: 观测层 (写入 memory)                                        
+                                                                                          
+  每个 skill 出口加 hook:
+                                                                                          
+  hermes hooks add post-skill record_trace.sh                     
+                                                                                          
+  record_trace.sh:                                                
+  hermes memory append --table route_outcomes --json '{                                   
+    "ts": "'$(date -u +%FT%TZ)'",                                 
+    "skill": "'"$HERMES_SKILL"'",                                                         
+    "task_id": "'"$HERMES_TASK_ID"'",
+    "verdict": "'"$HERMES_VERDICT"'",                                                     
+    "duration_s": "'"$HERMES_DURATION"'",                                                 
+    "tokens_in": "'"$HERMES_TOKENS_IN"'",                                                 
+    "tokens_out": "'"$HERMES_TOKENS_OUT"'"                                                
+  }'                                                              
+                                                                                          
+  hermes insights 直接读这表算 p50/p95、reject_rate、cost_per_task。
+                                                                                          
+  ---                                                             
+  L2: 短环 — 路线策略更新 (秒级, 在线)                                                    
+                                                                                          
+  router skill 内部用 多臂老虎机 (Thompson Sampling 或 UCB1) 而非硬编码:
+                                                                                          
+  # router/SKILL.md                                               
+  ---                                                                                     
+  name: router                                                    
+  ---
+
+  候选路线 (按 task class 分组):                                                          
+  class=feature.frontend.complicated:
+    - route_a: planner→implementer→verifier (历史 pass=0.82, cost=$0.3, p50=180s)         
+    - route_b: explorer→planner→implementer→verifier (pass=0.91, cost=$0.5, p50=240s)     
+    - route_c: implement_verify_cycle (pass=0.78, cost=$0.4, p50=200s)                    
+                                                                                          
+  每次执行前:                                                                             
+    1. 读 memory.route_outcomes 同 class 最近 50 条                                       
+    2. 算 score(route) = pass_rate − λ_cost·cost − λ_time·duration                        
+    3. ε-greedy: 90% 选 top-1, 10% 随机探索 (避免锁死)                                    
+    4. 写 memory.route_choice (含 score 和探索标记)                                       
+                                                                                          
+  无需重训, 每次调用即更新决策。                                                          
+                                                                  
+  ---                                                                                     
+  L3: 中环 — Skill / Prompt 进化 (天级, 离线)                     
+                                                                                          
+  cron 每天扫一次 outcome 库, 触发自学习 skill:
+                                                                                          
+  hermes cron add --name evolve --interval 1d --prompt "/self-evolve"
+                                                                                          
+  /self-evolve 走以下分支:                                        
+                                                                                          
+  A. 已有 skill prompt 退化 → 自动改写                                                    
+   
+  WHEN: skill X 的 reject_rate 7d > baseline + 10%                                        
+  THEN:                                                                                   
+    1. 拉 X 最近 20 条 reject case                                                        
+    2. 让 evolve-prompt skill 分析共性失败模式                                            
+    3. 产出 patch (新 system prompt diff)                                                 
+    4. 入 L4 eval gate                                                                    
+                                                                                          
+  调用现有的 continuous-learning-v2 或 self-improve (skill 列表里有, tournament           
+  selection)。                                                                            
+                                                                                          
+  B. 路线全军覆没 → 新 skill 提案                                                         
+   
+  WHEN: 某 task class 所有候选路线 pass < 0.5                                             
+  THEN:                                                                                   
+    1. 调 `learner` skill 从成功 case (含人工补救) 提取共同步骤
+    2. 用 `writing-skills` 生成新 SKILL.md draft                                          
+    3. 入 L4 eval gate                                                                    
+                                                                                          
+  C. 工具缺口 → 新 MCP 提案                                                               
+                                                                  
+  WHEN: skill 频繁手写同一段 bash / 同一个 API 调用                                       
+  THEN:                                                                                   
+    1. `mcp-server-patterns` skill 自动起草 MCP server 骨架
+    2. 推送到 ~/.hermes/mcp/proposals/                                                    
+    3. 通知用户 review (人审, 不自装)                                                     
+                                                                                          
+  D. Triage 误分类 → 分类器细化                                                           
+                                                                                          
+  WHEN: triage 输出 X, 路线后 verdict 与 X 的预期严重不符 (规则集)                        
+  THEN:                                                                                   
+    1. 把误分案例加入 triage 的 few-shot 例
+    2. eval harness 跑 triage 回归集                                                      
+    3. 通过则更新 triage skill                                                            
+                                                                                          
+  ---                                                                                     
+  L4: 准入门 — Eval Harness Gate                                  
+                                                                                          
+  这是自我提升不毁掉自己的核心保险。借用已有 eval-harness / agent-eval skill。
+                                                                                          
+  每个 L3 产出的 patch 进入:                                                              
+                                                                                          
+  patch → ~/.hermes/skills-staging/<skill>.md                                             
+         ↓                                                                                
+       eval harness 跑 100 条历史 task (固定基线集)
+         ↓                                                                                
+     {pass_rate, cost, latency} 三维对比                          
+         ↓                                                                                
+     ┌── 任一维 worse > 5% → reject, 写 evolution_log             
+     ├── 全部 better/平 → promote 到 production                                           
+     └── 部分 better/部分 worse → 灰度 A/B (L5)                                           
+                                                                                          
+  无 eval gate 自我提升 = 自我退化。这步绝不能省。                                        
+                                                                                          
+  ---                                                                                     
+  L5: 灰度 + 回滚                                                 
+                 
+  通过 eval 但拿不准的 patch:
+                                                                                          
+  hermes config set skills.<name>.canary 0.1   # 10% 流量走新版
+  hermes insights --skill <name> --since 24h --canary                                     
+  # 如果 24h canary pass_rate ≥ stable: hermes config set canary 1.0                      
+  # 如果 < stable: hermes config set canary 0.0 (rollback)                                
+                                                                                          
+  完全自动:                                                                               
+  hermes cron add --interval 1h --prompt "/canary-evaluator"                              
+                                                                                          
+  ---
+  完整结构落地命令 (一次性)                                                               
+                                                                                          
+  # 1. 装核心 skills
+  hermes skills install triage router verifier learner self-improve \                     
+                         continuous-learning-v2 eval-harness writing-skills
+                                                                                          
+  # 2. 配 memory provider (持久化路线 outcome + 进化日志)                                 
+  hermes memory configure --provider sqlite --path ~/.hermes/state.db                     
+                                                                                          
+  # 3. 拉源                                                       
+  hermes cron add --name mine --interval 5m --prompt "/auto-mine"
+                                                                                          
+  # 4. 在线短环 (router 用 outcomes 现选)                                                 
+  # 已在 router skill 里, 无需额外 cron                                                   
+                                                                                          
+  # 5. 离线中环 (自我进化)                                                                
+  hermes cron add --name evolve --interval 1d --prompt "/self-evolve"                     
+                                                                                          
+  # 6. 灰度评估 (canary)                                          
+  hermes cron add --name canary --interval 1h --prompt "/canary-evaluator"
+                                                                                          
+  # 7. 监控
+  hermes cron add --name health --interval 6h --prompt \                                  
+    "拉 insights, 任 skill reject>30% 或 cost 翻倍 → telegram/wechat 告警"                
+                                                                                          
+  ---                                                                                     
+  关键不变量 (不能违)                                                                     
+                                                                                          
+  ┌───────────────────────────────────────────────┬───────────────────────────────────┐
+  │                    不变量                     │              为什么               │   
+  ├───────────────────────────────────────────────┼───────────────────────────────────┤
+  │ 任何 prompt/skill 改动必过 eval gate          │ 防自残                            │
+  ├───────────────────────────────────────────────┼───────────────────────────────────┤
+  │ Router 保留 ε≥5% 随机探索                     │ 防策略锁死, 跟踪环境漂移          │   
+  ├───────────────────────────────────────────────┼───────────────────────────────────┤   
+  │ 高风险 task 永远经人审 (safety-guard)         │ 自学习不能自给写权限              │   
+  ├───────────────────────────────────────────────┼───────────────────────────────────┤   
+  │ 进化日志 append-only, 永不删除                │ 出问题可追溯 + 回滚到任一版本     │
+  ├───────────────────────────────────────────────┼───────────────────────────────────┤   
+  │ Memory 含 PII 必须先脱敏                      │ 合规                              │
+  │ (healthcare-phi-compliance 模式)              │                                   │   
+  ├───────────────────────────────────────────────┼───────────────────────────────────┤
+  │ 短环、中环用不同 cadence (秒 vs 天)           │ 避免 oscillation (控制论          │   
+  │                                               │ stability margin)                 │
+  └───────────────────────────────────────────────┴───────────────────────────────────┘   
+   
+  ---                                                                                     
+  可观测仪表 (3 个核心指标)                                       
+                           
+  # 1. 系统健康
+  hermes insights --metric pass_rate_overall --window 7d                                  
+  # 目标: ≥ 0.85, 持续下降→停 evolve cron                                                 
+                                                                                          
+  # 2. 学习效率                                                                           
+  hermes insights --metric pass_rate_delta --window 30d                                   
+  # 目标: 月度 +2%~+5% (太快= overfit, 太慢= 没在学)                                      
+                                                                                          
+  # 3. 成本曲线                                                                           
+  hermes insights --metric cost_per_pass --window 7d                                      
+  # 目标: 单调下降 或 平稳; 上升 = router 选错或 skill 膨胀                               
+                                                                                          
+  ---                                                                                     
+  一句话                                                                                  
+                                                                                          
+  Cron 拉源 (L0) + 多臂老虎机选路线 (L2 在线) + 每日 evolve skill 自动改 prompt/造 skill 
+  (L3 离线) + Eval harness 准入 (L4) + Canary 灰度 (L5) = 真正的自我提升闭环。 

@@ -1,0 +1,16 @@
+{
+  "approvals": [
+    {
+      "approved_at": "2026-04-26T09:21:01.489132Z",
+      "command": "~/.hermes/agent-hooks/record-trace.sh",
+      "event": "post_tool_call",
+      "script_mtime_at_approval": "2026-04-26T03:44:22.297774Z"
+    },
+    {
+      "approved_at": "2026-04-26T09:21:01.489935Z",
+      "command": "/Users/charles/.claude/hooks/log-route-outcome.sh",
+      "event": "post_tool_call",
+      "script_mtime_at_approval": null
+    }
+  ]
+}

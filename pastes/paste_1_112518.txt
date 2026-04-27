@@ -1,0 +1,6 @@
+  L0 执行    Source → Triage → Router → Exec → Verify                                     
+  L1 观测    ↓ 每步落 memory + insights                           
+  L2 反馈    Outcomes → 路线打分更新 (短环, 秒级)                                         
+  L3 进化    Pattern → 新 skill / 改 prompt (中环, 天级)                                  
+  L4 准入    Eval harness gate (新版本必过回归才上线)                                     
+  L5 灰度    A/B 流量切分, 可回滚

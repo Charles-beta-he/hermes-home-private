@@ -1,0 +1,6 @@
+name: git-branch-inject
+version: 1.0.0
+description: "Inject current git branch into every LLM call context. Prevents accidental edits to wrong branch."
+author: "self-diagnosis loop"
+hooks:
+  - pre_llm_call

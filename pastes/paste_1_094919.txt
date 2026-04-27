@@ -1,0 +1,14 @@
+视频里讲的10个Hermes关键配置已整理成实操清单：
+
+1. pre_llm_call挂钩：每轮自动注入当前git分支，避免改错代码
+2. post_llm_call挂钩：自动清洗用户输入并创建wip存档点，出问题可回退
+3. reasoning_effort设为high：复杂任务成功率提升，简单任务调回medium省资源
+4. tool_use_enforcement=true：强制模型真走工具通道，治"嘴上答应不办事"
+5. 压缩策略调整：threshold从0.5→0.6 + protect_last_n=30，晚压缩多保细节
+6. SOUL.md配置：处理路径歧义时先确认再操作，避免误改600+行代码
+7. skill三层加载：只读描述→展开正文→按需加载文档，装几十个也不卡
+8. skill_manage存流程：让agent把刚学会的操作存成本地skill复用
+9. delegate_task+worktree：三任务并行各占独立git工作区，改完再合主干
+10. 卡顿时三板斧：/verbose all查日志、debug share打包、gateway设超时
+
+挑2-3个先配，agent稳定性就能上一个台阶。

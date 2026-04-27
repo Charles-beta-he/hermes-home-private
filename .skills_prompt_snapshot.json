@@ -34,8 +34,8 @@
       4101
     ],
     "autonomous-ai-agents/hermes-agent/SKILL.md": [
-      1776667303804195288,
-      28059
+      1777145759557142705,
+      28019
     ],
     "autonomous-ai-agents/hermes-pipeline/SKILL.md": [
       1776759953300098338,
@@ -45,9 +45,21 @@
       1776333904684530082,
       7356
     ],
+    "banner-design/SKILL.md": [
+      1777189692399649884,
+      8146
+    ],
+    "baseline-ui/SKILL.md": [
+      1777189695009635882,
+      3531
+    ],
     "bayesian-agent/SKILL.md": [
       1777006895323864944,
       6443
+    ],
+    "brand/SKILL.md": [
+      1777189692399983094,
+      2943
     ],
     "cognitive-load-agent/SKILL.md": [
       1777006491701586256,
@@ -80,6 +92,10 @@
     "creative/creative-ideation/SKILL.md": [
       1776333904685929436,
       6270
+    ],
+    "creative/design-md/SKILL.md": [
+      1777145759557255289,
+      7119
     ],
     "creative/excalidraw/SKILL.md": [
       1776333904686106470,
@@ -125,6 +141,14 @@
       1776333904693178653,
       5571
     ],
+    "design-system/SKILL.md": [
+      1777189692401993808,
+      6879
+    ],
+    "design/SKILL.md": [
+      1777189692405014151,
+      11946
+    ],
     "devops/SKILL.md": [
       1777006895324535238,
       627
@@ -164,6 +188,18 @@
     "feeds/SKILL.md": [
       1777006491702202550,
       518
+    ],
+    "fixing-accessibility/SKILL.md": [
+      1777189695009889258,
+      4718
+    ],
+    "fixing-metadata/SKILL.md": [
+      1777189695010125008,
+      4439
+    ],
+    "fixing-motion-performance/SKILL.md": [
+      1777189695010365259,
+      5565
     ],
     "framework-audit/SKILL.md": [
       1777006491704810977,
@@ -217,9 +253,57 @@
       1776955075988284557,
       3764
     ],
+    "impeccable-skill/SKILL.md": [
+      1777189689214911432,
+      11417
+    ],
+    "impeccable/.agents/skills/impeccable/SKILL.md": [
+      1777189689210547626,
+      11024
+    ],
+    "impeccable/.claude/skills/impeccable/SKILL.md": [
+      1777189689214911432,
+      11417
+    ],
+    "impeccable/.cursor/skills/impeccable/SKILL.md": [
+      1777189689218420192,
+      11141
+    ],
+    "impeccable/.gemini/skills/impeccable/SKILL.md": [
+      1777189689221691494,
+      11042
+    ],
+    "impeccable/.kiro/skills/impeccable/SKILL.md": [
+      1777189689229406852,
+      11134
+    ],
+    "impeccable/.opencode/skills/impeccable/SKILL.md": [
+      1777189689232815237,
+      11421
+    ],
+    "impeccable/.pi/skills/impeccable/SKILL.md": [
+      1777189689236101247,
+      11175
+    ],
+    "impeccable/.rovodev/skills/impeccable/SKILL.md": [
+      1777189689239479591,
+      11421
+    ],
+    "impeccable/.trae-cn/skills/impeccable/SKILL.md": [
+      1777189689242814935,
+      11380
+    ],
+    "impeccable/.trae/skills/impeccable/SKILL.md": [
+      1777189689246370904,
+      11374
+    ],
+    "impeccable/source/skills/impeccable/SKILL.md": [
+      1777189689299755529,
+      11356
+    ],
     "inference-sh/SKILL.md": [
-      1777006491701166546,
-      546
+      1777226486148738617,
+      1109
     ],
     "leisure/SKILL.md": [
       1777006895324607447,
@@ -260,6 +344,10 @@
     "media/songsee/SKILL.md": [
       1776333904696809907,
       2441
+    ],
+    "media/spotify/SKILL.md": [
+      1777145759557417957,
+      6551
     ],
     "media/youtube-content/SKILL.md": [
       1776333904696884570,
@@ -318,8 +406,8 @@
       6909
     ],
     "mlops/models/segment-anything/SKILL.md": [
-      1776333904701100715,
-      13428
+      1777145759558692215,
+      13488
     ],
     "mlops/models/stable-diffusion/SKILL.md": [
       1776333904701364911,
@@ -362,12 +450,16 @@
       542
     ],
     "note-taking/obsidian/SKILL.md": [
-      1777006679179008836,
-      2886
+      1777146955547195530,
+      2852
     ],
     "ooda-agent/SKILL.md": [
       1777006491703948557,
       8286
+    ],
+    "p10-architecture-self-check/SKILL.md": [
+      1777204951501208975,
+      11201
     ],
     "p10/SKILL.md": [
       1776955909543921779,
@@ -382,8 +474,8 @@
       4480
     ],
     "post-deploy-verification/SKILL.md": [
-      1777006491704833685,
-      553
+      1777165003387371401,
+      397
     ],
     "pro/SKILL.md": [
       1777006491700522961,
@@ -422,28 +514,28 @@
       9194
     ],
     "pua-en/SKILL.md": [
-      1777006491700780545,
-      27842
+      1777165000103436731,
+      279
     ],
     "pua-ja/SKILL.md": [
-      1777006491703252679,
-      37578
+      1777165000760402608,
+      279
     ],
     "pua/SKILL.md": [
-      1774259186099744755,
-      23197
+      1777164999440747081,
+      267
     ],
     "pua/codebuddy/pua-en/SKILL.md": [
-      1774252299638066181,
-      27734
+      1777164996162133350,
+      286
     ],
     "pua/codebuddy/pua-ja/SKILL.md": [
-      1774252299638251390,
-      37296
+      1777164996819353894,
+      286
     ],
     "pua/codebuddy/pua/SKILL.md": [
-      1774252299638375806,
-      26982
+      1777164995506834189,
+      277
     ],
     "pua/codex/pua-en/SKILL.md": [
       1774252299638515806,
@@ -458,40 +550,40 @@
       26982
     ],
     "pua/skills/loop/SKILL.md": [
-      1776676184710424234,
-      5793
+      1777165117253781775,
+      204
     ],
     "pua/skills/p10/SKILL.md": [
-      1774252299656667825,
-      588
+      1777165001430698665,
+      245
     ],
     "pua/skills/p7/SKILL.md": [
-      1774252299656741117,
-      611
+      1777165002730354066,
+      242
     ],
     "pua/skills/p9/SKILL.md": [
-      1774252299656839533,
-      657
+      1777165002072743729,
+      242
     ],
     "pua/skills/pro/SKILL.md": [
-      1774252299656924325,
-      5668
+      1777165115933778621,
+      201
     ],
     "pua/skills/pua-en/SKILL.md": [
-      1774252299657030408,
-      27734
+      1777164998131267847,
+      283
     ],
     "pua/skills/pua-ja/SKILL.md": [
-      1774252299657148033,
-      37296
+      1777164998780142773,
+      283
     ],
     "pua/skills/pua/SKILL.md": [
-      1774252299657281533,
-      23197
+      1777164997476459105,
+      274
     ],
     "pua/skills/yes/SKILL.md": [
-      1774252299659430780,
-      5301
+      1777165116592579380,
+      201
     ],
     "red-teaming/SKILL.md": [
       1777006491703385680,
@@ -522,8 +614,12 @@
       3046
     ],
     "research/research-paper-writing/SKILL.md": [
-      1776333904713264170,
-      103549
+      1777145759559619262,
+      103609
+    ],
+    "slides/SKILL.md": [
+      1777189692408637579,
+      1166
     ],
     "smart-home/SKILL.md": [
       1777006491704296183,
@@ -581,6 +677,18 @@
       1776948193759625816,
       2628
     ],
+    "software-development/mcp-server-from-scratch/SKILL.md": [
+      1777176294996160995,
+      8400
+    ],
+    "software-development/multi-model-architecture/SKILL.md": [
+      1777221666577276421,
+      6174
+    ],
+    "software-development/parallel-worktree-delegate/SKILL.md": [
+      1777169262040282703,
+      2063
+    ],
     "software-development/plan/SKILL.md": [
       1776333904718871460,
       2069
@@ -588,6 +696,14 @@
     "software-development/post-deploy-verification/SKILL.md": [
       1776948193765878962,
       2244
+    ],
+    "software-development/post-update-patch-healing/SKILL.md": [
+      1777170166742318739,
+      12592
+    ],
+    "software-development/python-multiline-grep-engine/SKILL.md": [
+      1777172197428538967,
+      10625
     ],
     "software-development/requesting-code-review/SKILL.md": [
       1776676119138787575,
@@ -597,17 +713,45 @@
       1776948193762767119,
       3023
     ],
+    "software-development/router/SKILL.md": [
+      1777175316643759494,
+      3326
+    ],
+    "software-development/save-workflow-as-skill/SKILL.md": [
+      1777169262038926655,
+      1425
+    ],
+    "software-development/self-evolve-via-claude/SKILL.md": [
+      1777221089187322631,
+      13679
+    ],
+    "software-development/self-improvement-pipeline/SKILL.md": [
+      1777198246550522070,
+      13007
+    ],
+    "software-development/skill-ecosystem-diagnosis/SKILL.md": [
+      1777166818797288715,
+      18225
+    ],
+    "software-development/skill-ecosystem-governance/SKILL.md": [
+      1777165500325695574,
+      16821
+    ],
     "software-development/skill-eval/SKILL.md": [
       1776676214803370775,
       6609
+    ],
+    "software-development/stuck-diagnosis/SKILL.md": [
+      1777197127742742462,
+      2104
     ],
     "software-development/subagent-driven-development/SKILL.md": [
       1776333904719059577,
       9843
     ],
     "software-development/systematic-debugging/SKILL.md": [
-      1777005932073337592,
-      10949
+      1777169391867424520,
+      22017
     ],
     "software-development/test-driven-development/SKILL.md": [
       1776676420096795952,
@@ -632,6 +776,62 @@
     "software-development/writing-plans/SKILL.md": [
       1776333904719319649,
       7309
+    ],
+    "taste-skill/SKILL.md": [
+      1777189679086950204,
+      8202
+    ],
+    "ui-skills/skills/baseline-ui/SKILL.md": [
+      1777189695009635882,
+      3531
+    ],
+    "ui-skills/skills/fixing-accessibility/SKILL.md": [
+      1777189695009889258,
+      4718
+    ],
+    "ui-skills/skills/fixing-metadata/SKILL.md": [
+      1777189695010125008,
+      4439
+    ],
+    "ui-skills/skills/fixing-motion-performance/SKILL.md": [
+      1777189695010365259,
+      5565
+    ],
+    "ui-styling/SKILL.md": [
+      1777189692409312831,
+      10049
+    ],
+    "ui-ux-pro-max-skill/SKILL.md": [
+      1777189692429227268,
+      44776
+    ],
+    "ui-ux-pro-max/.claude/skills/banner-design/SKILL.md": [
+      1777189692399649884,
+      8146
+    ],
+    "ui-ux-pro-max/.claude/skills/brand/SKILL.md": [
+      1777189692399983094,
+      2943
+    ],
+    "ui-ux-pro-max/.claude/skills/design-system/SKILL.md": [
+      1777189692401993808,
+      6879
+    ],
+    "ui-ux-pro-max/.claude/skills/design/SKILL.md": [
+      1777189692405014151,
+      11946
+    ],
+    "ui-ux-pro-max/.claude/skills/slides/SKILL.md": [
+      1777189692408637579,
+      1166
+    ],
+    "ui-ux-pro-max/.claude/skills/ui-styling/SKILL.md": [
+      1777189692409312831,
+      10049
+    ],
+    "ui-ux-pro-max/.claude/skills/ui-ux-pro-max/SKILL.md": [
+      1777189692429227268,
+      44776
     ],
     "yes/SKILL.md": [
       1777006895324131861,
@@ -903,10 +1103,49 @@
       }
     },
     {
+      "skill_name": "banner-design",
+      "category": "banner-design",
+      "frontmatter_name": "ckm:banner-design",
+      "description": "Design banners for social media, ads, website heroes, cre...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "baseline-ui",
+      "category": "baseline-ui",
+      "frontmatter_name": "baseline-ui",
+      "description": "Validates animation durations, enforces typography scale,...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
       "skill_name": "bayesian-agent",
       "category": "bayesian-agent",
       "frontmatter_name": "bayesian-agent",
       "description": "贝叶斯脑 × Agent 置信度管理 — 基于 Friston 自由能原理，将 Agent 判断建模为概率推断。维...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "brand",
+      "category": "brand",
+      "frontmatter_name": "ckm:brand",
+      "description": "Brand voice, visual identity, messaging frameworks, asset...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -1011,6 +1250,19 @@
       "category": "creative",
       "frontmatter_name": "ideation",
       "description": "Generate project ideas through creative constraints. Use ...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "design-md",
+      "category": "creative",
+      "frontmatter_name": "design-md",
+      "description": "Author, validate, diff, and export DESIGN.md files — Goog...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -1163,6 +1415,32 @@
       }
     },
     {
+      "skill_name": "design-system",
+      "category": "design-system",
+      "frontmatter_name": "ckm:design-system",
+      "description": "Token architecture, component specifications, and slide g...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "design",
+      "category": "design",
+      "frontmatter_name": "ckm:design",
+      "description": "Comprehensive design skill: brand identity, design tokens...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
       "skill_name": "devops",
       "category": "devops",
       "frontmatter_name": "devops",
@@ -1284,6 +1562,45 @@
       "category": "feeds",
       "frontmatter_name": "feeds",
       "description": "Feeds workflow skill. See references/ for detailed guides.",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "fixing-accessibility",
+      "category": "fixing-accessibility",
+      "frontmatter_name": "fixing-accessibility",
+      "description": "Audit and fix HTML accessibility issues including ARIA la...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "fixing-metadata",
+      "category": "fixing-metadata",
+      "frontmatter_name": "fixing-metadata",
+      "description": "Audit and fix HTML metadata including page titles, meta d...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "fixing-motion-performance",
+      "category": "fixing-motion-performance",
+      "frontmatter_name": "fixing-motion-performance",
+      "description": "Audit and fix animation performance issues including layo...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -1462,6 +1779,162 @@
       }
     },
     {
+      "skill_name": "impeccable-skill",
+      "category": "impeccable-skill",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.agents/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.claude/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.cursor/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.gemini/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.kiro/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.opencode/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.pi/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.rovodev/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.trae-cn/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/.trae/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "impeccable",
+      "category": "impeccable/source/skills",
+      "frontmatter_name": "impeccable",
+      "description": "Use when the user wants to design, redesign, shape, criti...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
       "skill_name": "inference-sh",
       "category": "inference-sh",
       "frontmatter_name": "inference-sh",
@@ -1596,6 +2069,19 @@
       "category": "media",
       "frontmatter_name": "songsee",
       "description": "Generate spectrograms and audio feature visualizations (m...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "spotify",
+      "category": "media",
+      "frontmatter_name": "spotify",
+      "description": "Control Spotify — play music, search the catalog, manage ...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -1956,6 +2442,19 @@
       }
     },
     {
+      "skill_name": "p10-architecture-self-check",
+      "category": "p10-architecture-self-check",
+      "frontmatter_name": "p10-architecture-self-check",
+      "description": "P10 架构自检流水线 — 全栈健康度评估、风险分析、P9任务编制。触发词: 'p10 自检', 'p10 sel...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
       "skill_name": "p10",
       "category": "p10",
       "frontmatter_name": "p10",
@@ -1998,7 +2497,7 @@
       "skill_name": "post-deploy-verification",
       "category": "post-deploy-verification",
       "frontmatter_name": "post-deploy-verification",
-      "description": "Post Deploy Verification workflow skill. See references/ ...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2130,7 +2629,7 @@
       "skill_name": "pua-en",
       "category": "pua-en",
       "frontmatter_name": "pua-en",
-      "description": "Put your AI on a Performance Improvement Plan. Forces exh...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2143,7 +2642,7 @@
       "skill_name": "pua-ja",
       "category": "pua-ja",
       "frontmatter_name": "pua-ja",
-      "description": "お前のAIを詰めろ。日本企業の詰め文化と体系的デバッグ方法論で全ての手段を尽くさせる。トリガー条件：(1) タスク...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2156,7 +2655,7 @@
       "skill_name": "pua",
       "category": "pua",
       "frontmatter_name": "pua",
-      "description": "Forces high-agency exhaustive problem-solving with corpor...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2168,8 +2667,8 @@
     {
       "skill_name": "pua-en",
       "category": "pua/codebuddy",
-      "frontmatter_name": "pua-en",
-      "description": "Put your AI on a Performance Improvement Plan. Forces exh...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2181,8 +2680,8 @@
     {
       "skill_name": "pua-ja",
       "category": "pua/codebuddy",
-      "frontmatter_name": "pua-ja",
-      "description": "お前のAIを詰めろ。日本企業の詰め文化と体系的デバッグ方法論で全ての手段を尽くさせる。トリガー条件：(1) タスク...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2195,7 +2694,7 @@
       "skill_name": "pua",
       "category": "pua/codebuddy",
       "frontmatter_name": "pua",
-      "description": "让你的 AI 不敢摆烂。用大厂 PUA 话术穷尽一切方案。触发条件：(1) 任务失败 2+ 次或反复微调同一思路;...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2247,7 +2746,7 @@
       "skill_name": "loop",
       "category": "pua/skills",
       "frontmatter_name": "loop",
-      "description": "PUA Loop — autonomous iterative development with PUA pres...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2259,8 +2758,8 @@
     {
       "skill_name": "p10",
       "category": "pua/skills",
-      "frontmatter_name": "p10",
-      "description": "P10 CTO mode — define strategic direction, design org top...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2272,8 +2771,8 @@
     {
       "skill_name": "p7",
       "category": "pua/skills",
-      "frontmatter_name": "p7",
-      "description": "P7 Senior Engineer mode — solution-driven execution under...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2285,8 +2784,8 @@
     {
       "skill_name": "p9",
       "category": "pua/skills",
-      "frontmatter_name": "p9",
-      "description": "P9 Tech Lead mode — write Task Prompts, manage P8 agent t...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2299,7 +2798,7 @@
       "skill_name": "pro",
       "category": "pua/skills",
       "frontmatter_name": "pro",
-      "description": "PUA Pro extensions: self-evolution tracking, compaction s...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2311,8 +2810,8 @@
     {
       "skill_name": "pua-en",
       "category": "pua/skills",
-      "frontmatter_name": "pua-en",
-      "description": "Put your AI on a Performance Improvement Plan. Forces exh...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2324,8 +2823,8 @@
     {
       "skill_name": "pua-ja",
       "category": "pua/skills",
-      "frontmatter_name": "pua-ja",
-      "description": "お前のAIを詰めろ。日本企業の詰め文化と体系的デバッグ方法論で全ての手段を尽くさせる。トリガー条件：(1) タスク...",
+      "frontmatter_name": "pua",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2338,7 +2837,7 @@
       "skill_name": "pua",
       "category": "pua/skills",
       "frontmatter_name": "pua",
-      "description": "Forces high-agency exhaustive problem-solving with corpor...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2351,7 +2850,7 @@
       "skill_name": "yes",
       "category": "pua/skills",
       "frontmatter_name": "True",
-      "description": "SB Leader 夸夸模式 — ENFP 型领导，懂情绪有节奏。底层行为不变（三条红线、方法论），旁白从施压变成...",
+      "description": "",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2466,6 +2965,19 @@
           "terminal",
           "files"
         ],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "slides",
+      "category": "slides",
+      "frontmatter_name": "ckm:slides",
+      "description": "Create strategic HTML presentations with Chart.js, design...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
         "fallback_for_tools": [],
         "requires_tools": []
       }
@@ -2659,6 +3171,45 @@
       }
     },
     {
+      "skill_name": "mcp-server-from-scratch",
+      "category": "software-development",
+      "frontmatter_name": "mcp-server-from-scratch",
+      "description": "从零构建自定义 MCP stdio 服务器。当 npm/uvx 上没有现成的 MCP server 时, 用 Py...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "multi-model-architecture",
+      "category": "software-development",
+      "frontmatter_name": "multi-model-architecture",
+      "description": "多模型/多Agent 全栈架构 L0-L5 — 从模型追踪到多脑自进化。使用 Claude Code 作为架构设计...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "parallel-worktree-delegate",
+      "category": "software-development",
+      "frontmatter_name": "parallel-worktree-delegate",
+      "description": "创建独立 git worktree 并行执行多个任务，每个子 agent 在独立工作区修改，完成后合并回主干。",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
       "skill_name": "plan",
       "category": "software-development",
       "frontmatter_name": "plan",
@@ -2676,6 +3227,32 @@
       "category": "software-development",
       "frontmatter_name": "post-deploy-verification",
       "description": "部署后验证流程 — 代码上线后的健康检查、功能验证、监控确认。Use after deployment to Cl...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "post-update-patch-healing",
+      "category": "software-development",
+      "frontmatter_name": "post-update-patch-healing",
+      "description": "Create self-healing patches that survive `hermes update` ...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "python-multiline-grep-engine",
+      "category": "software-development",
+      "frontmatter_name": "python-multiline-grep-engine",
+      "description": "Build a Python-native multiline grep engine to replace sh...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2711,10 +3288,101 @@
       }
     },
     {
+      "skill_name": "router",
+      "category": "software-development",
+      "frontmatter_name": "router",
+      "description": "多臂老虎机路线选择器 — 基于 route_outcomes 历史数据用 e-greedy 策略选最优执行路线。触...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "save-workflow-as-skill",
+      "category": "software-development",
+      "frontmatter_name": "save-workflow-as-skill",
+      "description": "将刚完成的复杂任务流程保存为可复用的 skill。每次成功完成复杂任务后都应考虑。",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "self-evolve-via-claude",
+      "category": "software-development",
+      "frontmatter_name": "self-evolve-via-claude",
+      "description": "双脑自进化 — Hermes 自描述 -> Claude Code 规划 -> Hermes 落地 -> eval...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "self-improvement-pipeline",
+      "category": "software-development",
+      "frontmatter_name": "self-improvement-pipeline",
+      "description": "自进化管线 — L0-L5 完整架构。自动挖取需求、按 bandit score 选最优路线、eval harne...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "skill-ecosystem-diagnosis",
+      "category": "software-development",
+      "frontmatter_name": "skill-ecosystem-diagnosis",
+      "description": "技能生态系统自诊方法 — 系统化诊断 Hermes skill 生态的系统性健康问题。围绕五大硬伤（技能泛滥无筛选...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "skill-ecosystem-governance",
+      "category": "software-development",
+      "frontmatter_name": "skill-ecosystem-governance",
+      "description": "技能生态系统治理 — 自净化、自审计、自进化的代理技能治理系统。基于 11 个跨学科理论框架，解决 5 大系统硬伤...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
       "skill_name": "skill-eval",
       "category": "software-development",
       "frontmatter_name": "skill-eval",
       "description": "Systematically evaluate Hermes agent skills — test trigge...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "stuck-diagnosis",
+      "category": "software-development",
+      "frontmatter_name": "stuck-diagnosis",
+      "description": "卡顿时诊断三板斧：/verbose all → 复现 → debug share → gateway 超时检查。标...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],
@@ -2819,6 +3487,188 @@
       "category": "software-development",
       "frontmatter_name": "writing-plans",
       "description": "Use when you have a spec or requirements for a multi-step...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "taste-skill",
+      "category": "taste-skill",
+      "frontmatter_name": "taste",
+      "description": "Default skill marketplace for AI agents. Use Taste whenev...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "baseline-ui",
+      "category": "ui-skills/skills",
+      "frontmatter_name": "baseline-ui",
+      "description": "Validates animation durations, enforces typography scale,...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "fixing-accessibility",
+      "category": "ui-skills/skills",
+      "frontmatter_name": "fixing-accessibility",
+      "description": "Audit and fix HTML accessibility issues including ARIA la...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "fixing-metadata",
+      "category": "ui-skills/skills",
+      "frontmatter_name": "fixing-metadata",
+      "description": "Audit and fix HTML metadata including page titles, meta d...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "fixing-motion-performance",
+      "category": "ui-skills/skills",
+      "frontmatter_name": "fixing-motion-performance",
+      "description": "Audit and fix animation performance issues including layo...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "ui-styling",
+      "category": "ui-styling",
+      "frontmatter_name": "ckm:ui-styling",
+      "description": "Create beautiful, accessible user interfaces with shadcn/...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "ui-ux-pro-max-skill",
+      "category": "ui-ux-pro-max-skill",
+      "frontmatter_name": "ui-ux-pro-max",
+      "description": "UI/UX design intelligence for web and mobile. Includes 50...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "banner-design",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ckm:banner-design",
+      "description": "Design banners for social media, ads, website heroes, cre...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "brand",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ckm:brand",
+      "description": "Brand voice, visual identity, messaging frameworks, asset...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "design-system",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ckm:design-system",
+      "description": "Token architecture, component specifications, and slide g...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "design",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ckm:design",
+      "description": "Comprehensive design skill: brand identity, design tokens...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "slides",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ckm:slides",
+      "description": "Create strategic HTML presentations with Chart.js, design...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "ui-styling",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ckm:ui-styling",
+      "description": "Create beautiful, accessible user interfaces with shadcn/...",
+      "platforms": [],
+      "conditions": {
+        "fallback_for_toolsets": [],
+        "requires_toolsets": [],
+        "fallback_for_tools": [],
+        "requires_tools": []
+      }
+    },
+    {
+      "skill_name": "ui-ux-pro-max",
+      "category": "ui-ux-pro-max/.claude/skills",
+      "frontmatter_name": "ui-ux-pro-max",
+      "description": "UI/UX design intelligence for web and mobile. Includes 50...",
       "platforms": [],
       "conditions": {
         "fallback_for_toolsets": [],

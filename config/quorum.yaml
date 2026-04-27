@@ -1,0 +1,68 @@
+# quorum.yaml — 多脑 (multi-brain) 配置
+# 控制 consult-models.sh 的 planner 数量、diversity 规则、降级策略
+
+multi_brain:
+  enabled: false  # Phase 0: shadow mode — 并行跑但不替换 Claude plan
+  phase: 0        # 0=shadow, 1=N2, 2=N3, 3=steady
+  shadow_mode: true  # 并行运行 consult-models.sh 但仅记录差异，仍使用 consult-claude.sh 的 plan
+
+tiers:
+  T0:
+    quorum: 1
+    min_quorum: 1
+    planners: [mimo-v2.5-pro]
+    diversity: none
+    arbiter: null
+  T1:
+    quorum: 2
+    min_quorum: 1
+    planners: [mimo-v2.5-pro, deepseek-v4-pro]
+    diversity: provider  # 必须不同 provider
+    arbiter: null
+  T2:
+    quorum: 3
+    min_quorum: 2
+    planners: [mimo-v2.5-pro, deepseek-v4-pro, claude-opus-4-7]
+    diversity: provider
+    arbiter: claude-opus-4-7  # 独立仲裁
+  T3:
+    quorum: 3
+    min_quorum: 2
+    planners: [claude-opus-4-7, mimo-v2.5-pro, deepseek-v4-pro]
+    diversity: provider
+    arbiter: claude-opus-4-7
+
+consensus:
+  thresholds:
+    strong: 0.7
+    weak: 0.5
+  layers:
+    L1_diagnosis: {weight: 0.4}
+    L2_patches: {weight: 0.3, jaccard_min: 0.5}
+    L3_params: {weight: 0.2, deviation_max: 0.2}
+    L4_confidence: {weight: 0.1}
+
+arbitration:
+  budget_reserve_usd: 5.00
+  exclude_voters: true  # 已参与投票的模型不能当仲裁
+  tie_break: lowest_cost
+  fallback_if_none: reject_plan
+
+claude_budget_guard:
+  exclude_below_5_usd: true
+  exclude_opus_below_20_usd: true
+  downweight_below_50_usd: 0.5
+  arbiter_reserve: 5.00
+
+degradation:
+  one_planner_timeout: continue_with_n_minus_1
+  two_planners_timeout: solo_plan_low_risk_only  # 低于 min_quorum, 仅 low-risk patch
+  all_planners_fail: skip_tick
+  arbiter_unavailable: intersection_only_merge
+  silent_tick_limit: 3  # 3 连败 → 告警
+
+rollout:
+  phase_0_shadow_ticks: 1
+  phase_1_n2_ticks: 3
+  phase_2_n3_ticks: 5
+  phase_3_steady: auto_promote_after_N_ticks

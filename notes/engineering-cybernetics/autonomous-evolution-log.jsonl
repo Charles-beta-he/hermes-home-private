@@ -1,2 +1,5 @@
 {"timestamp": "2026-04-24T12:22:48.577490", "event": "skill_improved", "details": {"skill": "pua-ja", "old_score": 35, "new_score": 80, "fixes": ["added Input section", "added Output section", "added Constraints section", "added Checkpoints section"]}}
 {"timestamp": "2026-04-24T12:45:10.527121", "event": "skill_improved", "details": {"skill": "pro", "old_score": 45, "new_score": 80, "fixes": ["added Input section", "added Output section", "added Constraints section", "added Checkpoints section"]}}
+{"timestamp": "2026-04-27T02:00:58.178442", "event": "skill_unchanged", "details": {"skill": "inference-sh", "score": 60, "fixes": ["added Constraints section"]}}
+{"timestamp": "2026-04-27T02:01:06.653723", "event": "skill_unchanged", "details": {"skill": "inference-sh", "score": 60, "fixes": ["added Constraints section"]}}
+{"timestamp": "2026-04-27T02:01:30", "event": "skill_fixed", "details": {"skill": "inference-sh", "fixes": ["removed 3 duplicate \u7ea6\u675f sections", "added \u8fb9\u754c\u6761\u4ef6 section", "added \u793a\u4f8b section with 2 examples"], "expected_score_change": "60 -> 75+"}}

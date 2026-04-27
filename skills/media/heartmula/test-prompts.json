@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "prompt": "Use heartmula to process media",
+    "expected": "Media processed"
+  },
+  {
+    "id": 2,
+    "prompt": "Configure heartmula settings",
+    "expected": "Settings applied"
+  }
+]

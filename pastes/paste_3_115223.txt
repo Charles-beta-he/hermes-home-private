@@ -1,0 +1,308 @@
+Hermes ↔ Claude Code 双脑架构                                                           
+                                               
+  Hermes = 持有自身状态的 执行体, Claude Code = 拥有更强规划/编辑能力的                   
+  架构师。两者通过结构化通道互通, Hermes 自描述 → Claude Code 出方案 → Hermes 落地 →
+  反馈环。                                                                                
+                                                                  
+  ---
+  核心数据流
+
+  ┌─ Hermes (执行体, 24/7) ─────────────────────────────────┐
+  │  ┌─ 1. self-describe ───────────────────────────────┐  │                              
+  │  │  hermes dump + insights + memory → state.json    │  │                              
+  │  └────────────┬─────────────────────────────────────┘  │                              
+  │               │ pipe                                   │                              
+  │  ┌─ 2. 传出 ──┴────────────────────────────────────┐  │                               
+  │  │  claude -p --skills plan,architect < state.json │  │       
+  │  └────────────┬─────────────────────────────────────┘  │                              
+  │               │ JSON plan                              │      
+  │  ┌─ 3. 落地 ──┴────────────────────────────────────┐  │                               
+  │  │  apply-plan.sh: cron add/skill update/hook 装  │  │        
+  │  └────────────┬─────────────────────────────────────┘  │                              
+  │  ┌─ 4. eval gate ────────────────────────────────┐    │       
+  │  │  跑回归集 (历史 100 task), pass/reject       │    │                                
+  │  └────────────┬─────────────────────────────────┘    │                                
+  │               ↓                                        │                              
+  │  ┌─ 5. 反馈 ──────────────────────────────────────┐   │                               
+  │  │  把 outcome 拼回 state, 下轮 Claude Code 看到  │   │                               
+  │  └────────────────────────────────────────────────┘   │                               
+  └────────────────────────────────────────────────────────┘                              
+                                                                                          
+  闭环 = 控制论, 双脑 = 责任分离 (执行 vs 规划)。                                         
+                                                                                          
+  ---                                                                                     
+  通道选择                                                        
+          
+  ┌───────────────┬───────────────────────────────┬───────────────────────────────────┐
+  │     方案      │             实现              │               优劣                │   
+  ├───────────────┼───────────────────────────────┼───────────────────────────────────┤
+  │ A. 子进程     │ Hermes shell 调用             │ ✅ 简单, 无需账号互通; ❌ 单      │   
+  │ claude -p     │                               │ turn, 无 session 复用             │
+  ├───────────────┼───────────────────────────────┼───────────────────────────────────┤   
+  │ B. ACP 协议   │ hermes acp run                │ ✅ 多 turn, 共享上下文; ❌ 需写   │
+  │               │ claude-code-adapter           │ adapter                           │   
+  ├───────────────┼───────────────────────────────┼───────────────────────────────────┤
+  │ C. MCP 双向   │ Hermes 起 MCP server, Claude  │ ✅ Claude Code 可主动查 Hermes    │   
+  │               │ Code 接入                     │ 状态; ❌ 配置最重                 │   
+  ├───────────────┼───────────────────────────────┼───────────────────────────────────┤
+  │ D. 文件桥     │ Hermes 写 ~/inbox/, Claude    │ ✅ 解耦, 离线友好; ❌ 异步, 慢    │   
+  │               │ Code 监听                     │                                   │   
+  └───────────────┴───────────────────────────────┴───────────────────────────────────┘
+                                                                                          
+  推荐: A 起步 + 必要时升 B。先跑通最小闭环, 再加 session 复用。                          
+   
+  ---                                                                                     
+  1. Hermes 自描述 (self-describe.sh)                             
+                                                                                          
+  #!/usr/bin/env bash
+  # ~/.hermes/scripts/self-describe.sh                                                    
+  # 输出 state.json: 当前架构 + 健康度 + 最近失败模式             
+  set -euo pipefail                                                                       
+   
+  OUT=${1:-/tmp/hermes-state.json}                                                        
+                                                                  
+  cat <<JSON > "$OUT"                                                                     
+  {                                                               
+    "schema_version": "1",
+    "captured_at": "$(date -u +%FT%TZ)",                                                  
+    "config_summary":   $(hermes dump --json 2>/dev/null || echo '{}'),
+    "skills_active":    $(hermes skills list --json),                                     
+    "cron_jobs":        $(hermes cron list --json),               
+    "mcp_servers":      $(hermes mcp list --json),                                        
+    "auth_status":      $(hermes auth list --json),               
+    "insights_7d":      $(hermes insights --window 7d --json),                            
+    "recent_failures":  $(hermes sessions list --status failed --limit 20 --json),        
+    "memory_route_outcomes": $(hermes memory query --table route_outcomes --since 7d      
+  --json),                                                                                
+    "evolution_log_tail":    $(tail -n 50 ~/.hermes/logs/evolve.log 2>/dev/null | jq -R . 
+  | jq -s . || echo '[]')                                                                 
+  }                                                               
+  JSON                                                                                    
+                                                                  
+  echo "$OUT"                                                                             
+   
+  输出结构化 JSON, 不是自然语言。Claude Code 看 schema 才能机器规划。                     
+                                                                  
+  ---                                                                                     
+  2. 咨询 Claude Code (consult-claude.sh)                         
+                                         
+  #!/usr/bin/env bash
+  # ~/.hermes/scripts/consult-claude.sh                                                   
+  set -euo pipefail
+                                                                                          
+  STATE=$(~/.hermes/scripts/self-describe.sh)                                             
+  PROMPT_FILE=$(mktemp)
+                                                                                          
+  cat > "$PROMPT_FILE" <<'EOF'                                                            
+  你是 Hermes 的架构师 (Claude Code 化身).
+  读下面 state.json, 输出 JSON plan 改进 Hermes.                                          
+                                                                                          
+  要求:                                                                                   
+  1. 只输出 ```json ... ``` 一段, 不解释                                                  
+  2. plan schema:                                                                         
+  {                                                               
+    "diagnosis": "1-2 句最严重问题",                                                      
+    "steps": [                                                                            
+      {
+        "op": "cron_add|cron_remove|skill_install|skill_edit|hook_add|mcp_add|config_set",
+        "args": {...},                                                                    
+        "expected_gain": "...",
+        "risk": "low|med|high",                                                           
+        "reversible": true                                                                
+      }
+    ],                                                                                    
+    "eval_targets": ["回归集名称"],                               
+    "stop_if": "什么情况下放弃这次改动"                                                   
+  }                                                                                       
+  3. 改动总数 ≤ 5 (一次大改易回归)                                                        
+  4. 拒绝触动 safety-guard, auth, memory schema (锁死)                                    
+  5. 倾向可回滚 (canary > rollout)                                                        
+                                                                                          
+  State:                                                                                  
+  EOF                                                                                     
+                                                                  
+  cat "$STATE" >> "$PROMPT_FILE"                                                          
+   
+  # 调 claude -p, 用 plan 和 architect skill                                              
+  claude -p \                                                     
+    --skills plan,architect,critic \                                                      
+    --dangerously-skip-permissions \                              
+    --output-format json \                                                                
+    < "$PROMPT_FILE" \
+    > /tmp/hermes-plan.json                                                               
+                                                                  
+  rm -f "$PROMPT_FILE"                                                                    
+  echo "/tmp/hermes-plan.json"
+                                                                                          
+  关键: 给 Claude Code schema + 边界 + 不变量, 不让它自由发挥。                           
+   
+  ---                                                                                     
+  3. 落地执行 (apply-plan.sh)                                     
+                                                                                          
+  #!/usr/bin/env bash
+  # ~/.hermes/scripts/apply-plan.sh                                                       
+  set -euo pipefail                                               
+                                                                                          
+  PLAN=${1:-/tmp/hermes-plan.json}
+  DRY_RUN=${DRY_RUN:-0}                                                                   
+                                                                                          
+  # 提取 ```json ``` 段 (Claude Code 输出可能含围栏)                                      
+  JSON=$(jq -r '.result // empty' "$PLAN" | sed -n '/```json/,/```/p' | sed '1d;$d')      
+  [ -z "$JSON" ] && JSON=$(cat "$PLAN")                                                   
+                                                                                          
+  echo "$JSON" | jq -e . >/dev/null || { echo "ERROR: invalid plan JSON"; exit 1; }       
+                                                                                          
+  # 备份当前状态 (eval 失败可回滚)                                                        
+  SNAPSHOT=~/.hermes/snapshots/pre_$(date +%s)                    
+  mkdir -p "$SNAPSHOT"                                                                    
+  hermes backup "$SNAPSHOT/backup.zip"                            
+                                                                                          
+  # 执行每 step                                                   
+  echo "$JSON" | jq -c '.steps[]' | while read -r step; do                                
+    OP=$(echo "$step" | jq -r '.op')                                                      
+    ARGS=$(echo "$step" | jq -c '.args')
+    echo "[plan] $OP $ARGS"                                                               
+                                                                  
+    if [ "$DRY_RUN" = "1" ]; then continue; fi                                            
+                                                                  
+    case "$OP" in                                                                         
+      cron_add)      hermes cron add --json "$ARGS" ;;            
+      cron_remove)   hermes cron remove "$(echo "$ARGS" | jq -r '.name')" ;;
+      skill_install) hermes skills install "$(echo "$ARGS" | jq -r '.name')" ;;           
+      skill_edit)                                                                         
+        NAME=$(echo "$ARGS" | jq -r '.name')                                              
+        PATCH=$(echo "$ARGS" | jq -r '.patch')                                            
+        cp ~/.hermes/skills/"$NAME"/SKILL.md "$SNAPSHOT/$NAME.bak"
+        echo "$PATCH" | patch ~/.hermes/skills/"$NAME"/SKILL.md                           
+        ;;                                                                                
+      hook_add)      hermes hooks add --json "$ARGS" ;;                                   
+      mcp_add)       hermes mcp add --json "$ARGS" ;;                                     
+      config_set)    hermes config set --json "$ARGS" ;;                                  
+      *) echo "WARN: unknown op $OP, skip" ;;                     
+    esac                                                                                  
+  done                                                            
+                                                                                          
+  echo "$SNAPSHOT" > /tmp/hermes-last-snapshot                                            
+   
+  安全网: 每次都先 hermes backup, 失败可一键还原。                                        
+                                                                  
+  ---                                                                                     
+  4. Eval Gate (eval-after-apply.sh)                              
+                                                                                          
+  #!/usr/bin/env bash
+  # 跑回归集, 比对前后 pass_rate                                                          
+  set -euo pipefail                                                                       
+   
+  BASELINE=$(hermes insights --window 7d --metric pass_rate --json | jq -r '.value')      
+                                                                  
+  # 跑固定回归集 (100 个历史 task replay)                                                 
+  hermes -z "/run-eval-suite ~/.hermes/eval/regression-100.json"  
+  sleep 5                                                                                 
+                                                                  
+  NEW=$(hermes insights --window 1h --metric pass_rate --json | jq -r '.value')           
+  DELTA=$(echo "$NEW - $BASELINE" | bc -l)                        
+                                                                                          
+  echo "baseline=$BASELINE  new=$NEW  delta=$DELTA"                                       
+   
+  # 退步 > 5% → 自动回滚                                                                  
+  if (( $(echo "$DELTA < -0.05" | bc -l) )); then                 
+    echo "REGRESSION → rollback"                                                          
+    SNAP=$(cat /tmp/hermes-last-snapshot)                         
+    hermes import "$SNAP/backup.zip"                                                      
+    echo "rolled back to $SNAP"                                                           
+    exit 1                                                                                
+  fi                                                                                      
+                                                                  
+  echo "PASS — keep changes"                                                              
+   
+  ---                                                                                     
+  5. 编排 skill (self-evolve-via-claude/SKILL.md)                 
+                                                                                          
+  ---
+  name: self-evolve-via-claude                                                            
+  description: One-tick of self-evolution: dump self-state → claude-code plan → apply →
+  eval gate → rollback or keep                                                            
+  trigger: hourly cron
+  ---                                                                                     
+                                                                  
+  执行序列 (每步失败立即停, 不连环放大):                                                  
+  1. STATE=$(~/.hermes/scripts/self-describe.sh)                  
+  2. PLAN=$(~/.hermes/scripts/consult-claude.sh)                                          
+  3. 检查 plan.steps 数量 ≤ 5, risk 全 ≤ med, 全 reversible=true; 否则 abort
+  4. ~/.hermes/scripts/apply-plan.sh "$PLAN"                                              
+  5. ~/.hermes/scripts/eval-after-apply.sh                                                
+  6. 写日志: append ~/.hermes/logs/evolve.log {ts, plan, eval_result, kept|rolled_back}   
+  7. 通知用户 (telegram hook): 本次改了什么, eval 结果                                    
+                                                                                          
+  终止条件 (硬停):                                                                        
+  - 3 次连续 eval reject → 暂停 evolve cron, 等人审                                       
+  - claude -p 返回非 JSON → 写错误日志, 跳过本轮                                          
+  - snapshot 备份失败 → 立即 abort, 不允许无网执行                                        
+                                                                                          
+  ---                                                                                     
+  6. 一次性安装                                                                           
+                                                                                          
+  mkdir -p ~/.hermes/scripts ~/.hermes/snapshots ~/.hermes/logs
+  ~/.hermes/skills/self-evolve-via-claude                                                 
+                                                                  
+  # 拷贝 4 个脚本                                                                         
+  chmod +x ~/.hermes/scripts/*.sh                                 
+                                                                                          
+  # 装 skill                                                      
+  # (前面 SKILL.md 写到 ~/.hermes/skills/self-evolve-via-claude/SKILL.md)
+                                                                                          
+  # Cron: 每天一次 (低频, 防 oscillation)                                                 
+  hermes cron add --name self-evolve --interval 24h \                                     
+    --prompt "/self-evolve-via-claude"                                                    
+                                                                  
+  # 验证                                                                                  
+  hermes -z "/self-evolve-via-claude" --dry-run                   
+                                                                                          
+  ---
+  关键设计原则                                                                            
+                                                                  
+  ┌─────────────────┬─────────────────────────────────────────────────────────────────┐
+  │      原则       │                              落地                               │   
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ 责任分离        │ Hermes 执行 + 自检, Claude Code 只规划 (不直接改)               │   
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ 结构化通道      │ JSON in / JSON out, 拒绝自然语言传递                            │   
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤   
+  │ 不变量锁死      │ safety-guard / auth / memory schema 不允许 plan 触动            │   
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤   
+  │ 可逆为先        │ 每次 apply 前 backup, 自动 rollback 阈值 −5%                    │
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤   
+  │ 小步快跑        │ 单次 plan ≤ 5 step, 防大改难定位                                │
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤   
+  │ 频率控制        │ evolve cron 24h 一次, eval 1h 一次, route 短环秒级 —            │
+  │                 │ 三层时间尺度                                                    │   
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ 人审兜底        │ 3 连败 → 暂停, 等人介入                                         │   
+  ├─────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ 日志            │ ~/.hermes/logs/evolve.log 永不删, 审计追溯                      │   
+  │ append-only     │                                                                 │
+  └─────────────────┴─────────────────────────────────────────────────────────────────┘   
+                                                                  
+  ---
+  Cadence 矩阵 (避免环间互相干扰)
+                                                                                          
+  ┌─────────┬──────────────┬────────────────────┬──────────────────────────────────┐
+  │   环    │     周期     │       决策者       │              改什么              │      
+  ├─────────┼──────────────┼────────────────────┼──────────────────────────────────┤
+  │ L2 在线 │ 秒           │ Hermes router      │ 选哪条已有路线                   │      
+  ├─────────┼──────────────┼────────────────────┼──────────────────────────────────┤
+  │ L3 短期 │ 1h           │ Hermes self        │ route_outcomes 权重重算          │      
+  ├─────────┼──────────────┼────────────────────┼──────────────────────────────────┤      
+  │ L4 中期 │ 1d           │ Claude Code        │ 新 skill / 改 prompt / cron 调整 │      
+  ├─────────┼──────────────┼────────────────────┼──────────────────────────────────┤      
+  │ L5 季度 │ 30d (人触发) │ 用户 + Claude Code │ 架构级 (双脑模式本身重设计)      │
+  └─────────┴──────────────┴────────────────────┴──────────────────────────────────┘      
+                                                                  
+  ---                                                                                     
+  一句话                                                          
+        
+  `hermes dump → JSON → claude -p (plan/architect skill) → JSON plan → apply-plan.sh → 
+  eval-after-apply.sh → 通过留, 失败 hermes import 回滚 — 每天跑一次, 备份打底,           
+  不变量锁死, 3 连败暂停。
+                                                                                          
+  Hermes 是手, Claude Code 是脑, eval harness 是良心。

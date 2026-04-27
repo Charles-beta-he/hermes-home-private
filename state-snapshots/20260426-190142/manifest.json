@@ -1,0 +1,17 @@
+{
+  "id": "20260426-190142",
+  "timestamp": "20260426-190142",
+  "label": null,
+  "file_count": 8,
+  "total_size": 30576230,
+  "files": {
+    "state.db": 30507008,
+    "config.yaml": 15945,
+    ".env": 18841,
+    "auth.json": 11940,
+    "cron/jobs.json": 21772,
+    "gateway_state.json": 323,
+    "channel_directory.json": 399,
+    "processes.json": 2
+  }
+}

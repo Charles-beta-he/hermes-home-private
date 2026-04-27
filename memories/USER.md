@@ -5,3 +5,5 @@
 browser-harness 验证针对 work/ 目录项目优化: web-ui (Vue+Element UI 桌面端), uaec-h5 (Vue+Vant 移动端), partner-ui/excloud-ui (React+Ant Design 桌面端)。支持移动端 375px 和桌面端 1280px 视口测试。
 §
 用户偏好连续 exhaustive loop 执行：说"全部推进"时要求同时推进所有可识别方向，不逐个等待确认；接受自然语言触发大规模并行任务。对"loop并每次全部推进"的指令应理解为：找到所有可推进方向→并行执行→完成后扫描新方向→继续循环，直到用户明确喊停或确实穷尽。
+§
+供应商代码修补原则：vendor code 补丁被 `hermes update`（git pull）覆盖后，用 `~/.hermes/scripts/post-update-check.py` 自动检测并重打。不直接改 vendor 文件。先检查上游是否已修复（PR #15478 merge 等），避免重复劳动。修复模式 `--fix`。

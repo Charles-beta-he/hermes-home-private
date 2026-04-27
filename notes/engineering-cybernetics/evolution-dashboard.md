@@ -1,35 +1,32 @@
 ═══════════════════════════════════════════════════════════════════════════════
                     Agent 控制论进化仪表盘
 ═══════════════════════════════════════════════════════════════════════════════
-Timestamp: 2026-04-24T12:50:00
+Timestamp: 2026-04-27T00:10:56.954823
 
 【健康度】
-  V = 1.0000
-  V̇ = +0.0088 (Holt Trend)
-  记录数: 5
-
-【PA 健康度】
-  V_PA = 0.6340
-  V̇_PA = -0.0885
-  等级: Level 2 主动确认
+  V = 0.8600
+  V̇ = +0.0000
+  记录数: 8
+  趋势: ↓ (近5次)
 
 【Skill 生态】
   总数: 40
-  A=5 B=25 C=10 D=0  ✅ A+B=30 (目标达成)
+  已评估: 40
+  等级: A=1 B=26 C=10 D=0
 
 【Phase 状态】
-  Phase 0-6: ✅ Done
-  Phase 7:   ✅ Predictive Evolution Active
+  Phase 0: ✅ 跨学科基线
+  Phase 1: ✅ 控制论基线
+  Phase 2: ✅ 反馈优化
+  Phase 3: ✅ 智能升级
+  Phase 4: ✅ 大系统
+  Phase 5: 🔄 数据驱动验证
 
-【Cronjob 状态】
-  5 active, 2 compensated, 3 new blind-spot monitors generated
-
-【新增能力】
-  • Chart.js Dashboard v2
-  • NL Query: python3 nl-dashboard-query.py
-  • Intent Prediction: Top-1 40% confidence
-  • Self-Programming: 3 auto-generated monitors
-  • Distributed Audit: 8 workers, 0.01s for 40 skills
-  • Obsidian Bidirectional Sync + Watch
+【最近 Darwin 记录】
+  2026-04-24 post-deploy-verification    0→ 75 [accepted]
+  2026-04-24 pro                        45→ 45 [deferred]
+  2026-04-24 pua-ja                     35→ 35 [deferred]
+  2026-04-24 pua-ja                     35→ 80 [accepted]
+  2026-04-24 pro                        45→ 80 [accepted]
 
 ═══════════════════════════════════════════════════════════════════════════════

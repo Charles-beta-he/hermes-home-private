@@ -30,3 +30,75 @@ Config version: 18 → 19
 
 Tip: You can now select a provider and model:
   hermes model              # Select provider and model
+
+=== hermes update started 2026-04-26T03:35:52 ===
+⚕ Updating Hermes Agent...
+
+→ Fetching updates...
+→ Found 404 new commit(s)
+→ Pulling updates...
+  ✓ Cleared 14 stale __pycache__ directories
+→ Updating Python dependencies...
+→ Updating Node.js dependencies...
+  ✓ repo root
+  ✓ ui-tui
+→ Building web UI...
+  ✓ Web UI built
+
+✓ Code updated!
+
+→ Syncing bundled skills...
+  + 2 new: design-md, spotify
+  ↑ 4 updated: research-paper-writing, segment-anything-model, hermes-agent, google-workspace
+  ~ 5 user-modified (kept)
+
+→ Checking configuration for new options...
+
+
+
+  ✓ Plugins now opt-in: no existing plugins to grandfather. Use `hermes plugins enable <name>` to activate.
+Config version: 19 → 22
+
+✓ Configuration updated!
+
+✓ Update complete!
+
+Tip: You can now select a provider and model:
+  hermes model              # Select provider and model
+
+=== hermes update started 2026-04-26T09:22:11 ===
+⚕ Updating Hermes Agent...
+
+→ Fetching updates...
+→ Local changes detected — stashing before update...
+→ Found 27 new commit(s)
+→ Pulling updates...
+
+⚠ Local changes were stashed before updating.
+  Restoring them may reapply local customizations onto the updated codebase.
+  Review the result afterward if Hermes behaves unexpectedly.
+Restore local changes now? [Y/n]
+→ Restoring local changes...
+⚠ Local changes were restored on top of the updated codebase.
+  Review `git diff` / `git status` if Hermes behaves unexpectedly.
+  ✓ Cleared 16 stale __pycache__ directories
+→ Updating Python dependencies...
+→ Updating Node.js dependencies...
+  ✓ repo root
+  ✓ ui-tui
+→ Building web UI...
+  ✓ Web UI built
+
+✓ Code updated!
+
+→ Syncing bundled skills...
+  ~ 74 user-modified (kept)
+  ✓ Skills are up to date
+
+→ Checking configuration for new options...
+  ✓ Configuration is up to date
+
+✓ Update complete!
+
+Tip: You can now select a provider and model:
+  hermes model              # Select provider and model

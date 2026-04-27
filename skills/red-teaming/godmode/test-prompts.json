@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "prompt": "Use godmode for its intended purpose",
+    "expected": "godmode executes"
+  },
+  {
+    "id": 2,
+    "prompt": "Test godmode with edge case input",
+    "expected": "Handles gracefully"
+  }
+]

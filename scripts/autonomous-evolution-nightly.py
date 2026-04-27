@@ -77,7 +77,7 @@ def auto_fix_skill(skill_dir, skill_name):
         content += "\n## 输出\n\n- 执行结果或交付物\n"
         fixes.append("added Output section")
     
-    if not any(k in content.lower() for k in ["constraint", "边界", "限制"]):
+    if not any(k in content.lower() for k in ["constraint", "边界", "限制", "约束"]):
         content += "\n## 约束\n\n- 遵循项目规范\n- 在 context budget 内完成\n"
         fixes.append("added Constraints section")
     

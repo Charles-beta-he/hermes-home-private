@@ -1,0 +1,7 @@
+name: wip-auto-commit
+version: 1.0.0
+description: "Auto-commit WIP snapshots after each LLM turn. Configurable cooldown to avoid commit spam."
+author: "self-diagnosis loop"
+hooks:
+  - post_llm_call
+  - on_session_end

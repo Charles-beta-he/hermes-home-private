@@ -5,9 +5,7 @@ description: Read, search, and create notes in the Obsidian vault.
 
 # Obsidian Vault
 
-**Location:** Set via `OBSIDIAN_VAULT_PATH` environment variable.
-
-If unset, defaults to `~/Documents/Obsidian Vault`.
+**Location:** `~/Documents/brain/` (set via `OBSIDIAN_VAULT_PATH` env var in env.sh)
 
 Note: Vault paths may contain spaces - always quote them.
 

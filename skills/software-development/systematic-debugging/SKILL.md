@@ -140,6 +140,249 @@ search_files("function_name(", path="src/", file_glob="*.py")
 search_files("variable_name\\s*=", path="src/", file_glob="*.py")
 ```
 
+### 6. Trace Data Through Pipeline Boundaries (Multi-Component Systems)
+
+**WHEN the data flows through a normalization → persistence → reconstruction → API replay pipeline:**
+
+This is a common pattern in LLM agent frameworks. Data enters the system in one shape, gets transformed, stored to DB, loaded, transformed again, and sent to an API. **Each boundary can silently drop fields.**
+
+**Map the full pipeline before picking a fix:**
+
+```
+API response → normalize_response() → [NormalizedResponse object] → _build_assistant_message() → dict
+  → append_message() → SQLite → get_messages_as_conversation() → dict
+  → _copy_reasoning_content_for_api() → api_messages dict → transport.build_kwargs() → API call
+```
+
+At EACH boundary, verify:
+- **Inbound**: what fields does the input have? (use `print(list(input.keys()))` or `dir()`)
+- **Outbound**: what fields does the output have?
+- **Loss**: did any field disappear? Was it intentionally stripped?
+- **Transformation**: did any field change type or format?
+
+**Action:** Read EVERY file in the pipeline chain, following each function call. Focus on:
+
+1. **`getattr(obj, field, None)` vs `hasattr(obj, field)`**  
+   - `hasattr` returns `True` for `@property` definitions even when the underlying data is missing
+   - `getattr` returns the property's return value (which may be `None`)
+
+2. **`if value:` vs `if value is not None:`**  
+   - `if value:` uses truthiness: empty string `""`, `0`, `[]`, `False` all fail the check
+   - `if value is not None:` preserves the value even when it's falsy  
+   - This is the #1 cause of silent field loss at normalization boundaries
+
+3. **Deep copy vs shallow copy** — `msg.copy()` (shallow) vs `copy.deepcopy(messages)` (deep). Nested dicts/lists in shallow copies share references with the original, so modifications to one affect the other — or vice versa when the same mutable object is reused.
+
+4. **`if row["field"]:` vs `if row["field"] is not None:` in DB readback** — SQLite returns `""` for empty text fields and `None` for NULL. `if row["field"]:` treats both as falsy, silently dropping empty strings on round-trip.
+
+5. **`msg.copy()` on dicts with complex nested objects** — Tool calls, function arguments, and provider_data all contain nested structures. A shallow copy means child objects are shared between source and destination — mutations in one path leak into the other. Use `copy.deepcopy` when the dict contains mutable children.
+
+```python
+# WRONG — shallow copy passes through None for missing keys
+api_msg = msg.copy()
+api_msg["reasoning_content"] = api_msg.get("reasoning_content")  # None if missing
+
+# WRONG — truthiness check drops empty strings
+if reasoning_content:
+    provider_data["reasoning_content"] = reasoning_content
+
+# RIGHT — explicit None check preserves empty strings
+if reasoning_content is not None:
+    provider_data["reasoning_content"] = reasoning_content
+```
+
+**Real example (DeepSeek reasoning_content loss, April 2026):**
+```
+Root cause: chat_completions.py:351 used `if reasoning_content:` instead of
+`if reasoning_content is not None:`. Empty string `""` was silently dropped
+from provider_data, never flowing into the stored msg dict.
+
+Impact: DeepSeek's assistant messages lost reasoning_content on replay →
+HTTP 400 on every turn after the first. Fallback retried with the same
+broken schema → all retries failed → session never persisted.
+
+Fix: One-line change — truthiness check → None check.
+```
+
+### 7. Cross-Reference With Upstream Repository
+
+**WHEN working with a fork or open-source project that receives updates:**
+
+BEFORE proposing a fix, check whether the bug is already known upstream. This avoids:
+- Wasting time duplicating work
+- Writing a fix that will be overwritten by `git pull` on next update
+- Missing context from existing discussions (root cause analysis, edge cases, alternative approaches)
+
+**Action:**
+
+```bash
+# Search GitHub issues with relevant keywords
+open_browser -> https://github.com/<owner>/<repo>/issues?q=is%3Aissue+{keywords}
+```
+
+Sample keywords from common bug classes:
+- `reasoning_content` + `400` — DeepSeek/Kimi thinking mode validation
+- `think` + `stream` + `tag` — streaming reasoning tag display leaks
+- `_clean_for_display` — gateway stream filtering
+- `context_compressor` + `memory` — compression + memory interaction
+
+**When you find a matching issue:**
+- Note its status (Open/Closed/PR-linked)
+- Check if a PR already exists with a fix
+- Check if the fix has been merged — if so, `hermes update` will bring it
+- If the fix is not yet merged, decide whether to patch locally or wait
+
+### 8. Fix Sustainability Audit — Will This Survive `hermes update`?
+
+**WHEN the fix touches files inside the hermes-agent repo (`~/.hermes/hermes-agent/`):**
+
+Before writing any fix, map which files it affects against the update mechanism:
+
+```
+`hermes update` does git pull on ~/.hermes/hermes-agent/
+→ Any file inside this directory WILL be overwritten on next update
+
+Exempt files (NOT overwritten by update):
+  ~/.hermes/config.yaml         — user config
+  ~/.hermes/.env                — API keys
+  ~/.hermes/memories/           — persistent memory
+  ~/.hermes/skills/             — user skills
+  ~/.hermes/scripts/            — user scripts
+  ~/.hermes/cron/               — cron job data
+```
+
+**Three-layer fix strategy (ranked by sustainability):**
+
+| Layer | Method | Survives update? | Effort |
+|-------|--------|-----------------|--------|
+| **User data** | Edit ~/.hermes/memories/MEMORY.md, config.yaml | ✅ Always | Low |
+| **Monkey-patch** | Python runtime override at startup | ✅ Yes (inject from ~/.hermes/config.yaml or startup script) | Medium |
+| **Vendor code** | Edit run_agent.py, cli.py, transport files in ~/.hermes/hermes-agent/ | ❌ Overwritten by git pull | Low (but ephemeral) |
+| **PR upstream** | Submit fix to official repo, get merged | ✅ Once merged, future updates carry it | High |
+
+**Prefer higher layers when possible. Document lower-layer fixes with git hooks.**
+
+**For monkey-patching:**
+```python
+# Example: Patch ChatCompletionsTransport at startup
+# Place in ~/.hermes/hermes-agent/hermes_cli/startup_patch.py
+from agent.transports.chat_completions import ChatCompletionsTransport
+
+_orig_normalize = ChatCompletionsTransport.normalize_response
+
+def _patched_normalize(self, response, **kwargs):
+    result = _orig_normalize(self, response, **kwargs)
+    # Fix: preserve empty string reasoning_content
+    if hasattr(response, 'choices') and response.choices:
+        msg_rc = getattr(response.choices[0].message, 'reasoning_content', None)
+        if msg_rc is not None:
+            pd = result.provider_data or {}
+            pd['reasoning_content'] = msg_rc
+            object.__setattr__(result, 'provider_data', pd)
+    return result
+
+ChatCompletionsTransport.normalize_response = _patched_normalize
+```
+
+**For git hooks (auto-reapply patches after update):**
+```bash
+# ~/.hermes/hermes-agent/.git/hooks/post-merge
+#!/bin/sh
+# Auto-apply local patches after git pull
+git diff --quiet HEAD -- agent/transports/chat_completions.py || exit 0
+# Apply patch if not already present
+cd "$(git rev-parse --show-toplevel)"
+grep -q "is not None" agent/transports/chat_completions.py || \
+  sed -i '' 's/if reasoning_content:/if reasoning_content is not None:/' \
+    agent/transports/chat_completions.py
+```
+
+### 9. Ghost Memory Detection (Context-Compression-Aware)
+
+**WHEN analyzing issues related to persistent memory and context compression:**
+
+Past-tense entries in persistent memory survive context compression and get re-injected as current facts. This is a common source of confusion in agent systems.
+
+**Check for ghosts in `~/.hermes/memories/MEMORY.md`:**
+
+| Ghost Pattern | Example | Why It's Dangerous |
+|--------------|---------|-------------------|
+| **Past-tense completion summary** | "三轮审查修复10个问题，最终达到无改进状态" | Future sessions treat this as current state |
+| **Version number** | "v1.4.8" | Becomes stale as project evolves |
+| **Past progress** | "Discover 页面 + BottomNav 已上线" | Pages may have been modified/removed |
+| **Redundant entries** | Same project described twice | Wastes limited memory budget (2,200 chars) |
+
+**Detection heuristic:**
+```python
+# A memory entry is a ghost if it answers "Was this task COMPLETED?"
+# rather than "Is this fact STILL TRUE?"
+#
+# Linguistic markers:
+# - Past tense (完成/上线/修复了/was/implemented/done)
+# - Completion quantifiers (三轮/10个/全部)
+# - Version numbers (v1.4.x)
+# - Session-local progress (not system architecture)
+```
+
+**Fix:**
+- Remove ghost entries from MEMORY.md
+- Keep only architecturally durable facts (project structure, tool conventions, user preferences)
+- Duplicates → merge into single entry
+
+### 10. Multi-Loop Convergence — Iterate Until No Issues Remain
+
+**WHEN fixing multiple bugs in a single session:**
+
+```
+Fix → Re-check → Fix → Re-check → ... until 0 issues
+```
+
+Track progress with a structured todo list. Each loop iteration:
+1. Fix the highest-priority remaining issue
+2. Run the self-check
+3. If new issues found, add them to the todo list
+4. Stop when only time-dependent items remain
+
+**Convergence signal:** All checks pass or are explicitly labeled as time-dependent.
+
+### 11. Claim-Validation Audit — Verify System Weakness Claims Against Source Code
+
+**WHEN presented with a list of system weaknesses or "known issues" (from documentation, issue reports, or analysis):**
+
+BEFORE accepting any claim as true:
+1. **Read the actual source code** — do not rely on documentation or reputation
+2. **Categorize each claim** using a systematic framework:
+
+```python
+def audit_claim(claim, source_code):
+    """
+    Categories:
+    ✅ TRUE:       Claim accurately describes a real weakness
+    ⚠️ PARTIAL:    Claim is directionally correct but mitigations exist
+    ❌ FALSE:      Claim is wrong — the code doesn't match the description
+    """
+```
+
+3. **For each claim, produce evidence:**
+
+```
+| Claim: "MCP stdio lacks chunking → deadlock"
+| Reading: mcp_tool.py:1053 async with stdio_client(...)
+| Finding: ⚠️ PARTIAL — asyncio streams don't block, but large payloads 
+|           can time out. 300s read timeout mitigates permanent deadlock.
+| Verdict: Theory risk exists, but has timeout guardrails.
+```
+
+**Real example (Apr 2026 MCP 7-claim audit):**
+```
+Out of 7 claims:
+  ✅ 4 real:     memory noise, error solidification, learning loop, OAuth no heartbeat
+  ⚠️ 2 partial:  stdio blocking (has timeout), context overflow (has compression)
+  ⚠️ 1 limited:  MemoryManager dirty instance (doesn't cause global deadlock)
+```
+
+**Why this matters:** Accepting false claims leads to unnecessary fixes that waste time and add complexity. Validating against source code is the only reliable way to separate real bugs from design tradeoffs.
+
 ### Phase 1 Completion Checklist
 
 - [ ] Error messages fully read and understood
@@ -148,6 +391,8 @@ search_files("variable_name\\s*=", path="src/", file_glob="*.py")
 - [ ] Evidence gathered (logs, state, data flow)
 - [ ] Problem isolated to specific component/code
 - [ ] Root cause hypothesis formed
+- [ ] Claim validated against source code (if third-party claim)
+- [ ] Upstream repository cross-referenced (if related)
 
 **STOP:** Do not proceed to Phase 2 until you understand WHY it's happening.
 

@@ -1,10 +1,7 @@
-{
-  "test_cases": [
-    {
-      "input": "",
-      "expected_behavior": "",
-      "verification": ""
-    }
-  ],
-  "edge_cases": []
-}
+[
+  {
+    "id": 1,
+    "prompt": "实现这个功能",
+    "expected": "Complete implementation workflow"
+  }
+]

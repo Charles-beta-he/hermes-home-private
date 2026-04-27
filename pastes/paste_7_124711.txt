@@ -1,0 +1,268 @@
+ 目标: 跑一次完整双脑流程, 确认 args schema 修过后落地率 ≥80%, 然后让 03:00 cron         
+  按原计划自动触发。Cron 全程保持 armed, 不暂停。
+                                                                                          
+  ---                                                             
+  Step 1: 修 consult-claude.sh 的 args schema (必做)
+                                                                                          
+  编辑 ~/.hermes/scripts/consult-claude.sh, 在拼接 prompt 的 heredoc 段末尾 (EOF 前)
+  加入以下 SCHEMA 块:                                                                     
+                                                                  
+  ==== args schema (严格遵守, 不符则该 step 被 apply-plan.sh 跳过) ====                   
+                                                                                          
+  cron_add:
+    {"name":"string","interval":"5m|1h|24h|*/4h","prompt":"string","skills":["..."]}      
+                                                                                          
+  cron_remove:                                                                            
+    {"name":"string"}                                                                     
+                                                                                          
+  skill_install:                                                  
+    {"name":"string","source":"official|local|url"}
+                                                                                          
+  skill_edit:
+    {"name":"string","section":"system|protocol|examples|description","patch_text":"完整新
+  内容(整段替换, 不是diff)"}                                                              
+   
+  hook_add:                                                                               
+                                                                  
+  {"trigger":"post-skill|post-task|on-error","name":"string","command":"shell命令字符串"} 
+   
+  mcp_add:                                                                                
+    {"name":"string","url":"string","auth_env":"string?"}         
+                                                                                          
+  config_set:
+    {"key":"dot.path.to.key","value":"标量或JSON"}                                        
+                                                                                          
+  ==== 不变量 (绝不触动) ====                                                             
+  - safety-guard / auth / memory schema                                                   
+  - self-evolve-via-claude skill 自身                                                     
+  - evolve.log / 任何 backup/snapshot 路径                                                
+  - self-evolve cron 自身定义                                                             
+                                                                                          
+  ==== 输出格式 ====                                                                      
+  仅 JSON, 不要解释, 不要 markdown 围栏, 不要前后任何文本。                               
+                                                                                          
+  修完保存。
+                                                                                          
+  ---                                                             
+  Step 2: 记录跑前 baseline
+                                                                                          
+  hermes insights --window 7d --metric pass_rate > /tmp/baseline-pre.txt
+  date -u +%FT%TZ > /tmp/manual-run-start.txt                                             
+  ls ~/.hermes/snapshots/ | wc -l > /tmp/snapshot-count-pre.txt                           
+  hermes sessions list --status running --json > /tmp/inflight-pre.json
+  echo "in-flight tasks: $(jq 'length' /tmp/inflight-pre.json)"                           
+                                                                                          
+  前置条件: in-flight 数应 ≤ 2。>5 等到下个低峰再跑。                                     
+                                                                                          
+  ---                                                                                     
+  Step 3: 全链路手动执行 (Hermes 自动, 无人审 gate)               
+                                                                                          
+  set -e
+                                                                                          
+  ~/.hermes/scripts/self-describe.sh                              
+  test -s /tmp/hermes-state.json                                                          
+  test "$(wc -c < /tmp/hermes-state.json)" -lt 8192 || echo "WARN: state.json > 8K"       
+                                                                                          
+  ~/.hermes/scripts/consult-claude.sh                                                     
+  test -s /tmp/hermes-plan.json                                                           
+  jq -e '.diagnosis and .steps and .eval_targets and .stop_if' /tmp/hermes-plan.json
+  >/dev/null                                                                              
+   
+  # 记录 plan 摘要到日志                                                                  
+  {                                                               
+    echo "=== manual-run $(date -u +%FT%TZ) ==="
+    echo "diagnosis: $(jq -r '.diagnosis' /tmp/hermes-plan.json)"                         
+    echo "step count: $(jq '.steps | length' /tmp/hermes-plan.json)"
+    echo "ops: $(jq -r '[.steps[].op] | join(",")' /tmp/hermes-plan.json)"                
+    echo "risks: $(jq -r '[.steps[].risk] | join(",")' /tmp/hermes-plan.json)"
+  } >> ~/.hermes/logs/evolve.log                                                          
+                                                                                          
+  # 拒绝 high risk 或 不可逆                                                              
+  HIGH_RISK=$(jq '[.steps[] | select(.risk == "high")] | length' /tmp/hermes-plan.json)   
+  NON_REV=$(jq '[.steps[] | select(.reversible == false)] | length' /tmp/hermes-plan.json)
+  if [ "$HIGH_RISK" -gt 0 ] || [ "$NON_REV" -gt 0 ]; then                                 
+    echo "ABORT: plan contains high-risk or non-reversible step" | tee -a
+  ~/.hermes/logs/evolve.log                                                               
+    exit 1                                                        
+  fi                                                                                      
+                                                                  
+  ~/.hermes/scripts/apply-plan.sh /tmp/hermes-plan.json
+  SNAP_PATH=$(cat /tmp/hermes-last-snapshot)
+  echo "snapshot: $SNAP_PATH" >> ~/.hermes/logs/evolve.log                                
+   
+  ~/.hermes/scripts/eval-after-apply.sh                                                   
+  EVAL_EXIT=$?                                                    
+  echo "eval exit: $EVAL_EXIT" >> ~/.hermes/logs/evolve.log                               
+                                                                                          
+  ---
+  Step 4: 验证落地率 (PASS 阈值 ≥ 80%)                                                    
+                                                                                          
+  PLAN_STEPS=$(jq '.steps | length' /tmp/hermes-plan.json)
+  LANDED_STEPS=$(grep -c '\[plan\] ' ~/.hermes/logs/evolve.log | tail -n "$PLAN_STEPS" |  
+  wc -l)                                                                                  
+  # 或用更精确的方式: 看 apply-plan.sh 输出的 OK 行数
+  LANDED_OK=$(tail -n 100 ~/.hermes/logs/evolve.log | grep -c "applied: ")  # 视          
+  apply-plan.sh 实际格式调整                                                              
+                                                                                          
+  LAND_RATE=$(echo "scale=2; $LANDED_OK / $PLAN_STEPS" | bc)                              
+  echo "landed: $LANDED_OK / $PLAN_STEPS  rate: $LAND_RATE"       
+                                                                                          
+  # 写到日志                                                      
+  echo "land_rate: $LAND_RATE" >> ~/.hermes/logs/evolve.log                               
+                                                                                          
+  # PASS 判定
+  if (( $(echo "$LAND_RATE >= 0.8" | bc -l) )); then                                      
+    echo "✅ PASS: 落地率 >= 80%, args schema 修对了"                                     
+  else                                                                                    
+    echo "⚠️  FAIL: 落地率 < 80%, args schema 还有 mismatch, 看下面诊断"                   
+    # 输出每个 no-op step 的 op + args 到日志, 供下轮 prompt 调整                         
+    jq -c '.steps[]' /tmp/hermes-plan.json | while read -r step; do                       
+      OP=$(echo "$step" | jq -r '.op')                                                    
+      if ! grep -q "applied: $OP" ~/.hermes/logs/evolve.log; then                         
+        echo "no-op: $OP args=$(echo "$step" | jq -c '.args')" >>                         
+  ~/.hermes/logs/evolve.log                                                               
+      fi                                                                                  
+    done                                                                                  
+  fi                                                              
+
+  ---
+  Step 5: 验证安全网都激活
+                                                                                          
+  # 1. snapshot 真创建
+  NEW_SNAP_COUNT=$(ls ~/.hermes/snapshots/ | wc -l)                                       
+  [ "$NEW_SNAP_COUNT" -gt "$(cat /tmp/snapshot-count-pre.txt)" ] && \                     
+    echo "✅ snapshot OK ($SNAP_PATH)" || echo "❌ snapshot FAIL"                         
+                                                                                          
+  # 2. eval gate 跑了 (delta 计算了)                                                      
+  grep -q "delta=" ~/.hermes/logs/evolve.log && \                                         
+    echo "✅ eval gate OK" || echo "❌ eval gate didn't run"                              
+                                                                                          
+  # 3. 没误触不变量                                                                       
+  for forbidden in "safety-guard" "auth" "memory.schema" "self-evolve-via-claude"; do     
+    if grep -i "$forbidden" /tmp/hermes-plan.json | grep -q '"op"'; then                  
+      echo "❌ INVARIANT BREACH: plan touched $forbidden — 立即回滚"                      
+      hermes import "$SNAP_PATH/backup.zip"                                               
+      exit 1                                                                              
+    fi                                                                                    
+  done                                                                                    
+                                                                  
+  # 4. drain 没卡 in-flight
+  NEW_INFLIGHT=$(hermes sessions list --status running --json | jq 'length')
+  PRE_INFLIGHT=$(jq 'length' /tmp/inflight-pre.json)                                      
+  echo "in-flight: pre=$PRE_INFLIGHT now=$NEW_INFLIGHT"                                   
+  [ "$NEW_INFLIGHT" -le "$((PRE_INFLIGHT + 2))" ] && \                                    
+    echo "✅ drain OK" || echo "⚠️  drain 可能抢占了任务"                                  
+                                                                                          
+  # 5. cron self-evolve 仍 armed (没被改动误暂停)                                         
+  hermes cron list | grep self-evolve | grep -qi "active\|armed\|enabled" && \            
+    echo "✅ cron 仍 armed, 03:00 会自动跑" || echo "❌ cron 状态异常 — 检查"             
+                                                                                          
+  ---                                                                                     
+  Step 6: 输出最终判定                                                                    
+                                                                                          
+  {
+    echo "=========================================="                                     
+    echo "MANUAL DRY-RUN VERDICT  $(date -u +%FT%TZ)"             
+    echo "=========================================="                                     
+    echo "land_rate: $LAND_RATE  (PASS if >= 0.80)"
+    echo "eval_exit: $EVAL_EXIT  (0 = kept, 1 = rolled back)"                             
+    echo "snapshot: $SNAP_PATH"                                                           
+    echo "cron_03:00 armed: $(hermes cron list | grep self-evolve)"                       
+    echo                                                                                  
+    if (( $(echo "$LAND_RATE >= 0.8" | bc -l) )) && [ "$EVAL_EXIT" -eq 0 ]; then
+      echo "✅✅✅ READY FOR 03:00 AUTO RUN"                                              
+    else                                                          
+      echo "❌ NOT READY — fix issues before 03:00"                                       
+      echo "   if land_rate < 0.8: tune args schema in consult-claude.sh, re-run this     
+  script"                                                                                 
+      echo "   if eval_exit != 0: investigate evolve.log, may need to relax eval threshold
+   or fix plan quality"                                                                   
+    fi                                                            
+  } | tee -a ~/.hermes/logs/evolve.log                                                    
+                                                                                          
+  ---
+  Step 7: 锁定不变量并交给 cron                                                           
+                                                                                          
+  不论 PASS/FAIL, 都执行:
+                                                                                          
+  # 确认 cron 没被本次跑误动                                      
+  hermes cron list | grep self-evolve                                                     
+                                                                                          
+  # 如果不是 active 状态, 显式 resume (但这种情况说明 apply-plan 改错了 cron, 不该发生)   
+  if hermes cron list | grep self-evolve | grep -qi "paused\|disabled"; then              
+    echo "⚠️  cron 被改成 paused, 说明 apply-plan 触动了不变量 — 立即回滚"                 
+    hermes import "$SNAP_PATH/backup.zip"                                                 
+    hermes cron resume self-evolve
+  fi                                                                                      
+                                                                                          
+  # 最终 confirm
+  hermes cron list                                                                        
+  echo "next 03:00 run will fire automatically"                   
+                                                                                          
+  ---
+  失败处置 (Hermes 自决)                                                                  
+                                                                                          
+  ┌───────────────────────────────────┬───────────────────────────────────────────────┐
+  │               现象                │                     操作                      │   
+  ├───────────────────────────────────┼───────────────────────────────────────────────┤
+  │ land_rate < 0.5                   │ 调 prompt schema, 重跑 Step 2-6               │   
+  │                                   │ (本次手动可重复执行)                          │
+  ├───────────────────────────────────┼───────────────────────────────────────────────┤   
+  │                                   │ 记录 no-op 的 op+args 到                      │   
+  │ 0.5 ≤ land_rate < 0.8             │ ~/.hermes/logs/evolve.log, 调 prompt 后下次   │   
+  │                                   │ 03:00 cron 跑时验证                           │   
+  ├───────────────────────────────────┼───────────────────────────────────────────────┤   
+  │                                   │ 已自动回滚, 看 evolve.log 找 reject 原因;     │
+  │ eval_exit ≠ 0                     │ cron 仍 armed, 但今晚 03:00                   │   
+  │                                   │ 跑前如果未修则可能再次回滚                    │   
+  ├───────────────────────────────────┼───────────────────────────────────────────────┤
+  │ INVARIANT BREACH                  │ 已立即回滚, 暂停 cron hermes cron pause       │   
+  │                                   │ self-evolve, 等人审                           │   
+  ├───────────────────────────────────┼───────────────────────────────────────────────┤
+  │ claude -p degraded (生成          │ 检查 hermes auth status anthropic, 可能 token │   
+  │ /tmp/hermes-plan.degraded)        │  失效; cron armed 但今晚同样会降级            │
+  ├───────────────────────────────────┼───────────────────────────────────────────────┤
+  │ 整个流程 set -e 中途崩            │ 立即 hermes import "$SNAP_PATH/backup.zip"    │
+  │                                   │ 还原, 报告 stderr                             │   
+  └───────────────────────────────────┴───────────────────────────────────────────────┘
+                                                                                          
+  ---                                                             
+  不变量 (执行期间 Hermes 必守)
+                                                                                          
+  1. 绝不暂停 self-evolve cron, 除非 INVARIANT BREACH
+  2. 绝不修改 ~/.hermes/scripts/self-evolve-via-claude skill 自身                         
+  3. 绝不删除 snapshot, 至少保留 7 天 (find ~/.hermes/snapshots -mtime +7 -delete 是 GC   
+  cron 的活, 不是本次脚本的活)                                                            
+  4. 每个 echo 输出都同时写到 ~/.hermes/logs/evolve.log (append-only)                     
+  5. 失败时优先回滚, 不优先继续 — 双脑下半场 (今晚 03:00) 才是真考场, 手动这次只是验证    
+                                                                                          
+  ---                                                                                     
+  完成后报告 (Hermes 输出给用户的格式)                                                    
+                                                                                          
+  ✅/❌ MANUAL DRY-RUN <PASS|FAIL>
+                                                                                          
+  Plan summary:                                                   
+    diagnosis: <...>                                                                      
+    steps: <N> ops: <list>                                        
+    risks: <distribution>                                                                 
+   
+  Execution:                                                                              
+    landed: <X>/<N>  rate: <Y%>                                   
+    snapshot: <path>                                                                      
+    eval delta: <Z%>  verdict: <kept|rolled_back>                                         
+    in-flight drain: <pre>→<post>                                                         
+                                                                                          
+  Tonight 03:00:                                                                          
+    cron status: <armed|paused — if paused EXPLAIN WHY>           
+    expected: auto-run fires at 03:00, same flow                                          
+                                                                                          
+  Issues found (if any):                                                                  
+    - <issue 1>: <fix path>                                                               
+    - <issue 2>: <fix path>                                                               
+                                                                  
+  Recommendation:                                                                         
+    <continue to 03:00 auto run | fix X first | rollback and investigate>
+                                                                                          
+  ---                                                                                     
+  最后: 这次手动跑完, 不论 PASS 还是 FAIL, 03:00 cron 都会按时触发 (除非 INVARIANT BREACH 
+  强制暂停)。手动跑的目的是提前发现 args schema 是否对齐, 不是替代今晚的真跑。 

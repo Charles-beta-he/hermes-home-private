@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "prompt": "触发 p7 skill",
-    "expected": "按 P7 协议执行相应流程"
+    "prompt": "设计这个模块的实现方案",
+    "expected": "Solution with technical details"
   }
 ]

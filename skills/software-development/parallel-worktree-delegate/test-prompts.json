@@ -1,0 +1,5 @@
+[
+    {"prompt": "同时修改模块 A 和模块 B，并行进行", "expected": "创建 git worktree, delegate_task 并行派发, 完成 git add + commit, 合并回主干, 清理 worktree"},
+    {"prompt": "并行执行两个不冲突的任务", "expected": "确认无未提交修改, 为每个任务创建 worktree, delegate_task 派发, 合并, 清理"},
+    {"prompt": "多个任务分开做最后合到一起", "expected": "使用 git worktree + delegate_task 实现并行开发，最后 merge"}
+]
