@@ -21,7 +21,11 @@ import hashlib
 import json
 import os
 import sys
+import time
 from typing import List, Tuple
+
+sys.path.insert(0, os.path.dirname(__file__))
+from agent_protocol import wrap as protocol_wrap, emit as protocol_emit, ProtocolError
 
 
 def normalize_code(code: str) -> str:
@@ -95,7 +99,9 @@ def check_consensus(
       }
     """
     if len(outputs) < 2:
-        return {"agree": True, "consensus_type": "single_output", "hashes": [], "pairs": []}
+        result = {"agree": True, "consensus_type": "single_output", "hashes": [], "pairs": []}
+        _emit_consensus_check(result)
+        return result
 
     # 检测或使用指定类型
     if content_type is None:
@@ -115,7 +121,7 @@ def check_consensus(
 
     # 全匹配检测
     if len(set(hashes)) == 1:
-        return {
+        result = {
             "agree": True,
             "consensus_type": "exact_match",
             "content_type": content_type,
@@ -123,6 +129,8 @@ def check_consensus(
             "pairs": [],
             "unique_hashes": 1,
         }
+        _emit_consensus_check(result)
+        return result
 
     # 两两相似度
     pairs = []
@@ -157,7 +165,7 @@ def check_consensus(
     # 共识判定: 所有对都匹配
     agree = match_count == total_pairs
     
-    return {
+    result = {
         "agree": agree,
         "consensus_type": "high_similarity" if agree else "dissent",
         "content_type": content_type,
@@ -166,6 +174,27 @@ def check_consensus(
         "unique_hashes": len(set(hashes)),
         "match_ratio": round(match_count / total_pairs, 2) if total_pairs else 1.0,
     }
+    _emit_consensus_check(result)
+    return result
+
+
+def _emit_consensus_check(result: dict) -> None:
+    """Emit L2 protocol message for consensus-check results."""
+    try:
+        timestamp = time.strftime("%Y%m%dT%H%M%S")
+        msg = protocol_wrap(
+            agent_id="consensus-check",
+            task_id="check-" + timestamp,
+            verdict="pass" if result["agree"] else "dissent",
+            verification_pattern="consensus_check",
+            extensions={
+                "match_ratio": result.get("match_ratio", 1.0),
+                "hashes": result.get("hashes", []),
+            },
+        )
+        protocol_emit(msg)
+    except ProtocolError:
+        pass
 
 
 def similarity(a: str, b: str) -> float:

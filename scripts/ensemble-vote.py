@@ -109,67 +109,175 @@ def vote(
     models: List[str],
     strategy: str = "majority",
     workdir: str = None,
+    execute: bool = True,
 ) -> dict:
     """
-    执行多模型投票
-    
-    注意: 当前实现为模拟/框架 — 真实并行执行需要 delegate_task ACP 支持。
-    此处生成投票决策日志并返回预期的聚合结构。
-    delegate_task 实际调用需由 Hermes 的 ACP 层支持多模型并发。
+    执行多模型投票。
+
+    execute=True (默认): 实际调用每个模型 (via hermes chat -q),
+    收集 verdict，运行聚合策略。
+
+    execute=False: 仅输出框架 (兼容旧行为，用于 delegate_task 场景)。
     """
     weights = get_model_weights(models)
-    
-    # 构建结果结构 (实际执行由 delegate_task 完成)
-    # 这里先输出决策框架, 实际并行执行需 delegate_task toolsets 支持
+
     result = {
         "task": task,
         "models": models,
         "strategy": strategy,
         "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "model_weights": weights,
     }
-    
-    # 记录权重信息
-    result["model_weights"] = weights
-    
-    # 根据策略选择聚合方法
+
+    if not execute:
+        # 兼容旧行为: 仅框架输出
+        result["consensus"] = False
+        result["note"] = (
+            "Framework mode — set execute=True or use delegate_task "
+            "for actual parallel model execution."
+        )
+        _log_and_emit(result, strategy, models, weights)
+        return result
+
+    # ── 实际执行: 顺序调用每个模型 ──
+    results = []
+    for model in models:
+        model_result = _call_model(task, model, workdir)
+        results.append(model_result)
+
+    # ── 聚合 ──
     if strategy == "weighted":
-        result["expected_behavior"] = "Weighted vote: higher-score models get more influence"
+        aggregated = weighted_vote(results, weights)
     elif strategy == "arbiter":
-        result["expected_behavior"] = "Arbiter: an additional model reviews all outputs"
-    else:  # majority
-        result["expected_behavior"] = "Majority vote: most common verdict wins"
-    
-    result["note"] = (
-        "Actual parallel execution requires delegate_task with ACP "
-        "model overrides. This framework provides the aggregation logic "
-        "and logging. Use delegate_task with per-task acp_command/acp_args "
-        "to specify different models."
+        # Arbiter: 所有结果喂给 claude-opus-4-7 做最终裁决
+        aggregated = _arbiter_vote(results, task)
+    else:
+        aggregated = majority_vote(results)
+
+    result["model_results"] = results
+    result.update(aggregated)
+    result["consensus"] = aggregated.get("consensus",
+                                         aggregated.get("verdict", "unknown") != "unknown")
+
+    _log_and_emit(result, strategy, models, weights)
+    return result
+
+
+def _call_model(task: str, model: str, workdir: str = None) -> dict:
+    """
+    通过 hermes chat -q 调用模型执行投票任务。
+
+    返回 {"model": str, "verdict": str, "output": str|None}
+    """
+    import shutil
+    hermes = shutil.which("hermes")
+    if not hermes:
+        return {"model": model, "verdict": "unknown",
+                "output": None, "error": "hermes command not found"}
+
+    prompt = (
+        f"You are an expert code reviewer. Review this task and respond with your verdict.\n\n"
+        f"TASK:\n{task}\n\n"
+        f"Output ONLY a JSON object with:\n"
+        f'{{"verdict": "pass"|"fail"|"partial", "summary": "<brief reason>"}}'
     )
-    
+
+    try:
+        r = subprocess.run(
+            [hermes, "chat", "-q", prompt, "--model", model],
+            capture_output=True, text=True,
+            timeout=120,
+            cwd=workdir,
+        )
+        # 从输出提取 verdict
+        try:
+            data = json.loads(r.stdout)
+            verdict = data.get("verdict", "unknown")
+        except json.JSONDecodeError:
+            # 尝试从输出文本中探测
+            out_lower = r.stdout.lower()
+            if "pass" in out_lower and "fail" not in out_lower:
+                verdict = "pass"
+            elif "fail" in out_lower:
+                verdict = "fail"
+            else:
+                verdict = "unknown"
+
+        return {
+            "model": model,
+            "verdict": verdict,
+            "output": r.stdout[:500],
+            "exit_code": r.returncode,
+        }
+    except subprocess.TimeoutExpired:
+        return {"model": model, "verdict": "timeout", "output": None}
+    except (OSError, ValueError) as e:
+        return {"model": model, "verdict": "unknown", "output": None, "error": str(e)}
+
+
+def _arbiter_vote(results: List[dict], task: str) -> dict:
+    """仲裁投票: 将结果喂给 Claude 做裁决"""
+    summary = "\n".join(
+        f"- {r['model']}: verdict={r['verdict']}"
+        for r in results
+    )
+    prompt = (
+        f"You are the final arbiter. Review these model verdicts and decide.\n\n"
+        f"TASK: {task}\n\n"
+        f"VOTES:\n{summary}\n\n"
+        f"Output ONLY: {{\"verdict\": \"pass\"|\"fail\"|\"partial\", \"reason\": \"...\"}}"
+    )
+
+    # 使用 hermes chat -q --model claude-opus-4-7 或 claude
+    import shutil
+    hermes = shutil.which("hermes")
+    if not hermes:
+        return {"strategy": "arbiter", "verdict": "unknown", "reason": "hermes not found"}
+
+    try:
+        r = subprocess.run(
+            [hermes, "chat", "-q", prompt, "--model", "claude-sonnet-4-6"],
+            capture_output=True, text=True, timeout=120,
+        )
+        try:
+            data = json.loads(r.stdout)
+            return {"strategy": "arbiter", "verdict": data.get("verdict", "unknown"),
+                    "arbiter_reason": data.get("reason", "")}
+        except json.JSONDecodeError:
+            return {"strategy": "arbiter", "verdict": "unknown", "raw": r.stdout[:200]}
+    except (subprocess.TimeoutExpired, OSError) as e:
+        return {"strategy": "arbiter", "verdict": "timeout", "error": str(e)}
+
+
+def _log_and_emit(result: dict, strategy: str, models: List[str], weights: dict):
+    """记录日志 + L2 协议 emit"""
     # 记录到日志
     os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
     with open(LOG_FILE, "a") as f:
-        f.write(json.dumps(result) + "\n")
+        # 序列化安全副本
+        log_entry = {k: v for k, v in result.items()
+                     if k not in ("model_results",)}
+        f.write(json.dumps(log_entry) + "\n")
 
-    # ── L2 协议：包装为 agent_protocol 消息并持久化 ──
+    # ── L2 协议 emit ──
     try:
+        consensus = result.get("consensus", False)
         protocol_msg = protocol_wrap(
             agent_id="ensemble-vote",
             task_id="vote-" + datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S"),
-            verdict="pass" if result.get("consensus", False) else "partial",
+            verdict="pass" if consensus else "partial",
             verification_pattern="ensemble_vote",
             extensions={
                 "strategy": strategy,
                 "models": models,
+                "weights": weights,
                 "metadata": result.get("weighted_scores", result.get("votes", {})),
             },
         )
         result["agent_protocol"] = protocol_msg
         protocol_emit(protocol_msg)
     except ProtocolError as e:
-        print(f"[ensemble-vote] Protocol wrap failed: {e}", file=sys.stderr)
-
-    return result
+        print(f"[ensemble-vote] Protocol emit failed: {e}", file=sys.stderr)
 
 
 def cli():
@@ -181,6 +289,8 @@ def cli():
     vt.add_argument("--models", required=True, help="逗号分隔的模型列表")
     vt.add_argument("--strategy", default="majority", 
                     choices=["majority", "weighted", "arbiter"])
+    vt.add_argument("--execute", action="store_true", default=False,
+                    help="Actually call models (default: framework-only)")
     vt.add_argument("--workdir", default=None, help="工作目录")
 
     sub.add_parser("history", help="查看投票历史")
@@ -198,6 +308,7 @@ def cli():
             models=models,
             strategy=args.strategy,
             workdir=args.workdir,
+            execute=args.execute,
         )
         print(json.dumps(result, indent=2, ensure_ascii=False))
 

@@ -18,8 +18,13 @@ consensus-plans.py — 多模型 plan 语义一致性检测与合并 (L4 consens
 import argparse
 import hashlib
 import json
+import os
 import sys
+import time
 from typing import List, Dict, Tuple
+
+sys.path.insert(0, os.path.dirname(__file__))
+from agent_protocol import wrap as protocol_wrap, emit as protocol_emit, ProtocolError
 
 
 def load_plans(files: List[str]) -> List[dict]:
@@ -164,6 +169,7 @@ def merge_plans(plans: List[dict]) -> dict:
     if len(plans) == 1:
         merged = plans[0].copy()
         merged["merge_info"] = {"strategy": "single_planner", "planners": 1}
+        _emit_consensus_plans(merged)
         return merged
 
     N = len(plans)
@@ -244,7 +250,28 @@ def merge_plans(plans: List[dict]) -> dict:
     )
     merged["merge_info"]["max_blast_radius"] = [k for k, v in blast_order.items() if v == max_blast][0] if max_blast > 0 else "single_tier"
 
+    _emit_consensus_plans(merged)
     return merged
+
+
+def _emit_consensus_plans(merged: dict) -> None:
+    """Emit L2 protocol message for consensus-plans merge results."""
+    try:
+        timestamp = time.strftime("%Y%m%dT%H%M%S")
+        merge_info = merged.get("merge_info", {})
+        msg = protocol_wrap(
+            agent_id="consensus-plans",
+            task_id="merge-" + timestamp,
+            verdict="pass",
+            verification_pattern="consensus_plans",
+            extensions={
+                "source_plans": merge_info.get("planners", 0),
+                "consensus_score": merge_info.get("consensus_score", 0.0),
+            },
+        )
+        protocol_emit(msg)
+    except ProtocolError:
+        pass
 
 
 def cli():

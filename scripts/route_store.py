@@ -18,7 +18,8 @@ Schema:
     model_chain  TEXT DEFAULT '',          -- JSON array
     cost_usd     REAL DEFAULT 0,
     error        TEXT DEFAULT '',          -- 失败原因
-    is_synthetic INTEGER DEFAULT 0         -- 0=real trace, 1=synthetic/generated
+    is_synthetic INTEGER DEFAULT 0,        -- 0=real trace, 1=synthetic/generated
+    chain_id     TEXT                       -- L2 protocol chain identifier
   );
 
 用法:
@@ -82,6 +83,16 @@ class RouteStore:
             CREATE INDEX IF NOT EXISTS idx_ro_verdict ON route_outcomes(verdict);
             """
         )
+        # Migration: add chain_id column for L2 protocol traceability
+        try:
+            self._conn.execute(
+                "ALTER TABLE route_outcomes ADD COLUMN chain_id TEXT"
+            )
+        except sqlite3.OperationalError:
+            pass  # column already exists
+        self._conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_ro_chain_id ON route_outcomes(chain_id)"
+        )
 
     def append(
         self,
@@ -97,6 +108,7 @@ class RouteStore:
         cost_usd=0,
         error="",
         is_synthetic=0,
+        chain_id=None,
     ):
         """写入一条 trace"""
         if isinstance(model_chain, (list, tuple)):
@@ -104,8 +116,8 @@ class RouteStore:
         self._conn.execute(
             """INSERT INTO route_outcomes
                (ts, skill, task_class, route, verdict, duration_s,
-                tokens_in, tokens_out, task_id, model_chain, cost_usd, error, is_synthetic)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                tokens_in, tokens_out, task_id, model_chain, cost_usd, error, is_synthetic, chain_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 utc_now().strftime("%FT%TZ"),
                 skill,
@@ -120,6 +132,7 @@ class RouteStore:
                 cost_usd,
                 error,
                 is_synthetic,
+                chain_id,
             ),
         )
         self._conn.commit()
@@ -142,6 +155,7 @@ class RouteStore:
             cost_usd=payload.get("cost_usd", 0),
             error=payload.get("error", ""),
             is_synthetic=payload.get("is_synthetic", 0),
+            chain_id=payload.get("chain_id"),
         )
 
     def _build_where(self, task_class=None, skill=None, verdict=None, since_hours=0):
@@ -255,6 +269,14 @@ class RouteStore:
         sql += " ORDER BY id DESC LIMIT ? OFFSET ?"
         params.extend([limit, offset])
         rows = self._conn.execute(sql, params).fetchall()
+        return [dict(r) for r in rows]
+
+    def query_by_chain(self, chain_id, limit=50, offset=0):
+        """按 chain_id 查询路由结果 (L2 协议可追溯性)"""
+        rows = self._conn.execute(
+            "SELECT * FROM route_outcomes WHERE chain_id = ? ORDER BY ts DESC LIMIT ? OFFSET ?",
+            (chain_id, limit, offset),
+        ).fetchall()
         return [dict(r) for r in rows]
 
     def stats(self, task_class=None, skill=None, since_hours=168):
@@ -416,6 +438,7 @@ def cli():
     for f in ["duration_s", "tokens_in", "tokens_out", "cost_usd"]:
         ap.add_argument(f"--{f}", type=float, default=0)
     ap.add_argument("--synthetic", type=int, default=0, help="1=synthetic trace, 0=real")
+    ap.add_argument("--chain-id", default=None, help="L2 protocol chain identifier")
     ap.add_argument("--stdin", action="store_true", help="从 stdin 读取 JSON")
 
     qp = sub.add_parser("query", help="查询路由记录")
@@ -424,6 +447,11 @@ def cli():
     qp.add_argument("--verdict", default="")
     qp.add_argument("--limit", type=int, default=20)
     qp.add_argument("--hours", type=int, default=0)
+
+    qcp = sub.add_parser("query-by-chain", help="按 chain_id 查询路由记录")
+    qcp.add_argument("--chain-id", required=True, help="L2 protocol chain identifier")
+    qcp.add_argument("--limit", type=int, default=50)
+    qcp.add_argument("--offset", type=int, default=0)
 
     sp = sub.add_parser("stats", help="聚合统计")
     sp.add_argument("--task-class", default="")
@@ -466,6 +494,7 @@ def cli():
                 cost_usd=args.cost_usd,
                 error=args.error,
                 is_synthetic=args.synthetic,
+                chain_id=args.chain_id,
             )
             print(json.dumps({"id": row_id}))
 
@@ -476,6 +505,14 @@ def cli():
             verdict=args.verdict or None,
             limit=args.limit,
             since_hours=args.hours,
+        )
+        print(json.dumps(rows, indent=2, ensure_ascii=False, default=str))
+
+    elif args.cmd == "query-by-chain":
+        rows = store.query_by_chain(
+            chain_id=args.chain_id,
+            limit=args.limit,
+            offset=args.offset,
         )
         print(json.dumps(rows, indent=2, ensure_ascii=False, default=str))
 

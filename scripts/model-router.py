@@ -19,6 +19,8 @@ import random
 import sys
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple
+import subprocess
+import yaml
 
 # 延迟导入
 _pricing = None
@@ -35,7 +37,7 @@ def _get_pricing():
             sys.path.insert(0, os.path.join(HERMES_HOME, "scripts"))
             from pricing import load_pricing
             _pricing = load_pricing(CONFIG_PATH)
-        except Exception:
+        except (ImportError, AttributeError, yaml.YAMLError, OSError):
             pass
     return _pricing
 
@@ -43,6 +45,10 @@ def _get_pricing():
 def load_config():
     try:
         import yaml
+    except ImportError:
+        return None
+
+    try:
         with open(CONFIG_PATH) as f:
             c = yaml.safe_load(f)
         routing = c.get("smart_model_routing", {})
@@ -61,7 +67,7 @@ def load_config():
             "min_traces_per_model": routing.get("min_traces_per_model", 10),
             "default_model": c.get("model", {}).get("default", ""),
         }
-    except Exception:
+    except (yaml.YAMLError, FileNotFoundError, OSError):
         return None
 
 
@@ -75,7 +81,7 @@ def get_model_stats(task_class=None, since_hours=168):
         r = subprocess.run(args, capture_output=True, text=True, timeout=10)
         if r.returncode == 0 and r.stdout.strip():
             return json.loads(r.stdout)
-    except Exception:
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, OSError):
         pass
     return []
 
@@ -382,7 +388,7 @@ def cli():
                     d = json.loads(line)
                     label = d.get("schedule_label", "?")
                     print(f"  {d['ts']} → {d['model']} ({d['reason'][:60]}) [{label}]")
-                except:
+                except json.JSONDecodeError:
                     pass
 
     else:

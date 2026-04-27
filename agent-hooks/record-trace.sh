@@ -83,6 +83,7 @@ model = os.environ.get('HERMES_TRACE_MODEL', 'unknown')
 verification_pattern = os.environ.get('HERMES_VERIFY_PATTERN', '')
 fix_attribution = os.environ.get('HERMES_FIX_ATTRIBUTION', '')
 dissent_sig = os.environ.get('HERMES_DISSENT_SIGNATURE', '')
+chain_id = os.environ.get('HERMES_CHAIN_ID', '')
 
 print(json.dumps({
     'skill': extra.get('tool_name', '') or d.get('tool_name', ''),
@@ -98,6 +99,7 @@ print(json.dumps({
     'verification_pattern': verification_pattern,
     'fix_attribution': fix_attribution,
     'dissent_signature': dissent_sig,
+    'chain_id': chain_id,
 }))
 " 2>/dev/null)
 

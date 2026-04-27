@@ -20,6 +20,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
+import yaml
 
 
 class PricingTable:
@@ -169,14 +170,13 @@ def load_pricing(config_path: str = None) -> Optional[PricingTable]:
         )
     
     try:
-        import yaml
         with open(config_path) as f:
             config = yaml.safe_load(f)
         pricing_raw = config.get("pricing", {})
         if not pricing_raw.get("models"):
             return None
         return PricingTable(pricing_raw)
-    except Exception as e:
+    except (yaml.YAMLError, FileNotFoundError, OSError) as e:
         print(f"Warning: failed to load pricing: {e}", file=sys.stderr)
         return None
 
