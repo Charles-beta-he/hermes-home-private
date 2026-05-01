@@ -19,6 +19,7 @@ Self-Improvement Pipeline — 自进化优先调度层
 
 import os, sys, json, datetime, math
 from collections import Counter, defaultdict
+from pathlib import Path
 
 NOTES_DIR = os.path.expanduser("~/.hermes/notes")
 SIGNALS_PATH = os.path.join(NOTES_DIR, "improvement-signals.jsonl")
@@ -27,8 +28,45 @@ PATTERNS_PATH = os.path.join(NOTES_DIR, "user-routine-patterns.json")
 DARWIN_RESULTS = os.path.expanduser("~/.hermes/skills/darwin-skill/results.tsv")
 ACTION_PATH = os.path.join(NOTES_DIR, "improvement-action-plan.json")
 EVOLUTION_PATH = os.path.expanduser("~/.pua/evolution.md")
+USAGE_SCORE_PATH = os.path.expanduser("~/.hermes/state/usage-score.json")
+STALE_TRANSIENT_HOURS = 72
 
 os.makedirs(NOTES_DIR, exist_ok=True)
+
+def parse_iso(ts):
+    """Parse common ISO timestamps used by Hermes notes/logs."""
+    if not ts:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(str(ts).replace("Z", "+00:00")).replace(tzinfo=None)
+    except ValueError:
+        return None
+
+
+def signal_age_hours(sig):
+    t = parse_iso(sig.get("_parent_timestamp") or sig.get("timestamp"))
+    if not t:
+        return None
+    return (datetime.datetime.now() - t).total_seconds() / 3600
+
+
+def current_ops_healthy():
+    """Return True when current operational checks show the old transient errors are closed."""
+    try:
+        data = json.loads(Path(USAGE_SCORE_PATH).read_text())
+        cron = data.get("components", {}).get("cron_green", {})
+        return data.get("grade") == "A" and int(cron.get("bad") or 0) == 0
+    except Exception:
+        return False
+
+
+def is_stale_transient_signal(sig):
+    """Suppress old tool-failure ghosts after current ops health is green."""
+    if sig.get("type") != "tool_failures":
+        return False
+    age = signal_age_hours(sig)
+    return current_ops_healthy() and age is not None and age > STALE_TRANSIENT_HOURS
+
 
 # ─── Signal Sources ───
 
@@ -46,12 +84,13 @@ def load_signals(max_age_days=30):
                 if ts:
                     try:
                         t = datetime.datetime.fromisoformat(ts)
-                        if t >= cutoff:
-                            signals.append(s)
+                        if t < cutoff:
+                            continue
                     except ValueError:
-                        signals.append(s)
-                else:
-                    signals.append(s)
+                        pass
+                for sig in s.get("signals", []):
+                    sig.setdefault("_parent_timestamp", ts)
+                signals.append(s)
             except json.JSONDecodeError:
                 continue
     return signals
@@ -79,8 +118,13 @@ def load_patterns():
         return json.load(f)
 
 
-def load_darwin_results(max_count=50):
-    """加载 Darwin 优化记录"""
+def load_darwin_results(max_count=None):
+    """加载 Darwin 优化记录。
+
+    Use all rows by default: priority generation later collapses to the latest
+    row per skill, and truncating raw rows can drop the actual latest accepted
+    fix while retaining an older low baseline.
+    """
     records = []
     if not os.path.exists(DARWIN_RESULTS):
         return records
@@ -90,15 +134,15 @@ def load_darwin_results(max_count=50):
         for line in f:
             try:
                 cols = line.strip().split("\t")
-                if len(cols) >= 9:
+                if len(cols) >= 8:
                     records.append({
                         "timestamp": cols[0], "skill": cols[2],
                         "old_score": cols[3], "new_score": cols[4],
-                        "status": cols[5], "note": cols[7],
+                        "status": cols[5], "note": cols[7] if len(cols) > 7 else "",
                     })
             except (IndexError, ValueError):
                 continue
-    return records[-max_count:]
+    return records[-max_count:] if max_count else records
 
 
 # ─── Prioritization Engine ───
@@ -168,7 +212,7 @@ def aggregate_items(signals, health_records, patterns, darwin_records):
         ))
 
     # 工具失败 → 配置/脚本修复
-    failure_sigs = type_signals.get("tool_failures", [])
+    failure_sigs = [s for s in type_signals.get("tool_failures", []) if not is_stale_transient_signal(s)]
     if failure_sigs:
         # 找出失败最多的工具
         tool_counter = Counter()
@@ -241,14 +285,20 @@ def aggregate_items(signals, health_records, patterns, darwin_records):
                 source="darwin", category="skill_quality"
             ))
 
-        # 低分 skill 列表
-        low_skills = set()
+        # 低分 skill 列表：只看每个 skill 的最新 Darwin 记录，避免旧 baseline
+        # 在已修复后继续产生幽灵优先级。
+        latest_by_skill = {}
         for r in darwin_records:
+            latest_by_skill[r.get("skill", "")] = r
+        low_skills = set()
+        for skill, r in latest_by_skill.items():
+            if not skill:
+                continue
             try:
                 ns = int(r.get("new_score", 0))
                 if ns < 60:
-                    low_skills.add(r["skill"])
-            except ValueError:
+                    low_skills.add(skill)
+            except (TypeError, ValueError):
                 continue
         if low_skills:
             items.append(ActionItem(

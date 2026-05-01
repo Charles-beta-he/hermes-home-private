@@ -39,6 +39,12 @@ FILES = [
     "scripts/self-improvement-pipeline.py",  # L0 prioritizer
     "scripts/route_store.py",                # L1 store
     "scripts/eval-harness.py",               # L4 gate
+    "scripts/cross-patch.py",                # L4 cross-patch
+    "scripts/consult_models.py",             # L5 multi-brain
+    "scripts/ensemble-vote.py",              # L3 ensemble
+    "scripts/consensus-check.py",            # L4 consensus
+    "scripts/agent_protocol.py",             # L2 protocol
+    "scripts/test_cross_patch_real_execution.py",  # L4 regression
     "agent-hooks/record-trace.sh",           # L1 hook
     f"skills/software-development/router/SKILL.md",                  # L2 skill
     f"skills/software-development/self-improvement-pipeline/SKILL.md",# system skill
@@ -186,6 +192,202 @@ if db_ok:
     ))
 else:
     test("route_outcomes.db exists", lambda: (False, "not found"))
+
+# ── Multi-Model Architecture ──
+
+# cross-patch.py status
+r = subprocess.run(
+    [sys.executable, os.path.join(HERMES_HOME, "scripts/cross-patch.py"), "status"],
+    capture_output=True, text=True, timeout=10
+)
+test("cross-patch.py status", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# cross-patch.py compile
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/cross-patch.py")],
+    capture_output=True, text=True, timeout=10
+)
+test("cross-patch.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# test_cross_patch_real_execution.py exists and passes
+test_file = os.path.join(HERMES_HOME, "scripts/test_cross_patch_real_execution.py")
+if os.path.exists(test_file):
+    r = subprocess.run(
+        [sys.executable, test_file],
+        capture_output=True, text=True, timeout=30
+    )
+    test("cross-patch real execution tests", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("cross-patch real execution tests", lambda: (False, "test file not found"))
+
+# consult_models.py + model_quota.py + safe cron wrappers compile
+for script_name in (
+    "consult_models.py",
+    "model_quota.py",
+    "p10-health-safe.py",
+    "multi-model-smoke-safe.py",
+    "multi-model-smoke-every4h-wrapper.py",
+    "multi-model-smoke-daily-full-wrapper.py",
+    "multi-brain-nightly-wrapper.py",
+):
+    r = subprocess.run(
+        [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, f"scripts/{script_name}")],
+        capture_output=True, text=True, timeout=10
+    )
+    test(f"{script_name} compiles", lambda r=r: (r.returncode == 0, r.stderr[:200]))
+
+# ensemble-vote.py compile
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/ensemble-vote.py")],
+    capture_output=True, text=True, timeout=10
+)
+test("ensemble-vote.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# model-router.py select-pair
+r = subprocess.run(
+    [sys.executable, os.path.join(HERMES_HOME, "scripts/model-router.py"),
+     "select-pair", "--task-tier", "codegen"],
+    capture_output=True, text=True, timeout=10, env=ROUTE_ENV
+)
+has_pair = '"producer"' in r.stdout and '"reviewer"' in r.stdout
+test("model-router select-pair returns producer+reviewer", lambda: (
+    r.returncode == 0 and has_pair, r.stderr[:200] or r.stdout[:200]
+))
+
+# quorum.yaml parseable
+import yaml as _yaml
+quorum_path = os.path.join(HERMES_HOME, "config/quorum.yaml")
+try:
+    with open(quorum_path) as f:
+        q = _yaml.safe_load(f)
+    test("quorum.yaml parseable", lambda: (
+        isinstance(q, dict) and "multi_brain" in q, "missing multi_brain key"
+    ))
+except Exception as e:
+    test("quorum.yaml parseable", lambda: (False, str(e)))
+
+# consensus-check.py detect_type precision
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/consensus-check.py")],
+    capture_output=True, text=True, timeout=10
+)
+test("consensus-check.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# agent_protocol.py compile
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/agent_protocol.py")],
+    capture_output=True, text=True, timeout=10
+)
+test("agent_protocol.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# ensemble-vote integration tests (tally logic)
+test_ens = os.path.join(HERMES_HOME, "scripts/test_ensemble_vote_integration.py")
+if os.path.exists(test_ens):
+    r = subprocess.run([sys.executable, test_ens], capture_output=True, text=True, timeout=30)
+    test("ensemble-vote tally tests (6/6)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("ensemble-vote tally tests", lambda: (False, "test file not found"))
+
+# consult_models integration tests (provider resolution + quorum + quota + certification schema)
+test_con = os.path.join(HERMES_HOME, "scripts/test_consult_models_integration.py")
+if os.path.exists(test_con):
+    r = subprocess.run([sys.executable, test_con], capture_output=True, text=True, timeout=30)
+    test("consult_models integration tests (17/17)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("consult_models integration tests", lambda: (False, "test file not found"))
+
+# p10-health-safe bounded wrapper tests
+p10_safe_test = os.path.join(HERMES_HOME, "scripts/test_p10_health_safe.py")
+if os.path.exists(p10_safe_test):
+    r = subprocess.run([sys.executable, p10_safe_test], capture_output=True, text=True, timeout=15)
+    test("p10-health-safe tests (4/4)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("p10-health-safe tests", lambda: (False, "test file not found"))
+
+# multi-model-smoke-safe bounded cron wrapper tests
+smoke_safe_test = os.path.join(HERMES_HOME, "scripts/test_multi_model_smoke_safe.py")
+if os.path.exists(smoke_safe_test):
+    r = subprocess.run([sys.executable, smoke_safe_test], capture_output=True, text=True, timeout=15)
+    test("multi-model-smoke-safe tests (3/3)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("multi-model-smoke-safe tests", lambda: (False, "test file not found"))
+
+# self-improvement priority ghost-suppression tests
+self_improvement_test = os.path.join(HERMES_HOME, "scripts/test_self_improvement_pipeline.py")
+if os.path.exists(self_improvement_test):
+    r = subprocess.run([sys.executable, self_improvement_test], capture_output=True, text=True, timeout=15)
+    test("self-improvement pipeline tests (2/2)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("self-improvement pipeline tests", lambda: (False, "test file not found"))
+
+# model quota tests (headers/default snapshot/persistence/gating)
+for test_name, label in (
+    ("test_model_quota.py", "model_quota tests (4/4)"),
+    ("test_model_router_quota.py", "model-router quota tests (1/1)"),
+):
+    test_path = os.path.join(HERMES_HOME, f"scripts/{test_name}")
+    if os.path.exists(test_path):
+        r = subprocess.run([sys.executable, test_path], capture_output=True, text=True, timeout=30)
+        test(label, lambda r=r: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+    else:
+        test(label, lambda test_name=test_name: (False, f"{test_name} not found"))
+
+# cross-patch safety tests (5 tests: non-unique, --apply guard, verify pass, rollback, cost)
+test_safety = os.path.join(HERMES_HOME, "scripts/test_cross_patch_safety.py")
+if os.path.exists(test_safety):
+    r = subprocess.run([sys.executable, test_safety], capture_output=True, text=True, timeout=30)
+    test("cross-patch safety tests (5/5)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("cross-patch safety tests", lambda: (False, "test file not found"))
+
+# pricing.py promo TTL alarm compile
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/pricing.py")],
+    capture_output=True, text=True, timeout=10
+)
+test("pricing.py compiles (with promo TTL)", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# model-router.py compile (with self-healing log)
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/model-router.py")],
+    capture_output=True, text=True, timeout=10
+)
+test("model-router.py compiles (with self-heal)", lambda: (r.returncode == 0, r.stderr[:200]))
+
+# ── Private Evolution Governance ──
+
+# verify-evolution-event.py compile + compliance check against the canonical P0 event.
+verify_evo = os.path.join(HERMES_HOME, "scripts/verify-evolution-event.py")
+r = subprocess.run(
+    [sys.executable, "-m", "py_compile", verify_evo],
+    capture_output=True, text=True, timeout=10
+)
+test("verify-evolution-event.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
+
+p0_event = os.path.join(HERMES_HOME, "notes/evolution/2026-04-29-warp-p0-multimodel-governance.md")
+p0_spec = os.path.join(HERMES_HOME, "hermes-agent/specs/p0-multimodel-governance")
+p0_review_schema = os.path.join(HERMES_HOME, "hermes-agent/docs/specs/review.schema.json")
+fanout_schema = os.path.join(HERMES_HOME, "schemas/fanout-certification.schema.json")
+if os.path.exists(fanout_schema):
+    r = subprocess.run(
+        [sys.executable, "-m", "json.tool", fanout_schema],
+        capture_output=True, text=True, timeout=10
+    )
+    test("fanout-certification schema parseable", lambda r=r: (r.returncode == 0, r.stderr[:200]))
+else:
+    test("fanout-certification schema parseable", lambda: (False, "schema file not found"))
+
+if os.path.exists(p0_event) and os.path.exists(verify_evo):
+    r = subprocess.run(
+        [sys.executable, verify_evo, p0_event, p0_spec, p0_review_schema, "--repo=" + os.path.join(HERMES_HOME, "hermes-agent")],
+        capture_output=True, text=True, timeout=30
+    )
+    test("P0 evolution event is compliant", lambda r=r: (
+        r.returncode == 0 and "Final: COMPLIANT" in r.stdout,
+        r.stderr[:300] or r.stdout[-500:]
+    ))
+else:
+    test("P0 evolution event is compliant", lambda: (False, "P0 event or verifier missing"))
 
 # ── Summary ──
 
