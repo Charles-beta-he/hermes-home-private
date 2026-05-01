@@ -320,6 +320,14 @@ if os.path.exists(self_improvement_test):
 else:
     test("self-improvement pipeline tests", lambda: (False, "test file not found"))
 
+# usage-score metric semantics tests
+usage_score_test = os.path.join(HERMES_HOME, "scripts/test_usage_score.py")
+if os.path.exists(usage_score_test):
+    r = subprocess.run([sys.executable, usage_score_test], capture_output=True, text=True, timeout=15)
+    test("usage-score tests (1/1)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("usage-score tests", lambda: (False, "test file not found"))
+
 # model quota tests (headers/default snapshot/persistence/gating)
 for test_name, label in (
     ("test_model_quota.py", "model_quota tests (4/4)"),

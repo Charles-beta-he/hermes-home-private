@@ -3,3 +3,16 @@
 {"timestamp": "2026-04-27T02:00:58.178442", "event": "skill_unchanged", "details": {"skill": "inference-sh", "score": 60, "fixes": ["added Constraints section"]}}
 {"timestamp": "2026-04-27T02:01:06.653723", "event": "skill_unchanged", "details": {"skill": "inference-sh", "score": 60, "fixes": ["added Constraints section"]}}
 {"timestamp": "2026-04-27T02:01:30", "event": "skill_fixed", "details": {"skill": "inference-sh", "fixes": ["removed 3 duplicate \u7ea6\u675f sections", "added \u8fb9\u754c\u6761\u4ef6 section", "added \u793a\u4f8b section with 2 examples"], "expected_score_change": "60 -> 75+"}}
+{"timestamp": "2026-04-28T02:00:57.235541", "event": "skill_improved", "details": {"skill": "inference-sh", "old_score": 60, "new_score": 90, "fixes": []}}
+{"timestamp": "2026-04-28T02:01:07.420504", "event": "skill_unchanged", "details": {"skill": "mcp", "score": 60, "fixes": []}}
+{"timestamp": "2026-04-29T02:00:43.640665", "event": "skill_unchanged", "details": {"skill": "mcp", "score": 60, "fixes": []}}
+{"timestamp": "2026-04-29T02:00:53.992904", "event": "skill_unchanged", "details": {"skill": "mcp", "score": 60, "fixes": []}}
+{"timestamp": "2026-04-28T18:04:20.023300", "event": "skill_improved", "details": {"skill": "mcp", "old_score": 60, "new_score": 100, "fixes": ["added 边界条件 section with 4 boundary rules", "added 示例 section with 2 examples", "removed duplicate 约束 section", "added metadata frontmatter", "enhanced 检查点 with MCP-specific checks"]}}
+{"timestamp": "2026-04-30T02:00:59.621880", "event": "skill_improved", "details": {"skill": "mcp", "old_score": 60, "new_score": 90, "fixes": []}}
+{"timestamp": "2026-04-30T02:01:18.826249", "event": "skill_unchanged", "details": {"skill": "gifs", "score": 60, "fixes": []}}
+{"timestamp": "2026-04-30T02:04:38.688675", "event": "skill_improved", "details": {"skill": "gifs", "old_score": 60, "new_score": 100, "fixes": []}}
+{"timestamp": "2026-05-01T03:32:39.475528", "event": "skill_unchanged", "details": {"skill": "feeds", "score": 60, "fixes": []}}
+{"timestamp": "2026-05-01T03:50:01.965346", "event": "skill_unchanged", "details": {"skill": "feeds", "score": 60, "fixes": []}}
+{"timestamp": "2026-05-01T12:01:49.842637", "event": "skill_unchanged", "details": {"skill": "feeds", "score": 60, "fixes": []}}
+{"timestamp": "2026-05-01T12:04:15.310539", "event": "skill_unchanged", "details": {"skill": "feeds", "score": 60, "fixes": []}}
+{"timestamp": "2026-05-01T12:47:02.865586", "event": "skill_improved", "details": {"skill": "feeds", "old_score": 60, "new_score": 100, "fixes": []}}
