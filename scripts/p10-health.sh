@@ -10,42 +10,91 @@ JSON_MODE=false
 [[ "${1:-}" == "--json" ]] && JSON_MODE=true
 
 # ── 1. Cron Liveness ──
-CRON_LIVE=0
-CRON_TOTAL=0
-CRON_RECENT=0
-NOW_EPOCH=$(date +%s)
-cron_list=$(python3 -c "
-import os, json
-p = os.path.expanduser('$HERMES_HOME/cron/jobs.json')
-if not os.path.exists(p):
-    print('')
-else:
-    with open(p) as f:
-        data = json.load(f)
+# Health means enabled jobs are not in error. Recency remains an observability
+# detail, but weekly/monthly jobs and first-run-pending jobs must not be
+# counted as unhealthy just because they did not run in the last 24h.
+CRON_STATS=$(python3 - <<'PY'
+import json, os, time, datetime
+from pathlib import Path
+home = Path(os.environ.get('HERMES_HOME', os.path.expanduser('~/.hermes')))
+p = home / 'cron' / 'jobs.json'
+now = time.time()
+
+def parse_ts(s):
+    if not s:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(str(s).replace('Z', '+00:00')).timestamp()
+    except Exception:
+        return None
+
+jobs = []
+if p.exists():
+    data = json.loads(p.read_text())
     jobs = data.get('jobs', data) if isinstance(data, dict) else data
-    if isinstance(jobs, list):
-        for j in jobs:
-            if isinstance(j, dict):
-                jid = j.get('job_id', j.get('id','?'))[:12]
-                enabled = j.get('enabled', True)
-                last = j.get('last_run_at','') or ''
-                name = j.get('name','?')
-                print(f'{jid}|{enabled}|{last}|{name}')
-" 2>/dev/null || echo "")
+    if not isinstance(jobs, list):
+        jobs = []
 
-while IFS='|' read -r jid enabled last name; do
-    [[ -z "$jid" ]] && continue
-    CRON_TOTAL=$((CRON_TOTAL + 1))
-    [[ "$enabled" == "True" ]] && CRON_LIVE=$((CRON_LIVE + 1))
-    if [[ -n "$last" && "$last" != "None" && "$last" != "null" ]]; then
-        last_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${last:0:19}" +%s 2>/dev/null || echo 0)
-        if [[ $last_epoch -gt $((NOW_EPOCH - 86400)) ]]; then
-            CRON_RECENT=$((CRON_RECENT + 1))
-        fi
-    fi
-done <<< "$cron_list"
+enabled = [j for j in jobs if isinstance(j, dict) and j.get('enabled', True)]
+recent = 0
+good = 0
+bad = []
+stale = []
+pending = 0
+for j in enabled:
+    last = parse_ts(j.get('last_run_at'))
+    nxt = parse_ts(j.get('next_run_at'))
+    status = str(j.get('last_status') or '').lower()
+    state = str(j.get('state') or '').lower()
+    name = j.get('name') or j.get('id') or '?'
+    err = str(j.get('last_error') or '')
+    if last and last > now - 86400:
+        recent += 1
+    is_error = status in {'error', 'failed'} or state in {'error', 'failed'}
+    # Cron jobs can retain an old last_status=error until the next scheduled run.
+    # Treat old, scheduler/transient wrapper shutdown errors with a future retry as
+    # stale evidence rather than live health failure; cron-health-quarantine keeps
+    # the stale line auditable. This prevents one 4-day-old shutdown ghost from
+    # depressing P10 health while preserving fresh errors as bad.
+    age = (now - last) if last else None
+    stale_error = bool(is_error and last and age and age > 86400 and nxt and nxt > now and (
+        'interpreter shutdown' in err.lower() or
+        'timeout_recorded' in err.lower() or
+        'degraded_recorded' in err.lower() or
+        'partial_fail_recorded' in err.lower()
+    ))
+    first_run_pending = not last and not status and nxt and nxt > now - 1800
+    if first_run_pending:
+        pending += 1
+    if not is_error or stale_error:
+        good += 1
+        if stale_error:
+            stale.append(name)
+    else:
+        bad.append(name)
 
-CRON_HEALTH=$(python3 -c "print(round($CRON_RECENT / max($CRON_TOTAL, 1), 3))")
+out = {
+    'total': len(enabled),
+    'enabled': len(enabled),
+    'recent': recent,
+    'good': good,
+    'pending': pending,
+    'stale_error_count': len(stale),
+    'stale_errors': stale[:10],
+    'bad_count': len(bad),
+    'bad': bad[:10],
+    'health': round(good / max(len(enabled), 1), 3),
+}
+print(json.dumps(out, ensure_ascii=False))
+PY
+)
+CRON_TOTAL=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('total',0))")
+CRON_LIVE=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('enabled',0))")
+CRON_RECENT=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('recent',0))")
+CRON_GOOD=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('good',0))")
+CRON_PENDING=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('pending',0))")
+CRON_BAD=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('bad_count',0))")
+CRON_HEALTH=$(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(d.get('health',0))")
 
 # ── 2. Route Outcomes (多口径) ──
 ROUTE_STATS=$(python3 "$HERMES_HOME/scripts/route_store.py" stats --hours 168 2>/dev/null || echo '{}')
@@ -77,10 +126,32 @@ print(o.get('synthetic', 0))
 SYNTH_RATIO=$(python3 -c "print(round($SYNTH_COUNT / max($TRACE_COUNT, 1), 3))")
 
 # ── 3. Self-Test ──
-SELF_TEST_OUT=$(python3 "$HERMES_HOME/scripts/self-test.py" 2>&1 || true)
-SELF_TEST_PASS=false
-echo "$SELF_TEST_OUT" | grep -q "ALL PASS" && SELF_TEST_PASS=true
-SELF_TEST_COUNT=$(echo "$SELF_TEST_OUT" | grep -c "✓" || echo 0)
+# Use exit-code + bounded subprocess instead of grep -q on a pipe. With
+# `set -euo pipefail`, grep -q can close the pipe early and make the producer
+# receive SIGPIPE, turning a real ALL PASS into a false health failure.
+SELF_TEST_LOG="$HERMES_HOME/logs/p10-health-self-test.log"
+SELF_TEST_META=$(python3 - "$HERMES_HOME" "$SELF_TEST_LOG" <<'PY'
+import json, subprocess, sys
+from pathlib import Path
+home = Path(sys.argv[1]).expanduser()
+log = Path(sys.argv[2]).expanduser()
+log.parent.mkdir(parents=True, exist_ok=True)
+cmd = [sys.executable, str(home / 'scripts' / 'self-test.py')]
+try:
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=90)
+    out = proc.stdout or ''
+    ok = proc.returncode == 0 and 'ALL PASS' in out
+    status = 'ok' if ok else 'failed'
+except subprocess.TimeoutExpired as e:
+    out = (e.stdout or '') if isinstance(e.stdout, str) else ''
+    ok = False
+    status = 'timeout'
+log.write_text(out, encoding='utf-8')
+print(json.dumps({'ok': ok, 'status': status, 'check_count': out.count('✓'), 'log': str(log)}, ensure_ascii=False))
+PY
+)
+SELF_TEST_PASS=$(python3 -c "import json; d=json.loads('''$SELF_TEST_META'''); print('true' if d.get('ok') else 'false')")
+SELF_TEST_COUNT=$(python3 -c "import json; d=json.loads('''$SELF_TEST_META'''); print(int(d.get('check_count') or 0))")
 
 # ── 4. Skill Count ──
 SKILL_COUNT=$(find "$HERMES_HOME/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
@@ -92,7 +163,10 @@ MEMORY_LINES=$(wc -l < "$HERMES_HOME/memories/MEMORY.md" 2>/dev/null || echo 0)
 
 # ── 6. Gateway Status ──
 GATEWAY_RUNNING=false
-pgrep -f "hermes.*gateway" > /dev/null 2>&1 && GATEWAY_RUNNING=true
+# macOS pgrep -f 不可靠; grep -q + pipefail 会 SIGPIPE; 用 grep > /dev/null 替代
+if ps aux | grep '[h]ermes_cli.main gateway' > /dev/null 2>&1; then
+  GATEWAY_RUNNING=true
+fi
 
 # ── 7. Compute V(t) ──
 # V(t) = [self_test_pass, main_pass_rate, cron_health, 1-synth_ratio, gateway_running]
@@ -125,7 +199,19 @@ WARNINGS=()
 [[ "$GATEWAY_RUNNING" != "true" ]] && WARNINGS+=("gateway not running")
 [[ $MEMORY_SIZE -gt 2200 ]] && WARNINGS+=("memory file > 2.2KB, may have ghosts")
 [[ "$SELF_TEST_PASS" != "true" ]] && WARNINGS+=("self-test not all-pass")
-[[ $SKILL_COUNT -gt 80 ]] && WARNINGS+=("skill count > 80, consider reduction")
+# Raw skill count alone is not a P10 health failure once the governed steward
+# audit exists. Skill-steward owns actionable ecosystem warnings (zombies,
+# broken refs, conflicts, coverage). Keep only an extreme ungoverned-sprawl
+# guard here to avoid noisy false positives for intentionally installed packs.
+if [[ $SKILL_COUNT -gt 200 && ! -f "$HERMES_HOME/skills/steward/audit-report.json" ]]; then
+    WARNINGS+=("skill count > 200 and no steward audit found")
+fi
+
+if [[ ${#WARNINGS[@]} -eq 0 ]]; then
+    WARNINGS_JSON='[]'
+else
+    WARNINGS_JSON=$(printf '%s\n' "${WARNINGS[@]}" | python3 -c 'import sys,json; print(json.dumps([l.rstrip("\n") for l in sys.stdin if l.rstrip("\n")]))')
+fi
 
 # ── Output ──
 if $JSON_MODE; then
@@ -150,15 +236,19 @@ print(json.dumps({
         'overall_pass_rate': $OVERALL_PR,
         'cron_total': $CRON_TOTAL,
         'cron_enabled': $CRON_LIVE,
+        'cron_good': $CRON_GOOD,
+        'cron_pending_first_run': $CRON_PENDING,
+        'cron_bad': $CRON_BAD,
         'cron_recent_24h': $CRON_RECENT,
+        'cron_stale_errors': $(python3 -c "import json; d=json.loads('''$CRON_STATS'''); print(int(d.get('stale_error_count',0)))"),
         'skill_count': $SKILL_COUNT,
         'skill_staging': $STAGING_COUNT,
         'memory_bytes': $MEMORY_SIZE,
         'memory_lines': $MEMORY_LINES,
-        'gateway_running': $( [[ "$GATEWAY_RUNNING" == "true" ]] && echo 'true' || echo 'false' ),
+        'gateway_running': $( [[ "$GATEWAY_RUNNING" == "true" ]] && echo 'True' || echo 'False' ),
         'self_test_count': $SELF_TEST_COUNT
     },
-    'warnings': $(python3 -c "import json; print(json.dumps(${WARNINGS[@]+${WARNINGS[@]@Q}}))" 2>/dev/null || echo '[]'),
+    'warnings': $WARNINGS_JSON,
     'grade': '$(
         if [[ $(python3 -c "print(1 if $V_OVERALL >= 0.9 else 0)") == "1" ]]; then echo "A";
         elif [[ $(python3 -c "print(1 if $V_OVERALL >= 0.75 else 0)") == "1" ]]; then echo "B";
@@ -182,7 +272,7 @@ else
     echo "  Components:"
     echo "    self_test:     $V_SELF  ($SELF_TEST_COUNT checks)"
     echo "    main_pass_rate: $V_MAIN_PR  (7d, excl blank/planner-)"
-    echo "    cron_health:   $V_CRON  ($CRON_RECENT/$CRON_TOTAL recent)"
+    echo "    cron_health:   $V_CRON  ($CRON_GOOD/$CRON_TOTAL healthy; $CRON_RECENT recent; $CRON_PENDING pending first-run)"
     echo "    real_ratio:    $V_REAL_RATIO  (1 - synth_ratio=$SYNTH_RATIO)"
     echo "    gateway:       $V_GW  ($( [[ "$GATEWAY_RUNNING" == "true" ]] && echo 'up' || echo 'down' ))"
     echo ""

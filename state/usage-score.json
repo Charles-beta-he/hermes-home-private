@@ -1,0 +1,84 @@
+{
+  "ts": "2026-05-05T15:09:58Z",
+  "score": 93.75,
+  "grade": "A",
+  "components": {
+    "model_breadth_24h": {
+      "score": 18.75,
+      "max": 25,
+      "target_seen": [
+        "gpt-5.5",
+        "claude-opus-4-7",
+        "deepseek-v4-pro",
+        "mimo-v2.5-pro"
+      ],
+      "all_integrity_models": [
+        "claude-opus-4-7",
+        "deepseek-v4-pro",
+        "gpt-5.5",
+        "mimo-v2.5-pro"
+      ],
+      "fallback_used": true,
+      "fallback_hours": 168
+    },
+    "real_call_integrity": {
+      "score": 15.0,
+      "max": 15,
+      "ratio": 0.939,
+      "integrity_rows": 3,
+      "call_rows": 3,
+      "evaluated_integrity_rows_7d": 46,
+      "excluded_hook_rows": 18,
+      "fallback_used": true
+    },
+    "route_diversity": {
+      "score": 15.0,
+      "max": 15,
+      "mean_normalized": 1.0,
+      "routes": {
+        "probe:smoke": [
+          "claude-opus-4-7",
+          "deepseek-v4-pro",
+          "gpt-5.5",
+          "mimo-v2.5-pro"
+        ]
+      },
+      "evaluated_rows": 3,
+      "evaluated_rows_7d": 49,
+      "excluded_hook_rows": 18,
+      "fallback_used": true
+    },
+    "ensemble_executed": {
+      "score": 15,
+      "max": 15,
+      "count_7d": 5
+    },
+    "ratification_corpus": {
+      "score": 10,
+      "max": 10,
+      "count_7d": 5
+    },
+    "cron_green": {
+      "score": 10,
+      "max": 10,
+      "score_raw": 1.0,
+      "ok": 21,
+      "total": 21,
+      "recent_24h": 4,
+      "pending_first_run": 1,
+      "bad": 0,
+      "stale_errors": 0,
+      "source": "p10-health-json"
+    },
+    "self_evolution_closure": {
+      "score": 10,
+      "max": 10,
+      "closure_events_14d": 7
+    }
+  },
+  "thresholds": {
+    "A": 85,
+    "B": 70,
+    "C": 55
+  }
+}

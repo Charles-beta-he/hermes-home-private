@@ -1,40 +1,11 @@
 {
-  "generated_at": "2026-04-26T12:52:56.431002",
-  "total_items": 2,
+  "generated_at": "2026-05-05T23:06:05.616977",
+  "total_items": 0,
   "summary": {
     "critical": 0,
-    "high": 1,
-    "medium": 1,
+    "high": 0,
+    "medium": 0,
     "low": 0
   },
-  "items": [
-    {
-      "rank": 1,
-      "type": "fix_tool_config",
-      "summary": "工具失败 22 次 (工具失败 9 次，最多: terminal (5 次))",
-      "impact": "high",
-      "impact_score": 7,
-      "effort": "medium",
-      "effort_score": 4,
-      "roi": 1.75,
-      "category": "reliability",
-      "source": "session_autopsy",
-      "detail": "工具失败 9 次，最多: terminal (5 次)",
-      "suggestion": "检查对应工具的配置/超时设置"
-    },
-    {
-      "rank": 2,
-      "type": "improve_low_skills",
-      "summary": "3 个 skill 评分 < 60: p10, p9, p7",
-      "impact": "medium",
-      "impact_score": 4,
-      "effort": "medium",
-      "effort_score": 4,
-      "roi": 1.0,
-      "category": "skill_quality",
-      "source": "darwin",
-      "detail": "低分 skill 列表: p10, p9, p7",
-      "suggestion": "对最低分的 2-3 个 skill 执行 Darwin 优化"
-    }
-  ]
+  "items": []
 }

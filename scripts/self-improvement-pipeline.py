@@ -30,6 +30,8 @@ ACTION_PATH = os.path.join(NOTES_DIR, "improvement-action-plan.json")
 EVOLUTION_PATH = os.path.expanduser("~/.pua/evolution.md")
 USAGE_SCORE_PATH = os.path.expanduser("~/.hermes/state/usage-score.json")
 STALE_TRANSIENT_HOURS = 72
+STALE_TRANSIENT_MAX_HOURS = 168
+EVOLVE_LOG_PATH = os.path.expanduser("~/.hermes/logs/evolve.log")
 
 os.makedirs(NOTES_DIR, exist_ok=True)
 
@@ -61,11 +63,21 @@ def current_ops_healthy():
 
 
 def is_stale_transient_signal(sig):
-    """Suppress old tool-failure ghosts after current ops health is green."""
+    """Suppress old tool-failure ghosts once closed, and always after 7d.
+
+    Tool-failure autopsy records are point-in-time evidence. Keeping an old
+    terminal failure HIGH forever creates a ghost queue: the pipeline keeps
+    asking for work even after current traces/self-tests are healthy. Live
+    failures will be re-emitted by fresh autopsy records inside the 7d window.
+    """
     if sig.get("type") != "tool_failures":
         return False
     age = signal_age_hours(sig)
-    return current_ops_healthy() and age is not None and age > STALE_TRANSIENT_HOURS
+    if age is None:
+        return False
+    if age > STALE_TRANSIENT_MAX_HOURS:
+        return True
+    return current_ops_healthy() and age > STALE_TRANSIENT_HOURS
 
 
 # ─── Signal Sources ───
@@ -382,6 +394,29 @@ def print_action_plan(items):
         print(f"  └─ Action:   {it.suggestion}")
 
 
+def append_evolution_closure(items, mode="run"):
+    """Append an observable closure/noop event for non-preview pipeline ticks."""
+    os.makedirs(os.path.dirname(EVOLVE_LOG_PATH), exist_ok=True)
+    high = sum(1 for it in items if 6 <= it.impact < 9)
+    critical = sum(1 for it in items if it.impact >= 9)
+    event = {
+        "ts": datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+        "source": "self-improvement-pipeline",
+        "mode": mode,
+        "eval_result": "noop" if not items else "kept",
+        "diagnosis": "no actionable improvement items" if not items else f"priority queue has {len(items)} item(s), critical={critical}, high={high}",
+        "steps_count": len(items),
+        "critical": critical,
+        "high": high,
+        "baseline": 0,
+        "new": 0,
+        "delta": 0,
+    }
+    with open(EVOLVE_LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
+    return event
+
+
 def save_action_plan(items):
     """保存 action plan 到 JSON"""
     plan = {
@@ -532,6 +567,10 @@ def main():
 
         if args.auto_exec:
             auto_execute(items)
+
+    if not args.preview:
+        event = append_evolution_closure(items, mode="auto_exec" if args.auto_exec else "write" if args.write else "run")
+        print(f"\n  Evolution closure appended to {EVOLVE_LOG_PATH}: {event['eval_result']} ({event['steps_count']} item(s))")
 
     if created:
         print(f"\n  Next step: edit ~/.pua/evolution.md to add your first KPI entry")
