@@ -89,6 +89,36 @@ class UsageScoreTests(unittest.TestCase):
             self.assertEqual(rd["excluded_hook_rows"], 3)
             self.assertEqual(list(rd["routes"].keys()), ["probe:smoke"])
 
+    def test_compute_splits_operational_health_from_evidence_readiness(self):
+        with tempfile.TemporaryDirectory() as td:
+            db = str(Path(td) / "route_outcomes.db")
+            self.make_db(db)
+            mod = self.load_module(db)
+            data = mod.compute()
+            self.assertIn("semantic_grades", data)
+            self.assertEqual(data["semantic_grades"]["operational_health"]["grade"], "A")
+            self.assertEqual(data["semantic_grades"]["operational_health"]["cron_bad_count"], 0)
+            self.assertIn("evidence_readiness", data["semantic_grades"])
+            self.assertIn("interpretation", data)
+            self.assertIn("runtime", data["interpretation"])
+
+    def test_certified_discussion_results_count_as_ratification_corpus(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            db = str(root / "route_outcomes.db")
+            self.make_db(db)
+            tick = root / "tick-20260506-170132"
+            tick.mkdir()
+            (tick / "discussion_result.json").write_text(
+                '{"status":"certified","models_consulted":["gpt-5.5","mimo-v2.5-pro","deepseek-v4-pro"],"truth_assessment":{"truth_status":"grounded","can_certify_truth":true}}'
+            )
+            mod = self.load_module(db)
+            mod.H = root
+            data = mod.compute()
+            self.assertEqual(data["components"]["ratification_corpus"]["count_7d"], 1)
+            self.assertIn("discussion_result", data["components"]["ratification_corpus"]["sources"])
+            self.assertNotIn("ratification_corpus", data["semantic_grades"]["evidence_readiness"]["missing"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

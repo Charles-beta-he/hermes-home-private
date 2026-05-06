@@ -318,13 +318,15 @@ with tempfile.TemporaryDirectory() as td:
     r = subprocess.run([sys.executable, steward, "--graph-check", "--json"], env=env, capture_output=True, text=True, timeout=10)
     test("skill graph invalid fixture fails closed", lambda r=r: (r.returncode == 2 and 'cycle_count' in r.stdout and 'excessive_depth' in r.stdout, r.stderr[:200] or r.stdout[:500]))
 
-# ensemble-vote integration tests (tally logic)
+# ensemble-vote integration tests (tally + execution metadata)
 test_ens = os.path.join(HERMES_HOME, "scripts/test_ensemble_vote_integration.py")
 if os.path.exists(test_ens):
     r = subprocess.run([sys.executable, test_ens], capture_output=True, text=True, timeout=30)
-    test("ensemble-vote tally tests (6/6)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+    m = re.search(r"Ran (\d+) tests", r.stderr + r.stdout)
+    count_label = f"{m.group(1)}/{m.group(1)}" if m else "ensemble"
+    test(f"ensemble-vote tests ({count_label})", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
 else:
-    test("ensemble-vote tally tests", lambda: (False, "test file not found"))
+    test("ensemble-vote tests", lambda: (False, "test file not found"))
 
 # consult_models integration tests (provider resolution + quorum + quota + certification + evidence truth gate)
 test_con = os.path.join(HERMES_HOME, "scripts/test_consult_models_integration.py")
@@ -352,19 +354,33 @@ if os.path.exists(smoke_safe_test):
 else:
     test("multi-model-smoke-safe tests", lambda: (False, "test file not found"))
 
-# self-improvement priority ghost-suppression tests
+# self-improvement priority/action-state tests
 self_improvement_test = os.path.join(HERMES_HOME, "scripts/test_self_improvement_pipeline.py")
 if os.path.exists(self_improvement_test):
     r = subprocess.run([sys.executable, self_improvement_test], capture_output=True, text=True, timeout=15)
-    test("self-improvement pipeline tests (2/2)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+    m = re.search(r"Ran (\d+) tests", r.stderr + r.stdout)
+    count_label = f"{m.group(1)}/{m.group(1)}" if m else "pipeline"
+    test(f"self-improvement pipeline tests ({count_label})", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
 else:
     test("self-improvement pipeline tests", lambda: (False, "test file not found"))
+
+# post-session autopsy structured failure aggregation tests
+post_autopsy_test = os.path.join(HERMES_HOME, "scripts/test_post_session_autopsy.py")
+if os.path.exists(post_autopsy_test):
+    r = subprocess.run([sys.executable, post_autopsy_test], capture_output=True, text=True, timeout=15)
+    m = re.search(r"Ran (\d+) tests", r.stderr + r.stdout)
+    count_label = f"{m.group(1)}/{m.group(1)}" if m else "autopsy"
+    test(f"post-session autopsy tests ({count_label})", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("post-session autopsy tests", lambda: (False, "test file not found"))
 
 # usage-score metric semantics tests
 usage_score_test = os.path.join(HERMES_HOME, "scripts/test_usage_score.py")
 if os.path.exists(usage_score_test):
     r = subprocess.run([sys.executable, usage_score_test], capture_output=True, text=True, timeout=15)
-    test("usage-score tests (1/1)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+    m = re.search(r"Ran (\d+) tests", r.stderr + r.stdout)
+    count_label = f"{m.group(1)}/{m.group(1)}" if m else "usage"
+    test(f"usage-score tests ({count_label})", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
 else:
     test("usage-score tests", lambda: (False, "test file not found"))
 

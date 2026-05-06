@@ -173,6 +173,42 @@ def cron_stats() -> Dict[str, Any]:
         return {"score_raw": 0.0, "ok": 0, "total": 0, "recent_24h": 0, "pending_first_run": 0, "bad": 0, "stale_errors": 0, "source": "unknown"}
 
 
+def certified_discussion_results(days: int = 7) -> List[Dict[str, Any]]:
+    """Return recent consult_models discussion_result artifacts that reached ratification.
+
+    consult_models writes rich discussion artifacts under tick-*/discussion_result.json.
+    Those are first-class ratification evidence, even when no separate
+    logs/ratify.jsonl bridge exists yet.
+    """
+    out: List[Dict[str, Any]] = []
+    cutoff = NOW - timedelta(days=days)
+    for path in H.glob("tick-*/discussion_result.json"):
+        try:
+            mtime = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)
+            if mtime < cutoff:
+                continue
+            data = json.loads(path.read_text(errors="ignore"))
+        except Exception:
+            continue
+        if not isinstance(data, dict):
+            continue
+        status = str(data.get("status") or "")
+        truth = data.get("truth_assessment") or {}
+        if status not in {"certified", "certified_with_minor_risks"}:
+            continue
+        if isinstance(truth, dict) and truth and truth.get("can_certify_truth") is False:
+            continue
+        models = data.get("models_consulted") or data.get("models") or []
+        if isinstance(models, list) and len(models) < 2:
+            continue
+        item = dict(data)
+        item["source"] = "discussion_result"
+        item["path"] = str(path)
+        item["ts"] = item.get("ts") or mtime.strftime("%Y-%m-%dT%H:%M:%SZ")
+        out.append(item)
+    return out
+
+
 def compute() -> Dict[str, Any]:
     primary = call_window(24)
     fallback = call_window(FALLBACK_HOURS)
@@ -191,8 +227,10 @@ def compute() -> Dict[str, Any]:
     ensemble_score = 15 * min(len(ens_real) / 3, 1)
 
     cross7 = [e for e in read_jsonl(CROSS) + read_jsonl(RATIFY) if parse_ts(e.get("ts")) and parse_ts(e.get("ts")) >= NOW - timedelta(days=7)]
+    discussion_ratified = certified_discussion_results(days=7)
     ratified = [e for e in cross7 if e.get("actual_model_calls") or e.get("execute") or e.get("ratified") or e.get("verdict") in ("pass", "approved", "certified")]
     ratified.extend(ens_real)
+    ratified.extend(discussion_ratified)
     ratify_score = 10 * min(len(ratified) / 3, 1)
 
     cs = cron_stats()
@@ -207,16 +245,48 @@ def compute() -> Dict[str, Any]:
     closure_score = 10 * min(closure_events / 5, 1)
 
     total = round(w["breadth_score"] + w["integrity_score"] + w["diversity_score"] + ensemble_score + ratify_score + cron_score + closure_score, 2)
+    operational_score = 100 if int(cs.get("bad") or 0) == 0 else max(0, 100 - int(cs.get("bad") or 0) * 25)
+    evidence_readiness_score = round(
+        min(100, (
+            (w["breadth_score"] / 25) * 30
+            + (w["integrity_score"] / 15) * 20
+            + (w["diversity_score"] / 15) * 20
+            + (ensemble_score / 15) * 15
+            + (ratify_score / 10) * 15
+        )),
+        2,
+    )
+    missing_evidence = []
+    if len(ens_real) == 0:
+        missing_evidence.append("ensemble_executed")
+    if len(ratified) == 0:
+        missing_evidence.append("ratification_corpus")
     return {
         "ts": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "score": total,
         "grade": grade(total),
+        "semantic_grades": {
+            "operational_health": {
+                "score": operational_score,
+                "grade": grade(operational_score),
+                "cron_bad_count": int(cs.get("bad") or 0),
+                "cron_recent_24h": int(cs.get("recent_24h") or 0),
+                "cron_source": cs.get("source"),
+            },
+            "evidence_readiness": {
+                "score": evidence_readiness_score,
+                "grade": grade(evidence_readiness_score),
+                "missing": missing_evidence,
+                "fallback_used": bool(w.get("fallback_used", False)),
+            },
+        },
+        "interpretation": "runtime operational health is separated from multi-model evidence readiness; overall grade includes both",
         "components": {
             "model_breadth_24h": {"score": round(w["breadth_score"], 2), "max": 25, "target_seen": w["target_seen"], "all_integrity_models": w["models"], "fallback_used": w.get("fallback_used", False), "fallback_hours": w.get("fallback_hours")},
             "real_call_integrity": {"score": round(w["integrity_score"], 2), "max": 15, "ratio": round(w["integrity_ratio"], 3), "integrity_rows": w["integrity_rows"], "call_rows": w["call_rows"], "evaluated_integrity_rows_7d": w.get("evaluated_integrity_rows_7d"), "excluded_hook_rows": w["excluded_hook_rows"], "fallback_used": w.get("fallback_used", False)},
             "route_diversity": {"score": round(w["diversity_score"], 2), "max": 15, "mean_normalized": round(w["mean_div"], 3), "routes": {k: sorted(v) for k, v in w["hot"][:5]}, "evaluated_rows": w["diversity_rows"], "evaluated_rows_7d": w.get("evaluated_diversity_rows_7d"), "excluded_hook_rows": w["excluded_hook_diversity_rows"], "fallback_used": w.get("fallback_used", False)},
             "ensemble_executed": {"score": round(ensemble_score, 2), "max": 15, "count_7d": len(ens_real)},
-            "ratification_corpus": {"score": round(ratify_score, 2), "max": 10, "count_7d": len(ratified)},
+            "ratification_corpus": {"score": round(ratify_score, 2), "max": 10, "count_7d": len(ratified), "sources": sorted(set(str(e.get("source") or "jsonl") for e in ratified))},
             "cron_green": {"score": round(cron_score, 2), "max": 10, **cs},
             "self_evolution_closure": {"score": round(closure_score, 2), "max": 10, "closure_events_14d": closure_events},
         },

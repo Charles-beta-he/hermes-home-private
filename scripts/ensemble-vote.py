@@ -16,6 +16,7 @@ ensemble-vote.py — 多模型投票/仲裁 (L3)
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -32,7 +33,87 @@ from agent_protocol import (
 
 
 HERMES_HOME = os.path.expanduser(os.environ.get("HERMES_HOME", "~/.hermes"))
-LOG_FILE = os.path.join(HERMES_HOME, "logs", "ensemble-votes.jsonl")
+
+# ── SPL encoding (optional, for token savings) ──
+try:
+    sys.path.insert(0, os.path.join(HERMES_HOME, "hermes-agent"))
+    from agent.spl import SPLEncoder
+    _spl_encoder = SPLEncoder()
+    _spl_available = True
+except ImportError:
+    _spl_available = False
+
+LOG_FILE = os.environ.get(
+    "ENSEMBLE_VOTE_LOG_FILE",
+    os.path.join(HERMES_HOME, "logs", "ensemble-votes.jsonl"),
+)
+LOG_FILE = os.path.expanduser(LOG_FILE)
+QUORUM_FILE = os.environ.get(
+    "HERMES_QUORUM_FILE",
+    os.path.join(HERMES_HOME, "config", "quorum.yaml"),
+)
+QUORUM_FILE = os.path.expanduser(QUORUM_FILE)
+ENSEMBLE_LOG_SCHEMA_VERSION = 1
+SUPPORTED_HERMES_PROVIDERS = {
+    "openai-codex", "anthropic", "xiaomi", "openrouter", "gemini", "xai",
+    "ollama-cloud", "huggingface", "zai", "kimi-coding", "kimi-coding-cn",
+    "stepfun", "minimax", "minimax-cn", "kilocode", "arcee", "nvidia",
+}
+
+
+def load_config() -> dict:
+    """Load Hermes config for model→provider resolution."""
+    try:
+        import yaml
+    except ImportError:
+        return {}
+    try:
+        with open(os.path.join(HERMES_HOME, "config.yaml")) as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
+
+
+def load_quorum() -> dict:
+    """Load quorum.yaml for tier→arbiter resolution. Cached per-process."""
+    try:
+        import yaml
+    except ImportError:
+        return {}
+    try:
+        with open(QUORUM_FILE) as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
+
+
+def resolve_arbiter_model(tier: Optional[str] = None) -> Optional[str]:
+    """Resolve arbiter model from quorum.yaml.
+
+    Precedence:
+      1. tiers.<tier>.arbiter (if tier given and tier-level arbiter set)
+      2. multi_brain.default_arbiter
+      3. None (caller must skip arbiter)
+    """
+    q = load_quorum()
+    if tier:
+        t = (q.get("tiers") or {}).get(tier) or {}
+        v = t.get("arbiter")
+        if v:
+            return v
+    mb = q.get("multi_brain") or {}
+    return mb.get("default_arbiter")
+
+
+def model_provider(model: str, config: Optional[dict] = None) -> str:
+    """Resolve provider from pricing.models so ensemble votes call the intended backend."""
+    config = config if config is not None else load_config()
+    return (
+        config.get("pricing", {})
+        .get("models", {})
+        .get(model, {})
+        .get("provider", "")
+    )
 
 
 def get_model_weights(models: List[str]) -> Dict[str, float]:
@@ -110,6 +191,7 @@ def vote(
     strategy: str = "majority",
     workdir: str = None,
     execute: bool = True,
+    tier: Optional[str] = None,
 ) -> dict:
     """
     执行多模型投票。
@@ -118,6 +200,9 @@ def vote(
     收集 verdict，运行聚合策略。
 
     execute=False: 仅输出框架 (兼容旧行为，用于 delegate_task 场景)。
+
+    tier (T0-T3): 用于 strategy='arbiter' 时从 quorum.yaml 解析 arbiter
+    模型；为 None 时回退到 multi_brain.default_arbiter。
     """
     weights = get_model_weights(models)
 
@@ -125,13 +210,18 @@ def vote(
         "task": task,
         "models": models,
         "strategy": strategy,
+        "tier": tier,
+        "schema_version": ENSEMBLE_LOG_SCHEMA_VERSION,
         "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "model_weights": weights,
+        "execute": bool(execute),
     }
 
     if not execute:
         # 兼容旧行为: 仅框架输出
         result["consensus"] = False
+        result["verdict"] = "skipped"
+        result["votes_count"] = 0
         result["note"] = (
             "Framework mode — set execute=True or use delegate_task "
             "for actual parallel model execution."
@@ -149,15 +239,22 @@ def vote(
     if strategy == "weighted":
         aggregated = weighted_vote(results, weights)
     elif strategy == "arbiter":
-        # Arbiter: 所有结果喂给 claude-opus-4-7 做最终裁决
-        aggregated = _arbiter_vote(results, task)
+        # Arbiter: 所有结果喂给 quorum.yaml 决定的 arbiter 模型
+        aggregated = _arbiter_vote(results, task, tier=tier)
     else:
         aggregated = majority_vote(results)
 
     result["model_results"] = results
     result.update(aggregated)
-    result["consensus"] = aggregated.get("consensus",
-                                         aggregated.get("verdict", "unknown") != "unknown")
+    # 强制写入 verdict + votes_count, 供 schema-enforced logger 校验
+    result.setdefault("verdict", aggregated.get("verdict", "unknown"))
+    result["votes_count"] = sum(
+        1 for r in results if r.get("verdict") not in (None, "unknown", "timeout")
+    )
+    result["consensus"] = aggregated.get(
+        "consensus",
+        aggregated.get("verdict", "unknown") not in ("unknown", "timeout"),
+    )
 
     _log_and_emit(result, strategy, models, weights)
     return result
@@ -182,18 +279,34 @@ def _call_model(task: str, model: str, workdir: str = None) -> dict:
         f'{{"verdict": "pass"|"fail"|"partial", "summary": "<brief reason>"}}'
     )
 
+    # Try SPL encoding for token savings
+    if _spl_available:
+        try:
+            spl_msg = _spl_encoder.encode_vote_call(
+                task=task, model=model,
+            )
+            prompt = json.dumps(spl_msg, ensure_ascii=False)
+        except Exception:
+            pass  # fall back to original prompt
+    provider = model_provider(model)
+    cmd = [hermes, "chat", "-q", prompt, "--model", model,
+           "--quiet", "--max-turns", "1", "--source", "ensemble-vote", "--ignore-rules"]
+    if provider in SUPPORTED_HERMES_PROVIDERS:
+        cmd += ["--provider", provider]
+
     try:
         r = subprocess.run(
-            [hermes, "chat", "-q", prompt, "--model", model],
+            cmd,
             capture_output=True, text=True,
             timeout=120,
             cwd=workdir,
         )
-        # 从输出提取 verdict
+        # 从输出提取 verdict。Hermes 可能先打印 session_id，因此不能只 json.loads(stdout)。
         try:
-            data = json.loads(r.stdout)
+            match = re.search(r"\{.*\}", r.stdout, re.DOTALL)
+            data = json.loads(match.group(0) if match else r.stdout)
             verdict = data.get("verdict", "unknown")
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, AttributeError):
             # 尝试从输出文本中探测
             out_lower = r.stdout.lower()
             if "pass" in out_lower and "fail" not in out_lower:
@@ -205,6 +318,8 @@ def _call_model(task: str, model: str, workdir: str = None) -> dict:
 
         return {
             "model": model,
+            "provider": provider,
+            "adapter": "hermes-chat",
             "verdict": verdict,
             "output": r.stdout[:500],
             "exit_code": r.returncode,
@@ -215,8 +330,13 @@ def _call_model(task: str, model: str, workdir: str = None) -> dict:
         return {"model": model, "verdict": "unknown", "output": None, "error": str(e)}
 
 
-def _arbiter_vote(results: List[dict], task: str) -> dict:
-    """仲裁投票: 将结果喂给 Claude 做裁决"""
+def _arbiter_vote(results: List[dict], task: str, tier: Optional[str] = None) -> dict:
+    """仲裁投票: 将结果喂给仲裁模型 (从 quorum.yaml 解析).
+
+    tier 决定 arbiter 选择:
+      tiers.<tier>.arbiter > multi_brain.default_arbiter > None.
+    若无可用 arbiter, 返回 verdict='unknown' reason='no_arbiter_configured'.
+    """
     summary = "\n".join(
         f"- {r['model']}: verdict={r['verdict']}"
         for r in results
@@ -228,36 +348,65 @@ def _arbiter_vote(results: List[dict], task: str) -> dict:
         f"Output ONLY: {{\"verdict\": \"pass\"|\"fail\"|\"partial\", \"reason\": \"...\"}}"
     )
 
-    # 使用 hermes chat -q --model claude-opus-4-7 或 claude
     import shutil
     hermes = shutil.which("hermes")
     if not hermes:
-        return {"strategy": "arbiter", "verdict": "unknown", "reason": "hermes not found"}
+        return {"strategy": "arbiter", "verdict": "unknown", "reason": "hermes not found",
+                "tier": tier}
+
+    arbiter_model = resolve_arbiter_model(tier)
+    if not arbiter_model:
+        return {"strategy": "arbiter", "verdict": "unknown",
+                "reason": "no_arbiter_configured", "tier": tier}
+    provider = model_provider(arbiter_model)
+    cmd = [hermes, "chat", "-q", prompt, "--model", arbiter_model,
+           "--quiet", "--max-turns", "1", "--source", "ensemble-vote", "--ignore-rules"]
+    if provider in SUPPORTED_HERMES_PROVIDERS:
+        cmd += ["--provider", provider]
 
     try:
         r = subprocess.run(
-            [hermes, "chat", "-q", prompt, "--model", "claude-sonnet-4-6"],
+            cmd,
             capture_output=True, text=True, timeout=120,
         )
         try:
-            data = json.loads(r.stdout)
-            return {"strategy": "arbiter", "verdict": data.get("verdict", "unknown"),
-                    "arbiter_reason": data.get("reason", "")}
+            match = re.search(r"\{.*\}", r.stdout, re.DOTALL)
+            data = json.loads(match.group(0) if match else r.stdout)
+            return {"strategy": "arbiter", "arbiter_model": arbiter_model,
+                    "arbiter_provider": provider, "tier": tier,
+                    "verdict": data.get("verdict", "unknown"),
+                    "arbiter_reason": data.get("reason", data.get("summary", ""))}
         except json.JSONDecodeError:
-            return {"strategy": "arbiter", "verdict": "unknown", "raw": r.stdout[:200]}
+            return {"strategy": "arbiter", "verdict": "unknown",
+                    "arbiter_model": arbiter_model, "tier": tier,
+                    "raw": r.stdout[:200]}
     except (subprocess.TimeoutExpired, OSError) as e:
-        return {"strategy": "arbiter", "verdict": "timeout", "error": str(e)}
+        return {"strategy": "arbiter", "verdict": "timeout",
+                "arbiter_model": arbiter_model, "tier": tier, "error": str(e)}
 
 
 def _log_and_emit(result: dict, strategy: str, models: List[str], weights: dict):
-    """记录日志 + L2 协议 emit"""
-    # 记录到日志
-    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
-    with open(LOG_FILE, "a") as f:
-        # 序列化安全副本
-        log_entry = {k: v for k, v in result.items()
-                     if k not in ("model_results",)}
-        f.write(json.dumps(log_entry) + "\n")
+    """记录日志 + L2 协议 emit (schema-enforced).
+
+    保证写入字段: ts, task, strategy, verdict, votes_count, models,
+    schema_version, tier. 不达标的条目 fail-closed 不写入并 stderr 警告.
+    """
+    # 序列化安全副本
+    log_entry = {k: v for k, v in result.items() if k not in ("model_results",)}
+    # schema 校验
+    log_entry.setdefault("schema_version", ENSEMBLE_LOG_SCHEMA_VERSION)
+    required = ("ts", "task", "strategy", "verdict", "votes_count", "models")
+    missing = [f for f in required if log_entry.get(f) is None]
+    if missing:
+        print(
+            f"[ensemble-vote] WARN: missing required fields {missing}; "
+            f"skipping log write to keep schema clean.",
+            file=sys.stderr,
+        )
+    else:
+        os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+        with open(LOG_FILE, "a") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
 
     # ── L2 协议 emit ──
     try:
@@ -271,6 +420,8 @@ def _log_and_emit(result: dict, strategy: str, models: List[str], weights: dict)
                 "strategy": strategy,
                 "models": models,
                 "weights": weights,
+                "tier": result.get("tier"),
+                "votes_count": result.get("votes_count", 0),
                 "metadata": result.get("weighted_scores", result.get("votes", {})),
             },
         )
@@ -292,6 +443,8 @@ def cli():
     vt.add_argument("--execute", action="store_true", default=False,
                     help="Actually call models (default: framework-only)")
     vt.add_argument("--workdir", default=None, help="工作目录")
+    vt.add_argument("--tier", default=None, choices=["T0", "T1", "T2", "T3"],
+                    help="任务层级 (用于 strategy=arbiter 时解析 arbiter 模型)")
 
     sub.add_parser("history", help="查看投票历史")
 
@@ -309,6 +462,7 @@ def cli():
             strategy=args.strategy,
             workdir=args.workdir,
             execute=args.execute,
+            tier=args.tier,
         )
         print(json.dumps(result, indent=2, ensure_ascii=False))
 

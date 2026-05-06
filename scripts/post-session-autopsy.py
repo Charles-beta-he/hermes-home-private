@@ -106,6 +106,63 @@ def _is_tool_failure(content_str):
     return False
 
 
+def _tool_failure_payload(content_str):
+    """Best-effort parse of a tool result into structured failure metadata."""
+    payload = {"exit_code": None, "error": "", "output": content_str, "stderr_tail": content_str[:500]}
+    try:
+        data = json.loads(content_str)
+        if isinstance(data, dict):
+            payload["exit_code"] = data.get("exit_code")
+            payload["error"] = str(data.get("error") or "")
+            payload["output"] = str(data.get("output") or data.get("stdout") or "")
+            payload["stderr_tail"] = str(data.get("stderr") or data.get("error") or data.get("output") or "")[-500:]
+            return payload
+    except (json.JSONDecodeError, ValueError):
+        pass
+    return payload
+
+
+def _error_signature(payload):
+    text = f"{payload.get('error','')}\n{payload.get('stderr_tail','')}\n{payload.get('output','')}".lower()
+    exit_code = payload.get("exit_code")
+    if "timeout" in text or "timed out" in text:
+        return "timeout"
+    if "permission denied" in text:
+        return "permission_denied"
+    if "command not found" in text:
+        return "command_not_found"
+    if "module" in text and ("not found" in text or "no module named" in text):
+        return "module_not_found"
+    if "file not found" in text or "no such file" in text or "not found" in text:
+        return "not_found"
+    if "traceback" in text:
+        return "python_traceback"
+    if exit_code not in (None, 0, "0"):
+        return f"exit_code_{exit_code}"
+    return "error"
+
+
+def aggregate_failure_groups(failures, session_ts=""):
+    """Aggregate failures by tool_name + error_signature + exit_code."""
+    groups = {}
+    for f in failures:
+        key = (f.get("tool_name") or f.get("tool") or "unknown", f.get("error_signature") or "unknown", f.get("exit_code"))
+        g = groups.setdefault(key, {
+            "tool_name": key[0],
+            "error_signature": key[1],
+            "exit_code": key[2],
+            "count": 0,
+            "first_seen": session_ts or None,
+            "last_seen": session_ts or None,
+            "stale_status": "unknown",
+            "stderr_tail": f.get("stderr_tail") or f.get("snippet", "")[:500],
+        })
+        g["count"] += 1
+        if f.get("stderr_tail"):
+            g["stderr_tail"] = f.get("stderr_tail")[-500:]
+    return sorted(groups.values(), key=lambda g: g.get("count", 0), reverse=True)
+
+
 def load_recent_sessions(n=5):
     """加载最近的 n 个 session JSON 文件"""
     if not os.path.isdir(SESSIONS_DIR):
@@ -216,9 +273,15 @@ def detect_tool_failures(messages):
                     elif isinstance(tc, dict):
                         tool_name = tc.get("function", {}).get("name", "")
                 break
+        payload = _tool_failure_payload(text)
+        signature = _error_signature(payload)
         failures.append({
             "idx": i,
             "tool": tool_name,
+            "tool_name": tool_name,
+            "exit_code": payload.get("exit_code"),
+            "error_signature": signature,
+            "stderr_tail": payload.get("stderr_tail", "")[-500:],
             "snippet": text[:200],
         })
     return failures
@@ -295,6 +358,7 @@ def analyze_session(path, fname):
     task_type, type_scores = estimate_task_type(messages)
     corrections = detect_corrections(messages)
     tool_failures = detect_tool_failures(messages)
+    failure_groups = aggregate_failure_groups(tool_failures, session.get("session_start", ""))
     repetitive = detect_repetitive_patterns(messages)
 
     # 汇总信号
@@ -324,16 +388,16 @@ def analyze_session(path, fname):
 
     # 2. 工具失败 → 配置/脚本问题
     if len(tool_failures) >= 3:
-        # 统计失败的工具
-        tool_counts = Counter(f["tool"] for f in tool_failures)
-        worst_tool = tool_counts.most_common(1)[0]
+        # 统计失败的工具/错误签名
+        worst_group = failure_groups[0] if failure_groups else {"tool_name": "unknown", "error_signature": "unknown", "count": len(tool_failures)}
         signals.append({
             "type": "tool_failures",
             "severity": "high",
             "count": len(tool_failures),
-            "detail": f"工具失败 {len(tool_failures)} 次，最多: {worst_tool[0]} ({worst_tool[1]} 次)",
+            "detail": f"工具失败 {len(tool_failures)} 次，最多: {worst_group.get('tool_name')}/{worst_group.get('error_signature')} ({worst_group.get('count')} 次)",
             "context": tool_failures[0].get("snippet", "")[:100],
-            "suggestion": f"检查 {worst_tool[0]} 的配置或用法"
+            "failure_groups": failure_groups,
+            "suggestion": f"生成只读诊断后再判断是否需要修复 {worst_group.get('tool_name')} 的配置或用法"
         })
     elif tool_failures:
         signals.append({
@@ -342,6 +406,7 @@ def analyze_session(path, fname):
             "count": len(tool_failures),
             "detail": f"工具失败 {len(tool_failures)} 次",
             "context": tool_failures[0].get("snippet", "")[:100],
+            "failure_groups": failure_groups,
             "suggestion": "关注失败工具是否需要配置修复"
         })
 

@@ -472,6 +472,29 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(result["truth_assessment"]["truth_status"], "unsupported")
         self.assertEqual(result["evidence_requests"][0]["requested_by"], "claude")
 
+    def test_evidence_bundle_supports_claims_supported_alias(self):
+        """Evidence should link explicit claims_supported aliases to claim ids."""
+        state = {
+            "claims": [{"id": "C-001", "text": "self-test passed", "severity": 4}],
+            "evidence": [{"id": "E-001", "type": "command", "summary": "self-test output", "claims_supported": ["C-001"], "exit_code": 0}],
+        }
+        bundle = consult.build_evidence_bundle(state)
+        self.assertEqual(bundle["grounding"]["C-001"]["truth_status"], "verified_by_evidence")
+        self.assertEqual(bundle["grounding"]["C-001"]["supporting_evidence_ids"], ["E-001"])
+
+    def test_evidence_bundle_marks_raw_evidence_present_as_needs_link_review(self):
+        """Raw evidence with no explicit supports should request linkage review, not assert unsupported."""
+        state = {
+            "claims": [{"id": "C-001", "text": "self-test passed", "severity": 4}],
+            "evidence": [{"id": "E-001", "type": "command", "summary": "self-test output says ALL PASS", "exit_code": 0}],
+        }
+        bundle = consult.build_evidence_bundle(state)
+        self.assertEqual(bundle["grounding"]["C-001"]["truth_status"], "needs_link_review")
+        gate = consult.evaluate_truth_gate(bundle)
+        self.assertEqual(gate["truth_status"], "needs_link_review")
+        self.assertFalse(gate["can_certify_truth"])
+        self.assertIn("C-001", gate["needs_link_review_claim_ids"])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -642,7 +642,7 @@ def _normalize_evidence(raw_evidence: List[dict]) -> List[dict]:
         item.setdefault("id", f"E-{i:03d}")
         item.setdefault("type", "note")
         item.setdefault("summary", item.get("content") or item.get("stdout") or "")
-        item.setdefault("supports", item.get("claim_ids", []))
+        item.setdefault("supports", item.get("claim_ids") or item.get("claims_supported") or item.get("supported_claim_ids") or [])
         item.setdefault("contradicts", [])
         if isinstance(item.get("supports"), str):
             item["supports"] = [item["supports"]]
@@ -671,6 +671,7 @@ def build_evidence_bundle(state: dict) -> dict:
     raw_evidence = state.get("evidence") or (context.get("evidence") if isinstance(context, dict) else []) or []
     claims = _normalize_claims(raw_claims)
     evidence = _normalize_evidence(raw_evidence)
+    has_unlinked_raw_evidence = bool(evidence) and not any((e.get("supports") or e.get("contradicts")) for e in evidence)
 
     grounding: Dict[str, dict] = {}
     for claim in claims:
@@ -681,6 +682,8 @@ def build_evidence_bundle(state: dict) -> dict:
             truth_status = "contradicted_by_evidence"
         elif supporting:
             truth_status = "verified_by_evidence"
+        elif has_unlinked_raw_evidence:
+            truth_status = "needs_link_review"
         else:
             truth_status = "unsupported"
         grounding[cid] = {
@@ -690,6 +693,7 @@ def build_evidence_bundle(state: dict) -> dict:
             "truth_status": truth_status,
             "supporting_evidence_ids": supporting,
             "contradicting_evidence_ids": contradicting,
+            "candidate_evidence_ids": [e["id"] for e in evidence] if truth_status == "needs_link_review" else [],
         }
 
     verified_count = sum(1 for g in grounding.values() if g["truth_status"] == "verified_by_evidence")
@@ -711,8 +715,10 @@ def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
     bundle = evidence_bundle or build_evidence_bundle({})
     grounding = bundle.get("grounding", {}) if isinstance(bundle, dict) else {}
     unsupported = [cid for cid, g in grounding.items() if g.get("truth_status") == "unsupported"]
+    needs_link_review = [cid for cid, g in grounding.items() if g.get("truth_status") == "needs_link_review"]
     contradicted = [cid for cid, g in grounding.items() if g.get("truth_status") == "contradicted_by_evidence"]
     unsupported_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "unsupported" and int(g.get("severity", 3) or 3) >= 3]
+    needs_link_review_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "needs_link_review" and int(g.get("severity", 3) or 3) >= 3]
     contradicted_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "contradicted_by_evidence" and int(g.get("severity", 3) or 3) >= 3]
     claim_count = int(bundle.get("claim_count", len(grounding)) or 0) if isinstance(bundle, dict) else 0
     verified_count = int(bundle.get("verified_claim_count", 0) or 0) if isinstance(bundle, dict) else 0
@@ -721,6 +727,8 @@ def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
         truth_status = "no_claims"
     elif contradicted:
         truth_status = "contradicted"
+    elif needs_link_review:
+        truth_status = "needs_link_review"
     elif unsupported and verified_count > 0:
         truth_status = "partially_grounded"
     elif unsupported:
@@ -731,9 +739,11 @@ def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
     reasons = []
     if unsupported:
         reasons.append(f"unsupported factual claims: {unsupported}")
+    if needs_link_review:
+        reasons.append(f"raw evidence present but claim/evidence links need review: {needs_link_review}")
     if contradicted:
         reasons.append(f"contradicted factual claims: {contradicted}")
-    can_certify_truth = not unsupported and not contradicted
+    can_certify_truth = not unsupported and not contradicted and not needs_link_review
     return {
         "schema_version": TRUTH_GATE_SCHEMA_VERSION,
         "truth_status": truth_status,
@@ -743,6 +753,8 @@ def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
         "evidence_coverage": bundle.get("evidence_coverage", 1.0) if isinstance(bundle, dict) else 1.0,
         "unsupported_claim_ids": unsupported,
         "unsupported_high_severity_claim_ids": unsupported_high,
+        "needs_link_review_claim_ids": needs_link_review,
+        "needs_link_review_high_severity_claim_ids": needs_link_review_high,
         "contradicted_claim_ids": contradicted,
         "contradicted_high_severity_claim_ids": contradicted_high,
         "reasons": reasons,
