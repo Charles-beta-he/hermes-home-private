@@ -16,11 +16,17 @@ FILES = {
   "p10": PROJECT/"P10 - Long-term Strategy.md",
   "p9": PROJECT/"P9 - Implementation Backlog.md",
   "playbook": VAULT/"08-实践方案"/"06-一阶二阶控制论多模型介入Playbook.md",
+  "route_matrix": VAULT/"08-实践方案"/"07-关键点多模型介入路由矩阵.md",
   "review": VAULT/"60-reviews"/"2026-05-06-cybernetic-multimodel-intervention-review.md",
+  "hierarchy_review": VAULT/"60-reviews"/"2026-05-06-hierarchy-rewrite-vs-overlay-review.md",
   "task": VAULT/"30-tasks"/"2026-05-06-cybernetic-multimodel-intervention-log.md",
+  "hierarchy_task": VAULT/"30-tasks"/"2026-05-06-hierarchy-overlay-routing-landing-log.md",
   "evolution": VAULT/"05-进化日志"/"2026-05-06-控制论多模型介入落地.md",
+  "hierarchy_evolution": VAULT/"05-进化日志"/"2026-05-06-主层级覆盖层路由矩阵落地.md",
   "atom_first": VAULT/"10-atoms"/"first-order-cybernetic-multimodel-intervention.md",
   "atom_second": VAULT/"10-atoms"/"second-order-cybernetic-self-observation.md",
+  "atom_overlay": VAULT/"10-atoms"/"semantic-overlay-before-hierarchy-rewrite.md",
+  "atom_routing": VAULT/"10-atoms"/"keypoint-to-multimodel-routing.md",
   "theory_fo_so": VAULT/"01-控制论基础"/"06-一阶与二阶控制论.md",
   "theory_second": VAULT/"03-系统理论"/"SecondOrder-二阶控制论.md",
 }
@@ -28,10 +34,15 @@ PATTERNS = {
   "p10": ["first-order cybernetics", "second-order cybernetics", "observer", "P10 stop gate", "model agreement is not evidence"],
   "p9": ["P0", "P1", "P2", "Acceptance checks", "brainctl sync", "structural audit"],
   "playbook": ["First-order gate", "Second-order gate", "issue ledger", "not_certified", "tool evidence"],
+  "route_matrix": ["Keypoint routing matrix", "主层级不一步到位", "必要多样性", "反馈回路与稳定性", "置信度校准", "双环学习", "技能生态治理", "evidence boundary", "信息-通信-熵", "稳态/内稳态/自适应", "可靠性理论", "Parnas", "T0", "T1", "T2", "T3", "迁移门槛"],
   "review": ["not_certified", "issue_ledger", "DeepSeek", "timeout", "dissent"],
+  "hierarchy_review": ["Hierarchy Rewrite vs Overlay", "not_certified", "dissent", "truth_not_certified", "Do not rewrite", "issue_ledger"],
   "task": ["expires_at", "proof ledger", "sync", "reindex", "search"],
+  "hierarchy_task": ["expires_at", "主层级", "semantic/control-plane overlay", "关键点多模型介入路由矩阵", "Proof checklist"],
   "atom_first": ["first-order cybernetics", "object task", "tool evidence", "multi-model"],
   "atom_second": ["second-order cybernetics", "observer", "self-audit", "audit rules"],
+  "atom_overlay": ["Semantic overlay before hierarchy rewrite", "Obsidian main hierarchy", "reversible migration map", "explicit user approval"],
+  "atom_routing": ["Keypoint-to-multimodel routing", "complexity", "uncertainty", "reflexivity", "blast radius", "T0", "T1", "T2", "T3"],
   "theory_fo_so": ["cybernetic multi-model intervention", "first-order cybernetics", "second-order cybernetics"],
   "theory_second": ["multi-model self-observation", "second-order cybernetics", "audit rules"],
 }
@@ -91,6 +102,9 @@ def main():
         brainctl["search_chinese"] = run([sys.executable, script, "--json", "search", "一阶控制论 二阶控制论 多模型介入 观察者", "--limit", "8"])
         good=brainctl["search_chinese"]["exit_code"]==0 and "多模型介入" in brainctl["search_chinese"].get("stdout","")
         checks.append({"name":"brainctl:search_chinese","ok":good,"exit_code":brainctl["search_chinese"]["exit_code"]}); ok &= good
+        brainctl["search_route_matrix"] = run([sys.executable, script, "--json", "search", "关键点多模型介入路由矩阵 主层级不一步到位", "--limit", "8"])
+        good=brainctl["search_route_matrix"]["exit_code"]==0 and "关键点多模型介入路由矩阵" in brainctl["search_route_matrix"].get("stdout","")
+        checks.append({"name":"brainctl:search_route_matrix","ok":good,"exit_code":brainctl["search_route_matrix"]["exit_code"]}); ok &= good
     report={"status":"PASS" if ok else "FAIL", "vault":str(VAULT), "checks":checks, "structure":st, "brainctl":brainctl}
     print(json.dumps(report, ensure_ascii=False, indent=2) if args.json else report["status"])
     return 0 if ok else 1

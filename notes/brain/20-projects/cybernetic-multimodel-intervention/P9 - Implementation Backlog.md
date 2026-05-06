@@ -90,3 +90,15 @@ Acceptance checks:
 ## Execution order
 
 P0.1 → P0.2 → P0.3 → P10 verification → P1 template if requested。
+
+## P0.4 — Hierarchy overlay routing matrix
+
+Land keypoint-to-multimodel routing without rewriting the main Obsidian hierarchy.
+
+Acceptance checks:
+
+- [[08-实践方案/07-关键点多模型介入路由矩阵]] exists。
+- [[10-atoms/semantic-overlay-before-hierarchy-rewrite]] exists。
+- [[10-atoms/keypoint-to-multimodel-routing]] exists。
+- Chinese and English `brainctl search` queries hit the route matrix。
+- self-check validates hierarchy decision and route matrix patterns。

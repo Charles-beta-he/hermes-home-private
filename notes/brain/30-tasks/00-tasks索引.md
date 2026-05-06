@@ -40,3 +40,7 @@ folder: 30-tasks
 ## 控制论多模型介入任务日志
 
 - [[30-tasks/2026-05-06-cybernetic-multimodel-intervention-log]]
+
+## 主层级覆盖层路由任务
+
+- [[30-tasks/2026-05-06-hierarchy-overlay-routing-landing-log]]

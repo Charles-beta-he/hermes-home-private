@@ -61,3 +61,11 @@ P10 stop gate requires:
 ## 中文检索别名
 
 一阶控制论 二阶控制论 多模型介入 控制论 多模型 观察者 自观察 审计规则 证据门
+
+## Hierarchy strategy: overlay before rewrite
+
+The Obsidian main hierarchy must remain stable until the semantic/control-plane overlay proves measurable advantage. The next-stage answer is not an immediate directory rewrite, but a keypoint-to-multimodel routing matrix.
+
+Migration to a new main hierarchy requires G1-G7 gates: 4-week overlay run, measurable retrieval/decision improvement, zero broken wikilinks, reversible migration map, dual-write/shadow MOC, P10/P9 ratification or accepted-risk record, and explicit user approval.
+
+Decision artifact: [[08-实践方案/07-关键点多模型介入路由矩阵]].

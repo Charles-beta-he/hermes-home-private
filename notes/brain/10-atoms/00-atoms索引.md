@@ -40,3 +40,8 @@ folder: 10-atoms
 
 - [[10-atoms/first-order-cybernetic-multimodel-intervention]]
 - [[10-atoms/second-order-cybernetic-self-observation]]
+
+## 层级覆盖层与多模型路由
+
+- [[10-atoms/semantic-overlay-before-hierarchy-rewrite]]
+- [[10-atoms/keypoint-to-multimodel-routing]]
