@@ -1,11 +1,26 @@
 {
-  "generated_at": "2026-05-05T23:06:05.616977",
-  "total_items": 0,
+  "generated_at": "2026-05-06T22:57:02.638896",
+  "total_items": 1,
   "summary": {
     "critical": 0,
-    "high": 0,
+    "high": 1,
     "medium": 0,
     "low": 0
   },
-  "items": []
+  "items": [
+    {
+      "rank": 1,
+      "type": "fix_tool_config",
+      "summary": "工具失败 10 次 (工具失败 2 次)",
+      "impact": "high",
+      "impact_score": 7,
+      "effort": "medium",
+      "effort_score": 4,
+      "roi": 1.75,
+      "category": "reliability",
+      "source": "session_autopsy",
+      "detail": "工具失败 2 次",
+      "suggestion": "检查对应工具的配置/超时设置"
+    }
+  ]
 }
