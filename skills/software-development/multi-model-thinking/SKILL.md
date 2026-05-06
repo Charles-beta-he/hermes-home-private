@@ -24,6 +24,8 @@ When using `consult_models.py`:
 
 This keeps the roles clean: orchestrator = tool/evidence brain; planners/reviewers = reasoning brains.
 
+For tool-backed fact checking inside multi-model review, use the Evidence Request Fulfillment Loop in `references/evidence-request-fulfillment-loop.md`: reviewer models request evidence, the orchestrator executes read-only allowlisted tools, then the result is fed back as evidence. Do not let every reviewer run arbitrary tools by default.
+
 ## 默认模型组合
 
 默认使用 4 个互补模型：
@@ -94,6 +96,23 @@ round r:
 
 推荐上限：MAX_ROUNDS=5。上限只是防无限循环，不是认证条件。
 如果达到上限仍有 blocker，输出 `not_certified`，不得谎称“最佳方案”。
+
+## Communication Budget Protocol — 防 token 内耗通信协议
+
+`consult_models.py` 的 discussion round 默认使用 `multi_model_comm_packet_v1`，不要把 `merged_plan`、完整 `evidence_bundle`、完整 transcript 每轮广播给每个模型。
+
+通信规则：
+- 首轮 planner 可读取 state；后续 discussion 只收 `manifest_delta` packet。
+- `artifact_manifest` 只传 full artifact 的 hash/char/token 统计，不传完整正文。
+- `current_best_summary` 只传 patch id、target_file、op、risk、短 rationale、source_hash。
+- `round_delta` 只传当前 unresolved issues、上轮 vote 摘要，不传长 reasoning 历史。
+- `evidence_summary` 只传 claim/evidence count、grounding status、evidence ids；缺正文时 reviewer 必须输出 `evidence_requests`。
+- 每轮 artifact 必须记录 `communication.estimated_chars_saved` / `estimated_tokens_saved`，让 token 成本可审计。
+- 只有当 evidence_request 命中并由 orchestrator 执行后，才把新增 evidence 回填下一轮；禁止模型互相转述大段原文。
+
+口令：模型之间传“索引卡 + 差异”，不传“全量小说”。
+
+详细落地规范、telemetry 真实性规则、测试清单见 `references/communication-budget-protocol.md`。
 
 ## 停止条件：多方认证“当前最佳方案”
 

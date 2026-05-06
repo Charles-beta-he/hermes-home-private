@@ -158,12 +158,290 @@ def compute_state_hash(state_file: str) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
-MAX_PLANNER_STATE_CHARS = int(os.environ.get("HERMES_MULTI_BRAIN_MAX_STATE_CHARS", "24000"))
+def _env_int(name: str, default: Any) -> int:
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return int(default)
+
+
+MAX_PLANNER_STATE_CHARS = _env_int("HERMES_MULTI_BRAIN_MAX_STATE_CHARS", "24000")
 CRITICAL_STATE_FIELDS = [
     "schema", "question", "constraints", "acceptance_criteria", "non_goals",
     "risk_level", "budget", "claims", "evidence", "evidence_bundle", "truth_gate",
     "state_owner", "implementation_target",
 ]
+
+COMM_PACKET_SCHEMA_VERSION = "multi_model_comm_packet_v1"
+MAX_COMM_TEXT_CHARS = _env_int("HERMES_MULTI_BRAIN_MAX_COMM_TEXT_CHARS", "320")
+
+
+def _stable_json(obj: Any) -> str:
+    return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _short_hash(obj: Any) -> str:
+    return hashlib.sha256(_stable_json(obj).encode("utf-8")).hexdigest()[:16]
+
+
+def _truncate_text(value: Any, limit: int = MAX_COMM_TEXT_CHARS) -> str:
+    text = str(value or "")
+    if len(text) <= limit:
+        return text
+    return text[: max(0, limit - 24)] + f"…<truncated:{len(text)}>"
+
+
+def _approx_tokens(text_or_chars: Any) -> int:
+    if isinstance(text_or_chars, int):
+        chars = text_or_chars
+    else:
+        chars = len(str(text_or_chars or ""))
+    return max(1, (chars + 3) // 4)
+
+
+def _artifact_ref(name: str, payload: Any) -> dict:
+    raw = _stable_json(payload)
+    return {
+        "name": name,
+        "sha256_16": hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16],
+        "chars": len(raw),
+        "approx_tokens": _approx_tokens(len(raw)),
+        "policy": "not_inlined_full_payload; request specific evidence if needed",
+    }
+
+
+def _summarize_patches(patches: List[dict], limit: int = 8) -> List[dict]:
+    out: List[dict] = []
+    for patch in (patches or [])[:limit]:
+        if not isinstance(patch, dict):
+            continue
+        out.append({
+            "id": patch.get("id") or _patch_signature(patch),
+            "target_file": patch.get("target_file") or patch.get("file") or "",
+            "op": patch.get("op", ""),
+            "risk": patch.get("risk", ""),
+            "blast_radius": patch.get("blast_radius", ""),
+            "depends_on": patch.get("depends_on", []) or [],
+            "rationale": _truncate_text(patch.get("rationale", ""), 180),
+        })
+    if len(patches or []) > limit:
+        out.append({"id": "<omitted>", "omitted_patch_count": len(patches or []) - limit})
+    return out
+
+
+def _summarize_fanout_certification(value: Any) -> dict:
+    if not isinstance(value, dict):
+        return {}
+    keep = {
+        key: value.get(key)
+        for key in (
+            "schema_version", "status", "certified", "multi_model_certified",
+            "certification_scope", "below_min_quorum", "success_count", "fail_count",
+            "planner_count", "min_quorum", "reason",
+        )
+        if key in value
+    }
+    keep["source_hash"] = _short_hash(value)
+    keep["source_chars"] = len(_stable_json(value))
+    if "reason" in keep:
+        keep["reason"] = _truncate_text(keep["reason"], 220)
+    keep["policy"] = "bounded_summary_only"
+    return keep
+
+
+def _summarize_truth_gate(truth_gate: dict) -> dict:
+    if not isinstance(truth_gate, dict):
+        return {}
+    compact = {
+        "truth_status": truth_gate.get("truth_status"),
+        "can_certify_truth": truth_gate.get("can_certify_truth"),
+        "claim_count": truth_gate.get("claim_count"),
+        "verified_claim_count": truth_gate.get("verified_claim_count"),
+        "evidence_coverage": truth_gate.get("evidence_coverage"),
+        "unsupported_high_severity_claim_ids": (truth_gate.get("unsupported_high_severity_claim_ids") or [])[:20],
+        "contradicted_high_severity_claim_ids": (truth_gate.get("contradicted_high_severity_claim_ids") or [])[:20],
+        "unsupported_claim_ids": (truth_gate.get("unsupported_claim_ids") or [])[:20],
+        "contradicted_claim_ids": (truth_gate.get("contradicted_claim_ids") or [])[:20],
+        "reasons": [_truncate_text(r, 220) for r in (truth_gate.get("reasons") or [])[:8]],
+        "source_hash": _short_hash(truth_gate),
+        "source_chars": len(_stable_json(truth_gate)),
+    }
+    return {k: v for k, v in compact.items() if v not in (None, [], {})}
+
+
+def _finalize_packet_token_budget(packet: dict, raw_chars: int) -> dict:
+    packet.setdefault("token_budget", {})
+    no_savings_mode_set = False
+    for _ in range(50):
+        actual_packet_chars = len(json.dumps(packet, ensure_ascii=False))
+        chars_saved = max(0, raw_chars - actual_packet_chars)
+        if chars_saved <= 0 and not no_savings_mode_set:
+            packet["mode"] = "manifest_delta_no_savings"
+            packet["token_budget"]["policy"] = "no savings claimed; packet retained for schema consistency"
+            no_savings_mode_set = True
+            continue
+        packet["token_budget"].update({
+            "raw_context_chars": raw_chars,
+            "packet_chars": actual_packet_chars,
+            "estimated_chars_saved": chars_saved,
+            "estimated_tokens_saved": 0 if chars_saved <= 0 else _approx_tokens(chars_saved),
+            "compression_ratio": round(actual_packet_chars / raw_chars, 4) if raw_chars else 1.0,
+        })
+        if len(json.dumps(packet, ensure_ascii=False)) == actual_packet_chars:
+            return packet
+    # Extremely unlikely fallback: keep telemetry honest even if JSON digit lengths did
+    # not converge inside the safety cap.
+    actual_packet_chars = len(json.dumps(packet, ensure_ascii=False))
+    packet["token_budget"].update({
+        "raw_context_chars": raw_chars,
+        "packet_chars": actual_packet_chars,
+        "estimated_chars_saved": 0,
+        "estimated_tokens_saved": 0,
+        "compression_ratio": round(actual_packet_chars / raw_chars, 4) if raw_chars else 1.0,
+        "policy": "size telemetry did not converge; no savings claimed",
+    })
+    return packet
+
+
+def _summarize_current_best(current_best: dict) -> dict:
+    current_best = current_best or {}
+    diagnosis = current_best.get("diagnosis") if isinstance(current_best.get("diagnosis"), dict) else {}
+    return {
+        "diagnosis_summary": _truncate_text(diagnosis.get("summary") or current_best.get("summary", ""), 360),
+        "patches": _summarize_patches(current_best.get("patches", []) or []),
+        "certification_status": current_best.get("certification_status") or current_best.get("status"),
+        "degradation_reasons": current_best.get("degradation_reasons", [])[:5] if isinstance(current_best.get("degradation_reasons"), list) else [],
+        "fanout_certification": _summarize_fanout_certification(current_best.get("fanout_certification", {})),
+        "source_hash": _short_hash(current_best),
+    }
+
+
+def _summarize_issues(issues: List[dict], limit: int = 12) -> List[dict]:
+    compact: List[dict] = []
+    for issue in (issues or [])[:limit]:
+        if not isinstance(issue, dict):
+            continue
+        compact.append({
+            "id": issue.get("id"),
+            "status": issue.get("status"),
+            "severity": issue.get("severity"),
+            "target_file": issue.get("target_file") or issue.get("target_model"),
+            "models": issue.get("models", [])[:8] if isinstance(issue.get("models"), list) else issue.get("models"),
+            "missing_models": issue.get("missing_models", [])[:8] if isinstance(issue.get("missing_models"), list) else issue.get("missing_models"),
+            "claim": _truncate_text(issue.get("claim", ""), 260),
+            "resolution": _truncate_text(issue.get("resolution", ""), 220),
+            "evidence_refs": _compact_evidence_refs(issue.get("evidence")),
+        })
+    if len(issues or []) > limit:
+        compact.append({"id": "<omitted>", "omitted_issue_count": len(issues or []) - limit})
+    return compact
+
+
+def _compact_evidence_refs(evidence: Any, limit: int = 5) -> List[dict]:
+    if not isinstance(evidence, list):
+        if evidence:
+            return [{"summary": _truncate_text(evidence, 160)}]
+        return []
+    refs = []
+    for item in evidence[:limit]:
+        if isinstance(item, dict):
+            refs.append({
+                "id": item.get("id") or item.get("patch_id") or item.get("evidence_id"),
+                "model": item.get("model"),
+                "op": item.get("op"),
+                "summary": _truncate_text(item.get("summary") or item.get("rationale") or item.get("text") or "", 160),
+            })
+        else:
+            refs.append({"summary": _truncate_text(item, 160)})
+    if len(evidence) > limit:
+        refs.append({"id": "<omitted>", "omitted_evidence_count": len(evidence) - limit})
+    return refs
+
+
+def _summarize_evidence_bundle(evidence_bundle: dict) -> dict:
+    evidence_bundle = evidence_bundle or {}
+    grounding = evidence_bundle.get("grounding") if isinstance(evidence_bundle.get("grounding"), dict) else {}
+    compact_grounding = {}
+    for claim_id, info in list(grounding.items())[:20]:
+        if not isinstance(info, dict):
+            continue
+        compact_grounding[claim_id] = {
+            "truth_status": info.get("truth_status"),
+            "supporting_evidence_ids": info.get("supporting_evidence_ids", [])[:8],
+            "contradicting_evidence_ids": info.get("contradicting_evidence_ids", [])[:8],
+        }
+    return {
+        "schema_version": evidence_bundle.get("schema_version"),
+        "claim_count": len(evidence_bundle.get("claims", []) or []),
+        "evidence_count": len(evidence_bundle.get("evidence", []) or []),
+        "grounding": compact_grounding,
+        "source_hash": _short_hash(evidence_bundle),
+        "note": "Full evidence bodies are omitted; use evidence_requests for missing claim/evidence details.",
+    }
+
+
+def build_discussion_comm_packet(
+    current_best: dict,
+    unresolved_issues: List[dict],
+    evidence_bundle: dict,
+    truth_gate: dict,
+    round_no: int,
+    previous_transcript: Optional[List[dict]] = None,
+) -> dict:
+    """Build a compact manifest/delta discussion packet for reviewer models.
+
+    The packet avoids repeatedly broadcasting full merged plans and evidence bodies to
+    every model. It sends hashes/manifests, patch/issue summaries, the current truth
+    gate, and only the current unresolved delta. Reviewers must request specific
+    evidence instead of assuming omitted payloads.
+    """
+    previous_transcript = previous_transcript or []
+    raw_context = {
+        "current_best": current_best,
+        "unresolved_issues": unresolved_issues,
+        "evidence_bundle": evidence_bundle,
+        "truth_gate": truth_gate,
+        "previous_transcript": previous_transcript,
+    }
+    last_round = previous_transcript[-1] if previous_transcript else {}
+    last_votes = []
+    for vote in (last_round.get("votes", []) if isinstance(last_round, dict) else [])[:8]:
+        if isinstance(vote, dict):
+            last_votes.append({"model": vote.get("model"), "vote": vote.get("vote"), "best_within_constraints": bool(vote.get("best_within_constraints"))})
+    packet = {
+        "schema": COMM_PACKET_SCHEMA_VERSION,
+        "mode": "manifest_delta",
+        "artifact_manifest": {
+            "current_best": _artifact_ref("current_best", current_best),
+            "evidence_bundle": _artifact_ref("evidence_bundle", evidence_bundle),
+            "truth_gate": _artifact_ref("truth_gate", truth_gate),
+            "previous_transcript": _artifact_ref("previous_transcript", previous_transcript),
+        },
+        "round_delta": {
+            "round": round_no,
+            "unresolved_issues": _summarize_issues(unresolved_issues),
+            "previous_round_status": (last_round.get("status") if isinstance(last_round, dict) else None),
+            "previous_round_votes": last_votes,
+        },
+        "current_best_summary": _summarize_current_best(current_best),
+        "evidence_summary": _summarize_evidence_bundle(evidence_bundle),
+        "truth_gate": _summarize_truth_gate(truth_gate),
+        "instructions": [
+            "Use only this packet plus cited evidence summaries; do not assume omitted payload bodies.",
+            "Discuss only unresolved round_delta issues and novel severity>=3 blockers.",
+            "If a fact needs omitted detail, emit evidence_requests rather than restating full context.",
+            "Vote approve only if best_within_constraints and truth_gate permits certification.",
+        ],
+        "required_output": {
+            "critiques": [{"target_model": "...", "severity": 1, "claim": "...", "evidence": "evidence id/ref, not full blob", "correction": "...", "novel": True}],
+            "evidence_requests": [{"claim_id": "C-001", "tool_needed": "terminal|file|web|brainctl", "command": "read-only command/query", "why": "what this would verify"}],
+            "vote": "approve|amend|reject",
+            "best_within_constraints": True,
+            "reasoning": "<=600 chars, cite issue/evidence ids",
+        },
+    }
+    raw_chars = len(json.dumps(raw_context, ensure_ascii=False))
+    return _finalize_packet_token_budget(packet, raw_chars)
 
 
 def _planner_state_payload(state: dict) -> Tuple[str, bool]:
@@ -868,12 +1146,16 @@ def run_discussion_rounds(
     evidence_requests = collect_evidence_requests(plans)
     rounds_used = 0
     transcript: List[dict] = []
+    communication_rounds: List[dict] = []
     revised_this_round = False
     novel_redteam_blocker = False
 
     for round_no in range(1, max(1, max_rounds) + 1):
         rounds_used = round_no
         unresolved = [i for i in issue_ledger if i.get("status") == "unresolved"]
+        round_prompt_chars: Dict[str, int] = {}
+        round_token_budget: dict = {}
+        round_prompt_mode = "offline"
         if offline or call_model_fn is None:
             # Deterministic dry-run: no blockers means every model can certify; blockers
             # remain unresolved and correctly prevent false certification.
@@ -881,30 +1163,21 @@ def run_discussion_rounds(
         else:
             votes = []
             new_critiques = []
-            prompt_context = {
-                "phase": "cross_critique_rebuttal_ratification",
-                "current_best": current_best,
-                "unresolved_issues": unresolved,
-                "evidence_bundle": evidence_bundle,
-                "truth_gate": truth_gate,
-                "instructions": [
-                    "Challenge unresolved issues with specific evidence/correction/experiment.",
-                    "Do not claim tool-verified truth unless a claim is backed by evidence_bundle.grounding.",
-                    "If required evidence is missing, output evidence_requests instead of asserting the fact.",
-                    "If your prior position is challenged, rebut or concede in reasoning.",
-                    "Vote approve only if this is best_within_constraints and no blocker remains.",
-                ],
-                "required_output": {
-                    "critiques": [{"target_model": "...", "severity": 1, "claim": "...", "evidence": "...", "correction": "...", "novel": True}],
-                    "evidence_requests": [{"claim_id": "C-001", "tool_needed": "terminal|file|web", "command": "read-only command/query", "why": "what this would verify"}],
-                    "vote": "approve|amend|reject",
-                    "best_within_constraints": True,
-                    "reasoning": "...",
-                },
-            }
+            prompt_context = build_discussion_comm_packet(
+                current_best=current_best,
+                unresolved_issues=unresolved,
+                evidence_bundle=evidence_bundle,
+                truth_gate=truth_gate,
+                round_no=round_no,
+                previous_transcript=transcript,
+            )
+            round_token_budget = dict(prompt_context.get("token_budget", {}))
+            round_prompt_mode = str(prompt_context.get("mode") or "manifest_delta")
             for model in models:
                 try:
-                    raw = call_model_fn(model, json.dumps(prompt_context, ensure_ascii=False))
+                    prompt_text = json.dumps(prompt_context, ensure_ascii=False)
+                    round_prompt_chars[model] = len(prompt_text)
+                    raw = call_model_fn(model, prompt_text)
                     parsed = extract_plan_json(raw)
                 except Exception as e:
                     try:
@@ -956,11 +1229,26 @@ def run_discussion_rounds(
 
         agreement = _agreement_from_issues(issue_ledger)
         status = evaluate_ratification(votes, agreement, issue_ledger, revised_this_round, novel_redteam_blocker, truth_gate=truth_gate)
+        round_comm = {
+            "round": round_no,
+            "mode": round_prompt_mode if round_token_budget else "offline",
+            "prompt_chars_by_model": round_prompt_chars,
+            "prompt_chars": sum(round_prompt_chars.values()),
+            "raw_context_chars_per_model": round_token_budget.get("raw_context_chars", 0),
+            "packet_chars_per_model": round_token_budget.get("packet_chars", 0),
+            "estimated_chars_saved": int(round_token_budget.get("estimated_chars_saved", 0)) * len(round_prompt_chars),
+            "estimated_tokens_saved": int(round_token_budget.get("estimated_tokens_saved", 0)) * len(round_prompt_chars),
+            "compression_ratio": round_token_budget.get("compression_ratio", 1.0),
+        }
+        communication_rounds.append(round_comm)
         transcript.append({
             "round": round_no,
             "unresolved_issue_ids": [i.get("id") for i in unresolved],
             "votes": votes,
             "status": status,
+            "prompt_chars": round_comm["prompt_chars"],
+            "prompt_chars_by_model": round_comm["prompt_chars_by_model"],
+            "estimated_chars_saved": round_comm["estimated_chars_saved"],
         })
         if status["status"] in ("certified", "certified_with_minor_risks"):
             break
@@ -970,6 +1258,24 @@ def run_discussion_rounds(
             break
 
     final_status = transcript[-1]["status"] if transcript else {"status": "not_certified", "reasons": ["no rounds executed"]}
+    comm_modes = {r.get("mode") for r in communication_rounds if r.get("mode")}
+    if not comm_modes:
+        communication_mode = "none"
+    elif comm_modes == {"offline"}:
+        communication_mode = "offline"
+    elif "manifest_delta" in comm_modes:
+        communication_mode = "manifest_delta"
+    else:
+        communication_mode = sorted(comm_modes)[0]
+    communication_summary = {
+        "schema": COMM_PACKET_SCHEMA_VERSION,
+        "mode": communication_mode,
+        "rounds": communication_rounds,
+        "total_prompt_chars": sum(r.get("prompt_chars", 0) for r in communication_rounds),
+        "estimated_chars_saved": sum(r.get("estimated_chars_saved", 0) for r in communication_rounds),
+        "estimated_tokens_saved": sum(r.get("estimated_tokens_saved", 0) for r in communication_rounds),
+        "policy": "send manifest+delta packets; keep full artifacts in tick files; request omitted evidence explicitly",
+    }
     return {
         "status": final_status["status"],
         "models_consulted": models,
@@ -979,6 +1285,7 @@ def run_discussion_rounds(
         "issue_ledger": issue_ledger,
         "ratification_votes": transcript[-1]["votes"] if transcript else [],
         "discussion_transcript": transcript,
+        "communication": communication_summary,
         "remaining_risks": [i for i in issue_ledger if i.get("status") != "resolved"],
         "truth_assessment": truth_gate,
         "evidence_bundle": evidence_bundle,

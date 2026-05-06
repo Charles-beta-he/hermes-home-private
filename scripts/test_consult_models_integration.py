@@ -15,6 +15,19 @@ spec.loader.exec_module(consult)
 
 
 class TestConsultModelsIntegration(unittest.TestCase):
+    def test_env_int_falls_back_on_invalid_value(self):
+        """Invalid env integer values should not crash import-time config helpers."""
+        self.assertEqual(consult._env_int("__HERMES_TEST_MISSING_INT__", "123"), 123)
+        os.environ["__HERMES_TEST_BAD_INT__"] = "not-an-int"
+        try:
+            self.assertEqual(consult._env_int("__HERMES_TEST_BAD_INT__", "456"), 456)
+        finally:
+            os.environ.pop("__HERMES_TEST_BAD_INT__", None)
+
+    def test_truth_gate_summary_handles_non_dict_inputs(self):
+        """Communication packet truth gate summaries should defensively handle malformed values."""
+        self.assertEqual(consult._summarize_truth_gate("bad"), {})
+
     def test_model_provider_resolves_gpt55(self):
         """model_provider() should resolve gpt-5.5 to openai-codex"""
         config = {"pricing": {"models": {"gpt-5.5": {"provider": "openai-codex"}}}}
@@ -324,6 +337,104 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(requests[0]["requested_by"], "deepseek")
         self.assertEqual(requests[0]["status"], "requested")
         self.assertIn("read_only", requests[0]["safety"])
+
+    def test_discussion_packet_uses_manifest_and_delta_only_to_reduce_prompt_size(self):
+        """Discussion prompts should send compact pointers/deltas instead of full merged/evidence blobs."""
+        current_best = {
+            "diagnosis": {"summary": "x" * 4000},
+            "patches": [
+                {"id": "P1", "target_file": "a.py", "op": "add_verifier", "rationale": "r" * 2000},
+                {"id": "P2", "target_file": "b.py", "op": "modify_router_weight", "rationale": "s" * 2000},
+            ],
+            "large_irrelevant_blob": "z" * 12000,
+            "fanout_certification": {"status": "fanout_quorum_met", "planner_outputs": "f" * 9000},
+        }
+        evidence_bundle = {
+            "schema_version": 1,
+            "claims": [{"id": "C-1", "text": "claim " + "c" * 4000, "severity": 4}],
+            "evidence": [{"id": "E-1", "summary": "evidence " + "e" * 4000, "supports": ["C-1"]}],
+            "grounding": {"C-1": {"truth_status": "verified_by_evidence", "supporting_evidence_ids": ["E-1"]}},
+        }
+        truth_gate = {"truth_status": "grounded", "can_certify_truth": True, "verified_claim_count": 1, "claim_count": 1}
+        unresolved = [{"id": "I-1", "status": "unresolved", "severity": 3, "claim": "Need decide", "evidence": "tiny"}]
+
+        packet = consult.build_discussion_comm_packet(
+            current_best=current_best,
+            unresolved_issues=unresolved,
+            evidence_bundle=evidence_bundle,
+            truth_gate=truth_gate,
+            round_no=2,
+            previous_transcript=[{"round": 1, "votes": [{"model": "m1", "vote": "amend", "reasoning": "long" * 1000}], "status": {"status": "not_certified"}}],
+        )
+        raw_context = json.dumps({"current_best": current_best, "unresolved_issues": unresolved, "evidence_bundle": evidence_bundle, "truth_gate": truth_gate}, ensure_ascii=False)
+        compact_context = json.dumps(packet, ensure_ascii=False)
+
+        self.assertLess(len(compact_context), len(raw_context) // 3)
+        self.assertEqual(packet["schema"], consult.COMM_PACKET_SCHEMA_VERSION)
+        self.assertEqual(packet["mode"], "manifest_delta")
+        self.assertIn("artifact_manifest", packet)
+        self.assertIn("current_best", packet["artifact_manifest"])
+        self.assertNotIn("large_irrelevant_blob", compact_context)
+        self.assertIn("P1", compact_context)
+        self.assertNotIn("planner_outputs", compact_context)
+        self.assertNotIn("ffffffffffffffffffffffff", compact_context)
+        self.assertEqual(packet["round_delta"]["round"], 2)
+        self.assertEqual(packet["token_budget"]["packet_chars"], len(json.dumps(packet, ensure_ascii=False)))
+        self.assertIn("token_budget", packet)
+
+    def test_run_discussion_records_communication_telemetry_and_sends_compact_prompt(self):
+        """Online discussion should expose prompt telemetry so token waste is auditable."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": []},
+            {"meta": {"planner_model": "codex"}, "patches": []},
+        ]
+        prompts = []
+
+        def capturing_call(model, prompt):
+            prompts.append(prompt)
+            self.assertIn('"schema": "multi_model_comm_packet_v1"', prompt)
+            self.assertIn('"mode": "manifest_delta"', prompt)
+            return '{"vote":"approve","best_within_constraints":true,"reasoning":"compact ok","critiques":[],"evidence_requests":[]}'
+
+        result = consult.run_discussion_rounds(
+            plans,
+            current_best={"patches": [], "large_irrelevant_blob": "x" * 10000},
+            models=["claude", "codex"],
+            max_rounds=1,
+            call_model_fn=capturing_call,
+        )
+        self.assertEqual(result["status"], "certified")
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("communication", result)
+        self.assertEqual(result["communication"]["mode"], "manifest_delta")
+        self.assertGreater(result["communication"]["estimated_chars_saved"], 0)
+        self.assertIn("prompt_chars", result["discussion_transcript"][0])
+
+    def test_offline_discussion_communication_summary_does_not_report_manifest_savings(self):
+        """Offline rounds send no prompts, so communication telemetry must not invent savings."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": []},
+            {"meta": {"planner_model": "codex"}, "patches": []},
+        ]
+        result = consult.run_discussion_rounds(plans, current_best={"patches": []}, models=["claude", "codex"], offline=True)
+        self.assertEqual(result["communication"]["mode"], "offline")
+        self.assertEqual(result["communication"]["total_prompt_chars"], 0)
+        self.assertEqual(result["communication"]["estimated_chars_saved"], 0)
+
+    def test_packet_reports_zero_token_savings_when_manifest_has_no_char_savings(self):
+        """Telemetry must never claim token savings when char savings are zero."""
+        packet = consult.build_discussion_comm_packet(
+            current_best={},
+            unresolved_issues=[],
+            evidence_bundle={},
+            truth_gate={},
+            round_no=1,
+            previous_transcript=[],
+        )
+        if packet["token_budget"]["estimated_chars_saved"] == 0:
+            self.assertEqual(packet["token_budget"]["estimated_tokens_saved"], 0)
+            self.assertEqual(packet["mode"], "manifest_delta_no_savings")
+        self.assertEqual(packet["token_budget"]["packet_chars"], len(json.dumps(packet, ensure_ascii=False)))
 
     def test_ratification_fails_closed_when_high_severity_truth_unsupported(self):
         """Multi-model approval must not certify unsupported high-severity factual claims."""
