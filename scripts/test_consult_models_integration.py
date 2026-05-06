@@ -160,6 +160,46 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertIn("claude", issues[0]["models"])
         self.assertIn("codex", issues[0]["models"])
 
+    def test_issue_ledger_ignores_noop_patch_disagreements(self):
+        """No-op certification patches are not implementation disagreements or blockers."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "target_file": "x.py", "op": "noop", "rationale": "already verified"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"id": "noop-b", "target_file": "x.py", "op": "noop", "rationale": "no source change"}]},
+            {"meta": {"planner_model": "deepseek"}, "patches": []},
+            {"meta": {"planner_model": "mimo"}, "patches": [{"id": "noop-c", "target_file": "x.py", "op": "noop", "rationale": "certify"}]},
+        ]
+        self.assertEqual(consult.build_issue_ledger(plans), [])
+
+    def test_issue_ledger_flags_noop_vs_real_change_disagreement(self):
+        """A noop vote mixed with real implementation patches is a real disagreement."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "op": "noop", "rationale": "already verified"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"id": "A", "target_file": "x.py", "op": "add_verifier", "rationale": "needed"}]},
+        ]
+        issues = consult.build_issue_ledger(plans)
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["target_file"], "<mixed-noop-vs-change>")
+        self.assertIn("claude", issues[0]["missing_models"])
+
+    def test_discussion_retries_unparseable_response_with_strict_json_prompt(self):
+        """Transient empty/non-JSON discussion outputs should get one strict JSON retry before failing closed."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": []},
+            {"meta": {"planner_model": "codex"}, "patches": []},
+        ]
+        calls = {"claude": 0, "codex": 0}
+
+        def flaky_call(model, prompt):
+            calls[model] += 1
+            if calls[model] == 1:
+                return ""
+            self.assertIn("Return ONLY a JSON object", prompt)
+            return '{"vote":"approve","best_within_constraints":true,"reasoning":"strict retry ok","critiques":[],"evidence_requests":[]}'
+
+        result = consult.run_discussion_rounds(plans, current_best={"patches": []}, models=["claude", "codex"], max_rounds=1, call_model_fn=flaky_call)
+        self.assertEqual(result["status"], "certified")
+        self.assertEqual(calls, {"claude": 2, "codex": 2})
+
     def test_ratification_requires_no_rejects_and_no_unresolved_blockers(self):
         """Certification requires multi-party approval plus clean issue ledger."""
         votes = [

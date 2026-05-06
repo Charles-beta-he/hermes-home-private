@@ -159,6 +159,30 @@ round r:
 }
 ```
 
+## Dual-track anti-drift landing
+
+当用户要求“长时自主开发防漂 / 双轨防漂 / estimator-controller 解耦 / Hermes 融合”时，不要只跑 LLM 互检。先把事实分层：
+
+- Track A deterministic oracle：类型、测试、lint、scope contract、anchor lock、架构/视觉等机器可复现检查。Track A fail 一票否决，不能被多模型同意覆盖。
+- Track B LLM critic：`consult_models.py --discussion`、DeepSeek/Codex/MiMo/Claude 互审、semantic drift/scope creep/anchor violation 语义嗅探。Track B fail 而 Track A pass 时默认 ask/escalate，而不是直接 block。
+- Judge：合并 truth table；输出 JSON artifact，进入本地 brain/evidence index。
+
+Hermes-native 起步脚本：
+
+```bash
+python3 ~/.hermes/scripts/anti_drift_guard.py --root /path/to/repo init --goal "immutable goal"
+python3 ~/.hermes/scripts/anti_drift_guard.py --root /path/to/repo check-anchors
+python3 ~/.hermes/scripts/anti_drift_guard.py --root /path/to/repo scope --contract .omc/state/tasks/TASK.contract.json
+python3 ~/.hermes/scripts/anti_drift_guard.py --root /path/to/repo judge --track-a /tmp/track-a.json --track-b /tmp/track-b.json
+python3 ~/.hermes/scripts/anti_drift_guard.py --root /path/to/repo consult-state --track-a /tmp/track-a.json --out /tmp/drift-review-state.json
+```
+
+核心约束：
+- `.omc/anchors/.lock` 是不可变锚的 sha256 ledger；agent 修改 anchor 必须 halt/re-lock by explicit decision。
+- task contract 用 JSON：`expected_files`、`allowed_globs`、`forbidden_files`、`forbidden_globs`、`loc_budget`。
+- `consult-state` 只生成 evidence-first state；是否调用四脑由 orchestrator 决定，避免每次 edit 都烧多模型成本。
+- Track A/Track B 的证据可以通过 `brainctl.py` 同步进 `~/Documents/brain`，SQLite index 只是可重建派生层。
+
 ## Hermes 当前落地方式
 
 `consult_models.py` 已落地基础 DiscussionOrchestrator 能力：state builder、issue ledger、ratification gate、`--discussion` CLI、DeepSeek direct API fallback。
@@ -207,6 +231,7 @@ HERMES_MULTI_BRAIN_OFFLINE=1 python3 ~/.hermes/scripts/consult_models.py run /tm
 - Hermes CLI 当前不接受 `--provider deepseek` 时，`consult_models.py` 对 `provider: deepseek` 使用 DeepSeek direct API fallback。
 - 所有跨模型上下文必须 structured summary relay；不要假设 provider 共享上下文。
 - Claude budget 是硬约束；预算不足时可降级，但必须在 final output 写明缺席模型，不能声称完整四模型认证。
+- `delegate_task`/子代理审查可以作为补充 reviewer，但不是完整 `consult_models.py --discussion` 的替代品；如果任何 reviewer 超时、被截断或未完成，最终状态必须降级为 `certified_with_minor_risks` 或 `not_certified`，并在 provenance 中写明缺席/超时模型和由主编排器补充的证据。
 
 ## 何时使用
 

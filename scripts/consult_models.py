@@ -535,20 +535,37 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
     one model proposed. This gives Phase 3 a bounded issue ledger to debate.
     """
     by_target: Dict[str, List[Tuple[str, dict, str]]] = {}
+    noop_only_models: List[str] = []
     all_models = [_plan_model(p, f"model_{i}") for i, p in enumerate(plans)]
     for i, plan in enumerate(plans):
         model = _plan_model(plan, f"model_{i}")
-        for patch in plan.get("patches", []) or []:
+        patches = plan.get("patches", []) or []
+        non_noop_seen = False
+        noop_seen = False
+        for patch in patches:
+            op = str(patch.get("op", "")).lower()
+            # A noop patch is an explicit certification/no-change vote, not a proposed
+            # implementation delta. Heterogeneous noop ids alone should not create false
+            # blockers, but noop-vs-real-change is still a real disagreement below.
+            if op == "noop":
+                noop_seen = True
+                continue
+            non_noop_seen = True
             target = patch.get("target_file") or patch.get("file") or "<unknown>"
             by_target.setdefault(target, []).append((model, patch, _patch_signature(patch)))
+        if noop_seen and not non_noop_seen:
+            noop_only_models.append(model)
 
     issues = []
     next_id = 1
+    noop_only_set = set(noop_only_models)
     for target, entries in sorted(by_target.items()):
         sigs = {sig for _, _, sig in entries}
         models_present = {model for model, _, _ in entries}
+        missing_models = set(all_models) - models_present
         ops = {str(patch.get("op", "")) for _, patch, _ in entries}
-        if len(sigs) > 1 or (len(models_present) < len(all_models) and len(entries) == 1):
+        single_patch_missing_non_noop_model = len(entries) == 1 and bool(missing_models - noop_only_set)
+        if len(sigs) > 1 or single_patch_missing_non_noop_model:
             severity = 4 if len(ops) > 1 else 3
             issues.append({
                 "id": f"I-{next_id:03d}",
@@ -565,6 +582,22 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
                 "resolution": "",
             })
             next_id += 1
+
+    if by_target and noop_only_models:
+        issues.append({
+            "id": f"I-{next_id:03d}",
+            "status": "unresolved",
+            "severity": 3,
+            "target_file": "<mixed-noop-vs-change>",
+            "models": sorted(set(all_models) - set(noop_only_models)),
+            "missing_models": sorted(noop_only_models),
+            "claim": "Some models voted noop/no-change while others proposed implementation patches",
+            "evidence": [
+                {"model": model, "patch_id": "noop", "op": "noop", "rationale": "noop/no-change vote"}
+                for model in sorted(noop_only_models)
+            ],
+            "resolution": "",
+        })
 
     return issues
 
@@ -874,7 +907,28 @@ def run_discussion_rounds(
                     raw = call_model_fn(model, json.dumps(prompt_context, ensure_ascii=False))
                     parsed = extract_plan_json(raw)
                 except Exception as e:
-                    parsed = {"vote": "amend", "best_within_constraints": False, "reasoning": f"discussion call failed/unparseable: {str(e)[:160]}", "critiques": []}
+                    try:
+                        strict_context = {
+                            "unresolved_issues": unresolved,
+                            "truth_gate": truth_gate,
+                            "required_output": prompt_context["required_output"],
+                        }
+                        strict_prompt = (
+                            "Return ONLY a JSON object matching this schema: "
+                            '{"critiques":[],"evidence_requests":[],"vote":"approve|amend|reject",'
+                            '"best_within_constraints":true,"reasoning":"..."}. '
+                            "No markdown, no prose before or after JSON. Context: "
+                            + json.dumps(strict_context, ensure_ascii=False)
+                        )
+                        raw = call_model_fn(model, strict_prompt)
+                        parsed = extract_plan_json(raw)
+                    except Exception as retry_e:
+                        parsed = {
+                            "vote": "amend",
+                            "best_within_constraints": False,
+                            "reasoning": f"discussion call failed/unparseable: initial={str(e)[:120]}; retry={str(retry_e)[:120]}",
+                            "critiques": [],
+                        }
                 for critique in parsed.get("critiques", []) or []:
                     if not isinstance(critique, dict) or not critique.get("novel", True):
                         continue
