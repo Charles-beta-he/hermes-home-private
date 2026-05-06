@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hermes.local/schemas/evidence-bundle.schema.json",
+  "title": "Hermes Multi-Brain Evidence Bundle",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "claims",
+    "evidence",
+    "grounding",
+    "evidence_coverage",
+    "verified_claim_count",
+    "claim_count"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "created_at": {"type": "string"},
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "severity"],
+        "properties": {
+          "id": {"type": "string"},
+          "text": {"type": "string"},
+          "severity": {"type": "integer", "minimum": 1, "maximum": 5}
+        },
+        "additionalProperties": true
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "summary"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"type": "string"},
+          "summary": {"type": "string"},
+          "supports": {"type": "array", "items": {"type": "string"}},
+          "contradicts": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "grounding": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["claim_id", "truth_status", "supporting_evidence_ids", "contradicting_evidence_ids"],
+        "properties": {
+          "claim_id": {"type": "string"},
+          "claim_text": {"type": "string"},
+          "severity": {"type": "integer"},
+          "truth_status": {"enum": ["verified_by_evidence", "unsupported", "contradicted_by_evidence"]},
+          "supporting_evidence_ids": {"type": "array", "items": {"type": "string"}},
+          "contradicting_evidence_ids": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "evidence_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+    "verified_claim_count": {"type": "integer", "minimum": 0},
+    "claim_count": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": true
+}

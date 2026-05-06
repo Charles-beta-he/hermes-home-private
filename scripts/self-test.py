@@ -4,7 +4,7 @@
 验证每个组件可用并检查已知问题
 """
 
-import os, sys, json, subprocess
+import os, sys, json, subprocess, re, tempfile
 from pathlib import Path
 
 HERMES_HOME = os.path.expanduser("~/.hermes")
@@ -19,6 +19,7 @@ failed = 0
 
 def test(name, fn):
     global passed, failed
+    ok = False
     try:
         ok, msg = fn()
         if ok:
@@ -30,7 +31,7 @@ def test(name, fn):
     except Exception as e:
         failed += 1
         print(f"  ✗ {name}: {e}")
-    tests.append((name, ok if 'ok' in dir() else False))
+    tests.append((name, ok))
 
 # ── 文件存在性 ──
 
@@ -280,6 +281,43 @@ r = subprocess.run(
 )
 test("agent_protocol.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
 
+
+# skill-steward Skill Graphs 2.0 smoke tests
+def _write_skill(root, name, tier, related=None):
+    d = Path(root) / name
+    d.mkdir(parents=True, exist_ok=True)
+    rel = ""
+    if related:
+        rel = "related_skills: [" + ", ".join(related) + "]\n"
+    (d / "SKILL.md").write_text(
+        f"---\nname: {name}\ntier: {tier}\n{rel}---\n\n# {name}\nTest fixture.\n"
+    )
+
+steward = os.path.join(HERMES_HOME, "scripts/skill-steward.py")
+r = subprocess.run([sys.executable, "-m", "py_compile", steward], capture_output=True, text=True, timeout=10)
+test("skill-steward.py compiles (with Skill Graphs 2.0)", lambda: (r.returncode == 0, r.stderr[:200]))
+with tempfile.TemporaryDirectory() as td:
+    _write_skill(td, "atom-a", "atom")
+    _write_skill(td, "atom-b", "atom")
+    _write_skill(td, "molecule-ab", "molecule", ["atom-a", "atom-b"])
+    _write_skill(td, "compound-ab", "compound", ["molecule-ab", "atom-a"])
+    env = dict(os.environ, HERMES_SKILLS_DIR=td)
+    r = subprocess.run([sys.executable, steward, "--graph-check", "--json"], env=env, capture_output=True, text=True, timeout=10)
+    test("skill graph valid fixture passes", lambda r=r: (r.returncode == 0 and '"status": "OK"' in r.stdout, r.stderr[:200] or r.stdout[:300]))
+with tempfile.TemporaryDirectory() as td:
+    _write_skill(td, "cycle-a", "molecule", ["cycle-b"])
+    _write_skill(td, "cycle-b", "molecule", ["cycle-a"])
+    _write_skill(td, "deep-0", "atom")
+    previous = "deep-0"
+    for i in range(1, 7):
+        tier = "molecule" if i == 1 else "compound"
+        name = f"deep-{i}"
+        _write_skill(td, name, tier, [previous])
+        previous = name
+    env = dict(os.environ, HERMES_SKILLS_DIR=td)
+    r = subprocess.run([sys.executable, steward, "--graph-check", "--json"], env=env, capture_output=True, text=True, timeout=10)
+    test("skill graph invalid fixture fails closed", lambda r=r: (r.returncode == 2 and 'cycle_count' in r.stdout and 'excessive_depth' in r.stdout, r.stderr[:200] or r.stdout[:500]))
+
 # ensemble-vote integration tests (tally logic)
 test_ens = os.path.join(HERMES_HOME, "scripts/test_ensemble_vote_integration.py")
 if os.path.exists(test_ens):
@@ -288,11 +326,13 @@ if os.path.exists(test_ens):
 else:
     test("ensemble-vote tally tests", lambda: (False, "test file not found"))
 
-# consult_models integration tests (provider resolution + quorum + quota + certification schema)
+# consult_models integration tests (provider resolution + quorum + quota + certification + evidence truth gate)
 test_con = os.path.join(HERMES_HOME, "scripts/test_consult_models_integration.py")
 if os.path.exists(test_con):
     r = subprocess.run([sys.executable, test_con], capture_output=True, text=True, timeout=30)
-    test("consult_models integration tests (17/17)", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+    m = re.search(r"Ran (\d+) tests", r.stderr + r.stdout)
+    count_label = f"{m.group(1)}/{m.group(1)}" if m else "integration"
+    test(f"consult_models integration tests ({count_label})", lambda: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
 else:
     test("consult_models integration tests", lambda: (False, "test file not found"))
 
@@ -376,6 +416,8 @@ p0_event = os.path.join(HERMES_HOME, "notes/evolution/2026-04-29-warp-p0-multimo
 p0_spec = os.path.join(HERMES_HOME, "hermes-agent/specs/p0-multimodel-governance")
 p0_review_schema = os.path.join(HERMES_HOME, "hermes-agent/docs/specs/review.schema.json")
 fanout_schema = os.path.join(HERMES_HOME, "schemas/fanout-certification.schema.json")
+evidence_schema = os.path.join(HERMES_HOME, "schemas/evidence-bundle.schema.json")
+skill_graph_schema = os.path.join(HERMES_HOME, "schemas/skill-graph-audit.schema.json")
 if os.path.exists(fanout_schema):
     r = subprocess.run(
         [sys.executable, "-m", "json.tool", fanout_schema],
@@ -384,6 +426,22 @@ if os.path.exists(fanout_schema):
     test("fanout-certification schema parseable", lambda r=r: (r.returncode == 0, r.stderr[:200]))
 else:
     test("fanout-certification schema parseable", lambda: (False, "schema file not found"))
+if os.path.exists(evidence_schema):
+    r = subprocess.run(
+        [sys.executable, "-m", "json.tool", evidence_schema],
+        capture_output=True, text=True, timeout=10
+    )
+    test("evidence-bundle schema parseable", lambda r=r: (r.returncode == 0, r.stderr[:200]))
+else:
+    test("evidence-bundle schema parseable", lambda: (False, "schema file not found"))
+if os.path.exists(skill_graph_schema):
+    r = subprocess.run(
+        [sys.executable, "-m", "json.tool", skill_graph_schema],
+        capture_output=True, text=True, timeout=10
+    )
+    test("skill-graph-audit schema parseable", lambda r=r: (r.returncode == 0, r.stderr[:200]))
+else:
+    test("skill-graph-audit schema parseable", lambda: (False, "schema file not found"))
 
 if os.path.exists(p0_event) and os.path.exists(verify_evo):
     r = subprocess.run(

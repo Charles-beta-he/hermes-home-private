@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hermes.local/schemas/skill-graph-audit.schema.json",
+  "title": "Hermes Skill Graph Audit",
+  "type": "object",
+  "required": ["metric", "value", "status", "max_depth_allowed", "edge_count", "tier_counts", "cycle_count", "cycles", "excessive_depth", "typed_violations", "migration_suggestions"],
+  "properties": {
+    "metric": {"type": "string"},
+    "value": {"type": "string"},
+    "status": {"enum": ["OK", "GRAPH_VIOLATIONS"]},
+    "max_depth_allowed": {"type": "integer", "minimum": 1},
+    "edge_count": {"type": "integer", "minimum": 0},
+    "tier_counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "explicit_tier_count": {"type": "integer", "minimum": 0},
+    "cycle_count": {"type": "integer", "minimum": 0},
+    "cycles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["cycle", "action"],
+        "properties": {
+          "cycle": {"type": "array", "items": {"type": "string"}, "minItems": 2},
+          "action": {"type": "string"}
+        }
+      }
+    },
+    "excessive_depth": {"type": "array"},
+    "typed_violations": {"type": "array"},
+    "missing_dependencies": {"type": "array"},
+    "ambiguous_dependencies": {"type": "array"},
+    "migration_suggestions": {"type": "array"},
+    "details": {"type": "array", "items": {"type": "string"}}
+  }
+}

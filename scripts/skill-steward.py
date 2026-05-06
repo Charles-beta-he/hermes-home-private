@@ -13,23 +13,42 @@ skill-steward.py — 技能生态管家
 """
 
 import os
+import sys
 import json
 import time
+import re
+import subprocess
 from pathlib import Path
 from datetime import datetime, timezone
 from collections import defaultdict
 
 # === Configuration ===
-SKILLS_DIR = Path(os.path.expanduser("~/.hermes/skills"))
+SKILLS_DIR = Path(os.path.expanduser(os.environ.get("HERMES_SKILLS_DIR", "~/.hermes/skills")))
 BRAIN_DIR = Path(os.path.expanduser("~/Documents/brain"))
 REPORT_DIR = SKILLS_DIR / "steward"
 REPORT_FILE = REPORT_DIR / "audit-report.json"
 DASHBOARD_FILE = BRAIN_DIR / "06-仪表盘" / "技能生态健康度.md"
+MAX_GRAPH_DEPTH = int(os.environ.get("HERMES_SKILL_GRAPH_MAX_DEPTH", "4"))
+MAX_MOLECULE_DEPS = int(os.environ.get("HERMES_SKILL_GRAPH_MAX_MOLECULE_DEPS", "10"))
 
 # === State tracking database ===
 STATE_FILE = REPORT_DIR / "state.json"
 
 # === Helpers ===
+def parse_skill_list(value):
+    """Parse YAML-ish frontmatter lists without requiring PyYAML."""
+    if not value:
+        return []
+    if isinstance(value, list):
+        return [str(x).strip() for x in value if str(x).strip()]
+    text = str(value).strip()
+    if not text or text in ("[]", "null", "None"):
+        return []
+    if text.startswith("[") and text.endswith("]"):
+        text = text[1:-1]
+    return [p.strip().strip('"').strip("'") for p in text.split(",") if p.strip()]
+
+
 def get_all_skills():
     """Scan all skills and return list of dicts"""
     skills = []
@@ -73,6 +92,7 @@ def get_all_skills():
             "is_alias": is_alias,
             "body": parts[2].strip() if content.startswith("---") and len(parts) >= 3 else content,
             "related_skills": frontmatter.get("related_skills", ""),
+            "declared_tier": (frontmatter.get("skill_tier") or frontmatter.get("tier") or "").lower(),
         })
     return skills
 
@@ -365,6 +385,178 @@ def _suggest_dependencies(skills):
     return suggestions
 
 
+
+def _skill_graph(skills):
+    """Build an explicit dependency graph from related_skills frontmatter."""
+    real_skills = [s for s in skills if not s.get("is_alias")]
+    by_name = {s["name"]: s for s in real_skills}
+    by_cname = defaultdict(list)
+    by_short = defaultdict(list)
+    for s in real_skills:
+        by_cname[s.get("cname", "")].append(s["name"])
+        by_short[s["name"].split("/")[-1]].append(s["name"])
+
+    graph = {s["name"]: [] for s in real_skills}
+    missing = []
+    ambiguous = []
+    for s in real_skills:
+        for dep in parse_skill_list(s.get("related_skills", "")):
+            candidates = []
+            if dep in by_name:
+                candidates = [dep]
+            elif dep in by_cname:
+                candidates = by_cname[dep]
+            elif dep in by_short:
+                candidates = by_short[dep]
+            if len(candidates) == 1:
+                graph[s["name"]].append(candidates[0])
+            elif len(candidates) > 1:
+                ambiguous.append({"skill": s["name"], "dependency": dep, "candidates": sorted(candidates)[:10]})
+            else:
+                missing.append({"skill": s["name"], "dependency": dep})
+    return real_skills, by_name, graph, missing, ambiguous
+
+
+def _find_cycles(graph):
+    cycles = []
+    visiting = set()
+    visited = set()
+    stack = []
+
+    def dfs(node):
+        if node in visiting:
+            try:
+                idx = stack.index(node)
+                cycle = stack[idx:] + [node]
+            except ValueError:
+                cycle = [node, node]
+            if cycle not in cycles:
+                cycles.append(cycle)
+            return
+        if node in visited:
+            return
+        visiting.add(node)
+        stack.append(node)
+        for dep in graph.get(node, []):
+            dfs(dep)
+        stack.pop()
+        visiting.remove(node)
+        visited.add(node)
+
+    for node in sorted(graph):
+        dfs(node)
+    return cycles
+
+
+def _depths_and_chains(graph, cycles):
+    cycle_nodes = {n for c in cycles for n in c}
+    # `memo` is safe because graph and cycle_nodes are immutable within one audit;
+    # cycle nodes are excluded before DAG depth calculation, making depth path-invariant.
+    memo = {}
+    chains = {}
+
+    def depth(node, seen):
+        if node in memo:
+            return memo[node], chains[node]
+        if node in seen or node in cycle_nodes:
+            return 0, [node]
+        deps = graph.get(node, [])
+        if not deps:
+            memo[node] = 0
+            chains[node] = [node]
+            return 0, [node]
+        best_depth = -1
+        best_chain = [node]
+        for dep in deps:
+            d, c = depth(dep, seen | {node})
+            if d + 1 > best_depth:
+                best_depth = d + 1
+                best_chain = [node] + c
+        memo[node] = best_depth
+        chains[node] = best_chain
+        return best_depth, best_chain
+
+    for node in sorted(graph):
+        depth(node, set())
+    return memo, chains
+
+
+def _infer_tier(dep_count, depth):
+    if dep_count == 0:
+        return "atom"
+    if dep_count <= MAX_MOLECULE_DEPS and depth <= 2:
+        return "molecule"
+    return "compound"
+
+
+def audit_skill_graph(skills):
+    """Skill Graphs 2.0: atoms / molecules / compounds topology verifier."""
+    real_skills, by_name, graph, missing, ambiguous = _skill_graph(skills)
+    cycles = _find_cycles(graph)
+    depths, chains = _depths_and_chains(graph, cycles)
+    tier_counts = defaultdict(int)
+    explicit_tier_count = 0
+    violations = []
+    migrations = []
+
+    for s in real_skills:
+        name = s["name"]
+        deps = graph.get(name, [])
+        dep_count = len(deps)
+        depth = depths.get(name, 0)
+        declared = s.get("declared_tier") if s.get("declared_tier") in {"atom", "molecule", "compound"} else ""
+        inferred = _infer_tier(dep_count, depth)
+        tier = declared or inferred
+        tier_counts[tier] += 1
+        if declared:
+            explicit_tier_count += 1
+        else:
+            migrations.append({"skill": name, "suggested_tier": inferred, "reason": f"deps={dep_count}, depth={depth}"})
+        if declared == "atom" and dep_count:
+            violations.append({"type": "illegal_atom_dependency", "skill": name, "deps": deps, "action": "Split orchestration into a molecule; atoms must have zero skill dependencies."})
+        if declared == "molecule":
+            if dep_count < 1 or dep_count > MAX_MOLECULE_DEPS:
+                violations.append({"type": "illegal_molecule_fanin", "skill": name, "deps": deps, "action": f"Keep molecules at 1-{MAX_MOLECULE_DEPS} explicit dependencies or promote to compound."})
+            for dep in deps:
+                dep_tier = by_name.get(dep, {}).get("declared_tier", "") or _infer_tier(len(graph.get(dep, [])), depths.get(dep, 0))
+                if dep_tier != "atom":
+                    violations.append({"type": "illegal_molecule_dependency", "skill": name, "dependency": dep, "dependency_tier": dep_tier, "action": "Molecules should chain atoms; move nested orchestration to a compound."})
+        if declared == "compound":
+            for dep in deps:
+                dep_tier = by_name.get(dep, {}).get("declared_tier", "") or _infer_tier(len(graph.get(dep, [])), depths.get(dep, 0))
+                if dep_tier == "compound":
+                    violations.append({"type": "compound_to_compound_dependency", "skill": name, "dependency": dep, "action": "Break compound chains by extracting a molecule boundary."})
+
+    excessive_depth = [
+        {"skill": name, "depth": d, "chain": chains.get(name, [name]), "action": "Split at a molecule boundary; keep graph depth <= 4."}
+        for name, d in sorted(depths.items(), key=lambda x: -x[1]) if d > MAX_GRAPH_DEPTH
+    ]
+    cycle_reports = [{"cycle": c, "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."} for c in cycles]
+    hard_issue_count = len(cycle_reports) + len(excessive_depth) + len(violations)
+    edge_count = sum(len(v) for v in graph.values())
+    status = "OK" if hard_issue_count == 0 else "GRAPH_VIOLATIONS"
+    return {
+        "metric": "Skill Graphs 2.0 拓扑审计",
+        "value": f"edges={edge_count}, depth_max={max(depths.values()) if depths else 0}, cycles={len(cycles)}, tiers={dict(sorted(tier_counts.items()))}",
+        "status": status,
+        "max_depth_allowed": MAX_GRAPH_DEPTH,
+        "edge_count": edge_count,
+        "tier_counts": dict(sorted(tier_counts.items())),
+        "explicit_tier_count": explicit_tier_count,
+        "cycle_count": len(cycles),
+        "cycles": cycle_reports[:20],
+        "excessive_depth": excessive_depth[:50],
+        "typed_violations": violations[:50],
+        "missing_dependencies": missing[:50],
+        "ambiguous_dependencies": ambiguous[:50],
+        "migration_suggestions": migrations[:50],
+        "details": [
+            f"显式 tier: {explicit_tier_count}/{len(real_skills)}；未声明按 deps/depth 推断并给出迁移建议",
+            f"fail-closed gate: cycles={len(cycles)}, excessive_depth={len(excessive_depth)}, typed_violations={len(violations)}",
+        ],
+    }
+
+
 def audit_supply_chain(skills):
     """供应链安全: 检测危险命令模式"""
     real_skills = [s for s in skills if not s.get("is_alias")]
@@ -426,6 +618,7 @@ def generate_report(skills, state):
             "meme_flow": audit_meme_flow(skills),
             "content_overlap": audit_content_overlap(skills),
             "skill_dependencies": audit_skill_dependencies(skills),
+            "skill_graph": audit_skill_graph(skills),
             "supply_chain": audit_supply_chain(skills),
             "token_impact": audit_token_impact(skills),
         },
@@ -494,6 +687,13 @@ def update_dashboard(report):
 | 规则活性 | {audits['second_order']['value']} | 全部活跃 | {'✅' if audits['second_order']['status'] == 'OK' else '❌'} |
 | 激励积分 | {audits['nudge']['reward_points']} | >0 | {'✅' if audits['nudge']['reward_points'] > 0 else '⏳'} |
 | 同类聚类 | {audits['meme_flow']['value']} | ≤5 | {'✅' if audits['meme_flow']['status'] == 'OK' else '❌'} |
+| Skill Graph | {audits['skill_graph']['value']} | depth≤{audits['skill_graph']['max_depth_allowed']}, cycles=0 | {'✅' if audits['skill_graph']['status'] == 'OK' else '❌'} |
+
+## Skill Graphs 2.0
+
+- Taxonomy: atom = zero skill deps; molecule = bounded explicit composition; compound = high-level orchestrator.
+- Explicit tiers: {audits['skill_graph']['explicit_tier_count']} declared.
+- Migration suggestions are in `{REPORT_FILE}` under `audits.skill_graph.migration_suggestions`.
 
 ## 按类别分布
 | 类别 | 技能数 |
@@ -516,19 +716,45 @@ def update_dashboard(report):
 # === Main ===
 
 def main():
-    mode = sys.argv[1] if len(sys.argv) > 1 else "full"
-    print(f"  🛡️  技能生态管家 v1.1")
-    print(f"  {'='*40}")
+    args = sys.argv[1:]
+    mode = args[0] if args else "full"
+    json_mode = "--json" in args
+    warn_only = "--warn-only" in args
+    if mode != "--graph-check":
+        print(f"  🛡️  技能生态管家 v1.2")
+        print(f"  {'='*40}")
     skills = get_all_skills()
     state = load_state()
     report = generate_report(skills, state)
-    
+
+    if mode == "--graph-check":
+        graph = report["audits"]["skill_graph"]
+        REPORT_DIR.mkdir(parents=True, exist_ok=True)
+        (REPORT_DIR / "skill-graph-report.json").write_text(json.dumps(graph, indent=2, default=str))
+        if json_mode:
+            print(json.dumps(graph, ensure_ascii=False, indent=2, default=str))
+        else:
+            print(f"Skill Graphs 2.0: {graph['status']} — {graph['value']}")
+            for c in graph.get("cycles", [])[:5]:
+                print(f"  cycle: {' -> '.join(c['cycle'])}")
+            for d in graph.get("excessive_depth", [])[:5]:
+                print(f"  depth>{graph['max_depth_allowed']}: {d['skill']} depth={d['depth']} chain={' -> '.join(d['chain'])}")
+            for v in graph.get("typed_violations", [])[:5]:
+                print(f"  violation: {v['type']} {v.get('skill')} {v.get('dependency', '')}")
+        if graph["status"] != "OK" and not warn_only:
+            sys.exit(2)
+        return
+
     if mode == "--report":
         print_report(report)
         return
     elif mode == "--dashboard":
         update_dashboard(report)
-        os.system("python3 ~/.hermes/scripts/sync-brain.py --push")
+        subprocess.run(
+            [sys.executable, os.path.expanduser("~/.hermes/scripts/sync-brain.py"), "--push"],
+            check=False,
+            timeout=60,
+        )
         print(f"  📊 仪表盘已更新")
         return
     elif mode == "--cleanup":
@@ -554,5 +780,4 @@ def main():
         print(f"  🔄 Sync: python3 ~/.hermes/scripts/sync-brain.py")
 
 if __name__ == "__main__":
-    import sys
     main()

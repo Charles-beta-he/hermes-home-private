@@ -224,7 +224,35 @@ Tier 3 (COLD ~100):          Marked L1, no urgent action
   → Don't create test-prompts for skills that may never be used again
 ```
 
-## Step 5: Maintain
+## Step 5: Skill Graphs 2.0 — Atoms / Molecules / Compounds
+
+Skill dependency graphs must be composed as typed layers, not arbitrary dense Wikipedia-style links:
+
+- `atom`: single-purpose primitive, zero skill-level dependencies. It should be close to deterministic and narrow in scope.
+- `molecule`: a bounded workflow that explicitly chains 1-10 atoms. It may use judgement, but composition order should be written into the skill.
+- `compound`: a high-level orchestrator/playbook that drives molecules and optionally atoms. It is where meaningful autonomy belongs.
+
+Governance rule:
+1. Cycles are never safe. A cycle means the agent can bounce between skills or skip part of the chain. Break or invert one edge.
+2. Max graph depth defaults to 4 (`HERMES_SKILL_GRAPH_MAX_DEPTH`). Deeper chains should be split at a molecule boundary.
+3. Runtime loader behavior stays unchanged; enforcement is an audit gate first, migration second.
+4. Add `tier: atom|molecule|compound` or `skill_tier: atom|molecule|compound` in frontmatter when a skill is migrated. Untyped skills are inferred and reported as migration suggestions.
+
+Commands:
+```bash
+# Read-only topology report; writes ~/.hermes/skills/steward/skill-graph-report.json
+python3 ~/.hermes/scripts/skill-steward.py --graph-check --json --warn-only
+
+# Strict fail-closed gate for CI/curation; exit 2 on cycles, excessive depth, or typed violations
+python3 ~/.hermes/scripts/skill-steward.py --graph-check --json
+
+# Full steward report now includes audits.skill_graph
+python3 ~/.hermes/scripts/skill-steward.py
+```
+
+The report schema is `~/.hermes/schemas/skill-graph-audit.schema.json`. Self-test includes valid and invalid synthetic fixtures so the cycle/depth fail-closed behavior cannot silently regress.
+
+## Step 6: Maintain
 
 The system runs on cron, but quarterly reviews should check:
 

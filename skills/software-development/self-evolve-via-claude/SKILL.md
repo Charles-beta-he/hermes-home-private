@@ -25,7 +25,7 @@ config_highlights (cron_mode/canary_ratio/auto_approve)、
 skill_categories、gateway_status。Claude Code 诊断精度显著提升
 （能检测到"57% synthetic diluting real signal"这类高阶问题）。
 
-### Step 2: 咨询 Claude Code
+### Step 2: 咨询 Claude Code / 多脑
 
 ```bash
 PLAN=$(~/.hermes/scripts/consult-claude.sh)
@@ -39,6 +39,16 @@ PLAN=$(~/.hermes/scripts/consult-claude.sh)
 2. 校验 plan schema (retry × 3, 带 feedback)
 3. 全失败 → 降级到 self-improvement-pipeline.py (本地规划)
 4. 标记 degraded=true
+
+For high-risk architecture/self-evolution ticks, prefer `consult_models.py` T3 with evidence-first state:
+```bash
+python3 ~/.hermes/scripts/consult_models.py state '目标' --out /tmp/mm-state.json
+python3 ~/.hermes/scripts/consult_models.py run /tmp/mm-state.json --tier T3 --quorum 4 --discussion --max-rounds 2 --keep
+```
+Rules:
+- Add claims/evidence when certifying factual current state.
+- Treat planner agreement as design confidence, not truth.
+- SPL is opt-in only: set `HERMES_MULTI_BRAIN_USE_SPL=1` deliberately; default natural-language state preserves claims/evidence.
 
 ### Step 3: 安全检查
 

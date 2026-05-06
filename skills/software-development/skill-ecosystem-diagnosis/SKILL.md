@@ -112,6 +112,26 @@ grep -r "load_count\|usage_count\|skill.*track\|skill.*stat" ~/.hermes/hermes-ag
 
 Result: **If no usage tracking code exists, axis 5 is confirmed broken.** This is the most common finding.
 
+### Step 3.6: Skill Graphs 2.0 Topology Audit
+
+Dense arbitrary skill graphs degrade reliability: agents skip dependencies as graph depth grows, and cycles make orchestration non-deterministic. Run the topology gate before recommending new composition patterns:
+
+```bash
+# Non-blocking ecosystem scan
+python3 ~/.hermes/scripts/skill-steward.py --graph-check --json --warn-only
+
+# Strict fail-closed gate for a fixture/staging ecosystem
+HERMES_SKILLS_DIR=/path/to/skills python3 ~/.hermes/scripts/skill-steward.py --graph-check --json
+```
+
+Classify findings:
+- `cycles`: P0, break or invert one edge.
+- `excessive_depth`: P1, split the chain at a molecule boundary; default max depth is 4.
+- `typed_violations`: P1, declared atoms must have zero deps, molecules should compose bounded atoms, compounds should not chain into compounds.
+- `migration_suggestions`: P2, untyped legacy skills inferred as atom/molecule/compound.
+
+The audit writes `~/.hermes/skills/steward/skill-graph-report.json` and full steward reports include `audits.skill_graph`.
+
 ### Step 3.75: Ghost Memory Audit
 
 Check the persistent memory store for past-tense entries that silently contaminate future sessions. Unlike stale skills (visible in listings), ghost memory is invisible — it's injected into EVERY session's system prompt and gets treated as current fact.

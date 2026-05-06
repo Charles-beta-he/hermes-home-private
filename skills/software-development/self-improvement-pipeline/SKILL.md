@@ -338,6 +338,18 @@ python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec
       4. p10-health 的 self-test 必须用 exit-code + bounded subprocess，不要 `grep -q ALL PASS` 管道；`set -euo pipefail` 下 grep -q 早退可能 SIGPIPE 上游，制造 false negative。
       5. 旧 cron `last_status=error` 如果是 >24h 的 transient wrapper/interpreter shutdown 且已有 future retry，可标记 stale 而非 live bad；真正清除仍要手动或定时重跑该 job。
     - 验证目标: `bash ~/.hermes/scripts/p10-health.sh --json` Grade A 且 warnings=[]；`python3 ~/.hermes/scripts/usage-score.py` Grade A/B（fallback_used 可审计）；`python3 ~/.hermes/scripts/cron-health-quarantine.py` bad_count=0；`python3 ~/.hermes/scripts/cron-missed-run-guard.py` missed_count=0。
+17. **Skill Graphs 2.0 应作为审计门，而不是先改运行时 loader**:
+    - 症状: skill 数量增长后，related_skills 形成深链或循环；agent 运行时不稳定地跳过依赖。
+    - 正确分层:
+      - atom: 单一原语，0 skill 依赖；
+      - molecule: 1-10 个 atom 的显式工作流；
+      - compound: 驱动 molecules 的高级 playbook/orchestrator。
+    - 落地模式:
+      1. `python3 ~/.hermes/scripts/skill-steward.py --graph-check --json --warn-only` 生成 `skills/steward/skill-graph-report.json`
+      2. 严格 gate 用 `--graph-check --json`，发现 cycle/excessive_depth/typed_violations exit 2
+      3. 本轮只做审计和迁移建议，不直接清理旧 skill，不改 runtime loader
+      4. self-test 必须含 valid fixture 与 invalid fixture，证明 fail-closed 行为
+    - 验证目标: `self-test.py` 全绿；`skill-graph-audit.schema.json` parseable；steward full report 含 `audits.skill_graph`。
 - `pro` — PUA Pro 自进化追踪 (依赖 evolution.md)
 - `darwin-skill` — 单个 skill 优化
 - `skill-ecosystem-governance` — 生态治理

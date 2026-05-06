@@ -1,0 +1,479 @@
+{
+  "metric": "Skill Graphs 2.0 \u62d3\u6251\u5ba1\u8ba1",
+  "value": "edges=117, depth_max=4, cycles=24, tiers={'atom': 143, 'compound': 4, 'molecule': 45}",
+  "status": "GRAPH_VIOLATIONS",
+  "max_depth_allowed": 4,
+  "edge_count": 117,
+  "tier_counts": {
+    "atom": 143,
+    "compound": 4,
+    "molecule": 45
+  },
+  "explicit_tier_count": 0,
+  "cycle_count": 24,
+  "cycles": [
+    {
+      "cycle": [
+        "autonomous-ai-agents/claude-code",
+        "autonomous-ai-agents/codex",
+        "autonomous-ai-agents/claude-code"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "autonomous-ai-agents/claude-code",
+        "autonomous-ai-agents/codex",
+        "autonomous-ai-agents/hermes-agent",
+        "autonomous-ai-agents/claude-code"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "autonomous-ai-agents/codex",
+        "autonomous-ai-agents/hermes-agent",
+        "autonomous-ai-agents/codex"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "autonomous-ai-agents/claude-code",
+        "autonomous-ai-agents/codex",
+        "autonomous-ai-agents/hermes-agent",
+        "autonomous-ai-agents/opencode",
+        "autonomous-ai-agents/claude-code"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "autonomous-ai-agents/codex",
+        "autonomous-ai-agents/hermes-agent",
+        "autonomous-ai-agents/opencode",
+        "autonomous-ai-agents/codex"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "autonomous-ai-agents/hermes-agent",
+        "autonomous-ai-agents/opencode",
+        "autonomous-ai-agents/hermes-agent"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "creative/sketch",
+        "software-development/spike",
+        "creative/sketch"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/writing-plans",
+        "software-development/subagent-driven-development",
+        "software-development/writing-plans"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/subagent-driven-development",
+        "software-development/requesting-code-review",
+        "software-development/subagent-driven-development"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/writing-plans",
+        "software-development/subagent-driven-development",
+        "software-development/requesting-code-review",
+        "software-development/writing-plans"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/test-driven-development",
+        "software-development/systematic-debugging",
+        "software-development/test-driven-development"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/writing-plans",
+        "software-development/subagent-driven-development",
+        "software-development/requesting-code-review",
+        "software-development/test-driven-development",
+        "software-development/systematic-debugging",
+        "software-development/writing-plans"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/subagent-driven-development",
+        "software-development/requesting-code-review",
+        "software-development/test-driven-development",
+        "software-development/systematic-debugging",
+        "software-development/subagent-driven-development"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/writing-plans",
+        "software-development/subagent-driven-development",
+        "software-development/requesting-code-review",
+        "software-development/test-driven-development",
+        "software-development/writing-plans"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "software-development/subagent-driven-development",
+        "software-development/requesting-code-review",
+        "software-development/test-driven-development",
+        "software-development/subagent-driven-development"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "github/github-auth",
+        "github/github-pr-workflow",
+        "github/github-auth"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "github/github-code-review",
+        "github/github-auth",
+        "github/github-pr-workflow",
+        "github/github-code-review"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "github/github-code-review",
+        "github/github-auth",
+        "github/github-code-review"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "github/github-auth",
+        "github/github-issues",
+        "github/github-auth"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    },
+    {
+      "cycle": [
+        "github/github-auth",
+        "github/github-repo-management",
+        "github/github-auth"
+      ],
+      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
+    }
+  ],
+  "excessive_depth": [],
+  "typed_violations": [],
+  "missing_dependencies": [
+    {
+      "skill": "research/research-paper-writing",
+      "dependency": "ml-paper-writing"
+    },
+    {
+      "skill": "feeds",
+      "dependency": "cronjob"
+    },
+    {
+      "skill": "creative/comfyui",
+      "dependency": "image_gen"
+    },
+    {
+      "skill": "creative/touchdesigner-mcp",
+      "dependency": "ascii-video"
+    },
+    {
+      "skill": "creative/touchdesigner-mcp",
+      "dependency": "hermes-video"
+    },
+    {
+      "skill": "creative/p5js",
+      "dependency": "ascii-video"
+    },
+    {
+      "skill": "creative/architecture-diagram",
+      "dependency": "concept-diagrams"
+    }
+  ],
+  "ambiguous_dependencies": [],
+  "migration_suggestions": [
+    {
+      "skill": "apple",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "apple/apple-reminders",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "apple/imessage",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "apple/findmy",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "apple/apple-notes",
+      "suggested_tier": "molecule",
+      "reason": "deps=1, depth=1"
+    },
+    {
+      "skill": "research",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "research/blogwatcher",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "research/polymarket",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "research/llm-wiki",
+      "suggested_tier": "compound",
+      "reason": "deps=2, depth=3"
+    },
+    {
+      "skill": "research/arxiv",
+      "suggested_tier": "molecule",
+      "reason": "deps=1, depth=2"
+    },
+    {
+      "skill": "research/research-paper-writing",
+      "suggested_tier": "compound",
+      "reason": "deps=3, depth=3"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/ui-ux-pro-max",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/design",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/banner-design",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/ui-styling",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/brand",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/slides",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/design-system",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "idea-refine",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "gaming",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "gaming/minecraft-modpack-server",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "social-media",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "social-media/xurl",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "social-media/xitter",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "devops",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "devops/gateway-telegram-setup",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "devops/semantic-release-monorepo",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "devops/kanban-worker",
+      "suggested_tier": "molecule",
+      "reason": "deps=1, depth=0"
+    },
+    {
+      "skill": "devops/webhook-subscriptions",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "devops/kanban-orchestrator",
+      "suggested_tier": "molecule",
+      "reason": "deps=1, depth=0"
+    },
+    {
+      "skill": "devops/cloudflare-pages-pnpm",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "bayesian-agent",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "leisure",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "p10",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "incremental-implementation",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "pro",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "yuanbao",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "impeccable/source/skills/impeccable",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "impeccable/.claude/skills/impeccable",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "data-science",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "data-science/jupyter-live-kernel",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "api-and-interface-design",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "software-development",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "software-development/post-update-patch-healing",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "software-development/post-deploy-verification",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "software-development/parallel-worktree-delegate",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "software-development/browser-harness-integration",
+      "suggested_tier": "molecule",
+      "reason": "deps=3, depth=1"
+    },
+    {
+      "skill": "software-development/incident-response",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "software-development/test-driven-development",
+      "suggested_tier": "molecule",
+      "reason": "deps=3, depth=0"
+    },
+    {
+      "skill": "software-development/requirement-clarification",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    }
+  ],
+  "details": [
+    "\u663e\u5f0f tier: 0/192\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
+    "fail-closed gate: cycles=24, excessive_depth=0, typed_violations=0"
+  ]
+}
