@@ -15,6 +15,10 @@ license: MIT
 
 Model agreement is not evidence. The main orchestrator owns tool execution and evidence collection; reviewer models own critique, evidence requests, and risk analysis.
 
+### Ratification-first anti-shell rule
+
+When the user asks for ratification/certification, do not frame the work as “deterministic completion already exists; add a formal multi-model certification shell outside it.” Ratification is a first-class lifecycle gate, not presentation metadata. The correct order is: claims/evidence bundle → issue ledger → cross-critique/rebuttal or explicit evidence-request loop → ratification votes/agreement matrix → final status transition. Deterministic gates remain necessary evidence, but they do not create a certified state by themselves. If `discussion_result.json` or an equivalent ratification artifact is missing, timed out, or contains unresolved severity>=3 blockers, the final status must be `not_certified` or `certified_with_minor_risks`, never “fully certified with a caveat.”
+
 When using `consult_models.py`:
 - Put factual assertions in `state.claims` and tool outputs in `state.evidence`.
 - Require each model to cite `evidence_bundle.grounding` for factual claims.
@@ -25,6 +29,12 @@ When using `consult_models.py`:
 This keeps the roles clean: orchestrator = tool/evidence brain; planners/reviewers = reasoning brains.
 
 For tool-backed fact checking inside multi-model review, use the Evidence Request Fulfillment Loop in `references/evidence-request-fulfillment-loop.md`: reviewer models request evidence, the orchestrator executes read-only allowlisted tools, then the result is fed back as evidence. Do not let every reviewer run arbitrary tools by default.
+
+For code changes, MCP/tool changes, and cross-repo/API decisions, add a code-evidence gate before ratification. Use `references/gitnexus-code-evidence-mcp-pattern.md` for the GitNexus-inspired Hermes-native pattern: impact-before-edit, stale-index checks, detect-changes-before-commit, tool/shape contract checks, canonical contract IDs, and RRF only for evidence ranking (not truth certification). Do not import GitNexus runtime or copy code without license/supply-chain review.
+
+When the user asks to make such an idea a long-term project or says “落地融合 / loop 多模型思考自检”, use `references/code-evidence-long-term-landing.md`: create project/P10/P9/playbook/review/task/evolution artifacts in the canonical local brain, add a local-first self-check script, run sync/reindex/search + structural audit, preserve `dissent`/`not_certified` caveats, then make a scoped local commit. For external memory/RAG/retrieval/KG systems specifically, also load the Obsidian reference `references/external-memory-system-landing.md` and keep `~/Documents/brain` canonical while treating runtime indexes as derived caches unless explicitly decided otherwise.
+
+When applying control theory, systems theory, metacognition, or skill-governance keypoints to multi-model thinking, do not default to “four brains for every keypoint”. Route by complexity, uncertainty, reflexivity, and blast radius: T0 for deterministic tool checks, T1 for lightweight reviewer, T2 for seed fanout + local gates, T3 for P10/canonical/self-evolution/high-risk rules. If this routing is landed into the local brain, prefer a keypoint-to-multimodel route matrix as a semantic/control-plane overlay rather than rewriting the Obsidian main hierarchy; use the Obsidian reference `references/local-brain-hierarchy-overlay-routing.md`.
 
 ## 默认模型组合
 
@@ -155,6 +165,7 @@ round r:
 - 质疑必须可行动：correction 或 experiment 至少一个非空。
 - DeepSeek/MiMo 的少数意见不能因模型较便宜而直接忽略；按 severity 和 evidence 质量处理。
 - Claude/Codex 也不能以权威身份压制其他模型；最终以 issue resolution 认证，不以模型名认证。
+- 当把本协议落到本地大脑时，必须有独立可检索的原则卡覆盖“少数意见 / 模型名不等于权威”。推荐 atom 标题包含“少数意见：模型名不是证据，模型名不等于权威”，避免搜索只命中任务日志而不命中原则本体。
 
 ## 输出格式
 
@@ -242,6 +253,20 @@ HERMES_MULTI_BRAIN_OFFLINE=1 python3 ~/.hermes/scripts/consult_models.py run /tm
 - `merged_plan.json`：consensus merge。
 - `discussion_result.json`：status、issue_ledger、ratification_votes、agreement_matrix、remaining_risks。
 
+If the outer command times out after planner fan-out but before discussion/ratification finishes, inspect the tick directory before rerunning:
+
+```bash
+find ~/.hermes -maxdepth 1 -type d -name 'tick-*' -mmin -60 | sort | tail -5
+ls ~/.hermes/tick-*/plans/*.json ~/.hermes/tick-*/merged_plan.json
+```
+
+Interpretation:
+- `plans/*.json` for all requested models + `merged_plan.json` means fan-out produced useful evidence.
+- Missing `discussion_result.json` or timeout during consensus means the result is **weak consensus / not fully ratified**, even if 4 models answered.
+- Report `fanout_status`, `consensus_verdict`, `unanimous_count`, `majority_count`, `minority_count`, and `arbitration_needed` from `merged_plan.json`.
+- Do not claim full multi-model certification unless the ratification artifact exists and stop conditions pass.
+- Prefer summarizing existing artifacts over immediately rerunning an expensive T3 discussion; rerun only if the missing ratification materially changes the decision.
+
 注意：
 - `~/.hermes/config/quorum.yaml` 的 T2/T3 虽列出 4 个 planners，但默认 quorum=3 会截断为 3 个模型；完整四模型必须 `--quorum 4`。
 - 第三方框架/仓库评估可用多视角 delegate reviewers 作为轻量“多脑”替代，但最终必须标注为 multi-view review，而不是完整 `consult_models.py --discussion` certification；若用户要求真正四模型认证，仍需运行 `consult_models.py` 并保留 artifact。
@@ -278,6 +303,7 @@ HERMES_MULTI_BRAIN_OFFLINE=1 python3 ~/.hermes/scripts/consult_models.py run /tm
 4. 强模型的结论也必须经 issue ledger 验证；模型名不是证据。
 5. 为防 token 爆炸，后续轮只传 unresolved issues + compact current_best，不传全量历史。
 6. 到达 MAX_ROUNDS 仍有 blocker 时必须 `not_certified`，不能为了结束而声称最佳。
+7. 评估 GitNexus 这类 code-intelligence MCP 时，最值得借鉴的是协议和 guardrail：impact-before-edit、detect_changes-before-commit、stale-index gate、contract_id、tool_map/shape_check。默认做 Hermes-native 方法论提取，不整体引入第三方 runtime；RRF 只能排序证据，不能认证真理。
 
 ## 关联 Skill
 

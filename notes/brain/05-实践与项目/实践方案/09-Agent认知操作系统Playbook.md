@@ -39,3 +39,12 @@ python3 ~/.hermes/scripts/brainctl.py --json search "cognitive operating system 
 ## Search Aliases
 
 PUA loop Agent COS 本地大脑自检 互补矩阵 A+ 配对 验证闭环 sync reindex search structural audit
+
+## Ratification-first execution protocol (2026-05-07T00:54:55+08:00)
+
+1. Run deterministic evidence gates: `agent_cos_selfcheck.py`, local brain audit, targeted search, tests.
+2. Build top-level claims/evidence bundle with explicit `supports` links for every severity>=3 claim.
+3. Run multi-model discussion against the evidence bundle.
+4. Run `ratification_gate.py --discussion-result <scoped discussion_result.json>`.
+5. Only if the gate passes may dashboard `final_integration_status` move to `FULLY_CERTIFIED`.
+6. Timeout, SIGTERM, missing artifact, weak consensus, unsupported claims, or unresolved severity>=3 issues must remain `LOCAL_COMPLETE_UNRATIFIED` / `NOT_CERTIFIED_*`.

@@ -29,12 +29,23 @@ concepts: [multi-model-thinking, agent-cos, evidence-boundary, a-plus-rubric]
 | I-001 | 5 | 旧表存在 `✗ 缺失` / `△ 薄弱` 与 A-/B+ | 新建 canonical COS dashboard；旧表作为历史诊断，不作为当前 completion gate | resolved |
 | I-002 | 5 | A+ 可能变成口号 | 定义 R1-R7，self-check 验证所有配对 grade=A+ 且 required domains 覆盖 | resolved |
 | I-003 | 4 | 本地大脑主层级迁移风险 | 使用 overlay，不移动目录 | resolved |
-| I-004 | 4 | 多模型讨论可能超时/不完整 | 只作为 provenance；完成依赖 deterministic gates | resolved |
+| I-004 | 4 | 多模型讨论可能超时/不完整；deterministic pass 被误读为 full certification | `ratification_gate.py` fail-closed；T3 four-model attempt `degraded_not_certified` 仅作 provenance；最新 scoped T1 Agent-COS `discussion_result.json` 通过 gate，允许 `FULLY_CERTIFIED` | resolved_certified |
 | I-005 | 3 | 中文检索可能漏召回 | dashboard/project/playbook/atom 写入中英 search aliases | resolved |
 
 ## Ratification Boundary
 
-若 `consult_models.py --discussion` 产出 certified，则可追加为 provenance；若超时/not_certified，则不影响当前 deterministic landing 的证据状态。本 review 不把尚未读取的模型输出写成事实。
+若 `consult_models.py --discussion` 产出 certified，则可追加为 provenance；若超时/not_certified，则不影响 deterministic matrix landing 的证据状态，但会阻断 full certification。本 review 不把尚未读取的模型输出写成事实。
+
+当前认证边界：
+
+- deterministic/local matrix gate: `PASS`（24/24 pairings, `missing_pairs=0`, `below_a_plus=0`）
+- ratification gate: `PASS`
+- discussion artifact: `/Users/charles/.hermes/tick-20260506-170132/discussion_result.json` (`status=certified`)
+- canonical brain artifact: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json`
+- certification basis: 3/3 available-model approvals, agreement matrix >= 0.95, remaining risks `[]`, truth assessment `grounded`, evidence coverage `1.0`
+- final integration status: `FULLY_CERTIFIED`
+
+Promotion rule: 只有 `ratification_gate.py --discussion-result <Agent-COS discussion_result.json>` 返回 `PASS` 时，才允许把 dashboard 或 review 写成 `FULLY_CERTIFIED` / `CERTIFIED_WITH_MINOR_RISKS`。
 
 ## Search Aliases
 
@@ -72,3 +83,35 @@ This is not full multi-model ratification. It is a useful four-model fanout prov
 ## Background completion notice
 
 Observed at 2026-05-07T00:13:27+0800: background process `proc_8de33b9e571f` completed with exit code `-15` and empty output. This confirms the prior caveat: no `discussion_result.json` was produced; the multi-model run remains fanout/merged-plan provenance only, not full discussion ratification.
+
+## Ratification-first loop update (2026-05-07T00:54:32+08:00)
+
+- Added scoped gate script: `/Users/charles/.hermes/scripts/ratification_gate.py`.
+- Added TDD coverage: `/Users/charles/.hermes/scripts/test_agent_cos_ratification.py`.
+- Added canonical evidence bundle: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-evidence-bundle.json`.
+- Added canonical issue ledger: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-issue-ledger.json`.
+- Current state split: `matrix_status=A_PLUS_MATRIX_COMPLETE`, `deterministic_gate_status=PASS`, `ratification_status=NOT_CERTIFIED_NO_ARTIFACT`, `final_integration_status=LOCAL_COMPLETE_UNRATIFIED`.
+- Anti-shell rule: deterministic PASS is evidence only; certification requires scoped `discussion_result.json` plus `ratification_gate.py` PASS.
+
+### Commands
+
+- selfcheck exit `0`
+- local brain audit exit `0`
+- ratification unit tests exit `0`
+- py_compile exit `0`
+- ratification gate exit `2` (expected fail-closed until scoped discussion artifact exists)
+
+## Multi-model ratification certified (2026-05-07T01:05:41+08:00)
+
+- T1 available-model run: `/Users/charles/.hermes/tick-20260506-170132/discussion_result.json`.
+- Canonical brain artifact: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json`.
+- Models: `gpt-5.5, mimo-v2.5-pro, deepseek-v4-pro`.
+- Discussion status: `certified`.
+- Agreement matrix: `{'framing': 0.95, 'approach': 0.95, 'implementation_order': 0.95}`.
+- Votes: `3 approve / 0 reject`.
+- Remaining risks: `[]`.
+- Truth assessment: `grounded`, evidence coverage `1.0`, unsupported high-severity claims `[]`.
+- Gate command: `python3 /Users/charles/.hermes/scripts/ratification_gate.py --json --discussion-result /Users/charles/.hermes/tick-20260506-170132/discussion_result.json` -> exit `0`.
+- Final status: `FULLY_CERTIFIED`.
+
+T3 four-model attempt `/Users/charles/.hermes/tick-20260506-165552/` is recorded as degraded_not_certified because Claude credentials were unavailable and planner quorum was below min_quorum. It is not used as certification. The successful certification is the scoped T1 ratification artifact above.

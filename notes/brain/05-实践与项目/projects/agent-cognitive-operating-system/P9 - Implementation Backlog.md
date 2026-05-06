@@ -35,3 +35,11 @@ unchecked_checkboxes: 0
 ## Search Aliases
 
 Agent COS backlog zero open_backlog_count 0 unchecked_checkboxes 0 A+互补矩阵
+
+## Ratification-first hardening (2026-05-07T00:54:55+08:00)
+
+- [x] Split deterministic matrix completion from ratification certification.
+- [x] Add `ratification_gate.py` as the only certification transition gate.
+- [x] Add evidence bundle and issue ledger artifacts.
+- [x] Fail closed when no scoped Agent-COS `discussion_result.json` exists.
+- [ ] Upgrade to `FULLY_CERTIFIED` only after multi-model discussion returns no unresolved severity>=3 issues and `ratification_gate.py` passes.

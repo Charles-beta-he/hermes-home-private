@@ -12,7 +12,13 @@ concepts: [agent-cognitive-operating-system, complementary-matrix, interdiscipli
 <!-- COS_CONTRACT_START -->
 ```json
 {
-  "cos_status": "A_PLUS_COMPLETE",
+  "matrix_status": "A_PLUS_MATRIX_COMPLETE",
+  "legacy_cos_status": "A_PLUS_COMPLETE",
+  "deterministic_gate_status": "PASS",
+  "ratification_status": "CERTIFIED",
+  "final_integration_status": "FULLY_CERTIFIED",
+  "ratification_artifact": "05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json",
+  "ratification_gate": "/Users/charles/.hermes/scripts/ratification_gate.py",
   "required_pairings_count": 24,
   "missing_pairs": 0,
   "below_a_plus": 0,
@@ -42,6 +48,15 @@ concepts: [agent-cognitive-operating-system, complementary-matrix, interdiscipli
 }
 ```
 <!-- COS_CONTRACT_END -->
+
+## Certification Status
+
+- `matrix_status`: `A_PLUS_MATRIX_COMPLETE` — 24/24 required pairings are present, unique, `paired`, and graded `A+`.
+- `deterministic_gate_status`: `PASS` — local deterministic checks pass via `agent_cos_selfcheck.py`.
+- `ratification_status`: `CERTIFIED` — scoped Agent-COS discussion artifact passed `ratification_gate.py`.
+- `final_integration_status`: `FULLY_CERTIFIED` — the status transition is backed by `ratification-discussion-result-2026-05-07.json`, 3/3 available-model approvals, agreement matrix >= 0.95, no remaining risks, and grounded truth assessment.
+
+Certification transition rule: deterministic PASS is evidence only. `ratification_gate.py` promoted this artifact only after a target-bound discussion artifact had a certified verdict, resolved severity >=3 issue ledger, sufficient votes, agreement matrix >=0.85, and truth gate certification.
 
 ## A+ 评分定义
 
@@ -118,8 +133,20 @@ A+ 不是“理论本身很高级”，而是“理论 × Agent 子系统 × 可
 
 ## Evidence Boundary
 
-本表的 A+ 是 COS 落地评级，不是声称每个理论本身已被数学证明为最优。模型讨论只能提出候选盲点；最终完成由 `agent_cos_selfcheck.py`、`local_brain_exhaustive_audit.py`、`brainctl sync/reindex/search` 证明。
+本表的 A+ 是 COS matrix/local-brain 落地评级，不是声称每个理论本身已被数学证明为最优，也不是完整多模型认证。模型讨论只能提出候选盲点；deterministic matrix completion 由 `agent_cos_selfcheck.py`、`local_brain_exhaustive_audit.py`、`brainctl sync/reindex/search` 证明。完整 certification 必须另由 `ratification_gate.py` 绑定 Agent-COS-scoped `discussion_result.json` 后通过。
 
 ## Search Aliases
 
 Agent认知操作系统互补矩阵 无缺失配对 跨学科配对总表 全部A+ missing_pairs 0 below_a_plus 0 cognitive operating system complementary matrix interdisciplinary A+ local brain selfcheck
+
+
+## Ratification-first Lifecycle Status
+
+| Gate | Status | Authority | Meaning |
+|---|---|---|---|
+| Matrix completeness | `A_PLUS_MATRIX_COMPLETE` | `agent_cos_selfcheck.py` | 24/24 paired rows, all A+, no missing pairs |
+| Deterministic gate | `PASS` | local scripts + brain audit | Local evidence layer is ready |
+| Ratification gate | `CERTIFIED` | scoped `discussion_result.json` + `ratification_gate.py` | Multi-model certification artifact exists and passed gate |
+| Final integration | `FULLY_CERTIFIED` | lifecycle state machine | Current Agent COS landing is certified |
+
+Deterministic PASS is evidence only. The certification transition is backed by `ratification-discussion-result-2026-05-07.json` and `ratification_gate.py` PASS, not by a post-hoc certification shell.

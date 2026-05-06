@@ -105,8 +105,46 @@ Agent COS landing log proof ledger 本地大脑自检 互补矩阵 无缺失 A+ 
 
 ### Multi-model provenance
 
-`consult_models.py --tier T3 --quorum 4 --discussion` produced 4/4 planner fanout and `merged_plan.json`, but no `discussion_result.json`; after a long-running no-output discussion process it completed with exit code -15 (SIGTERM). Merged artifact reports `weak_consensus`, `consensus_score=0.66`, `arbitration_needed=true`. This is provenance only, not full ratification. Deterministic completion does not depend on model agreement.
+`consult_models.py --tier T3 --quorum 4 --discussion` produced 4/4 planner fanout and `merged_plan.json`, but no Agent-COS-scoped `discussion_result.json`; after a long-running no-output discussion process it completed with exit code -15 (SIGTERM). Merged artifact reports `weak_consensus`, `consensus_score=0.66`, `arbitration_needed=true`. This is provenance only, not full ratification. Deterministic matrix completion remains valid, but full certification is explicitly blocked by `ratification_gate.py` until a target-bound certified discussion artifact exists.
+
+### Ratification-first hardening (continued verification)
+
+- Added/kept `scripts/ratification_gate.py` as the certification transition gate.
+- Gate default is fail-closed: it does not auto-ratify from unrelated latest `discussion_result.json` artifacts.
+- Current expected result: `status=FAIL`, `ratification_status=NOT_CERTIFIED_NO_ARTIFACT`, `blocking_reasons=[discussion_result_missing]`, `final_integration_status=LOCAL_COMPLETE_UNRATIFIED`.
 
 ## Background completion notice
 
 Observed at 2026-05-07T00:13:27+0800: background process `proc_8de33b9e571f` completed with exit code `-15` and empty output. This confirms the prior caveat: no `discussion_result.json` was produced; the multi-model run remains fanout/merged-plan provenance only, not full discussion ratification.
+
+## Ratification-first loop update (2026-05-07T00:54:32+08:00)
+
+- Added scoped gate script: `/Users/charles/.hermes/scripts/ratification_gate.py`.
+- Added TDD coverage: `/Users/charles/.hermes/scripts/test_agent_cos_ratification.py`.
+- Added canonical evidence bundle: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-evidence-bundle.json`.
+- Added canonical issue ledger: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-issue-ledger.json`.
+- Current state split: `matrix_status=A_PLUS_MATRIX_COMPLETE`, `deterministic_gate_status=PASS`, `ratification_status=NOT_CERTIFIED_NO_ARTIFACT`, `final_integration_status=LOCAL_COMPLETE_UNRATIFIED`.
+- Anti-shell rule: deterministic PASS is evidence only; certification requires scoped `discussion_result.json` plus `ratification_gate.py` PASS.
+
+### Commands
+
+- selfcheck exit `0`
+- local brain audit exit `0`
+- ratification unit tests exit `0`
+- py_compile exit `0`
+- ratification gate exit `2` (expected fail-closed until scoped discussion artifact exists)
+
+## Multi-model ratification certified (2026-05-07T01:05:41+08:00)
+
+- T1 available-model run: `/Users/charles/.hermes/tick-20260506-170132/discussion_result.json`.
+- Canonical brain artifact: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json`.
+- Models: `gpt-5.5, mimo-v2.5-pro, deepseek-v4-pro`.
+- Discussion status: `certified`.
+- Agreement matrix: `{'framing': 0.95, 'approach': 0.95, 'implementation_order': 0.95}`.
+- Votes: `3 approve / 0 reject`.
+- Remaining risks: `[]`.
+- Truth assessment: `grounded`, evidence coverage `1.0`, unsupported high-severity claims `[]`.
+- Gate command: `python3 /Users/charles/.hermes/scripts/ratification_gate.py --json --discussion-result /Users/charles/.hermes/tick-20260506-170132/discussion_result.json` -> exit `0`.
+- Final status: `FULLY_CERTIFIED`.
+
+T3 four-model attempt `/Users/charles/.hermes/tick-20260506-165552/` is recorded as degraded_not_certified because Claude credentials were unavailable and planner quorum was below min_quorum. It is not used as certification. The successful certification is the scoped T1 ratification artifact above.
