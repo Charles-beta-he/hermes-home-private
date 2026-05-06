@@ -63,12 +63,12 @@ Accepted landing decisions:
 See:
 
 - [[2026-05-06-multimodel-local-brain-category-fill-log]]
-- [[Evidence: Symphony source and Obsidian CLI enablement]]
-- [[Local brain canonical vault]]
-- [[Model agreement is not evidence]]
+- [[00-evidence/2026-05-06-symphony-source-and-obsidian-cli-evidence|Evidence: Symphony source and Obsidian CLI enablement]]
+- [[10-atoms/local-brain-canonical-vault|Local brain canonical vault]]
+- [[10-atoms/model-agreement-is-not-evidence|Model agreement is not evidence]]
 - [[Project - Hermes Local Brain]]
-- [[Skill mirror: Obsidian sync and brain routing]]
-- [[Local-first Obsidian memory preferences]]
+- [[40-skills/obsidian-sync-and-brain-routing|Skill mirror: Obsidian sync and brain routing]]
+- [[50-prefs/local-first-obsidian-memory-preferences|Local-first Obsidian memory preferences]]
 
 ## Remaining caveat
 

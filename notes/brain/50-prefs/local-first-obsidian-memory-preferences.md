@@ -28,5 +28,5 @@ Non-goals:
 
 Related:
 
-- [[Local brain canonical vault]]
-- [[Model agreement is not evidence]]
+- [[10-atoms/local-brain-canonical-vault|Local brain canonical vault]]
+- [[10-atoms/model-agreement-is-not-evidence|Model agreement is not evidence]]
