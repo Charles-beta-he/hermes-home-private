@@ -1,8 +1,8 @@
 # Evolution Event: Symphony → Obsidian Local Brain Control Plane
 
-**Date:** 2026-05-06  
-**Type:** methodology-migration | local-brain-architecture | workflow-hardening  
-**Status:** completed  
+**Date:** 2026-05-06
+**Type:** methodology-migration | local-brain-architecture | workflow-hardening
+**Status:** completed
 **Scope:** Level 0 update-safe notes/skills/memory; no upstream push required
 
 ## Source Signal
@@ -45,10 +45,10 @@ Created/updated local-brain artifacts:
 
 | Artifact | Purpose |
 |----------|---------|
-| `/Users/charles/Documents/brain/00-system/Hermes Local Brain Memory Hierarchy.md` | Canonical 7-layer memory hierarchy and write routing rules |
-| `/Users/charles/Documents/brain/10-ai-systems/OpenAI Symphony - Codex Orchestration.md` | Source analysis and Hermes adaptation map |
-| `/Users/charles/Documents/brain/60-reviews/2026-05-06-hermes-brain-hierarchy-multi-model-review.md` | Multi-model provenance and timeout/dissent caveat |
-| `/Users/charles/Documents/brain/00-system/Obsidian Setup - Hermes Local Brain.md` | Obsidian.app / official CLI / vault registration record |
+| `/Users/charles/Documents/brain/01-系统与偏好/system/Hermes Local Brain Memory Hierarchy.md` | Canonical 7-layer memory hierarchy and write routing rules |
+| `/Users/charles/Documents/brain/04-知识原子/ai-systems/OpenAI Symphony - Codex Orchestration.md` | Source analysis and Hermes adaptation map |
+| `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-06-hermes-brain-hierarchy-multi-model-review.md` | Multi-model provenance and timeout/dissent caveat |
+| `/Users/charles/Documents/brain/01-系统与偏好/system/Obsidian Setup - Hermes Local Brain.md` | Obsidian.app / official CLI / vault registration record |
 | `/Users/charles/.hermes/notes/evolution/2026-05-06-symphony-obsidian-local-brain.md` | Formal self-evolution event log |
 | `/Users/charles/.hermes/logs/evolve.log` | Append-only self-evolution event stream |
 | `/Users/charles/.hermes/notes/engineering-cybernetics/autonomous-evolution-log.jsonl` | Engineering-cybernetics evolution event stream |
@@ -133,10 +133,10 @@ Required final verification commands for this event:
 ```bash
 python3 ~/.hermes/scripts/verify-evolution-event.py \
   /Users/charles/.hermes/notes/evolution/2026-05-06-symphony-obsidian-local-brain.md \
-  /Users/charles/Documents/brain/00-system/Hermes\ Local\ Brain\ Memory\ Hierarchy.md \
-  /Users/charles/Documents/brain/10-ai-systems/OpenAI\ Symphony\ -\ Codex\ Orchestration.md \
-  /Users/charles/Documents/brain/60-reviews/2026-05-06-hermes-brain-hierarchy-multi-model-review.md \
-  /Users/charles/Documents/brain/00-system/Obsidian\ Setup\ -\ Hermes\ Local\ Brain.md \
+  /Users/charles/Documents/brain/01-系统与偏好/system/Hermes\ Local\ Brain\ Memory\ Hierarchy.md \
+  /Users/charles/Documents/brain/04-知识原子/ai-systems/OpenAI\ Symphony\ -\ Codex\ Orchestration.md \
+  /Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-06-hermes-brain-hierarchy-multi-model-review.md \
+  /Users/charles/Documents/brain/01-系统与偏好/system/Obsidian\ Setup\ -\ Hermes\ Local\ Brain.md \
   --repo=/Users/charles/.hermes/hermes-agent
 
 python3 ~/.hermes/scripts/brainctl.py --json sync

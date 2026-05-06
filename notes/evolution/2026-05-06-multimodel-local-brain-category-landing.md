@@ -1,8 +1,8 @@
 # Evolution Event: Multi-model Thinking → Local Brain Category Landing
 
-**Date:** 2026-05-06  
-**Type:** methodology-migration | local-brain-category-landing | audit-log-hardening  
-**Status:** completed  
+**Date:** 2026-05-06
+**Type:** methodology-migration | local-brain-category-landing | audit-log-hardening
+**Status:** completed
 **Scope:** Level 0 notes + Obsidian vault notes; no upstream push required
 
 ## Source Signal
@@ -21,14 +21,14 @@ Created local-brain category folders and category notes:
 
 | Layer | Folder/File | Purpose |
 |---|---|---|
-| L0 | `/Users/charles/Documents/brain/00-evidence/2026-05-06-symphony-source-and-obsidian-cli-evidence.md` | Raw source/provenance evidence |
-| L1 | `/Users/charles/Documents/brain/10-atoms/local-brain-canonical-vault.md` | Stable canonical-vault claim |
-| L1 | `/Users/charles/Documents/brain/10-atoms/model-agreement-is-not-evidence.md` | Stable evidence-first truth-gate principle |
-| L2 | `/Users/charles/Documents/brain/20-projects/hermes-local-brain/Project - Hermes Local Brain.md` | Project MOC/status |
-| L3 | `/Users/charles/Documents/brain/30-tasks/2026-05-06-multimodel-local-brain-category-fill-log.md` | Task proof log with expiry |
-| L4 | `/Users/charles/Documents/brain/40-skills/obsidian-sync-and-brain-routing.md` | Skill mirror/index card |
-| L5 | `/Users/charles/Documents/brain/50-prefs/local-first-obsidian-memory-preferences.md` | Stable preference mirror |
-| L6 | `/Users/charles/Documents/brain/60-reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log.md` | Multi-model landing review log |
+| L0 | `/Users/charles/Documents/brain/02-证据与原文/evidence/2026-05-06-symphony-source-and-obsidian-cli-evidence.md` | Raw source/provenance evidence |
+| L1 | `/Users/charles/Documents/brain/04-知识原子/atoms/local-brain-canonical-vault.md` | Stable canonical-vault claim |
+| L1 | `/Users/charles/Documents/brain/04-知识原子/atoms/model-agreement-is-not-evidence.md` | Stable evidence-first truth-gate principle |
+| L2 | `/Users/charles/Documents/brain/05-实践与项目/projects/hermes-local-brain/Project - Hermes Local Brain.md` | Project MOC/status |
+| L3 | `/Users/charles/Documents/brain/05-实践与项目/tasks/2026-05-06-multimodel-local-brain-category-fill-log.md` | Task proof log with expiry |
+| L4 | `/Users/charles/Documents/brain/06-治理与评审/skills/obsidian-sync-and-brain-routing.md` | Skill mirror/index card |
+| L5 | `/Users/charles/Documents/brain/01-系统与偏好/prefs/local-first-obsidian-memory-preferences.md` | Stable preference mirror |
+| L6 | `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log.md` | Multi-model landing review log |
 
 ## Multi-model Evidence
 
@@ -67,7 +67,7 @@ No remote push is required. This is private local evolution.
 Verification commands for this event:
 
 ```bash
-python3 ~/.hermes/scripts/verify-evolution-event.py   /Users/charles/.hermes/notes/evolution/2026-05-06-multimodel-local-brain-category-landing.md   /Users/charles/Documents/brain/00-evidence/2026-05-06-symphony-source-and-obsidian-cli-evidence.md   /Users/charles/Documents/brain/10-atoms/local-brain-canonical-vault.md   /Users/charles/Documents/brain/10-atoms/model-agreement-is-not-evidence.md   /Users/charles/Documents/brain/20-projects/hermes-local-brain/Project\ -\ Hermes\ Local\ Brain.md   /Users/charles/Documents/brain/30-tasks/2026-05-06-multimodel-local-brain-category-fill-log.md   /Users/charles/Documents/brain/40-skills/obsidian-sync-and-brain-routing.md   /Users/charles/Documents/brain/50-prefs/local-first-obsidian-memory-preferences.md   /Users/charles/Documents/brain/60-reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log.md   --repo=/Users/charles/.hermes/hermes-agent
+python3 ~/.hermes/scripts/verify-evolution-event.py   /Users/charles/.hermes/notes/evolution/2026-05-06-multimodel-local-brain-category-landing.md   /Users/charles/Documents/brain/02-证据与原文/evidence/2026-05-06-symphony-source-and-obsidian-cli-evidence.md   /Users/charles/Documents/brain/04-知识原子/atoms/local-brain-canonical-vault.md   /Users/charles/Documents/brain/04-知识原子/atoms/model-agreement-is-not-evidence.md   /Users/charles/Documents/brain/05-实践与项目/projects/hermes-local-brain/Project\ -\ Hermes\ Local\ Brain.md   /Users/charles/Documents/brain/05-实践与项目/tasks/2026-05-06-multimodel-local-brain-category-fill-log.md   /Users/charles/Documents/brain/06-治理与评审/skills/obsidian-sync-and-brain-routing.md   /Users/charles/Documents/brain/01-系统与偏好/prefs/local-first-obsidian-memory-preferences.md   /Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log.md   --repo=/Users/charles/.hermes/hermes-agent
 
 python3 ~/.hermes/scripts/brainctl.py --json sync
 python3 ~/.hermes/scripts/brainctl.py --json reindex
@@ -118,6 +118,6 @@ Final observed brain visibility:
 ```text
 brainctl sync: Sync complete: 1 pushed, 8 pulled
 brainctl reindex: indexed_blocks=855, skipped_secret_blocks=0, skipped_ignored_files=0
-brainctl search "multimodel local brain category fill": hit 60-reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log.md and 30-tasks/2026-05-06-multimodel-local-brain-category-fill-log.md
+brainctl search "multimodel local brain category fill": hit 06-治理与评审/reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log.md and 05-实践与项目/tasks/2026-05-06-multimodel-local-brain-category-fill-log.md
 brainctl search "local brain category landing verification": hit 99-hermes-notes/evolution/2026-05-06-multimodel-local-brain-category-landing.md
 ```

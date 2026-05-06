@@ -21,9 +21,9 @@ project: hermes-code-evidence-mcp-fusion
 ## Artifact
 
 - `/Users/charles/.hermes/scripts/gitnexus_fusion_selfcheck.py`
-- [[20-projects/hermes-code-evidence-mcp/Project - Hermes Code Evidence MCP Fusion]]
-- [[08-实践方案/04-GitNexus-inspired多模型代码证据门落地方案]]
-- [[60-reviews/2026-05-06-gitnexus-fusion-multimodel-selfcheck]]
+- [[05-实践与项目/projects/hermes-code-evidence-mcp/Project - Hermes Code Evidence MCP Fusion]]
+- [[05-实践与项目/实践方案/04-GitNexus-inspired多模型代码证据门落地方案]]
+- [[06-治理与评审/reviews/2026-05-06-gitnexus-fusion-multimodel-selfcheck]]
 
 ## Caveat
 
