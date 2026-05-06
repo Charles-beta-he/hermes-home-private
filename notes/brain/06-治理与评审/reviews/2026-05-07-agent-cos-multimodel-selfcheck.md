@@ -49,7 +49,7 @@ Agent COS multi-model selfcheck review issue ledger A+ rubric evidence boundary 
 | planner fanout | 4/4 plans present: Claude, Codex/gpt-5.5, DeepSeek, MiMo |
 | merged_plan | present |
 | discussion_result | missing |
-| process outcome | killed after long-running discussion produced no additional output |
+| process outcome | completed with exit code -15 (SIGTERM) after long-running discussion produced no additional output |
 | consensus_verdict | `weak_consensus` |
 | consensus_score | `0.66` |
 | unanimous_count | `0` |
@@ -68,3 +68,7 @@ This is not full multi-model ratification. It is a useful four-model fanout prov
 - Complementarity matrix verifier -> landed as `agent_cos_selfcheck.py`.
 - Proof log and brainctl gate -> landed in task log and playbook completion gate.
 - Scoped commit guard -> executed after mirror verification.
+
+## Background completion notice
+
+Observed at 2026-05-07T00:13:27+0800: background process `proc_8de33b9e571f` completed with exit code `-15` and empty output. This confirms the prior caveat: no `discussion_result.json` was produced; the multi-model run remains fanout/merged-plan provenance only, not full discussion ratification.

@@ -105,4 +105,8 @@ Agent COS landing log proof ledger 本地大脑自检 互补矩阵 无缺失 A+ 
 
 ### Multi-model provenance
 
-`consult_models.py --tier T3 --quorum 4 --discussion` produced 4/4 planner fanout and `merged_plan.json`, but no `discussion_result.json`; after a long-running no-output discussion process it was killed. Merged artifact reports `weak_consensus`, `consensus_score=0.66`, `arbitration_needed=true`. This is provenance only, not full ratification. Deterministic completion does not depend on model agreement.
+`consult_models.py --tier T3 --quorum 4 --discussion` produced 4/4 planner fanout and `merged_plan.json`, but no `discussion_result.json`; after a long-running no-output discussion process it completed with exit code -15 (SIGTERM). Merged artifact reports `weak_consensus`, `consensus_score=0.66`, `arbitration_needed=true`. This is provenance only, not full ratification. Deterministic completion does not depend on model agreement.
+
+## Background completion notice
+
+Observed at 2026-05-07T00:13:27+0800: background process `proc_8de33b9e571f` completed with exit code `-15` and empty output. This confirms the prior caveat: no `discussion_result.json` was produced; the multi-model run remains fanout/merged-plan provenance only, not full discussion ratification.
