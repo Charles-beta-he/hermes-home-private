@@ -1,0 +1,334 @@
+{
+  "meta": {
+    "planner_model": "ensemble:4",
+    "planner_role": "merged",
+    "state_hash": "eb2a1fcd89fc526ae2e43a09ffa66997d39bdfd86975db6ff07468083cebeb5d",
+    "tier_target": "T3",
+    "confidence": 0.6528,
+    "source_plans": 4
+  },
+  "diagnosis": {
+    "root_cause_class": "verifier_gap",
+    "summary": "Merged from 4 planners, consensus score=0.653"
+  },
+  "patches": [],
+  "merge_info": {
+    "strategy": "intersection_first",
+    "planners": 4,
+    "quorum": 3,
+    "unanimous_count": 0,
+    "majority_count": 0,
+    "minority_count": 19,
+    "arbitration_needed": true,
+    "minority_patches": [
+      "P1-real-delta-metrics",
+      "P2-impact-aware-actionable-gate",
+      "P3-fix-tool-config-diagnostic",
+      "P4-aggregation-precision",
+      "P5-grounding-linker-fix",
+      "P1-grounding-schema-normalizer",
+      "P2-action-state-ledger",
+      "P3-readonly-tool-failure-diagnostic",
+      "P4-autopsy-aggregation-evidence",
+      "P5-usage-grade-classification",
+      "P-001",
+      "P-002",
+      "P-003",
+      "P-004",
+      "P-005",
+      "P1-closure-metrics",
+      "P2-action-item-precision",
+      "P3-roi-threshold-documentation",
+      "P4-usage-score-clarity"
+    ],
+    "consensus_score": 0.6528,
+    "consensus_verdict": "weak_consensus",
+    "max_blast_radius": "single_tier"
+  },
+  "verification": {
+    "expected_metric_delta": {
+      "main_pass_rate": 0.01
+    },
+    "guard_metrics": [
+      "main_pass_rate"
+    ],
+    "tier_eval_plan": "T0_T1"
+  },
+  "rollback_signal": {
+    "auto_rollback_if": "main_pass_rate < pre - 0.05",
+    "kill_switch_inc": false
+  },
+  "quota_snapshot": {
+    "anthropic::claude-opus-4-7": {
+      "model": "claude-opus-4-7",
+      "provider": "anthropic",
+      "status": "unknown",
+      "observability": "unknown",
+      "quota_type": "unknown",
+      "remaining_tokens": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "error_inference",
+      "confidence": 0.2,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-05-06T11:31:47.023722Z"
+    },
+    "openai-codex::gpt-5.5": {
+      "model": "gpt-5.5",
+      "provider": "openai-codex",
+      "status": "unobservable",
+      "observability": "unobservable",
+      "quota_type": "subscription_cap",
+      "remaining_tokens": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "response_headers",
+      "confidence": 0.2,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-05-06T11:32:56.752660Z",
+      "usage": {}
+    },
+    "deepseek::deepseek-v4-pro": {
+      "model": "deepseek-v4-pro",
+      "provider": "deepseek",
+      "status": "unknown",
+      "observability": "unknown",
+      "quota_type": "unknown",
+      "remaining_tokens": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "response_headers",
+      "confidence": 0.1,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-05-06T11:33:20.987475Z",
+      "usage": {}
+    },
+    "xiaomi::mimo-v2.5-pro": {
+      "model": "mimo-v2.5-pro",
+      "provider": "xiaomi",
+      "status": "unknown",
+      "observability": "unknown",
+      "quota_type": "unknown",
+      "remaining_tokens": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "response_headers",
+      "confidence": 0.1,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-05-06T11:34:43.999919Z",
+      "usage": {}
+    }
+  },
+  "quota_confidence": {
+    "schema_version": 1,
+    "exact_count": 0,
+    "estimated_count": 0,
+    "unknown_count": 3,
+    "unobservable_count": 1,
+    "exhausted_count": 0,
+    "has_low_confidence_quota": true,
+    "low_confidence_models": [
+      "claude-opus-4-7",
+      "deepseek-v4-pro",
+      "gpt-5.5",
+      "mimo-v2.5-pro"
+    ]
+  },
+  "skipped_due_to_quota": [],
+  "fanout_certification": {
+    "schema_version": 1,
+    "status": "fanout_quorum_met",
+    "certified": true,
+    "multi_model_certified": true,
+    "certification_scope": "multi_model",
+    "below_min_quorum": false,
+    "success_count": 4,
+    "fail_count": 0,
+    "planner_count": 4,
+    "min_quorum": 2,
+    "reason": "planner fan-out met min_quorum: 4/2"
+  },
+  "evidence_bundle": {
+    "schema_version": 1,
+    "created_at": "2026-05-06T15:02:53.694906+00:00",
+    "claims": [
+      {
+        "id": "C-001",
+        "text": "C1: The self-evolution cron job ran successfully at 2026-05-06T22:56:46+08:00 with last_status ok.",
+        "severity": 3
+      },
+      {
+        "id": "C-002",
+        "text": "C2: The manual loop produced exactly one HIGH reliability fix_tool_config action with ROI 1.75.",
+        "severity": 3
+      },
+      {
+        "id": "C-003",
+        "text": "C3: Auto-exec did not execute that action because its ROI was below the >=2.0 actionable threshold.",
+        "severity": 3
+      },
+      {
+        "id": "C-004",
+        "text": "C4: System health checks are operationally green except usage-score Grade B caused by missing ensemble/ratification corpus components.",
+        "severity": 3
+      },
+      {
+        "id": "C-005",
+        "text": "C5: The evolution closure log currently records baseline/new/delta as constant zero, so kept/noop is not a real performance delta.",
+        "severity": 3
+      }
+    ],
+    "evidence": [
+      {
+        "cron_self_evolve": {
+          "job_id": "6510a716937c",
+          "name": "双脑自进化 (Hermes→ClaudeCode→落地→Eval)",
+          "script": "self-improvement-pipeline.py",
+          "last_run_at": "2026-05-06T22:56:46.436045+08:00",
+          "last_status": "ok",
+          "prompt": "Summarize injected self-improvement-pipeline.py output in 3 lines; report top high-priority action and manual follow-up."
+        },
+        "manual_loop_commands": [
+          "python3 ~/.hermes/scripts/post-session-autopsy.py --recent 10 --write",
+          "python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec"
+        ],
+        "action_plan": {
+          "generated_at": "2026-05-06T22:57:02.638896",
+          "total_items": 1,
+          "summary": {
+            "critical": 0,
+            "high": 1,
+            "medium": 0,
+            "low": 0
+          },
+          "items": [
+            {
+              "rank": 1,
+              "type": "fix_tool_config",
+              "summary": "工具失败 10 次 (工具失败 2 次)",
+              "impact": "high",
+              "impact_score": 7,
+              "effort": "medium",
+              "effort_score": 4,
+              "roi": 1.75,
+              "category": "reliability",
+              "source": "session_autopsy",
+              "detail": "工具失败 2 次",
+              "suggestion": "检查对应工具的配置/超时设置"
+            }
+          ]
+        },
+        "evolve_log_last2": [
+          "{\"baseline\":0,\"critical\":0,\"delta\":0,\"diagnosis\":\"no actionable improvement items\",\"eval_result\":\"noop\",\"high\":0,\"mode\":\"run\",\"new\":0,\"source\":\"self-improvement-pipeline\",\"steps_count\":0,\"ts\":\"2026-05-06T14:56:38Z\"}",
+          "{\"baseline\":0,\"critical\":0,\"delta\":0,\"diagnosis\":\"priority queue has 1 item(s), critical=0, high=1\",\"eval_result\":\"kept\",\"high\":1,\"mode\":\"auto_exec\",\"new\":0,\"source\":\"self-improvement-pipeline\",\"steps_count\":1,\"ts\":\"2026-05-06T14:57:02Z\"}"
+        ],
+        "health": {
+          "usage_score": 75.0,
+          "usage_grade": "B",
+          "score_gaps": {
+            "ensemble_executed": "0/15",
+            "ratification_corpus": "0/10"
+          },
+          "cron_bad_count": 0,
+          "missed_count": 0,
+          "self_test": "64/64 passed"
+        },
+        "code_facts": {
+          "stale_transient_suppression": "tool_failures suppressed only when age>168h, or current_ops_healthy() and age>72h",
+          "tool_failure_aggregation": "failure_sigs = all non-stale tool_failures; worst_tool_detail counts detail strings, not exact tool for medium signals",
+          "auto_execute_threshold": "actionable = roi >= 2.0 and impact >= 4",
+          "observed_action_roi": 1.75,
+          "fix_tool_config_handler": "if actionable, only prints suggestion and logs pending_review; no automatic diagnostic script",
+          "closure_event_metrics": "append_evolution_closure writes baseline/new/delta as 0 constants; eval_result is noop if no items else kept"
+        },
+        "commit": "ed9a476 chore(evolve): trigger self-improvement loop",
+        "scope": "analysis only; no code changes requested yet; no push",
+        "id": "E-001",
+        "type": "note",
+        "summary": "",
+        "supports": [],
+        "contradicts": []
+      }
+    ],
+    "grounding": {
+      "C-001": {
+        "claim_id": "C-001",
+        "claim_text": "C1: The self-evolution cron job ran successfully at 2026-05-06T22:56:46+08:00 with last_status ok.",
+        "severity": 3,
+        "truth_status": "unsupported",
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": []
+      },
+      "C-002": {
+        "claim_id": "C-002",
+        "claim_text": "C2: The manual loop produced exactly one HIGH reliability fix_tool_config action with ROI 1.75.",
+        "severity": 3,
+        "truth_status": "unsupported",
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": []
+      },
+      "C-003": {
+        "claim_id": "C-003",
+        "claim_text": "C3: Auto-exec did not execute that action because its ROI was below the >=2.0 actionable threshold.",
+        "severity": 3,
+        "truth_status": "unsupported",
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": []
+      },
+      "C-004": {
+        "claim_id": "C-004",
+        "claim_text": "C4: System health checks are operationally green except usage-score Grade B caused by missing ensemble/ratification corpus components.",
+        "severity": 3,
+        "truth_status": "unsupported",
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": []
+      },
+      "C-005": {
+        "claim_id": "C-005",
+        "claim_text": "C5: The evolution closure log currently records baseline/new/delta as constant zero, so kept/noop is not a real performance delta.",
+        "severity": 3,
+        "truth_status": "unsupported",
+        "supporting_evidence_ids": [],
+        "contradicting_evidence_ids": []
+      }
+    },
+    "evidence_coverage": 0.0,
+    "verified_claim_count": 0,
+    "claim_count": 5
+  },
+  "truth_assessment": {
+    "schema_version": 1,
+    "truth_status": "unsupported",
+    "can_certify_truth": false,
+    "claim_count": 5,
+    "verified_claim_count": 0,
+    "evidence_coverage": 0.0,
+    "unsupported_claim_ids": [
+      "C-001",
+      "C-002",
+      "C-003",
+      "C-004",
+      "C-005"
+    ],
+    "unsupported_high_severity_claim_ids": [
+      "C-001",
+      "C-002",
+      "C-003",
+      "C-004",
+      "C-005"
+    ],
+    "contradicted_claim_ids": [],
+    "contradicted_high_severity_claim_ids": [],
+    "reasons": [
+      "unsupported factual claims: ['C-001', 'C-002', 'C-003', 'C-004', 'C-005']"
+    ]
+  },
+  "certification_status": "truth_not_certified",
+  "degradation_reasons": [
+    "unsupported factual claims: ['C-001', 'C-002', 'C-003', 'C-004', 'C-005']"
+  ]
+}
