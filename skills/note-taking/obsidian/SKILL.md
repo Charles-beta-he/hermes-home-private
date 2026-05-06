@@ -28,7 +28,25 @@ Derived indexes live under `~/.hermes/memory/` and are rebuildable caches; `~/Do
 
 ### Official Obsidian CLI
 
-Obsidian has an official CLI in recent versions, but this machine may not have the `obsidian`/`obsidian-cli` binary installed. Treat it as optional: detect it first and fall back to Markdown filesystem operations.
+Install Obsidian on macOS with Homebrew cask when missing:
+
+```bash
+brew install --cask obsidian
+```
+
+Current observed Homebrew behavior: installing the cask places `Obsidian.app` at `/Applications/Obsidian.app` and links the official CLI as:
+
+```bash
+/opt/homebrew/bin/obsidian -> /Applications/Obsidian.app/Contents/MacOS/obsidian-cli
+```
+
+Obsidian's official CLI is app-mediated. The binary can exist while runtime commands still fail with:
+
+```text
+Command line interface is not enabled. Please turn it on in Settings > General > Advanced.
+```
+
+If that happens, the app must be opened and the user/app setting toggled: Settings → General → Advanced → Command line interface. Until then, treat the CLI as installed but not runtime-enabled; fall back to Markdown filesystem operations and `brainctl.py`.
 
 Safe default capabilities: read/create/append/search/backlinks/tags/properties/tasks/open. Do not expose destructive or executable operations (`delete`, `eval`, arbitrary `command`, plugin install/enable/disable) without explicit scope and whitelist.
 
@@ -119,6 +137,8 @@ python3 ~/.hermes/scripts/brainctl.py --json status
 python3 ~/.hermes/scripts/sync-brain.py --status
 ```
 Treat sync output as an audit artifact; if there are unexpected pushed/pulled counts, inspect diffs before committing further local-brain changes.
+
+Pitfall: the canonical sync script must skip only the pull-mirror subtree `~/.hermes/notes/brain/`, not every path containing the substring `brain`. If a valid Hermes note such as `...local-brain.md` does not appear under `~/Documents/brain/99-hermes-notes/` after sync, regression-test `~/.hermes/scripts/sync-brain.py` with `~/.hermes/scripts/test_sync_brain.py` and ensure the filter checks `src_path.relative_to(HERMES_NOTES).parts[0] == "brain"`.
 
 ### Legacy narrow sync
 

@@ -29,7 +29,13 @@ def push():
     HERMES_BRAIN_SYNC.mkdir(parents=True, exist_ok=True)
     count = 0
     for src_path in HERMES_NOTES.rglob("*.md"):
-        if "brain" in str(src_path):
+        # Skip only the pull-mirror subtree ~/.hermes/notes/brain/.
+        # Do not skip ordinary notes whose filename contains "brain".
+        try:
+            rel_parts = src_path.relative_to(HERMES_NOTES).parts
+        except ValueError:
+            rel_parts = src_path.parts
+        if rel_parts and rel_parts[0] == "brain":
             continue
         if ".git" in str(src_path):
             continue
@@ -63,7 +69,13 @@ def status():
     print("=== Push (Hermes → Brain) ===")
     push_count = 0
     for src_path in HERMES_NOTES.rglob("*.md"):
-        if "brain" in str(src_path):
+        # Skip only the pull-mirror subtree ~/.hermes/notes/brain/.
+        # Do not skip ordinary notes whose filename contains "brain".
+        try:
+            rel_parts = src_path.relative_to(HERMES_NOTES).parts
+        except ValueError:
+            rel_parts = src_path.parts
+        if rel_parts and rel_parts[0] == "brain":
             continue
         if ".git" in str(src_path):
             continue
