@@ -36,3 +36,6 @@ folder: 60-reviews
 ## MemPalace 派生索引评审
 
 - [[60-reviews/2026-05-06-local-brain-mempalace-multimodel-selfcheck]]
+## 控制论多模型介入评审
+
+- [[60-reviews/2026-05-06-cybernetic-multimodel-intervention-review]]

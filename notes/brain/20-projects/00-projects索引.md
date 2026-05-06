@@ -36,3 +36,8 @@ folder: 20-projects
 - [[20-projects/local-brain-mempalace-derived/Project - MemPalace Derived Local Brain]]
 - [[20-projects/local-brain-mempalace-derived/P10 - Long-term Strategy]]
 - [[20-projects/local-brain-mempalace-derived/P9 - Implementation Backlog]]
+## 控制论多模型介入
+
+- [[20-projects/cybernetic-multimodel-intervention/Project - Cybernetic Multi-model Intervention]]
+- [[20-projects/cybernetic-multimodel-intervention/P10 - Long-term Strategy]]
+- [[20-projects/cybernetic-multimodel-intervention/P9 - Implementation Backlog]]

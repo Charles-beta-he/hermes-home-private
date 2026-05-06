@@ -55,3 +55,10 @@ def self_audit(rule_history):
 
 > von Foerster, H. (1981). *Observing Systems*. Intersystems Publications.
 > Glanville, R. (2002). "Second-order cybernetics". In *Systems Science and Cybernetics*, UNESCO.
+
+## 多模型自观察 / multi-model self-observation
+
+second-order cybernetics 在多模型系统中的关键不是“更多模型同意”，而是观察 observer：谁选择了模型？谁定义了证据门？谁把 timeout/dissent 写入 issue ledger？谁审计 audit rules？
+
+对应 atom：[[10-atoms/second-order-cybernetic-self-observation]]。
+对应 playbook：[[08-实践方案/06-一阶二阶控制论多模型介入Playbook]]。

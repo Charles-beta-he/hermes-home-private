@@ -36,3 +36,7 @@ folder: 10-atoms
 
 - [[10-atoms/evidence-boundary-lossy-summary]]
 - [[10-atoms/minority-opinion-model-name-is-not-authority]]
+## 控制论多模型介入
+
+- [[10-atoms/first-order-cybernetic-multimodel-intervention]]
+- [[10-atoms/second-order-cybernetic-self-observation]]

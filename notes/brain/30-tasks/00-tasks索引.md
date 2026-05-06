@@ -37,3 +37,6 @@ folder: 30-tasks
 ## MemPalace 派生索引任务日志
 
 - [[30-tasks/2026-05-06-local-brain-mempalace-landing-log]]
+## 控制论多模型介入任务日志
+
+- [[30-tasks/2026-05-06-cybernetic-multimodel-intervention-log]]
