@@ -79,3 +79,9 @@ skill_view('some-skill') 返回知识卡片 + 最后评价：
 ## 引用
 
 > Havel, V. (1978). "The Power of the Powerless". *Living in Truth*. Faber and Faber.
+
+## Evidence Boundary
+
+- 来源支持什么：该卡仅记录理论概念、经典解释或本地大脑已引用的工程化映射。
+- Hermes 映射边界：Agent/多模型/技能治理映射是工程类比与设计启发，不等同于原理论在数学或社会科学意义上的严格证明。
+- 不应过度推出什么：不得仅凭该理论卡宣称某项代码、流程或策略已经正确；仍需工具证据、原文证据、审计输出或运行验证。

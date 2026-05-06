@@ -1,6 +1,7 @@
 ---
 type: template
 for: project-moc
+status: template
 ---
 
 # Project - <Name>

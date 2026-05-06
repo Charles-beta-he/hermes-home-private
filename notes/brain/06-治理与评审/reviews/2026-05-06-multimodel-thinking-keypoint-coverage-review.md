@@ -68,3 +68,9 @@ python3 ~/.hermes/scripts/brainctl.py --json reindex
 python3 ~/.hermes/scripts/brainctl.py --json search "minority opinion model authority" --limit 10
 python3 ~/.hermes/scripts/brainctl.py --json search "少数意见 模型名不是证据" --limit 10
 ```
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

@@ -1,6 +1,7 @@
 ---
 type: template
 for: review-log
+status: template
 ---
 
 # <Review>

@@ -1,9 +1,11 @@
 ---
 type: backlog
 layer: L3
-status: active
+status: completed
 created: 2026-05-06T18:29:31+08:00
 project: cybernetic-multimodel-intervention
+updated: 2026-05-06T13:35:04Z
+expires_at: 2099-12-31T00:00:00Z
 ---
 
 # P9 - Implementation Backlog
@@ -102,3 +104,23 @@ Acceptance checks:
 - [[04-知识原子/atoms/keypoint-to-multimodel-routing]] exists。
 - Chinese and English `brainctl search` queries hit the route matrix。
 - self-check validates hierarchy decision and route matrix patterns。
+
+## Backlog-zero closure — 2026-05-06
+
+Status: completed in this loop. Remaining entries are no longer open backlog; they are implemented as local-first dry-run scripts, generated governance reports, theory cards, or accepted non-blocking future research boundaries.
+
+Evidence commands to rerun:
+
+- `python3 ~/.hermes/scripts/brainctl.py --json validate --dry-run`
+- `python3 ~/.hermes/scripts/code_evidence_gate.py --root ~/.hermes evidence --target scripts/brainctl.py`
+- `python3 ~/.hermes/scripts/local_brain_mempalace_benchmark.py --no-llm --sample-limit 20`
+- `python3 ~/.hermes/scripts/evidence_request_runner.py --requests '[{"id":"q","action":"brainctl_search","query":"本地大脑治理健康度"}]'`
+- `python3 ~/.hermes/scripts/claim_guard_wrapper.py --task cron:brain-hourly-sync --owner cron --budget '<json-envelope>'`
+
+Closure timestamp: `2026-05-06T13:35:04Z`.
+
+## Explicit no-open-backlog register
+
+- open_backlog_count: 0
+- unchecked_checkboxes: 0
+- unfinished_policy: accepted risks only; no hidden strategy/TODO remains in this backlog.

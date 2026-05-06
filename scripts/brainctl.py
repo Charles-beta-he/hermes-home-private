@@ -488,6 +488,258 @@ def open_note(path: str, *, json_mode: bool = False, launch: bool = False) -> di
     return result
 
 
+def parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
+    if not text.startswith("---\n"):
+        return {}, text
+    end = text.find("\n---", 4)
+    if end == -1:
+        return {}, text
+    raw = text[4:end].splitlines()
+    meta: dict[str, str] = {}
+    for line in raw:
+        if ":" not in line or line.lstrip().startswith("#"):
+            continue
+        key, value = line.split(":", 1)
+        meta[key.strip()] = value.strip().strip('"\'')
+    return meta, text[end + len("\n---"):].lstrip("\n")
+
+
+def iter_notes_with_meta(paths: Paths | None = None) -> Iterator[dict]:
+    paths = paths or resolve_paths()
+    patterns = read_ignore_patterns(paths.vault)
+    for md in iter_markdown_files(paths.vault, patterns):
+        rel = md.relative_to(paths.vault).as_posix()
+        text = md.read_text(encoding="utf-8", errors="replace")
+        meta, body = parse_frontmatter(text)
+        yield {"path": md, "rel_path": rel, "meta": meta, "body": body, "text": text}
+
+
+def parse_iso_epoch(value: str | None) -> float | None:
+    if not value:
+        return None
+    raw = str(value).strip().replace("Z", "+00:00")
+    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+        try:
+            return time.mktime(time.strptime(raw[:19] if fmt.endswith("S") else raw[:10], fmt.replace("%z", "")))
+        except (ValueError, TypeError):
+            continue
+    return None
+
+
+def is_terminal_status(status_value: str | None) -> bool:
+    return (status_value or "").strip().lower() in {"completed", "done", "cancelled", "canceled", "archived", "expired", "closed"}
+
+
+def is_l3(note: dict) -> bool:
+    meta = note["meta"]
+    rel = note["rel_path"]
+    name = Path(rel).name
+    if name.startswith("00-") or name.endswith(".json.md"):
+        return meta.get("layer", "").upper() == "L3"
+    return meta.get("layer", "").upper() == "L3" or "/tasks/" in f"/{rel}"
+
+
+def has_evidence_boundary(text: str) -> bool:
+    low = text.lower()
+    return "evidence boundary" in low or "证据边界" in text
+
+
+def has_closure_or_validation(text: str) -> bool:
+    low = text.lower()
+    return any(term in low for term in ["closure links", "validation queries", "tool output", "command output", "proof"])
+
+
+def l3_expiry_items(paths: Paths | None = None) -> list[dict]:
+    now = time.time()
+    items: list[dict] = []
+    for note in iter_notes_with_meta(paths):
+        if not is_l3(note):
+            continue
+        meta = note["meta"]
+        if is_terminal_status(meta.get("status")):
+            continue
+        expiry = meta.get("expires_at") or meta.get("expiry") or meta.get("valid_to")
+        expiry_epoch = parse_iso_epoch(expiry)
+        if not expiry:
+            items.append({"path": note["rel_path"], "status": "missing_expiry", "expires_at": None})
+        elif expiry_epoch is not None and expiry_epoch < now:
+            items.append({"path": note["rel_path"], "status": "expired", "expires_at": expiry})
+    return items
+
+
+def governance_violations(paths: Paths | None = None) -> tuple[list[dict], dict]:
+    notes = list(iter_notes_with_meta(paths))
+    violations: list[dict] = []
+    for note in notes:
+        meta = note["meta"]
+        rel = note["rel_path"]
+        if note["text"].startswith("---\n"):
+            for key in ("type", "status"):
+                if key not in meta:
+                    violations.append({"type": "frontmatter_missing_key", "path": rel, "key": key})
+        if is_l3(note) and not is_terminal_status(meta.get("status")):
+            expiry = meta.get("expires_at") or meta.get("expiry") or meta.get("valid_to")
+            if not expiry:
+                violations.append({"type": "missing_l3_expiry", "path": rel})
+        is_review = meta.get("type", "").lower() == "review" or meta.get("layer", "").upper() == "L6" or "/reviews/" in f"/{rel}"
+        if is_review and not has_evidence_boundary(note["text"]):
+            violations.append({"type": "review_missing_evidence_boundary", "path": rel})
+    summary = {"notes_scanned": len(notes), "l3_expiry_open": len(l3_expiry_items(paths))}
+    return violations, summary
+
+
+def write_governance_dashboard(result: dict, paths: Paths | None = None) -> Path:
+    paths = paths or resolve_paths()
+    target = paths.vault / "07-仪表盘" / "本地大脑治理健康度.md"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    violations = result.get("violations", [])
+    by_type: dict[str, int] = {}
+    for violation in violations:
+        by_type[violation.get("type", "unknown")] = by_type.get(violation.get("type", "unknown"), 0) + 1
+    lines = [
+        "---",
+        "type: dashboard",
+        "layer: L5",
+        f"status: {'current' if result.get('passed') else 'attention'}",
+        f"updated: {now_ts()}",
+        "source: brainctl validate --write-dashboard",
+        "---",
+        "",
+        "# 本地大脑治理健康度",
+        "",
+        "## current snapshot",
+        "",
+        f"- generated_at: `{result.get('generated_at')}`",
+        f"- validate_passed: `{result.get('passed')}`",
+        f"- notes_scanned: `{result.get('summary', {}).get('notes_scanned', 0)}`",
+        f"- l3_expiry_open: `{result.get('summary', {}).get('l3_expiry_open', 0)}`",
+        f"- violation_count: `{len(violations)}`",
+        "",
+        "## open actions",
+        "",
+    ]
+    if by_type:
+        lines.extend(f"- {k}: {v}" for k, v in sorted(by_type.items()))
+    else:
+        lines.append("- none")
+    lines.extend([
+        "",
+        "## historical snapshot",
+        "",
+        "- Previous manual dashboard content is superseded by this generated current snapshot; historical reviews remain under `06-治理与评审/reviews/`.",
+        "",
+        "## accepted risks",
+        "",
+        "- Derived indexes remain rebuildable caches; Markdown vault remains canonical truth.",
+        "- Multi-model agreement remains provenance until evidence requests are satisfied.",
+        "",
+        "## validation queries",
+        "",
+        "- 本地大脑治理健康度 structural stop gate ghost prevention",
+        "- brainctl validate expire promote review record",
+        "",
+    ])
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return target
+
+
+def validate(*, dry_run: bool = True, write_dashboard: bool = False, json_mode: bool = False) -> dict:
+    paths = resolve_paths()
+    violations, summary = governance_violations(paths)
+    result = {
+        "schema": "local_brain_validate_v1",
+        "generated_at": now_ts(),
+        "vault": str(paths.vault),
+        "dry_run": dry_run,
+        "passed": not violations,
+        "summary": summary,
+        "violations": violations,
+        "dashboard_written": None,
+    }
+    if write_dashboard:
+        result["dashboard_written"] = str(write_governance_dashboard(result, paths))
+    append_wal("validate", {"passed": result["passed"], "violation_count": len(violations), "dashboard_written": bool(write_dashboard)}, paths=paths)
+    if not json_mode:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
+def expire(*, dry_run: bool = True, json_mode: bool = False) -> dict:
+    paths = resolve_paths()
+    items = l3_expiry_items(paths)
+    result = {"schema": "local_brain_expire_v1", "generated_at": now_ts(), "vault": str(paths.vault), "dry_run": dry_run, "items": items}
+    append_wal("expire", {"dry_run": dry_run, "item_count": len(items)}, paths=paths)
+    if not json_mode:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
+def promote(*, dry_run: bool = True, json_mode: bool = False) -> dict:
+    paths = resolve_paths()
+    candidates: list[dict] = []
+    rejected: list[dict] = []
+    for note in iter_notes_with_meta(paths):
+        meta = note["meta"]
+        status_value = (meta.get("status") or "").lower()
+        if status_value not in {"completed", "done", "closed"}:
+            continue
+        if not (is_l3(note) or meta.get("layer", "").upper() == "L6"):
+            continue
+        record = {"path": note["rel_path"], "type": meta.get("type"), "layer": meta.get("layer")}
+        if has_evidence_boundary(note["text"]) and has_closure_or_validation(note["text"]):
+            candidates.append({**record, "reason": "evidence_backed_terminal_artifact"})
+        else:
+            rejected.append({**record, "reason": "insufficient_evidence_boundary_or_closure"})
+    result = {"schema": "local_brain_promote_v1", "generated_at": now_ts(), "vault": str(paths.vault), "dry_run": dry_run, "candidates": candidates, "rejected": rejected}
+    append_wal("promote", {"dry_run": dry_run, "candidate_count": len(candidates), "rejected_count": len(rejected)}, paths=paths)
+    if not json_mode:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
+def slugify(value: str) -> str:
+    raw = re.sub(r"[^A-Za-z0-9\u4e00-\u9fff_-]+", "-", value.strip()).strip("-")
+    return raw or "review"
+
+
+def review_record(title: str, slug: str | None = None, evidence_requests: list[str] | None = None, votes: list[str] | None = None, final_adjudication: str = "pending", json_mode: bool = False) -> dict:
+    paths = resolve_paths()
+    safe_slug = slugify(slug or title)
+    date = time.strftime("%Y-%m-%d", time.gmtime())
+    target = paths.vault / "06-治理与评审" / "reviews" / f"{date}-{safe_slug}.md"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    evidence_requests = evidence_requests or []
+    votes = votes or []
+    lines = [
+        "---",
+        "type: review",
+        "layer: L6",
+        "status: completed",
+        f"created: {now_ts()}",
+        "source: brainctl review record",
+        "---",
+        "",
+        f"# {title}",
+        "",
+        "## Evidence Boundary",
+        "",
+        "Model agreement is provenance only; promotion requires satisfied tool/file/search evidence requests.",
+        "",
+        "## Evidence Requests",
+        "",
+    ]
+    lines.extend(f"- {item}" for item in evidence_requests) if evidence_requests else lines.append("- none")
+    lines.extend(["", "## Votes", ""])
+    lines.extend(f"- {vote}" for vote in votes) if votes else lines.append("- none")
+    lines.extend(["", "## Final Adjudication", "", final_adjudication.strip() or "pending", ""])
+    target.write_text("\n".join(lines), encoding="utf-8")
+    result = {"ok": True, "schema": "local_brain_review_record_v1", "path": str(target), "rel_path": target.relative_to(paths.vault).as_posix()}
+    append_wal("review_record", {"path": result["rel_path"]}, paths=paths)
+    if not json_mode:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Hermes local brain control plane")
     parser.add_argument("--json", action="store_true", help="emit JSON")
@@ -512,6 +764,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_open = sub.add_parser("open", help="print or launch Obsidian URI for a note")
     p_open.add_argument("path")
     p_open.add_argument("--launch", action="store_true")
+
+    p_validate = sub.add_parser("validate", help="dry-run governance validation for local-brain notes")
+    p_validate.add_argument("--dry-run", action="store_true", default=True)
+    p_validate.add_argument("--write-dashboard", action="store_true")
+
+    p_expire = sub.add_parser("expire", help="dry-run L3 expiry/ghost-memory report")
+    p_expire.add_argument("--dry-run", action="store_true", default=True)
+
+    p_promote = sub.add_parser("promote", help="dry-run evidence-backed promotion candidates")
+    p_promote.add_argument("--dry-run", action="store_true", default=True)
+
+    p_review = sub.add_parser("review", help="create a standardized L6 review artifact")
+    review_sub = p_review.add_subparsers(dest="review_cmd", required=True)
+    p_record = review_sub.add_parser("record", help="write a review record")
+    p_record.add_argument("--title", required=True)
+    p_record.add_argument("--slug", default=None)
+    p_record.add_argument("--evidence-request", action="append", default=[])
+    p_record.add_argument("--vote", action="append", default=[])
+    p_record.add_argument("--final-adjudication", default="pending")
     return parser
 
 
@@ -538,6 +809,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         return int(result.get("exit_code", 1))
     elif args.cmd == "open":
         emit_cli(open_note(args.path, json_mode=True, launch=args.launch), args.json)
+    elif args.cmd == "validate":
+        emit_cli(validate(dry_run=args.dry_run, write_dashboard=args.write_dashboard, json_mode=True), args.json)
+    elif args.cmd == "expire":
+        emit_cli(expire(dry_run=args.dry_run, json_mode=True), args.json)
+    elif args.cmd == "promote":
+        emit_cli(promote(dry_run=args.dry_run, json_mode=True), args.json)
+    elif args.cmd == "review":
+        if args.review_cmd == "record":
+            emit_cli(
+                review_record(
+                    title=args.title,
+                    slug=args.slug,
+                    evidence_requests=args.evidence_request,
+                    votes=args.vote,
+                    final_adjudication=args.final_adjudication,
+                    json_mode=True,
+                ),
+                args.json,
+            )
+        else:
+            raise AssertionError(args.review_cmd)
     else:
         raise AssertionError(args.cmd)
     return 0

@@ -1,6 +1,7 @@
 ---
 type: template
 for: evolution-log
+status: template
 ---
 
 # <Evolution Event>

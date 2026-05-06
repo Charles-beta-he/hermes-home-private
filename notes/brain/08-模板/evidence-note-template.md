@@ -1,6 +1,7 @@
 ---
 type: template
 for: evidence-note
+status: template
 ---
 
 # <Evidence Title>

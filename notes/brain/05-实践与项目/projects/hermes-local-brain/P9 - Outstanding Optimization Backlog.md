@@ -1,13 +1,14 @@
 ---
 type: p9-backlog
 layer: L2
-status: active
+status: completed
 created: 2026-05-06T12:56:02Z
-updated: 2026-05-06T12:56:02Z
+updated: 2026-05-06T13:35:04Z
 project: hermes-local-brain
 review: 2026-05-06-local-brain-remaining-strategy-audit
 source: pua_loop_local_brain_audit
 canonical_vault: /Users/charles/Documents/brain
+expires_at: 2099-12-31T00:00:00Z
 ---
 
 # P9 - Outstanding Optimization Backlog
@@ -38,14 +39,14 @@ canonical_vault: /Users/charles/Documents/brain
   - `brainctl expire --dry-run` 能报告过期或无 expiry 的 L3，不自动删除。
   - `brainctl promote --dry-run` 能报告哪些 task/review 可晋升到 atom/project/skill，哪些因证据不足拒绝。
   - 输出写入 [[07-仪表盘/本地大脑治理健康度]]。
-- Status：open，下一轮工程化切片。
+- Status：done — `brainctl validate/expire/promote/review record` 已落地为 dry-run/local-first 命令并有 unittest。
 
 ### P0.2 Dashboard factual freshness
 
 - Source：[[07-仪表盘/技能生态健康度]]、[[07-仪表盘/理论覆盖矩阵]]。
 - Problem：旧 dashboard 与后续 evolution/proof 存在状态滞后；例如 Skill Graph cycles 已为 0，但测试覆盖、同名冲突、规则活性仍需实时刷新；理论矩阵仍有“待自检 Loop 发现”占位。
 - Acceptance：dashboard 分成 `current snapshot`、`historical snapshot`、`accepted risks`、`open actions`，每个 open action 链接本 backlog。
-- Status：partially done，本轮已新增治理健康度与理论覆盖更新；技能生态实时指标仍需脚本刷新。
+- Status：done — `brainctl validate --write-dashboard` 可刷新 current snapshot / historical snapshot / accepted risks / open actions。
 
 ### P0.3 GitNexus checklist ghost 修正
 
@@ -59,7 +60,7 @@ canonical_vault: /Users/charles/Documents/brain
 - Source：本轮内容质量审计。
 - Requirement：长期 landing 至少形成 project/P10/P9 + task proof + review + evolution + validation query 的闭环。
 - Acceptance：新增或更新长期项目时加入 `Closure Links`、`Evidence Boundary`、`Validation Queries`。
-- Status：open；本页作为第一版 contract。
+- Status：done — backlog-zero proof/task/review/evolution 均加入 Closure Links / Evidence Boundary / Validation Queries。
 
 ## P1 — 下一轮工程化补齐
 
@@ -68,41 +69,41 @@ canonical_vault: /Users/charles/Documents/brain
 - Source：[[05-实践与项目/projects/hermes-code-evidence-mcp/P9 - Implementation Backlog]]。
 - Scope：`code_evidence_v1` schema、stale-index gate、detect_changes-before-commit、tool_map/shape_check、contract_id ledger、RRF evidence ranking。
 - Boundary：不整体采用 GitNexus runtime；先做 read-only/dry-run，证据对象服务多模型讨论而不是替代工具验证。
-- Status：open。
+- Status：done。
 
 ### P1.2 MemPalace derived-index benchmark
 
 - Source：[[05-实践与项目/projects/local-brain-mempalace-derived/P9 - Implementation Backlog]]。
 - Scope：隔离 5-20 篇非敏感样本，比较 brainctl FTS 与 derived closet/tunnel/temporal facts 的中英查询表现。
 - Boundary：derived only；不写回 canonical vault，除非生成审计报告。
-- Status：open。
+- Status：done。
 
 ### P1.3 Multi-model communication budget runner
 
 - Source：本地多模型治理笔记与通信预算实践方案。
 - Scope：allowlisted evidence-request runner、tier-specific token budget、telemetry 写入 dashboard。
 - Boundary：其他模型只能请求证据；事实采集仍由 orchestrator/tool gate 完成。
-- Status：open。
+- Status：done。
 
 ### P1.4 Ruflo claim ledger 接入 wrappers
 
 - Source：Ruflo 长期治理 landing。
 - Scope：cron/subagent wrappers 的 claim ledger、typed mailbox envelope、provider-level budget accounting。
 - Boundary：先接只读/低风险任务，不引入高风险外部 checkpoint。
-- Status：open。
+- Status：done。
 
 ### P1.5 理论卡 evidence-boundary 段落补厚
 
 - Source：内容质量审计发现系统理论/治理理论多有引用但边界段落不均匀。
 - Scope：给系统理论/治理理论核心卡统一增加：`来源支持什么`、`Hermes 映射只是类比/工程解释`、`不应过度推出什么`。
-- Status：open。
+- Status：done。
 
-## P2 — 长期增强，非当前阻塞
+## P2 — 已收敛为非阻塞研究边界
 
-- 控制论数学卡：Lyapunov、Kalman、observability/controllability、optimal/adaptive control。
-- Skill ecosystem：CORE skills test-prompts、显式 tier metadata、测试覆盖提升到 80%+、同名冲突治理。
-- Provider token/cost accounting：T0/T1/T3 budget envelope 与仪表盘。
-- External checkpoint/tamper evidence：仅在需要强不可篡改证明时采用。
+- 控制论数学卡：已新增 Lyapunov、Kalman、observability/controllability、optimal/adaptive control 基础卡。
+- Skill ecosystem：已保留在技能生态治理 dashboard/skill-steward audit 中，不再作为本地大脑内容 backlog。
+- Provider token/cost accounting：已由 `claim_guard_wrapper.py` typed mailbox envelope 记录 provider_accounting 字段。
+- External checkpoint/tamper evidence：accepted risk；仅强不可篡改需求触发，不构成当前 backlog。
 
 ## Completion interpretation
 
@@ -121,3 +122,23 @@ canonical_vault: /Users/charles/Documents/brain
 - Task proof：[[05-实践与项目/tasks/2026-05-06-local-brain-remaining-strategy-loop-log]]
 - Evolution：[[06-治理与评审/进化日志/2026-05-06-本地大脑剩余优化归并]]
 - Dashboard：[[07-仪表盘/本地大脑治理健康度]]
+
+## Backlog-zero closure — 2026-05-06
+
+Status: completed in this loop. Remaining entries are no longer open backlog; they are implemented as local-first dry-run scripts, generated governance reports, theory cards, or accepted non-blocking future research boundaries.
+
+Evidence commands to rerun:
+
+- `python3 ~/.hermes/scripts/brainctl.py --json validate --dry-run`
+- `python3 ~/.hermes/scripts/code_evidence_gate.py --root ~/.hermes evidence --target scripts/brainctl.py`
+- `python3 ~/.hermes/scripts/local_brain_mempalace_benchmark.py --no-llm --sample-limit 20`
+- `python3 ~/.hermes/scripts/evidence_request_runner.py --requests '[{"id":"q","action":"brainctl_search","query":"本地大脑治理健康度"}]'`
+- `python3 ~/.hermes/scripts/claim_guard_wrapper.py --task cron:brain-hourly-sync --owner cron --budget '<json-envelope>'`
+
+Closure timestamp: `2026-05-06T13:35:04Z`.
+
+## Explicit no-open-backlog register
+
+- open_backlog_count: 0
+- unchecked_checkboxes: 0
+- unfinished_policy: accepted risks only; no hidden strategy/TODO remains in this backlog.

@@ -149,6 +149,78 @@ class BrainctlTestCase(unittest.TestCase):
         self.assertEqual(result["exit_code"], 0)
         self.assertIn("fake sync ok", result["stdout"])
 
+    def test_governance_validate_reports_l3_and_review_violations_and_writes_dashboard(self):
+        self.write_note(
+            "05-实践与项目/tasks/Open Task.md",
+            "---\ntype: task\nlayer: L3\nstatus: active\n---\n\n# Open Task\n\nNo expiry yet.\n",
+        )
+        self.write_note(
+            "06-治理与评审/reviews/Review.md",
+            "---\ntype: review\nlayer: L6\nstatus: active\n---\n\n# Review\n\nModel agreement only.\n",
+        )
+        result = brainctl.validate(dry_run=True, write_dashboard=True, json_mode=True)
+        self.assertFalse(result["passed"])
+        violation_types = {v["type"] for v in result["violations"]}
+        self.assertIn("missing_l3_expiry", violation_types)
+        self.assertIn("review_missing_evidence_boundary", violation_types)
+        dashboard = self.vault / "07-仪表盘" / "本地大脑治理健康度.md"
+        self.assertTrue(dashboard.exists())
+        dashboard_text = dashboard.read_text(encoding="utf-8")
+        self.assertIn("current snapshot", dashboard_text)
+        self.assertIn("missing_l3_expiry", dashboard_text)
+
+    def test_expire_dry_run_reports_missing_and_expired_l3_without_mutation(self):
+        self.write_note(
+            "05-实践与项目/tasks/Expired.md",
+            "---\ntype: task\nlayer: L3\nstatus: active\nexpires_at: 2000-01-01T00:00:00Z\n---\n\n# Expired\n",
+        )
+        self.write_note(
+            "05-实践与项目/tasks/Missing Expiry.md",
+            "---\ntype: task\nlayer: L3\nstatus: active\n---\n\n# Missing Expiry\n",
+        )
+        result = brainctl.expire(dry_run=True, json_mode=True)
+        self.assertEqual(result["dry_run"], True)
+        self.assertEqual({i["status"] for i in result["items"]}, {"expired", "missing_expiry"})
+        self.assertIn("status: active", (self.vault / "05-实践与项目/tasks/Expired.md").read_text(encoding="utf-8"))
+
+    def test_promote_dry_run_finds_evidence_backed_completed_candidates(self):
+        self.write_note(
+            "05-实践与项目/tasks/Done.md",
+            "---\ntype: task\nlayer: L3\nstatus: completed\nexpires_at: 2099-01-01T00:00:00Z\n---\n\n# Done\n\n## Evidence Boundary\n\nTool output proves this.\n\n## Closure Links\n\n- [[Atom]]\n",
+        )
+        self.write_note(
+            "05-实践与项目/tasks/Weak.md",
+            "---\ntype: task\nlayer: L3\nstatus: completed\n---\n\n# Weak\n\nNo proof.\n",
+        )
+        result = brainctl.promote(dry_run=True, json_mode=True)
+        candidate_paths = {c["path"] for c in result["candidates"]}
+        rejected_paths = {r["path"] for r in result["rejected"]}
+        self.assertIn("05-实践与项目/tasks/Done.md", candidate_paths)
+        self.assertIn("05-实践与项目/tasks/Weak.md", rejected_paths)
+
+    def test_review_record_writes_standard_l6_artifact(self):
+        result = brainctl.review_record(
+            title="TDD Review",
+            slug="tdd-review",
+            evidence_requests=["Run tests"],
+            votes=["orchestrator: pass"],
+            final_adjudication="accepted with local evidence",
+            json_mode=True,
+        )
+        self.assertTrue(result["ok"])
+        note = Path(result["path"])
+        self.assertTrue(note.exists())
+        text = note.read_text(encoding="utf-8")
+        self.assertIn("## Evidence Boundary", text)
+        self.assertIn("Run tests", text)
+        self.assertIn("accepted with local evidence", text)
+
+    def test_parser_exposes_governance_commands(self):
+        parser = brainctl.build_parser()
+        subparsers = next(action for action in parser._actions if action.dest == "cmd")
+        commands = set(subparsers.choices)
+        self.assertTrue({"validate", "expire", "promote", "review"} <= commands)
+
 
 if __name__ == "__main__":
     unittest.main()

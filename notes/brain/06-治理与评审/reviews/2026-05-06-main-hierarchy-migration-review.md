@@ -37,3 +37,9 @@ Multi-model output is provenance, not proof。Completion is certified only by lo
 Proceed with controlled migration because user explicitly requested completion and backup/rollback/self-check gates exist。
 
 中文检索别名：多模型验证 主层级迁移 weak_consensus provenance_only 本地大脑主层级迁移
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

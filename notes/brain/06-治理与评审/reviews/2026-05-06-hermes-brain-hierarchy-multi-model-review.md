@@ -53,3 +53,9 @@ See `[[Hermes Local Brain Memory Hierarchy]]`.
 - Discussion ratification timed out; if this becomes code changes, run another bounded multi-model review with evidence bundle.
 - Obsidian official CLI is installed but requires manual app setting toggle: Settings > General > Advanced > Command line interface.
 - Future `brainctl` extensions must be additive and dry-run by default.
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

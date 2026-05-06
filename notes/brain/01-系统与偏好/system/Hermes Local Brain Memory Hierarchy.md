@@ -85,10 +85,10 @@ Obsidian.app is the human visualization/editor. `brainctl.py`, `sync-brain.py`, 
 
 ## Governance implementation status — 2026-05-06 PUA-loop
 
-- `brainctl validate`: P0 open. Minimal dry-run should check frontmatter/layer schema, L3 expiry/terminal state, review evidence-boundary/caveat, and wikilink/secret gates.
-- `brainctl promote`: P1 open. Must keep model review as provenance until evidence requests are satisfied; dry-run by default.
-- `brainctl expire`: P0 open. Must report expired/no-expiry L3 tasks first; no automatic deletion without policy.
-- `brainctl review record`: P1 open. Should standardize L6 models/provenance/issue ledger/evidence requests/dissent/final adjudication.
+- `brainctl validate`: done. Dry-run checks frontmatter/status, L3 expiry/terminal state, review evidence-boundary, and can refresh dashboard.
+- `brainctl promote`: done. Dry-run reports evidence-backed terminal artifacts and rejects insufficient evidence/provenance.
+- `brainctl expire`: done. Dry-run reports expired/no-expiry L3 tasks; no automatic deletion.
+- `brainctl review record`: done. Writes standardized L6 review artifacts with evidence requests, votes, and final adjudication.
 - `brainctl gc-evidence --dry-run`: P2 open. Only report unreferenced L0 evidence; never delete source evidence without an explicit whitelist.
 - Deterministic structure audit: available as `~/.hermes/scripts/local_brain_exhaustive_audit.py` and currently passing.
 - Backlog owner: [[05-实践与项目/projects/hermes-local-brain/P9 - Outstanding Optimization Backlog]].
@@ -110,5 +110,5 @@ Obsidian.app is the human visualization/editor. `brainctl.py`, `sync-brain.py`, 
 1. Keep Obsidian vault canonical and indexed.
 2. Add this design note and the Symphony note.
 3. Patch the Obsidian skill with install/CLI caveats and hierarchy routing.
-4. Later: implement `brainctl validate/promote/expire/review` additively.
+4. Completed: `brainctl validate/promote/expire/review` added additively as dry-run/local-first governance gates.
 5. Later: create task-state templates and policy YAML.

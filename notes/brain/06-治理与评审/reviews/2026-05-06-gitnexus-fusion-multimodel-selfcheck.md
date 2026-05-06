@@ -75,3 +75,9 @@ review_type: multi-model-selfcheck
 ## Scoped commit reconciliation — 2026-05-06
 
 本轮本地大脑剩余策略审计确认 GitNexus fusion 已有本地 scoped commit：`62e05b3 docs(brain): land GitNexus code-evidence fusion`。历史多模型状态仍保持 `fanout + dissent / not ratified` caveat；本次只修正 checklist 状态，不改变 ratification 结论。
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

@@ -73,3 +73,9 @@ See:
 ## Remaining caveat
 
 Future code-level changes such as `brainctl validate/promote/expire/review record` should run a new bounded evidence-first multi-model review if they modify runtime behavior.
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

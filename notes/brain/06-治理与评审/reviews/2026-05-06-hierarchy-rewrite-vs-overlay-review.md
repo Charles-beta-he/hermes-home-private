@@ -57,3 +57,9 @@ Do not rewrite the main hierarchy now。Land semantic/control-plane overlay firs
 ## Certification caveat
 
 Knowledge coverage can be complete while historical multi-model certification remains not_certified。Do not upgrade this review to certified unless a later evidence-bound discussion resolves the truth grounding caveat。
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

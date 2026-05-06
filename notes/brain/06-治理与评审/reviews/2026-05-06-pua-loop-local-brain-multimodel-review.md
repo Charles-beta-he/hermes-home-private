@@ -31,3 +31,9 @@ state_hash: f6b4466cd32124fef3ce7dbdcab7a29a6ac714fd4dc4b8aa579e87f596bd3bc5
 ## Caveat
 
 本次不能宣称完整 multi-model ratified certification；只能说 multi-model fanout/provenance + orchestrator evidence-backed implementation。
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.

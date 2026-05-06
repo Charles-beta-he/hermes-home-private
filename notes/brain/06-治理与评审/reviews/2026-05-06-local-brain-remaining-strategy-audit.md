@@ -1,7 +1,7 @@
 ---
 type: review
 layer: L6
-status: active
+status: completed
 created: 2026-05-06T12:56:02Z
 updated: 2026-05-06T12:56:02Z
 project: hermes-local-brain
@@ -75,3 +75,11 @@ certification: deterministic_local_audit_plus_single_orchestrator_synthesis
 - Search `GitNexus checklist scoped commit 62e05b3 ghost risk`: hit includes the L6 review; checklist state was reconciled in GitNexus task/review notes.
 - Search `理论覆盖矩阵 控制论 evidence boundary 未覆盖问题`: hits include [[07-仪表盘/理论覆盖矩阵]].
 - Boundary: proof edits can change the exact indexed block count; after writing this section, run sync/reindex/search once more before final user-facing completion.
+
+## Continuation verification — 2026-05-06T14:06Z
+
+- `brainctl validate --dry-run --write-dashboard`: passed=true; notes_scanned=227; l3_expiry_open=0; violation_count=0; dashboard refreshed at [[07-仪表盘/本地大脑治理健康度]].
+- `local_brain_exhaustive_audit.py`: stop_gate_pass=true; empty_dirs=[]; top_level_no_index=[]; parent_no_direct_md_top=[]; broken_wikilinks_count=0; secret_pattern_hits=0; markdown_files_scanned=227; wikilinks_seen=436.
+- `brainctl expire --dry-run`: items=[].
+- `brainctl promote --dry-run`: reports candidates/rejections for provenance only; rejection is not a stop-gate failure unless evidence-boundary/closure becomes a current acceptance target.
+- Boundary: completion claim remains bound to deterministic local audit, sync/reindex/search, tests, and scoped git evidence, not model agreement.

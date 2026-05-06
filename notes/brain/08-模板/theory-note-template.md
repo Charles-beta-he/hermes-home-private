@@ -1,6 +1,7 @@
 ---
 type: template
 for: theory-note
+status: template
 ---
 
 # <Theory / Concept>

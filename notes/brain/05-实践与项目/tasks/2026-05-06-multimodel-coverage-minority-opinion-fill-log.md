@@ -1,8 +1,8 @@
 ---
 type: task-log
-status: active
+status: completed
 created: 2026-05-06T09:05:08Z
-expiry: 2026-06-06
+expires_at: 2026-06-06
 concepts: [multi-model-thinking, coverage-audit, minority-opinion]
 ---
 
@@ -40,3 +40,7 @@ concepts: [multi-model-thinking, coverage-audit, minority-opinion]
 - `brainctl search "minority opinion model authority"`: hit `04-知识原子/atoms/minority-opinion-and-model-authority.md`.
 - `brainctl search "少数意见 模型名不是证据"`: hit `04-知识原子/atoms/minority-opinion-and-model-authority.md` as top result.
 - Coverage scan: `defined_key_points: 22`, `covered_key_points: 22`, `coverage_pct: 100.0`, `uncovered: []`.
+
+## Closure status
+
+This task is terminal/completed. It should not be treated as active WIP in future ghost-prevention scans.

@@ -41,3 +41,9 @@ Observed result: four planners started, consensus step timed out after 600s。Me
 ## Certification caveat
 
 This review is provenance, not proof。Completion must be grounded in self-check, brainctl sync/reindex/search, structural audit, and local commit。
+
+## Evidence Boundary
+
+- Added by backlog-zero loop at `2026-05-06T13:32:29Z`.
+- This review is provenance, not truth proof. Its claims may support promotion only when linked tool/file/search evidence is satisfied.
+- Model agreement, dissent, timeout, or not_certified labels must remain visible; do not treat review consensus as deterministic evidence.
