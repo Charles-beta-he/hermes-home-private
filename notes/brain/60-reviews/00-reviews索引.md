@@ -31,3 +31,4 @@ folder: 60-reviews
 ## 维护规则
 
 每次本目录新增 3 个以上笔记，更新本索引；每次本地大脑结构变更后运行 `brainctl sync && brainctl reindex && brainctl search` 验证。
+- [[60-reviews/2026-05-06-gitnexus-fusion-multimodel-selfcheck|2026-05-06-gitnexus-fusion-multimodel-selfcheck]]
