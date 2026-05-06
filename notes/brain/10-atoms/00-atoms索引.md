@@ -31,3 +31,8 @@ folder: 10-atoms
 ## 维护规则
 
 每次本目录新增 3 个以上笔记，更新本索引；每次本地大脑结构变更后运行 `brainctl sync && brainctl reindex && brainctl search` 验证。
+
+## MemPalace / 多模型治理原则
+
+- [[10-atoms/evidence-boundary-lossy-summary]]
+- [[10-atoms/minority-opinion-model-name-is-not-authority]]

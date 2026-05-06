@@ -30,3 +30,9 @@ folder: 20-projects
 
 每次本目录新增 3 个以上笔记，更新本索引；每次本地大脑结构变更后运行 `brainctl sync && brainctl reindex && brainctl search` 验证。
 - [[20-projects/hermes-code-evidence-mcp/Project - Hermes Code Evidence MCP Fusion|Hermes Code Evidence MCP Fusion]]
+
+## MemPalace 派生索引项目
+
+- [[20-projects/local-brain-mempalace-derived/Project - MemPalace Derived Local Brain]]
+- [[20-projects/local-brain-mempalace-derived/P10 - Long-term Strategy]]
+- [[20-projects/local-brain-mempalace-derived/P9 - Implementation Backlog]]

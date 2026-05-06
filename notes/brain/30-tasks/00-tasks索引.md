@@ -33,3 +33,7 @@ folder: 30-tasks
 
 每次本目录新增 3 个以上笔记，更新本索引；每次本地大脑结构变更后运行 `brainctl sync && brainctl reindex && brainctl search` 验证。
 - [[30-tasks/2026-05-06-gitnexus-fusion-long-term-landing-log|2026-05-06-gitnexus-fusion-long-term-landing-log]]
+
+## MemPalace 派生索引任务日志
+
+- [[30-tasks/2026-05-06-local-brain-mempalace-landing-log]]
