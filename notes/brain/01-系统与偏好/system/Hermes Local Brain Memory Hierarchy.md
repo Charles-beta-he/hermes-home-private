@@ -2,7 +2,7 @@
 type: system-design
 status: active
 created: 2026-05-06T07:41:43Z
-updated: 2026-05-06T07:41:43Z
+updated: 2026-05-06T12:56:02Z
 source: hermes_multi_model_review
 review_artifact: /Users/charles/.hermes/tick-20260506-073039
 models_consulted:
@@ -81,6 +81,17 @@ Obsidian.app is the human visualization/editor. `brainctl.py`, `sync-brain.py`, 
 - `brainctl review record`: writes L6 review artifact with evidence requests and votes.
 - `brainctl gc-evidence --dry-run`: reports old unreferenced L0 evidence.
 - Cron: run sync + reindex + validate + expiry report, but do not delete automatically without policy.
+
+
+## Governance implementation status — 2026-05-06 PUA-loop
+
+- `brainctl validate`: P0 open. Minimal dry-run should check frontmatter/layer schema, L3 expiry/terminal state, review evidence-boundary/caveat, and wikilink/secret gates.
+- `brainctl promote`: P1 open. Must keep model review as provenance until evidence requests are satisfied; dry-run by default.
+- `brainctl expire`: P0 open. Must report expired/no-expiry L3 tasks first; no automatic deletion without policy.
+- `brainctl review record`: P1 open. Should standardize L6 models/provenance/issue ledger/evidence requests/dissent/final adjudication.
+- `brainctl gc-evidence --dry-run`: P2 open. Only report unreferenced L0 evidence; never delete source evidence without an explicit whitelist.
+- Deterministic structure audit: available as `~/.hermes/scripts/local_brain_exhaustive_audit.py` and currently passing.
+- Backlog owner: [[05-实践与项目/projects/hermes-local-brain/P9 - Outstanding Optimization Backlog]].
 
 ## Symphony-inspired mapping
 

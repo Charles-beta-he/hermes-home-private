@@ -45,3 +45,7 @@ folder: 20-projects
 ## 本地大脑主层级迁移
 
 - [[05-实践与项目/projects/local-brain-main-hierarchy-migration/Project - Local Brain Main Hierarchy Migration]]
+
+## 本地大脑剩余优化策略
+
+- [[05-实践与项目/projects/hermes-local-brain/P9 - Outstanding Optimization Backlog]]

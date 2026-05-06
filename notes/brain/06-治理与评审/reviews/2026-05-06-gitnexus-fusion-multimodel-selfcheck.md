@@ -49,7 +49,7 @@ review_type: multi-model-selfcheck
 - [x] 实践方案创建。
 - [x] 自检脚本创建。
 - [x] sync/reindex/search 验证。
-- [ ] scoped local commit。
+- [x] scoped local commit：`62e05b3 docs(brain): land GitNexus code-evidence fusion`（2026-05-06 PUA-loop ghost-risk 修正）。
 
 ## 下一轮 loop 建议
 
@@ -71,3 +71,7 @@ review_type: multi-model-selfcheck
 - search `impact-before-edit detect_changes stale-index`: hit_count=5。
 - search `Contract Bridge contract_id shape_check`: hit_count=2。
 - structural audit: empty_dirs=[], top_level_no_index=[], broken_wikilinks_count=0, secret_pattern_hits=0, md_count=173。
+
+## Scoped commit reconciliation — 2026-05-06
+
+本轮本地大脑剩余策略审计确认 GitNexus fusion 已有本地 scoped commit：`62e05b3 docs(brain): land GitNexus code-evidence fusion`。历史多模型状态仍保持 `fanout + dissent / not ratified` caveat；本次只修正 checklist 状态，不改变 ratification 结论。

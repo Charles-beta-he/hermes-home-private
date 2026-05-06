@@ -47,3 +47,7 @@ folder: 60-reviews
 ## 主层级迁移 Review
 
 - [[06-治理与评审/reviews/2026-05-06-main-hierarchy-migration-review]]
+
+## 本地大脑剩余优化策略审计
+
+- [[06-治理与评审/reviews/2026-05-06-local-brain-remaining-strategy-audit]]

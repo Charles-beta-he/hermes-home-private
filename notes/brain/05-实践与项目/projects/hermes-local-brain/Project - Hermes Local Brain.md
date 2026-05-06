@@ -48,3 +48,10 @@ Related:
 - [[Hermes Local Brain Memory Hierarchy]]
 - [[OpenAI Symphony - Codex Orchestration]]
 - [[2026-05-06-multimodel-local-brain-category-fill-log]]
+
+## Governance closure — 2026-05-06
+
+- Unified backlog: [[05-实践与项目/projects/hermes-local-brain/P9 - Outstanding Optimization Backlog]]
+- Governance dashboard: [[07-仪表盘/本地大脑治理健康度]]
+- Remaining-strategy review: [[06-治理与评审/reviews/2026-05-06-local-brain-remaining-strategy-audit]]
+- PUA-loop proof log: [[05-实践与项目/tasks/2026-05-06-local-brain-remaining-strategy-loop-log]]

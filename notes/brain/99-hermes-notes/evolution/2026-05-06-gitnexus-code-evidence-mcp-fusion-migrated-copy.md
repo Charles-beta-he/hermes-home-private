@@ -40,3 +40,7 @@ project: hermes-code-evidence-mcp-fusion
 - search `impact-before-edit detect_changes stale-index`: hit_count=5。
 - search `Contract Bridge contract_id shape_check`: hit_count=2。
 - structural audit: empty_dirs=[], top_level_no_index=[], broken_wikilinks_count=0, secret_pattern_hits=0, md_count=173。
+
+## Migrated-copy boundary — 2026-05-06
+
+此文件是迁移/镜像副本，用于保留同步 provenance；canonical evolution event 以 [[99-hermes-notes/evolution/2026-05-06-gitnexus-code-evidence-mcp-fusion]] 为准。未来引用 GitNexus fusion 结论时优先链接 canonical note，避免双源冲突。
