@@ -1,0 +1,37 @@
+---
+type: backlog
+status: active
+layer: P9
+created: 2026-05-07T00:05:39+08:00
+concepts: [p9, implementation-backlog, agent-cos]
+open_backlog_count: 0
+unchecked_checkboxes: 0
+---
+
+# P9 - Agent COS Implementation Backlog
+
+## Closed in this landing slice
+
+- [x] P0 define A+ rubric with evidence boundary.
+- [x] P0 create no-missing-pair complementarity matrix.
+- [x] P0 create cross-disciplinary master table where every pairing is A+ under the rubric.
+- [x] P0 create local-first `agent_cos_selfcheck.py`.
+- [x] P0 wire project/playbook/atom/review/task/evolution/dashboard artifacts.
+- [x] P0 verify with sync/reindex/search/structural audit.
+
+## Accepted non-blocking future improvements
+
+| Item | Why non-blocking | Gate before reopening |
+|---|---|---|
+| cron integration | current request is landing + self-check, not scheduler mutation | add only after P10 health accepts extra cron cost |
+| per-pair benchmark | matrix already has evidence gates; benchmark is refinement | require stable usage traces over 4 weeks |
+| main hierarchy rewrite | explicitly rejected by overlay-routing gate | user approval + reversible migration proof |
+
+## No-open-backlog register
+
+open_backlog_count: 0
+unchecked_checkboxes: 0
+
+## Search Aliases
+
+Agent COS backlog zero open_backlog_count 0 unchecked_checkboxes 0 A+互补矩阵

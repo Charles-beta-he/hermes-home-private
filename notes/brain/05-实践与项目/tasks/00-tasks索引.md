@@ -48,3 +48,8 @@ folder: 30-tasks
 ## 主层级迁移 Task Log
 
 - [[05-实践与项目/tasks/2026-05-06-main-hierarchy-migration-log]]
+
+
+## Agent COS Task Log
+
+- [[05-实践与项目/tasks/2026-05-07-agent-cos-landing-log]]

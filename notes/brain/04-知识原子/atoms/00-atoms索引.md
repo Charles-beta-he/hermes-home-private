@@ -49,3 +49,8 @@ folder: 10-atoms
 ## 主层级迁移
 
 - [[04-知识原子/atoms/main-hierarchy-migration-as-control-plane]]
+
+
+## Agent 认知操作系统
+
+- [[04-知识原子/atoms/agent-cognitive-operating-system]]

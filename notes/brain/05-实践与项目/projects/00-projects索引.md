@@ -49,3 +49,10 @@ folder: 20-projects
 ## 本地大脑剩余优化策略
 
 - [[05-实践与项目/projects/hermes-local-brain/P9 - Outstanding Optimization Backlog]]
+
+
+## Agent 认知操作系统
+
+- [[05-实践与项目/projects/agent-cognitive-operating-system/Project - Agent Cognitive Operating System]]
+- [[05-实践与项目/projects/agent-cognitive-operating-system/P10 - Long-term Strategy]]
+- [[05-实践与项目/projects/agent-cognitive-operating-system/P9 - Implementation Backlog]]

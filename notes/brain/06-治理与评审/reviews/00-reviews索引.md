@@ -51,3 +51,8 @@ folder: 60-reviews
 ## 本地大脑剩余优化策略审计
 
 - [[06-治理与评审/reviews/2026-05-06-local-brain-remaining-strategy-audit]]
+
+
+## Agent COS Review
+
+- [[06-治理与评审/reviews/2026-05-07-agent-cos-multimodel-selfcheck]]
