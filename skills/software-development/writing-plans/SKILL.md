@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [planning, design, implementation, workflow, documentation]
-    related_skills: [subagent-driven-development, test-driven-development, requesting-code-review]
+    related_skills: []
 ---
 
 # Writing Implementation Plans

@@ -1,192 +1,17 @@
 {
   "metric": "Skill Graphs 2.0 \u62d3\u6251\u5ba1\u8ba1",
-  "value": "edges=117, depth_max=4, cycles=24, tiers={'atom': 143, 'compound': 4, 'molecule': 45}",
-  "status": "GRAPH_VIOLATIONS",
+  "value": "edges=87, depth_max=4, cycles=0, tiers={'atom': 147, 'compound': 14, 'molecule': 31}",
+  "status": "OK",
   "max_depth_allowed": 4,
-  "edge_count": 117,
+  "edge_count": 87,
   "tier_counts": {
-    "atom": 143,
-    "compound": 4,
-    "molecule": 45
+    "atom": 147,
+    "compound": 14,
+    "molecule": 31
   },
   "explicit_tier_count": 0,
-  "cycle_count": 24,
-  "cycles": [
-    {
-      "cycle": [
-        "autonomous-ai-agents/claude-code",
-        "autonomous-ai-agents/codex",
-        "autonomous-ai-agents/claude-code"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "autonomous-ai-agents/claude-code",
-        "autonomous-ai-agents/codex",
-        "autonomous-ai-agents/hermes-agent",
-        "autonomous-ai-agents/claude-code"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "autonomous-ai-agents/codex",
-        "autonomous-ai-agents/hermes-agent",
-        "autonomous-ai-agents/codex"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "autonomous-ai-agents/claude-code",
-        "autonomous-ai-agents/codex",
-        "autonomous-ai-agents/hermes-agent",
-        "autonomous-ai-agents/opencode",
-        "autonomous-ai-agents/claude-code"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "autonomous-ai-agents/codex",
-        "autonomous-ai-agents/hermes-agent",
-        "autonomous-ai-agents/opencode",
-        "autonomous-ai-agents/codex"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "autonomous-ai-agents/hermes-agent",
-        "autonomous-ai-agents/opencode",
-        "autonomous-ai-agents/hermes-agent"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "creative/sketch",
-        "software-development/spike",
-        "creative/sketch"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/writing-plans",
-        "software-development/subagent-driven-development",
-        "software-development/writing-plans"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/subagent-driven-development",
-        "software-development/requesting-code-review",
-        "software-development/subagent-driven-development"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/writing-plans",
-        "software-development/subagent-driven-development",
-        "software-development/requesting-code-review",
-        "software-development/writing-plans"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/test-driven-development",
-        "software-development/systematic-debugging",
-        "software-development/test-driven-development"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/writing-plans",
-        "software-development/subagent-driven-development",
-        "software-development/requesting-code-review",
-        "software-development/test-driven-development",
-        "software-development/systematic-debugging",
-        "software-development/writing-plans"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/subagent-driven-development",
-        "software-development/requesting-code-review",
-        "software-development/test-driven-development",
-        "software-development/systematic-debugging",
-        "software-development/subagent-driven-development"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/writing-plans",
-        "software-development/subagent-driven-development",
-        "software-development/requesting-code-review",
-        "software-development/test-driven-development",
-        "software-development/writing-plans"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "software-development/subagent-driven-development",
-        "software-development/requesting-code-review",
-        "software-development/test-driven-development",
-        "software-development/subagent-driven-development"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "github/github-auth",
-        "github/github-pr-workflow",
-        "github/github-auth"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "github/github-code-review",
-        "github/github-auth",
-        "github/github-pr-workflow",
-        "github/github-code-review"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "github/github-code-review",
-        "github/github-auth",
-        "github/github-code-review"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "github/github-auth",
-        "github/github-issues",
-        "github/github-auth"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    },
-    {
-      "cycle": [
-        "github/github-auth",
-        "github/github-repo-management",
-        "github/github-auth"
-      ],
-      "action": "Remove or invert one edge; cycles are never safe for runtime skill composition."
-    }
-  ],
+  "cycle_count": 0,
+  "cycles": [],
   "excessive_depth": [],
   "typed_violations": [],
   "missing_dependencies": [
@@ -274,7 +99,7 @@
     {
       "skill": "research/research-paper-writing",
       "suggested_tier": "compound",
-      "reason": "deps=3, depth=3"
+      "reason": "deps=3, depth=4"
     },
     {
       "skill": "ui-ux-pro-max/.claude/skills/ui-ux-pro-max",
@@ -358,8 +183,8 @@
     },
     {
       "skill": "devops/kanban-worker",
-      "suggested_tier": "molecule",
-      "reason": "deps=1, depth=0"
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
     },
     {
       "skill": "devops/webhook-subscriptions",
@@ -369,7 +194,7 @@
     {
       "skill": "devops/kanban-orchestrator",
       "suggested_tier": "molecule",
-      "reason": "deps=1, depth=0"
+      "reason": "deps=1, depth=1"
     },
     {
       "skill": "devops/cloudflare-pages-pnpm",
@@ -464,7 +289,7 @@
     {
       "skill": "software-development/test-driven-development",
       "suggested_tier": "molecule",
-      "reason": "deps=3, depth=0"
+      "reason": "deps=1, depth=1"
     },
     {
       "skill": "software-development/requirement-clarification",
@@ -474,6 +299,6 @@
   ],
   "details": [
     "\u663e\u5f0f tier: 0/192\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
-    "fail-closed gate: cycles=24, excessive_depth=0, typed_violations=0"
+    "fail-closed gate: cycles=0, excessive_depth=0, typed_violations=0"
   ]
 }

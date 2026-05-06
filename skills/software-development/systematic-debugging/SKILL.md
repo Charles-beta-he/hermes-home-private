@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [debugging, troubleshooting, problem-solving, root-cause, investigation]
-    related_skills: [test-driven-development, writing-plans, subagent-driven-development]
+    related_skills: [writing-plans, test-driven-development]
 ---
 
 # Systematic Debugging

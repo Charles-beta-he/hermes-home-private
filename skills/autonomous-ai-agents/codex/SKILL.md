@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [Coding-Agent, Codex, OpenAI, Code-Review, Refactoring]
-    related_skills: [claude-code, hermes-agent]
+    related_skills: [opencode]
 ---
 
 # Codex CLI
@@ -17,7 +17,8 @@ Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes
 ## Prerequisites
 
 - Codex installed: `npm install -g @openai/codex`
-- OpenAI API key configured
+- Authentication configured either via OpenAI API key or ChatGPT/Codex login/session (`codex --version` should work; use `codex login` if the CLI asks)
+- Hermes provider/model mapping is environment-specific; check `~/.hermes/config.yaml` instead of hardcoding a model name in this skill.
 - **Must run inside a git repository** — Codex refuses to run outside one
 - Use `pty=true` in terminal calls — Codex is an interactive terminal app
 

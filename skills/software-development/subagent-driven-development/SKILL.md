@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [delegation, subagent, implementation, workflow, parallel]
-    related_skills: [writing-plans, requesting-code-review, test-driven-development]
+    related_skills: [writing-plans, requesting-code-review]
 ---
 
 # Subagent-Driven Development

@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [GitHub, Code-Review, Pull-Requests, Git, Quality]
-    related_skills: [github-auth, github-pr-workflow]
+    related_skills: [github-auth]
 ---
 
 # GitHub Code Review

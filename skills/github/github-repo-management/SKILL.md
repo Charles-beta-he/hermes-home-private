@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [GitHub, Repositories, Git, Releases, Secrets, Configuration]
-    related_skills: [github-auth, github-pr-workflow, github-issues]
+    related_skills: [github-auth, github-issues]
 ---
 
 # GitHub Repository Management

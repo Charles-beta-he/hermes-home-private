@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [GitHub, Issues, Project-Management, Bug-Tracking, Triage]
-    related_skills: [github-auth, github-pr-workflow]
+    related_skills: [github-auth]
 ---
 
 # GitHub Issues Management

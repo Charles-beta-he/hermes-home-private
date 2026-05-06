@@ -107,3 +107,31 @@ All changed artifacts are Level 0 under `~/.hermes`; they survive upstream `herm
 | Strict graph check exists but production uses warn-only | Current ecosystem has known cycles; strict mode proves fail-closed behavior for CI/fixtures. |
 | Evidence-first truth gate blocks unsupported high-severity claims | Multi-model agreement is not factual verification. |
 | No push to upstream | Private fork/local Hermes evolution; local commit is sufficient. |
+
+## Follow-up: Skill Graph Cycle Cleanup
+
+After the initial audit gate landed, PUA-loop continued from observation to remediation:
+
+- Initial production graph after audit gate: `GRAPH_VIOLATIONS`, `cycles=24`, `depth_max=4`.
+- Collapsed cycle paths into SCCs instead of treating 24 paths as 24 independent problems.
+- Rewrote `related_skills` as a one-way DAG across the major SCCs:
+  - autonomous AI agents: preserve discovery as `claude-code -> codex -> opencode`, avoid peer-to-peer cycles.
+  - GitHub workflow skills: make `github-auth` a primitive prerequisite, downstream skills point toward it instead of back-linking.
+  - software-development workflow skills: keep planning/review/TDD/debug discoverability without mutual cycles.
+  - sketch/spike, kanban orchestrator/worker, and debugger helper cycles were reduced to directional edges.
+- Claude Code reviewed the cleanup diff and returned `passed=true`, `blocking=[]`; non-blocking suggestions about discoverability and user-specific Codex text were applied.
+- Removed user/account-specific Codex model/economics text from the generic `codex` skill; provider/model mapping belongs in `~/.hermes/config.yaml` or memory, not shared SKILL.md.
+
+Final strict graph gate:
+
+```text
+python3 ~/.hermes/scripts/skill-steward.py --graph-check --json
+status=OK
+edges=87
+depth_max=4
+cycles=0
+typed_violations=[]
+excessive_depth=[]
+```
+
+This completes the Skill Graphs 2.0 closure condition: the production graph is now strict-gate clean while runtime skill loading remains unchanged.

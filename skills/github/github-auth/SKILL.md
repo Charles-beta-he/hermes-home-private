@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [GitHub, Authentication, Git, gh-cli, SSH, Setup]
-    related_skills: [github-pr-workflow, github-code-review, github-issues, github-repo-management]
+    related_skills: []
 ---
 
 # GitHub Authentication Setup

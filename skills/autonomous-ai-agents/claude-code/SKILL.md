@@ -7,7 +7,7 @@ license: MIT
 metadata:
   hermes:
     tags: [Coding-Agent, Claude, Anthropic, Code-Review, Refactoring, PTY, Automation]
-    related_skills: [codex, hermes-agent, opencode]
+    related_skills: [codex]
 ---
 
 # Claude Code — Hermes Orchestration Guide
@@ -714,6 +714,42 @@ Use `/context` in interactive mode to see a colored grid of context usage. Key t
 9. **Use `--fallback-model haiku`** in print mode to gracefully handle model overload.
 10. **Start new sessions for distinct tasks** — sessions last 5 hours; fresh context is more efficient.
 11. **Use `--no-session-persistence`** in CI to avoid accumulating saved sessions on disk.
+
+## Troubleshooting API Errors
+
+### 400 "out of extra usage" — Time-Based Quota Exhaustion
+Anthropic enforces **time-windowed** usage limits (e.g., per 5-hour window), not just total quota. A 400 error saying "out of extra usage" does NOT mean your account is empty — it means you hit the rate limit for the current time window.
+
+**Diagnosis:**
+```bash
+# Check if auth is valid (separate from quota)
+claude auth status --text
+
+# Quick API connectivity test
+echo "ping" | claude -p "reply pong only" --max-turns 1
+```
+
+**Recovery:**
+1. Wait for the time window to reset (typically 1-5 hours)
+2. The quota auto-resets — no manual action needed
+3. Verify recovery with the ping test above
+4. If using Hermes with Anthropic as provider, the model router should auto-fallback to other providers during the window
+
+**Key distinction:** `authentication_error` = bad API key. `invalid_request_error` with "out of usage" = quota exhaustion (transient).
+
+### Claude Code CLI Issues
+```bash
+# Full health check
+claude doctor
+
+# Re-authenticate
+claude auth login
+claude auth login --console   # API key billing
+claude auth login --sso       # Enterprise
+
+# Update to latest
+claude update
+```
 
 ## Pitfalls & Gotchas
 
