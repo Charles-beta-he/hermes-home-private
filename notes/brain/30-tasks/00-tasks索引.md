@@ -22,6 +22,7 @@ folder: 30-tasks
 
 - [[30-tasks/2026-05-06-local-brain-empty-directory-audit|2026-05-06-local-brain-empty-directory-audit]]
 - [[30-tasks/2026-05-06-multimodel-local-brain-category-fill-log|2026-05-06-multimodel-local-brain-category-fill-log]]
+- [[30-tasks/2026-05-06-multimodel-coverage-minority-opinion-fill-log|2026-05-06-multimodel-coverage-minority-opinion-fill-log]]
 - [[30-tasks/2026-05-06-控制论基础理论补齐日志|2026-05-06-控制论基础理论补齐日志]]
 
 ## 子目录

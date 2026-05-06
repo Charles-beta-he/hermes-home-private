@@ -22,6 +22,7 @@ folder: 10-atoms
 
 - [[10-atoms/local-brain-canonical-vault|local-brain-canonical-vault]]
 - [[10-atoms/model-agreement-is-not-evidence|model-agreement-is-not-evidence]]
+- [[10-atoms/minority-opinion-and-model-authority|minority-opinion-and-model-authority]]
 
 ## 子目录
 

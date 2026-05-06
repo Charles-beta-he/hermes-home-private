@@ -21,6 +21,7 @@ folder: 60-reviews
 ## 当前直接笔记
 
 - [[60-reviews/2026-05-06-hermes-brain-hierarchy-multi-model-review|2026-05-06-hermes-brain-hierarchy-multi-model-review]]
+- [[60-reviews/2026-05-06-multimodel-thinking-keypoint-coverage-review|2026-05-06-multimodel-thinking-keypoint-coverage-review]]
 - [[60-reviews/2026-05-06-multimodel-thinking-landing-and-fill-review-log|2026-05-06-multimodel-thinking-landing-and-fill-review-log]]
 
 ## 子目录
