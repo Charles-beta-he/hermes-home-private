@@ -244,6 +244,13 @@ HERMES_MULTI_BRAIN_OFFLINE=1 python3 ~/.hermes/scripts/consult_models.py run /tm
 
 注意：
 - `~/.hermes/config/quorum.yaml` 的 T2/T3 虽列出 4 个 planners，但默认 quorum=3 会截断为 3 个模型；完整四模型必须 `--quorum 4`。
+- 第三方框架/仓库评估可用多视角 delegate reviewers 作为轻量“多脑”替代，但最终必须标注为 multi-view review，而不是完整 `consult_models.py --discussion` certification；若用户要求真正四模型认证，仍需运行 `consult_models.py` 并保留 artifact。
+- 从 Ruflo/外部编排框架评估中采纳治理原语时，优先 Hermes-native 小切片落地，不整体引入第三方运行时。P0 长期进化控制面是 `~/.hermes/scripts/long_evolution_guard.py`：
+  - `inventory` / `witness` / `verify`：生成 capability inventory、本地 HMAC witness、检测 tool/skill/script 漂移。
+  - `claim` / `claim-status` / `release` / `handoff` / `steal` / `ledger-verify`：给 cron、subagent、多模型任务建立 claim/lease/handoff ledger，使用 SQLite `BEGIN IMMEDIATE` 做本地互斥，并用 event hash chain 做篡改检测。
+  - `budget-check`：对递归委派、多模型 fanout、agent 调 agent 强制 max_hops/max_tokens/max_usd/max_tool_calls/max_wall_seconds；缺失/NaN/负数/超限都 fail-loud。
+  - `verify` 必须重建当前 inventory，检测 `inventory_drift` / `added_capability` / `hash_mismatch`，避免 witness 只检查旧清单。
+  - 运行模式必须 local-first、no network、禁止 shell 模式执行；仅允许 bounded `git rev-parse HEAD` 作为 provenance；witness key 是本地 runtime secret，不提交 git。
 - Claude Code 需要完整能力时优先 `claude -p`；Hermes Anthropic adapter 是 fallback。
 - Codex/gpt-5.5 走 openai-codex provider。
 - MiMo 走 xiaomi provider。
@@ -257,6 +264,7 @@ HERMES_MULTI_BRAIN_OFFLINE=1 python3 ~/.hermes/scripts/consult_models.py run /tm
 使用：
 - 架构设计、新系统/模块、影响 >3 文件的关键决策。
 - 高风险：安全、可靠性、成本、数据迁移、不可逆操作。
+- 第三方 agent/orchestration 框架评估需要多视角时：至少拆成 architecture、security/supply-chain、product/workflow 三个独立 reviewer；固定 commit 和证据文件；最终 synthesis 必须区分“可借鉴治理原语”和“不应整体引入/需沙箱”的风险。
 - 用户明确要求“多模型讨论 / 真多模型 / 四脑 / 来回讨论 / 多方认证”。
 
 不用：
