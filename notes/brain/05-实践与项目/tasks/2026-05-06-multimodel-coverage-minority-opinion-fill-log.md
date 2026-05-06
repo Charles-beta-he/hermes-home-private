@@ -44,3 +44,15 @@ concepts: [multi-model-thinking, coverage-audit, minority-opinion]
 ## Closure status
 
 This task is terminal/completed. It should not be treated as active WIP in future ghost-prevention scans.
+
+## Evidence Boundary
+
+- Canonical truth is the Markdown vault plus deterministic `brainctl` / filesystem / git gates.
+- Multi-model agreement, derived indexes, RRF/vector/KG outputs, and theory analogies are provenance or retrieval aids only; they are not truth sources.
+- Promotion requires linked tool/file/search evidence after this artifact is written.
+
+## Permission retrigger proof pointer
+
+- 2026-05-06 permission-retrigger scope: rerun approval-sensitive local-brain governance path after the user explicitly requested re-triggering permission-gated work.
+- Proof ledger: [[2026-05-06-permission-retrigger-local-brain-closure-review]].
+- Expected gates: `brainctl promote`, `brainctl sync`, `brainctl reindex`, `brainctl search`, `brainctl validate --dry-run`, exhaustive audit, active-backlog marker scan, test suite, scoped mirror/git status, and local commit if the scoped diff is dirty.

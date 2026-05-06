@@ -51,3 +51,15 @@ project: hermes-code-evidence-mcp-fusion
 ## Scoped commit reconciliation — 2026-05-06
 
 本轮本地大脑剩余策略审计发现 checklist 滞后：`git -C ~/.hermes log --oneline --grep='GitNexus code-evidence fusion'` 已观察到 `62e05b3 docs(brain): land GitNexus code-evidence fusion`。因此将 scoped commit 验收项标记为完成，避免未来 loop 把已完成事项误判为 WIP ghost。
+
+## Evidence Boundary
+
+- Canonical truth is the Markdown vault plus deterministic `brainctl` / filesystem / git gates.
+- Multi-model agreement, derived indexes, RRF/vector/KG outputs, and theory analogies are provenance or retrieval aids only; they are not truth sources.
+- Promotion requires linked tool/file/search evidence after this artifact is written.
+
+## Permission retrigger proof pointer
+
+- 2026-05-06 permission-retrigger scope: rerun approval-sensitive local-brain governance path after the user explicitly requested re-triggering permission-gated work.
+- Proof ledger: [[2026-05-06-permission-retrigger-local-brain-closure-review]].
+- Expected gates: `brainctl promote`, `brainctl sync`, `brainctl reindex`, `brainctl search`, `brainctl validate --dry-run`, exhaustive audit, active-backlog marker scan, test suite, scoped mirror/git status, and local commit if the scoped diff is dirty.

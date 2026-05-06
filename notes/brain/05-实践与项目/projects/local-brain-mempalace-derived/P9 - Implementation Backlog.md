@@ -107,3 +107,15 @@ Closure timestamp: `2026-05-06T13:35:04Z`.
 - open_backlog_count: 0
 - unchecked_checkboxes: 0
 - unfinished_policy: accepted risks only; no hidden strategy/TODO remains in this backlog.
+
+## Evidence Boundary
+
+- Canonical truth is the Markdown vault plus deterministic `brainctl` / filesystem / git gates.
+- Multi-model agreement, derived indexes, RRF/vector/KG outputs, and theory analogies are provenance or retrieval aids only; they are not truth sources.
+- Promotion requires linked tool/file/search evidence after this artifact is written.
+
+## Permission retrigger proof pointer
+
+- 2026-05-06 permission-retrigger scope: rerun approval-sensitive local-brain governance path after the user explicitly requested re-triggering permission-gated work.
+- Proof ledger: [[2026-05-06-permission-retrigger-local-brain-closure-review]].
+- Expected gates: `brainctl promote`, `brainctl sync`, `brainctl reindex`, `brainctl search`, `brainctl validate --dry-run`, exhaustive audit, active-backlog marker scan, test suite, scoped mirror/git status, and local commit if the scoped diff is dirty.

@@ -74,3 +74,15 @@ brainctl search proof-note pua loop state_hash -> 01-系统与偏好/system/brai
 brainctl search pua-loop-local-brain-exhaustive-fill -> 05-实践与项目/tasks/2026-05-06-pua-loop-local-brain-exhaustive-fill-log.md
 post-fill audit: empty_dirs=[], top_level_no_index=[], parent_no_direct_md_top=[], broken_wikilinks_count=0
 ```
+
+## Evidence Boundary
+
+- Canonical truth is the Markdown vault plus deterministic `brainctl` / filesystem / git gates.
+- Multi-model agreement, derived indexes, RRF/vector/KG outputs, and theory analogies are provenance or retrieval aids only; they are not truth sources.
+- Promotion requires linked tool/file/search evidence after this artifact is written.
+
+## Permission retrigger proof pointer
+
+- 2026-05-06 permission-retrigger scope: rerun approval-sensitive local-brain governance path after the user explicitly requested re-triggering permission-gated work.
+- Proof ledger: [[2026-05-06-permission-retrigger-local-brain-closure-review]].
+- Expected gates: `brainctl promote`, `brainctl sync`, `brainctl reindex`, `brainctl search`, `brainctl validate --dry-run`, exhaustive audit, active-backlog marker scan, test suite, scoped mirror/git status, and local commit if the scoped diff is dirty.

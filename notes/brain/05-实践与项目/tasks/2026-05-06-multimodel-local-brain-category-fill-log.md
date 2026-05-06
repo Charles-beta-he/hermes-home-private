@@ -81,3 +81,15 @@ brainctl search: category fill log and mirrored evolution note both found
 ## Expiry rule
 
 This L3 task state should not be injected as durable future context after it is done. It can remain as proof, but durable facts should live in L1/L2/L4/L5, not here.
+
+## Evidence Boundary
+
+- Canonical truth is the Markdown vault plus deterministic `brainctl` / filesystem / git gates.
+- Multi-model agreement, derived indexes, RRF/vector/KG outputs, and theory analogies are provenance or retrieval aids only; they are not truth sources.
+- Promotion requires linked tool/file/search evidence after this artifact is written.
+
+## Permission retrigger proof pointer
+
+- 2026-05-06 permission-retrigger scope: rerun approval-sensitive local-brain governance path after the user explicitly requested re-triggering permission-gated work.
+- Proof ledger: [[2026-05-06-permission-retrigger-local-brain-closure-review]].
+- Expected gates: `brainctl promote`, `brainctl sync`, `brainctl reindex`, `brainctl search`, `brainctl validate --dry-run`, exhaustive audit, active-backlog marker scan, test suite, scoped mirror/git status, and local commit if the scoped diff is dirty.
