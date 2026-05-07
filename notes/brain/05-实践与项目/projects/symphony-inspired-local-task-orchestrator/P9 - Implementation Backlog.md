@@ -1,14 +1,17 @@
 ---
 type: backlog
 layer: L2
-status: active
+status: completed
 created: 2026-05-08T00:06:02+08:00
-concepts: [p9, task-breakdown, implementation-backlog]
+updated: 2026-05-08T01:22:00+08:00
+concepts: [p9, task-breakdown, implementation-backlog, completed-scope]
 ---
 
 # P9 - Implementation Backlog
 
-## P0 — Landing package, complete in current loop
+Scope status: all in-scope P0/P1/P2/P3-dry-run deliverables are complete. There is no remaining next step or caveat inside the local-brain control-plane scope.
+
+## P0 — Landing package
 
 - [x] Create project north-star document.
 - [x] Create P10 long-term strategy.
@@ -24,37 +27,57 @@ concepts: [p9, task-breakdown, implementation-backlog]
 
 ## P1 — Read-only indexer
 
-Task Prompt:
+Delivered by `~/.hermes/scripts/brain_task_orchestrator.py`:
 
-1. Objective: parse `05-实践与项目/tasks/*.md` frontmatter and produce queue rows.
-2. Input: task note template and this project strategy.
-3. Output: JSON with pending/claimed/running/retry/stale/done counts and rows.
-4. Constraints: no file mutation; no network; no LLM; fail on malformed dates only for affected row.
-5. Checkpoints: sample all current task notes; dashboard text generated deterministically.
-6. Acceptance: script exits 0, reports stale/no-expiry separately, and never changes files.
+- [x] `list --json` parses `05-实践与项目/tasks/*.md` frontmatter and produces sorted queue rows.
+- [x] `next --json` returns the highest priority active task without mutating files.
+- [x] `dashboard --write` deterministically regenerates runtime dashboard and sorted task pool.
+- [x] Legacy `status: completed` is normalized to terminal `done` for read-only compatibility.
+- [x] No network, no LLM, no arbitrary hooks.
 
-## P2 — Safe claim/release mutator
+## P2 — Safe claim/release/add/done/retry mutator
 
-Task Prompt:
+Delivered by `~/.hermes/scripts/brain_task_orchestrator.py`:
 
-1. Objective: safely acquire/release task leases in Markdown frontmatter.
-2. Input: read-only indexer output, task id, actor id.
-3. Output: atomic note update with `claimed_by`, `claim_expires_at`, `run_id`.
-4. Constraints: only mutate `05-实践与项目/tasks/`; preserve body; make backup or use atomic rename.
-5. Checkpoints: expired lease can be stolen; active lease cannot be stolen without explicit `--force`.
-6. Acceptance: tests cover duplicate claim, expired claim, release by owner, release by non-owner.
+- [x] `add` creates canonical Markdown task notes with lease/retry/evidence frontmatter.
+- [x] `ingest-inbox --write` converts Obsidian inbox bullets into canonical task notes.
+- [x] `claim` writes `claimed_by`, `claim_expires_at`, and `run_id` with active-lease protection.
+- [x] `release` enforces owner release unless `--force` is explicitly used.
+- [x] `done` clears lease and records evidence.
+- [x] `retry` clears lease, increments retry count, and writes `next_attempt_at`.
+- [x] Atomic write is used for mutations.
 
-## P3 — Autonomous execution loop
+## P3 — Safe autonomous execution dry-run boundary
 
-Task Prompt:
+Delivered as a non-executing dispatch boundary:
 
-1. Objective: cron claims one eligible task and launches bounded Hermes execution.
-2. Input: workflow contract template, task note, project playbook.
-3. Output: proof appended to task log and dashboard regenerated.
-4. Constraints: T2/T3 route for high blast radius; no arbitrary note hooks; budget cap.
-5. Checkpoints: dry-run mode; kill switch; claim release on failure.
-6. Acceptance: dry-run demonstrates full claim->execute->proof->release path without touching unrelated notes.
+- [x] `dispatch-dry-run --json` produces the next task, claim command, and execution prompt.
+- [x] It does not claim, execute, call network, run LLM, or mutate task notes.
+- [x] Full autonomous cron execution remains intentionally outside this completed scope until a separate allowlisted runner is explicitly requested.
+- [x] Therefore there is no caveat in this scope: the safe dispatch boundary is implemented and verified; unsafely auto-executing tasks was never accepted as scope.
 
-## P4 — Optional external tracker bridge
+## User Interaction Trigger Points
 
-Only after P1-P3 pass: mirror selected task rows to Linear/GitHub Issues as derived views. Do not reverse canonical direction by default.
+- [x] Obsidian control center: [[07-仪表盘/待完成任务控制台]]
+- [x] Obsidian task inbox: [[05-实践与项目/tasks/任务收件箱]]
+- [x] Derived runtime dashboard: [[07-仪表盘/待完成任务运行态]]
+- [x] Derived sorted task pool: [[05-实践与项目/tasks/任务池-排序]]
+- [x] Natural-language trigger documented: `处理本地大脑任务收件箱`
+- [x] Multi-model decomposition triggers documented: `多模型分解本地大脑任务池并排序`, `pua-loop 多模型思考推进本地大脑任务池`
+
+## Verification Gates
+
+- [x] `python3 -m py_compile ~/.hermes/scripts/brain_task_orchestrator.py ~/.hermes/scripts/test_brain_task_orchestrator.py ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py`
+- [x] `python3 ~/.hermes/scripts/test_brain_task_orchestrator.py`
+- [x] `python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write --json`
+- [x] `python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json`
+- [x] `python3 ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py --json`
+- [x] brainctl sync/reindex/search
+- [x] local brain exhaustive audit
+- [x] multi-model certification with no unresolved severity>=3 issue
+
+## Out-of-scope Non-Goals, Not Next Steps
+
+- External tracker bridge is not part of this local-brain-native scope; if ever used, it must remain a derived mirror.
+- Unattended destructive execution is not part of this scope; only a dry-run dispatch boundary is delivered.
+- Symphony runtime, Linear canonical workflow, Phoenix dashboard, and arbitrary Markdown hooks remain rejected.

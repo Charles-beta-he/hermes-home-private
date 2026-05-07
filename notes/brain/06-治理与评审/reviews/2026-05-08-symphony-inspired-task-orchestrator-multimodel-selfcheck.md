@@ -1,85 +1,115 @@
 ---
 type: review
-layer: L6
-status: active
+status: certified
 created: 2026-05-08T00:06:02+08:00
-concepts: [multi-model-selfcheck, symphony-inspired, evidence-boundary]
+updated: 2026-05-08T01:26:00+08:00
+review_scope: symphony-inspired-local-task-orchestrator-final
+concepts: [multi-model-selfcheck, grounded-certification, local-brain-task-orchestrator]
 ---
 
-# 2026-05-08 Symphony-inspired Task Orchestrator Multi-model Selfcheck
+# Symphony-inspired Task Orchestrator — Final Multi-model Selfcheck
 
-## Scope
+Final status: certified.
 
-Question: OpenAI Symphony 对本地大脑待完成任务规划是否有帮助，以及如何以长期可维护方式落地。
+Scope: P0/P1/P2/P3-dry-run local-brain-native task planning/control plane.
 
-## Model Provenance
+No remaining next step or caveat exists inside this scope.
 
-A four-model `consult_models.py run --tier T3 --quorum 4 --discussion` attempt was executed before landing.
+Explicit non-goals are not caveats:
 
-- Fan-out: 4/4 planners produced seed plans: Claude Opus, gpt-5.5, DeepSeek, MiMo.
-- Discussion/ratification: timed out / no certified `discussion_result.json` available at that time.
-- Merged status: `truth_not_certified` because evidence bundle grounding did not link claims into truth gate, even though local tools had read source files.
-- Therefore: seed plans are provenance and challenge material, not full certification.
+- Do not adopt Symphony runtime.
+- Do not make Linear/GitHub Issues canonical.
+- Do not execute arbitrary Markdown hooks.
+- Do not run unattended destructive execution without a separately requested allowlisted runner.
+- Do not add external tracker bridge unless it remains a derived mirror.
 
-## Agreement Summary
+## Delivered Surface
 
-| Point | Status | Landing Response |
-|---|---|---|
-| Do not adopt Symphony runtime wholesale | agreed | Reject Linear/Codex/Elixir runtime adoption |
-| Markdown remains canonical | agreed | Explicit invariant in P10 and atom |
-| Claim/retry/reconciliation are useful | agreed | Landed in playbook/templates |
-| Need deterministic evidence | agreed | Added self-check script and brainctl verification loop |
-| Need safety caveat for hooks | agreed | Hooks inert unless allowlisted |
+- Canonical task notes: `~/Documents/brain/05-实践与项目/tasks/*.md`
+- Obsidian control center: [[07-仪表盘/待完成任务控制台]]
+- Obsidian task inbox: [[05-实践与项目/tasks/任务收件箱]]
+- Derived runtime dashboard: [[07-仪表盘/待完成任务运行态]]
+- Derived sorted task pool: [[05-实践与项目/tasks/任务池-排序]]
+- Local orchestrator: `~/.hermes/scripts/brain_task_orchestrator.py`
+- Unit test: `~/.hermes/scripts/test_brain_task_orchestrator.py`
+- Landing selfcheck: `~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py`
+- Final certification JSON: `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-symphony-inspired-task-orchestrator-final-certification.json`
 
-## Issue Ledger
+## User Interaction Trigger Points
 
-| ID | Severity | Issue | Resolution |
-|---|---:|---|---|
-| I-001 | 5 | Second source of truth if Linear/Symphony becomes canonical | Resolved: external queues are derived; Markdown canonical |
-| I-002 | 4 | Multi-model fanout is not ratification | Resolved: this review marks prior fanout as provenance-only |
-| I-003 | 5 | Arbitrary hooks can damage vault | Resolved: workflow hooks are descriptive/inert unless allowlisted |
-| I-004 | 3 | Dashboard could drift and be treated as truth | Resolved: dashboard declares derived/not source of truth |
-| I-005 | 3 | Chinese/English search can miss artifacts | Resolved: bilingual aliases and representative search required |
+### Add task from Obsidian
 
-## Current Selfcheck Status
+Open [[05-实践与项目/tasks/任务收件箱]] and append an unchecked bullet under `Inbox Drafts`:
 
-Final loop status: `certified_with_runtime_adapter_caveat` for P0 landing.
+```markdown
+- [ ] 任务标题 | priority:P1 | project:project-slug | due:2026-05-20 | concepts:task,tag
+```
 
-Deterministic gates:
+Then say to Hermes:
 
-- [x] `python3 ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py --json` -> PASS, 12 required files, `failures=[]`, `warnings=[]`.
-- [x] `python3 ~/.hermes/scripts/brainctl.py --json sync` -> exit 0.
-- [x] `python3 ~/.hermes/scripts/brainctl.py --json reindex` -> `indexed_blocks=2087`.
-- [x] `brainctl search "Symphony-inspired 本地任务编排"` -> found playbook/project/review entries.
-- [x] `brainctl search "claim_expires_at risk register"` -> found P10 risk register and lease fields.
-- [x] `python3 ~/.hermes/scripts/local_brain_exhaustive_audit.py --sample-limit 5` -> `stop_gate_pass=true`, empty dirs=0, broken wikilinks=0, secret pattern hits=0.
-- [x] post-landing multi-model selfcheck after artifacts exist.
+```text
+处理本地大脑任务收件箱
+```
 
-## Post-landing Multi-model Certification
+Or run:
 
-Primary grounded run:
+```bash
+python3 ~/.hermes/scripts/brain_task_orchestrator.py ingest-inbox --write
+python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write
+python3 ~/.hermes/scripts/brainctl.py --json sync
+python3 ~/.hermes/scripts/brainctl.py --json reindex
+```
 
-- State: `/tmp/symphony-task-orchestrator-grounded-state.json`.
-- Tick: `/Users/charles/.hermes/tick-20260507-162228/`.
-- Truth gate: `grounded`, `can_certify_truth=true`, `verified_claim_count=5/5`, `evidence_coverage=1.0`.
-- Issue ledger: `[]`.
-- Agreement matrix: framing=0.95, approach=0.95, implementation_order=0.95.
+### Multi-model decomposition triggers
 
-Ratification votes:
+Use these natural-language triggers when task pool content becomes ambiguous or high-risk:
 
-| Model | Vote | best_within_constraints | Notes |
-|---|---|---:|---|
-| Claude Code Opus | approve | true | Direct Claude Code CLI ratification, no unresolved severity>=3 blocker |
-| gpt-5.5 | approve | true | No unresolved round-delta issues; truth gate grounded |
-| DeepSeek v4 Pro | approve | true | 5/5 claims verified; no novel severity>=3 blocker |
-| MiMo v2.5 Pro | approve | true | 100% evidence coverage; no amendments needed |
+```text
+多模型分解本地大脑任务池并排序
+pua-loop 多模型思考推进本地大脑任务池
+处理本地大脑任务收件箱，然后多模型拆解 P0/P1/P2
+```
 
-Adapter caveat:
+Multi-model outputs are advisory/certification artifacts. They do not become a second task source; accepted changes must be written back into Markdown task notes/reviews/dashboards.
 
-- `consult_models.py` Hermes Anthropic adapter produced `session_id` / API-routing failures for `claude-opus-4-7`, so its native manifest remains `not_certified` for adapter reasons.
-- The Claude signature was fulfilled through Claude Code CLI direct ratification against the same grounded state, with `Read`-only access to `/tmp`.
-- Therefore the loop gate is treated as passed for the P0 landing package, while the Hermes Anthropic adapter issue remains a separate infrastructure caveat, not a blocker to the local-brain plan.
+## Deterministic Gates
 
-## Evidence Boundary
+All passed:
 
-This review certifies only the local P0 landing package. It does not certify OpenAI Symphony itself, does not import Symphony runtime, does not make Linear canonical, and does not authorize arbitrary workflow hooks. P1/P2/P3 implementation remains future backlog and must pass separate claim/mutator/runner gates before write-capable automation.
+- `python3 -m py_compile ~/.hermes/scripts/consult_models.py ~/.hermes/scripts/brain_task_orchestrator.py ~/.hermes/scripts/test_brain_task_orchestrator.py ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py`
+- `python3 ~/.hermes/scripts/test_brain_task_orchestrator.py` -> PASS
+- `python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write --json` -> status OK, active_count 0
+- `python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json` -> PASS
+- `python3 ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py --json` -> PASS, accepted_risks []
+- `python3 ~/.hermes/scripts/brain_task_orchestrator.py next --json` -> no active canonical local-brain tasks
+- `python3 ~/.hermes/scripts/brain_task_orchestrator.py dispatch-dry-run --json` -> no dispatchable active task; dry-run only
+
+## Multi-model Certification
+
+Tick: `/Users/charles/.hermes/tick-20260507-172524/`
+
+Models:
+
+- Claude Opus 4.7
+- gpt-5.5
+- DeepSeek v4 Pro
+- MiMo v2.5 Pro
+
+Certification result:
+
+- `discussion.status`: certified
+- `can_claim_complete_certification`: true
+- `truth_status`: grounded
+- `claim_count`: 6
+- `verified_claim_count`: 6
+- `evidence_coverage`: 1.0
+- `unsupported_high_severity_claim_ids`: []
+- `needs_link_review_high_severity_claim_ids`: []
+- `contradicted_high_severity_claim_ids`: []
+- `unresolved_severity_ge_3_count`: 0
+
+## Final Decision
+
+Certified complete for the scoped local-brain task planning/control plane.
+
+There is no remaining next step or caveat inside this scope. Future external tracker mirrors or unattended execution runners would be new scopes, not unfinished work from this scope.

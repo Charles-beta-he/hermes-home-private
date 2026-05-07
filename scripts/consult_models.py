@@ -2218,11 +2218,28 @@ def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = 
     provider = model_provider(config, model)
     if provider == "deepseek":
         return call_deepseek_api(prompt, model, timeout=timeout)
+    if "claude" in model.lower() and shutil.which("claude"):
+        # Prefer Claude Code CLI for Claude models. It uses the user's working
+        # Claude Max/OAuth session and avoids the Hermes Anthropic adapter path
+        # that can misroute provider/model fields in some local configs.
+        cmd = ["claude", "-p", prompt, "--model", model, "--max-turns", "1", "--output-format", "json"]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        if r.returncode != 0:
+            if model_quota:
+                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
+            raise RuntimeError((r.stderr or r.stdout)[:500])
+        if model_quota:
+            model_quota.record_call(model=model, provider="claude-code", ok=True, headers={}, usage={})
+        try:
+            wrapped = json.loads(r.stdout)
+            if isinstance(wrapped, dict) and isinstance(wrapped.get("result"), str):
+                return wrapped["result"]
+        except json.JSONDecodeError:
+            pass
+        return r.stdout
     hermes_bin = shutil.which("hermes") or "hermes"
     cmd = [hermes_bin, "chat", "-q", prompt, "--model", model, "--quiet", "--max-turns", "1", "--source", "multi-brain-discussion", "--ignore-rules"]
-    if "claude" in model.lower():
-        cmd += ["--provider", "anthropic"]
-    elif provider in SUPPORTED_HERMES_PROVIDERS:
+    if provider in SUPPORTED_HERMES_PROVIDERS:
         cmd += ["--provider", provider]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     if r.returncode != 0:
@@ -2330,11 +2347,10 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
             plan["meta"]["confidence"] = 0.2
             plan["diagnosis"]["summary"] = f"{model} direct DeepSeek adapter failed: {str(e)[:240]}"
             return plan, {"ok": False, "adapter": adapter, "provider": provider, "error": str(e)[:500], "latency_ms": latency_ms}
-    if "claude" in model.lower():
-        adapter = "hermes-chat"
-        cmd = [hermes_bin, "chat", "-q", prompt, "--model", model,
-               "--provider", "anthropic", "--quiet", "--max-turns", "1",
-               "--source", "multi-brain", "--ignore-rules"]
+    if "claude" in model.lower() and shutil.which("claude"):
+        adapter = "claude-code"
+        cmd = ["claude", "-p", prompt, "--model", model,
+               "--max-turns", "1", "--output-format", "json"]
     elif shutil.which("hermes"):
         adapter = "hermes-chat"
         cmd = [hermes_bin, "chat", "-q", prompt, "--model", model, "--quiet", "--max-turns", "1", "--source", "multi-brain", "--ignore-rules"]
@@ -2360,7 +2376,15 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
             return plan, {"ok": False, "adapter": adapter, "provider": provider, "exit_code": r.returncode, "latency_ms": latency_ms, "stderr": r.stderr[:500]}
         if model_quota:
             model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
-        parsed = extract_plan_json(r.stdout)
+        raw_stdout = r.stdout
+        if adapter == "claude-code":
+            try:
+                wrapped = json.loads(raw_stdout)
+                if isinstance(wrapped, dict) and isinstance(wrapped.get("result"), str):
+                    raw_stdout = wrapped["result"]
+            except json.JSONDecodeError:
+                pass
+        parsed = extract_plan_json(raw_stdout)
         plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
         return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
     except subprocess.TimeoutExpired:

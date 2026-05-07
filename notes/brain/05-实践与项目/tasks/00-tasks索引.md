@@ -59,6 +59,8 @@ folder: 30-tasks
 
 - [[05-实践与项目/tasks/2026-05-07-resumable-multimodel-certification-landing-log]]
 
-## Symphony-inspired 本地任务编排 Task Log
+## Symphony-inspired 本地任务编排 Task Log / Control Files
 
 - [[05-实践与项目/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log]]
+- [[05-实践与项目/tasks/任务收件箱]]
+- [[05-实践与项目/tasks/任务池-排序]]

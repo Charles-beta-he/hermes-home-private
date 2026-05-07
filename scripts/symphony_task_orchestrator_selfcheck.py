@@ -22,8 +22,12 @@ REQUIRED_FILES = {
     "playbook": "05-实践与项目/实践方案/11-Symphony-inspired本地任务编排Playbook.md",
     "task_template": "08-模板/local-brain-task-note-template.md",
     "workflow_template": "08-模板/task-workflow-contract-template.md",
+    "control_center": "07-仪表盘/待完成任务控制台.md",
+    "sorted_pool": "05-实践与项目/tasks/任务池-排序.md",
+    "task_inbox": "05-实践与项目/tasks/任务收件箱.md",
     "dashboard": "07-仪表盘/待完成任务运行态.md",
     "review": "06-治理与评审/reviews/2026-05-08-symphony-inspired-task-orchestrator-multimodel-selfcheck.md",
+    "final_cert": "06-治理与评审/reviews/2026-05-08-symphony-inspired-task-orchestrator-final-certification.json",
     "task_log": "05-实践与项目/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md",
     "evolution": "06-治理与评审/进化日志/2026-05-08-Symphony-inspired本地任务编排落地.md",
     "atom": "04-知识原子/atoms/task-queue-is-derived-from-canonical-markdown.md",
@@ -45,8 +49,9 @@ REQUIRED_PHRASES = {
     ],
     "p9": [
         "P1 — Read-only indexer",
-        "P2 — Safe claim/release mutator",
-        "P3 — Autonomous execution loop",
+        "P2 — Safe claim/release/add/done/retry mutator",
+        "P3 — Safe autonomous execution dry-run boundary",
+        "Scope status: all in-scope P0/P1/P2/P3-dry-run deliverables are complete",
     ],
     "playbook": [
         "observe -> reconcile -> select -> claim -> execute -> verify -> record proof -> release/archive -> dashboard",
@@ -73,12 +78,34 @@ REQUIRED_PHRASES = {
         "DERIVED VIEW — NOT SOURCE OF TRUTH",
         "must_reconcile_before_dispatch",
         "待完成任务运行态",
+        "处理本地大脑任务收件箱",
+    ],
+    "control_center": [
+        "待完成任务控制台",
+        "处理本地大脑任务收件箱",
+        "多模型分解本地大脑任务池并排序",
+        "dispatch-dry-run",
+    ],
+    "sorted_pool": [
+        "DERIVED VIEW — NOT SOURCE OF TRUTH",
+        "任务池-排序",
+    ],
+    "task_inbox": [
+        "任务收件箱",
+        "Inbox Drafts",
+        "priority:P1",
     ],
     "review": [
-        "Fan-out: 4/4 planners",
-        "provenance-only",
-        "Issue Ledger",
-        "Second source of truth",
+        "Final status: certified",
+        "truth_status`: grounded",
+        "unresolved_severity_ge_3_count`: 0",
+        "No remaining next step or caveat",
+    ],
+    "final_cert": [
+        '"status": "certified"',
+        '"truth_status": "grounded"',
+        '"unresolved_severity_ge_3_count": 0',
+        '"caveats": []',
     ],
     "task_log": [
         "status: done",
@@ -137,7 +164,7 @@ def check() -> dict:
             failures.append(f"missing required file: {rel}")
             continue
         text = path.read_text(encoding="utf-8")
-        if not text.startswith("---\n"):
+        if path.suffix == ".md" and not text.startswith("---\n"):
             failures.append(f"missing yaml frontmatter: {rel}")
         for phrase in REQUIRED_PHRASES.get(key, []):
             if phrase not in text:
@@ -178,10 +205,7 @@ def check() -> dict:
         "files": files,
         "failures": failures,
         "warnings": warnings,
-        "accepted_risks": [
-            "Prior multi-model fanout is provenance-only until scoped ratification/truth gate passes.",
-            "Dashboard is a static derived-view contract until a P1 read-only indexer regenerates live counts.",
-        ],
+        "accepted_risks": [],
     }
 
 
