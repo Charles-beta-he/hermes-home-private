@@ -21,6 +21,7 @@ Phase 0 shadow → Phase 3 steady: 读取 quorum.yaml, 选择 planner, fan-out �
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -165,6 +166,37 @@ def _env_int(name: str, default: Any) -> int:
         return int(default)
 
 
+def _strict_true(value: Any) -> bool:
+    """Return True only for a real JSON boolean true, never truthy strings."""
+    return value is True
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    if isinstance(value, bool):
+        return default
+    try:
+        parsed = int(value)
+        return parsed if math.isfinite(float(parsed)) else default
+    except (TypeError, ValueError, OverflowError):
+        return default
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    if isinstance(value, bool):
+        return default
+    try:
+        parsed = float(value)
+        return parsed if math.isfinite(parsed) else default
+    except (TypeError, ValueError, OverflowError):
+        return default
+
+
+def _strict_int(value: Any) -> Optional[int]:
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value
+
+
 MAX_PLANNER_STATE_CHARS = _env_int("HERMES_MULTI_BRAIN_MAX_STATE_CHARS", "24000")
 CRITICAL_STATE_FIELDS = [
     "schema", "question", "constraints", "acceptance_criteria", "non_goals",
@@ -173,11 +205,59 @@ CRITICAL_STATE_FIELDS = [
 ]
 
 COMM_PACKET_SCHEMA_VERSION = "multi_model_comm_packet_v1"
+CERTIFICATION_MANIFEST_SCHEMA_VERSION = "certification_manifest_v1"
 MAX_COMM_TEXT_CHARS = _env_int("HERMES_MULTI_BRAIN_MAX_COMM_TEXT_CHARS", "320")
 
 
 def _stable_json(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _read_json_file(path: str, default: Any = None) -> Any:
+    try:
+        with open(os.path.expanduser(path)) as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return default
+
+
+def _write_json_atomic(path: str, data: Any) -> None:
+    path = os.path.expanduser(path)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = f"{path}.tmp-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+    with open(tmp, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
+def _safe_artifact_name(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_.-]+", "_", str(value or "unknown")).strip("._") or "unknown"
+
+
+def _normalize_target_file(value: Any) -> str:
+    """Normalize model-reported target paths before issue grouping.
+
+    Reviewers may say `consult_models.py` while repo artifacts use
+    `scripts/consult_models.py`; without normalization, RMCS inflates one real
+    disagreement into multiple blockers and cannot converge.
+    """
+    target = str(value or "<unknown>").replace("\\", "/").strip()
+    if target in ("", "."):
+        return "<unknown>"
+    while target.startswith("./"):
+        target = target[2:]
+    if target.startswith(f"{os.path.basename(HERMES_HOME)}/"):
+        target = target.split("/", 1)[1]
+    if "/" not in target:
+        candidate = os.path.join(HERMES_HOME, "scripts", target)
+        if os.path.exists(candidate):
+            return f"scripts/{target}"
+    return target
 
 
 def _short_hash(obj: Any) -> str:
@@ -312,6 +392,7 @@ def _summarize_current_best(current_best: dict) -> dict:
         "certification_status": current_best.get("certification_status") or current_best.get("status"),
         "degradation_reasons": current_best.get("degradation_reasons", [])[:5] if isinstance(current_best.get("degradation_reasons"), list) else [],
         "fanout_certification": _summarize_fanout_certification(current_best.get("fanout_certification", {})),
+        "planner_patch_summary": current_best.get("planner_patch_summary") if isinstance(current_best.get("planner_patch_summary"), dict) else {},
         "source_hash": _short_hash(current_best),
     }
 
@@ -407,7 +488,7 @@ def build_discussion_comm_packet(
     last_votes = []
     for vote in (last_round.get("votes", []) if isinstance(last_round, dict) else [])[:8]:
         if isinstance(vote, dict):
-            last_votes.append({"model": vote.get("model"), "vote": vote.get("vote"), "best_within_constraints": bool(vote.get("best_within_constraints"))})
+            last_votes.append({"model": vote.get("model"), "vote": vote.get("vote"), "best_within_constraints": _strict_true(vote.get("best_within_constraints"))})
     packet = {
         "schema": COMM_PACKET_SCHEMA_VERSION,
         "mode": "manifest_delta",
@@ -431,6 +512,7 @@ def build_discussion_comm_packet(
             "Discuss only unresolved round_delta issues and novel severity>=3 blockers.",
             "If a fact needs omitted detail, emit evidence_requests rather than restating full context.",
             "Vote approve only if best_within_constraints and truth_gate permits certification.",
+            "An empty current_best_summary.patches list is not by itself a blocker when current_best_summary.planner_patch_summary.certification_intent == 'no_action_certification' and concrete_patch_count == 0; treat it as evidence that planners explicitly signed off with noop/advisory patches, not as a dropped-patch contradiction.",
         ],
         "required_output": {
             "critiques": [{"target_model": "...", "severity": 1, "claim": "...", "evidence": "evidence id/ref, not full blob", "correction": "...", "novel": True}],
@@ -495,6 +577,11 @@ Rules:
 - Multi-model agreement is not truth verification.
 - Cite evidence_bundle.grounding when relying on factual claims.
 - If evidence is missing, add evidence_requests instead of asserting you verified it.
+- Use `patches` only for concrete implementation deltas. Conditional verifier ideas
+  ("add a test if missing", "only if fresh tick fails", "verify whether coverage exists")
+  are evidence_requests/advisories, not patches. If orchestrator evidence already
+  proves the verifier exists, output a noop patch citing that evidence instead of a
+  conditional `add_verifier` patch.
 
 Keep patches ≤ 5. Be concrete. Confidence must be honest."""
 
@@ -659,6 +746,33 @@ def _normalize_evidence(raw_evidence: List[dict]) -> List[dict]:
     return evidence
 
 
+def _evidence_counts_as_verification(evidence_item: dict) -> bool:
+    """Return whether an evidence item can verify a factual claim.
+
+    Gate requirements, policies, and provenance-only records are useful audit
+    context, but they are not proof that the required execution happened.
+    """
+    kind = str(evidence_item.get("kind") or "").strip().casefold()
+    typ = str(evidence_item.get("type") or "").strip().casefold()
+    non_verifying_kinds = {
+        "gate",
+        "gate_requirement",
+        "requirement",
+        "policy",
+        "policy_only",
+        "obligation",
+        "acceptance_criterion",
+        "provenance",
+        "provenance_only",
+        "audit_provenance",
+    }
+    if kind in non_verifying_kinds or typ in non_verifying_kinds:
+        return False
+    if evidence_item.get("validity") == "command_failed":
+        return False
+    return True
+
+
 def build_evidence_bundle(state: dict) -> dict:
     """Build a grounded evidence bundle from orchestrator-collected claims/evidence.
 
@@ -676,12 +790,15 @@ def build_evidence_bundle(state: dict) -> dict:
     grounding: Dict[str, dict] = {}
     for claim in claims:
         cid = claim["id"]
-        supporting = [e["id"] for e in evidence if cid in (e.get("supports") or [])]
+        supporting = [e["id"] for e in evidence if cid in (e.get("supports") or []) and _evidence_counts_as_verification(e)]
+        non_verifying_supporting = [e["id"] for e in evidence if cid in (e.get("supports") or []) and not _evidence_counts_as_verification(e)]
         contradicting = [e["id"] for e in evidence if cid in (e.get("contradicts") or [])]
         if contradicting:
             truth_status = "contradicted_by_evidence"
         elif supporting:
             truth_status = "verified_by_evidence"
+        elif non_verifying_supporting:
+            truth_status = "unsupported"
         elif has_unlinked_raw_evidence:
             truth_status = "needs_link_review"
         else:
@@ -692,6 +809,7 @@ def build_evidence_bundle(state: dict) -> dict:
             "severity": claim.get("severity", 3),
             "truth_status": truth_status,
             "supporting_evidence_ids": supporting,
+            "non_verifying_supporting_evidence_ids": non_verifying_supporting,
             "contradicting_evidence_ids": contradicting,
             "candidate_evidence_ids": [e["id"] for e in evidence] if truth_status == "needs_link_review" else [],
         }
@@ -717,11 +835,11 @@ def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
     unsupported = [cid for cid, g in grounding.items() if g.get("truth_status") == "unsupported"]
     needs_link_review = [cid for cid, g in grounding.items() if g.get("truth_status") == "needs_link_review"]
     contradicted = [cid for cid, g in grounding.items() if g.get("truth_status") == "contradicted_by_evidence"]
-    unsupported_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "unsupported" and int(g.get("severity", 3) or 3) >= 3]
-    needs_link_review_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "needs_link_review" and int(g.get("severity", 3) or 3) >= 3]
-    contradicted_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "contradicted_by_evidence" and int(g.get("severity", 3) or 3) >= 3]
-    claim_count = int(bundle.get("claim_count", len(grounding)) or 0) if isinstance(bundle, dict) else 0
-    verified_count = int(bundle.get("verified_claim_count", 0) or 0) if isinstance(bundle, dict) else 0
+    unsupported_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "unsupported" and _safe_int(g.get("severity", 3), 3) >= 3]
+    needs_link_review_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "needs_link_review" and _safe_int(g.get("severity", 3), 3) >= 3]
+    contradicted_high = [cid for cid, g in grounding.items() if g.get("truth_status") == "contradicted_by_evidence" and _safe_int(g.get("severity", 3), 3) >= 3]
+    claim_count = _safe_int(bundle.get("claim_count", len(grounding)), len(grounding)) if isinstance(bundle, dict) else 0
+    verified_count = _safe_int(bundle.get("verified_claim_count", 0), 0) if isinstance(bundle, dict) else 0
 
     if claim_count == 0:
         truth_status = "no_claims"
@@ -809,11 +927,117 @@ def _plan_model(plan: dict, fallback: str = "unknown") -> str:
     return meta.get("planner_model") or meta.get("model") or fallback
 
 
+def _is_conditional_advisory_patch(patch: dict) -> bool:
+    """Return true for non-authoritative, conditional verifier suggestions.
+
+    Planner output sometimes uses an `add_verifier` patch to say "if direct
+    inspection shows a gap, add a test". That is an evidence request/advisory,
+    not a concrete implementation delta, and must not manufacture a severity>=3
+    blocker when the orchestrator evidence already contains the verifier result.
+    Concrete unconditional verifier additions still count as real patches.
+    """
+    if not isinstance(patch, dict):
+        return False
+    op = str(patch.get("op", "")).strip().lower()
+    if op != "add_verifier":
+        return False
+    rationale = str(patch.get("rationale", "")).strip().lower()
+    conditional_markers = (
+        "only if",
+        "conditional",
+        "if absent",
+        "if missing",
+        "if fresh",
+        "if direct inspection",
+        "if verification",
+        "if tests",
+        "if the named test",
+        "if the verifier",
+        "verify whether",
+    )
+    return any(marker in rationale for marker in conditional_markers)
+
+
+def _planner_patch_summary(plans: List[dict]) -> dict:
+    """Summarize planner patch intent after advisory/noop normalization.
+
+    Consensus merging may legitimately produce `patches=[]` for certification-only
+    ticks where every planner either signs off with noop or emits conditional
+    evidence-request/advisory verifier ideas. Preserve that intent explicitly so
+    discussion reviewers do not mistake an empty merged patch list for a dropped
+    implementation patch.
+    """
+    summary = {
+        "schema_version": 1,
+        "planner_count": 0,
+        "total_patch_count": 0,
+        "noop_patch_count": 0,
+        "conditional_advisory_patch_count": 0,
+        "concrete_patch_count": 0,
+        "malformed_plan_count": 0,
+        "plans_missing_patches_count": 0,
+        "plans_non_list_patches_count": 0,
+        "non_dict_patch_count": 0,
+        "models_with_concrete_patches": [],
+        "certification_intent": "unknown",
+    }
+    concrete_models: List[str] = []
+    for idx, plan in enumerate(plans or []):
+        if not isinstance(plan, dict):
+            summary["malformed_plan_count"] += 1
+            continue
+        summary["planner_count"] += 1
+        model = _plan_model(plan, f"model_{idx}")
+        model_has_concrete = False
+        if "patches" not in plan:
+            summary["plans_missing_patches_count"] += 1
+            continue
+        patches = plan.get("patches")
+        if not isinstance(patches, list):
+            summary["plans_non_list_patches_count"] += 1
+            continue
+        for patch_obj in patches:
+            if not isinstance(patch_obj, dict):
+                summary["non_dict_patch_count"] += 1
+                continue
+            summary["total_patch_count"] += 1
+            op = str(patch_obj.get("op", "")).strip().lower()
+            if op == "noop":
+                summary["noop_patch_count"] += 1
+            elif _is_conditional_advisory_patch(patch_obj):
+                summary["conditional_advisory_patch_count"] += 1
+            else:
+                summary["concrete_patch_count"] += 1
+                model_has_concrete = True
+        if model_has_concrete:
+            concrete_models.append(model)
+    summary["models_with_concrete_patches"] = sorted(set(concrete_models))
+    malformed_count = (
+        summary["malformed_plan_count"]
+        + summary["plans_missing_patches_count"]
+        + summary["plans_non_list_patches_count"]
+        + summary["non_dict_patch_count"]
+    )
+    if malformed_count:
+        summary["certification_intent"] = "malformed_patch_data"
+    elif summary["concrete_patch_count"] == 0 and summary["planner_count"] > 0:
+        summary["certification_intent"] = "no_action_certification"
+    elif summary["concrete_patch_count"] > 0:
+        summary["certification_intent"] = "implementation_required"
+    else:
+        summary["certification_intent"] = "no_patches_reported"
+    return summary
+
+
 def _patch_signature(patch: dict) -> str:
     """Stable signature for comparing plan patches across models."""
     if patch.get("id"):
         return str(patch.get("id"))
-    body = "|".join(str(patch.get(k, "")) for k in ("target_file", "op", "rationale"))
+    body = "|".join([
+        _normalize_target_file(patch.get("target_file") or patch.get("file") or ""),
+        str(patch.get("op", "")),
+        str(patch.get("rationale", "")),
+    ])
     return hashlib.sha1(body.encode("utf-8")).hexdigest()[:12]
 
 
@@ -829,19 +1053,23 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
     all_models = [_plan_model(p, f"model_{i}") for i, p in enumerate(plans)]
     for i, plan in enumerate(plans):
         model = _plan_model(plan, f"model_{i}")
-        patches = plan.get("patches", []) or []
+        patches = plan.get("patches", []) if isinstance(plan, dict) else []
+        if not isinstance(patches, list):
+            patches = []
         non_noop_seen = False
         noop_seen = False
         for patch in patches:
+            if not isinstance(patch, dict):
+                continue
             op = str(patch.get("op", "")).lower()
             # A noop patch is an explicit certification/no-change vote, not a proposed
             # implementation delta. Heterogeneous noop ids alone should not create false
             # blockers, but noop-vs-real-change is still a real disagreement below.
-            if op == "noop":
+            if op == "noop" or _is_conditional_advisory_patch(patch):
                 noop_seen = True
                 continue
             non_noop_seen = True
-            target = patch.get("target_file") or patch.get("file") or "<unknown>"
+            target = _normalize_target_file(patch.get("target_file") or patch.get("file") or "<unknown>")
             by_target.setdefault(target, []).append((model, patch, _patch_signature(patch)))
         if noop_seen and not non_noop_seen:
             noop_only_models.append(model)
@@ -873,6 +1101,10 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
             })
             next_id += 1
 
+    # Conditional verifier/advisory ideas are skipped before `by_target`; any
+    # remaining non-noop entry is a concrete implementation delta. Even an N-1
+    # noop majority must not hide a concrete minority patch, because that would
+    # turn model agreement into evidence and mask a real implementation blocker.
     if by_target and noop_only_models:
         issues.append({
             "id": f"I-{next_id:03d}",
@@ -1065,10 +1297,10 @@ def evaluate_ratification(
     """
     reasons: List[str] = []
     n = len(votes)
-    approvals = sum(1 for v in votes if str(v.get("vote", "")).lower() == "approve")
+    approvals = sum(1 for v in votes if str(v.get("vote", "")).lower() == "approve" and _strict_true(v.get("best_within_constraints")))
     rejects = [v for v in votes if str(v.get("vote", "")).lower() == "reject"]
-    unsigned = [v for v in votes if not v.get("best_within_constraints")]
-    blockers = [i for i in issue_ledger if i.get("status") == "unresolved" and int(i.get("severity", 0)) >= 3]
+    unsigned = [v for v in votes if not _strict_true(v.get("best_within_constraints"))]
+    blockers = [i for i in issue_ledger if i.get("status") == "unresolved" and _safe_int(i.get("severity", 3), 3) >= 3]
 
     if approvals < max(1, n - 1):
         reasons.append(f"approval_count {approvals}/{n} below N-1")
@@ -1077,7 +1309,7 @@ def evaluate_ratification(
     if unsigned:
         reasons.append(f"missing best_within_constraints signatures: {[v.get('model') for v in unsigned]}")
     for axis in ("framing", "approach", "implementation_order"):
-        if float(agreement_matrix.get(axis, 0.0)) < min_agreement:
+        if _safe_float(agreement_matrix.get(axis, 0.0)) < min_agreement:
             reasons.append(f"agreement.{axis} below {min_agreement}")
     if revised_this_round:
         reasons.append("revision occurred this round")
@@ -1095,7 +1327,7 @@ def evaluate_ratification(
         if not truth_gate.get("can_certify_truth", True) and not (unsupported_high or contradicted_high):
             reasons.append("truth gate not certified: " + "; ".join(truth_gate.get("reasons", [])))
 
-    minor_risks = [i for i in issue_ledger if i.get("status") == "unresolved" and int(i.get("severity", 0)) <= 2]
+    minor_risks = [i for i in issue_ledger if i.get("status") == "unresolved" and _safe_int(i.get("severity", 0)) <= 2]
     if reasons:
         status = "not_certified"
     elif minor_risks:
@@ -1112,7 +1344,7 @@ def evaluate_ratification(
 
 def _agreement_from_issues(issue_ledger: List[dict]) -> dict:
     unresolved = [i for i in issue_ledger if i.get("status") == "unresolved"]
-    blockers = [i for i in unresolved if int(i.get("severity", 0)) >= 3]
+    blockers = [i for i in unresolved if _safe_int(i.get("severity", 3), 3) >= 3]
     if not unresolved:
         score = 0.95
     elif not blockers:
@@ -1123,7 +1355,7 @@ def _agreement_from_issues(issue_ledger: List[dict]) -> dict:
 
 
 def _offline_votes(models: List[str], issue_ledger: List[dict]) -> List[dict]:
-    blockers = [i for i in issue_ledger if i.get("status") == "unresolved" and int(i.get("severity", 0)) >= 3]
+    blockers = [i for i in issue_ledger if i.get("status") == "unresolved" and _safe_int(i.get("severity", 3), 3) >= 3]
     vote = "reject" if blockers else "approve"
     return [
         {
@@ -1136,6 +1368,147 @@ def _offline_votes(models: List[str], issue_ledger: List[dict]) -> List[dict]:
     ]
 
 
+def write_discussion_checkpoint(
+    checkpoint_dir: str,
+    *,
+    round_no: int,
+    status: dict,
+    votes: List[dict],
+    issue_ledger: List[dict],
+    transcript: List[dict],
+    communication_round: dict,
+    models: List[str],
+) -> None:
+    """Durably checkpoint one completed discussion round.
+
+    RMCS is artifact-first: a killed process must leave enough cursor/state to
+    audit that the run is partial_uncertified rather than silently pretending it
+    never happened.
+    """
+    base = os.path.join(os.path.expanduser(checkpoint_dir), "discussion")
+    round_dir = os.path.join(base, f"round_{round_no:03d}")
+    unresolved = [i for i in issue_ledger if i.get("status") == "unresolved"]
+    summary = {
+        "schema_version": "discussion_round_checkpoint_v1",
+        "round": round_no,
+        "written_at": _utc_now_iso(),
+        "status": status.get("status", "not_certified"),
+        "status_detail": status,
+        "votes": votes,
+        "unresolved_issue_ids": [i.get("id") for i in unresolved],
+        "unresolved_severity_ge_3_count": sum(1 for i in unresolved if _safe_int(i.get("severity", 3), 3) >= 3),
+        "communication": communication_round,
+    }
+    cursor = {
+        "schema_version": "discussion_cursor_v1",
+        "updated_at": summary["written_at"],
+        "rounds_completed": round_no,
+        "latest_round_dir": os.path.relpath(round_dir, os.path.expanduser(checkpoint_dir)),
+        "latest_status": summary["status"],
+        "complete": summary["status"] in ("certified", "certified_with_minor_risks"),
+    }
+    state = {
+        "schema_version": "discussion_state_v1",
+        "updated_at": summary["written_at"],
+        "status": summary["status"],
+        "models": models,
+        "rounds_completed": round_no,
+        "issue_ledger": issue_ledger,
+        "transcript": transcript,
+    }
+    heartbeat = {
+        "schema_version": "discussion_heartbeat_v1",
+        "updated_at": summary["written_at"],
+        "round": round_no,
+        "status": summary["status"],
+    }
+    _write_json_atomic(os.path.join(round_dir, "round_summary.json"), summary)
+    _write_json_atomic(os.path.join(base, "cursor.json"), cursor)
+    _write_json_atomic(os.path.join(base, "state.json"), state)
+    _write_json_atomic(os.path.join(base, "heartbeat.json"), heartbeat)
+
+
+def write_discussion_model_checkpoint(
+    checkpoint_dir: str,
+    *,
+    round_no: int,
+    model: str,
+    models: List[str],
+    models_completed: List[str],
+    parse_status: str,
+    raw_response: str,
+    parsed_response: dict,
+    issue_ledger: List[dict],
+    transcript: List[dict],
+) -> None:
+    """Persist a single model response immediately after it returns.
+
+    This is stricter than per-round checkpointing: SIGTERM after model 3/4 still
+    leaves model-level raw/parsed/parse_status artifacts and a cursor pointing to
+    the next incomplete model.
+    """
+    written_at = _utc_now_iso()
+    base = os.path.join(os.path.expanduser(checkpoint_dir), "discussion")
+    round_dir = os.path.join(base, f"round_{round_no:03d}")
+    safe_model = _safe_artifact_name(model)
+    response_artifact = {
+        "schema_version": "discussion_model_response_v1",
+        "round": round_no,
+        "model": model,
+        "written_at": written_at,
+        "parse_status": parse_status,
+        "raw_response": raw_response,
+        "parsed_response": parsed_response,
+    }
+    parse_artifact = {
+        "schema_version": "discussion_parse_status_v1",
+        "round": round_no,
+        "model": model,
+        "written_at": written_at,
+        "parse_status": parse_status,
+        "vote": parsed_response.get("vote") if isinstance(parsed_response, dict) else None,
+        "best_within_constraints": parsed_response.get("best_within_constraints") if isinstance(parsed_response, dict) else None,
+    }
+    remaining = [m for m in models if m not in set(models_completed)]
+    cursor = {
+        "schema_version": "discussion_cursor_v1",
+        "updated_at": written_at,
+        "rounds_completed": max(0, round_no - 1),
+        "round_in_progress": round_no,
+        "models_completed": models_completed,
+        "next_model": remaining[0] if remaining else None,
+        "latest_round_dir": os.path.relpath(round_dir, os.path.expanduser(checkpoint_dir)),
+        "latest_status": "model_checkpointed",
+        "complete": False,
+    }
+    state = {
+        "schema_version": "discussion_state_v1",
+        "updated_at": written_at,
+        "status": "model_checkpointed",
+        "models": models,
+        "rounds_completed": max(0, round_no - 1),
+        "round_in_progress": round_no,
+        "models_completed": models_completed,
+        "next_model": cursor["next_model"],
+        "issue_ledger": issue_ledger,
+        "transcript": transcript,
+    }
+    heartbeat = {
+        "schema_version": "discussion_heartbeat_v1",
+        "updated_at": written_at,
+        "round": round_no,
+        "model": model,
+        "status": "model_checkpointed",
+        "models_completed_count": len(models_completed),
+        "models_total": len(models),
+    }
+    _write_json_atomic(os.path.join(round_dir, f"model_response_{safe_model}.json"), response_artifact)
+    _write_json_atomic(os.path.join(round_dir, f"parse_status_{safe_model}.json"), parse_artifact)
+    _write_json_atomic(os.path.join(base, "cursor.json"), cursor)
+    _write_json_atomic(os.path.join(base, "state.json"), state)
+    _write_json_atomic(os.path.join(base, "heartbeat.json"), heartbeat)
+
+
 def run_discussion_rounds(
     plans: List[dict],
     current_best: dict,
@@ -1144,6 +1517,7 @@ def run_discussion_rounds(
     offline: bool = False,
     call_model_fn=None,
     evidence_bundle: Optional[dict] = None,
+    checkpoint_dir: Optional[str] = None,
 ) -> dict:
     """Run Phase 3-6 discussion/ratification loop.
 
@@ -1160,9 +1534,9 @@ def run_discussion_rounds(
     transcript: List[dict] = []
     communication_rounds: List[dict] = []
     revised_this_round = False
-    novel_redteam_blocker = False
 
     for round_no in range(1, max(1, max_rounds) + 1):
+        novel_redteam_blocker = False
         rounds_used = round_no
         unresolved = [i for i in issue_ledger if i.get("status") == "unresolved"]
         round_prompt_chars: Dict[str, int] = {}
@@ -1175,6 +1549,7 @@ def run_discussion_rounds(
         else:
             votes = []
             new_critiques = []
+            models_completed: List[str] = []
             prompt_context = build_discussion_comm_packet(
                 current_best=current_best,
                 unresolved_issues=unresolved,
@@ -1186,12 +1561,15 @@ def run_discussion_rounds(
             round_token_budget = dict(prompt_context.get("token_budget", {}))
             round_prompt_mode = str(prompt_context.get("mode") or "manifest_delta")
             for model in models:
+                raw = ""
+                parse_status = "ok"
                 try:
                     prompt_text = json.dumps(prompt_context, ensure_ascii=False)
                     round_prompt_chars[model] = len(prompt_text)
                     raw = call_model_fn(model, prompt_text)
                     parsed = extract_plan_json(raw)
                 except Exception as e:
+                    parse_status = "retried"
                     try:
                         strict_context = {
                             "unresolved_issues": unresolved,
@@ -1208,16 +1586,31 @@ def run_discussion_rounds(
                         raw = call_model_fn(model, strict_prompt)
                         parsed = extract_plan_json(raw)
                     except Exception as retry_e:
+                        parse_status = "failed_closed"
                         parsed = {
                             "vote": "amend",
                             "best_within_constraints": False,
                             "reasoning": f"discussion call failed/unparseable: initial={str(e)[:120]}; retry={str(retry_e)[:120]}",
                             "critiques": [],
                         }
+                models_completed.append(model)
+                if checkpoint_dir:
+                    write_discussion_model_checkpoint(
+                        checkpoint_dir,
+                        round_no=round_no,
+                        model=model,
+                        models=models,
+                        models_completed=list(models_completed),
+                        parse_status=parse_status,
+                        raw_response=raw,
+                        parsed_response=parsed if isinstance(parsed, dict) else {},
+                        issue_ledger=issue_ledger,
+                        transcript=transcript,
+                    )
                 for critique in parsed.get("critiques", []) or []:
                     if not isinstance(critique, dict) or not critique.get("novel", True):
                         continue
-                    severity = int(critique.get("severity", 3) or 3)
+                    severity = _safe_int(critique.get("severity", 3), 3)
                     if severity >= 3:
                         new_critiques.append({
                             "id": f"I-{len(issue_ledger) + len(new_critiques) + 1:03d}",
@@ -1234,7 +1627,7 @@ def run_discussion_rounds(
                     existing = {(r.get("requested_by"), r.get("claim_id"), r.get("claim"), r.get("tool_needed"), r.get("command"), r.get("why")) for r in evidence_requests}
                     if key not in existing:
                         evidence_requests.append(req)
-                votes.append({"model": model, "vote": parsed.get("vote", "amend"), "best_within_constraints": bool(parsed.get("best_within_constraints")), "reasoning": parsed.get("reasoning", "")})
+                votes.append({"model": model, "vote": parsed.get("vote", "amend"), "best_within_constraints": _strict_true(parsed.get("best_within_constraints")), "reasoning": parsed.get("reasoning", "")})
             if new_critiques:
                 issue_ledger.extend(new_critiques)
                 novel_redteam_blocker = True
@@ -1262,6 +1655,17 @@ def run_discussion_rounds(
             "prompt_chars_by_model": round_comm["prompt_chars_by_model"],
             "estimated_chars_saved": round_comm["estimated_chars_saved"],
         })
+        if checkpoint_dir:
+            write_discussion_checkpoint(
+                checkpoint_dir,
+                round_no=round_no,
+                status=status,
+                votes=votes,
+                issue_ledger=issue_ledger,
+                transcript=transcript,
+                communication_round=round_comm,
+                models=models,
+            )
         if status["status"] in ("certified", "certified_with_minor_risks"):
             break
         # If there are blockers and no online model callable to resolve them, more
@@ -1305,6 +1709,455 @@ def run_discussion_rounds(
         "provenance": [f"{_plan_model(plan, f'model_{i}')} contributed seed proposal" for i, plan in enumerate(plans)],
         "reasons": final_status.get("reasons", []),
     }
+
+
+def _artifact_entry(path: str, base: str) -> dict:
+    exists = os.path.exists(path)
+    entry = {"path": os.path.relpath(path, base), "exists": exists}
+    if exists:
+        try:
+            entry["bytes"] = os.path.getsize(path)
+            with open(path, "rb") as f:
+                entry["sha256"] = hashlib.sha256(f.read()).hexdigest()
+        except OSError:
+            entry["read_error"] = True
+    return entry
+
+
+def audit_certification(tick_dir: str, write: bool = False) -> dict:
+    """Audit a tick directory and fail closed unless ratification artifacts are complete.
+
+    This is the RMCS deterministic ratifier: model agreement is provenance, but
+    complete certification requires a discussion_result plus fanout/truth gates.
+    """
+    tick_dir = os.path.abspath(os.path.expanduser(tick_dir))
+    plans_dir = os.path.join(tick_dir, "plans")
+    merged_path = os.path.join(tick_dir, "merged_plan.json")
+    discussion_path = os.path.join(tick_dir, "discussion_result.json")
+    final_path = os.path.join(tick_dir, "final", "certification_manifest.json")
+    plan_files = sorted(
+        os.path.join(plans_dir, p)
+        for p in os.listdir(plans_dir)
+        if p.endswith(".json")
+    ) if os.path.isdir(plans_dir) else []
+    raw_merged = _read_json_file(merged_path, {})
+    raw_discussion = _read_json_file(discussion_path, None)
+    reasons: List[str] = []
+    gates: Dict[str, Any] = {}
+    merged = raw_merged if isinstance(raw_merged, dict) else {}
+    discussion = raw_discussion if isinstance(raw_discussion, dict) else None
+    if os.path.isfile(merged_path) and not isinstance(raw_merged, dict):
+        reasons.append("merged_plan malformed")
+    if os.path.isfile(discussion_path) and raw_discussion is not None and not isinstance(raw_discussion, dict):
+        reasons.append("discussion_result malformed")
+
+    gates["tick_dir_exists"] = os.path.isdir(tick_dir)
+    gates["plans_present"] = len(plan_files) > 0
+    gates["merged_plan_present"] = os.path.isfile(merged_path)
+    gates["discussion_result_present"] = isinstance(discussion, dict)
+    if not gates["tick_dir_exists"]:
+        reasons.append("missing tick_dir")
+    if not gates["plans_present"]:
+        reasons.append("missing plans/*.json")
+    if not gates["merged_plan_present"]:
+        reasons.append("missing merged_plan.json")
+    if not gates["discussion_result_present"]:
+        reasons.append("missing discussion_result.json")
+
+    source = discussion if isinstance(discussion, dict) else merged
+
+    def _gate_from_source(primary: dict, fallback: dict, keys: Tuple[str, ...], reason_name: str) -> dict:
+        for key in keys:
+            if key in primary:
+                value = primary.get(key)
+                if isinstance(value, dict):
+                    return value
+                reasons.append(f"{reason_name} malformed")
+                return {}
+        for key in keys:
+            if key in fallback:
+                value = fallback.get(key)
+                if isinstance(value, dict):
+                    return value
+                reasons.append(f"merged {reason_name} malformed")
+                return {}
+        return {}
+
+    def _merged_patches_are_list(plan: dict) -> bool:
+        return isinstance(plan, dict) and isinstance(plan.get("patches"), list)
+
+    def _empty_patch_no_action_summary_valid(plan: dict) -> bool:
+        patches = plan.get("patches") if isinstance(plan, dict) else None
+        if not isinstance(patches, list):
+            return False
+        if len(patches) != 0:
+            return True
+        summary = plan.get("planner_patch_summary") if isinstance(plan.get("planner_patch_summary"), dict) else {}
+        stored_no_action = (
+            _strict_int(summary.get("concrete_patch_count")) == 0
+            and str(summary.get("certification_intent", "")).strip().casefold() == "no_action_certification"
+        )
+        recomputed_no_action = (
+            _strict_int(recomputed_patch_summary.get("concrete_patch_count")) == 0
+            and str(recomputed_patch_summary.get("certification_intent", "")).strip().casefold() == "no_action_certification"
+        )
+        return stored_no_action and recomputed_no_action
+
+    fanout = _gate_from_source(source, merged if source is not merged else {}, ("fanout_certification",), "fanout_certification")
+    truth = _gate_from_source(source, merged if source is not merged else {}, ("truth_assessment", "truth_gate"), "truth_assessment")
+    merged_fanout: dict = {}
+    merged_truth: dict = {}
+    if source is not merged:
+        if "fanout_certification" in merged:
+            value = merged.get("fanout_certification")
+            if isinstance(value, dict):
+                merged_fanout = value
+            else:
+                reasons.append("merged fanout_certification malformed")
+        for key in ("truth_assessment", "truth_gate"):
+            if key in merged:
+                value = merged.get(key)
+                if isinstance(value, dict):
+                    merged_truth = value
+                else:
+                    reasons.append("merged truth_assessment malformed")
+                break
+    else:
+        merged_fanout = fanout
+        merged_truth = truth
+    raw_issue_ledger = source.get("issue_ledger")
+    issue_ledger = raw_issue_ledger if isinstance(raw_issue_ledger, list) else []
+    raw_votes = source.get("ratification_votes")
+    votes = raw_votes if isinstance(raw_votes, list) else []
+    discussion_status = discussion.get("status") if isinstance(discussion, dict) else None
+    plan_models: List[str] = []
+    audit_plans: List[dict] = []
+    for idx, plan_file in enumerate(plan_files):
+        raw_plan = _read_json_file(plan_file, None)
+        if not isinstance(raw_plan, dict):
+            reasons.append(f"plan artifact malformed: {os.path.basename(plan_file)}")
+            raw_plan = {}
+        else:
+            audit_plans.append(raw_plan)
+        plan_models.append(_plan_model(raw_plan, f"model_{idx}"))
+    recomputed_patch_summary = _planner_patch_summary(audit_plans)
+
+    gates["fanout_certified"] = _strict_true(fanout.get("certified"))
+    gates["multi_model_certified"] = _strict_true(fanout.get("multi_model_certified"))
+    gates["truth_can_certify"] = _strict_true(truth.get("can_certify_truth"))
+    gates["merged_fanout_certified"] = _strict_true(merged_fanout.get("certified"))
+    gates["merged_multi_model_certified"] = _strict_true(merged_fanout.get("multi_model_certified"))
+    gates["merged_truth_can_certify"] = _strict_true(merged_truth.get("can_certify_truth"))
+    planner_count = _strict_int(fanout.get("planner_count"))
+    success_count = _strict_int(fanout.get("success_count"))
+    merged_planner_count = _strict_int(merged_fanout.get("planner_count")) if merged_fanout else None
+    merged_success_count = _strict_int(merged_fanout.get("success_count")) if merged_fanout else None
+    expected_vote_count = planner_count if planner_count is not None else len(plan_files)
+    valid_votes = [v for v in votes if isinstance(v, dict)]
+    vote_models = [str(v.get("model", "")) for v in valid_votes]
+    vote_model_set = set(vote_models)
+    expected_model_set = set(plan_models)
+    duplicate_vote_models = sorted({m for m in vote_models if m and vote_models.count(m) > 1})
+    anonymous_vote_count = sum(1 for m in vote_models if not m)
+    unexpected_vote_models = sorted(vote_model_set - expected_model_set) if expected_model_set else []
+    approvals = [v for v in valid_votes if str(v.get("vote", "")).lower() == "approve" and _strict_true(v.get("best_within_constraints"))]
+    approving_model_set = {str(v.get("model", "")) for v in approvals if v.get("model")}
+    rejects = [v for v in valid_votes if str(v.get("vote", "")).lower() == "reject"]
+    unsigned = [v for v in valid_votes if not _strict_true(v.get("best_within_constraints"))]
+    gates["issue_ledger_present"] = isinstance(raw_issue_ledger, list)
+    gates["issue_ledger_malformed_count"] = sum(1 for i in issue_ledger if not isinstance(i, dict))
+    gates["ratification_votes_present"] = isinstance(raw_votes, list)
+    gates["ratification_vote_count"] = len(valid_votes)
+    gates["non_dict_vote_count"] = len(votes) - len(valid_votes) if isinstance(votes, list) else 0
+    gates["expected_vote_count"] = expected_vote_count
+    gates["planner_count"] = planner_count
+    gates["success_count"] = success_count
+    gates["merged_planner_count"] = merged_planner_count
+    gates["merged_success_count"] = merged_success_count
+    gates["plan_file_count"] = len(plan_files)
+    gates["approval_count"] = len(approvals)
+    gates["unique_approval_count"] = len(approving_model_set)
+    gates["reject_count"] = len(rejects)
+    gates["no_reject_votes"] = not rejects
+    gates["all_votes_best_within_constraints"] = not unsigned
+    gates["vote_models_unique"] = not duplicate_vote_models
+    gates["vote_models_nonempty"] = anonymous_vote_count == 0
+    gates["vote_models_expected"] = not unexpected_vote_models
+    gates["ratification_quorum_met"] = (
+        gates["ratification_vote_count"] >= max(2, expected_vote_count - 1)
+        and gates["unique_approval_count"] >= max(2, expected_vote_count - 1)
+    )
+    gates["unresolved_severity_ge_3_count"] = sum(
+        1 for i in issue_ledger
+        if isinstance(i, dict) and i.get("status") == "unresolved" and _safe_int(i.get("severity", 3), 3) >= 3
+    )
+    agreement = source.get("agreement_matrix") if isinstance(source.get("agreement_matrix"), dict) else {}
+    gates["agreement_matrix_present"] = all(axis in agreement for axis in ("framing", "approach", "implementation_order"))
+    gates["agreement_matrix_min"] = min([_safe_float(agreement.get(axis)) for axis in ("framing", "approach", "implementation_order")]) if gates["agreement_matrix_present"] else 0.0
+    gates["agreement_matrix_pass"] = gates["agreement_matrix_present"] and gates["agreement_matrix_min"] >= 0.85
+    gates["discussion_status"] = discussion_status or "missing"
+    gates["merged_patches_are_list"] = _merged_patches_are_list(merged)
+    gates["empty_patches_have_no_action_intent"] = _empty_patch_no_action_summary_valid(merged)
+    gates["plan_patch_artifacts_well_formed"] = not any(
+        _strict_int(recomputed_patch_summary.get(key)) or 0
+        for key in (
+            "malformed_plan_count",
+            "plans_missing_patches_count",
+            "plans_non_list_patches_count",
+            "non_dict_patch_count",
+        )
+    )
+
+    if not fanout:
+        reasons.append("missing fanout_certification")
+    elif not gates["fanout_certified"]:
+        reasons.append(f"fanout not certified: {fanout.get('status', 'unknown')}")
+    if not fanout or not gates["multi_model_certified"]:
+        reasons.append("fanout is not multi-model certified")
+    if source is not merged:
+        if not merged_fanout:
+            reasons.append("missing merged fanout_certification")
+        else:
+            if not gates["merged_fanout_certified"]:
+                reasons.append(f"merged fanout not certified: {merged_fanout.get('status', 'unknown')}")
+            if not gates["merged_multi_model_certified"]:
+                reasons.append("merged fanout is not multi-model certified")
+    if planner_count is None or success_count is None:
+        reasons.append("fanout planner_count/success_count must be strict integers")
+    elif planner_count < 2 or success_count < 2:
+        reasons.append("fanout planner_count/success_count below 2")
+    elif planner_count != len(plan_files) or success_count != len(plan_files):
+        reasons.append("fanout counts inconsistent with plan files")
+    if source is not merged and merged_fanout:
+        if merged_planner_count is None or merged_success_count is None:
+            reasons.append("merged fanout planner_count/success_count must be strict integers")
+        elif merged_planner_count < 2 or merged_success_count < 2:
+            reasons.append("merged fanout planner_count/success_count below 2")
+        elif merged_planner_count != len(plan_files) or merged_success_count != len(plan_files):
+            reasons.append("merged fanout counts inconsistent with plan files")
+    if not gates["issue_ledger_present"]:
+        reasons.append("issue_ledger missing or malformed")
+    if gates["issue_ledger_malformed_count"]:
+        reasons.append("issue_ledger contains malformed entries")
+    if not gates["ratification_votes_present"]:
+        reasons.append("ratification_votes missing or malformed")
+    if gates["non_dict_vote_count"]:
+        reasons.append("ratification_votes contains malformed entries")
+    if not gates["vote_models_nonempty"]:
+        reasons.append("ratification vote missing model identity")
+    if not gates["vote_models_unique"]:
+        reasons.append(f"duplicate ratification votes: {duplicate_vote_models}")
+    if not gates["vote_models_expected"]:
+        reasons.append(f"unexpected ratification vote models: {unexpected_vote_models}")
+    if not truth:
+        reasons.append("missing truth_assessment")
+    elif not gates["truth_can_certify"]:
+        reasons.append("truth gate cannot certify")
+    if source is not merged:
+        if not merged_truth:
+            reasons.append("missing merged truth_assessment")
+        elif not gates["merged_truth_can_certify"]:
+            reasons.append("merged truth gate cannot certify")
+    if not gates["ratification_quorum_met"]:
+        reasons.append(f"ratification quorum not met: approvals={gates['approval_count']} votes={gates['ratification_vote_count']} expected={expected_vote_count}")
+    if not gates["all_votes_best_within_constraints"]:
+        reasons.append("ratification contains unsigned/non-true best_within_constraints")
+    if not gates["no_reject_votes"]:
+        reasons.append("ratification contains reject vote")
+    if not gates["agreement_matrix_pass"]:
+        reasons.append("agreement matrix missing or below 0.85")
+    if gates["unresolved_severity_ge_3_count"]:
+        reasons.append("unresolved severity>=3 issues remain")
+    if not gates["plan_patch_artifacts_well_formed"]:
+        reasons.append("plan patches missing or malformed")
+    if not gates["merged_patches_are_list"]:
+        reasons.append("merged_plan patches missing or malformed")
+    elif not gates["empty_patches_have_no_action_intent"]:
+        reasons.append("empty merged patches require planner_patch_summary no_action_certification")
+
+    complete_statuses = {"certified", "certified_with_minor_risks"}
+    if not gates["discussion_result_present"]:
+        status = "partial_uncertified"
+    elif discussion_status not in complete_statuses:
+        status = discussion_status or "not_certified"
+        reasons.append(f"discussion status is {status}")
+    elif reasons:
+        status = "not_certified"
+    else:
+        status = discussion_status
+
+    can_claim = status in complete_statuses and not reasons
+    manifest = {
+        "schema_version": CERTIFICATION_MANIFEST_SCHEMA_VERSION,
+        "generated_at": _utc_now_iso(),
+        "tick_dir": tick_dir,
+        "status": status,
+        "can_claim_complete_certification": can_claim,
+        "reasons": reasons,
+        "gates": gates,
+        "artifacts": {
+            "plans": {"count": len(plan_files), "files": [_artifact_entry(p, tick_dir) for p in plan_files]},
+            "merged_plan": _artifact_entry(merged_path, tick_dir),
+            "discussion_result": _artifact_entry(discussion_path, tick_dir),
+            "certification_manifest": {"path": os.path.relpath(final_path, tick_dir), "exists": bool(write or os.path.exists(final_path))},
+        },
+    }
+    if write:
+        _write_json_atomic(final_path, manifest)
+    return manifest
+
+
+def _load_tick_plans(tick_dir: str) -> List[dict]:
+    plans_dir = os.path.join(os.path.expanduser(tick_dir), "plans")
+    loaded = []
+    if not os.path.isdir(plans_dir):
+        return loaded
+    for name in sorted(os.listdir(plans_dir)):
+        if not name.endswith(".json"):
+            continue
+        plan = _read_json_file(os.path.join(plans_dir, name), None)
+        if isinstance(plan, dict):
+            loaded.append(plan)
+    return loaded
+
+
+def resume_discussion_from_tick_dir(
+    tick_dir: str,
+    *,
+    offline: bool = False,
+    max_rounds: int = 5,
+    timeout: int = DEFAULT_TIMEOUT,
+    force: bool = False,
+    call_model_fn=None,
+) -> dict:
+    """Resume or create a missing discussion_result for an existing tick directory."""
+    tick_dir = os.path.abspath(os.path.expanduser(tick_dir))
+    discussion_path = os.path.join(tick_dir, "discussion_result.json")
+    if os.path.exists(discussion_path) and not force:
+        manifest = audit_certification(tick_dir, write=True)
+        return {"tick_dir": tick_dir, "resumed": False, "discussion": _read_json_file(discussion_path, {}), "certification_manifest": manifest}
+
+    plans = _load_tick_plans(tick_dir)
+    merged = _read_json_file(os.path.join(tick_dir, "merged_plan.json"), {}) or {}
+    if not plans:
+        discussion = {"status": "not_certified", "reasons": ["no plans available for resume"]}
+    else:
+        models = [_plan_model(plan, f"model_{i}") for i, plan in enumerate(plans)]
+        evidence_bundle = merged.get("evidence_bundle") if isinstance(merged.get("evidence_bundle"), dict) else build_evidence_bundle({})
+        merged_truth = merged.get("truth_assessment") if isinstance(merged.get("truth_assessment"), dict) else merged.get("truth_gate") if isinstance(merged.get("truth_gate"), dict) else None
+        if call_model_fn is None and not offline:
+            config = load_config()
+            call_model_fn = lambda model, prompt: call_discussion_model(model, prompt, config, timeout=timeout)
+        discussion = run_discussion_rounds(
+            plans,
+            current_best=merged,
+            models=models,
+            max_rounds=max_rounds,
+            offline=offline,
+            call_model_fn=call_model_fn,
+            evidence_bundle=evidence_bundle,
+            checkpoint_dir=tick_dir,
+        )
+        discussion["fanout_certification"] = merged.get("fanout_certification", {})
+        if isinstance(merged_truth, dict):
+            discussion["truth_assessment"] = merged_truth
+        else:
+            discussion.setdefault("truth_assessment", merged.get("truth_assessment", discussion.get("truth_assessment", {})))
+    _write_json_atomic(discussion_path, discussion)
+    manifest = audit_certification(tick_dir, write=True)
+    return {"tick_dir": tick_dir, "resumed": True, "discussion": discussion, "certification_manifest": manifest}
+
+
+def run_rmcs_runner(
+    root: str = HERMES_HOME,
+    *,
+    max_ticks: int = 5,
+    resume_missing: bool = False,
+    offline: bool = True,
+    max_rounds: int = 2,
+    timeout: int = DEFAULT_TIMEOUT,
+) -> dict:
+    """Bounded RMCS runner for cron/background use.
+
+    It performs one finite scan of recent tick dirs and writes a durable last-run
+    report. No unbounded loops, no implicit daemonization, and no recursive job
+    creation.
+    """
+    root = os.path.abspath(os.path.expanduser(root))
+    max_ticks = max(1, int(max_ticks or 1))
+    tick_dirs = []
+    if os.path.isdir(root):
+        for name in os.listdir(root):
+            path = os.path.join(root, name)
+            if name.startswith("tick-") and os.path.isdir(path):
+                tick_dirs.append(path)
+    tick_dirs = sorted(tick_dirs, key=lambda p: os.path.getmtime(p), reverse=True)[:max_ticks]
+    status_path = os.path.join(root, "state", "rmcs-runner-status.json")
+    _write_json_atomic(status_path, {
+        "schema_version": "rmcs_runner_status_v1",
+        "updated_at": _utc_now_iso(),
+        "status": "running",
+        "root": root,
+        "max_ticks": max_ticks,
+        "processed_count": 0,
+        "current_tick": None,
+    })
+    processed = []
+    for tick in tick_dirs:
+        _write_json_atomic(status_path, {
+            "schema_version": "rmcs_runner_status_v1",
+            "updated_at": _utc_now_iso(),
+            "status": "running",
+            "root": root,
+            "max_ticks": max_ticks,
+            "processed_count": len(processed),
+            "current_tick": tick,
+        })
+        before = audit_certification(tick, write=True)
+        action = "audited"
+        result = {"certification_manifest": before}
+        if resume_missing and not before.get("gates", {}).get("discussion_result_present", False):
+            result = resume_discussion_from_tick_dir(
+                tick,
+                offline=offline,
+                max_rounds=max_rounds,
+                timeout=timeout,
+                force=False,
+            )
+            action = "resumed"
+        after = result.get("certification_manifest") or audit_certification(tick, write=True)
+        processed.append({
+            "tick_dir": tick,
+            "action": action,
+            "status": after.get("status"),
+            "can_claim_complete_certification": after.get("can_claim_complete_certification", False),
+        })
+    report = {
+        "schema_version": "rmcs_runner_report_v1",
+        "generated_at": _utc_now_iso(),
+        "root": root,
+        "bounded": {
+            "max_ticks": max_ticks,
+            "resume_missing": resume_missing,
+            "offline": offline,
+            "max_rounds": max_rounds,
+            "timeout": timeout,
+            "processed_count": len(processed),
+        },
+        "processed": processed,
+    }
+    _write_json_atomic(os.path.join(root, "state", "rmcs-runner-last.json"), report)
+    _write_json_atomic(status_path, {
+        "schema_version": "rmcs_runner_status_v1",
+        "updated_at": report["generated_at"],
+        "status": "complete",
+        "root": root,
+        "max_ticks": max_ticks,
+        "processed_count": len(processed),
+        "current_tick": None,
+        "last_report": os.path.join(root, "state", "rmcs-runner-last.json"),
+    })
+    return report
 
 
 def _load_env_file(path: Optional[str] = None) -> dict:
@@ -1760,6 +2613,14 @@ def run_fanout(
     merged["quota_confidence"] = quota_confidence
     merged["skipped_due_to_quota"] = skipped_due_to_quota
     merged["fanout_certification"] = fanout_status
+    loaded_plan_summaries = []
+    for pf in plan_files:
+        try:
+            with open(pf) as f:
+                loaded_plan_summaries.append(json.load(f))
+        except (OSError, json.JSONDecodeError):
+            continue
+    merged["planner_patch_summary"] = _planner_patch_summary(loaded_plan_summaries)
     merged["evidence_bundle"] = evidence_bundle
     merged["truth_assessment"] = truth_gate
     if not truth_gate.get("can_certify_truth", True):
@@ -1791,6 +2652,7 @@ def run_fanout(
                 offline=shadow or os.environ.get("HERMES_MULTI_BRAIN_OFFLINE") == "1",
                 call_model_fn=(lambda model, prompt: call_discussion_model(model, prompt, config, timeout=timeout)),
                 evidence_bundle=evidence_bundle,
+                checkpoint_dir=tick_dir,
             )
         else:
             discussion_result = {"status": "not_certified", "reasons": ["no plans available for discussion"]}
@@ -1809,12 +2671,16 @@ def run_fanout(
         discussion_file = os.path.join(tick_dir, "discussion_result.json")
         with open(discussion_file, "w") as f:
             json.dump(discussion_result, f, indent=2, ensure_ascii=False)
+        certification_manifest = audit_certification(tick_dir, write=True)
         merged["discussion"] = {
             "status": discussion_result.get("status"),
             "result_file": discussion_file,
             "rounds_used": discussion_result.get("rounds_used"),
             "models_consulted": discussion_result.get("models_consulted", []),
+            "certification_manifest": os.path.join(tick_dir, "final", "certification_manifest.json"),
+            "can_claim_complete_certification": certification_manifest.get("can_claim_complete_certification", False),
         }
+        _write_json_atomic(merged_file, merged)
 
     # ── 9. 发射 FANOUT_END 事件 ──
     emit_phase_event("fanout_end", chain_id, f"multi-brain-{tick_id}",
@@ -1895,6 +2761,33 @@ def cli():
 
     # ── cleanup ──
     sub.add_parser("cleanup", help="Clean all old TICK_DIRs")
+
+    # ── RMCS audit/resume ──
+    audit_p = sub.add_parser("audit-certification", help="Audit a tick dir and write final/certification_manifest.json")
+    audit_p.add_argument("tick_dir", help="Existing ~/.hermes/tick-* directory")
+    audit_p.add_argument("--no-write", action="store_true", help="Only print manifest; do not write final artifact")
+
+    resume_p = sub.add_parser("resume-discussion", help="Resume/create discussion_result.json for an existing tick dir")
+    resume_p.add_argument("tick_dir", help="Existing ~/.hermes/tick-* directory")
+    resume_p.add_argument("--offline", action="store_true", help="Use deterministic offline ratification instead of model calls")
+    resume_p.add_argument("--max-rounds", type=int, default=5, help="Max discussion rounds")
+    resume_p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, help="Per-model timeout in seconds")
+    resume_p.add_argument("--force", action="store_true", help="Recreate discussion_result even if it already exists")
+
+    discuss_existing_p = sub.add_parser("discuss-existing", help="Alias for resume-discussion")
+    discuss_existing_p.add_argument("tick_dir", help="Existing ~/.hermes/tick-* directory")
+    discuss_existing_p.add_argument("--offline", action="store_true", help="Use deterministic offline ratification instead of model calls")
+    discuss_existing_p.add_argument("--max-rounds", type=int, default=5, help="Max discussion rounds")
+    discuss_existing_p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, help="Per-model timeout in seconds")
+    discuss_existing_p.add_argument("--force", action="store_true", help="Recreate discussion_result even if it already exists")
+
+    rmcs_runner_p = sub.add_parser("rmcs-runner", help="Bounded RMCS audit/resume scan for cron/background use")
+    rmcs_runner_p.add_argument("--root", default=HERMES_HOME, help="Root containing tick-* dirs")
+    rmcs_runner_p.add_argument("--max-ticks", type=int, default=5, help="Max tick dirs to process in this finite run")
+    rmcs_runner_p.add_argument("--resume-missing", action="store_true", help="Create missing discussion_result.json via resume-discussion")
+    rmcs_runner_p.add_argument("--offline", action="store_true", help="Use deterministic offline ratification for resumed ticks")
+    rmcs_runner_p.add_argument("--max-rounds", type=int, default=2, help="Max discussion rounds for resumed ticks")
+    rmcs_runner_p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, help="Per-model timeout in seconds")
 
     args = parser.parse_args()
 
@@ -2021,6 +2914,35 @@ def cli():
     elif args.cmd == "cleanup":
         cleanup_old_ticks()
         print("[consult_models] Cleanup complete.")
+
+    elif args.cmd == "audit-certification":
+        manifest = audit_certification(args.tick_dir, write=not args.no_write)
+        print(json.dumps(manifest, indent=2, ensure_ascii=False))
+        if not manifest.get("can_claim_complete_certification", False):
+            sys.exit(2)
+
+    elif args.cmd in ("resume-discussion", "discuss-existing"):
+        result = resume_discussion_from_tick_dir(
+            args.tick_dir,
+            offline=args.offline,
+            max_rounds=args.max_rounds,
+            timeout=args.timeout,
+            force=args.force,
+        )
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        if not result.get("certification_manifest", {}).get("can_claim_complete_certification", False):
+            sys.exit(2)
+
+    elif args.cmd == "rmcs-runner":
+        report = run_rmcs_runner(
+            args.root,
+            max_ticks=args.max_ticks,
+            resume_missing=args.resume_missing,
+            offline=args.offline,
+            max_rounds=args.max_rounds,
+            timeout=args.timeout,
+        )
+        print(json.dumps(report, indent=2, ensure_ascii=False))
 
     else:
         parser.print_help()

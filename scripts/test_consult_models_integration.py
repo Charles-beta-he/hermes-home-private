@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -27,6 +28,25 @@ class TestConsultModelsIntegration(unittest.TestCase):
     def test_truth_gate_summary_handles_non_dict_inputs(self):
         """Communication packet truth gate summaries should defensively handle malformed values."""
         self.assertEqual(consult._summarize_truth_gate("bad"), {})
+
+    def test_safe_numeric_parsers_reject_bool_and_nonfinite_values(self):
+        """Certification-critical numeric parsing must fail closed on bool/NaN/Infinity."""
+        self.assertEqual(consult._safe_int(True, 3), 3)
+        self.assertEqual(consult._safe_int(False, 3), 3)
+        self.assertEqual(consult._safe_int(float("inf"), 3), 3)
+        self.assertEqual(consult._safe_float(True, 0.0), 0.0)
+        self.assertEqual(consult._safe_float(False, 0.0), 0.0)
+        self.assertEqual(consult._safe_float(float("nan"), 0.0), 0.0)
+        self.assertEqual(consult._safe_float(float("inf"), 0.0), 0.0)
+        self.assertEqual(consult._safe_float(float("-inf"), 0.0), 0.0)
+
+    def test_evidence_verification_canonicalizes_kind_and_type_independently(self):
+        self.assertFalse(consult._evidence_counts_as_verification({"kind": "   ", "type": " gate_requirement "}))
+        self.assertFalse(consult._evidence_counts_as_verification({"kind": " policy ", "type": "command_output"}))
+        self.assertFalse(consult._evidence_counts_as_verification({"kind": " provenance ", "type": "command_output"}))
+        self.assertFalse(consult._evidence_counts_as_verification({"kind": "command_output", "type": " provenance_only "}))
+        self.assertFalse(consult._evidence_counts_as_verification({"kind": " POLICY_ONLY ", "type": "artifact"}))
+        self.assertTrue(consult._evidence_counts_as_verification({"kind": " command_output ", "type": "artifact"}))
 
     def test_model_provider_resolves_gpt55(self):
         """model_provider() should resolve gpt-5.5 to openai-codex"""
@@ -184,7 +204,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(consult.build_issue_ledger(plans), [])
 
     def test_issue_ledger_flags_noop_vs_real_change_disagreement(self):
-        """A noop vote mixed with real implementation patches is a real disagreement."""
+        """A balanced noop/change split remains a real disagreement."""
         plans = [
             {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "op": "noop", "rationale": "already verified"}]},
             {"meta": {"planner_model": "codex"}, "patches": [{"id": "A", "target_file": "x.py", "op": "add_verifier", "rationale": "needed"}]},
@@ -193,6 +213,94 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(len(issues), 1)
         self.assertEqual(issues[0]["target_file"], "<mixed-noop-vs-change>")
         self.assertIn("claude", issues[0]["missing_models"])
+
+    def test_issue_ledger_does_not_block_on_conditional_advisory_under_noop_supermajority(self):
+        """N-1 noop/no-change votes make a minority conditional advisory non-blocking."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "op": "noop", "rationale": "already verified"}]},
+            {"meta": {"planner_model": "gpt"}, "patches": [{"id": "A", "target_file": "x.py", "op": "add_verifier", "rationale": "optional follow-up only if missing"}]},
+            {"meta": {"planner_model": "deepseek"}, "patches": [{"id": "noop-b", "op": "noop", "rationale": "no source change"}]},
+            {"meta": {"planner_model": "mimo"}, "patches": [{"id": "noop-c", "op": "noop", "rationale": "certify"}]},
+        ]
+        self.assertEqual(consult.build_issue_ledger(plans), [])
+
+    def test_issue_ledger_blocks_unconditional_minority_patch_under_noop_supermajority(self):
+        """N-1 noop/no-change votes must not hide a concrete minority implementation patch."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "op": "noop", "rationale": "already verified"}]},
+            {"meta": {"planner_model": "gpt"}, "patches": [{"id": "A", "target_file": "x.py", "op": "add_verifier", "rationale": "missing regression test must be added"}]},
+            {"meta": {"planner_model": "deepseek"}, "patches": [{"id": "noop-b", "op": "noop", "rationale": "no source change"}]},
+            {"meta": {"planner_model": "mimo"}, "patches": [{"id": "noop-c", "op": "noop", "rationale": "certify"}]},
+        ]
+        issues = consult.build_issue_ledger(plans)
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["target_file"], "<mixed-noop-vs-change>")
+        self.assertIn("claude", issues[0]["missing_models"])
+
+    def test_issue_ledger_treats_conditional_verifier_suggestions_as_advisory(self):
+        """Conditional add_verifier proposals are evidence requests, not patch blockers."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "target_file": "x.py", "op": "noop", "rationale": "tests already prove it"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"id": "maybe-test", "target_file": "x.py", "op": "add_verifier", "rationale": "add verifier only if direct inspection shows the named test is missing"}]},
+            {"meta": {"planner_model": "deepseek"}, "patches": [{"id": "maybe-test-2", "target_file": "x.py", "op": "add_verifier", "rationale": "conditional follow-up if fresh tick fails"}]},
+            {"meta": {"planner_model": "mimo"}, "patches": []},
+        ]
+        self.assertEqual(consult.build_issue_ledger(plans), [])
+
+    def test_issue_ledger_flags_unconditional_verifier_patch_vs_noop(self):
+        """Concrete verifier additions still block a balanced noop/change split."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "target_file": "x.py", "op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"id": "add-test", "target_file": "x.py", "op": "add_verifier", "rationale": "missing regression test must be added"}]},
+        ]
+        issues = consult.build_issue_ledger(plans)
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["target_file"], "<mixed-noop-vs-change>")
+
+    def test_issue_ledger_flags_unconditional_verifier_patch_with_nonconditional_if_word(self):
+        """The bare word 'if' in a concrete rationale must not make it advisory."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "target_file": "x.py", "op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"id": "add-test", "target_file": "x.py", "op": "add_verifier", "rationale": "add regression for if statement parsing"}]},
+            {"meta": {"planner_model": "deepseek"}, "patches": [{"id": "noop-b", "target_file": "x.py", "op": "noop", "rationale": "already verified"}]},
+            {"meta": {"planner_model": "mimo"}, "patches": []},
+        ]
+        issues = consult.build_issue_ledger(plans)
+        self.assertTrue(any(issue.get("target_file") == "<mixed-noop-vs-change>" for issue in issues))
+
+    def test_issue_ledger_flags_unconditional_verifier_patch_with_before_deciding_phrase(self):
+        """Process phrases without explicit conditional wording must not make concrete verifier work advisory."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"id": "noop-a", "target_file": "x.py", "op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"id": "add-test", "target_file": "x.py", "op": "add_verifier", "rationale": "add the regression verifier before deciding certification"}]},
+            {"meta": {"planner_model": "deepseek"}, "patches": [{"id": "noop-b", "target_file": "x.py", "op": "noop", "rationale": "already verified"}]},
+            {"meta": {"planner_model": "mimo"}, "patches": []},
+        ]
+        issues = consult.build_issue_ledger(plans)
+        self.assertTrue(any(issue.get("target_file") == "<mixed-noop-vs-change>" for issue in issues))
+        summary = consult._planner_patch_summary(plans)
+        self.assertEqual(summary["concrete_patch_count"], 1)
+        self.assertEqual(summary["conditional_advisory_patch_count"], 0)
+
+    def test_planner_patch_summary_marks_no_action_certification_without_concrete_patches(self):
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"op": "add_verifier", "rationale": "add only if missing"}]},
+        ]
+        summary = consult._planner_patch_summary(plans)
+        self.assertEqual(summary["certification_intent"], "no_action_certification")
+        self.assertEqual(summary["concrete_patch_count"], 0)
+        self.assertEqual(summary["noop_patch_count"], 1)
+        self.assertEqual(summary["conditional_advisory_patch_count"], 1)
+
+    def test_discussion_packet_explains_empty_patches_for_no_action_certification(self):
+        current_best = {
+            "patches": [],
+            "planner_patch_summary": {"certification_intent": "no_action_certification", "concrete_patch_count": 0},
+        }
+        packet = consult.build_discussion_comm_packet(current_best, [], consult.build_evidence_bundle({}), {}, 1)
+        self.assertEqual(packet["current_best_summary"]["planner_patch_summary"]["certification_intent"], "no_action_certification")
+        self.assertTrue(any("empty current_best_summary.patches" in instruction for instruction in packet["instructions"]))
 
     def test_discussion_retries_unparseable_response_with_strict_json_prompt(self):
         """Transient empty/non-JSON discussion outputs should get one strict JSON retry before failing closed."""
@@ -321,6 +429,20 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(gate["truth_status"], "partially_grounded")
         self.assertFalse(gate["can_certify_truth"])
         self.assertIn("C-002", gate["unsupported_claim_ids"])
+
+    def test_evidence_bundle_gate_requirement_does_not_verify_claim(self):
+        """A gate requirement is an obligation, not proof that execution happened."""
+        state = {
+            "claims": [{"id": "C-GATE", "text": "final certification tick exists", "severity": 5}],
+            "evidence": [{"id": "E-GATE", "kind": "   ", "type": " gate_requirement ", "summary": "must run T3", "supports": ["C-GATE"]}],
+        }
+        bundle = consult.build_evidence_bundle(state)
+        self.assertEqual(bundle["grounding"]["C-GATE"]["truth_status"], "unsupported")
+        self.assertEqual(bundle["grounding"]["C-GATE"]["supporting_evidence_ids"], [])
+        self.assertEqual(bundle["grounding"]["C-GATE"]["non_verifying_supporting_evidence_ids"], ["E-GATE"])
+        gate = consult.evaluate_truth_gate(bundle)
+        self.assertFalse(gate["can_certify_truth"])
+        self.assertIn("C-GATE", gate["unsupported_high_severity_claim_ids"])
 
     def test_evidence_requests_are_extracted_from_model_outputs(self):
         """Other brains should request evidence instead of claiming tool-verified truth."""
@@ -482,6 +604,16 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(bundle["grounding"]["C-001"]["truth_status"], "verified_by_evidence")
         self.assertEqual(bundle["grounding"]["C-001"]["supporting_evidence_ids"], ["E-001"])
 
+    def test_evidence_bundle_does_not_verify_provenance_only_support(self):
+        state = {
+            "claims": [{"id": "C-001", "text": "runtime gate passed", "severity": 5}],
+            "evidence": [{"id": "E-prov", "kind": " provenance ", "summary": "planner said gate should exist", "supports": ["C-001"]}],
+        }
+        bundle = consult.build_evidence_bundle(state)
+        self.assertEqual(bundle["grounding"]["C-001"]["truth_status"], "unsupported")
+        self.assertEqual(bundle["grounding"]["C-001"]["supporting_evidence_ids"], [])
+        self.assertEqual(bundle["grounding"]["C-001"]["non_verifying_supporting_evidence_ids"], ["E-prov"])
+
     def test_evidence_bundle_marks_raw_evidence_present_as_needs_link_review(self):
         """Raw evidence with no explicit supports should request linkage review, not assert unsupported."""
         state = {
@@ -494,6 +626,577 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(gate["truth_status"], "needs_link_review")
         self.assertFalse(gate["can_certify_truth"])
         self.assertIn("C-001", gate["needs_link_review_claim_ids"])
+
+    def test_issue_ledger_normalizes_equivalent_target_paths(self):
+        """consult_models.py and scripts/consult_models.py should group as one target."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"target_file": "scripts/consult_models.py", "op": "add_verifier", "rationale": "checkpoint"}]},
+            {"meta": {"planner_model": "mimo"}, "patches": [{"target_file": "consult_models.py", "op": "add_verifier", "rationale": "resume"}]},
+        ]
+
+        ledger = consult.build_issue_ledger(plans)
+
+        targets = {issue.get("target_file") for issue in ledger}
+        self.assertEqual(targets, {"scripts/consult_models.py"})
+        self.assertEqual(len(ledger), 1)
+
+    def test_audit_certification_fails_closed_without_discussion_result(self):
+        """A tick with plans/merged output but no discussion_result must stay partial_uncertified."""
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            (tick / "plans" / "claude.json").write_text(json.dumps({"meta": {"planner_model": "claude"}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 2, "success_count": 2},
+                "truth_assessment": {"can_certify_truth": True},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["schema_version"], consult.CERTIFICATION_MANIFEST_SCHEMA_VERSION)
+            self.assertEqual(manifest["status"], "partial_uncertified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("missing discussion_result.json", " ".join(manifest["reasons"]))
+            self.assertTrue((tick / "final" / "certification_manifest.json").exists())
+
+    def test_audit_certification_fails_closed_missing_fanout_truth_or_votes(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({"patches": []}))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "issue_ledger": [],
+                "ratification_votes": [],
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("missing fanout_certification", manifest["reasons"])
+            self.assertIn("missing truth_assessment", manifest["reasons"])
+            self.assertTrue(any("ratification quorum not met" in r for r in manifest["reasons"]))
+
+    def test_audit_certification_rejects_malformed_merged_fanout_counts_even_when_discussion_is_clean(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            models = ["claude", "codex", "deepseek", "mimo"]
+            for model in models:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            discussion_fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            merged_fanout = {"certified": True, "multi_model_certified": True, "planner_count": "4", "success_count": 3}
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in models]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": merged_fanout,
+                "truth_assessment": truth,
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": discussion_fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("merged fanout planner_count/success_count must be strict integers", manifest["reasons"])
+
+    def test_audit_certification_rejects_empty_patches_without_no_action_summary(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in ["claude", "codex", "deepseek", "mimo"]]
+            (tick / "merged_plan.json").write_text(json.dumps({"patches": [], "fanout_certification": fanout, "truth_assessment": truth}))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("empty merged patches require planner_patch_summary no_action_certification", manifest["reasons"])
+
+    def test_audit_certification_accepts_empty_patches_with_no_action_summary(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in ["claude", "codex", "deepseek", "mimo"]]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "certified")
+            self.assertTrue(manifest["can_claim_complete_certification"])
+            self.assertTrue((tick / "final" / "certification_manifest.json").exists())
+            self.assertTrue(manifest["artifacts"]["certification_manifest"]["exists"])
+
+    def test_audit_certification_rejects_malformed_plan_artifact(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            (tick / "plans" / "codex.json").write_text(json.dumps("bad-plan"))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in ["claude", "codex", "deepseek", "mimo"]]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("plan artifact malformed: codex.json", manifest["reasons"])
+
+    def test_audit_certification_rejects_malformed_plan_patch_structures(self):
+        malformed_cases = [
+            ("missing-patches", {"meta": {"planner_model": "codex"}}),
+            ("non-list-patches", {"meta": {"planner_model": "codex"}, "patches": "not-a-list"}),
+            ("non-dict-patch-entry", {"meta": {"planner_model": "codex"}, "patches": ["not-a-dict"]}),
+        ]
+        for case_name, malformed_plan in malformed_cases:
+            with self.subTest(case_name):
+                with tempfile.TemporaryDirectory() as td:
+                    tick = Path(td)
+                    (tick / "plans").mkdir()
+                    models = ["claude", "codex", "deepseek", "mimo"]
+                    for model in models:
+                        plan = {"meta": {"planner_model": model}, "patches": []}
+                        if model == "codex":
+                            plan = malformed_plan
+                        (tick / "plans" / f"{model}.json").write_text(json.dumps(plan))
+                    fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+                    truth = {"can_certify_truth": True}
+                    votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in models]
+                    (tick / "merged_plan.json").write_text(json.dumps({
+                        "patches": [],
+                        "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                        "fanout_certification": fanout,
+                        "truth_assessment": truth,
+                    }))
+                    (tick / "discussion_result.json").write_text(json.dumps({
+                        "status": "certified",
+                        "fanout_certification": fanout,
+                        "truth_assessment": truth,
+                        "issue_ledger": [],
+                        "ratification_votes": votes,
+                        "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+                    }))
+
+                    manifest = consult.audit_certification(str(tick), write=True)
+
+                    self.assertFalse(manifest["can_claim_complete_certification"])
+                    self.assertIn("plan patches missing or malformed", manifest["reasons"])
+                    self.assertIn("empty merged patches require planner_patch_summary no_action_certification", manifest["reasons"])
+
+    def test_audit_certification_rejects_missing_or_non_list_merged_patches(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in ["claude", "codex", "deepseek", "mimo"]]
+            for merged in [{"fanout_certification": fanout, "truth_assessment": truth}, {"patches": "not-a-list", "fanout_certification": fanout, "truth_assessment": truth}]:
+                (tick / "merged_plan.json").write_text(json.dumps(merged))
+                (tick / "discussion_result.json").write_text(json.dumps({
+                    "status": "certified",
+                    "fanout_certification": fanout,
+                    "truth_assessment": truth,
+                    "issue_ledger": [],
+                    "ratification_votes": votes,
+                    "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+                }))
+
+                manifest = consult.audit_certification(str(tick), write=True)
+
+                self.assertFalse(manifest["can_claim_complete_certification"])
+                self.assertIn("merged_plan patches missing or malformed", manifest["reasons"])
+
+    def test_audit_certification_rejects_empty_merged_patches_when_planner_has_concrete_patch(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            models = ["claude", "codex", "deepseek", "mimo"]
+            for model in models:
+                patches = [{"op": "replace", "target_file": "scripts/x.py", "rationale": "real change"}] if model == "codex" else [{"op": "noop"}]
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": patches}))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in models]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("empty merged patches require planner_patch_summary no_action_certification", manifest["reasons"])
+
+    def test_audit_certification_rejects_discussion_truth_masking_failing_merged_truth(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            models = ["claude", "codex", "deepseek", "mimo"]
+            for model in models:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in models]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": fanout,
+                "truth_assessment": {"can_certify_truth": False, "reasons": ["unsupported claims"]},
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": fanout,
+                "truth_assessment": {"can_certify_truth": True},
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("merged truth gate cannot certify", manifest["reasons"])
+
+    def test_resume_discussion_preserves_failing_merged_truth_assessment(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            models = ["claude", "codex", "deepseek", "mimo"]
+            for model in models:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": fanout,
+                "truth_assessment": {"can_certify_truth": False, "reasons": ["unsupported claims"]},
+            }))
+
+            result = consult.resume_discussion_from_tick_dir(str(tick), offline=True, max_rounds=1, force=True)
+
+            self.assertFalse(result["discussion"]["truth_assessment"]["can_certify_truth"])
+            self.assertFalse(result["certification_manifest"]["can_claim_complete_certification"])
+            self.assertIn("truth gate cannot certify", result["certification_manifest"]["reasons"])
+
+    def test_audit_certification_rejects_string_false_signature_and_low_agreement(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4},
+                "truth_assessment": {"can_certify_truth": True},
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4},
+                "truth_assessment": {"can_certify_truth": True},
+                "issue_ledger": [],
+                "ratification_votes": [
+                    {"model": "claude", "vote": "approve", "best_within_constraints": "false"},
+                    {"model": "codex", "vote": "approve", "best_within_constraints": True},
+                    {"model": "deepseek", "vote": "approve", "best_within_constraints": True},
+                    {"model": "mimo", "vote": "approve", "best_within_constraints": True},
+                ],
+                "agreement_matrix": {"framing": 0.95, "approach": 0.5, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("ratification contains unsigned/non-true best_within_constraints", manifest["reasons"])
+            self.assertIn("agreement matrix missing or below 0.85", manifest["reasons"])
+
+    def test_audit_certification_rejects_boolean_severity_and_agreement_axes(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4},
+                "truth_assessment": {"can_certify_truth": True},
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4},
+                "truth_assessment": {"can_certify_truth": True},
+                "issue_ledger": [
+                    {"id": "I-bool", "status": "unresolved", "severity": False},
+                    {"id": "I-inf", "status": "unresolved", "severity": float("inf")},
+                ],
+                "ratification_votes": [
+                    {"model": "claude", "vote": "approve", "best_within_constraints": True},
+                    {"model": "codex", "vote": "approve", "best_within_constraints": True},
+                    {"model": "deepseek", "vote": "approve", "best_within_constraints": True},
+                    {"model": "mimo", "vote": "approve", "best_within_constraints": True},
+                ],
+                "agreement_matrix": {"framing": True, "approach": float("nan"), "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("unresolved severity>=3 issues remain", manifest["reasons"])
+            self.assertIn("agreement matrix missing or below 0.85", manifest["reasons"])
+
+    def test_audit_certification_rejects_malformed_top_level_and_nested_artifacts(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps("bad-merged"))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": "bad-fanout",
+                "truth_assessment": "bad-truth",
+                "issue_ledger": [],
+                "ratification_votes": [],
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("merged_plan malformed", manifest["reasons"])
+            self.assertIn("fanout_certification malformed", manifest["reasons"])
+            self.assertIn("truth_assessment malformed", manifest["reasons"])
+            self.assertIn("missing fanout_certification", manifest["reasons"])
+            self.assertIn("missing truth_assessment", manifest["reasons"])
+
+    def test_audit_certification_rejects_malformed_ledger_votes_and_fanout_counts(self):
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            for model in ["claude", "codex", "deepseek", "mimo"]:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": "4", "success_count": 3},
+                "truth_assessment": {"can_certify_truth": True},
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": "4", "success_count": 3},
+                "truth_assessment": {"can_certify_truth": True},
+                "issue_ledger": [{"status": "resolved", "severity": 1}, "bad-entry"],
+                "ratification_votes": [
+                    {"model": "claude", "vote": "approve", "best_within_constraints": True},
+                    {"model": "claude", "vote": "approve", "best_within_constraints": True},
+                    {"model": "", "vote": "approve", "best_within_constraints": True},
+                    {"model": "unexpected", "vote": "approve", "best_within_constraints": True},
+                    "bad-vote",
+                ],
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            self.assertIn("fanout planner_count/success_count must be strict integers", manifest["reasons"])
+            self.assertIn("issue_ledger contains malformed entries", manifest["reasons"])
+            self.assertIn("ratification_votes contains malformed entries", manifest["reasons"])
+            self.assertTrue(any("duplicate ratification votes" in r for r in manifest["reasons"]))
+            self.assertTrue(any("unexpected ratification vote models" in r for r in manifest["reasons"]))
+            self.assertIn("ratification vote missing model identity", manifest["reasons"])
+
+    def test_run_discussion_rejects_string_false_best_within_constraints(self):
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": []},
+            {"meta": {"planner_model": "codex"}, "patches": []},
+        ]
+
+        def string_false(_model, _prompt):
+            return json.dumps({"critiques": [], "evidence_requests": [], "vote": "approve", "best_within_constraints": "false", "reasoning": "bad type"})
+
+        result = consult.run_discussion_rounds(
+            plans,
+            current_best={"patches": []},
+            models=["claude", "codex"],
+            call_model_fn=string_false,
+            max_rounds=1,
+        )
+
+        self.assertEqual(result["status"], "not_certified")
+        self.assertTrue(all(v["best_within_constraints"] is False for v in result["ratification_votes"]))
+
+    def test_run_discussion_checkpoint_writes_cursor_and_round_summary(self):
+        """Discussion should checkpoint each completed round before final certification."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": []},
+            {"meta": {"planner_model": "codex"}, "patches": []},
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            def approve(_model, _prompt):
+                return json.dumps({"critiques": [], "evidence_requests": [], "vote": "approve", "best_within_constraints": True, "reasoning": "checkpoint smoke"})
+
+            result = consult.run_discussion_rounds(
+                plans,
+                current_best={"patches": []},
+                models=["claude", "codex"],
+                call_model_fn=approve,
+                max_rounds=1,
+                checkpoint_dir=td,
+            )
+            cursor = json.loads((Path(td) / "discussion" / "cursor.json").read_text())
+            state = json.loads((Path(td) / "discussion" / "state.json").read_text())
+            summary = json.loads((Path(td) / "discussion" / "round_001" / "round_summary.json").read_text())
+
+            self.assertEqual(result["status"], "certified")
+            self.assertEqual(cursor["rounds_completed"], 1)
+            self.assertEqual(cursor["latest_status"], "certified")
+            self.assertEqual(state["status"], "certified")
+            self.assertEqual(summary["round"], 1)
+            self.assertIn("votes", summary)
+            self.assertTrue((Path(td) / "discussion" / "round_001" / "model_response_claude.json").exists())
+            parse_status = json.loads((Path(td) / "discussion" / "round_001" / "parse_status_claude.json").read_text())
+            self.assertEqual(parse_status["parse_status"], "ok")
+
+    def test_online_discussion_does_not_blanket_resolve_existing_blockers(self):
+        """Aggregate approval votes alone must not erase existing issue-ledger blockers."""
+        plans = [
+            {"meta": {"planner_model": "claude"}, "patches": [{"target_file": "scripts/consult_models.py", "op": "add_verifier", "rationale": "checkpoint"}]},
+            {"meta": {"planner_model": "codex"}, "patches": [{"target_file": "scripts/consult_models.py", "op": "tune_threshold", "rationale": "budget"}]},
+        ]
+
+        def approve(_model, _prompt):
+            return json.dumps({"critiques": [], "evidence_requests": [], "vote": "approve", "best_within_constraints": True, "reasoning": "resolved by implementation evidence"})
+
+        result = consult.run_discussion_rounds(
+            plans,
+            current_best={"patches": []},
+            models=["claude", "codex"],
+            call_model_fn=approve,
+            max_rounds=1,
+        )
+
+        self.assertEqual(result["status"], "not_certified")
+        self.assertTrue([i for i in result["issue_ledger"] if i.get("status") == "unresolved"])
+
+    def test_resume_discussion_from_tick_dir_creates_discussion_and_manifest(self):
+        """A resumable tick should be able to create missing discussion_result + final manifest."""
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            plan = {"meta": {"planner_model": "claude"}, "patches": []}
+            (tick / "plans" / "claude.json").write_text(json.dumps(plan))
+            (tick / "plans" / "codex.json").write_text(json.dumps({"meta": {"planner_model": "codex"}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 2, "success_count": 2},
+                "truth_assessment": {"can_certify_truth": True},
+            }))
+
+            result = consult.resume_discussion_from_tick_dir(str(tick), offline=True, max_rounds=1)
+
+            self.assertEqual(result["discussion"]["status"], "certified")
+            self.assertTrue((tick / "discussion_result.json").exists())
+            self.assertTrue((tick / "final" / "certification_manifest.json").exists())
+            self.assertTrue(result["certification_manifest"]["can_claim_complete_certification"])
+
+    def test_rmcs_runner_is_bounded_and_can_resume_missing_discussion(self):
+        """Background/cron use should be a bounded runner, not an unbounded foreground hang."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            tick = root / "tick-20260507-000000"
+            (tick / "plans").mkdir(parents=True)
+            (tick / "plans" / "claude.json").write_text(json.dumps({"meta": {"planner_model": "claude"}, "patches": []}))
+            (tick / "plans" / "codex.json").write_text(json.dumps({"meta": {"planner_model": "codex"}, "patches": []}))
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 2, "success_count": 2},
+                "truth_assessment": {"can_certify_truth": True},
+            }))
+
+            report = consult.run_rmcs_runner(str(root), max_ticks=1, resume_missing=True, offline=True, max_rounds=1)
+
+            self.assertEqual(report["schema_version"], "rmcs_runner_report_v1")
+            self.assertEqual(report["bounded"]["max_ticks"], 1)
+            self.assertEqual(len(report["processed"]), 1)
+            self.assertEqual(report["processed"][0]["action"], "resumed")
+            self.assertTrue((tick / "discussion_result.json").exists())
+            self.assertTrue((root / "state" / "rmcs-runner-last.json").exists())
+            status = json.loads((root / "state" / "rmcs-runner-status.json").read_text())
+            self.assertEqual(status["status"], "complete")
+            self.assertEqual(status["processed_count"], 1)
 
 
 if __name__ == "__main__":

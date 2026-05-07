@@ -10,6 +10,14 @@ level: P9
 
 ## P0 — Contract and Audit
 
+Status: implemented and certified for the RMCS implementation scope in `/Users/charles/.hermes/tick-20260507-112446`.
+
+Evidence:
+
+- `audit-certification` exists and writes `final/certification_manifest.json`.
+- Missing `discussion_result.json` fails closed as `partial_uncertified`.
+- Current certification tick manifest `/Users/charles/.hermes/tick-20260507-112446/final/certification_manifest.json`: `status=certified`, `can_claim_complete_certification=true`.
+
 ### RMCS-P0-001 Certification state enum
 
 Define status values:
@@ -54,6 +62,14 @@ Acceptance:
 
 ## P1 — Checkpoint and Resume
 
+Status: implemented and certified for the RMCS implementation scope in `/Users/charles/.hermes/tick-20260507-112446`.
+
+Evidence:
+
+- Per-model checkpoint artifacts are written as `discussion/round_NNN/model_response_<model>.json` and `parse_status_<model>.json`.
+- Cursor/state/heartbeat are updated after each model checkpoint.
+- `resume-discussion` can materialize missing `discussion_result.json` + final manifest from existing tick artifacts.
+
 ### RMCS-P1-001 Per-model checkpoint
 
 Persist raw + parsed response after each discussion model call.
@@ -82,6 +98,14 @@ Acceptance:
 
 ## P2 — Background-safe Runner
 
+Status: implemented and certified for the RMCS implementation scope in `/Users/charles/.hermes/tick-20260507-112446`.
+
+Evidence:
+
+- `rmcs-runner` is bounded by `max_ticks`.
+- Runner writes `state/rmcs-runner-status.json` and `state/rmcs-runner-last.json`.
+- Partial artifacts remain uncertified until discussion and manifest gates pass.
+
 ### RMCS-P2-001 Background status/heartbeat
 
 Write heartbeat/status JSON during long discussion.
@@ -101,6 +125,14 @@ Acceptance:
 - Partial artifacts are preserved.
 
 ## P3 — Evidence-first Workflow
+
+Status: partially implemented for certification evidence gates; broader evidence-request work queue remains future enhancement.
+
+Implemented evidence:
+
+- `state` supports claims/evidence and truth gate.
+- RMCS selfcheck has optional `--certification-tick` gate that fails closed unless `discussion_result.json` + `final/certification_manifest.json` support `can_claim_complete_certification=true`.
+- Regression tests cover missing discussion, missing/false manifest, clean certified artifact chain, strict booleans, malformed issue/vote/fanout artifacts, agreement floor, gate-requirement-not-proof, safe severity parsing, no blanket blocker resolution, and noop-supermajority vs balanced noop/change behavior.
 
 ### RMCS-P3-001 Evidence request export
 
@@ -143,3 +175,52 @@ Acceptance before reopening:
 - background runner exists;
 - partial discussion cannot be certified;
 - TaskCreate runtime fixture can be ratified using RMCS.
+
+
+## r10 closure evidence
+
+- Final certified tick: `/Users/charles/.hermes/tick-20260507-112446`.
+- Tests: 60 OK.
+- Added regression coverage: runtime/selfcheck safe numeric parser bool + NaN/Infinity rejection and independent evidence kind/type canonicalization.
+- Prior r9 not_certified tick `/Users/charles/.hermes/tick-20260507-081025` retained as provenance only.
+
+
+## r12 closure evidence
+
+- Final certified tick: `/Users/charles/.hermes/tick-20260507-112446`.
+- Tests: 64 OK.
+- Added regression coverage: conditional `add_verifier` proposals are advisory/evidence requests, while unconditional verifier patches still block noop/change splits.
+- Prior r11 not_certified tick `/Users/charles/.hermes/tick-20260507-112446` retained as provenance only.
+
+
+## r13 closure evidence
+
+- Final certified tick: `/Users/charles/.hermes/tick-20260507-112446`.
+- Tests: 65 OK.
+- Fresh T3: 4 planner successes, 4 approval votes, 0 rejects, all best-within-constraints true.
+- Reviewer blocker fixed: unconditional minority verifier/implementation patches still block even under N-1 noop votes; only conditional advisories are skipped.
+
+## r19 closure evidence
+
+- Final certified tick: `/Users/charles/.hermes/tick-20260507-112446`.
+- Tests: 68 OK.
+- Fresh T3: 4 planner successes, 4 approval votes, 0 rejects, all best-within-constraints true, agreement 0.95/0.95/0.95, unresolved severity>=3 = 0.
+- Source-of-truth manifest: `/Users/charles/.hermes/tick-20260507-112446/final/certification_manifest.json` with `can_claim_complete_certification=true`.
+- Added regression coverage and runtime metadata for no-action certification: `planner_patch_summary` records noop/advisory/concrete patch counts and `certification_intent=no_action_certification`, preventing empty merged `patches=[]` from being mistaken for dropped work.
+- Prior not-certified tick `/Users/charles/.hermes/tick-20260507-112446` retained as provenance only.
+
+## r22 PUA-loop convergence closure evidence
+
+- Final certified tick: `/Users/charles/.hermes/tick-20260507-123552`.
+- Tests: 82 OK after adding standalone selfcheck parity coverage for conditional advisory `add_verifier` no-action plans.
+- Fresh T3: 4 planner successes, 4 approval votes, 0 rejects, all `best_within_constraints=true`, truth gate grounded, evidence coverage 1.0, unresolved severity>=3 = 0, evidence requests = 0, remaining risks = 0.
+- Audit/selfcheck: `audit-certification` and `resumable_multimodel_cert_selfcheck.py --certification-tick` both PASS for the final tick.
+- Reviewer-loop hardening now covers both false-pass and false-negative boundaries: malformed planner patch artifacts fail closed, while conditional advisory verifier suggestions do not break legitimate no-action certification.
+
+## r23 PUA-loop final convergence closure evidence
+
+- Final certified tick: `/Users/charles/.hermes/tick-20260507-130831`.
+- Tests: 85 OK after adding regressions for certification-manifest artifact state, merged fanout count masking, and unconditional verifier advisory-overbreadth phrases.
+- Fresh T3: 4 planner successes, 4 approval votes, 0 rejects, all `best_within_constraints=true`, truth gate grounded, evidence coverage 1.0, unresolved severity>=3 = 0, evidence requests = 0, remaining risks = 0.
+- Audit/selfcheck: `audit-certification /Users/charles/.hermes/tick-20260507-130831` and standalone `resumable_multimodel_cert_selfcheck.py --certification-tick /Users/charles/.hermes/tick-20260507-130831` both PASS with empty reasons/fail_reasons.
+- PUA-loop caught one additional live convergence edge: `/Users/charles/.hermes/tick-20260507-130003` failed closed because one planner timed out (`success_count=3` while `planner_count=4`); the final run reran with full 4/4 fanout instead of waiving that mismatch.
