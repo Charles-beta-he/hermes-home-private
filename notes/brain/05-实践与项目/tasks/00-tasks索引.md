@@ -53,3 +53,8 @@ folder: 30-tasks
 ## Agent COS Task Log
 
 - [[05-实践与项目/tasks/2026-05-07-agent-cos-landing-log]]
+
+
+## 可恢复多模型认证系统 Task Log
+
+- [[05-实践与项目/tasks/2026-05-07-resumable-multimodel-certification-landing-log]]

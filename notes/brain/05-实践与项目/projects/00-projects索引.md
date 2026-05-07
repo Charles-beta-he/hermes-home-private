@@ -56,3 +56,10 @@ folder: 20-projects
 - [[05-实践与项目/projects/agent-cognitive-operating-system/Project - Agent Cognitive Operating System]]
 - [[05-实践与项目/projects/agent-cognitive-operating-system/P10 - Long-term Strategy]]
 - [[05-实践与项目/projects/agent-cognitive-operating-system/P9 - Implementation Backlog]]
+
+
+## 可恢复多模型认证系统
+
+- [[05-实践与项目/projects/resumable-multimodel-certification/Project - Resumable Multi-Model Certification]]
+- [[05-实践与项目/projects/resumable-multimodel-certification/P10 - Long-term Strategy]]
+- [[05-实践与项目/projects/resumable-multimodel-certification/P9 - Implementation Backlog]]

@@ -56,3 +56,8 @@ folder: 60-reviews
 ## Agent COS Review
 
 - [[06-治理与评审/reviews/2026-05-07-agent-cos-multimodel-selfcheck]]
+
+
+## 可恢复多模型认证系统 Review
+
+- [[06-治理与评审/reviews/2026-05-07-resumable-multimodel-certification-multimodel-selfcheck]]
