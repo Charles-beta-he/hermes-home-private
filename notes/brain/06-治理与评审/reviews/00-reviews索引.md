@@ -61,3 +61,7 @@ folder: 60-reviews
 ## 可恢复多模型认证系统 Review
 
 - [[06-治理与评审/reviews/2026-05-07-resumable-multimodel-certification-multimodel-selfcheck]]
+
+## Symphony-inspired 本地任务编排 Review
+
+- [[06-治理与评审/reviews/2026-05-08-symphony-inspired-task-orchestrator-multimodel-selfcheck]]

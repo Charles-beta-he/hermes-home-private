@@ -29,3 +29,7 @@ folder: 10-ai-systems
 ## 维护规则
 
 每次本目录新增 3 个以上笔记，更新本索引；每次本地大脑结构变更后运行 `brainctl sync && brainctl reindex && brainctl search` 验证。
+
+## OpenAI Symphony
+
+- [[04-知识原子/ai-systems/OpenAI Symphony - Codex Orchestration]]

@@ -54,3 +54,7 @@ folder: 10-atoms
 ## Agent 认知操作系统
 
 - [[04-知识原子/atoms/agent-cognitive-operating-system]]
+
+## Symphony-inspired task orchestration
+
+- [[04-知识原子/atoms/task-queue-is-derived-from-canonical-markdown]]

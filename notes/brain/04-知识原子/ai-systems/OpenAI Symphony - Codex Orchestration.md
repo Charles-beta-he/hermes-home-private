@@ -1,92 +1,42 @@
 ---
-type: reference
+type: ai-system-note
+layer: L1
 status: active
-created: 2026-05-06T07:41:43Z
-updated: 2026-05-06T07:41:43Z
-source_url: https://openai.com/index/open-source-codex-orchestration-symphony/
-github: https://github.com/openai/symphony
-tags:
-  - 大模型开发
-  - AI应用开发
-  - harness-engineering
-  - agent-orchestration
-  - codex
+created: 2026-05-08T00:06:02+08:00
+source_repo: https://github.com/openai/symphony
+source_commit: 58cf97da06d556c019ccea20c67f4f77da124bf3
+concepts: [openai-symphony, codex-orchestration, linear, agent-runner]
 ---
 
 # OpenAI Symphony - Codex Orchestration
 
-## Screenshot OCR source
+## Summary
 
-symphony github地址：https://github.com/openai/symphony
-原文链接：https://openai.com/index/open-source-codex-orchestration-symphony/ #大模型开发 #AI应用开发 #harness_
+OpenAI Symphony is a preview service/spec for turning tracker work into isolated autonomous coding-agent runs. It polls Linear, creates per-issue workspaces, launches Codex app-server, tracks retries/reconciliation, and exposes observability.
 
-The final tag was truncated in the screenshot; likely `#harness_engineering` or similar.
+## Useful Concepts for Local Brain
 
-## What Symphony is
+- Repository-owned workflow contract (`WORKFLOW.md`).
+- Internal orchestration state: claimed/running/retry/released.
+- Bounded concurrency and candidate selection.
+- Reconciliation before dispatch.
+- Exponential retry/backoff and stall detection.
+- Per-issue workspace isolation.
+- Observability-only dashboard/API.
 
-Symphony is an issue-driven coding-agent orchestrator. It turns a project-management board, especially Linear, into a control plane for autonomous Codex implementation runs.
+## Adoption Decision
 
-Instead of humans supervising many interactive Codex sessions, humans manage work items. Symphony continuously maps eligible issues to isolated agent workspaces, starts agents, restarts stalled/crashed runs, and requires proof of work for review.
+Selective extraction only. Do not adopt Symphony runtime as local-brain control plane. For this user, Markdown in `~/Documents/brain` remains canonical.
 
-## Key article claims
+## Risks
 
-- OpenAI teams first redesigned repositories for agent work via harness engineering: tests, guardrails, automation, and agent-friendly repo structure.
-- The next bottleneck was human attention and context switching, not just agent capability.
-- Engineers could manage only a few interactive sessions before coordination overhead dominated.
-- Symphony reframes the unit of work from “session” or “PR” to “task/issue/deliverable.”
-- OpenAI reports up to 500% increase in landed PRs for some teams.
+- Preview/prototype software.
+- Linear/Codex runtime lock-in.
+- Arbitrary trusted hooks.
+- Safety posture is deployment-specific.
+- Does not solve Chinese local-brain retrieval or knowledge hierarchy design.
 
-## GitHub snapshot observed 2026-05-06
+## Related
 
-- Repo: `openai/symphony`
-- Language: Elixir
-- License: Apache-2.0
-- Description: “Symphony turns project work into isolated, autonomous implementation runs, allowing teams to manage work instead of supervising coding agents.”
-- Reference implementation: `elixir/`
-- Language-agnostic spec: `SPEC.md`
-
-## Architecture primitives worth absorbing
-
-1. Issue tracker as control plane.
-2. Per-issue isolated workspace.
-3. In-repo workflow contract (`WORKFLOW.md`).
-4. State-machine lifecycle for tasks.
-5. Agent runner separated from orchestrator.
-6. Proof-of-work as a required completion artifact.
-7. Observability logs/status surfaces for many concurrent runs.
-8. Recovery behavior for crash/stall/retry.
-9. Human review at work-result level instead of session micromanagement.
-
-## How Hermes should absorb this
-
-Do not replace Hermes runtime with Symphony. Absorb the governance primitives:
-
-| Symphony primitive | Hermes-native evolution |
-|---|---|
-| Linear board | Obsidian `05-实践与项目/tasks/`, Lark/Linear adapters later |
-| Per-issue workspace | git worktree / task workdir linked from task note |
-| `WORKFLOW.md` | Hermes skill + project workflow contract |
-| Agent subprocess | Hermes subagent, Codex CLI, Claude Code, or cron job |
-| Proof of work | test/build output, git commit, evidence bundle, L6 review note |
-| Status surface | `brainctl status`, WAL, cron health, Obsidian dashboard/MOC |
-| Restart/retry | Hermes cron/process supervision and task state transitions |
-
-## Local brain implication
-
-Symphony’s main lesson for the local brain is that task state must be explicit, bounded, and reviewable. Durable memory should not become a dumping ground for WIP status.
-
-Therefore:
-
-- Task state belongs in expiring task notes, not Hermes injected memory.
-- Evidence and proof links are first-class.
-- Model review artifacts are review evidence, not truth evidence.
-- Project workflow contracts should be versioned like code.
-- The human should view work through Obsidian and status notes, while Hermes executes through brainctl/cron/subagents.
-
-## Links
-
-- Article: https://openai.com/index/open-source-codex-orchestration-symphony/
-- Repo: https://github.com/openai/symphony
-- Spec: https://github.com/openai/symphony/blob/main/SPEC.md
-- Elixir reference: https://github.com/openai/symphony/tree/main/elixir
-- Related: https://openai.com/index/harness-engineering/
+- [[04-知识原子/atoms/task-queue-is-derived-from-canonical-markdown]]
+- [[05-实践与项目/projects/symphony-inspired-local-task-orchestrator/Project - Symphony-inspired Local Task Orchestrator]]

@@ -58,3 +58,7 @@ folder: 30-tasks
 ## 可恢复多模型认证系统 Task Log
 
 - [[05-实践与项目/tasks/2026-05-07-resumable-multimodel-certification-landing-log]]
+
+## Symphony-inspired 本地任务编排 Task Log
+
+- [[05-实践与项目/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log]]

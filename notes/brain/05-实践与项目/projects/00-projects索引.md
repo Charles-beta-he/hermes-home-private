@@ -63,3 +63,9 @@ folder: 20-projects
 - [[05-实践与项目/projects/resumable-multimodel-certification/Project - Resumable Multi-Model Certification]]
 - [[05-实践与项目/projects/resumable-multimodel-certification/P10 - Long-term Strategy]]
 - [[05-实践与项目/projects/resumable-multimodel-certification/P9 - Implementation Backlog]]
+
+## Symphony-inspired 本地任务编排
+
+- [[05-实践与项目/projects/symphony-inspired-local-task-orchestrator/Project - Symphony-inspired Local Task Orchestrator]]
+- [[05-实践与项目/projects/symphony-inspired-local-task-orchestrator/P10 - Long-term Strategy]]
+- [[05-实践与项目/projects/symphony-inspired-local-task-orchestrator/P9 - Implementation Backlog]]
