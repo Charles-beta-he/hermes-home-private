@@ -639,7 +639,7 @@ def write_governance_dashboard(result: dict, paths: Paths | None = None) -> Path
         "- brainctl validate expire promote review record",
         "",
     ])
-    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    target.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
     return target
 
 

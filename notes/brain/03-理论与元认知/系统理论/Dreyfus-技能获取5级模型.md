@@ -40,13 +40,13 @@ def grade_skill(skill):
 
 ## 生态目标
 
-| 等级 | 当前占比 | 目标占比 |
-|------|---------|---------|
-| 5 Expert | 0% | ≥ 10% (核心技能) |
-| 4 Proficient | 未知 | ≥ 20% |
-| 3 Competent | ~24% (有 CHANGELOG) | ≥ 50% |
-| 2 Advanced | ~23% (有 tests) | ≥ 70% |
-| 1 Novice | 剩余 | < 30% |
+| 等级           | 当前占比               | 目标占比         |
+| ------------ | ------------------ | ------------ |
+| 5 Expert     | 0%                 | ≥ 10% (核心技能) |
+| 4 Proficient | 未知                 | ≥ 20%        |
+| 3 Competent  | ~24% (有 CHANGELOG) | ≥ 50%        |
+| 2 Advanced   | ~23% (有 tests)     | ≥ 70%        |
+| 1 Novice     | 剩余                 | < 30%        |
 
 ## 引用
 

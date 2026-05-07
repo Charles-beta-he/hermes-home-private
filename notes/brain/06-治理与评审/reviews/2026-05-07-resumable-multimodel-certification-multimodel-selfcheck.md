@@ -44,6 +44,10 @@ No `discussion_result.json` was produced for this landing review. Therefore this
 3. Certification must be based on `discussion_result.json + certification_manifest.json`, not merged_plan.
 4. First implementation slice should be checkpoint + audit, not parallelism.
 
+## Evidence Boundary
+
+This review is provenance and architecture synthesis, not truth proof. The T3 fanout produced `merged_plan.json` with dissent and no `discussion_result.json`; therefore it cannot certify implementation correctness or final runtime status. Any promotion to executable Hermes behavior still requires tool/file evidence, tests, and a future `discussion_result.json + certification_manifest.json` gate.
+
 ## Caveats
 
 - This is not certified discussion ratification.

@@ -41,13 +41,13 @@ P10 stop gate requires:
 
 ## Top risks
 
-| Risk | Severity | Mitigation |
-|---|---:|---|
-| 多模型一致被误当事实 | 5 | model agreement is not evidence + first-order tool evidence gate |
-| 二阶审计退化为自我赞美 | 4 | second-order gate 必须检查规则、路由、memory、验证脚本本身 |
-| 讨论超时后伪装认证 | 4 | review note 记录 not_certified / timeout / dissent |
-| 过度调用多模型造成成本浪费 | 3 | 只在架构/高风险/跨域任务触发，普通任务用 T0/T1 或 deterministic gates |
-| 本地脑只写方案不验证 | 3 | self-check + sync/reindex/search + scoped commit |
+| Risk          | Severity | Mitigation                                                       |
+| ------------- | -------: | ---------------------------------------------------------------- |
+| 多模型一致被误当事实    |        5 | model agreement is not evidence + first-order tool evidence gate |
+| 二阶审计退化为自我赞美   |        4 | second-order gate 必须检查规则、路由、memory、验证脚本本身                        |
+| 讨论超时后伪装认证     |        4 | review note 记录 not_certified / timeout / dissent                 |
+| 过度调用多模型造成成本浪费 |        3 | 只在架构/高风险/跨域任务触发，普通任务用 T0/T1 或 deterministic gates                |
+| 本地脑只写方案不验证    |        3 | self-check + sync/reindex/search + scoped commit                 |
 
 ## Decision
 

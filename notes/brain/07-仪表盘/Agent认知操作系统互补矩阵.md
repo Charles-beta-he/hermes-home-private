@@ -103,18 +103,18 @@ A+ 不是“理论本身很高级”，而是“理论 × Agent 子系统 × 可
 
 ## 跨学科配对总表（全部 A+）
 
-| 学科 | A+ 配对 ID | 对 COS 的不可替代贡献 | Evidence Gate |
-|---|---|---|---|
-| 控制论/工程控制论 | COS-01 COS-02 COS-03 | 反馈、状态估计、必要多样性 | audit/test/V/Vdot |
-| 系统科学/复杂性 | COS-09 COS-18 | 退化、耗散、老化、维护 | sync/reindex/health history |
-| 认知科学 | COS-04 COS-05 COS-06 COS-16 COS-21 | 工作记忆、速度、自知、双系统、工具身体 | context budget/OODA/selfcheck |
-| 进化论/生物学 | COS-08 | skill 变异-选择-遗传 | skill steward/usage traces |
-| 认识论/科学哲学 | COS-10 COS-22 COS-23 | 证伪、实践效用、少数意见治理 | tests/red-team/review ledger |
-| 经济学/资源理论 | COS-11 COS-12 COS-24 | 有限理性、停止条件、成本 envelope | budget/loop stop gates |
-| 组织管理/军事 C2 | COS-05 COS-13 COS-20 | OODA、精益、P10/P9/P8 指挥链 | loop logs/delegation contracts |
-| 计算机科学/AI | COS-14 COS-15 COS-17 | 模块边界、多 Agent、信息增益 | contract checks/communication budget |
-| 治理理论 | COS-19 COS-23 | skill 公地治理、权威去魅 | governance review/accepted risk |
-| 可靠性工程 | COS-18 | cron/script/skill 生命周期维护 | health warnings/stale checks |
+| 学科         | A+ 配对 ID                           | 对 COS 的不可替代贡献            | Evidence Gate                        |
+| ---------- | ---------------------------------- | ------------------------ | ------------------------------------ |
+| 控制论/工程控制论  | COS-01 COS-02 COS-03               | 反馈、状态估计、必要多样性            | audit/test/V/Vdot                    |
+| 系统科学/复杂性   | COS-09 COS-18                      | 退化、耗散、老化、维护              | sync/reindex/health history          |
+| 认知科学       | COS-04 COS-05 COS-06 COS-16 COS-21 | 工作记忆、速度、自知、双系统、工具身体      | context budget/OODA/selfcheck        |
+| 进化论/生物学    | COS-08                             | skill 变异-选择-遗传           | skill steward/usage traces           |
+| 认识论/科学哲学   | COS-10 COS-22 COS-23               | 证伪、实践效用、少数意见治理           | tests/red-team/review ledger         |
+| 经济学/资源理论   | COS-11 COS-12 COS-24               | 有限理性、停止条件、成本 envelope    | budget/loop stop gates               |
+| 组织管理/军事 C2 | COS-05 COS-13 COS-20               | OODA、精益、P10/P9/P8 指挥链    | loop logs/delegation contracts       |
+| 计算机科学/AI   | COS-14 COS-15 COS-17               | 模块边界、多 Agent、信息增益        | contract checks/communication budget |
+| 治理理论       | COS-19 COS-23                      | skill 公地治理、权威去魅          | governance review/accepted risk      |
+| 可靠性工程      | COS-18                             | cron/script/skill 生命周期维护 | health warnings/stale checks         |
 
 ## 缺失配对归零说明
 
