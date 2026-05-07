@@ -359,7 +359,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
             "gpt-5.5": {"provider": "openai-codex"},
         }}}
         snapshots = {
-            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2026-04-28T09:00:00Z"},
+            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2999-04-28T09:00:00Z"},
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "unobservable"},
         }
         allowed, skipped, attached = consult.filter_planners_by_quota(
@@ -367,7 +367,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         )
         self.assertEqual(allowed, ["gpt-5.5"])
         self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
-        self.assertEqual(skipped[0]["reason"], "quota_exhausted")
+        self.assertEqual(skipped[0]["reason"], "quota_exhausted_until_reset")
         self.assertEqual(attached["openai-codex::gpt-5.5"]["observability"], "unobservable")
 
     def test_select_planners_gates_quota_before_quorum_trim(self):
@@ -391,6 +391,23 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(selected, ["gpt-5.5", "deepseek-v4-pro"])
         self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
         self.assertIn("deepseek::deepseek-v4-pro", attached)
+
+    def test_filter_planners_by_quota_allows_elapsed_reset_window(self):
+        """Expired rate-limit resets should re-enter fan-out instead of staying skipped forever."""
+        config = {"pricing": {"models": {
+            "claude-opus-4-7": {"provider": "anthropic"},
+            "gpt-5.5": {"provider": "openai-codex"},
+        }}}
+        snapshots = {
+            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2000-01-01T00:00:00Z"},
+            "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
+        }
+        allowed, skipped, attached = consult.filter_planners_by_quota(
+            ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
+        )
+        self.assertEqual(allowed, ["claude-opus-4-7", "gpt-5.5"])
+        self.assertEqual(skipped, [])
+        self.assertEqual(attached["anthropic::claude-opus-4-7"]["status"], "reset_elapsed")
 
     def test_planner_prompt_truncation_preserves_truth_gate_fields(self):
         """Oversized state prompts must not silently drop claims/evidence/truth_gate."""

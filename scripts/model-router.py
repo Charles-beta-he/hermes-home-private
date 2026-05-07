@@ -18,7 +18,7 @@ import os
 import random
 import sys
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import subprocess
 import yaml
 
@@ -26,8 +26,17 @@ import yaml
 _pricing = None
 
 HERMES_HOME = os.path.expanduser(os.environ.get("HERMES_HOME", "~/.hermes"))
-LOG_FILE = os.path.join(HERMES_HOME, "logs", "model-router.jsonl")
+LOG_FILE = os.path.join(HERMES_HOME, "logs", "model-routing.jsonl")
+STICKY_FILE = os.path.join(HERMES_HOME, "state", "model-router-sticky.json")
 CONFIG_PATH = os.path.join(HERMES_HOME, "config.yaml")
+
+try:
+    for _path in (os.path.join(HERMES_HOME, "scripts"), os.path.dirname(os.path.abspath(__file__))):
+        if _path and _path not in sys.path:
+            sys.path.insert(0, _path)
+    import model_quota
+except Exception:
+    model_quota = None
 
 
 def _get_pricing():
@@ -40,6 +49,173 @@ def _get_pricing():
         except (ImportError, AttributeError, yaml.YAMLError, OSError):
             pass
     return _pricing
+
+
+
+
+# Known provider -> env var mapping for availability check
+_PROVIDER_ENV = {
+    "openai-codex": "OPENAI_API_KEY",  # or OAuth session
+    "anthropic": "ANTHROPIC_API_KEY",
+    "xiaomi": "XIAOMI_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
+    "gemini": "GOOGLE_API_KEY",
+    "xai": "XAI_API_KEY",
+    "deepseek": "DEEPSEEK_API_KEY",
+}
+
+def _model_available(model: str, config: Optional[dict] = None) -> bool:
+    """Check if a model's provider likely has credentials configured.
+    Returns True if: (a) no env var known, (b) env var set, (c) OAuth-based provider.
+    Returns False when a known provider's required auth is explicitly empty/unset.
+    """
+    provider = _provider_for_model(model, config=config) if config else ""
+    if not provider:
+        pt = _get_pricing()
+        if not pt:
+            return True  # can't check and no config provider, assume available
+        provider = pt.get_provider(model)
+    if not provider:
+        return True  # no provider info, assume available
+    # OAuth-based providers are always considered available (session-based auth)
+    if provider in ("openai-codex", "nous", "qwen-oauth"):
+        return True
+    env_var = _PROVIDER_ENV.get(provider)
+    if not env_var:
+        return True  # unknown provider, assume available
+    # Check: (1) shell env, (2) .env file, (3) hermes auth store
+    available = bool(os.environ.get(env_var))
+    if not available:
+        # Check .env file (hermes loads these at startup)
+        env_file = os.path.join(HERMES_HOME, ".env")
+        try:
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        key = line.split("=", 1)[0].strip()
+                        val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        if key == env_var and val and val != "***":
+                            available = True
+                            break
+        except OSError:
+            pass
+    if not available and provider == "anthropic":
+        # Claude CLI has its own auth (device code / session)
+        import shutil
+        available = shutil.which("claude") is not None
+    if not available:
+        _log_unavailable_provider(provider, model, env_var)
+    return available
+
+
+def _log_unavailable_provider(provider: str, model: str, env_var: str):
+    """Log unavailable provider with deduplication.
+
+    Maintains state/provider_availability.json as the current snapshot keyed by
+    (provider, model). Appends to state/unavailable_providers.jsonl ONLY on
+    state transition (first time seen, or reason change). Avoids per-call
+    explosion when _model_available is invoked many times per routing decision.
+    """
+    state_dir = os.path.join(HERMES_HOME, "state")
+    snapshot_path = os.path.join(state_dir, "provider_availability.json")
+    manifest_path = os.path.join(state_dir, "unavailable_providers.jsonl")
+    try:
+        os.makedirs(state_dir, exist_ok=True)
+        # load snapshot
+        snapshot = {}
+        if os.path.exists(snapshot_path):
+            try:
+                with open(snapshot_path) as f:
+                    snapshot = json.load(f) or {}
+            except (json.JSONDecodeError, OSError):
+                snapshot = {}
+
+        key = f"{provider}::{model}"
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        prev = snapshot.get(key, {})
+        is_new = not prev or prev.get("status") != "unavailable"
+        snapshot[key] = {
+            "provider": provider,
+            "model": model,
+            "missing_env": env_var,
+            "status": "unavailable",
+            "first_seen": prev.get("first_seen", now),
+            "last_seen": now,
+            "count": prev.get("count", 0) + 1,
+            "last_reason": "missing_env_var",
+        }
+        # atomic write of snapshot
+        tmp = snapshot_path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(snapshot, f, indent=2)
+        os.replace(tmp, snapshot_path)
+
+        # only append to jsonl on state transition
+        if is_new:
+            entry = {
+                "ts": now,
+                "provider": provider,
+                "model": model,
+                "missing_env": env_var,
+                "transition": "available_or_unknown -> unavailable",
+                "action": "filtered_from_candidates",
+            }
+            with open(manifest_path, "a") as f:
+                f.write(json.dumps(entry) + "\n")
+    except OSError:
+        pass  # non-critical, don't fail routing
+
+
+def probe_all_providers(verbose: bool = False) -> dict:
+    """Probe every model in pricing.models and report availability state.
+
+    Returns: {"available": [...], "unavailable": [{model,provider,reason}]}.
+    Side effect: refreshes state/provider_availability.json snapshot.
+    """
+    pt = _get_pricing()
+    if not pt:
+        return {"error": "pricing table not loadable", "available": [], "unavailable": []}
+    available, unavailable = [], []
+    for model, info in pt.models.items():
+        provider = info.get("provider", "")
+        env_var = _PROVIDER_ENV.get(provider)
+        ok = _model_available(model)
+        entry = {"model": model, "provider": provider, "env_var": env_var}
+        if ok:
+            available.append(entry)
+        else:
+            entry["reason"] = f"missing {env_var or 'auth'}"
+            unavailable.append(entry)
+    # Mark previously-unavailable models that are now available as transitioned
+    snapshot_path = os.path.join(HERMES_HOME, "state", "provider_availability.json")
+    if os.path.exists(snapshot_path):
+        try:
+            with open(snapshot_path) as f:
+                snap = json.load(f) or {}
+            now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            for a in available:
+                key = f"{a['provider']}::{a['model']}"
+                if key in snap and snap[key].get("status") == "unavailable":
+                    snap[key]["status"] = "available"
+                    snap[key]["recovered_at"] = now
+                    # log transition
+                    manifest = os.path.join(HERMES_HOME, "state", "unavailable_providers.jsonl")
+                    with open(manifest, "a") as f:
+                        f.write(json.dumps({
+                            "ts": now, "provider": a["provider"], "model": a["model"],
+                            "transition": "unavailable -> available", "action": "recovered",
+                        }) + "\n")
+            tmp = snapshot_path + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(snap, f, indent=2)
+            os.replace(tmp, snapshot_path)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return {"available": available, "unavailable": unavailable}
 
 
 def load_config():
@@ -66,6 +242,7 @@ def load_config():
             "epsilon": routing.get("epsilon", 0.1),
             "min_traces_per_model": routing.get("min_traces_per_model", 10),
             "default_model": c.get("model", {}).get("default", ""),
+            "pricing": c.get("pricing", {}),
         }
     except (yaml.YAMLError, FileNotFoundError, OSError):
         return None
@@ -102,12 +279,146 @@ def _schedule_label(model_name: str, now_utc=None) -> str:
     return label
 
 
+def _provider_for_model(model_name: str, config: Optional[dict] = None) -> str:
+    if config:
+        provider = (
+            config.get("pricing", {})
+            .get("models", {})
+            .get(model_name, {})
+            .get("provider")
+        )
+        if provider:
+            return provider
+    pt = _get_pricing()
+    if pt is not None:
+        provider = pt.get_provider(model_name)
+        if provider and provider != "unknown":
+            return provider
+    if model_quota:
+        return model_quota.provider_for_model(model_name)
+    return "unknown"
+
+
+def _quota_filter_candidates(candidates: List[str], config: Optional[dict] = None) -> Tuple[List[str], List[str], dict]:
+    """Hard-gate explicitly exhausted quota candidates.
+
+    Unknown/unobservable snapshots stay eligible; only status=exhausted is skipped.
+    """
+    if not candidates:
+        return candidates, [], {}
+    if not model_quota:
+        return [], list(candidates), {
+            "__quota_gate__": {
+                "status": "unavailable",
+                "reason": "model_quota_import_failed",
+                "models": list(candidates),
+            }
+        }
+    providers = {m: _provider_for_model(m, config=config) for m in candidates}
+    snapshots = model_quota.snapshot_models(candidates, config=config, providers=providers)
+    allowed, skipped = model_quota.gate_models(candidates, snapshots, providers=providers)
+    exhausted = [s.get("model") for s in skipped]
+    return allowed, exhausted, snapshots
+
+
+def _required_capabilities(task_tier: str, task_class: Optional[str] = None) -> set:
+    text = f"{task_tier or ''} {task_class or ''}".lower()
+    if any(word in text for word in ("code", "codegen", "bug", "bugfix", "test", "reviewer", "review")):
+        return {"code", "codegen", "tool_calling"}
+    if any(word in text for word in ("reason", "arbiter", "p10", "architecture")):
+        return {"reasoning", "analysis"}
+    if "long" in text or "context" in text:
+        return {"long_context"}
+    if "chat" in text:
+        return {"chat"}
+    return set()
+
+
+def _model_declared_capabilities(model: str, config: Optional[dict] = None) -> set:
+    info: Dict[str, Any] = {}
+    pt = _get_pricing()
+    if pt is not None:
+        info.update(getattr(pt, "models", {}).get(model, {}) or {})
+    if config:
+        info.update(((config.get("pricing") or {}).get("models") or {}).get(model, {}) or {})
+    caps = set()
+    for key in ("capabilities", "strengths", "candidate_groups"):
+        values = info.get(key) or []
+        if isinstance(values, str):
+            values = [values]
+        caps.update(str(v).lower() for v in values if v)
+    return caps
+
+
+def _capability_filter_candidates(
+    candidates: List[str],
+    task_tier: str,
+    task_class: Optional[str],
+    config: Optional[dict],
+) -> Tuple[List[str], List[str]]:
+    required = _required_capabilities(task_tier, task_class)
+    if not required:
+        return candidates, []
+    compatible: List[str] = []
+    skipped: List[str] = []
+    for model in candidates:
+        caps = _model_declared_capabilities(model, config=config)
+        if not caps or caps.intersection(required):
+            compatible.append(model)
+        else:
+            skipped.append(model)
+    if compatible:
+        return compatible, skipped
+    return [], skipped
+
+
+def _sticky_scope(sticky_key: str, task_class: Optional[str], task_tier: str) -> str:
+    return f"{task_tier or ''}::{task_class or ''}::{sticky_key}"
+
+
+def _load_sticky() -> Dict[str, Any]:
+    try:
+        with open(STICKY_FILE) as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _remember_sticky(sticky_key: Optional[str], task_class: Optional[str], task_tier: str, model: Optional[str]) -> None:
+    if not sticky_key or not model:
+        return
+    try:
+        os.makedirs(os.path.dirname(STICKY_FILE), exist_ok=True)
+        data = _load_sticky()
+        data[_sticky_scope(sticky_key, task_class, task_tier)] = {
+            "model": model,
+            "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        tmp = STICKY_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False, sort_keys=True)
+        os.replace(tmp, STICKY_FILE)
+    except OSError:
+        pass
+
+
+def _sticky_candidate(sticky_key: Optional[str], task_class: Optional[str], task_tier: str, candidates: List[str]) -> Optional[str]:
+    if not sticky_key:
+        return None
+    record = _load_sticky().get(_sticky_scope(sticky_key, task_class, task_tier), {})
+    model = record.get("model") if isinstance(record, dict) else None
+    return model if model in candidates else None
+
+
 def select_model(
     task_class=None,
     task_tier="codegen",
     epsilon=None,
     config=None,
     now_utc=None,
+    candidate_override: Optional[List[str]] = None,
+    sticky_key: Optional[str] = None,
 ) -> dict:
     """ε-greedy 选择一个模型 (v2: cost-aware)
     
@@ -122,22 +433,109 @@ def select_model(
     if config is None:
         config = load_config()
     if config is None:
-        return {"model": "unknown", "reason": "config_load_failed"}
+        return {"model": None, "reason": "config_load_failed"}
 
     if not config["enabled"]:
         return {"model": config["default_model"], "reason": "routing_disabled"}
 
-    # 按 tier 过滤候选
+    # 按 tier 过滤候选；select_pair 可传入 candidate_override 保证 reviewer 不会退回 producer/provider。
     pt = _get_pricing()
-    if pt:
+    if candidate_override is not None:
+        candidates = candidate_override
+    elif pt:
         candidates = pt.get_candidate_models(task_tier)
         if not candidates:
             candidates = config.get("candidate_models", [])
     else:
         candidates = config.get("candidate_models", [])
 
+    # Filter out models with unavailable providers, then hard-gate explicit quota exhaustion.
+    available_candidates = [m for m in candidates if _model_available(m, config=config)]
+    unavailable = [m for m in candidates if not _model_available(m, config=config)]
+    if candidates and not available_candidates:
+        return {
+            "model": None,
+            "reason": "no_available_providers",
+            "epsilon_used": epsilon if epsilon is not None else config.get("epsilon", 0),
+            "candidates": [],
+            "unavailable_candidates": unavailable,
+            "quota_exhausted_candidates": [],
+            "capability_skipped_candidates": [],
+            "quota_snapshot": {},
+            "task_tier": task_tier,
+            "schedule_label": "unknown",
+            "effective_cost_est": 0,
+            "model_scores": {},
+        }
+    candidates = available_candidates
+    quota_allowed, quota_exhausted, quota_snapshot = _quota_filter_candidates(candidates, config=config)
+    if quota_allowed:
+        candidates = quota_allowed
+    elif candidates and quota_exhausted:
+        return {
+            "model": None,
+            "reason": "no_quota_candidates",
+            "epsilon_used": epsilon if epsilon is not None else config.get("epsilon", 0),
+            "candidates": [],
+            "unavailable_candidates": unavailable,
+            "quota_exhausted_candidates": quota_exhausted,
+            "quota_snapshot": quota_snapshot,
+            "task_tier": task_tier,
+            "schedule_label": "unknown",
+            "effective_cost_est": 0,
+            "model_scores": {},
+        }
+    _log_unavailable = bool(unavailable)
+
     if not candidates:
-        return {"model": config["default_model"], "reason": "no_candidates"}
+        return {
+            "model": None,
+            "reason": "no_candidates",
+            "epsilon_used": epsilon if epsilon is not None else config.get("epsilon", 0),
+            "candidates": [],
+            "unavailable_candidates": unavailable if _log_unavailable else [],
+            "quota_exhausted_candidates": quota_exhausted,
+            "capability_skipped_candidates": [],
+            "quota_snapshot": quota_snapshot,
+            "task_tier": task_tier,
+            "schedule_label": "unknown",
+            "effective_cost_est": 0,
+            "model_scores": {},
+        }
+
+    candidates, capability_skipped = _capability_filter_candidates(candidates, task_tier, task_class, config)
+    if not candidates and capability_skipped:
+        return {
+            "model": None,
+            "reason": "no_capability_candidates",
+            "epsilon_used": epsilon if epsilon is not None else config.get("epsilon", 0),
+            "candidates": [],
+            "unavailable_candidates": unavailable if _log_unavailable else [],
+            "quota_exhausted_candidates": quota_exhausted,
+            "capability_skipped_candidates": capability_skipped,
+            "quota_snapshot": quota_snapshot,
+            "task_tier": task_tier,
+            "schedule_label": "unknown",
+            "effective_cost_est": 0,
+            "model_scores": {},
+        }
+    sticky_key = sticky_key or os.environ.get("HERMES_ROUTER_STICKY_KEY")
+    sticky_model = _sticky_candidate(sticky_key, task_class, task_tier, candidates)
+    if sticky_model:
+        return {
+            "model": sticky_model,
+            "reason": "sticky_affinity",
+            "epsilon_used": epsilon if epsilon is not None else config.get("epsilon", 0),
+            "candidates": candidates,
+            "unavailable_candidates": unavailable if _log_unavailable else [],
+            "quota_exhausted_candidates": quota_exhausted,
+            "capability_skipped_candidates": capability_skipped,
+            "quota_snapshot": quota_snapshot,
+            "task_tier": task_tier,
+            "schedule_label": _schedule_label(sticky_model, now_utc),
+            "effective_cost_est": _effective_cost(sticky_model, 2000, now_utc),
+            "model_scores": {},
+        }
 
     stats = get_model_stats(task_class=task_class)
     
@@ -150,14 +548,19 @@ def select_model(
         m for m in candidates
         if m not in model_scores or model_scores[m]["count"] < min_traces
     ]
+    warm_models = [m for m in candidates if m not in cold_models]
 
     if epsilon is None:
         epsilon = config["epsilon"]
 
-    # 冷启动 → 强制探索, off-peak 偏向
-    if cold_models:
+    # 冷启动策略：只有当所有候选都缺乏样本时才强制探索。
+    # 否则保留 ε-greedy，让已验证的 gpt-5.5/Codex 等 warm model 继续承担主力，
+    # 但仍以 epsilon 概率探索冷模型。
+    if cold_models and not warm_models:
         epsilon = 1.0
-        reason = f"cold_start({len(cold_models)}_models_need_warmup)"
+        reason = f"cold_start(all_{len(cold_models)}_models_need_warmup)"
+    elif cold_models:
+        reason = f"epsilon_greedy(epsilon={epsilon}, cold_available={len(cold_models)})"
     else:
         reason = f"epsilon_greedy(epsilon={epsilon})"
 
@@ -181,10 +584,18 @@ def select_model(
         # 利用: 选最高 score (含时间感知成本)
         def score_model(m):
             ms = model_scores.get(m, {})
+            count = ms.get("count", 0)
             pr = ms.get("pass_rate", 0.5)
             ec = _effective_cost(m, 2000, now_utc)
             avg_dur = ms.get("avg_dur", 10)
-            return pr - 0.1 * ec * 100 - 0.01 * avg_dur / 60  # λ_cost=0.1, λ_time=0.01
+            base = pr - 0.1 * ec * 100 - 0.01 * avg_dur / 60  # λ_cost=0.1, λ_time=0.01
+            # Cold-start warm-up bonus: models with <min_traces get a score boost
+            # so they're competitive in exploit phase, not just the 10% explore.
+            # Bonus decays linearly with trace count: 0 traces → +0.25, min_traces → +0
+            if count < min_traces:
+                warmup_bonus = 0.25 * (1.0 - count / max(min_traces, 1))
+                base += warmup_bonus
+            return base
 
         scored = [(m, score_model(m)) for m in candidates]
         scored.sort(key=lambda x: x[1], reverse=True)
@@ -192,11 +603,16 @@ def select_model(
         label = _schedule_label(chosen, now_utc)
         reason = f"exploit({reason}, score={scored[0][1]:.4f}, schedule={label})"
 
+    _remember_sticky(sticky_key, task_class, task_tier, chosen)
     return {
         "model": chosen,
         "reason": reason,
         "epsilon_used": epsilon,
         "candidates": candidates,
+        "unavailable_candidates": unavailable if _log_unavailable else [],
+        "quota_exhausted_candidates": quota_exhausted,
+        "capability_skipped_candidates": capability_skipped,
+        "quota_snapshot": quota_snapshot,
         "task_tier": task_tier,
         "schedule_label": _schedule_label(chosen, now_utc),
         "effective_cost_est": _effective_cost(chosen, 2000, now_utc),
@@ -232,14 +648,21 @@ def select_pair(
 
     # 选择 producer
     prod = select_model(task_class=task_class, task_tier=task_tier, config=config, now_utc=now_utc)
+    if not prod.get("model"):
+        return {
+            "producer": prod,
+            "reviewer": {"model": None, "reason": "producer_unavailable"},
+            "diversity_rule": diversity_rule,
+            "same_provider": False,
+        }
 
     # 选择 reviewer (排除 producer 的 provider 优先)
-    prod_provider = pt.get_provider(prod["model"]) if pt else "unknown"
+    prod_provider = _provider_for_model(prod["model"], config=config)
     
     # 过滤: 优先不同 provider
     diverse_reviewers = [
         m for m in reviewer_candidates
-        if m != prod["model"] and (not pt or pt.get_provider(m) != prod_provider)
+        if m != prod["model"] and _provider_for_model(m, config=config) != prod_provider
     ]
     
     if diverse_reviewers:
@@ -252,54 +675,123 @@ def select_pair(
             task_tier="reviewer",
             config=rev_config,
             now_utc=now_utc,
+            candidate_override=diverse_reviewers,
         )
     else:
         # 无 diverse reviewer — 选同 provider 但要求 off-peak + 高 pass_rate
-        same_provider = [m for m in reviewer_candidates if m != prod["model"]]
-        if same_provider:
-            # 检查 off-peak 节省
-            if pt and pt.is_off_peak(prod["model"], now_utc):
-                stats = get_model_stats(task_class=task_class)
-                scored = [
-                    (m, (stats.get(m, {}).get("pass_rate", 0.5) if m in {s["model"]: s for s in stats} else 0.5))
-                    for m in same_provider
-                ]
-                best = max(scored, key=lambda x: x[1])
-                if best[1] >= 0.9:
-                    reviewer = {"model": best[0], "reason": "same_provider_offpeak_highconf"}
-                else:
-                    reviewer = select_model(task_class=task_class, task_tier="reviewer", config=config, now_utc=now_utc)
-            else:
-                reviewer = select_model(task_class=task_class, task_tier="reviewer", config=config, now_utc=now_utc)
-        else:
-            reviewer = {"model": None, "reason": "no_reviewer_available"}
+        same_provider = [
+            m for m in reviewer_candidates
+            if m != prod["model"] and _provider_for_model(m, config=config) == prod_provider
+        ]
+        reviewer = {"model": None, "reason": "no_diverse_reviewer"}
+        if same_provider and pt and pt.is_off_peak(prod["model"], now_utc):
+            stats = get_model_stats(task_class=task_class)
+            stats_by_model = {s.get("model"): s for s in stats if isinstance(s, dict)}
+            high_conf_same_provider = [
+                m for m in same_provider
+                if stats_by_model.get(m, {}).get("pass_rate", 0.5) >= 0.9
+            ]
+            if high_conf_same_provider:
+                rev_config = dict(config)
+                rev_config["candidate_models"] = high_conf_same_provider
+                reviewer = select_model(
+                    task_class=task_class,
+                    task_tier="reviewer",
+                    config=rev_config,
+                    now_utc=now_utc,
+                    candidate_override=high_conf_same_provider,
+                )
+                if reviewer.get("model"):
+                    reviewer = dict(reviewer)
+                    reviewer["reason"] = "same_provider_offpeak_highconf"
 
     return {
         "producer": prod,
         "reviewer": reviewer,
         "diversity_rule": diversity_rule,
         "same_provider": (
-            pt.get_provider(prod["model"]) == pt.get_provider(reviewer["model"])
-            if pt and reviewer.get("model")
+            _provider_for_model(prod["model"], config=config) == _provider_for_model(reviewer["model"], config=config)
+            if reviewer.get("model")
             else False
         ),
     }
 
 
+def _safe_quota_status(quota_snapshot: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    """Return a secret-safe, schema-stable quota ledger projection."""
+    safe: Dict[str, Dict[str, Any]] = {}
+    allow = {
+        "model", "provider", "status", "observability", "quota_type", "confidence",
+        "reset_at", "reset_after_seconds", "remaining_tokens", "remaining_requests",
+        "source", "error_class", "previous_status", "reset_elapsed",
+    }
+    for key, snap in (quota_snapshot or {}).items():
+        if not isinstance(snap, dict):
+            continue
+        safe[str(key)] = {k: v for k, v in snap.items() if k in allow}
+    return safe
+
+
+def _skipped_model_entries(decision: Dict[str, Any]) -> List[Dict[str, Any]]:
+    quota_status = _safe_quota_status(decision.get("quota_snapshot", {}))
+    skipped: List[Dict[str, Any]] = []
+    for model in decision.get("unavailable_candidates", []) or []:
+        skipped.append({
+            "model": model,
+            "provider": _provider_for_model(model),
+            "skip_reason": "provider_unavailable",
+        })
+    for model in decision.get("quota_exhausted_candidates", []) or []:
+        provider = _provider_for_model(model)
+        key = f"{provider}::{model}"
+        snap = quota_status.get(key) or next(
+            (v for v in quota_status.values() if v.get("model") == model),
+            {},
+        )
+        skipped.append({
+            "model": model,
+            "provider": provider,
+            "skip_reason": "quota_exhausted",
+            "quota_status": snap.get("status"),
+            "quota_confidence": snap.get("confidence"),
+            "reset_at": snap.get("reset_at"),
+            "reset_after_seconds": snap.get("reset_after_seconds"),
+        })
+    for model in decision.get("capability_skipped_candidates", []) or []:
+        skipped.append({
+            "model": model,
+            "provider": _provider_for_model(model),
+            "skip_reason": "capability_mismatch",
+        })
+    return skipped
+
+
 def log_decision(decision, task_class=None):
     os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+    selected = decision.get("model")
     entry = {
+        "schema_version": 2,
+        "event": "routing_decision",
         "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "task_class": task_class or "",
         "task_tier": decision.get("task_tier", ""),
-        "model": decision["model"],
-        "reason": decision["reason"],
+        "selected_model": selected,
+        "selected_provider": _provider_for_model(selected) if selected else "unknown",
+        "reason": decision.get("reason", ""),
         "epsilon_used": decision.get("epsilon_used", 0),
         "schedule_label": decision.get("schedule_label", "?"),
         "eff_cost_est": decision.get("effective_cost_est", 0),
+        "candidate_models": decision.get("candidates", []) or [],
+        "skipped_models": _skipped_model_entries(decision),
+        "quota_status": _safe_quota_status(decision.get("quota_snapshot", {})),
+        "model_scores": decision.get("model_scores", {}) or {},
+        # Backward-compatible fields for existing status readers/parsers.
+        "model": selected,
+        "quota_exhausted_candidates": decision.get("quota_exhausted_candidates", []) or [],
+        "capability_skipped_candidates": decision.get("capability_skipped_candidates", []) or [],
     }
     with open(LOG_FILE, "a") as f:
-        f.write(json.dumps(entry) + "\n")
+        f.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
 
 
 def cli():
@@ -318,7 +810,11 @@ def cli():
     pair.add_argument("--diversity-rule", default="provider_or_savings")
     pair.add_argument("--hour", type=int, default=None)
 
-    sub.add_parser("status", help="显示路由状态")
+    status = sub.add_parser("status", help="显示路由状态")
+    status.add_argument("--quota", action="store_true", help="显示 quota snapshot")
+
+    pr = sub.add_parser("probe", help="探测所有 provider 可用性 (auth check, no token spend)")
+    pr.add_argument("--json", action="store_true", help="输出 JSON 而不是表格")
 
     args = parser.parse_args()
     
@@ -338,6 +834,9 @@ def cli():
             now_utc=now,
         )
         log_decision(decision, task_class=args.task_class or None)
+        if not decision.get("model"):
+            print(json.dumps({"error": "model_selection_failed", "reason": decision.get("reason", "unknown")}, ensure_ascii=False), file=sys.stderr)
+            sys.exit(2)
         print(decision["model"])
 
     elif args.cmd == "select-pair":
@@ -348,6 +847,16 @@ def cli():
             config=config,
             now_utc=now,
         )
+        producer = result.get("producer") or {}
+        reviewer = result.get("reviewer") or {}
+        if not producer.get("model") or not reviewer.get("model"):
+            error = {
+                "error": "model_pair_selection_failed",
+                "producer_reason": producer.get("reason", "unknown"),
+                "reviewer_reason": reviewer.get("reason", "unknown"),
+            }
+            print(json.dumps(error, ensure_ascii=False, sort_keys=True), file=sys.stderr)
+            sys.exit(2)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.cmd == "status":
@@ -390,6 +899,29 @@ def cli():
                     print(f"  {d['ts']} → {d['model']} ({d['reason'][:60]}) [{label}]")
                 except json.JSONDecodeError:
                     pass
+        if getattr(args, "quota", False) and model_quota:
+            print("\nQuota snapshot:")
+            models = []
+            if pt:
+                models = list(pt.models.keys())
+            else:
+                models = config.get("candidate_models", [])
+            print(model_quota.render_table(model_quota.snapshot_models(models)))
+
+    elif args.cmd == "probe":
+        report = probe_all_providers(verbose=False)
+        if getattr(args, "json", False):
+            print(json.dumps(report, indent=2, ensure_ascii=False))
+        else:
+            print("Provider availability probe (no token spend, auth check only):")
+            print(f"\nAvailable ({len(report['available'])}):")
+            for a in report["available"]:
+                print(f"  ✓ {a['model']:30s} provider={a['provider']:15s} env={a.get('env_var') or '-'}")
+            print(f"\nUnavailable ({len(report['unavailable'])}):")
+            for u in report["unavailable"]:
+                print(f"  ✗ {u['model']:30s} provider={u['provider']:15s} reason={u.get('reason')}")
+            print(f"\nSnapshot: ~/.hermes/state/provider_availability.json")
+            print(f"Transition log: ~/.hermes/state/unavailable_providers.jsonl")
 
     else:
         parser.print_help()
