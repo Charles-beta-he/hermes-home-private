@@ -35,6 +35,28 @@ TERMINAL_STATUSES = {"done", "archived", "expired"}
 PRIORITY_WEIGHT = {"P0": 400, "P1": 300, "P2": 200, "P3": 100}
 STATUS_WEIGHT = {"retry": 60, "running": 50, "claimed": 45, "blocked": 40, "review": 35, "pending": 30, "proposed": 10, "done": -100, "archived": -120, "expired": -130}
 
+# Formal lifecycle contract. Markdown task notes remain canonical; this graph is
+# the local control-plane guardrail for agents, cron ticks, and multi-model
+# planning outputs. Keep it small, explicit, and fail-closed for high-risk exits.
+LIFECYCLE_TRANSITIONS: dict[str, list[str]] = {
+    "proposed": ["pending", "blocked", "archived", "expired"],
+    "pending": ["claimed", "blocked", "archived", "expired"],
+    "claimed": ["running", "pending", "retry", "blocked", "archived", "expired"],
+    "running": ["review", "retry", "blocked", "expired"],
+    "review": ["done", "retry", "blocked", "pending", "archived", "expired"],
+    "retry": ["pending", "claimed", "blocked", "archived", "expired"],
+    "blocked": ["pending", "retry", "archived", "expired"],
+    "done": ["archived"],
+    "archived": [],
+    "expired": ["archived"],
+}
+REASON_REQUIRED_TO = {"retry", "blocked"}
+EVIDENCE_REQUIRED_TO = {"review", "done"}
+CLAIM_BOUND_STATUSES = {"claimed", "running", "review"}
+INITIAL_TASK_STATUSES = {"proposed", "pending"}
+RECONCILE_STALE_CLAIM_STATUSES = {"pending", "blocked", "expired"}
+RECONCILE_OVER_RETRY_STATUSES = {"blocked", "expired"}
+
 
 def now() -> datetime:
     return datetime.now(TZ).replace(microsecond=0)
@@ -101,7 +123,7 @@ def parse_yamlish(raw: str) -> dict[str, Any]:
             items: list[str] = []
             j = i + 1
             while j < len(lines) and lines[j].startswith("  - "):
-                items.append(lines[j][4:].strip())
+                items.append(lines[j][4:].strip().strip('"').strip("'"))
                 j += 1
             if items:
                 data[key] = items
@@ -121,7 +143,7 @@ def yaml_scalar(v: Any) -> str:
     if v is None:
         return ""
     if isinstance(v, list):
-        return "[" + ", ".join(str(x) for x in v) + "]"
+        return "[" + ", ".join(json.dumps(str(x), ensure_ascii=False) for x in v) + "]"
     s = str(v)
     if s == "":
         return ""
@@ -141,7 +163,7 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         if isinstance(v, list) and k == "evidence" and v:
             out.append(f"{k}:")
             for item in v:
-                out.append(f"  - {item}")
+                out.append(f"  - {yaml_scalar(item)}")
         else:
             out.append(f"{k}: {yaml_scalar(v)}")
     out.append("---")
@@ -210,7 +232,7 @@ class Task:
 
     def is_stale_claim(self, at: datetime | None = None) -> bool:
         at = at or now()
-        return self.status in {"claimed", "running"} and self.claim_expires_at() is not None and self.claim_expires_at() < at
+        return self.status in CLAIM_BOUND_STATUSES and self.claim_expires_at() is not None and self.claim_expires_at() < at
 
     def is_expired(self, at: datetime | None = None) -> bool:
         at = at or now()
@@ -246,9 +268,9 @@ class Task:
             return False
         if self.is_expired(at):
             return False
-        if self.status not in {"proposed", "pending", "retry"}:
+        if self.status not in {"pending", "retry"}:
             return False
-        if self.fm.get("claimed_by") and not self.is_stale_claim(at):
+        if any(self.fm.get(field) for field in ("claimed_by", "claim_expires_at", "run_id")):
             return False
         if self.status == "retry" and not self.is_retry_due(at):
             return False
@@ -270,6 +292,7 @@ class Task:
             "stale_claim": self.is_stale_claim(),
             "expired": self.is_expired(),
             "dispatchable": self.is_dispatchable(),
+            "lifecycle_next": allowed_next_statuses(self.status),
             "path": str(self.path),
             "link": obsidian_link(self.path),
         }
@@ -325,11 +348,128 @@ def evidence_is_structured(e: str) -> bool:
     e = (e or "").strip()
     if not e:
         return False
-    if e.startswith(("command:", "file:", "search:", "brainctl:", "url:", "artifact:")):
+    prefixes = ("command:", "file:", "search:", "brainctl:", "url:", "artifact:")
+    if e.startswith(prefixes):
         return True
-    if e.startswith("/") or e.startswith("~"):
-        return Path(e).expanduser().exists()
-    return False
+    p = Path(os.path.expanduser(e))
+    return p.is_absolute() and p.exists()
+
+
+def validate_clean_text(label: str, value: str, *, allow_empty: bool = True) -> None:
+    text = "" if value is None else str(value)
+    if not allow_empty and not text.strip():
+        raise SystemExit(f"{label} must not be empty")
+    if any(ch in text for ch in ("\n", "\r")) or any(ord(ch) < 32 for ch in text):
+        raise SystemExit(f"{label} must be a single-line printable value")
+    if text.strip() == "---":
+        raise SystemExit(f"{label} must not be a frontmatter delimiter")
+
+
+def validate_clean_values(**values: Any) -> None:
+    for label, value in values.items():
+        if value is None:
+            continue
+        if isinstance(value, list):
+            for i, item in enumerate(value):
+                validate_clean_text(f"{label}[{i}]", str(item))
+        else:
+            validate_clean_text(label, str(value))
+
+
+def allowed_next_statuses(status: str) -> list[str]:
+    return list(LIFECYCLE_TRANSITIONS.get(STATUS_ALIASES.get(status, status), []))
+
+
+def has_active_claim(task: Task, at: datetime | None = None) -> bool:
+    at = at or now()
+    lease = task.claim_expires_at()
+    return bool(task.fm.get("claimed_by") and task.fm.get("run_id") and lease and lease >= at)
+
+
+def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] | None = None, reason: str = "", force: bool = False) -> tuple[list[str], list[str]]:
+    """Return (failures, warnings) for a proposed lifecycle transition."""
+    evidence = evidence or []
+    reason = (reason or "").strip()
+    validate_clean_values(actor=actor, reason=reason, evidence=evidence)
+    failures: list[str] = []
+    warnings: list[str] = []
+    from_status = task.status
+    to_status = STATUS_ALIASES.get(to_status, to_status)
+    if to_status not in VALID_STATUSES:
+        failures.append(f"invalid target status: {to_status}")
+        return failures, warnings
+    if from_status not in VALID_STATUSES:
+        failures.append(f"invalid current status {from_status}: {task.id}")
+        return failures, warnings
+    if force and reason.lower() in {"", "not specified", "none"}:
+        failures.append("--force requires --reason so manual overrides are auditable")
+    if to_status == from_status:
+        failures.append(f"no-op transition is not allowed: {from_status} -> {to_status}")
+    elif to_status not in allowed_next_statuses(from_status) and not force:
+        failures.append(f"illegal lifecycle transition: {from_status} -> {to_status}; allowed={allowed_next_statuses(from_status)}")
+
+    owner = str(task.fm.get("claimed_by") or "")
+    lease = task.claim_expires_at()
+    active_claim = has_active_claim(task)
+    if from_status in CLAIM_BOUND_STATUSES and not active_claim and not force:
+        failures.append("claim-bound status requires claimed_by, run_id, and a valid non-expired claim_expires_at before transition")
+    if from_status in CLAIM_BOUND_STATUSES and owner and owner != actor and not force:
+        failures.append(f"task claim owned by {owner}; actor {actor} cannot transition without --force")
+    if from_status in CLAIM_BOUND_STATUSES and owner and lease is not None and lease < now() and not force:
+        failures.append("task claim is stale; reconcile or --force after manual review before lifecycle transition")
+    if to_status in {"running", "review"} and not active_claim and not force:
+        failures.append(f"transition to {to_status} requires an active claim first")
+    if to_status == "running" and from_status != "claimed" and not force:
+        failures.append("running must be entered from claimed so lease ownership is explicit")
+    if to_status in REASON_REQUIRED_TO and reason.lower() in {"", "not specified", "none"}:
+        failures.append(f"transition to {to_status} requires --reason")
+    if to_status in EVIDENCE_REQUIRED_TO and not evidence:
+        failures.append(f"transition to {to_status} requires structured --evidence")
+    invalid_evidence = [e for e in evidence if not evidence_is_structured(e)]
+    if invalid_evidence:
+        failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url: prefixes or an existing absolute path")
+    if to_status == "done" and from_status != "review" and not force:
+        failures.append("done must be entered from review; use --force --reason only for audited manual closure")
+    elif to_status == "done" and from_status != "review":
+        warnings.append("forced done outside review; preferred path is running -> review -> done")
+    return failures, warnings
+
+
+def apply_lifecycle_status(task: Task, to_status: str, actor: str, *, evidence: list[str] | None = None, reason: str = "", ttl_minutes: int = 60, delay_minutes: int = 60, force: bool = False) -> None:
+    stamp = now()
+    evidence = evidence or []
+    previous = task.status
+    task.fm["status"] = to_status
+    task.fm["updated"] = iso(stamp)
+    if to_status in CLAIM_BOUND_STATUSES:
+        if to_status == "claimed" or not task.fm.get("claimed_by"):
+            task.fm["claimed_by"] = actor
+        if to_status == "claimed" or not task.fm.get("run_id"):
+            task.fm["run_id"] = f"{actor}-{stamp.strftime('%Y%m%d%H%M%S')}"
+        if to_status == "claimed" or not task.fm.get("claim_expires_at"):
+            task.fm["claim_expires_at"] = iso(stamp + timedelta(minutes=ttl_minutes))
+    else:
+        task.fm["claimed_by"] = ""
+        task.fm["claim_expires_at"] = ""
+        task.fm["run_id"] = ""
+    if to_status == "retry":
+        try:
+            task.fm["retry_count"] = int(task.fm.get("retry_count") or 0) + 1
+        except Exception:
+            task.fm["retry_count"] = 1
+        task.fm["next_attempt_at"] = iso(stamp + timedelta(minutes=delay_minutes))
+    elif to_status != "blocked":
+        task.fm["next_attempt_at"] = ""
+    if evidence:
+        current = task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []
+        for e in evidence:
+            if e not in current:
+                current.append(e)
+        task.fm["evidence"] = current
+    reason_text = f" Reason: {reason}" if reason else ""
+    evidence_text = f" Evidence: {', '.join(evidence)}" if evidence else ""
+    force_text = " Force: true." if force else ""
+    task.body += f"\n- {iso(stamp)}: Lifecycle transition `{previous}` -> `{to_status}` by `{actor}`.{force_text}{reason_text}{evidence_text}\n"
 
 
 def body_has_legacy_proof(body: str) -> bool:
@@ -345,6 +485,9 @@ def command_list(args: argparse.Namespace) -> dict[str, Any]:
 
 def command_add(args: argparse.Namespace) -> dict[str, Any]:
     title = args.title.strip()
+    if args.status not in INITIAL_TASK_STATUSES:
+        raise SystemExit(f"add can only create initial statuses {sorted(INITIAL_TASK_STATUSES)}; use transition/reconcile for lifecycle changes")
+    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", concepts=args.concepts or "task")
     created = now()
     expires = parse_dt(args.expires_at) if args.expires_at else created + timedelta(days=args.expires_days)
     slug = slugify(title)
@@ -492,20 +635,19 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
 
 def command_claim(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
-    if t.status in TERMINAL_STATUSES:
-        raise SystemExit(f"cannot claim terminal task: {t.id} status={t.status}")
-    active_claim = t.fm.get("claimed_by") and not t.is_stale_claim()
+    active_claim = has_active_claim(t)
     if active_claim and not args.force:
         raise SystemExit(f"task already claimed by {t.fm.get('claimed_by')} until {t.fm.get('claim_expires_at')}; use --force only after manual review")
-    stamp = now()
-    t.fm["status"] = "claimed"
-    t.fm["claimed_by"] = args.actor
-    t.fm["claim_expires_at"] = iso(stamp + timedelta(minutes=args.ttl_minutes))
-    t.fm["run_id"] = args.run_id or f"{args.actor}-{stamp.strftime('%Y%m%d%H%M%S')}"
-    t.fm["updated"] = iso(stamp)
-    t.body += f"\n- {iso(stamp)}: Claimed by `{args.actor}` until `{t.fm['claim_expires_at']}`.\n"
+    run_id = args.run_id or ""
+    validate_clean_values(run_id=run_id)
+    failures, warnings = lifecycle_gate(t, "claimed", args.actor, reason=args.reason, force=args.force)
+    if failures:
+        raise SystemExit("; ".join(failures))
+    apply_lifecycle_status(t, "claimed", args.actor, reason=args.reason, ttl_minutes=args.ttl_minutes, force=args.force)
+    if run_id:
+        t.fm["run_id"] = run_id
     save_task(t)
-    return {"status": "OK", "task": t.id, "claimed_by": args.actor, "claim_expires_at": t.fm["claim_expires_at"], "path": str(t.path)}
+    return {"status": "OK", "task": t.id, "claimed_by": args.actor, "claim_expires_at": t.fm["claim_expires_at"], "warnings": warnings, "path": str(t.path)}
 
 
 def command_release(args: argparse.Namespace) -> dict[str, Any]:
@@ -513,54 +655,115 @@ def command_release(args: argparse.Namespace) -> dict[str, Any]:
     owner = t.fm.get("claimed_by") or ""
     if owner and owner != args.actor and not args.force:
         raise SystemExit(f"task claimed by {owner}; {args.actor} cannot release without --force")
-    stamp = now()
-    t.fm["status"] = args.to_status
-    t.fm["claimed_by"] = ""
-    t.fm["claim_expires_at"] = ""
-    t.fm["run_id"] = ""
-    t.fm["updated"] = iso(stamp)
-    t.body += f"\n- {iso(stamp)}: Released by `{args.actor}` to `{args.to_status}`.\n"
+    failures, warnings = lifecycle_gate(t, args.to_status, args.actor, reason=args.reason, force=args.force)
+    if failures:
+        raise SystemExit("; ".join(failures))
+    apply_lifecycle_status(t, args.to_status, args.actor, reason=args.reason, force=args.force)
     save_task(t)
-    return {"status": "OK", "task": t.id, "to_status": args.to_status, "path": str(t.path)}
+    return {"status": "OK", "task": t.id, "to_status": args.to_status, "warnings": warnings, "path": str(t.path)}
 
 
 def command_done(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
     if not args.evidence:
         raise SystemExit("done requires at least one structured --evidence entry, e.g. 'command: pytest PASS' or 'file:/path/to/proof.md'")
-    invalid = [e for e in args.evidence if not evidence_is_structured(e)]
-    if invalid:
-        raise SystemExit(f"invalid evidence shape: {invalid}; use command:/file:/search:/brainctl:/artifact:/url: prefixes or an existing absolute path")
-    stamp = now()
-    evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
-    for e in args.evidence or []:
-        if e not in evidence:
-            evidence.append(e)
-    t.fm.update({"status": "done", "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp), "evidence": evidence})
-    t.body += f"\n- {iso(stamp)}: Marked done by `{args.actor}`. Evidence: {', '.join(args.evidence)}.\n"
+    failures, warnings = lifecycle_gate(t, "done", args.actor, args.evidence, args.reason, args.force)
+    if failures:
+        raise SystemExit("; ".join(failures))
+    apply_lifecycle_status(t, "done", args.actor, evidence=args.evidence, reason=args.reason, force=args.force)
     save_task(t)
-    return {"status": "OK", "task": t.id, "path": str(t.path), "evidence_count": len(evidence)}
+    evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
+    return {"status": "OK", "task": t.id, "path": str(t.path), "evidence_count": len(evidence), "warnings": warnings}
 
 
 def command_retry(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
-    stamp = now()
-    try:
-        retry_count = int(t.fm.get("retry_count") or 0) + 1
-    except Exception:
-        retry_count = 1
-    t.fm.update({
-        "status": "retry",
-        "claimed_by": "",
-        "claim_expires_at": "",
-        "run_id": "",
-        "retry_count": retry_count,
-        "next_attempt_at": iso(stamp + timedelta(minutes=args.delay_minutes)),
-        "updated": iso(stamp),
-    })
-    t.body += f"\n- {iso(stamp)}: Retry scheduled by `{args.actor}` at `{t.fm['next_attempt_at']}`. Reason: {args.reason}\n"
+    failures, warnings = lifecycle_gate(t, "retry", args.actor, reason=args.reason)
+    if failures:
+        raise SystemExit("; ".join(failures))
+    apply_lifecycle_status(t, "retry", args.actor, reason=args.reason, delay_minutes=args.delay_minutes)
     save_task(t)
-    return {"status": "OK", "task": t.id, "retry_count": retry_count, "next_attempt_at": t.fm["next_attempt_at"], "path": str(t.path)}
+    return {"status": "OK", "task": t.id, "retry_count": t.fm.get("retry_count") or 0, "next_attempt_at": t.fm["next_attempt_at"], "warnings": warnings, "path": str(t.path)}
+
+
+def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
+    tasks = iter_tasks()
+    invalid: list[dict[str, Any]] = []
+    missing_graph_states = sorted(set(VALID_STATUSES) - set(LIFECYCLE_TRANSITIONS))
+    for state in missing_graph_states:
+        invalid.append({"task": "__schema__", "status": state, "reason": "status_missing_from_lifecycle_graph"})
+    for state, targets in LIFECYCLE_TRANSITIONS.items():
+        for target in targets:
+            if target not in VALID_STATUSES:
+                invalid.append({"task": "__schema__", "status": state, "target": target, "reason": "transition_target_invalid_status"})
+    for t in tasks:
+        if t.status not in LIFECYCLE_TRANSITIONS:
+            invalid.append({"task": t.id, "status": t.status, "reason": "status_not_in_lifecycle_graph"})
+        claim_fields = [k for k in ("claimed_by", "claim_expires_at", "run_id") if t.fm.get(k)]
+        if t.status in CLAIM_BOUND_STATUSES and not t.fm.get("claimed_by"):
+            invalid.append({"task": t.id, "status": t.status, "reason": "claim_bound_status_missing_claimed_by"})
+        if t.status in CLAIM_BOUND_STATUSES and not t.fm.get("claim_expires_at"):
+            invalid.append({"task": t.id, "status": t.status, "reason": "claim_bound_status_missing_lease"})
+        if t.status in CLAIM_BOUND_STATUSES and not t.fm.get("run_id"):
+            invalid.append({"task": t.id, "status": t.status, "reason": "claim_bound_status_missing_run_id"})
+        if t.status in CLAIM_BOUND_STATUSES and t.fm.get("claimed_by") and t.claim_expires_at() is None:
+            invalid.append({"task": t.id, "status": t.status, "reason": "claim_bound_status_invalid_lease"})
+        if t.status in CLAIM_BOUND_STATUSES and t.is_stale_claim():
+            invalid.append({"task": t.id, "status": t.status, "reason": "claim_bound_status_stale_lease"})
+        if t.status not in CLAIM_BOUND_STATUSES and claim_fields:
+            invalid.append({"task": t.id, "status": t.status, "fields": claim_fields, "reason": "non_claim_bound_status_has_claim_metadata"})
+        if t.status in EVIDENCE_REQUIRED_TO:
+            evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
+            if not evidence and not (t.status == "done" and body_has_legacy_proof(t.body)):
+                invalid.append({"task": t.id, "status": t.status, "reason": f"{t.status}_missing_structured_or_legacy_proof"})
+            for e in evidence:
+                if not evidence_is_structured(str(e)):
+                    invalid.append({"task": t.id, "status": t.status, "evidence": str(e), "reason": "evidence_not_structured"})
+        for line in t.body.splitlines():
+            m = re.search(r"Lifecycle transition `([^`]+)` -> `([^`]+)`", line)
+            if not m:
+                continue
+            from_status = STATUS_ALIASES.get(m.group(1), m.group(1))
+            to_status = STATUS_ALIASES.get(m.group(2), m.group(2))
+            forced = "Force: true" in line
+            if to_status not in allowed_next_statuses(from_status) and not forced:
+                invalid.append({"task": t.id, "from_status": from_status, "to_status": to_status, "reason": "illegal_recorded_lifecycle_transition"})
+            if to_status == "done" and from_status != "review" and not forced:
+                invalid.append({"task": t.id, "from_status": from_status, "to_status": to_status, "reason": "done_recorded_outside_review_without_force"})
+    status = "PASS" if not invalid else "FAIL"
+    return {
+        "status": status,
+        "schema": "local_brain_task_lifecycle_v1",
+        "generated_at": iso(),
+        "states": VALID_STATUSES,
+        "transitions": LIFECYCLE_TRANSITIONS,
+        "reason_required_to": sorted(REASON_REQUIRED_TO),
+        "evidence_required_to": sorted(EVIDENCE_REQUIRED_TO),
+        "claim_bound_statuses": sorted(CLAIM_BOUND_STATUSES),
+        "task_count": len(tasks),
+        "invalid_count": len(invalid),
+        "invalid": invalid,
+    }
+
+
+def command_transition(args: argparse.Namespace) -> dict[str, Any]:
+    t = find_task(args.task)
+    from_status = t.status
+    to_status = STATUS_ALIASES.get(args.to_status, args.to_status)
+    failures, warnings = lifecycle_gate(t, to_status, args.actor, args.evidence, args.reason, args.force)
+    if failures:
+        raise SystemExit("; ".join(failures))
+    apply_lifecycle_status(t, to_status, args.actor, evidence=args.evidence, reason=args.reason, ttl_minutes=args.ttl_minutes, delay_minutes=args.delay_minutes, force=args.force)
+    save_task(t)
+    return {
+        "status": "OK",
+        "task": t.id,
+        "from_status": from_status,
+        "to_status": to_status,
+        "warnings": warnings,
+        "path": str(t.path),
+        "next_allowed": allowed_next_statuses(to_status),
+    }
 
 
 def counts(rows: list[Task]) -> dict[str, int]:
@@ -607,7 +810,9 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
   "derived": true,
   "regenerate_command": "python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write",
   "states": {json.dumps(VALID_STATUSES, ensure_ascii=False)},
+  "lifecycle_transitions": {json.dumps(LIFECYCLE_TRANSITIONS, ensure_ascii=False)},
   "must_reconcile_before_dispatch": true,
+  "must_transition_via_graph": true,
   "safe_dispatch_tick": "python3 ~/.hermes/scripts/brain_task_dispatch_tick.py",
   "skill_route_matrix": "[[07-仪表盘/Agent技能树路由矩阵]]"
 }}
@@ -735,7 +940,15 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py claim TASK_ID --actor herme
 # 释放任务
 python3 ~/.hermes/scripts/brain_task_orchestrator.py release TASK_ID --actor hermes --to-status pending
 
-# 标记完成：必须给结构化 evidence
+# 查看生命周期契约与审计当前任务
+python3 ~/.hermes/scripts/brain_task_orchestrator.py lifecycle --json
+
+# 严格状态流转（走状态机 + 审计日志）
+python3 ~/.hermes/scripts/brain_task_orchestrator.py transition TASK_ID --actor hermes --to running
+python3 ~/.hermes/scripts/brain_task_orchestrator.py transition TASK_ID --actor hermes --to review --evidence "command:验证命令 PASS"
+python3 ~/.hermes/scripts/brain_task_orchestrator.py transition TASK_ID --actor hermes --to done --evidence "file:/path/to/proof.md"
+
+# 标记完成：必须给结构化 evidence（legacy convenience；优先用 transition review -> done）
 python3 ~/.hermes/scripts/brain_task_orchestrator.py done TASK_ID --actor hermes --evidence "command:验证命令 PASS" --evidence "file:/path/to/proof.md"
 
 # 检查 done 任务是否有结构化 proof
@@ -775,6 +988,11 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor herme
 
 
 def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
+    validate_clean_values(actor=args.actor)
+    if args.stale_claim_status not in RECONCILE_STALE_CLAIM_STATUSES:
+        raise SystemExit(f"--stale-claim-status must be one of {sorted(RECONCILE_STALE_CLAIM_STATUSES)}")
+    if args.over_retry_status not in RECONCILE_OVER_RETRY_STATUSES:
+        raise SystemExit(f"--over-retry-status must be one of {sorted(RECONCILE_OVER_RETRY_STATUSES)}")
     stamp = now()
     actions: list[dict[str, Any]] = []
     for t in iter_tasks():
@@ -798,6 +1016,9 @@ def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
         elif t.status == "retry" and t.is_retry_due(stamp) and args.promote_due_retry:
             t.fm.update({"status": "pending", "next_attempt_at": "", "updated": iso(stamp)})
             action = "retry_due_promoted"
+        elif t.status not in CLAIM_BOUND_STATUSES and any(t.fm.get(k) for k in ("claimed_by", "claim_expires_at", "run_id")):
+            t.fm.update({"claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp)})
+            action = "orphan_claim_metadata_cleared"
         if action:
             t.body += f"\n- {iso(stamp)}: Reconcile action `{action}` by `{args.actor}`. Previous status `{before.get('status')}`.\n"
             if args.write:
@@ -835,13 +1056,16 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def command_next(args: argparse.Namespace) -> dict[str, Any]:
-    if getattr(args, "reconcile", False):
-        command_reconcile(argparse.Namespace(write=True, actor="next", max_retries=3, retry_delay_minutes=60, stale_claim_status="pending", over_retry_status="blocked", promote_due_retry=True))
+    reconcile_result = None
+    if not getattr(args, "no_reconcile", False):
+        reconcile_result = command_reconcile(argparse.Namespace(write=bool(getattr(args, "reconcile", False)), actor="next", max_retries=3, retry_delay_minutes=60, stale_claim_status="pending", over_retry_status="blocked", promote_due_retry=True))
+        if reconcile_result.get("action_count") and not getattr(args, "reconcile", False):
+            return {"status": "OK", "next": None, "message": "Reconcile is required before dispatch. Re-run with --reconcile to write canonical task-note fixes, or run reconcile --write explicitly.", "reconcile": reconcile_result}
     rows = dispatchable_tasks()
     if not rows:
-        return {"status": "OK", "next": None, "message": "No dispatchable local-brain tasks in canonical task notes."}
+        return {"status": "OK", "next": None, "message": "No dispatchable local-brain tasks in canonical task notes.", "reconcile": reconcile_result}
     t = rows[0]
-    return {"status": "OK", "next": t.row(), "claim_command": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py claim {t.id} --actor hermes --ttl-minutes 60", "dashboard_command": "python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write"}
+    return {"status": "OK", "next": t.row(), "claim_command": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py claim {t.id} --actor hermes --ttl-minutes 60", "dashboard_command": "python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write", "reconcile": reconcile_result}
 
 
 def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
@@ -878,12 +1102,21 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     for t in iter_tasks():
         if t.status not in VALID_STATUSES:
             failures.append(f"invalid status {t.status}: {t.path}")
+        if t.status not in LIFECYCLE_TRANSITIONS:
+            failures.append(f"status missing lifecycle transition contract {t.status}: {t.path}")
         if t.priority not in PRIORITY_WEIGHT:
             warnings.append(f"unknown priority {t.priority}: {t.path}")
-        if t.status in {"claimed", "running"} and not t.fm.get("claim_expires_at"):
-            failures.append(f"active claim missing claim_expires_at: {t.path}")
+        if t.status in {"claimed", "running", "review"} and not t.fm.get("claimed_by"):
+            failures.append(f"claim-bound status missing claimed_by: {t.path}")
+        if t.status in {"claimed", "running", "review"} and not t.fm.get("claim_expires_at"):
+            failures.append(f"claim-bound status missing claim_expires_at: {t.path}")
+        if t.status in {"claimed", "running", "review"} and not t.fm.get("run_id"):
+            failures.append(f"claim-bound status missing run_id: {t.path}")
         if t.status not in TERMINAL_STATUSES and not t.fm.get("expires_at"):
             warnings.append(f"active task missing expires_at: {t.path}")
+    missing_graph_states = sorted(set(VALID_STATUSES) - set(LIFECYCLE_TRANSITIONS))
+    if missing_graph_states:
+        failures.append(f"lifecycle graph missing statuses: {missing_graph_states}")
     if DASHBOARD.exists() and "DERIVED VIEW — NOT SOURCE OF TRUTH" not in DASHBOARD.read_text(encoding="utf-8"):
         failures.append("dashboard missing derived-view warning")
     if CONTROL_CENTER.exists() and "处理本地大脑任务收件箱" not in CONTROL_CENTER.read_text(encoding="utf-8"):
@@ -935,8 +1168,8 @@ def build_parser() -> argparse.ArgumentParser:
     recp.add_argument("--actor", default="hermes-reconcile")
     recp.add_argument("--max-retries", type=int, default=3)
     recp.add_argument("--retry-delay-minutes", type=int, default=60)
-    recp.add_argument("--stale-claim-status", default="pending", choices=VALID_STATUSES)
-    recp.add_argument("--over-retry-status", default="blocked", choices=VALID_STATUSES)
+    recp.add_argument("--stale-claim-status", default="pending", choices=sorted(RECONCILE_STALE_CLAIM_STATUSES))
+    recp.add_argument("--over-retry-status", default="blocked", choices=sorted(RECONCILE_OVER_RETRY_STATUSES))
     recp.add_argument("--promote-due-retry", action="store_true")
     recp.add_argument("--json", action="store_true")
 
@@ -945,6 +1178,7 @@ def build_parser() -> argparse.ArgumentParser:
     cp.add_argument("--actor", default="hermes")
     cp.add_argument("--ttl-minutes", type=int, default=60)
     cp.add_argument("--run-id", default="")
+    cp.add_argument("--reason", default="")
     cp.add_argument("--force", action="store_true")
     cp.add_argument("--json", action="store_true")
 
@@ -952,6 +1186,7 @@ def build_parser() -> argparse.ArgumentParser:
     rp.add_argument("task")
     rp.add_argument("--actor", default="hermes")
     rp.add_argument("--to-status", default="pending", choices=VALID_STATUSES)
+    rp.add_argument("--reason", default="")
     rp.add_argument("--force", action="store_true")
     rp.add_argument("--json", action="store_true")
 
@@ -959,6 +1194,8 @@ def build_parser() -> argparse.ArgumentParser:
     dp.add_argument("task")
     dp.add_argument("--actor", default="hermes")
     dp.add_argument("--evidence", action="append", default=[])
+    dp.add_argument("--reason", default="")
+    dp.add_argument("--force", action="store_true")
     dp.add_argument("--json", action="store_true")
 
     pcp = sub.add_parser("proof-check")
@@ -972,12 +1209,27 @@ def build_parser() -> argparse.ArgumentParser:
     rtp.add_argument("--delay-minutes", type=int, default=60)
     rtp.add_argument("--json", action="store_true")
 
+    lcp = sub.add_parser("lifecycle")
+    lcp.add_argument("--json", action="store_true")
+
+    trp = sub.add_parser("transition")
+    trp.add_argument("task")
+    trp.add_argument("--to", dest="to_status", required=True, choices=VALID_STATUSES)
+    trp.add_argument("--actor", default="hermes")
+    trp.add_argument("--reason", default="")
+    trp.add_argument("--evidence", action="append", default=[])
+    trp.add_argument("--ttl-minutes", type=int, default=60)
+    trp.add_argument("--delay-minutes", type=int, default=60)
+    trp.add_argument("--force", action="store_true")
+    trp.add_argument("--json", action="store_true")
+
     gp = sub.add_parser("dashboard")
     gp.add_argument("--write", action="store_true")
     gp.add_argument("--json", action="store_true")
 
     np = sub.add_parser("next")
-    np.add_argument("--reconcile", action="store_true")
+    np.add_argument("--reconcile", action="store_true", help="write required reconcile fixes before selecting next")
+    np.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
     np.add_argument("--json", action="store_true")
 
     ddp = sub.add_parser("dispatch-dry-run")
@@ -1008,6 +1260,10 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_proof_check(args), args.json)
     if args.cmd == "retry":
         return print_result(command_retry(args), args.json)
+    if args.cmd == "lifecycle":
+        return print_result(command_lifecycle(args), args.json)
+    if args.cmd == "transition":
+        return print_result(command_transition(args), args.json)
     if args.cmd == "dashboard":
         return print_result(command_dashboard(args), args.json)
     if args.cmd == "next":
