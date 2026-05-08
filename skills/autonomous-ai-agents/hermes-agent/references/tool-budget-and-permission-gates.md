@@ -36,6 +36,30 @@ Rules:
 - Destructive or external actions first produce a dry-run plan.
 - Every mutating command writes proof/evidence suitable for later audit.
 
+## Iteration budget reached warning
+
+When CLI or automation prints `Iteration budget reached (N/N) — response may be incomplete`, the agent hit its LLM/tool-calling iteration cap, not necessarily the context window. Diagnose before raising the cap:
+
+1. Check the effective cap:
+   ```bash
+   hermes config | grep -A5 '^agent:'
+   python3 - <<'PY'
+   import yaml, pathlib
+   cfg=yaml.safe_load(pathlib.Path('~/.hermes/config.yaml').expanduser().read_text()) or {}
+   print((cfg.get('agent') or {}).get('max_turns'))
+   PY
+   ```
+2. For gateway/cron, check startup logs for `Agent budget: max_iterations=...`. `config.yaml` `agent.max_turns` should override stale `.env` `HERMES_MAX_ITERATIONS`; if it does not, restart gateway and inspect the config→env bridge.
+3. If the task is a long autonomous mission, do not solve it only by increasing `agent.max_turns`. Split into resumable ticks (`plan -> execute -> verify -> certify -> commit`) and write handoff/proof artifacts after each tick.
+4. Prefer script-first cron (`no_agent=True` for deterministic watchdog/control-plane jobs, or script + tiny summarizer prompt for reports) so repeated mechanical work does not burn iterations.
+5. If more headroom is genuinely needed, raise the cap explicitly:
+   ```bash
+   hermes config set agent.max_turns 120
+   # restart CLI/gateway after config changes
+   ```
+   Keep separate child-agent budgets in mind: `delegation.max_iterations` controls `delegate_task` children.
+6. Add a recovery rule to automation prompts: if close to the cap, produce a non-empty final handoff with completed gates, incomplete gates, artifact paths, next command, and whether the task is safe to resume.
+
 ## Verification checklist
 
 - A durable artifact exists for each tick or decision gate.
