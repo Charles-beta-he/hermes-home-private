@@ -27,6 +27,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from datetime import datetime, timezone
@@ -1154,16 +1155,28 @@ def fanout_certification_status(success_count: int, planner_count: int, min_quor
     T0/single-planner fan-out can satisfy its own quick-plan threshold while still
     being explicitly marked as non-multi-model certification.
     """
-    success_count = max(0, int(success_count))
-    planner_count = max(0, int(planner_count))
-    min_quorum = max(1, int(min_quorum or 1))
-    fail_count = max(0, int(fail_count))
+    success_count = max(0, _safe_int(success_count, 0))
+    planner_count = max(0, _safe_int(planner_count, 0))
+    min_quorum = max(1, _safe_int(min_quorum, 1))
+    fail_count = max(0, _safe_int(fail_count, 0))
+
+    impossible_count_reasons: List[str] = []
+    if success_count > planner_count:
+        impossible_count_reasons.append("success_count exceeds planner_count")
+    if fail_count > planner_count:
+        impossible_count_reasons.append("fail_count exceeds planner_count")
+    if success_count + fail_count > planner_count:
+        impossible_count_reasons.append("success_count + fail_count exceeds planner_count")
 
     below_min = success_count < min_quorum
     all_failed = planner_count > 0 and success_count == 0
     single_planner = planner_count == 1
 
-    if all_failed:
+    if impossible_count_reasons:
+        status = "degraded_not_certified"
+        certified = False
+        reason = "inconsistent fan-out counts: " + "; ".join(impossible_count_reasons)
+    elif all_failed:
         status = "all_failed"
         certified = False
         reason = "all planners failed"
@@ -1180,7 +1193,7 @@ def fanout_certification_status(success_count: int, planner_count: int, min_quor
         certified = True
         reason = f"planner fan-out met min_quorum: {success_count}/{min_quorum}"
 
-    multi_model_certified = bool(certified and success_count >= 2 and planner_count >= 2)
+    multi_model_certified = bool(certified and success_count >= 2 and planner_count >= 2 and not impossible_count_reasons)
     certification_scope = "multi_model" if multi_model_certified else "single_model"
 
     return {
@@ -1221,20 +1234,58 @@ def validate_fanout_certification_status(status: dict) -> Tuple[bool, List[str]]
         if not isinstance(status.get(field), bool):
             errors.append(f"{field} must be boolean")
     for field in ("success_count", "fail_count", "planner_count", "min_quorum"):
-        if not isinstance(status.get(field), int) or status.get(field) < 0:
+        value = status.get(field)
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             errors.append(f"{field} must be non-negative integer")
-    if status.get("min_quorum", 0) < 1:
+    valid_count_fields = all(isinstance(status.get(field), int) and not isinstance(status.get(field), bool) for field in ("success_count", "fail_count", "planner_count", "min_quorum"))
+    if valid_count_fields and status.get("min_quorum", 0) < 1:
         errors.append("min_quorum must be >= 1")
+    success_count = status.get("success_count", 0)
+    fail_count = status.get("fail_count", 0)
+    planner_count = status.get("planner_count", 0)
+    min_quorum = status.get("min_quorum", 0)
+    if valid_count_fields:
+        if success_count > planner_count:
+            errors.append("success_count cannot exceed planner_count")
+        if fail_count > planner_count:
+            errors.append("fail_count cannot exceed planner_count")
+        if success_count + fail_count > planner_count:
+            errors.append("success_count + fail_count cannot exceed planner_count")
+        if status.get("certified") and planner_count < 1:
+            errors.append("certified fanout requires planner_count >= 1")
+        if status.get("certified") and success_count < min_quorum:
+            errors.append("certified fanout requires success_count >= min_quorum")
     if status.get("certification_scope") not in {"single_model", "multi_model"}:
         errors.append("certification_scope must be single_model or multi_model")
     if status.get("multi_model_certified") and status.get("certification_scope") != "multi_model":
         errors.append("multi_model_certified requires certification_scope=multi_model")
-    if status.get("multi_model_certified") and status.get("success_count", 0) < 2:
-        errors.append("multi_model_certified requires success_count >= 2")
-    if status.get("status") == "degraded_not_certified" and status.get("certified"):
-        errors.append("degraded_not_certified cannot be certified")
-    if status.get("status") == "all_failed" and status.get("success_count") != 0:
-        errors.append("all_failed requires success_count=0")
+    if status.get("multi_model_certified") and status.get("certified") is not True:
+        errors.append("multi_model_certified requires certified=true")
+    if valid_count_fields:
+        if status.get("multi_model_certified") and success_count < 2:
+            errors.append("multi_model_certified requires success_count >= 2")
+        if status.get("multi_model_certified") and planner_count < 2:
+            errors.append("multi_model_certified requires planner_count >= 2")
+    if status.get("status") == "degraded_not_certified":
+        if status.get("certified"):
+            errors.append("degraded_not_certified cannot be certified")
+        if status.get("multi_model_certified"):
+            errors.append("degraded_not_certified cannot be multi_model_certified")
+    if status.get("status") == "all_failed":
+        if status.get("success_count") != 0:
+            errors.append("all_failed requires success_count=0")
+        if status.get("certified") or status.get("multi_model_certified"):
+            errors.append("all_failed cannot be certified")
+    if status.get("status") == "single_model_quorum_met":
+        if status.get("multi_model_certified"):
+            errors.append("single_model_quorum_met cannot be multi_model_certified")
+        if valid_count_fields and planner_count != 1:
+            errors.append("single_model_quorum_met requires planner_count=1")
+    if status.get("status") == "fanout_quorum_met":
+        if status.get("certified") is not True:
+            errors.append("fanout_quorum_met requires certified=true")
+        if valid_count_fields and success_count < min_quorum:
+            errors.append("fanout_quorum_met requires success_count >= min_quorum")
     if not str(status.get("reason", "")).strip():
         errors.append("reason must be non-empty")
     return not errors, errors
@@ -1278,6 +1329,164 @@ def quota_observability_summary(quota_snapshot: dict) -> dict:
     summary["low_confidence_models"] = sorted(set(summary["low_confidence_models"]))
     summary["has_low_confidence_quota"] = bool(summary["low_confidence_models"])
     return summary
+
+
+def _append_analysis_check(report: dict, category: str, name: str, ok: bool, detail: Any = None, severity: str = "error") -> None:
+    """Append one deterministic multi-model analysis self-check result."""
+    entry = {"category": category, "name": name, "ok": bool(ok), "severity": severity}
+    if detail is not None:
+        entry["detail"] = detail
+    report.setdefault("checks", []).append(entry)
+    if ok:
+        report["summary"]["passed"] += 1
+    elif severity == "warning":
+        report["summary"]["warnings"] += 1
+    else:
+        report["summary"]["failed"] += 1
+
+
+def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict] = None, include_temp_audit: bool = True) -> dict:
+    """Deterministic self-check for multi-model analysis/certification semantics.
+
+    This is intentionally local and model-free. It validates the analysis layer's
+    invariants (quorum config, provider diversity, fanout certification, truth gate,
+    discussion ratification, and RMCS audit) before any result can be called a
+    P10-grade multi-model certification.
+    """
+    quorum = quorum if quorum is not None else load_quorum()
+    config = config if config is not None else load_config()
+    report = {
+        "schema_version": "multi_model_analysis_selfcheck_v1",
+        "generated_at": _utc_now_iso(),
+        "status": "FAIL",
+        "summary": {"passed": 0, "failed": 0, "warnings": 0},
+        "checks": [],
+        "tiers": {},
+        "fanout_matrix": {},
+        "truth_gate_matrix": {},
+    }
+
+    mb = quorum.get("multi_brain", {}) if isinstance(quorum, dict) else {}
+    tiers = quorum.get("tiers", {}) if isinstance(quorum, dict) else {}
+    _append_analysis_check(report, "config", "quorum_is_object", isinstance(quorum, dict), type(quorum).__name__)
+    _append_analysis_check(report, "config", "multi_brain_present", isinstance(mb, dict) and bool(mb), mb)
+    _append_analysis_check(report, "config", "multi_brain_enabled", mb.get("enabled") is True, mb.get("enabled"))
+    _append_analysis_check(report, "config", "actual_mode_not_shadow", mb.get("shadow_mode") is False, mb.get("shadow_mode"))
+    _append_analysis_check(report, "config", "default_arbiter_configured", bool(str(mb.get("default_arbiter") or "").strip()), mb.get("default_arbiter"))
+
+    all_models: List[str] = []
+    for tier_name in ("T0", "T1", "T2", "T3"):
+        tier_cfg = tiers.get(tier_name, {}) if isinstance(tiers, dict) else {}
+        planners = list(tier_cfg.get("planners") or []) if isinstance(tier_cfg.get("planners") or [], list) else []
+        quorum_count = _safe_int(tier_cfg.get("quorum"), 0)
+        min_quorum = _safe_int(tier_cfg.get("min_quorum"), 0)
+        providers = {model: model_provider(config, model) for model in planners}
+        unknown_providers = sorted([model for model, provider in providers.items() if not provider])
+        provider_values = [provider for provider in providers.values() if provider]
+        duplicate_providers = sorted({provider for provider in provider_values if provider_values.count(provider) > 1})
+        diversity = str(tier_cfg.get("diversity") or "none")
+        report["tiers"][tier_name] = {
+            "planners": planners,
+            "quorum": quorum_count,
+            "min_quorum": min_quorum,
+            "diversity": diversity,
+            "providers": providers,
+            "unknown_providers": unknown_providers,
+            "duplicate_providers": duplicate_providers,
+        }
+        all_models.extend(planners)
+        _append_analysis_check(report, "quorum", f"{tier_name}_planners_nonempty", bool(planners), planners)
+        _append_analysis_check(report, "quorum", f"{tier_name}_quorum_within_planners", 1 <= quorum_count <= len(planners), {"quorum": quorum_count, "planner_count": len(planners)})
+        _append_analysis_check(report, "quorum", f"{tier_name}_min_quorum_valid", 1 <= min_quorum <= quorum_count, {"min_quorum": min_quorum, "quorum": quorum_count})
+        _append_analysis_check(report, "provider", f"{tier_name}_providers_resolved", not unknown_providers, {"unknown": unknown_providers, "providers": providers})
+        if diversity == "provider" and len(planners) > 1:
+            _append_analysis_check(report, "provider", f"{tier_name}_provider_diversity", not duplicate_providers and not unknown_providers, {"duplicates": duplicate_providers, "providers": providers})
+        if tier_name in {"T1", "T2", "T3"} and len(planners) >= 2:
+            _append_analysis_check(report, "quorum", f"{tier_name}_not_solo_certifiable", min_quorum >= 2, {"min_quorum": min_quorum})
+
+    unique_models = sorted(set(all_models))
+    _append_analysis_check(report, "config", "model_pool_has_diversity", len(unique_models) >= 3, unique_models)
+
+    fanout_cases = {
+        "all_failed": fanout_certification_status(0, 3, 2, 3),
+        "below_min": fanout_certification_status(1, 3, 2, 2),
+        "single_model": fanout_certification_status(1, 1, 1, 0),
+        "multi_model": fanout_certification_status(3, 4, 2, 1),
+        "success_exceeds_planners": fanout_certification_status(3, 2, 2, 0),
+        "success_with_zero_planners": fanout_certification_status(2, 0, 1, 0),
+        "failures_exceed_planners": fanout_certification_status(1, 2, 1, 2),
+        "bad_numeric_inputs": fanout_certification_status("bad", "bad", "bad", "bad"),
+    }
+    report["fanout_matrix"] = fanout_cases
+    impossible_fanout_cases = {"success_exceeds_planners", "success_with_zero_planners", "failures_exceed_planners"}
+    for case_name, status in fanout_cases.items():
+        ok, errors = validate_fanout_certification_status(status)
+        if case_name in impossible_fanout_cases:
+            _append_analysis_check(report, "fanout", f"{case_name}_validator_rejects_inconsistent_counts", not ok and bool(errors), errors or status)
+        else:
+            _append_analysis_check(report, "fanout", f"{case_name}_schema_valid", ok, errors or status)
+    _append_analysis_check(report, "fanout", "below_min_not_certified", fanout_cases["below_min"].get("certified") is False and fanout_cases["below_min"].get("status") == "degraded_not_certified", fanout_cases["below_min"])
+    _append_analysis_check(report, "fanout", "single_model_not_multi_model_certified", fanout_cases["single_model"].get("certification_scope") == "single_model" and fanout_cases["single_model"].get("multi_model_certified") is False, fanout_cases["single_model"])
+    _append_analysis_check(report, "fanout", "multi_model_certified_requires_two_successes", fanout_cases["multi_model"].get("multi_model_certified") is True and fanout_cases["multi_model"].get("success_count", 0) >= 2, fanout_cases["multi_model"])
+    _append_analysis_check(report, "fanout", "impossible_count_relationships_fail_closed", all(
+        fanout_cases[name].get("certified") is False and fanout_cases[name].get("multi_model_certified") is False and fanout_cases[name].get("status") == "degraded_not_certified"
+        for name in ("success_exceeds_planners", "success_with_zero_planners", "failures_exceed_planners")
+    ), {name: fanout_cases[name] for name in ("success_exceeds_planners", "success_with_zero_planners", "failures_exceed_planners")})
+
+    supported_bundle = build_evidence_bundle({
+        "claims": [{"id": "C-OK", "text": "deterministic tests passed", "severity": 4}],
+        "evidence": [{"id": "E-OK", "type": "command", "summary": "test output PASS", "supports": ["C-OK"], "exit_code": 0}],
+    })
+    unsupported_bundle = build_evidence_bundle({"claims": [{"id": "C-MISSING", "text": "unverified claim", "severity": 4}], "evidence": []})
+    needs_link_bundle = build_evidence_bundle({
+        "claims": [{"id": "C-LINK", "text": "raw evidence exists", "severity": 4}],
+        "evidence": [{"id": "E-RAW", "type": "command", "summary": "raw output without explicit supports", "exit_code": 0}],
+    })
+    truth_cases = {
+        "supported": evaluate_truth_gate(supported_bundle),
+        "unsupported": evaluate_truth_gate(unsupported_bundle),
+        "needs_link_review": evaluate_truth_gate(needs_link_bundle),
+    }
+    report["truth_gate_matrix"] = truth_cases
+    _append_analysis_check(report, "truth_gate", "supported_claim_certifies", truth_cases["supported"].get("can_certify_truth") is True and truth_cases["supported"].get("truth_status") == "grounded", truth_cases["supported"])
+    _append_analysis_check(report, "truth_gate", "unsupported_high_severity_fails_closed", truth_cases["unsupported"].get("can_certify_truth") is False and "C-MISSING" in truth_cases["unsupported"].get("unsupported_high_severity_claim_ids", []), truth_cases["unsupported"])
+    _append_analysis_check(report, "truth_gate", "raw_unlinked_evidence_needs_link_review", truth_cases["needs_link_review"].get("can_certify_truth") is False and truth_cases["needs_link_review"].get("truth_status") == "needs_link_review", truth_cases["needs_link_review"])
+
+    clean_plans = [
+        {"meta": {"planner_model": "model-a"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
+        {"meta": {"planner_model": "model-b"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
+    ]
+    clean_discussion = run_discussion_rounds(clean_plans, current_best={"patches": [], "planner_patch_summary": _planner_patch_summary(clean_plans)}, models=["model-a", "model-b"], offline=True, evidence_bundle=supported_bundle)
+    conflict_plans = [
+        {"meta": {"planner_model": "model-a"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
+        {"meta": {"planner_model": "model-b"}, "patches": [{"target_file": "scripts/consult_models.py", "op": "add_guard", "rationale": "concrete unresolved change"}]},
+    ]
+    conflict_discussion = run_discussion_rounds(conflict_plans, current_best={"patches": []}, models=["model-a", "model-b"], offline=True, evidence_bundle=supported_bundle)
+    report["discussion_matrix"] = {"clean": clean_discussion.get("status"), "conflict": conflict_discussion.get("status")}
+    _append_analysis_check(report, "discussion", "offline_clean_discussion_certifies", clean_discussion.get("status") in {"certified", "certified_with_minor_risks"}, clean_discussion.get("reasons"))
+    _append_analysis_check(report, "discussion", "offline_conflict_discussion_fails_closed", conflict_discussion.get("status") == "not_certified" and conflict_discussion.get("remaining_risks"), {"status": conflict_discussion.get("status"), "risks": conflict_discussion.get("remaining_risks")})
+
+    if include_temp_audit:
+        with tempfile.TemporaryDirectory(prefix="consult-models-selfcheck-") as td:
+            tick = os.path.join(td, "tick-selfcheck")
+            plans_dir = os.path.join(tick, "plans")
+            os.makedirs(plans_dir, exist_ok=True)
+            for model in ("model-a", "model-b"):
+                _write_json_atomic(os.path.join(plans_dir, f"{model}.json"), {"meta": {"planner_model": model}, "patches": [{"op": "noop", "rationale": "selfcheck noop"}]})
+            fanout = fanout_certification_status(2, 2, 2, 0)
+            truth = evaluate_truth_gate(supported_bundle)
+            merged = {"patches": [], "planner_patch_summary": _planner_patch_summary(_load_tick_plans(tick)), "fanout_certification": fanout, "truth_assessment": truth}
+            votes = [{"model": model, "vote": "approve", "best_within_constraints": True} for model in ("model-a", "model-b")]
+            discussion = {"status": "certified", "fanout_certification": fanout, "truth_assessment": truth, "issue_ledger": [], "ratification_votes": votes, "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95}}
+            _write_json_atomic(os.path.join(tick, "merged_plan.json"), merged)
+            _write_json_atomic(os.path.join(tick, "discussion_result.json"), discussion)
+            manifest = audit_certification(tick, write=True)
+            report["temp_audit_manifest_status"] = manifest.get("status")
+            _append_analysis_check(report, "certification_audit", "valid_temp_tick_certifies", manifest.get("can_claim_complete_certification") is True, manifest)
+
+    report["status"] = "PASS" if report["summary"]["failed"] == 0 else "FAIL"
+    report["summary"]["total"] = len(report.get("checks", []))
+    return report
 
 
 def evaluate_ratification(
@@ -1842,11 +2051,24 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
         plan_models.append(_plan_model(raw_plan, f"model_{idx}"))
     recomputed_patch_summary = _planner_patch_summary(audit_plans)
 
-    gates["fanout_certified"] = _strict_true(fanout.get("certified"))
-    gates["multi_model_certified"] = _strict_true(fanout.get("multi_model_certified"))
+    fanout_schema_ok = False
+    fanout_schema_errors: List[str] = []
+    merged_fanout_schema_ok = False
+    merged_fanout_schema_errors: List[str] = []
+    if fanout:
+        fanout_schema_ok, fanout_schema_errors = validate_fanout_certification_status(fanout)
+    if merged_fanout:
+        merged_fanout_schema_ok, merged_fanout_schema_errors = validate_fanout_certification_status(merged_fanout)
+
+    gates["fanout_certification_schema_valid"] = fanout_schema_ok
+    gates["fanout_certification_schema_errors"] = fanout_schema_errors
+    gates["merged_fanout_certification_schema_valid"] = merged_fanout_schema_ok
+    gates["merged_fanout_certification_schema_errors"] = merged_fanout_schema_errors
+    gates["fanout_certified"] = fanout_schema_ok and _strict_true(fanout.get("certified"))
+    gates["multi_model_certified"] = fanout_schema_ok and _strict_true(fanout.get("multi_model_certified"))
     gates["truth_can_certify"] = _strict_true(truth.get("can_certify_truth"))
-    gates["merged_fanout_certified"] = _strict_true(merged_fanout.get("certified"))
-    gates["merged_multi_model_certified"] = _strict_true(merged_fanout.get("multi_model_certified"))
+    gates["merged_fanout_certified"] = merged_fanout_schema_ok and _strict_true(merged_fanout.get("certified"))
+    gates["merged_multi_model_certified"] = merged_fanout_schema_ok and _strict_true(merged_fanout.get("multi_model_certified"))
     gates["merged_truth_can_certify"] = _strict_true(merged_truth.get("can_certify_truth"))
     planner_count = _strict_int(fanout.get("planner_count"))
     success_count = _strict_int(fanout.get("success_count"))
@@ -1910,6 +2132,8 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
 
     if not fanout:
         reasons.append("missing fanout_certification")
+    elif fanout_schema_errors:
+        reasons.append(f"fanout_certification invalid: {'; '.join(fanout_schema_errors)}")
     elif not gates["fanout_certified"]:
         reasons.append(f"fanout not certified: {fanout.get('status', 'unknown')}")
     if not fanout or not gates["multi_model_certified"]:
@@ -1918,7 +2142,9 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
         if not merged_fanout:
             reasons.append("missing merged fanout_certification")
         else:
-            if not gates["merged_fanout_certified"]:
+            if merged_fanout_schema_errors:
+                reasons.append(f"merged fanout_certification invalid: {'; '.join(merged_fanout_schema_errors)}")
+            elif not gates["merged_fanout_certified"]:
                 reasons.append(f"merged fanout not certified: {merged_fanout.get('status', 'unknown')}")
             if not gates["merged_multi_model_certified"]:
                 reasons.append("merged fanout is not multi-model certified")
@@ -2783,6 +3009,11 @@ def cli():
     status_p = sub.add_parser("status", help="Show current quorum.yaml configuration")
     status_p.add_argument("--quota", action="store_true", help="Include current model quota snapshot")
 
+    # ── deterministic analysis selfcheck ──
+    selfcheck_p = sub.add_parser("selfcheck", help="Run deterministic multi-model analysis self-check (no model calls)")
+    selfcheck_p.add_argument("--json", action="store_true", help="Emit full JSON report")
+    selfcheck_p.add_argument("--no-temp-audit", action="store_true", help="Skip temporary RMCS certification fixture audit")
+
     # ── cleanup ──
     sub.add_parser("cleanup", help="Clean all old TICK_DIRs")
 
@@ -2934,6 +3165,20 @@ def cli():
                 print(model_quota.render_table(snapshots))
             else:
                 print("  model_quota unavailable")
+
+    elif args.cmd == "selfcheck":
+        report = run_analysis_selfcheck(include_temp_audit=not args.no_temp_audit)
+        if args.json:
+            print(json.dumps(report, indent=2, ensure_ascii=False))
+        else:
+            summary = report.get("summary", {})
+            print(f"multi-model analysis selfcheck: {report.get('status')} "
+                  f"passed={summary.get('passed', 0)} failed={summary.get('failed', 0)} warnings={summary.get('warnings', 0)}")
+            for check in report.get("checks", []):
+                if not check.get("ok"):
+                    print(f"  [{check.get('severity', 'error')}] {check.get('category')}.{check.get('name')}: {check.get('detail')}")
+        if report.get("status") != "PASS":
+            sys.exit(2)
 
     elif args.cmd == "cleanup":
         cleanup_old_ticks()

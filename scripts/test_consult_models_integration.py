@@ -78,6 +78,115 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertTrue(q["multi_brain"].get("enabled", False))
         self.assertIn("T1", q.get("tiers", {}))
 
+    def _analysis_selfcheck_fixture(self):
+        quorum = {
+            "multi_brain": {"enabled": True, "shadow_mode": False, "default_arbiter": "claude-opus-4-7"},
+            "tiers": {
+                "T0": {"quorum": 1, "min_quorum": 1, "planners": ["mimo-v2.5-pro"], "diversity": "none"},
+                "T1": {"quorum": 3, "min_quorum": 2, "planners": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"], "diversity": "provider"},
+                "T2": {"quorum": 4, "min_quorum": 2, "planners": ["gpt-5.5", "mimo-v2.5-pro", "claude-opus-4-7", "deepseek-v4-pro"], "diversity": "provider"},
+                "T3": {"quorum": 4, "min_quorum": 2, "planners": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"], "diversity": "provider"},
+            },
+        }
+        config = {"pricing": {"models": {
+            "gpt-5.5": {"provider": "openai-codex"},
+            "mimo-v2.5-pro": {"provider": "xiaomi"},
+            "deepseek-v4-pro": {"provider": "deepseek"},
+            "claude-opus-4-7": {"provider": "anthropic"},
+        }}}
+        return quorum, config
+
+    def test_analysis_selfcheck_passes_with_valid_fixture(self):
+        quorum, config = self._analysis_selfcheck_fixture()
+        report = consult.run_analysis_selfcheck(quorum=quorum, config=config, include_temp_audit=True)
+
+        self.assertEqual(report["schema_version"], "multi_model_analysis_selfcheck_v1")
+        self.assertEqual(report["status"], "PASS", [c for c in report["checks"] if not c["ok"]])
+        self.assertEqual(report["summary"]["failed"], 0)
+        self.assertEqual(report["fanout_matrix"]["below_min"]["status"], "degraded_not_certified")
+        self.assertEqual(report["truth_gate_matrix"]["needs_link_review"]["truth_status"], "needs_link_review")
+        self.assertEqual(report.get("temp_audit_manifest_status"), "certified")
+
+    def test_analysis_selfcheck_fails_closed_for_solo_t1_and_duplicate_provider(self):
+        quorum, config = self._analysis_selfcheck_fixture()
+        quorum["tiers"]["T1"]["min_quorum"] = 1
+        config["pricing"]["models"]["deepseek-v4-pro"]["provider"] = "xiaomi"
+
+        report = consult.run_analysis_selfcheck(quorum=quorum, config=config, include_temp_audit=False)
+
+        self.assertEqual(report["status"], "FAIL")
+        failed_names = {check["name"] for check in report["checks"] if not check["ok"]}
+        self.assertIn("T1_not_solo_certifiable", failed_names)
+        self.assertIn("T1_provider_diversity", failed_names)
+
+    def test_fanout_certification_handles_bad_numeric_inputs_fail_closed(self):
+        status = consult.fanout_certification_status("bad", "bad", "bad", "bad")
+        ok, errors = consult.validate_fanout_certification_status(status)
+
+        self.assertTrue(ok, errors)
+        self.assertEqual(status["status"], "degraded_not_certified")
+        self.assertFalse(status["certified"])
+        self.assertFalse(status["multi_model_certified"])
+
+    def test_fanout_certification_rejects_impossible_count_relationships(self):
+        impossible_cases = [
+            consult.fanout_certification_status(3, 2, 2, 0),
+            consult.fanout_certification_status(2, 0, 1, 0),
+            consult.fanout_certification_status(1, 2, 1, 2),
+        ]
+        for status in impossible_cases:
+            with self.subTest(status=status):
+                ok, errors = consult.validate_fanout_certification_status(status)
+                self.assertFalse(status["certified"])
+                self.assertFalse(status["multi_model_certified"])
+                self.assertEqual(status["status"], "degraded_not_certified")
+                self.assertFalse(ok)
+                self.assertTrue(errors)
+
+    def test_fanout_validator_rejects_handcrafted_false_certification_counts(self):
+        status = consult.fanout_certification_status(2, 2, 2, 0)
+        status["planner_count"] = 0
+        status["certified"] = True
+        status["multi_model_certified"] = True
+
+        ok, errors = consult.validate_fanout_certification_status(status)
+
+        self.assertFalse(ok)
+        self.assertIn("success_count cannot exceed planner_count", errors)
+        self.assertIn("certified fanout requires planner_count >= 1", errors)
+
+    def test_fanout_validator_rejects_malformed_counts_without_crashing(self):
+        status = consult.fanout_certification_status(2, 2, 2, 0)
+        status["success_count"] = "2"
+        status["multi_model_certified"] = True
+
+        ok, errors = consult.validate_fanout_certification_status(status)
+
+        self.assertFalse(ok)
+        self.assertIn("success_count must be non-negative integer", errors)
+
+    def test_fanout_validator_rejects_handcrafted_cross_field_inconsistencies(self):
+        base = consult.fanout_certification_status(2, 2, 2, 0)
+        cases = []
+        mutated = dict(base)
+        mutated["certified"] = False
+        mutated["multi_model_certified"] = True
+        cases.append((mutated, "multi_model_certified requires certified=true"))
+        mutated = dict(base)
+        mutated["status"] = "single_model_quorum_met"
+        mutated["multi_model_certified"] = True
+        cases.append((mutated, "single_model_quorum_met cannot be multi_model_certified"))
+        mutated = dict(base)
+        mutated["status"] = "fanout_quorum_met"
+        mutated["certified"] = False
+        cases.append((mutated, "fanout_quorum_met requires certified=true"))
+
+        for status, expected_error in cases:
+            with self.subTest(expected_error=expected_error):
+                ok, errors = consult.validate_fanout_certification_status(status)
+                self.assertFalse(ok)
+                self.assertIn(expected_error, errors)
+
     def test_quorum_t1_has_two_planners(self):
         """T1 should have at least 2 planners for diversity"""
         quorum_path = Path(os.path.expanduser("~/.hermes/config/quorum.yaml"))
@@ -664,7 +773,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
             (tick / "plans").mkdir()
             (tick / "plans" / "claude.json").write_text(json.dumps({"meta": {"planner_model": "claude"}, "patches": []}))
             (tick / "merged_plan.json").write_text(json.dumps({
-                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 2, "success_count": 2},
+                "fanout_certification": consult.fanout_certification_status(2, 2, 2, 0),
                 "truth_assessment": {"can_certify_truth": True},
             }))
 
@@ -730,6 +839,65 @@ class TestConsultModelsIntegration(unittest.TestCase):
             self.assertFalse(manifest["can_claim_complete_certification"])
             self.assertIn("merged fanout planner_count/success_count must be strict integers", manifest["reasons"])
 
+    def test_audit_certification_rejects_validator_invalid_fanout_artifacts(self):
+        def write_tick(tick, discussion_fanout, merged_fanout):
+            models = ["claude", "codex", "deepseek", "mimo"]
+            (tick / "plans").mkdir()
+            for model in models:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in models]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": merged_fanout,
+                "truth_assessment": truth,
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "fanout_certification": discussion_fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+        valid = consult.fanout_certification_status(4, 4, 2, 0)
+        cases = []
+
+        invalid_discussion = dict(valid)
+        invalid_discussion["fail_count"] = 1
+        cases.append((invalid_discussion, valid, "fanout_certification invalid", "success_count + fail_count cannot exceed planner_count"))
+
+        invalid_discussion = dict(valid)
+        invalid_discussion["status"] = "single_model_quorum_met"
+        invalid_discussion["multi_model_certified"] = True
+        cases.append((invalid_discussion, valid, "fanout_certification invalid", "single_model_quorum_met cannot be multi_model_certified"))
+
+        invalid_merged = dict(valid)
+        invalid_merged["status"] = "degraded_not_certified"
+        invalid_merged["certified"] = True
+        cases.append((valid, invalid_merged, "merged fanout_certification invalid", "degraded_not_certified cannot be certified"))
+
+        invalid_merged = dict(valid)
+        invalid_merged["status"] = "fanout_quorum_met"
+        invalid_merged["certified"] = False
+        cases.append((valid, invalid_merged, "merged fanout_certification invalid", "fanout_quorum_met requires certified=true"))
+
+        for discussion_fanout, merged_fanout, reason_prefix, expected_error in cases:
+            with self.subTest(expected_error=expected_error):
+                with tempfile.TemporaryDirectory() as td:
+                    tick = Path(td)
+                    write_tick(tick, discussion_fanout, merged_fanout)
+
+                    manifest = consult.audit_certification(str(tick), write=True)
+
+                    self.assertEqual(manifest["status"], "not_certified")
+                    self.assertFalse(manifest["can_claim_complete_certification"])
+                    joined = "\n".join(manifest["reasons"])
+                    self.assertIn(reason_prefix, joined)
+                    self.assertIn(expected_error, joined)
+
     def test_audit_certification_rejects_empty_patches_without_no_action_summary(self):
         with tempfile.TemporaryDirectory() as td:
             tick = Path(td)
@@ -761,7 +929,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
             (tick / "plans").mkdir()
             for model in ["claude", "codex", "deepseek", "mimo"]:
                 (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
-            fanout = {"certified": True, "multi_model_certified": True, "planner_count": 4, "success_count": 4}
+            fanout = consult.fanout_certification_status(4, 4, 2, 0)
             truth = {"can_certify_truth": True}
             votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in ["claude", "codex", "deepseek", "mimo"]]
             (tick / "merged_plan.json").write_text(json.dumps({
@@ -1177,7 +1345,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
             (tick / "merged_plan.json").write_text(json.dumps({
                 "patches": [],
                 "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
-                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 2, "success_count": 2},
+                "fanout_certification": consult.fanout_certification_status(2, 2, 2, 0),
                 "truth_assessment": {"can_certify_truth": True},
             }))
 
@@ -1199,7 +1367,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
             (tick / "merged_plan.json").write_text(json.dumps({
                 "patches": [],
                 "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
-                "fanout_certification": {"certified": True, "multi_model_certified": True, "planner_count": 2, "success_count": 2},
+                "fanout_certification": consult.fanout_certification_status(2, 2, 2, 0),
                 "truth_assessment": {"can_certify_truth": True},
             }))
 

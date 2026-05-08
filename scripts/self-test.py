@@ -267,6 +267,21 @@ try:
 except Exception as e:
     test("quorum.yaml parseable", lambda: (False, str(e)))
 
+# consult_models deterministic analysis selfcheck (no model calls)
+r = subprocess.run(
+    [sys.executable, os.path.join(HERMES_HOME, "scripts/consult_models.py"), "selfcheck", "--json"],
+    capture_output=True, text=True, timeout=30
+)
+def _consult_models_selfcheck_ok(r=r):
+    if r.returncode != 0:
+        return False, r.stderr[:300] or r.stdout[:500]
+    try:
+        report = json.loads(r.stdout)
+    except json.JSONDecodeError as e:
+        return False, f"invalid JSON: {e}; stdout={r.stdout[:200]}"
+    return report.get("status") == "PASS", json.dumps(report.get("summary", report), ensure_ascii=False)[:300]
+test("consult_models analysis selfcheck", _consult_models_selfcheck_ok)
+
 # consensus-check.py detect_type precision
 r = subprocess.run(
     [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, "scripts/consensus-check.py")],
