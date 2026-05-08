@@ -119,6 +119,7 @@ verified_claim_count: 5/5
 | 2026-05-08 | Cross-project closure standard exists | `前端闭环验收标准.md` | verified | Reuse across frontend projects |
 | 2026-05-08 | User decision: current-state baseline wins | current conversation decision | verified by user instruction | 后续以当前 uvisa-app-2.0 状态推进 |
 | 2026-05-08 | Historical reference candidate exists | `/Users/charles/Downloads/uvisa-app` | non-blocking reference | 仅作历史对照，不作为当前验收 gate |
+| 2026-05-08 | Login -> email-code browser walkthrough | `/tmp/uvisa-login-email-evidence-default-railway/evidence.json`, `/tmp/uvisa-login-email-evidence-mock/evidence.json`, `/Users/charles/.hermes/tick-20260508-084049` | default dev FAIL; forced mock PASS to new-email-code stage; truth grounded 5/5 | P0: resolve dev/mock API route contract; P1: vitals beacon base; P2: email-code copy |
 
 ## 8.1 Claim / Evidence IDs
 
