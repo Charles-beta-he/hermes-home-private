@@ -197,6 +197,17 @@ class Task:
     def next_attempt_at(self) -> datetime | None:
         return parse_dt(self.fm.get("next_attempt_at"))
 
+    def retry_count(self) -> int:
+        try:
+            return int(self.fm.get("retry_count") or 0)
+        except Exception:
+            return 0
+
+    def is_retry_due(self, at: datetime | None = None) -> bool:
+        at = at or now()
+        nxt = self.next_attempt_at()
+        return nxt is None or nxt <= at
+
     def is_stale_claim(self, at: datetime | None = None) -> bool:
         at = at or now()
         return self.status in {"claimed", "running"} and self.claim_expires_at() is not None and self.claim_expires_at() < at
@@ -229,6 +240,20 @@ class Task:
             score -= 1000
         return score
 
+    def is_dispatchable(self, at: datetime | None = None) -> bool:
+        at = at or now()
+        if self.status in TERMINAL_STATUSES:
+            return False
+        if self.is_expired(at):
+            return False
+        if self.status not in {"proposed", "pending", "retry"}:
+            return False
+        if self.fm.get("claimed_by") and not self.is_stale_claim(at):
+            return False
+        if self.status == "retry" and not self.is_retry_due(at):
+            return False
+        return True
+
     def row(self) -> dict[str, Any]:
         return {
             "id": self.id,
@@ -244,6 +269,7 @@ class Task:
             "expires_at": self.fm.get("expires_at") or "",
             "stale_claim": self.is_stale_claim(),
             "expired": self.is_expired(),
+            "dispatchable": self.is_dispatchable(),
             "path": str(self.path),
             "link": obsidian_link(self.path),
         }
@@ -288,6 +314,28 @@ def save_task(task: Task) -> None:
 def sorted_tasks(include_done: bool = False) -> list[Task]:
     rows = [t for t in iter_tasks() if include_done or t.status not in TERMINAL_STATUSES]
     return sorted(rows, key=lambda t: (-t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id))
+
+
+def dispatchable_tasks() -> list[Task]:
+    rows = [t for t in iter_tasks() if t.is_dispatchable()]
+    return sorted(rows, key=lambda t: (-t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id))
+
+
+def evidence_is_structured(e: str) -> bool:
+    e = (e or "").strip()
+    if not e:
+        return False
+    if e.startswith(("command:", "file:", "search:", "brainctl:", "url:", "artifact:")):
+        return True
+    if e.startswith("/") or e.startswith("~"):
+        return Path(e).expanduser().exists()
+    return False
+
+
+def body_has_legacy_proof(body: str) -> bool:
+    proof_markers = ["## Proof Log", "## Final verification bundle", "## Final Verification", "## Evidence Boundary"]
+    evidence_markers = ["`python", "`brainctl", "exit 0", "passed=true", "tests OK", "OK.", "status `certified`"]
+    return any(m in body for m in proof_markers) and any(m in body for m in evidence_markers)
 
 
 def command_list(args: argparse.Namespace) -> dict[str, Any]:
@@ -382,7 +430,9 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write
 
 ## Inbox Drafts
 
-- [ ] 示例：整理本周本地大脑任务 | priority:P2 | project:local-brain | due:2099-01-01 | concepts:task,inbox-example
+<!-- Add real unchecked task bullets here. Example syntax only:
+- [ ] 整理本周本地大脑任务 | priority:P2 | project:local-brain | due:2099-01-01 | concepts:task,inbox-example
+-->
 
 ## Ingested Log
 
@@ -395,7 +445,33 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
     lines = INBOX.read_text(encoding="utf-8").splitlines()
     created = []
     new_lines = []
+    in_drafts = False
+    in_fence = False
+    in_html_comment = False
     for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("<!--"):
+            in_html_comment = True
+            new_lines.append(line)
+            if "-->" in stripped:
+                in_html_comment = False
+            continue
+        if in_html_comment:
+            new_lines.append(line)
+            if "-->" in stripped:
+                in_html_comment = False
+            continue
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            new_lines.append(line)
+            continue
+        if stripped.startswith("## "):
+            in_drafts = stripped == "## Inbox Drafts"
+            new_lines.append(line)
+            continue
+        if not in_drafts or in_fence:
+            new_lines.append(line)
+            continue
         meta = parse_inbox_line(line)
         if not meta:
             new_lines.append(line)
@@ -450,15 +526,20 @@ def command_release(args: argparse.Namespace) -> dict[str, Any]:
 
 def command_done(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
+    if not args.evidence:
+        raise SystemExit("done requires at least one structured --evidence entry, e.g. 'command: pytest PASS' or 'file:/path/to/proof.md'")
+    invalid = [e for e in args.evidence if not evidence_is_structured(e)]
+    if invalid:
+        raise SystemExit(f"invalid evidence shape: {invalid}; use command:/file:/search:/brainctl:/artifact:/url: prefixes or an existing absolute path")
     stamp = now()
     evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
     for e in args.evidence or []:
         if e not in evidence:
             evidence.append(e)
     t.fm.update({"status": "done", "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp), "evidence": evidence})
-    t.body += f"\n- {iso(stamp)}: Marked done by `{args.actor}`. Evidence: {', '.join(args.evidence or ['recorded in note'])}.\n"
+    t.body += f"\n- {iso(stamp)}: Marked done by `{args.actor}`. Evidence: {', '.join(args.evidence)}.\n"
     save_task(t)
-    return {"status": "OK", "task": t.id, "path": str(t.path)}
+    return {"status": "OK", "task": t.id, "path": str(t.path), "evidence_count": len(evidence)}
 
 
 def command_retry(args: argparse.Namespace) -> dict[str, Any]:
@@ -526,7 +607,9 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
   "derived": true,
   "regenerate_command": "python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write",
   "states": {json.dumps(VALID_STATUSES, ensure_ascii=False)},
-  "must_reconcile_before_dispatch": true
+  "must_reconcile_before_dispatch": true,
+  "safe_dispatch_tick": "python3 ~/.hermes/scripts/brain_task_dispatch_tick.py",
+  "skill_route_matrix": "[[07-仪表盘/Agent技能树路由矩阵]]"
 }}
 ```
 
@@ -536,6 +619,8 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
 - 在 Obsidian 添加任务草稿：[[05-实践与项目/tasks/任务收件箱]]
 - 处理收件箱：对 Hermes 说“处理本地大脑任务收件箱”，或运行 `python3 ~/.hermes/scripts/brain_task_orchestrator.py ingest-inbox --write && python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write`
 - 直接创建任务：`python3 ~/.hermes/scripts/brain_task_orchestrator.py add "任务标题" --priority P1 --project local-brain`
+- 技能路由入口：[[07-仪表盘/Agent技能树路由矩阵]]
+- 安全派发 tick：`python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always`
 
 ## Counts
 
@@ -556,6 +641,7 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
 - This dashboard and `任务池-排序.md` are derived views.
 - Claim before work; release/archive after proof.
 - Reconcile stale leases before dispatch.
+- `done` requires structured evidence (`command:`, `file:`, `search:`, `brainctl:`, `artifact:`, `url:`).
 - No arbitrary shell hooks from Markdown.
 
 ## Search Aliases
@@ -631,11 +717,17 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py list --json
 # 创建任务
 python3 ~/.hermes/scripts/brain_task_orchestrator.py add "任务标题" --priority P1 --project local-brain
 
-# 查看下一项任务，不改文件
+# 对 stale lease / expired / due retry 做调和
+python3 ~/.hermes/scripts/brain_task_orchestrator.py reconcile --write --json
+
+# 查看下一项可派发任务，不改文件
 python3 ~/.hermes/scripts/brain_task_orchestrator.py next --json
 
 # 生成安全派发 dry-run，不认领、不执行
 python3 ~/.hermes/scripts/brain_task_orchestrator.py dispatch-dry-run --json
+
+# 安全 tick：收件箱 ingest + reconcile + dashboard + dispatch hint
+python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always
 
 # 认领任务，生成 lease
 python3 ~/.hermes/scripts/brain_task_orchestrator.py claim TASK_ID --actor hermes --ttl-minutes 60
@@ -643,8 +735,11 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py claim TASK_ID --actor herme
 # 释放任务
 python3 ~/.hermes/scripts/brain_task_orchestrator.py release TASK_ID --actor hermes --to-status pending
 
-# 标记完成
-python3 ~/.hermes/scripts/brain_task_orchestrator.py done TASK_ID --actor hermes --evidence "验证命令/证据路径"
+# 标记完成：必须给结构化 evidence
+python3 ~/.hermes/scripts/brain_task_orchestrator.py done TASK_ID --actor hermes --evidence "command:验证命令 PASS" --evidence "file:/path/to/proof.md"
+
+# 检查 done 任务是否有结构化 proof
+python3 ~/.hermes/scripts/brain_task_orchestrator.py proof-check --json
 
 # 进入 retry
 python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor hermes --reason "失败原因" --delay-minutes 60
@@ -675,13 +770,76 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor herme
 - Dashboard / sorted pool 是 derived view。
 - Workflow contract 中的 hooks 默认 inert；没有 allowlisted runner 不执行。
 - 自动执行任务前必须先 claim，结束必须 release/done/retry 并写 proof。
+- 长期闭环必须经过 [[07-仪表盘/Agent技能树路由矩阵]] 选择 skills，不能凭感觉调度。
 """
 
 
+def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
+    stamp = now()
+    actions: list[dict[str, Any]] = []
+    for t in iter_tasks():
+        before = dict(t.fm)
+        action = None
+        if t.is_expired(stamp):
+            t.fm.update({"status": "expired", "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp)})
+            action = "expired"
+        elif t.is_stale_claim(stamp):
+            if t.status == "running":
+                retry_count = t.retry_count() + 1
+                if retry_count > args.max_retries:
+                    t.fm.update({"status": args.over_retry_status, "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp), "retry_count": retry_count})
+                    action = "stale_running_over_retry"
+                else:
+                    t.fm.update({"status": "retry", "claimed_by": "", "claim_expires_at": "", "run_id": "", "next_attempt_at": iso(stamp + timedelta(minutes=args.retry_delay_minutes)), "updated": iso(stamp), "retry_count": retry_count})
+                    action = "stale_running_retry"
+            else:
+                t.fm.update({"status": args.stale_claim_status, "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp)})
+                action = "stale_claim_released"
+        elif t.status == "retry" and t.is_retry_due(stamp) and args.promote_due_retry:
+            t.fm.update({"status": "pending", "next_attempt_at": "", "updated": iso(stamp)})
+            action = "retry_due_promoted"
+        if action:
+            t.body += f"\n- {iso(stamp)}: Reconcile action `{action}` by `{args.actor}`. Previous status `{before.get('status')}`.\n"
+            if args.write:
+                save_task(t)
+            actions.append({"task": t.id, "action": action, "write": bool(args.write), "path": str(t.path)})
+    return {"status": "OK", "write": bool(args.write), "action_count": len(actions), "actions": actions}
+
+
+def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
+    failures: list[str] = []
+    warnings: list[str] = []
+    checked = 0
+    legacy_body_evidence: list[str] = []
+    for t in iter_tasks():
+        if t.status != "done" and not args.include_active:
+            continue
+        checked += 1
+        evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
+        has_evidence = bool(evidence)
+        if not has_evidence and body_has_legacy_proof(t.body):
+            has_evidence = True
+            legacy_body_evidence.append(t.id)
+            warnings.append(f"legacy body-only evidence accepted: {t.id}")
+        if t.status == "done" and not has_evidence:
+            failures.append(f"done task missing evidence: {t.id}")
+        for e in evidence:
+            if not evidence_is_structured(str(e)):
+                failures.append(f"unstructured evidence in {t.id}: {e}")
+        if "## Proof Log" not in t.body and "## Final verification bundle" not in t.body:
+            warnings.append(f"missing Proof Log section: {t.id}")
+        if "## Final Handoff" not in t.body and not body_has_legacy_proof(t.body):
+            warnings.append(f"missing Final Handoff section: {t.id}")
+    status = "PASS" if not failures else "FAIL"
+    return {"status": status, "checked_count": checked, "failures": failures, "warnings": warnings, "legacy_body_evidence": legacy_body_evidence}
+
+
 def command_next(args: argparse.Namespace) -> dict[str, Any]:
-    rows = sorted_tasks(include_done=False)
+    if getattr(args, "reconcile", False):
+        command_reconcile(argparse.Namespace(write=True, actor="next", max_retries=3, retry_delay_minutes=60, stale_claim_status="pending", over_retry_status="blocked", promote_due_retry=True))
+    rows = dispatchable_tasks()
     if not rows:
-        return {"status": "OK", "next": None, "message": "No active local-brain tasks in canonical task notes."}
+        return {"status": "OK", "next": None, "message": "No dispatchable local-brain tasks in canonical task notes."}
     t = rows[0]
     return {"status": "OK", "next": t.row(), "claim_command": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py claim {t.id} --actor hermes --ttl-minutes 60", "dashboard_command": "python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write"}
 
@@ -772,6 +930,16 @@ def build_parser() -> argparse.ArgumentParser:
     ip.add_argument("--expires-days", type=int, default=30)
     ip.add_argument("--json", action="store_true")
 
+    recp = sub.add_parser("reconcile")
+    recp.add_argument("--write", action="store_true")
+    recp.add_argument("--actor", default="hermes-reconcile")
+    recp.add_argument("--max-retries", type=int, default=3)
+    recp.add_argument("--retry-delay-minutes", type=int, default=60)
+    recp.add_argument("--stale-claim-status", default="pending", choices=VALID_STATUSES)
+    recp.add_argument("--over-retry-status", default="blocked", choices=VALID_STATUSES)
+    recp.add_argument("--promote-due-retry", action="store_true")
+    recp.add_argument("--json", action="store_true")
+
     cp = sub.add_parser("claim")
     cp.add_argument("task")
     cp.add_argument("--actor", default="hermes")
@@ -793,6 +961,10 @@ def build_parser() -> argparse.ArgumentParser:
     dp.add_argument("--evidence", action="append", default=[])
     dp.add_argument("--json", action="store_true")
 
+    pcp = sub.add_parser("proof-check")
+    pcp.add_argument("--include-active", action="store_true")
+    pcp.add_argument("--json", action="store_true")
+
     rtp = sub.add_parser("retry")
     rtp.add_argument("task")
     rtp.add_argument("--actor", default="hermes")
@@ -805,6 +977,7 @@ def build_parser() -> argparse.ArgumentParser:
     gp.add_argument("--json", action="store_true")
 
     np = sub.add_parser("next")
+    np.add_argument("--reconcile", action="store_true")
     np.add_argument("--json", action="store_true")
 
     ddp = sub.add_parser("dispatch-dry-run")
@@ -823,12 +996,16 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_add(args), args.json)
     if args.cmd == "ingest-inbox":
         return print_result(command_ingest_inbox(args), args.json)
+    if args.cmd == "reconcile":
+        return print_result(command_reconcile(args), args.json)
     if args.cmd == "claim":
         return print_result(command_claim(args), args.json)
     if args.cmd == "release":
         return print_result(command_release(args), args.json)
     if args.cmd == "done":
         return print_result(command_done(args), args.json)
+    if args.cmd == "proof-check":
+        return print_result(command_proof_check(args), args.json)
     if args.cmd == "retry":
         return print_result(command_retry(args), args.json)
     if args.cmd == "dashboard":

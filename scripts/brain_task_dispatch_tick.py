@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+"""Safe local-brain task dispatch tick.
+
+This is a control-plane tick, not an autonomous executor:
+- ingests Obsidian inbox drafts into canonical task notes;
+- reconciles stale leases/expired tasks/due retries;
+- regenerates derived dashboards;
+- emits a dispatch hint for the next dispatchable task;
+- records a JSONL proof log.
+
+It never executes task Markdown, never runs arbitrary hooks, and never marks a task done.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any
+
+TZ = timezone(timedelta(hours=8))
+HOME = Path.home()
+SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_orchestrator.py"
+STATE_DIR = HOME / ".hermes" / "state"
+LOG_DIR = HOME / ".hermes" / "logs"
+STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
+LOG_FILE = LOG_DIR / "brain_task_dispatch_tick.jsonl"
+
+
+def iso() -> str:
+    return datetime.now(TZ).replace(microsecond=0).isoformat()
+
+
+def run_json(args: list[str]) -> dict[str, Any]:
+    cmd = [sys.executable, str(SCRIPT), *args]
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    out = (r.stdout or "").strip()
+    err = (r.stderr or "").strip()
+    if r.returncode != 0:
+        return {"status": "ERROR", "cmd": cmd, "returncode": r.returncode, "stdout": out, "stderr": err}
+    try:
+        data = json.loads(out) if out else {"status": "OK"}
+    except Exception as exc:
+        data = {"status": "ERROR", "cmd": cmd, "returncode": r.returncode, "stdout": out, "stderr": err, "parse_error": str(exc)}
+    data.setdefault("cmd", cmd)
+    data.setdefault("returncode", r.returncode)
+    return data
+
+
+def load_state() -> dict[str, Any]:
+    try:
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def save_state(state: dict[str, Any]) -> None:
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def append_log(event: dict[str, Any]) -> None:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    with LOG_FILE.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Safe local-brain task dispatch tick")
+    parser.add_argument("--print-always", action="store_true", help="Always print the event JSON")
+    parser.add_argument("--no-state", action="store_true", help="Do not suppress repeated notifications")
+    args = parser.parse_args()
+
+    event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
+    event["ingest"] = run_json(["ingest-inbox", "--write", "--json"])
+    event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
+    event["dashboard"] = run_json(["dashboard", "--write", "--json"])
+    event["proof_check"] = run_json(["proof-check", "--json"])
+    event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
+
+    errors = []
+    for key in ["ingest", "reconcile", "dashboard", "proof_check", "dispatch"]:
+        item = event.get(key, {})
+        if item.get("status") not in {"OK", "PASS"}:
+            errors.append({"step": key, "status": item.get("status"), "stderr": item.get("stderr"), "stdout": item.get("stdout")})
+    event["errors"] = errors
+    if errors:
+        event["status"] = "ERROR"
+
+    next_task = (event.get("dispatch") or {}).get("next") or {}
+    next_id = next_task.get("id") or ""
+    event["next_task_id"] = next_id
+    event["dispatchable"] = bool((event.get("dispatch") or {}).get("dispatchable"))
+    event["reconcile_action_count"] = int((event.get("reconcile") or {}).get("action_count") or 0)
+    event["ingested_count"] = int((event.get("ingest") or {}).get("created_count") or 0)
+    event["log_file"] = str(LOG_FILE)
+    event["state_file"] = str(STATE_FILE)
+
+    append_log(event)
+
+    previous = load_state() if not args.no_state else {}
+    changed = next_id and next_id != previous.get("last_notified_task_id")
+    noteworthy = bool(errors or event["reconcile_action_count"] or event["ingested_count"] or changed)
+    save_state({"updated_at": event["generated_at"], "last_notified_task_id": next_id, "last_status": event["status"], "last_dispatchable": event["dispatchable"]})
+
+    if args.print_always or noteworthy:
+        print(json.dumps(event, ensure_ascii=False, indent=2))
+    return 0 if event["status"] == "OK" else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

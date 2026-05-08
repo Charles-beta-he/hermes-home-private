@@ -29,11 +29,35 @@ concepts: [skill tree, route matrix, project memory, systems engineering, agent 
 | Verification | requesting-code-review + post-deploy-verification + multi-model-thinking(按风险) | build/test/UI/多模型验证 |
 | Deposition | obsidian + project workpad + ADR/UI_TEST_CASES | 项目记忆沉淀 |
 
+## 任务池 / 长期闭环路线
+
+| 阶段 | 技能/能力链 | 输出 |
+|---|---|---|
+| Intake | obsidian + local-brain-task-orchestration | canonical task note，而不是 session-local todo |
+| Reconcile | brain_task_orchestrator reconcile + proof-check | stale lease / expired / due retry 调和结果 |
+| Safe Dispatch | brain_task_dispatch_tick + dispatch-dry-run | 只给下一任务 hint，不自动执行、不自动 done |
+| Execution | p9 + loop + 项目专属 skill route | claim -> execute -> verify -> done/retry/release |
+| Proof Gate | proof-check + brainctl sync/reindex/search | 结构化 evidence；done 不允许空口完成 |
+| Cadence | no_agent cron local-brain-task-dispatch-safe-tick | 静默定时 tick；有变化/错误才输出 |
+
+## 外部 GitHub 项目分析 -> 技能树完善路线
+
+| 阶段 | 技能/能力链 | 输出 |
+|---|---|---|
+| Recon | github + framework-audit + source-driven-development | repo 结构、核心概念、可借鉴/不采纳边界 |
+| Multi-model Review | multi-model-thinking(T1/T2 按风险) + ratification gate | scoped claims/evidence/issue ledger，不把模型共识当事实 |
+| Skill Gap Mapping | skill-ecosystem-governance + Agent技能树路由矩阵 | 新增/修改 skill 的最小必要清单 |
+| Landing | obsidian + hermes-agent-skill-authoring | Project/Review/Evolution/Task proof + skill patch |
+| Verification | skill-steward graph-check + py_compile/test/build(按项目) | graph 无环/深度合规，脚本和文档可检索 |
+
 ## 路由规则
 
 - 低风险单文件：L1 + L3 即可，不跑四模型。
 - 跨模块业务流：L1 + L2 + browser/Playwright 验证。
 - 架构/原型漂移/删除功能：必须 P10 + workpad anchors + 多模型 T2/T3。
+- 任务池事实源必须是 `05-实践与项目/tasks/*.md` frontmatter；Dashboard/排序池只是 derived view。
+- `done` 必须有结构化 evidence（`command:`/`file:`/`brainctl:`/`search:`/`artifact:`/`url:`），否则 proof gate FAIL；英文检索锚点：`proof-check structured evidence`。
+- 外部 GitHub 项目只先做 selective extraction；除非另有决策，不采纳整套 runtime。
 - 项目状态、业务流程、验收矩阵进入 Project Workpad，不进 persistent memory。
 - 用户稳定偏好、职业目标、长期红线进入 memory；但必须压缩成不会过期的事实。
 

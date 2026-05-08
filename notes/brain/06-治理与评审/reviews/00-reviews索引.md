@@ -65,3 +65,5 @@ folder: 60-reviews
 ## Symphony-inspired 本地任务编排 Review
 
 - [[06-治理与评审/reviews/2026-05-08-symphony-inspired-task-orchestrator-multimodel-selfcheck]]
+
+- [[06-治理与评审/reviews/2026-05-08-local-brain-taskflow-closure-multimodel-review]]
