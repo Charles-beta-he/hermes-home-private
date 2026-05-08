@@ -54,3 +54,15 @@ consensus_verdict: dissent
 - Self-check: `/Users/charles/.hermes/scripts/uvisa_app_2_workpad_selfcheck.py`
 - Review: `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-uvisa-app-2-workpad-multimodel-review.md`
 - Certification JSON: `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-uvisa-app-2-workpad-certification.json`
+
+
+## 用户决策更新：以当前状态为主
+
+2026-05-08 用户确认：直接以 `uvisa-app-2.0` 当前状态为主。
+
+影响：
+
+- `/Users/charles/Desktop/folder/work/uvisa-app` 不再作为阻塞 reference anchor。
+- `/Users/charles/Downloads/uvisa-app` 仅作为历史候选参考，不作为当前验收 gate。
+- 后续 loop 的基线改为当前 repo 的 routes/screens/services/docs/UI_TEST_CASES/ADR/browser evidence。
+- 下一步应从当前状态生成 closure backlog，而不是等待旧参考恢复。

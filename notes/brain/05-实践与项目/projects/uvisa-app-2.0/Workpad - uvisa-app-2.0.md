@@ -1,7 +1,7 @@
 ---
 title: Workpad - uvisa-app-2.0
 created: 2026-05-08
-updated: 2026-05-08 16:12:56 CST
+updated: 2026-05-08 16:20:00 CST
 type: project_workpad
 project: uvisa-app-2.0
 repo_path: /Users/charles/Desktop/folder/work/uvisa-app-2.0
@@ -35,7 +35,7 @@ verified_claim_count: 5/5
 
 让 `uvisa-app-2.0` 在不丢功能、不降精度、不破坏原字段展示与 H5 交互的前提下，持续对齐参考 `uvisa-app` 的功能完成度，达到 P10/A+ 前端上线级：功能完整、交互闭环、移动端可用、i18n/dark/PWA/观测/后端联调可验证。
 
-注意：当前预期参考路径 `/Users/charles/Desktop/folder/work/uvisa-app` 在本次自检中不存在；候选参考 `/Users/charles/Downloads/uvisa-app` 存在（route_count=47, screen_count=45）。后续做 parity diff 前必须先确认 canonical reference anchor，不能把缺失参考当作已验证 parity。
+决策更新（2026-05-08）：用户已确认直接以 `uvisa-app-2.0` 当前状态为主，不再等待旧 `uvisa-app` reference anchor。因此后续 loop 的基线是当前 repo 的代码、路由、screens、UI_TEST_CASES、ADR 与真实浏览器验收结果；旧 reference 仅作为历史候选材料，不能阻塞当前闭环推进。
 
 ## 2. Non-goals
 
@@ -50,8 +50,8 @@ verified_claim_count: 5/5
 | Anchor | Path/URL | Type | Immutable? | Verification |
 |---|---|---|---|---|
 | Current project | `/Users/charles/Desktop/folder/work/uvisa-app-2.0` | code repo | No | `git status`, package scripts, routes/screens |
-| Expected reference project | `/Users/charles/Desktop/folder/work/uvisa-app` | reference anchor | Provisional | 当前不存在，需确认/恢复后再做 parity diff |
-| Candidate reference project | `/Users/charles/Downloads/uvisa-app` | reference candidate | Provisional | 当前存在；47 routes / 45 screens |
+| Current-state baseline | `/Users/charles/Desktop/folder/work/uvisa-app-2.0` | canonical baseline | Yes for next loop | 以当前 routes/screens/docs/tests 为主；本轮记录 78 routes / 72 screens |
+| Historical reference candidate | `/Users/charles/Downloads/uvisa-app` | optional historical material | No | 仅作参考，不作为阻塞 gate |
 | UI test ledger | `docs/UI_TEST_CASES.md` | project evidence | Append-only preferred | PASS/TODO/FAIL/BLOCK/SKIP 状态与证据 |
 | ADR index | `docs/decisions/INDEX.md` | architecture evidence | Append-only preferred | ADR-001..008 |
 | Project Claude profile | `/Users/charles/Documents/brain/01-系统与偏好/prefs/uvisa-app-2.0-Claude会话画像-2026-05-08.md` | work-habit evidence | Stable snapshot | multi-model tick 20260508-072835 |
@@ -117,8 +117,8 @@ verified_claim_count: 5/5
 | 2026-05-08 | UI test ledger exists and contains mixed status evidence | `docs/UI_TEST_CASES.md` | keyword_counts PASS=108, TODO=35, FAIL=7, BLOCK=1, SKIP=3 | Do not treat keyword counts as unique-test pass rate |
 | 2026-05-08 | Red lines and workflow habits are grounded | `uvisa-app-2.0-Claude会话画像-2026-05-08.md` | grounded | Re-evaluate if user changes project goal |
 | 2026-05-08 | Cross-project closure standard exists | `前端闭环验收标准.md` | verified | Reuse across frontend projects |
-| 2026-05-08 | Expected reference path missing | `/Users/charles/Desktop/folder/work/uvisa-app` | unresolved anchor | Confirm or restore before strict parity claim |
-| 2026-05-08 | Candidate reference path exists | `/Users/charles/Downloads/uvisa-app` | provisional anchor | Ask/confirm before canonical use |
+| 2026-05-08 | User decision: current-state baseline wins | current conversation decision | verified by user instruction | 后续以当前 uvisa-app-2.0 状态推进 |
+| 2026-05-08 | Historical reference candidate exists | `/Users/charles/Downloads/uvisa-app` | non-blocking reference | 仅作历史对照，不作为当前验收 gate |
 
 ## 8.1 Claim / Evidence IDs
 
@@ -131,7 +131,7 @@ verified_claim_count: 5/5
 
 | ID | Risk | Severity | Owner | Next Check |
 |---|---|---|---|---|
-| R-001 | Canonical reference `uvisa-app` anchor unresolved: expected Desktop path missing, Downloads candidate exists | 4 | orchestrator/user | Confirm reference before parity diff |
+| R-001 | 当前状态基线可能仍含历史 TODO/FAIL/BLOCK，不能因为不等旧参考就降低闭环标准 | 4 | next loop | 从 UI_TEST_CASES 和真实浏览器结果生成 P0/P1 队列 |
 | R-002 | UI_TEST_CASES includes TODO/FAIL/BLOCK keyword counts; cannot claim A+ until actual current run evidence updates ledger | 4 | next loop | Run Playwright/browser-harness and update statuses |
 | R-003 | Real backend vs mock alignment can drift as APIs change | 4 | next backend loop | service path scan + network check |
 | R-004 | i18n/dark/mobile/PWA issues often pass build but fail real UI | 3 | UI loop | 375/390 viewport + system dark + language switch |
@@ -139,8 +139,8 @@ verified_claim_count: 5/5
 
 ## 10. Next Loop Queue
 
-- [ ] Confirm canonical reference anchor: restore/locate `/Users/charles/Desktop/folder/work/uvisa-app` or explicitly adopt `/Users/charles/Downloads/uvisa-app`.
-- [ ] Build parity diff: reference routes/screens/flows vs uvisa-app-2.0 routes/screens/flows.
+- [ ] Freeze current-state baseline: record current routes/screens/services/docs snapshot as next loop starting point.
+- [ ] Build current-state closure backlog: derive P0/P1/P2 from UI_TEST_CASES TODO/FAIL/BLOCK + live browser evidence.
 - [ ] Convert UI_TEST_CASES TODO/FAIL/BLOCK into prioritized P0/P1/P2 loop queue.
 - [ ] Run deterministic gates: lint, build/tsc, vitest.
 - [ ] Run Playwright/browser-harness mobile dark/i18n closure sweep.

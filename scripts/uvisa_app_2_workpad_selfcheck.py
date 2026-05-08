@@ -12,7 +12,7 @@ REQUIRED_HEADINGS = [
 REQUIRED_TERMS = [
     'uvisa-app-2.0', 'dead UI', '不丢功能', '不降精度', 'P10/A+',
     'browser-harness', 'Playwright', 'i18n', 'dark', 'mock/real backend',
-    'C-001', 'E-001', 'truth_status: grounded'
+    'C-001', 'E-001', 'truth_status: grounded', 'current-state baseline'
 ]
 SECRET_PATTERNS = [
     r'sk-[A-Za-z0-9]{20,}', r'ghp_[A-Za-z0-9]{20,}', r'xox[baprs]-[A-Za-z0-9-]{20,}',
@@ -50,8 +50,7 @@ def main():
         cert=json.loads(CERT.read_text(encoding='utf-8'))
         if cert.get('truth_status') != 'grounded': failures.append('cert truth_status not grounded')
         if cert.get('verified_claim_count') != '5/5': failures.append('cert verified_claim_count not 5/5')
-        if cert.get('reference_anchor',{}).get('expected_exists') is not False:
-            failures.append('reference expected_exists should record current unresolved anchor')
+        if cert.get('reference_anchor_decision') != 'current_state_baseline': failures.append('cert reference_anchor_decision not current_state_baseline')
     except Exception as e:
         failures.append(f'cert json invalid: {e}')
     searches={q: brain_search(q) for q in ['Workpad - uvisa-app-2.0','uvisa-app-2.0 dead UI','mock/real backend alignment']}
