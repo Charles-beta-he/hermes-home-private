@@ -1,10 +1,10 @@
 ---
 type: task
 layer: L3
-status: pending
+status: done
 priority: P1
 created: 2026-05-08T18:01:13+08:00
-updated: 2026-05-08T18:01:13+08:00
+updated: 2026-05-08T19:04:57+08:00
 expires_at: 2026-06-07T18:01:13+08:00
 project: local-brain-governance
 workflow_contract: repair-plan dry-run + review gate + explicit repair-apply + verification chain + structured proof
@@ -14,7 +14,14 @@ run_id:
 retry_count: 0
 next_attempt_at: 
 workspace: 
-evidence: []
+evidence:
+  - command:local_brain_main_hierarchy_migration_selfcheck.py --json PASS
+  - command:local_brain_exhaustive_audit.py --sample-limit 100 PASS stop_gate_pass=true broken_wikilinks=0 secret_hits=0
+  - command:brainctl validate --write-dashboard PASS violations=0 l3_expiry_open=0
+  - command:test_brainctl.py PASS 15 tests
+  - command:brain_task_orchestrator selfcheck/proof-check PASS
+  - file:/Users/charles/Documents/brain/06-治理与评审/历史快照/legacy-06-dashboard-20260508/repair-manifest.json
+  - artifact:/tmp/local_brain_doc_func_after_archive_*
 concepts: [local-brain, residue-cleanup, repair-plan, repair-apply, dashboard-migration, proof-gate]
 ---
 
@@ -53,3 +60,7 @@ concepts: [local-brain, residue-cleanup, repair-plan, repair-apply, dashboard-mi
 - Status:
 - Evidence:
 - Residual risk:
+
+- 2026-05-08T19:04:57+08:00: Claimed by `hermes-doc-function-closure` until `2026-05-08T21:04:57+08:00`.
+
+- 2026-05-08T19:04:57+08:00: Marked done by `hermes-doc-function-closure`. Evidence: command:local_brain_main_hierarchy_migration_selfcheck.py --json PASS, command:local_brain_exhaustive_audit.py --sample-limit 100 PASS stop_gate_pass=true broken_wikilinks=0 secret_hits=0, command:brainctl validate --write-dashboard PASS violations=0 l3_expiry_open=0, command:test_brainctl.py PASS 15 tests, command:brain_task_orchestrator selfcheck/proof-check PASS, file:/Users/charles/Documents/brain/06-治理与评审/历史快照/legacy-06-dashboard-20260508/repair-manifest.json, artifact:/tmp/local_brain_doc_func_after_archive_*.

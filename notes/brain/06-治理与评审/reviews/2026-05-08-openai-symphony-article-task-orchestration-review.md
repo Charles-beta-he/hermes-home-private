@@ -94,3 +94,8 @@ Advisory hardening ideas from gpt-5.5, explicitly outside the already completed 
 ## Scope Status
 
 本评审补充的是文章层面的设计确认与 Hermes 操作策略；它不改变已完成的 local-brain task orchestrator scope。当前 scoped control plane 仍是 completed，caveats: []。
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

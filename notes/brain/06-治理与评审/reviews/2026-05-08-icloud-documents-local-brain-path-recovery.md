@@ -47,3 +47,8 @@ iCloud 同步后，本地大脑目录出现在：
 ## Safety Notes
 
 Root `Documents` 中的散落个人文件、应用数据目录、旧版 `Obsidian Vault` 未批量移动，避免破坏应用路径或误合并个人资料。后续如要继续全量整理，应先生成分类 dry-run manifest，再按类别逐步迁移。
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

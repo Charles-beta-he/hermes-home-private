@@ -6,6 +6,7 @@ source: 钱学森《论系统工程》系统工程思想重构 + Hermes 多模�
 multi_model_tick: /Users/charles/.hermes/tick-20260508-074429
 truth_status: grounded
 verified_claim_count: 5/5
+type: project
 ---
 
 # Project - Agent系统工程控制面

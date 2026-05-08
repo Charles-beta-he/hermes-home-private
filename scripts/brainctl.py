@@ -534,6 +534,19 @@ def is_l3(note: dict) -> bool:
     meta = note["meta"]
     rel = note["rel_path"]
     name = Path(rel).name
+    note_type = str(meta.get("type", "")).lower()
+    derived_flag = str(meta.get("derived", "")).lower() in {"true", "yes", "1"}
+    non_task_views = {
+        "task_inbox",
+        "derived_task_pool",
+        "dashboard",
+        "moc",
+        "proof",
+        "review",
+        "evolution_log",
+    }
+    if derived_flag or note_type in non_task_views or note_type.startswith("derived_"):
+        return meta.get("layer", "").upper() == "L3"
     if name.startswith("00-") or name.endswith(".json.md"):
         return meta.get("layer", "").upper() == "L3"
     return meta.get("layer", "").upper() == "L3" or "/tasks/" in f"/{rel}"

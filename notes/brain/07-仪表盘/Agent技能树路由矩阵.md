@@ -3,6 +3,7 @@ title: Agent技能树路由矩阵
 created: 2026-05-08
 type: control-plane-overlay
 concepts: [skill tree, route matrix, project memory, systems engineering, agent control plane]
+status: current
 ---
 
 # Agent技能树路由矩阵

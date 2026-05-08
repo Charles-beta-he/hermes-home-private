@@ -104,3 +104,8 @@ Inventory before：
 ## Rollback
 
 每个文件的 rollback command 已写入 manifest 的 `rollback_command` 字段。
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

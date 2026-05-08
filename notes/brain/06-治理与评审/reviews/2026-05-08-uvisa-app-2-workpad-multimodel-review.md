@@ -7,6 +7,7 @@ multi_model_tick: /Users/charles/.hermes/tick-20260508-080122
 truth_status: grounded
 verified_claim_count: 5/5
 consensus_verdict: dissent
+status: current
 ---
 
 # uvisa-app-2.0 Workpad 多模型评审
@@ -66,3 +67,8 @@ consensus_verdict: dissent
 - `/Users/charles/Downloads/uvisa-app` 仅作为历史候选参考，不作为当前验收 gate。
 - 后续 loop 的基线改为当前 repo 的 routes/screens/services/docs/UI_TEST_CASES/ADR/browser evidence。
 - 下一步应从当前状态生成 closure backlog，而不是等待旧参考恢复。
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

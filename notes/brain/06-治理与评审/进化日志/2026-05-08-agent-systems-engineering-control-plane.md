@@ -2,6 +2,7 @@
 title: Agent系统工程控制面进化日志
 created: 2026-05-08
 type: evolution-log
+status: current
 ---
 
 # Agent系统工程控制面进化日志

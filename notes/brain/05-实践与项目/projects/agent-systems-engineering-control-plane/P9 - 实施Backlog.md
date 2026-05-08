@@ -2,6 +2,7 @@
 title: P9 - Agent系统工程控制面实施Backlog
 created: 2026-05-08
 status: active
+type: backlog
 ---
 
 # P9 - 实施Backlog

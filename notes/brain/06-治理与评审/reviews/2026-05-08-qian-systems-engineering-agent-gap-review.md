@@ -48,3 +48,8 @@ Hermes 已有 memory、skills、session todo，但缺少：
 - 尚未给每个实际项目生成 workpad。
 - 尚未将 workpad schema 机器化。
 - 尚未把 route matrix 和 skill-steward usage 数据打通。
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

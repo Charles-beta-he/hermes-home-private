@@ -91,3 +91,8 @@ verification dir: `/tmp/iteration_budget_verify_20260508183533`
 - 多模型不完整：明确降级为 advisory，不冒充 full certification。
 
 剩余后续增强：将 `brain_task_budget_tick.py` 与 idle-runner 的 claim/run/retry 自动执行阶段合并；当前版本先作为安全准备器，不自动执行任务内容。
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

@@ -113,3 +113,8 @@ Certification result:
 Certified complete for the scoped local-brain task planning/control plane.
 
 There is no remaining next step or caveat inside this scope. Future external tracker mirrors or unattended execution runners would be new scopes, not unfinished work from this scope.
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

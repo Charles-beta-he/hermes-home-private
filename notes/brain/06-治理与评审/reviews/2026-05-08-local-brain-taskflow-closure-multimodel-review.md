@@ -33,7 +33,7 @@ concepts: [taskflow-closure, multi-model, proof-gate, skill-route-matrix, cron]
 - Verified claims: 5/5
 - Unsupported high-severity claims: 0
 - Evidence coverage: 1.0
-- Certification JSON: [[06-治理与评审/reviews/2026-05-08-local-brain-taskflow-closure-certification.json]]
+- Certification JSON file: `06-治理与评审/reviews/2026-05-08-local-brain-taskflow-closure-certification.json`
 
 ## Interpretation of Dissent
 
@@ -52,3 +52,8 @@ Certification is accepted because:
 Status: certified for task-pool closure infrastructure.
 
 Residual scope: execute the separate Agent-S GitHub analysis task next; do not confuse that pending task with failure of the taskflow closure.
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

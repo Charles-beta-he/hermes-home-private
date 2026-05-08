@@ -45,3 +45,8 @@ concepts: [iteration-budget, self-evolution, pua-loop]
 
 - `/Users/charles/Documents/brain/05-实践与项目/tasks/2026-05-08-iteration-budget-pua-loop-proof.md`
 - `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-iteration-budget-p10-multimodel-review.md`
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

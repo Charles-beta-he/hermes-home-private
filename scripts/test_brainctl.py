@@ -155,13 +155,23 @@ class BrainctlTestCase(unittest.TestCase):
             "---\ntype: task\nlayer: L3\nstatus: active\n---\n\n# Open Task\n\nNo expiry yet.\n",
         )
         self.write_note(
+            "05-实践与项目/tasks/任务收件箱.md",
+            "---\ntype: task_inbox\nstatus: active\nderived: false\n---\n\n# Inbox\n",
+        )
+        self.write_note(
+            "05-实践与项目/tasks/任务池-排序.md",
+            "---\ntype: derived_task_pool\nstatus: active\nderived: true\n---\n\n# Sorted Pool\n",
+        )
+        self.write_note(
             "06-治理与评审/reviews/Review.md",
             "---\ntype: review\nlayer: L6\nstatus: active\n---\n\n# Review\n\nModel agreement only.\n",
         )
         result = brainctl.validate(dry_run=True, write_dashboard=True, json_mode=True)
         self.assertFalse(result["passed"])
         violation_types = {v["type"] for v in result["violations"]}
+        missing_expiry_paths = {v["path"] for v in result["violations"] if v["type"] == "missing_l3_expiry"}
         self.assertIn("missing_l3_expiry", violation_types)
+        self.assertEqual(missing_expiry_paths, {"05-实践与项目/tasks/Open Task.md"})
         self.assertIn("review_missing_evidence_boundary", violation_types)
         dashboard = self.vault / "07-仪表盘" / "本地大脑治理健康度.md"
         self.assertTrue(dashboard.exists())

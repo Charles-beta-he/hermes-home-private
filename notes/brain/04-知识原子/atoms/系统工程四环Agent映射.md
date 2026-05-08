@@ -4,6 +4,7 @@ created: 2026-05-08
 type: atom
 concepts: [Qian Xuesen, systems engineering, feedback loop, human-machine integration, agent architecture]
 source_boundary: reconstructed_from_domain_knowledge_not_verbatim_quote
+status: current
 ---
 
 # 系统工程四环Agent映射

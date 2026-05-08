@@ -51,3 +51,8 @@ concepts: [iteration-budget, proof-gate, pua-loop]
 - `brain_task_budget_tick.py` is intentionally a bounded preparer, not a fully autonomous executor.
 - Full idle-runner / auto-claim-run-retry remains a separate P1 task and must keep safety gates.
 - Existing proof-check has one legacy body-only evidence warning unrelated to this task.
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

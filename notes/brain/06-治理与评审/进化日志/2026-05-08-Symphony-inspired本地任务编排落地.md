@@ -35,3 +35,8 @@ OpenAI Symphony 的任务编排思想被翻译为 Hermes/local-brain 原生方�
 ## Certification Caveat
 
 Prior multi-model fanout is not full ratification. Final completion depends on deterministic self-check, sync/reindex/search, post-landing model issue ledger, and scoped local commit.
+
+## Evidence Boundary
+
+Model agreement is provenance only; status promotion requires command/file/search proof recorded in this note or linked artifacts.
+

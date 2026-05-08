@@ -2,6 +2,7 @@
 title: P10 - 系统工程式Agent自进化策略
 created: 2026-05-08
 status: active
+type: strategy
 ---
 
 # P10 - 系统工程式Agent自进化策略
