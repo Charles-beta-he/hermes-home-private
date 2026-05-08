@@ -6,7 +6,7 @@ L3-C MCP提案: git_operations→已安装 mcp-git-server.py (6 tools)。http_re
 §
 L2=agent_protocol.py v2.0.0 (可导入模块+symlink, OTel链式关联chain_id/span_id, protocol_messages持久化, ProtocolError异常, try_wrap安全包装, 灵活extract, v1→v2迁移, TypedDict子结构, envelope块, 新verdict: pending/skipped/timeout)。cross-patch.py/ensemble-vote.py已集成。
 §
-uvisa-app: /Users/charles/Desktop/folder/work/uvisa-app。React19+TS+Zustand；已落地服务/store/i18n/dark/PWA/Sentry/auth。原型同步 workflow 在 react-architecture-migration skill；导航链接修补最易漏。
+uvisa-app-2.0 path: /Users/charles/Desktop/folder/work/uvisa-app-2.0. Reference uvisa-app anchor unresolved: Desktop path absent 2026-05-08; candidate /Users/charles/Downloads/uvisa-app.
 §
 Gateway 配置陷阱: config.yaml 的 platforms 必须顶层；PlatformConfig 用 token 非 bot_token；.env TELEGRAM_BOT_TOKEN 可启用；崩溃后清 gateway.pid/lock。
 §
