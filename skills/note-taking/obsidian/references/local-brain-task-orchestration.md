@@ -6,6 +6,35 @@ Use this when an external agent-orchestration or tracker-runner project is evalu
 
 `~/Documents/brain` Markdown remains the canonical source of truth. External trackers, dashboards, daemon state, SQLite/vector indexes, and generated queues are derived/rebuildable unless the user explicitly changes that boundary.
 
+Dashboard/self-check directionality: self-checks should scan canonical Markdown/scripts and then write dashboards as observability artifacts; dashboards must not be treated as authoritative input that automatically repairs the vault. If a dashboard shows violations, create a repair plan or task with explicit dry-run/apply phases, proof gates, and full re-verification. Do not implement dashboard → vault self-repair unless the user explicitly authorizes that new capability and a kill switch/rollback path exists.
+
+Migration pitfall: after hierarchy renumbering, duplicate top-level dashboard folders can be a compatibility leftover, not a legitimate second dashboard layer. For the current brain layout, `07-仪表盘/` is the canonical dashboard layer; a residual `06-仪表盘/` should be classified as legacy/compat unless it has been explicitly whitelisted. Before deleting or moving it, search all wikilinks/references, compare unique content, migrate valuable pages, then run the hierarchy self-check, exhaustive audit, `brainctl validate --write-dashboard`, sync, reindex, and search.
+
+## Local-brain repair closure protocol
+
+When a self-check/dashboard reveals vault residue, do not jump straight to edits. Use this explicit loop:
+
+1. **repair-plan (read-only)**
+   - Run deterministic scanners: `local_brain_main_hierarchy_migration_selfcheck.py --json`, `local_brain_exhaustive_audit.py`, `brainctl.py --json validate --write-dashboard`, `brain_task_orchestrator.py proof-check --json`.
+   - Produce a manifest with one candidate change per item: `source_path`, `target_path`, `operation`, `reason`, `risk`, `content_hash_before`, `references_found`, `rollback_plan`, and `verification_commands`.
+   - For directory removals, include exact reference search, wikilink search, frontmatter path search, and content diff against the replacement directory.
+
+2. **review gate**
+   - Human or multi-model review inspects the manifest. Model agreement is advisory; file/command evidence is the gate.
+   - Classify each item: `safe_apply`, `needs_manual_decision`, `archive_only`, `false_positive`, or `accepted_risk`.
+
+3. **repair-apply (explicit only)**
+   - Apply only reviewed `safe_apply` items. Do not read dashboards as authoritative input; read the reviewed manifest.
+   - Create backups or a git commit boundary before destructive changes.
+   - Never delete evidence files or task logs without a replacement link/proof ledger.
+
+4. **verify/proof**
+   - Re-run the same scanners and require monotonic improvement: fewer old top dirs, fewer broken links, fewer validate violations, no new secret hits.
+   - Run `brainctl sync`, `brainctl reindex`, and targeted `brainctl search` queries.
+   - Write structured evidence back to the task note before marking it `done`.
+
+This makes cleanup a closed control loop: detect -> plan -> review -> apply -> verify -> proof, rather than an unsafe dashboard-to-vault auto-repair path.
+
 ## What to borrow from tracker-driven agent runners
 
 Useful concepts:
@@ -86,6 +115,22 @@ python3 ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py --json
 ```
 
 Also inspect cron jobs for an actual dispatcher. A sync cron (`brain-hourly-sync`) does not imply autonomous task execution. If running `consult_models.py --discussion` for this audit times out after fan-out, inspect the latest `~/.hermes/tick-*` `merged_plan.json`: report fan-out and truth grounding as advisory/provenance, but do not claim full ratification without `discussion_result.json`.
+
+## Idle execution boundary and scheduler semantics
+
+Do not imply that a local-brain task pool or `dispatch-dry-run` provides idle-time autonomous execution. Distinguish these levels explicitly:
+
+- Control-plane tick: ingest inbox, reconcile leases/retries/expiry, regenerate dashboards, run proof-check, and emit a dispatch hint. It must not claim, execute task Markdown, run arbitrary hooks, or mark tasks done.
+- Human-triggered execution: can run at any time after the agent/tooling claims the task, executes the workflow contract, verifies, and records structured proof.
+- Idle runner/autonomous execution: only exists if a dedicated runner checks user/system idle state, active sessions, model/tool budget, project allowlist, risk tier, kill switch, and claim lease before executing. Without that runner, answer “manual execution is ready; autonomous idle execution is not enabled.”
+
+Current scheduler semantics to preserve in future changes:
+
+- Dispatchable statuses are `proposed`, `pending`, and due `retry`; terminal/expired/claimed/running/review/blocked tasks are not selected by `next`/`dispatch-dry-run`.
+- `retry` requires `next_attempt_at` empty or due. Reconcile may promote due retries back to `pending` when configured.
+- `blocked` currently means status-level blocked: visible in active pool but not dispatchable. Do not claim DAG dependency support unless frontmatter such as `blocked_by`/`blocks`/`ready_when` is implemented and verified.
+- Sort score is priority weight + status weight + expiry urgency + retry-count bonus + stale-claim bonus, then sorted by score desc, expiry asc, priority, id. Explain concrete scores when users ask why a task is first.
+- Recommended next evolution path is staged: detect-only idle probe -> idle claim dry-run for allowlisted low-risk tasks -> readonly execution -> low-risk write execution -> high-risk manual approval. Keep P0/P1 architecture, skill edits, external repo adoption, deletion, and cross-repo commits manual unless the user explicitly authorizes an autonomous runner with proof gates.
 
 ## Reporting caveat
 
