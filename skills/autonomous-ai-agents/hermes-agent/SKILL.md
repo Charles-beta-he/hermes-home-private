@@ -176,6 +176,13 @@ hermes cron remove ID       Delete a job
 hermes cron status          Scheduler status
 ```
 
+Operational troubleshooting pattern:
+- If `last_status=error` with no delivery error and the message is "Agent completed but produced empty response", treat it as a cron-agent/wrapper problem before blaming the scheduler.
+- Prefer script-first cron jobs: put deterministic work in `~/.hermes/scripts/<job>.py`, emit JSON/JSONL, and make the cron prompt only summarize injected output in 2-3 lines with "Always produce a non-empty final response."
+- For long-running multi-model jobs, wrap them with explicit timeouts and record `timeout_recorded`/`degraded_recorded`; then run a lightweight health/score script afterward so the cron still leaves an auditable result.
+- After editing a job, use `hermes cron run <id>` or the cronjob tool's run action, wait for scheduler execution, then re-check `hermes cron list` and any health script. Do not assume `next_run_at` change means it already ran.
+- `last_run_at=null` is not automatically a failure for daily/weekly jobs; compare `next_run_at` with current time and distinguish first-run-pending from missed windows.
+
 ### Webhooks
 
 ```
@@ -321,6 +328,55 @@ $HERMES_HOME/skills/        Installed skills
 
 Profiles use `~/.hermes/profiles/<name>/` with the same layout.
 
+### Auditing Project-Local Hermes Artifacts
+
+Use this when a non-Hermes project contains Python scripts or files that mention Hermes, `~/.hermes`, `hermes-agent`, `agent.spl`, `consult_models.py`, `ensemble-vote.py`, `model_health`, or scripts that hardcode paths under `~/.hermes/hermes-agent/`. The goal is to distinguish app code from Hermes support artifacts before deleting, moving, or modifying anything.
+
+Recommended verification flow:
+
+```bash
+# 1. Identify the project root and tracked Python files
+pwd
+git rev-parse --show-toplevel 2>/dev/null || true
+git ls-files '*.py'
+find . -name '*.py' -not -path './node_modules/*'
+
+# 2. Search for Hermes-specific references
+grep -RIn "hermes\|Hermes\|HERMES\|~/.hermes\|hermes-agent\|agent\.spl\|consult_models\|ensemble-vote\|model_health" . \
+  --exclude-dir=node_modules --exclude-dir=.git
+
+# 3. If a project-local file looks like a copy of a Hermes runtime module,
+# compare it with the actual runtime file instead of assuming it is live.
+python3 - <<'PY'
+from pathlib import Path
+import hashlib
+pairs = [
+    (Path('spl.py'), Path.home()/'.hermes/hermes-agent/agent/spl.py'),
+]
+for a,b in pairs:
+    if a.exists() and b.exists():
+        ah = hashlib.sha256(a.read_bytes()).hexdigest()
+        bh = hashlib.sha256(b.read_bytes()).hexdigest()
+        print(a, ah)
+        print(b, bh)
+        print('identical:', ah == bh)
+PY
+
+# 4. Check whether Hermes actually imports the runtime module.
+grep -RIn "from agent\.spl\|import agent\.spl\|SPLEncoder\|SPLDecoder\|SPLTier" ~/.hermes/scripts ~/.hermes/hermes-agent \
+  --include='*.py'
+
+# 5. Syntax-check before making cleanup recommendations.
+python3 -m py_compile <suspect-file.py>
+```
+
+Interpretation:
+- A file inside the app repo that hardcodes `~/.hermes/hermes-agent/...` is probably a Hermes patch/helper artifact, not app runtime code.
+- A project-local copy may be only a source/staging copy; Hermes runtime usually imports from `~/.hermes/hermes-agent/...` or `~/.hermes/scripts/...`.
+- If the project-local file is byte-identical to the Hermes runtime copy, report that relationship explicitly.
+- Do not delete Hermes-related artifacts until project references, Hermes runtime references, and git tracked/untracked status have all been checked.
+- One-off patch scripts that modify vendor files should be migrated to an update-safe checker/plugin pattern; see `post-update-patch-healing`.
+
 ### Config Sections
 
 Edit with `hermes config edit` or `hermes config set section.key value`.
@@ -439,7 +495,11 @@ Voice commands: `/voice on` (voice-to-voice), `/voice tts` (always voice), `/voi
 
 ---
 
-## Spawning Additional Hermes Instances
+### Tool-call budgets and permission gates
+
+For long autonomous loops, single-session tool-call limits, and permission problems, use `references/tool-budget-and-permission-gates.md`: batch mechanical calls into scripts, externalize state into durable artifacts, split work into resumable ticks, use subagents/background jobs for long work, and enforce least-privilege typed tool proxies with dry-run-first external effects.
+
+### Spawning Additional Hermes Instances
 
 Run additional Hermes processes as fully independent subprocesses — separate sessions, tools, and environments.
 

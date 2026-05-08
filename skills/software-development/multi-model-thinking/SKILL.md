@@ -28,9 +28,21 @@ When using `consult_models.py`:
 
 This keeps the roles clean: orchestrator = tool/evidence brain; planners/reviewers = reasoning brains.
 
+For external web articles that are Cloudflare-protected or dynamic, use `references/web-article-advisory-review.md`: fetch via browser first, fall back to Jina Reader when direct access returns 403/challenge, package article excerpts as claim-linked evidence, and label timed-out planner-only runs as `multi-view advisory` rather than certification.
+
 For tool-backed fact checking inside multi-model review, use the Evidence Request Fulfillment Loop in `references/evidence-request-fulfillment-loop.md`: reviewer models request evidence, the orchestrator executes read-only allowlisted tools, then the result is fed back as evidence. Do not let every reviewer run arbitrary tools by default.
 
+For multi-model GitHub repository/codebase analysis, use `references/repository-audit-evidence-packaging.md`: run deterministic read-only reconnaissance and project gates first, package each severity>=3 claim with explicit file/line or command evidence, link evidence to claims so the truth gate does not fall to `evidence_coverage=0.0`, and if the outer `consult_models.py` command times out, inspect the latest `~/.hermes/tick-*` artifacts before rerunning or claiming certification.
+
+Important evidence-packaging pitfall: passing one raw `--evidence-json` object that merely contains a list of citations is not enough. If evidence entries lack claim linkage (`supports` / claim IDs, or equivalent verified grounding), `discussion_result` may correctly report `truth_not_certified`, `needs_link_review`, and `evidence_coverage=0.0` even though the orchestrator read the files. For adoption reviews, create claim-specific evidence objects or run the Evidence Request Fulfillment Loop before ratification; never upgrade fan-out consensus to certification just because the raw evidence is in context.
+
 For code changes, MCP/tool changes, and cross-repo/API decisions, add a code-evidence gate before ratification. Use `references/gitnexus-code-evidence-mcp-pattern.md` for the GitNexus-inspired Hermes-native pattern: impact-before-edit, stale-index checks, detect-changes-before-commit, tool/shape contract checks, canonical contract IDs, and RRF only for evidence ranking (not truth certification). Do not import GitNexus runtime or copy code without license/supply-chain review.
+
+For certification tasks where deterministic gates already pass, use `references/ratification-gate-pattern.md`: build a target-bound claims/evidence bundle and issue ledger, fail closed on missing/unscoped `discussion_result.json`, preserve degraded T3 attempts as provenance only, and allow status promotion only through an explicit ratification gate. For RMCS/`consult_models.py` certification infrastructure specifically, also apply the false-certification hardening notes in `references/resumable-multimodel-certification-system.md`: never trust `discussion_result.status` alone, require independent fanout/truth/vote/agreement gates, and treat post-certification reviewer blockers as requiring a fresh T3 tick.
+
+If certification is blocked by a provider/adapter runtime failure rather than a model dissent or missing evidence, use `references/provider-adapter-fallback-ratification.md`: preserve the native tick as not-certified, call the same model through an official read-only alternate route against the exact same grounded state, write a separate supplemental certification artifact, and label the result with an explicit runtime adapter caveat. This can close the target decision gate only when truth grounding, issue ledger, and all votes pass; it never certifies the broken adapter itself.
+
+For hook automation, task creation automation, agent continuation loops, or state-machine wiring, use `references/hook-automation-verifier-gates.md`: start with logging-only runtime fixtures, prove hook payload/order/blocking behavior, document state and aggregate schemas, enforce debounce/idempotency/recursion/session-project isolation, and keep write-capable behavior fail-closed until rollback/kill-switch evidence exists.
 
 When the user asks to make such an idea a long-term project or says “落地融合 / loop 多模型思考自检”, use `references/code-evidence-long-term-landing.md`: create project/P10/P9/playbook/review/task/evolution artifacts in the canonical local brain, add a local-first self-check script, run sync/reindex/search + structural audit, preserve `dissent`/`not_certified` caveats, then make a scoped local commit. For external memory/RAG/retrieval/KG systems specifically, also load the Obsidian reference `references/external-memory-system-landing.md` and keep `~/Documents/brain` canonical while treating runtime indexes as derived caches unless explicitly decided otherwise.
 
@@ -266,6 +278,10 @@ Interpretation:
 - Report `fanout_status`, `consensus_verdict`, `unanimous_count`, `majority_count`, `minority_count`, and `arbitration_needed` from `merged_plan.json`.
 - Do not claim full multi-model certification unless the ratification artifact exists and stop conditions pass.
 - Prefer summarizing existing artifacts over immediately rerunning an expensive T3 discussion; rerun only if the missing ratification materially changes the decision.
+
+For long-running or repeatedly timed-out discussions, see `references/long-running-discussion-and-resume.md`. Key point: `--max-rounds` and `--timeout` can extend discussion, but online discussion calls models serially and may retry JSON parsing, so run long T3 certification in the background with `--keep` and inspect `discussion_result.json` afterward. If the blocker is missing runtime evidence, run an Evidence Request Fulfillment Loop before adding more rounds.
+
+When repeated timeouts or recurring governance needs make this a long-term infrastructure project, use `references/resumable-multimodel-certification-system.md`: treat the target as RMCS (checkpoint → audit-certification → resume-discussion → background runner → evidence-first split), not as a one-off timeout increase. Defer dependent high-risk hook/state automation such as `TaskCreate -> next-round ralph` until RMCS P0-P2 pass.
 
 注意：
 - `~/.hermes/config/quorum.yaml` 的 T2/T3 虽列出 4 个 planners，但默认 quorum=3 会截断为 3 个模型；完整四模型必须 `--quorum 4`。
