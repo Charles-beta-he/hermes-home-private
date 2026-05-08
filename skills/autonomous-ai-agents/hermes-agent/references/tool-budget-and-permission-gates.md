@@ -60,6 +60,27 @@ When CLI or automation prints `Iteration budget reached (N/N) — response may b
    Keep separate child-agent budgets in mind: `delegation.max_iterations` controls `delegate_task` children.
 6. Add a recovery rule to automation prompts: if close to the cap, produce a non-empty final handoff with completed gates, incomplete gates, artifact paths, next command, and whether the task is safe to resume.
 
+## P10 iteration-budget strategy
+
+Treat `Iteration budget reached (N/N)` as a control-system saturation signal. The policy is four-layered:
+
+1. **Strategic policy**: keep normal `agent.max_turns` bounded; raise it only for explicitly scoped long runs after a handoff/proof path exists.
+2. **Deterministic doctor**: run `python3 ~/.hermes/scripts/iteration_budget_doctor.py --json` to inspect effective caps, recent warning hits, cron job risk shape, and task-pool automation exposure. The doctor is read-only and never emits secret values.
+3. **Bounded task tick**: run `python3 ~/.hermes/scripts/brain_task_budget_tick.py --json` before long local-brain work. It selects one canonical task/dispatch hint, classifies risk/execution mode, computes a safe remaining budget, and writes `~/.hermes/artifacts/iteration-budget/*/handoff.md`.
+4. **LLM execution boundary**: execute at most one bounded slice after claim. If the tick says `handoff_required`, stop and resume later instead of pushing into an incomplete response.
+
+Execution modes:
+
+| Mode | Use | Budget behavior |
+|---|---|---|
+| `script_first_no_agent` | deterministic cron/control-plane jobs | prefer `no_agent=True`; no LLM loop |
+| `tiny_summarizer` | script output needs a short human summary | script collects evidence; LLM only summarizes |
+| `bounded_agent_tick` | local-brain task execution | claim one task, execute one slice, proof or handoff |
+| `single_shot_capped` | small interactive one-off | hard cap + no recursive fanout |
+| `manual` | high-risk/P0/destructive/external side effect | human-triggered only |
+
+PUA-loop rule: when a loop approaches the cap, do not rationalize a partial answer as completion. Write a handoff artifact, release/retry the task if applicable, and make the next bounded command explicit.
+
 ## Verification checklist
 
 - A durable artifact exists for each tick or decision gate.
