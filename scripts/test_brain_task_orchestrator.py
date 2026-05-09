@@ -29,6 +29,8 @@ def make_env_and_vault():
     (vault / "07-仪表盘").mkdir(parents=True)
     env = os.environ.copy()
     env["HERMES_BRAIN_VAULT"] = str(vault)
+    env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(Path(td.name) / "state")
+    env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     return td, vault, env
 
 
@@ -271,6 +273,106 @@ def test_lifecycle_fail_closed_edges():
         bad_evidence = run(env, "transition", task2, "--to", "review", "--actor", "tester", "--evidence", "command: ok\n- forged", "--json", check=False)
         assert bad_evidence.returncode != 0
         assert "single-line printable" in bad_evidence.stderr
+        missing_path_evidence = run(env, "transition", task2, "--to", "review", "--actor", "tester", "--evidence", "/tmp/hermes-definitely-missing-proof-artifact", "--json", check=False)
+        assert missing_path_evidence.returncode != 0
+        assert "invalid evidence shape" in missing_path_evidence.stderr
+
+
+def test_autorun_eligibility_and_handoff_are_fail_closed():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="验证 autorun 默认关闭与 allowlist")
+        run(env, "dashboard", "--write", "--json")
+
+        disabled = json.loads(run(env, "eligibility-check", "--json").stdout)
+        assert disabled["status"] == "PASS", disabled
+        assert disabled["eligible"] is False
+        assert "autorun_disabled" in disabled["reasons"]
+        assert "allowlist_empty" in disabled["reasons"]
+        assert disabled["task_id"] == task_id
+
+        no_claim = json.loads(run(env, "auto-claim-and-handoff", "--json").stdout)
+        assert no_claim["status"] == "PASS", no_claim
+        assert no_claim["claimed"] is False
+        assert "autorun_disabled" in no_claim["reasons"]
+        note = task_path.read_text(encoding="utf-8")
+        assert "status: pending" in note
+        assert "claimed_by: " in note
+
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+
+        eligible = json.loads(run(env, "eligibility-check", "--json").stdout)
+        assert eligible["status"] == "PASS", eligible
+        assert eligible["eligible"] is True
+        assert eligible["allowlist_hit"] is True
+        assert eligible["mode"] == "allow"
+
+        handoff = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--ttl-minutes", "15", "--json").stdout)
+        assert handoff["status"] == "OK", handoff
+        assert handoff["claimed"] is True
+        assert handoff["task"] == task_id
+        assert handoff["safety"] == "claimed-and-handoff-only; does not execute task body or mark done"
+        assert Path(handoff["handoff"]).exists()
+        assert handoff["proof_hash"].startswith("sha256:")
+        handoff_text = Path(handoff["handoff"]).read_text(encoding="utf-8")
+        assert "Do not execute Markdown task body as a script" in handoff_text
+        assert f"proof:{handoff['proof_hash']}" in handoff_text
+        proof_lines = (state_dir / "auto_run_proof.jsonl").read_text(encoding="utf-8").strip().splitlines()
+        assert len(proof_lines) == 1
+        proof_event = json.loads(proof_lines[0])
+        assert proof_event["event"] == "handoff_created"
+        assert proof_event["event_hash"] == handoff["proof_hash"]
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        row = next(r for r in rows if r["id"] == task_id)
+        assert row["status"] == "claimed"
+        assert row["claimed_by"] == "hermes-autorun"
+
+
+def test_autorun_done_requires_valid_proof_hash():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, _task_path = add_task(env, title="验证 autorun done proof gate")
+        run(env, "dashboard", "--write", "--json")
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+        handoff = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--json").stdout)
+        proof_hash = handoff["proof_hash"]
+
+        run(env, "transition", task_id, "--to", "running", "--actor", "hermes-autorun", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "hermes-autorun", "--evidence", "command: bounded runner PASS", "--json")
+
+        missing_proof = run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", "command: final PASS", "--json", check=False)
+        assert missing_proof.returncode != 0
+        assert "autorun closure requires proof:<sha256:" in missing_proof.stderr
+
+        bad_proof = run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", "proof:sha256:deadbeef", "--json", check=False)
+        assert bad_proof.returncode != 0
+        assert "autorun proof hash not found or chain verification failed" in bad_proof.stderr
+
+        done = json.loads(run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", f"proof:{proof_hash}", "--evidence", "command: final PASS", "--json").stdout)
+        assert done["status"] == "OK", done
+        proof_check = json.loads(run(env, "proof-check", "--json").stdout)
+        assert proof_check["status"] == "PASS", proof_check
+
+
+def test_proof_check_flags_persisted_autorun_done_without_proof_hash():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="验证 persisted autorun done proof audit")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: done", 1)
+        text = text.replace("evidence: []", "evidence:\n  - command: persisted autorun closure", 1)
+        text += "\n- 2099-01-01T00:00:00+08:00: Lifecycle transition `review` -> `done` by `hermes-autorun`. Evidence: command: persisted autorun closure\n"
+        task_path.write_text(text, encoding="utf-8")
+        proof = json.loads(run(env, "proof-check", "--json", check=False).stdout)
+        assert proof["status"] == "FAIL", proof
+        assert any("autorun done task missing proof evidence" in f for f in proof["failures"]), proof
 
 
 def main():
@@ -278,6 +380,9 @@ def main():
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
     test_lifecycle_fail_closed_edges()
+    test_autorun_eligibility_and_handoff_are_fail_closed()
+    test_autorun_done_requires_valid_proof_hash()
+    test_proof_check_flags_persisted_autorun_done_without_proof_hash()
     print("PASS")
 
 

@@ -28,6 +28,11 @@ CONTROL_CENTER = VAULT / "07-仪表盘" / "待完成任务控制台.md"
 SORTED_POOL = TASKS_DIR / "任务池-排序.md"
 INBOX = TASKS_DIR / "任务收件箱.md"
 DEFAULT_WORKFLOW = "[[08-模板/task-workflow-contract-template]]"
+AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN"
+AUTORUN_STATE_DIR = Path(os.environ.get("HERMES_BRAIN_AUTORUN_STATE_DIR", str(Path.home() / ".hermes" / "state"))).expanduser()
+AUTORUN_ALLOWLIST = AUTORUN_STATE_DIR / "auto_run_allowlist.json"
+AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
+AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
 VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "blocked", "done", "archived", "expired"]
 STATUS_ALIASES = {"completed": "done"}  # legacy notes may use completed; normalize as terminal done.
 ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review", "blocked"}
@@ -348,11 +353,112 @@ def evidence_is_structured(e: str) -> bool:
     e = (e or "").strip()
     if not e:
         return False
-    prefixes = ("command:", "file:", "search:", "brainctl:", "url:", "artifact:")
+    prefixes = ("command:", "file:", "search:", "brainctl:", "url:", "artifact:", "proof:")
     if e.startswith(prefixes):
         return True
     p = Path(os.path.expanduser(e))
     return p.is_absolute() and p.exists()
+
+
+def canonical_json(data: dict[str, Any]) -> str:
+    return json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def proof_payload_hash(event: dict[str, Any]) -> str:
+    payload = {k: v for k, v in event.items() if k != "event_hash"}
+    return "sha256:" + hashlib.sha256(canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+def read_autorun_proof_events() -> list[dict[str, Any]]:
+    if not AUTORUN_PROOF_LOG.exists():
+        return []
+    events: list[dict[str, Any]] = []
+    for line in AUTORUN_PROOF_LOG.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        events.append(json.loads(line))
+    return events
+
+
+def verify_autorun_proof_chain() -> tuple[bool, list[str]]:
+    failures: list[str] = []
+    prev = ""
+    try:
+        events = read_autorun_proof_events()
+    except Exception as exc:
+        return False, [f"autorun proof log unreadable: {exc}"]
+    for i, event in enumerate(events, 1):
+        if event.get("prev_hash", "") != prev:
+            failures.append(f"autorun proof chain prev_hash mismatch at line {i}")
+        expected = proof_payload_hash(event)
+        if event.get("event_hash") != expected:
+            failures.append(f"autorun proof chain hash mismatch at line {i}")
+        prev = str(event.get("event_hash") or "")
+    return not failures, failures
+
+
+def verify_autorun_proof_hash(proof_hash: str) -> bool:
+    if not proof_hash.startswith("sha256:"):
+        return False
+    ok, _failures = verify_autorun_proof_chain()
+    if not ok:
+        return False
+    try:
+        return any(event.get("event_hash") == proof_hash for event in read_autorun_proof_events())
+    except Exception:
+        return False
+
+
+def append_autorun_proof_event(event: dict[str, Any]) -> str:
+    AUTORUN_STATE_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        prior = read_autorun_proof_events()
+    except Exception as exc:
+        raise SystemExit(f"autorun proof log is not readable JSONL: {exc}")
+    prev_hash = str(prior[-1].get("event_hash") or "") if prior else ""
+    record = {
+        "schema": "local_brain_autorun_proof_v1",
+        "generated_at": iso(),
+        "prev_hash": prev_hash,
+        **event,
+    }
+    record["event_hash"] = proof_payload_hash(record)
+    with AUTORUN_PROOF_LOG.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+    return str(record["event_hash"])
+
+
+def load_autorun_allowlist() -> list[Any]:
+    try:
+        data = json.loads(AUTORUN_ALLOWLIST.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return []
+    except Exception:
+        return []
+    return data if isinstance(data, list) else []
+
+
+def autorun_allowlist_matches(task: Task, allowlist: list[Any]) -> bool:
+    for item in allowlist:
+        if isinstance(item, str):
+            token = item.strip()
+            if token in {task.id, f"task:{task.id}", task.project, f"project:{task.project}", task.title}:
+                return True
+        elif isinstance(item, dict):
+            task_id = str(item.get("task_id") or item.get("id") or "").strip()
+            project = str(item.get("project") or "").strip()
+            title = str(item.get("title") or "").strip()
+            if (task_id and task_id == task.id) or (project and project == task.project) or (title and title == task.title):
+                return True
+    return False
+
+
+def is_autorun_context(task: Task, actor: str) -> bool:
+    return str(actor or "").startswith("hermes-autorun") or str(task.fm.get("run_id") or "").startswith("autorun-")
+
+
+def task_has_autorun_audit(task: Task) -> bool:
+    return "by `hermes-autorun" in task.body or any(str(e).startswith("proof:sha256:") for e in (task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []))
 
 
 def validate_clean_text(label: str, value: str, *, allow_empty: bool = True) -> None:
@@ -425,9 +531,15 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
         failures.append(f"transition to {to_status} requires --reason")
     if to_status in EVIDENCE_REQUIRED_TO and not evidence:
         failures.append(f"transition to {to_status} requires structured --evidence")
-    invalid_evidence = [e for e in evidence if not evidence_is_structured(e)]
+    invalid_evidence = [e for e in evidence if not evidence_is_structured(str(e))]
     if invalid_evidence:
-        failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url: prefixes or an existing absolute path")
+        failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url:/proof: prefixes or an existing absolute path")
+    if to_status == "done" and is_autorun_context(task, actor):
+        proof_hashes = [str(e)[len("proof:") :] for e in evidence if str(e).startswith("proof:sha256:")]
+        if not proof_hashes:
+            failures.append("autorun closure requires proof:<sha256:...> evidence from the append-only autorun proof log")
+        elif not any(verify_autorun_proof_hash(h) for h in proof_hashes):
+            failures.append("autorun proof hash not found or chain verification failed")
     if to_status == "done" and from_status != "review" and not force:
         failures.append("done must be entered from review; use --force --reason only for audited manual closure")
     elif to_status == "done" and from_status != "review":
@@ -1044,9 +1156,13 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
             warnings.append(f"legacy body-only evidence accepted: {t.id}")
         if t.status == "done" and not has_evidence:
             failures.append(f"done task missing evidence: {t.id}")
+        if t.status == "done" and task_has_autorun_audit(t) and not any(str(e).startswith("proof:sha256:") for e in evidence):
+            failures.append(f"autorun done task missing proof evidence: {t.id}")
         for e in evidence:
             if not evidence_is_structured(str(e)):
                 failures.append(f"unstructured evidence in {t.id}: {e}")
+            if str(e).startswith("proof:sha256:") and not verify_autorun_proof_hash(str(e)[len("proof:") :]):
+                failures.append(f"invalid autorun proof hash in {t.id}: {e}")
         if "## Proof Log" not in t.body and "## Final verification bundle" not in t.body:
             warnings.append(f"missing Proof Log section: {t.id}")
         if "## Final Handoff" not in t.body and not body_has_legacy_proof(t.body):
@@ -1079,6 +1195,154 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
         f"Task: {row['link']} ({row['id']}) priority={row['priority']} status={row['status']} project={row['project']}"
     )
     return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "safety": "dry-run only; does not claim or execute"}
+
+
+def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
+    validate_clean_values(actor=getattr(args, "actor", "hermes-autorun"))
+    reasons: list[str] = []
+    warnings: list[str] = []
+    task: Task | None = None
+    if getattr(args, "task", ""):
+        task = find_task(args.task)
+    else:
+        nxt = command_next(argparse.Namespace(reconcile=False, no_reconcile=bool(getattr(args, "no_reconcile", False)), json=True))
+        if nxt.get("next"):
+            task = find_task(nxt["next"]["id"])
+        elif (nxt.get("reconcile") or {}).get("action_count"):
+            reasons.append("reconcile_required")
+        else:
+            reasons.append("no_dispatchable_task")
+    allowlist = load_autorun_allowlist()
+    allowlist_hit = bool(task and autorun_allowlist_matches(task, allowlist))
+    if os.environ.get(AUTORUN_ENV_FLAG) != "1":
+        reasons.append("autorun_disabled")
+    if not allowlist:
+        reasons.append("allowlist_empty")
+    elif not allowlist_hit:
+        reasons.append("allowlist_miss")
+    if task and not task.is_dispatchable():
+        reasons.append("task_not_dispatchable")
+    proof_ok, proof_failures = verify_autorun_proof_chain()
+    if not proof_ok:
+        reasons.append("proof_chain_invalid")
+        warnings.extend(proof_failures)
+    selfcheck = command_selfcheck(argparse.Namespace(json=True))
+    if selfcheck.get("status") != "PASS":
+        reasons.append("selfcheck_failed")
+        warnings.extend(str(x) for x in selfcheck.get("failures", []))
+    eligible = bool(task and not reasons)
+    row = task.row() if task else None
+    return {
+        "status": "PASS",
+        "eligible": eligible,
+        "mode": "allow" if eligible else "deny",
+        "reasons": sorted(set(reasons)),
+        "warnings": warnings,
+        "task_id": task.id if task else "",
+        "task": row,
+        "allowlist": str(AUTORUN_ALLOWLIST),
+        "allowlist_hit": allowlist_hit,
+        "kill_switch": os.environ.get(AUTORUN_ENV_FLAG) != "1",
+        "required_proof": ["proof:<sha256:...> required before autorun-originated done"],
+        "budget_ceiling": None,
+    }
+
+
+def render_autorun_handoff(task: Task, claim: dict[str, Any], proof_hash: str, actor: str) -> str:
+    return f"""# Auto-Claim Handoff — {task.title}
+
+- task_id: `{task.id}`
+- task_link: {obsidian_link(task.path)}
+- actor: `{actor}`
+- run_id: `{task.fm.get('run_id') or ''}`
+- claim_expires_at: `{task.fm.get('claim_expires_at') or ''}`
+- proof_evidence: `proof:{proof_hash}`
+
+## Safety Contract
+
+- Do not execute Markdown task body as a script.
+- Do not run arbitrary hooks from task notes.
+- Do not mark the task done from this handoff.
+- Runner must perform bounded execution, write concrete evidence, transition `running -> review`, and only then use proof-gated `review -> done`.
+- If any gate fails, release/retry/block; never force close.
+
+## Suggested Runner Prompt
+
+Claim has already been acquired. Work only within the task's stated workspace/contract, verify with deterministic commands, append proof, and close through lifecycle gates.
+
+## Claim Result
+
+```json
+{json.dumps(claim, ensure_ascii=False, indent=2)}
+```
+"""
+
+
+def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
+    eligibility = command_eligibility_check(args)
+    if not eligibility.get("eligible"):
+        return {
+            "status": "PASS",
+            "claimed": False,
+            "eligible": False,
+            "reasons": eligibility.get("reasons", []),
+            "warnings": eligibility.get("warnings", []),
+            "task_id": eligibility.get("task_id", ""),
+            "safety": "fail-closed; no claim and no execution",
+        }
+    task = find_task(str(eligibility["task_id"]))
+    if not task.is_dispatchable():
+        return {"status": "PASS", "claimed": False, "eligible": False, "reasons": ["task_not_dispatchable_after_eligibility"], "task_id": task.id, "safety": "fail-closed; no execution"}
+    stamp = now()
+    run_id = f"autorun-{stamp.strftime('%Y%m%d%H%M%S')}-{task.id[:24]}"
+    claim = command_claim(argparse.Namespace(task=task.id, actor=args.actor, ttl_minutes=args.ttl_minutes, run_id=run_id, reason="auto-claim-and-handoff", force=False, json=True))
+    claimed_task = find_task(task.id)
+    readback_failures = []
+    if claimed_task.status != "claimed":
+        readback_failures.append(f"status read-back mismatch: {claimed_task.status}")
+    if str(claimed_task.fm.get("claimed_by") or "") != args.actor:
+        readback_failures.append(f"claimed_by read-back mismatch: {claimed_task.fm.get('claimed_by')}")
+    if str(claimed_task.fm.get("run_id") or "") != run_id:
+        readback_failures.append(f"run_id read-back mismatch: {claimed_task.fm.get('run_id')}")
+    if not claimed_task.fm.get("claim_expires_at"):
+        readback_failures.append("claim_expires_at missing after claim")
+    if readback_failures:
+        try:
+            command_release(argparse.Namespace(task=task.id, actor=args.actor, to_status="pending", reason="autorun read-back mismatch; fail-closed release", force=True, json=True))
+        except Exception:
+            pass
+        return {"status": "ERROR", "claimed": False, "eligible": False, "task_id": task.id, "reasons": ["claim_readback_mismatch"], "warnings": readback_failures, "safety": "fail-closed; released if possible; no execution"}
+    AUTORUN_HANDOFF_DIR.mkdir(parents=True, exist_ok=True)
+    handoff_path = AUTORUN_HANDOFF_DIR / f"{run_id}.md"
+    try:
+        proof_hash = append_autorun_proof_event({
+            "event": "handoff_created",
+            "task": task.id,
+            "actor": args.actor,
+            "run_id": run_id,
+            "handoff": str(handoff_path),
+            "safety": "claimed-and-handoff-only; no execution; no done",
+        })
+        atomic_write(handoff_path, render_autorun_handoff(claimed_task, claim, proof_hash, args.actor))
+    except Exception as exc:
+        try:
+            command_release(argparse.Namespace(task=task.id, actor=args.actor, to_status="pending", reason="autorun handoff/proof write failed; fail-closed release", force=True, json=True))
+        except Exception:
+            pass
+        return {"status": "ERROR", "claimed": False, "eligible": False, "task_id": task.id, "reasons": ["handoff_or_proof_write_failed"], "warnings": [str(exc)], "safety": "fail-closed; released if possible; no execution"}
+    return {
+        "status": "OK",
+        "claimed": True,
+        "eligible": True,
+        "task": task.id,
+        "claimed_by": args.actor,
+        "run_id": run_id,
+        "claim_expires_at": claim.get("claim_expires_at"),
+        "handoff": str(handoff_path),
+        "proof_hash": proof_hash,
+        "proof_log": str(AUTORUN_PROOF_LOG),
+        "safety": "claimed-and-handoff-only; does not execute task body or mark done",
+    }
 
 
 def command_dashboard(args: argparse.Namespace) -> dict[str, Any]:
@@ -1117,6 +1381,16 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     missing_graph_states = sorted(set(VALID_STATUSES) - set(LIFECYCLE_TRANSITIONS))
     if missing_graph_states:
         failures.append(f"lifecycle graph missing statuses: {missing_graph_states}")
+    proof_ok, proof_failures = verify_autorun_proof_chain()
+    if not proof_ok:
+        failures.extend(proof_failures)
+    if AUTORUN_HANDOFF_DIR.exists():
+        try:
+            handoff_count = sum(1 for _ in AUTORUN_HANDOFF_DIR.glob("*.md"))
+            if handoff_count > 100:
+                warnings.append(f"autorun handoff directory has {handoff_count} handoffs; consider archival/cleanup")
+        except Exception as exc:
+            warnings.append(f"autorun handoff directory count unavailable: {exc}")
     if DASHBOARD.exists() and "DERIVED VIEW — NOT SOURCE OF TRUTH" not in DASHBOARD.read_text(encoding="utf-8"):
         failures.append("dashboard missing derived-view warning")
     if CONTROL_CENTER.exists() and "处理本地大脑任务收件箱" not in CONTROL_CENTER.read_text(encoding="utf-8"):
@@ -1235,6 +1509,19 @@ def build_parser() -> argparse.ArgumentParser:
     ddp = sub.add_parser("dispatch-dry-run")
     ddp.add_argument("--json", action="store_true")
 
+    ecp = sub.add_parser("eligibility-check")
+    ecp.add_argument("--task", default="")
+    ecp.add_argument("--actor", default="hermes-autorun")
+    ecp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
+    ecp.add_argument("--json", action="store_true")
+
+    ahp = sub.add_parser("auto-claim-and-handoff")
+    ahp.add_argument("--task", default="")
+    ahp.add_argument("--actor", default="hermes-autorun")
+    ahp.add_argument("--ttl-minutes", type=int, default=60)
+    ahp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
+    ahp.add_argument("--json", action="store_true")
+
     sp = sub.add_parser("selfcheck")
     sp.add_argument("--json", action="store_true")
     return p
@@ -1270,6 +1557,10 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_next(args), args.json)
     if args.cmd == "dispatch-dry-run":
         return print_result(command_dispatch_dry_run(args), args.json)
+    if args.cmd == "eligibility-check":
+        return print_result(command_eligibility_check(args), args.json)
+    if args.cmd == "auto-claim-and-handoff":
+        return print_result(command_auto_claim_and_handoff(args), args.json)
     if args.cmd == "selfcheck":
         return print_result(command_selfcheck(args), args.json)
     raise SystemExit(2)

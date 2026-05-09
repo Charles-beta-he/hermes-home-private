@@ -24,8 +24,8 @@ from typing import Any
 TZ = timezone(timedelta(hours=8))
 HOME = Path.home()
 SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_orchestrator.py"
-STATE_DIR = HOME / ".hermes" / "state"
-LOG_DIR = HOME / ".hermes" / "logs"
+STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME / ".hermes" / "state"))).expanduser()
+LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
 LOG_FILE = LOG_DIR / "brain_task_dispatch_tick.jsonl"
 
@@ -72,6 +72,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Safe local-brain task dispatch tick")
     parser.add_argument("--print-always", action="store_true", help="Always print the event JSON")
     parser.add_argument("--no-state", action="store_true", help="Do not suppress repeated notifications")
+    parser.add_argument("--autorun", action="store_true", help="Opt-in bridge: run auto-claim-and-handoff after all safe tick gates pass")
     args = parser.parse_args()
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
@@ -89,6 +90,13 @@ def main() -> int:
     event["errors"] = errors
     if errors:
         event["status"] = "ERROR"
+
+    if args.autorun and not errors:
+        event["autorun"] = run_json(["auto-claim-and-handoff", "--json"])
+        if event["autorun"].get("status") not in {"OK", "PASS"}:
+            errors.append({"step": "autorun", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout")})
+            event["status"] = "ERROR"
+            event["errors"] = errors
 
     next_task = (event.get("dispatch") or {}).get("next") or {}
     next_id = next_task.get("id") or ""
