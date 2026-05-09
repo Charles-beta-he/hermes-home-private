@@ -397,6 +397,58 @@ def newest_discussion_result(since: float) -> Path | None:
     return sorted(candidates, key=lambda p: p.stat().st_mtime)[-1] if candidates else None
 
 
+def synthetic_certified_discussion() -> dict[str, Any]:
+    return {
+        "status": "certified",
+        "models_consulted": list(DEFAULT_MODELS),
+        "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+        "issue_ledger": [{"id": "I-SYNTHETIC", "severity": 3, "status": "resolved"}],
+        "remaining_risks": [],
+        "ratification_votes": [
+            {"model": model, "vote": "approve", "best_within_constraints": True}
+            for model in DEFAULT_MODELS
+        ],
+        "truth_assessment": {
+            "evidence_coverage": 1.0,
+            "unsupported_high_severity_claim_ids": [],
+            "contradicted_high_severity_claim_ids": [],
+        },
+        "provenance": ["offline synthetic runtime selfcheck fixture; no provider calls"],
+    }
+
+
+def ratification_summary(discussion: dict[str, Any]) -> dict[str, Any]:
+    passed, reasons = verify_ratification(discussion)
+    return {
+        "stop_gate": passed,
+        "reasons": reasons,
+        "status": str(discussion.get("status") or "not_certified"),
+        "agreement_matrix": discussion.get("agreement_matrix") or {},
+        "vote_count": len(discussion.get("ratification_votes") or []),
+        "open_high_severity_issue_count": len(open_high_severity(discussion.get("issue_ledger") or [])),
+        "open_high_severity_remaining_risk_count": len(open_high_severity(discussion.get("remaining_risks") or [])),
+    }
+
+
+def dry_run_payload(inject: str = "") -> dict[str, Any]:
+    discussion = synthetic_certified_discussion()
+    if inject == "amend_vote":
+        discussion["ratification_votes"][0]["vote"] = "amend"
+    elif inject == "unresolved_issue":
+        discussion["issue_ledger"].append({"id": "I-DRY-RUN", "severity": 3, "status": "unresolved"})
+    elif inject == "low_agreement":
+        discussion["agreement_matrix"] = {"framing": 0.65, "approach": 0.65, "implementation_order": 0.65}
+    verdict = evaluate_discussion(discussion)
+    return {
+        "status": "PASS",
+        "mode": "dry_run",
+        "inject": inject or "none",
+        "ratification": ratification_summary(discussion),
+        "verdict": verdict,
+        "artifact": build_ratification_artifact(discussion, verdict),
+    }
+
+
 def build_ratification_artifact(
     discussion: dict[str, Any],
     verdict: dict[str, Any],
@@ -468,7 +520,12 @@ def ratification_selfcheck_main(argv: list[str] | None = None) -> int:
         state_path=Path(args.state).expanduser() if args.state else None,
     )
     ok, missing = required_ratification_artifact_fields_present(artifact)
-    payload = {"status": "PASS" if ok else "FAIL", "missing_fields": missing, "artifact": artifact}
+    payload = {
+        "status": "PASS" if ok else "FAIL",
+        "missing_fields": missing,
+        "ratification": ratification_summary(discussion),
+        "artifact": artifact,
+    }
     if args.out:
         write_state(Path(args.out).expanduser(), payload)
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
@@ -535,8 +592,38 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--skip-deterministic", action="store_true")
     parser.add_argument("--executor-command", default="", help="Explicit bounded command to apply unresolved issue ledger between rounds")
     parser.add_argument("--executor-timeout", type=int, default=300)
+    parser.add_argument("--probe-quota", action="store_true", help="Read-only model quota probe; no provider calls")
+    parser.add_argument("--dry-run", action="store_true", help="Run synthetic ratification verifier without model calls")
+    parser.add_argument("--inject", choices=["amend_vote", "unresolved_issue", "low_agreement"], default="")
+    parser.add_argument("--selfcheck-runtime", action="store_true", help="Write/read a synthetic ratification artifact to prove runtime export path")
+    parser.add_argument("--artifact-out", default="")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
+
+    if args.probe_quota:
+        probe = collect_model_quota_probe(DEFAULT_MODELS)
+        print(json.dumps({"status": probe.get("status", "unknown"), "model_quota_probe": probe}, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+
+    if args.dry_run:
+        print(json.dumps(dry_run_payload(args.inject), ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
+
+    if args.selfcheck_runtime:
+        discussion = synthetic_certified_discussion()
+        verdict = evaluate_discussion(discussion)
+        artifact = build_ratification_artifact(discussion, verdict)
+        out = Path(args.artifact_out).expanduser() if args.artifact_out else HERMES_HOME / "state" / "brain_task_multimodel_loop_runtime_selfcheck_artifact.json"
+        write_state(out, artifact)
+        payload = {
+            "status": "PASS",
+            "mode": "offline_synthetic_runtime_selfcheck",
+            "artifact_path": str(out),
+            "ratification": ratification_summary(discussion),
+            "artifact": artifact,
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
 
     round_dir = Path(args.round_dir).expanduser()
     round_dir.mkdir(parents=True, exist_ok=True)

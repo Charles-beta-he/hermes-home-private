@@ -164,6 +164,55 @@ def test_ratification_selfcheck_cli_dumps_certification_artifact():
         assert payload["artifact"]["consult_models"]["best_within_constraints_by_model"], payload
 
 
+def test_probe_quota_cli_outputs_read_only_probe():
+    r = subprocess.run([
+        sys.executable,
+        str(SCRIPT),
+        "--probe-quota",
+        "--json",
+    ], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr or r.stdout
+    payload = json.loads(r.stdout)
+    assert payload["status"] in {"ok", "unavailable"}, payload
+    assert "model_quota_probe" in payload, payload
+    assert len(payload["model_quota_probe"]["models"]) == 4, payload
+
+
+def test_dry_run_injected_amend_vote_reports_stop_gate_false():
+    r = subprocess.run([
+        sys.executable,
+        str(SCRIPT),
+        "--dry-run",
+        "--inject",
+        "amend_vote",
+        "--json",
+    ], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr or r.stdout
+    payload = json.loads(r.stdout)
+    assert payload["ratification"]["stop_gate"] is False, payload
+    assert "non_approve_vote" in payload["ratification"]["reasons"], payload
+
+
+def test_selfcheck_runtime_writes_synthetic_ratification_artifact():
+    with tempfile.TemporaryDirectory() as td:
+        out = Path(td) / "runtime-artifact.json"
+        r = subprocess.run([
+            sys.executable,
+            str(SCRIPT),
+            "--selfcheck-runtime",
+            "--artifact-out",
+            str(out),
+            "--json",
+        ], capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr or r.stdout
+        payload = json.loads(r.stdout)
+        assert payload["status"] == "PASS", payload
+        assert payload["ratification"]["stop_gate"] is True, payload
+        assert out.exists(), payload
+        artifact = json.loads(out.read_text())
+        assert artifact["consult_models"]["discussion_result_status"] == "certified", artifact
+
+
 def test_cli_fixture_certified_exits_zero_and_writes_state():
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -224,6 +273,9 @@ if __name__ == "__main__":
     test_ratification_artifact_exports_explicit_acceptance_fields()
     test_build_state_payload_records_quota_probe_and_ratification_export_claims()
     test_ratification_selfcheck_cli_dumps_certification_artifact()
+    test_probe_quota_cli_outputs_read_only_probe()
+    test_dry_run_injected_amend_vote_reports_stop_gate_false()
+    test_selfcheck_runtime_writes_synthetic_ratification_artifact()
     test_cli_fixture_certified_exits_zero_and_writes_state()
     test_cli_fixture_not_certified_max_rounds_fails_closed()
     print("PASS")
