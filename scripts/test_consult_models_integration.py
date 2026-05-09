@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 SCRIPT = Path(__file__).parent / "consult_models.py"
@@ -585,6 +586,258 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(requests[0]["requested_by"], "deepseek")
         self.assertEqual(requests[0]["status"], "requested")
         self.assertIn("read_only", requests[0]["safety"])
+
+    def test_evidence_request_scalar_container_is_one_malformed_request(self):
+        requests = consult.collect_evidence_requests([
+            {"meta": {"planner_model": "mimo"}, "evidence_requests": "not-a-list"},
+            {"meta": {"planner_model": "deepseek"}, "diagnosis": {"evidence_requests": "also-bad"}},
+        ])
+        self.assertEqual(len(requests), 2)
+        self.assertTrue(all(req.get("malformed_request") for req in requests))
+        self.assertEqual([req["raw_type"] for req in requests], ["str", "str"])
+
+    def test_evidence_fulfillment_allowlist_rejects_shell_and_credentials(self):
+        state = consult.build_state(
+            question="evidence execution safety",
+            implementation_target={"files": [], "verify_commands": ["python3 scripts/test_consult_models_integration.py"], "forbidden_changes": []},
+        )
+        allowed = consult.classify_evidence_request_safety({"command": "git status --short", "tool_needed": "terminal"}, state=state)
+        self.assertTrue(allowed["allowed"])
+        self.assertTrue(Path(allowed["argv"][0]).is_absolute())
+        self.assertEqual(Path(allowed["argv"][0]).name, "git")
+        injection = consult.classify_evidence_request_safety({"command": "git status --short; cat ~/.hermes/.env", "tool_needed": "terminal"}, state=state)
+        credential = consult.classify_evidence_request_safety({"command": "cat ~/.hermes/auth.json", "tool_needed": "terminal"}, state=state)
+        outside = consult.classify_evidence_request_safety({"command": "python3 -c 'print(1)'", "tool_needed": "terminal"}, state=state)
+        ext_diff = consult.classify_evidence_request_safety({"command": "git diff --ext-diff", "tool_needed": "terminal"}, state=state)
+        bare_diff = consult.classify_evidence_request_safety({"command": "git diff", "tool_needed": "terminal"}, state=state)
+        no_index = consult.classify_evidence_request_safety({"command": "git diff --no-index a b", "tool_needed": "terminal"}, state=state)
+        output_file = consult.classify_evidence_request_safety({"command": "git diff --output=/tmp/leak.diff", "tool_needed": "terminal"}, state=state)
+        show_blob = consult.classify_evidence_request_safety({"command": "git show --stat HEAD:scripts/consult_models.py", "tool_needed": "terminal"}, state=state)
+        fake_brainctl = consult.classify_evidence_request_safety({"command": "python3 /tmp/brainctl.py status --json", "tool_needed": "terminal"}, state=state)
+        canonical_brainctl_path = Path(consult.HERMES_HOME) / "scripts" / "brainctl.py"
+        fake_interpreter_brainctl = consult.classify_evidence_request_safety({"command": f"/tmp/python3 {canonical_brainctl_path} status --json", "tool_needed": "terminal"}, state=state)
+        relative_interpreter_brainctl = consult.classify_evidence_request_safety({"command": f"./python3 {canonical_brainctl_path} status --json", "tool_needed": "terminal"}, state=state)
+        brainctl_status = consult.classify_evidence_request_safety({"command": f"{sys.executable} {canonical_brainctl_path} status --json", "tool_needed": "terminal"}, state=state)
+        brainctl_search = consult.classify_evidence_request_safety({"command": f"{sys.executable} {canonical_brainctl_path} --json search scope", "tool_needed": "terminal"}, state=state)
+        brainctl_path_flag = consult.classify_evidence_request_safety({"command": f"{sys.executable} {canonical_brainctl_path} --json search scope --path /tmp", "tool_needed": "terminal"}, state=state)
+        anti_drift_path = Path(consult.HERMES_HOME) / "scripts" / "anti_drift_guard.py"
+        anti_drift_out = consult.classify_evidence_request_safety({"command": f"{sys.executable} {anti_drift_path} check-anchors --json --out /tmp/drift.json", "tool_needed": "terminal"}, state=state)
+
+        self.assertTrue(allowed["allowed"])
+        self.assertFalse(injection["allowed"])
+        self.assertIn("shell metacharacters", injection["reason"])
+        self.assertFalse(credential["allowed"])
+        self.assertIn("credential", credential["reason"])
+        self.assertFalse(outside["allowed"])
+        self.assertFalse(ext_diff["allowed"])
+        self.assertFalse(bare_diff["allowed"])
+        self.assertFalse(no_index["allowed"])
+        self.assertFalse(output_file["allowed"])
+        self.assertFalse(show_blob["allowed"])
+        self.assertFalse(fake_brainctl["allowed"])
+        self.assertFalse(fake_interpreter_brainctl["allowed"])
+        self.assertFalse(relative_interpreter_brainctl["allowed"])
+        self.assertFalse(brainctl_status["allowed"])
+        self.assertFalse(brainctl_search["allowed"])
+        self.assertFalse(brainctl_path_flag["allowed"])
+        self.assertFalse(anti_drift_out["allowed"])
+
+    def test_evidence_fulfillment_updates_state_truth_gate(self):
+        verify_command = "git status --short"
+        state = consult.build_state(
+            question="evidence execution",
+            claims=[{"id": "C-EXEC", "text": "approved verifier command ran", "severity": 4}],
+            evidence=[],
+            implementation_target={"files": [], "verify_commands": [verify_command], "forbidden_changes": []},
+        )
+        state["evidence_fulfillment_policy"] = {"claim_command_allowlist": {"C-EXEC": [verify_command]}}
+        requests = [{
+            "id": "ER-EXEC",
+            "requested_by": "codex",
+            "claim_id": "C-EXEC",
+            "tool_needed": "terminal",
+            "command": verify_command,
+            "why": "verify execution",
+        }]
+        report = consult.fulfill_evidence_requests(requests, state=state, cwd=str(Path(__file__).resolve().parents[1]), timeout=10)
+        updated = consult.update_state_with_fulfilled_evidence(state, report)
+
+        self.assertEqual(report["schema_version"], consult.EVIDENCE_FULFILLMENT_SCHEMA_VERSION)
+        self.assertEqual(report["succeeded_count"], 1)
+        self.assertEqual(report["rejected_count"], 0)
+        self.assertEqual(updated["truth_gate"]["truth_status"], "grounded")
+        self.assertTrue(updated["truth_gate"]["can_certify_truth"])
+        self.assertIn("C-EXEC", updated["evidence"][-1]["supports"])
+        self.assertEqual(updated["evidence_fulfillment_reports"][-1]["results"][0]["status"], "succeeded")
+
+    def test_evidence_fulfillment_verify_command_requires_allowlisted_command(self):
+        verify_command = f"{sys.executable} -c 'print(\"evidence-ok\")'"
+        state = consult.build_state(
+            question="verify command policy",
+            claims=[{"id": "C-EXEC", "text": "approved verifier command ran", "severity": 4}],
+            implementation_target={"files": [], "verify_commands": [verify_command], "forbidden_changes": []},
+        )
+        state["evidence_fulfillment_policy"] = {"claim_command_allowlist": {"C-EXEC": [verify_command]}}
+        safety = consult.classify_evidence_request_safety({
+            "id": "ER-EXEC",
+            "requested_by": "codex",
+            "claim_id": "C-EXEC",
+            "tool_needed": "terminal",
+            "command": verify_command,
+        }, state=state)
+        self.assertFalse(safety["allowed"])
+        self.assertIn("outside evidence fulfillment allowlist", safety["reason"])
+
+    def test_evidence_fulfillment_subprocess_env_is_scrubbed(self):
+        old = os.environ.get("LEAKVAR")
+        os.environ["LEAKVAR"] = "should-not-leak"
+        try:
+            env = consult._evidence_subprocess_env()
+        finally:
+            if old is None:
+                os.environ.pop("LEAKVAR", None)
+            else:
+                os.environ["LEAKVAR"] = old
+        self.assertNotIn("LEAKVAR", env)
+        self.assertEqual(env.get("HERMES_MULTI_BRAIN_OFFLINE"), "1")
+        self.assertEqual(env.get("GIT_TERMINAL_PROMPT"), "0")
+        self.assertEqual(env.get("GIT_OPTIONAL_LOCKS"), "0")
+        self.assertEqual(env.get("GIT_CONFIG_NOSYSTEM"), "1")
+        self.assertEqual(env.get("GIT_CONFIG_GLOBAL"), "/dev/null")
+        self.assertEqual(env.get("GIT_CONFIG_SYSTEM"), "/dev/null")
+        self.assertIn("PATH", env)
+
+    def test_evidence_fulfillment_subprocess_oserror_is_auditable_failure(self):
+        with mock.patch.object(consult.subprocess, "run", side_effect=OSError("missing /Users/me/.ssh/id_rsa")):
+            report = consult.fulfill_evidence_requests([
+                {"id": "ER-OS", "requested_by": "codex", "tool_needed": "terminal", "command": "git status --short", "why": "probe"}
+            ], state={}, cwd=str(Path(__file__).resolve().parents[1]), timeout=10)
+        self.assertEqual(report["approved_count"], 1)
+        self.assertEqual(report["failed_count"], 1)
+        self.assertEqual(report["results"][0]["status"], "failed")
+        self.assertEqual(report["results"][0]["reason"], "subprocess execution failed")
+        self.assertNotIn("/Users/me/.ssh/id_rsa", report["results"][0]["stderr_excerpt"])
+
+    def test_evidence_fulfillment_does_not_auto_ground_model_claim_links(self):
+        state = consult.build_state(
+            question="candidate-only evidence",
+            claims=[{"id": "C-ARB", "text": "arbitrary claim is true", "severity": 4}],
+            evidence=[],
+        )
+        report = consult.fulfill_evidence_requests([
+            {"id": "ER-ARB", "requested_by": "deepseek", "claim_id": "C-ARB", "tool_needed": "terminal", "command": "git status --short", "why": "unrelated successful command"}
+        ], state=state, cwd=str(Path(__file__).resolve().parents[1]), timeout=10)
+        updated = consult.update_state_with_fulfilled_evidence(state, report)
+
+        self.assertEqual(report["succeeded_count"], 1)
+        self.assertEqual(report["evidence"][0]["supports"], [])
+        self.assertEqual(report["evidence"][0]["candidate_claim_ids"], ["C-ARB"])
+        self.assertEqual(updated["truth_gate"]["truth_status"], "needs_link_review")
+        self.assertFalse(updated["truth_gate"]["can_certify_truth"])
+
+    def test_evidence_fulfillment_counts_malformed_requests_as_rejected(self):
+        report = consult.fulfill_evidence_requests(["not-an-object"], state={}, dry_run=True)
+        self.assertEqual(report["processed_count"], 1)
+        self.assertEqual(report["rejected_count"], 1)
+        self.assertEqual(report["results"][0]["status"], "rejected")
+
+    def test_evidence_fulfillment_redacts_secret_shaped_output(self):
+        redacted = consult.redact_evidence_text("token=abcdef1234567890 and Bearer abcdefghijklmnop")
+        self.assertNotIn("abcdef1234567890", redacted)
+        self.assertIn("[REDACTED]", redacted)
+
+    def test_evidence_fulfillment_redacts_credential_paths_in_output(self):
+        redacted = consult.redact_evidence_text("fatal: could not read /Users/me/.ssh/id_rsa or ~/.hermes/auth.json")
+        self.assertNotIn("/Users/me/.ssh/id_rsa", redacted)
+        self.assertNotIn("~/.hermes/auth.json", redacted)
+        self.assertIn("[REDACTED]", redacted)
+
+    def test_evidence_fulfillment_redacts_json_style_secrets(self):
+        payload = """
+        {"api_key": "abcdef1234567890", "token": "tok_abcdef123456", "safe": "visible"}
+        password: abcdef1234567890
+        aws_secret_access_key = ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
+        authorization = "Bearer abcdefghijklmnopqrstuvwxyz"
+        ghp_abcdefghijklmnopqrstuvwxyz123456
+        -----BEGIN PRIVATE KEY-----
+        abcdefghijklmnopqrstuvwxyz
+        -----END PRIVATE KEY-----
+        """
+        redacted = consult.redact_evidence_text(payload)
+        self.assertNotIn("abcdef1234567890", redacted)
+        self.assertNotIn("tok_abcdef123456", redacted)
+        self.assertNotIn("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", redacted)
+        self.assertNotIn("abcdefghijklmnopqrstuvwxyz123456", redacted)
+        self.assertNotIn("BEGIN PRIVATE KEY", redacted)
+        self.assertIn("visible", redacted)
+        self.assertIn("[REDACTED]", redacted)
+
+    def test_evidence_fulfillment_counts_malformed_requests_loaded_from_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "requests.json"
+            path.write_text(json.dumps([
+                {"claim_id": "C-1", "tool_needed": "terminal", "command": "git status --short", "why": "ok"},
+                "bad-request",
+            ]), encoding="utf-8")
+            requests = consult.load_evidence_requests_from_file(str(path))
+        self.assertEqual(len(requests), 2)
+        malformed = [req for req in requests if req.get("malformed_request")]
+        self.assertEqual(len(malformed), 1)
+        report = consult.fulfill_evidence_requests(requests, state={}, dry_run=True)
+        self.assertEqual(report["processed_count"], 2)
+        self.assertEqual(report["rejected_count"], 1)
+        self.assertEqual(report["results"][1]["status"], "rejected")
+        self.assertIn("object", report["results"][1]["reason"])
+
+    def test_evidence_fulfillment_counts_malformed_scalar_requests_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "requests.json"
+            path.write_text(json.dumps("bad-top-level"), encoding="utf-8")
+            requests = consult.load_evidence_requests_from_file(str(path))
+        self.assertEqual(len(requests), 1)
+        self.assertTrue(requests[0].get("malformed_request"))
+        self.assertEqual(requests[0].get("raw_type"), "str")
+        report = consult.fulfill_evidence_requests(requests, state={}, dry_run=True)
+        self.assertEqual(report["processed_count"], 1)
+        self.assertEqual(report["rejected_count"], 1)
+
+    def test_evidence_fulfillment_counts_malformed_nested_scalar_requests_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "requests.json"
+            path.write_text(json.dumps({"evidence_requests": "bad-nested"}), encoding="utf-8")
+            requests = consult.load_evidence_requests_from_file(str(path))
+        self.assertEqual(len(requests), 1)
+        self.assertTrue(requests[0].get("malformed_request"))
+        self.assertEqual(requests[0].get("raw_type"), "str")
+
+    def test_evidence_fulfillment_counts_invalid_requests_file_as_rejected(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "requests.json"
+            path.write_text("{not-json", encoding="utf-8")
+            requests = consult.load_evidence_requests_from_file(str(path))
+        self.assertEqual(len(requests), 1)
+        self.assertTrue(requests[0].get("malformed_request"))
+        self.assertIn("invalid JSON", requests[0].get("malformed_reason", ""))
+        report = consult.fulfill_evidence_requests(requests, state={}, dry_run=True)
+        self.assertEqual(report["processed_count"], 1)
+        self.assertEqual(report["rejected_count"], 1)
+
+    def test_evidence_fulfillment_counts_malformed_requests_loaded_from_tick(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tick = Path(tmpdir)
+            plans = tick / "plans"
+            plans.mkdir()
+            (plans / "planner.json").write_text(json.dumps({
+                "meta": {"planner_model": "mimo"},
+                "evidence_requests": ["bad-request"],
+            }), encoding="utf-8")
+            requests = consult.load_evidence_requests_from_tick(str(tick))
+        self.assertEqual(len(requests), 1)
+        self.assertTrue(requests[0].get("malformed_request"))
+        report = consult.fulfill_evidence_requests(requests, state={}, dry_run=True)
+        self.assertEqual(report["processed_count"], 1)
+        self.assertEqual(report["rejected_count"], 1)
+        self.assertEqual(report["results"][0]["status"], "rejected")
 
     def test_discussion_packet_uses_manifest_and_delta_only_to_reduce_prompt_size(self):
         """Discussion prompts should send compact pointers/deltas instead of full merged/evidence blobs."""

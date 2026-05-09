@@ -25,6 +25,7 @@ import math
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -207,7 +208,9 @@ CRITICAL_STATE_FIELDS = [
 
 COMM_PACKET_SCHEMA_VERSION = "multi_model_comm_packet_v1"
 CERTIFICATION_MANIFEST_SCHEMA_VERSION = "certification_manifest_v1"
+EVIDENCE_FULFILLMENT_SCHEMA_VERSION = "evidence_fulfillment_v1"
 MAX_COMM_TEXT_CHARS = _env_int("HERMES_MULTI_BRAIN_MAX_COMM_TEXT_CHARS", "320")
+MAX_EVIDENCE_OUTPUT_CHARS = _env_int("HERMES_MULTI_BRAIN_EVIDENCE_OUTPUT_CHARS", "4000")
 
 
 def _stable_json(obj: Any) -> str:
@@ -880,6 +883,19 @@ def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
     }
 
 
+def _coerce_evidence_request_items(raw: Any) -> List[Any]:
+    """Normalize evidence_requests containers without silently dropping malformed scalars."""
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, dict):
+        if isinstance(raw.get("evidence_requests"), list):
+            return raw.get("evidence_requests") or []
+        return [raw]
+    return [raw]
+
+
 def collect_evidence_requests(outputs: List[dict]) -> List[dict]:
     """Collect structured evidence requests from planner/discussion outputs.
 
@@ -893,12 +909,26 @@ def collect_evidence_requests(outputs: List[dict]) -> List[dict]:
             continue
         model = _plan_model(output, "unknown")
         raw_requests = []
-        raw_requests.extend(output.get("evidence_requests") or [])
+        raw_requests.extend(_coerce_evidence_request_items(output.get("evidence_requests")))
         diagnosis = output.get("diagnosis") or {}
         if isinstance(diagnosis, dict):
-            raw_requests.extend(diagnosis.get("evidence_requests") or [])
+            raw_requests.extend(_coerce_evidence_request_items(diagnosis.get("evidence_requests")))
         for i, raw in enumerate(raw_requests, start=1):
             if not isinstance(raw, dict):
+                requests.append({
+                    "id": f"ER-{len(requests) + 1:03d}",
+                    "requested_by": model,
+                    "claim_id": "",
+                    "claim": "",
+                    "tool_needed": "unknown",
+                    "command": "",
+                    "why": "",
+                    "status": "malformed",
+                    "safety": "rejected_malformed_request",
+                    "malformed_request": True,
+                    "malformed_reason": "evidence request must be an object",
+                    "raw_type": type(raw).__name__,
+                })
                 continue
             command = str(raw.get("command") or raw.get("query") or "").strip()
             claim_id = str(raw.get("claim_id") or "").strip()
@@ -921,6 +951,504 @@ def collect_evidence_requests(outputs: List[dict]) -> List[dict]:
                 "safety": "read_only_or_orchestrator_approved",
             })
     return requests
+
+
+_SECRET_REDACTION_PATTERNS = [
+    # JSON/YAML/TOML/env-style key/value secrets. Match prefixed keys such as
+    # aws_secret_access_key and serviceAccountToken, not only exact key names.
+    re.compile(r"(?i)['\"]?[A-Za-z0-9_.-]*(api[_-]?key|access[_-]?key|secret|password|passwd|token|authorization|credential|private[_-]?key|service[_-]?account)[A-Za-z0-9_.-]*['\"]?\s*[:=]\s*['\"][^'\"]{6,}['\"]"),
+    re.compile(r"(?i)[A-Za-z0-9_.-]*(api[_-]?key|access[_-]?key|secret|password|passwd|token|authorization|credential|bearer|private[_-]?key|service[_-]?account)[A-Za-z0-9_.-]*\s*[:=]\s*['\"]?[^\s'\",}]{6,}"),
+    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----"),
+    re.compile(r"(?i)(?:~|/|\./|\.\./)[^\s'\"]*(?:\.env|auth\.json|\.npmrc|\.netrc|\.pypirc|\.aws/|aws/credentials|\.ssh/|id_rsa|id_ed25519|credentials?|secrets?|private[_-]?key|\.pem|key\.json|service[_-]?account|cookies?|keychain)[^\s'\"]*"),
+    re.compile(r"(?i)bearer\s+[A-Za-z0-9._~+/=-]{12,}"),
+    re.compile(r"sk-[A-Za-z0-9]{12,}"),
+    re.compile(r"gh[pousr]_[A-Za-z0-9_]{20,}"),
+    re.compile(r"xox[baprs]-[A-Za-z0-9-]{20,}"),
+    re.compile(r"AKIA[0-9A-Z]{16}"),
+]
+
+
+def redact_evidence_text(text: Any, limit: int = MAX_EVIDENCE_OUTPUT_CHARS) -> str:
+    """Redact credential-shaped substrings before storing model-visible evidence."""
+    value = str(text or "")
+    for pat in _SECRET_REDACTION_PATTERNS:
+        value = pat.sub("[REDACTED]", value)
+    if len(value) > limit:
+        value = value[: max(0, limit - 32)] + f"\n...[truncated:{len(value)}]"
+    return value
+
+
+def _command_has_forbidden_tokens(command: str) -> bool:
+    forbidden = (";", "&&", "||", "|", "`", "$(`", "$(", ">", "<", "\n", "\r")
+    return any(tok in command for tok in forbidden)
+
+
+def _mentions_credential_path(command: str) -> bool:
+    lowered = command.lower()
+    credential_markers = (
+        ".env", "auth.json", ".npmrc", ".netrc", ".pypirc", ".aws/", "aws/credentials",
+        ".ssh/", "id_rsa", "id_ed25519", "known_hosts", "credentials", "credential",
+        "secret", "secrets", "private_key", "private-key", ".pem", "key.json",
+        "service_account", "service-account", "cookie", "cookies", "keychain",
+    )
+    return any(marker in lowered for marker in credential_markers)
+
+
+def _safe_split_command(command: str) -> Tuple[Optional[List[str]], str]:
+    command = str(command or "").strip()
+    if not command:
+        return None, "empty command"
+    if _command_has_forbidden_tokens(command):
+        return None, "shell metacharacters/pipelines are not allowed for evidence fulfillment"
+    if _mentions_credential_path(command):
+        return None, "credential-bearing paths are not allowed in evidence requests"
+    try:
+        parts = shlex.split(command)
+    except ValueError as e:
+        return None, f"cannot parse command: {e}"
+    if not parts:
+        return None, "empty command"
+    return parts, ""
+
+
+def _trusted_git_executable() -> Optional[str]:
+    git = shutil.which("git", path="/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin")
+    if not git:
+        return None
+    real = os.path.realpath(git)
+    # Reject cwd/tmp-controlled binaries; keep deterministic system/homebrew git.
+    if real.startswith(("/tmp/", "/private/tmp/", os.getcwd() + os.sep)):
+        return None
+    return real
+
+
+def _is_allowed_git_evidence_command(parts: List[str]) -> bool:
+    """Strict read-only git evidence allowlist.
+
+    Keep this deliberately narrow. Avoid arbitrary `--*` forwarding, ext-diff,
+    no-index, output files, blob selectors, or path forms that can disclose
+    secret-bearing files. The model may ask for broader evidence, but the
+    orchestrator should collect it manually instead of executing it here.
+    """
+    if not parts or parts[0] != "git" or len(parts) < 2:
+        return False
+    subcmd = parts[1]
+    args = parts[2:]
+    if subcmd == "status":
+        return args in ([], ["--short"], ["--porcelain"], ["--branch"], ["--short", "--branch"])
+    if subcmd == "diff":
+        return args in (
+            ["--stat"],
+            ["--name-only"],
+            ["--cached", "--check"],
+            ["--check"],
+        )
+    if subcmd == "log":
+        if args == ["--oneline"]:
+            return True
+        if len(args) == 2 and args[0] == "--oneline" and re.fullmatch(r"-\d{1,3}", args[1]):
+            return True
+        return False
+    if subcmd == "show":
+        if len(args) != 2 or args[0] != "--stat":
+            return False
+        ref = args[1]
+        # No `rev:path` blob selectors and no branch names with path-like slashes.
+        return bool(re.fullmatch(r"HEAD(?:~\d{1,3}|\^\d{0,2})?|[0-9a-fA-F]{7,40}", ref))
+    return False
+
+
+def _canonical_script_path(script_name: str) -> str:
+    return os.path.realpath(os.path.join(HERMES_HOME, "scripts", script_name))
+
+
+def _is_canonical_helper_script(parts: List[str], script_name: str) -> bool:
+    if len(parts) < 2:
+        return False
+    interpreter = os.path.realpath(os.path.expanduser(parts[0]))
+    if interpreter != os.path.realpath(sys.executable):
+        return False
+    requested = os.path.realpath(os.path.expanduser(parts[1]))
+    return requested == _canonical_script_path(script_name)
+
+
+def _flag_value(args: List[str], flag: str) -> Optional[str]:
+    """Return the single-token value following a flag, if present."""
+    if flag not in args:
+        return None
+    idx = args.index(flag)
+    if idx + 1 >= len(args):
+        return None
+    return args[idx + 1]
+
+
+def _is_safe_small_int(value: Optional[str], *, min_value: int = 0, max_value: int = 1000) -> bool:
+    if value is None or not re.fullmatch(r"\d{1,4}", str(value)):
+        return False
+    parsed = int(str(value))
+    return min_value <= parsed <= max_value
+
+
+def _token_has_path_or_secret_risk(value: str) -> bool:
+    token = str(value or "")
+    if _mentions_credential_path(token):
+        return True
+    return any(part in token for part in ("/", "\\", "..", "~"))
+
+
+def _validate_flag_shape(args: List[str], allowed_flags: set, flags_with_values: set, valueless_flags: set) -> bool:
+    """Validate flag names and arity; reject unknown flags and dangling values."""
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg.startswith("-"):
+            if arg not in allowed_flags:
+                return False
+            if arg in flags_with_values:
+                if i + 1 >= len(args) or args[i + 1].startswith("-"):
+                    return False
+                i += 2
+                continue
+            if arg not in valueless_flags:
+                return False
+        i += 1
+    return True
+
+
+def _is_allowed_brainctl_command(parts: List[str]) -> bool:
+    # brainctl search/evidence can disclose private brain excerpts and may mutate
+    # local indexes/WAL. Automatic model-requested evidence fulfillment therefore
+    # does not execute brainctl at all; orchestrator-owned verification can run it
+    # outside this gate when explicitly needed.
+    return False
+
+
+def _is_allowed_anti_drift_command(parts: List[str]) -> bool:
+    # Automatic evidence fulfillment is read-only and model-requested. The
+    # anti_drift helper accepts path-valued flags and historical write/report
+    # flags such as --out, so it is not safe as a generic model-requested
+    # allowlist target. Orchestrator-owned verification can run it outside this
+    # evidence-fulfillment gate when explicitly needed.
+    return False
+
+
+def _implementation_verify_commands(state: dict) -> List[str]:
+    if not isinstance(state, dict):
+        return []
+    target = state.get("implementation_target") if isinstance(state.get("implementation_target"), dict) else {}
+    return [str(cmd).strip() for cmd in (target.get("verify_commands") or []) if str(cmd).strip()]
+
+
+def _trusted_claim_command_allowlist(state: dict) -> Dict[str, List[str]]:
+    """Return orchestrator-owned command→claim support policy.
+
+    Model-supplied `claim_id` is only a candidate link. A fulfilled command can
+    verify a claim only when the state itself contains an explicit trusted mapping:
+
+      evidence_fulfillment_policy.claim_command_allowlist = {
+        "C-001": ["python3 scripts/self-test.py"]
+      }
+
+    This prevents a reviewer from grounding arbitrary claims by attaching them to
+    unrelated successful read-only commands such as `git status --short`.
+    """
+    if not isinstance(state, dict):
+        return {}
+    policy = state.get("evidence_fulfillment_policy") if isinstance(state.get("evidence_fulfillment_policy"), dict) else {}
+    raw = policy.get("claim_command_allowlist") if isinstance(policy.get("claim_command_allowlist"), dict) else {}
+    normalized: Dict[str, List[str]] = {}
+    for claim_id, commands in raw.items():
+        if isinstance(commands, str):
+            commands = [commands]
+        if not isinstance(commands, list):
+            continue
+        normalized[str(claim_id)] = [str(cmd).strip() for cmd in commands if str(cmd).strip()]
+    return normalized
+
+
+def _command_has_trusted_claim_policy(request: dict, state: dict, command: str) -> bool:
+    claim_id = str((request or {}).get("claim_id") or "").strip()
+    if not claim_id or not command:
+        return False
+    return command in _trusted_claim_command_allowlist(state).get(claim_id, [])
+
+
+def _request_has_trusted_claim_support(request: dict, safety: dict, state: dict) -> bool:
+    claim_id = str((request or {}).get("claim_id") or "").strip()
+    command = str(safety.get("command") or (request or {}).get("command") or "").strip()
+    if not claim_id or not command:
+        return False
+    return command in _trusted_claim_command_allowlist(state).get(claim_id, [])
+
+
+def _evidence_subprocess_env() -> dict:
+    """Minimal environment for fulfilled evidence subprocesses.
+
+    Do not inherit provider tokens, API keys, shell secrets, or user credential
+    variables. Commands that need secrets are not read-only evidence commands.
+    """
+    return {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/homebrew/bin",
+        "LANG": os.environ.get("LANG", "C.UTF-8"),
+        "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
+        "HERMES_MULTI_BRAIN_OFFLINE": "1",
+        "GIT_TERMINAL_PROMPT": "0",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+        "GIT_CONFIG_SYSTEM": "/dev/null",
+    }
+
+
+def _redacted_command(command: str) -> str:
+    return redact_evidence_text(command, limit=800)
+
+
+def classify_evidence_request_safety(request: dict, state: Optional[dict] = None) -> dict:
+    """Fail-closed allowlist for model-requested evidence execution.
+
+    Reviewer models may request evidence, but only the orchestrator executes a
+    narrow read-only subset. Anything malformed, shell-like, secret-bearing, or
+    outside the allowlist is rejected before subprocess execution.
+    """
+    if not isinstance(request, dict):
+        return {"allowed": False, "reason": "request must be an object", "command": "", "tool_needed": ""}
+    if request.get("malformed_request") or str(request.get("status") or "") == "malformed":
+        return {"allowed": False, "reason": str(request.get("malformed_reason") or "malformed evidence request"), "command": str(request.get("command") or ""), "tool_needed": str(request.get("tool_needed") or "")}
+    command = str((request or {}).get("command") or "").strip()
+    tool_needed = str((request or {}).get("tool_needed") or (request or {}).get("tool") or "").strip().lower()
+    parts, reason = _safe_split_command(command)
+    if parts is None:
+        return {"allowed": False, "reason": reason, "command": command, "tool_needed": tool_needed}
+
+    # Never approve model-requested evidence merely because it appears in
+    # implementation_target.verify_commands. Those commands can be arbitrary
+    # build/test scripts and are executed by the orchestrator elsewhere; the
+    # evidence-fulfillment gate remains a narrower read-only allowlist. Trusted
+    # claim policy only controls whether an already-approved command may support
+    # a claim, not whether the command may execute.
+    if _is_allowed_git_evidence_command(parts):
+        git = _trusted_git_executable()
+        if not git:
+            return {"allowed": False, "reason": "trusted git executable not found", "command": command, "tool_needed": tool_needed, "argv": parts}
+        return {"allowed": True, "reason": "read-only git command allowlist", "command": command, "tool_needed": tool_needed, "argv": [git] + parts[1:]}
+    if _is_allowed_brainctl_command(parts):
+        return {"allowed": True, "reason": "read-only brainctl allowlist", "command": command, "tool_needed": tool_needed, "argv": parts}
+    if _is_allowed_anti_drift_command(parts):
+        return {"allowed": True, "reason": "read-only anti_drift_guard allowlist", "command": command, "tool_needed": tool_needed, "argv": parts}
+    return {"allowed": False, "reason": "command is outside evidence fulfillment allowlist", "command": command, "tool_needed": tool_needed, "argv": parts}
+
+
+def _malformed_evidence_request(reason: str, raw: Any = None, *, requested_by: str = "external") -> dict:
+    return {
+        "id": "ER-MALFORMED-001",
+        "requested_by": requested_by,
+        "tool_needed": "unknown",
+        "command": "",
+        "why": "",
+        "status": "malformed",
+        "safety": "rejected_malformed_request",
+        "malformed_request": True,
+        "malformed_reason": reason,
+        "raw_type": type(raw).__name__,
+    }
+
+
+def load_evidence_requests_from_file(path: str) -> List[dict]:
+    data = _read_json_file(path, default=None)
+    if data is None:
+        return [_malformed_evidence_request("requests file is missing or invalid JSON", data)]
+    if isinstance(data, list):
+        return collect_evidence_requests([{"meta": {"planner_model": "external"}, "evidence_requests": data}])
+    if isinstance(data, dict):
+        # Top-level dict can be either a single request or a planner-style object.
+        # If it declares evidence_requests, let the collector classify malformed
+        # nested scalars. Otherwise wrap the dict as one external request.
+        data.setdefault("meta", {"planner_model": "external"})
+        if "evidence_requests" in data or "diagnosis" in data:
+            return collect_evidence_requests([data])
+        return collect_evidence_requests([{"meta": {"planner_model": "external"}, "evidence_requests": [data]}])
+    return collect_evidence_requests([{"meta": {"planner_model": "external"}, "evidence_requests": data}])
+
+
+def load_evidence_requests_from_tick(tick_dir: str) -> List[dict]:
+    outputs: List[dict] = []
+    tick_dir = os.path.expanduser(tick_dir)
+    for rel in ("discussion_result.json", "merged_plan.json"):
+        data = _read_json_file(os.path.join(tick_dir, rel), default=None)
+        if isinstance(data, dict):
+            outputs.append(data)
+    plans_dir = os.path.join(tick_dir, "plans")
+    if os.path.isdir(plans_dir):
+        for name in sorted(os.listdir(plans_dir)):
+            if not name.endswith(".json"):
+                continue
+            data = _read_json_file(os.path.join(plans_dir, name), default=None)
+            if isinstance(data, dict):
+                outputs.append(data)
+    return collect_evidence_requests(outputs)
+
+
+def fulfill_evidence_requests(
+    requests: List[dict],
+    state: Optional[dict] = None,
+    cwd: str = HERMES_HOME,
+    timeout: int = 30,
+    max_requests: int = 20,
+    dry_run: bool = False,
+) -> dict:
+    """Execute approved read-only evidence requests and return an auditable report."""
+    state = state or {}
+    report = {
+        "schema_version": EVIDENCE_FULFILLMENT_SCHEMA_VERSION,
+        "generated_at": _utc_now_iso(),
+        "dry_run": bool(dry_run),
+        "cwd": os.path.abspath(os.path.expanduser(cwd)),
+        "requested_count": len(requests or []),
+        "processed_count": 0,
+        "approved_count": 0,
+        "rejected_count": 0,
+        "succeeded_count": 0,
+        "failed_count": 0,
+        "results": [],
+        "evidence": [],
+    }
+    safe_cwd = os.path.abspath(os.path.expanduser(cwd))
+    for req in (requests or [])[:max_requests]:
+        report["processed_count"] += 1
+        if not isinstance(req, dict):
+            report["rejected_count"] += 1
+            report["results"].append({
+                "request_id": f"ER-{report['processed_count']:03d}",
+                "claim_id": "",
+                "requested_by": "unknown",
+                "command": "",
+                "command_sha256_16": "",
+                "safety": {"allowed": False, "reason": "request must be an object"},
+                "status": "rejected",
+                "reason": "request must be an object",
+            })
+            continue
+        safety = classify_evidence_request_safety(req, state=state)
+        command = safety.get("command") or str(req.get("command") or "")
+        redacted_command = _redacted_command(command)
+        result = {
+            "request_id": req.get("id") or f"ER-{report['processed_count']:03d}",
+            "claim_id": str(req.get("claim_id") or ""),
+            "requested_by": req.get("requested_by") or "unknown",
+            "command": redacted_command,
+            "command_sha256_16": hashlib.sha256(str(command).encode("utf-8")).hexdigest()[:16] if command else "",
+            "safety": {k: v for k, v in safety.items() if k != "argv" and k != "command"},
+            "status": "rejected",
+        }
+        if not safety.get("allowed"):
+            report["rejected_count"] += 1
+            result["reason"] = safety.get("reason")
+            report["results"].append(result)
+            continue
+        report["approved_count"] += 1
+        if dry_run:
+            result["status"] = "approved_dry_run"
+            report["results"].append(result)
+            continue
+        try:
+            proc = subprocess.run(
+                safety.get("argv") or [],
+                cwd=safe_cwd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                env=_evidence_subprocess_env(),
+            )
+            stdout = redact_evidence_text(proc.stdout)
+            stderr = redact_evidence_text(proc.stderr)
+            raw_output_hash = hashlib.sha256(((proc.stdout or "") + "\n" + (proc.stderr or "")).encode("utf-8")).hexdigest()[:16]
+            result.update({
+                "status": "succeeded" if proc.returncode == 0 else "failed",
+                "exit_code": proc.returncode,
+                "stdout_excerpt": stdout,
+                "stderr_excerpt": stderr,
+                "output_sha256_16": raw_output_hash,
+                "output_hash_basis": "raw_stdout_stderr_before_redaction",
+            })
+        except subprocess.TimeoutExpired as e:
+            result.update({
+                "status": "timeout",
+                "exit_code": None,
+                "stdout_excerpt": redact_evidence_text(e.stdout or ""),
+                "stderr_excerpt": redact_evidence_text(e.stderr or ""),
+                "reason": f"timeout after {timeout}s",
+            })
+        except OSError as e:
+            result.update({
+                "status": "failed",
+                "exit_code": None,
+                "stdout_excerpt": "",
+                "stderr_excerpt": redact_evidence_text(str(e)),
+                "reason": "subprocess execution failed",
+            })
+        if result["status"] == "succeeded":
+            report["succeeded_count"] += 1
+        else:
+            report["failed_count"] += 1
+        evidence_id = f"E-fulfill-{report['processed_count']:03d}"
+        trusted_support = result.get("status") == "succeeded" and _request_has_trusted_claim_support(req, safety, state)
+        candidate_claim_ids = [result["claim_id"]] if result.get("claim_id") and not trusted_support else []
+        evidence = {
+            "id": evidence_id,
+            "type": "tool_result",
+            "kind": "orchestrator_fulfilled_evidence",
+            "summary": f"Evidence request {result['request_id']} executed: {result['command']} -> {result['status']}",
+            "supports": [result["claim_id"]] if trusted_support else [],
+            "candidate_claim_ids": candidate_claim_ids,
+            "claim_linkage": "trusted_state_policy" if trusted_support else "candidate_needs_orchestrator_link_review",
+            "contradicts": [],
+            "evidence_request_id": result["request_id"],
+            "requested_by": result.get("requested_by"),
+            "command": result["command"],
+            "command_sha256_16": result.get("command_sha256_16"),
+            "exit_code": result.get("exit_code"),
+            "stdout_excerpt": result.get("stdout_excerpt", ""),
+            "stderr_excerpt": result.get("stderr_excerpt", ""),
+            "output_sha256_16": result.get("output_sha256_16"),
+            "output_hash_basis": result.get("output_hash_basis"),
+            "executed_at": _utc_now_iso(),
+            "redaction": "credential patterns redacted; output truncated",
+        }
+        if result["status"] != "succeeded":
+            evidence["validity"] = "command_failed"
+        report["evidence"].append(evidence)
+        report["results"].append(result)
+    if len(requests or []) > max_requests:
+        report["truncated_request_count"] = len(requests or []) - max_requests
+    return report
+
+
+def update_state_with_fulfilled_evidence(state: dict, fulfillment_report: dict) -> dict:
+    updated = dict(state or {})
+    evidence = list(updated.get("evidence") or [])
+    evidence.extend(fulfillment_report.get("evidence") or [])
+    updated["evidence"] = evidence
+    updated.setdefault("evidence_fulfillment_reports", [])
+    summary = {
+        "schema_version": fulfillment_report.get("schema_version"),
+        "generated_at": fulfillment_report.get("generated_at"),
+        "requested_count": fulfillment_report.get("requested_count"),
+        "processed_count": fulfillment_report.get("processed_count"),
+        "approved_count": fulfillment_report.get("approved_count"),
+        "rejected_count": fulfillment_report.get("rejected_count"),
+        "succeeded_count": fulfillment_report.get("succeeded_count"),
+        "failed_count": fulfillment_report.get("failed_count"),
+        "dry_run": fulfillment_report.get("dry_run"),
+        "results": fulfillment_report.get("results", []),
+    }
+    if fulfillment_report.get("truncated_request_count"):
+        summary["truncated_request_count"] = fulfillment_report.get("truncated_request_count")
+    updated["evidence_fulfillment_reports"].append(summary)
+    bundle = build_evidence_bundle(updated)
+    updated["evidence_bundle"] = bundle
+    updated["truth_gate"] = evaluate_truth_gate(bundle)
+    return updated
 
 
 def _plan_model(plan: dict, fallback: str = "unknown") -> str:
@@ -1451,6 +1979,54 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
     _append_analysis_check(report, "truth_gate", "supported_claim_certifies", truth_cases["supported"].get("can_certify_truth") is True and truth_cases["supported"].get("truth_status") == "grounded", truth_cases["supported"])
     _append_analysis_check(report, "truth_gate", "unsupported_high_severity_fails_closed", truth_cases["unsupported"].get("can_certify_truth") is False and "C-MISSING" in truth_cases["unsupported"].get("unsupported_high_severity_claim_ids", []), truth_cases["unsupported"])
     _append_analysis_check(report, "truth_gate", "raw_unlinked_evidence_needs_link_review", truth_cases["needs_link_review"].get("can_certify_truth") is False and truth_cases["needs_link_review"].get("truth_status") == "needs_link_review", truth_cases["needs_link_review"])
+
+    fulfill_state = build_state(
+        question="selfcheck evidence fulfillment",
+        claims=[{"id": "C-EXEC", "text": "approved verifier command ran", "severity": 4}],
+        evidence=[],
+        implementation_target={"files": [], "verify_commands": ["git status --short"], "forbidden_changes": []},
+    )
+    fulfill_state["evidence_fulfillment_policy"] = {
+        "claim_command_allowlist": {"C-EXEC": [fulfill_state["implementation_target"]["verify_commands"][0]]}
+    }
+    fulfill_requests = [{
+        "id": "ER-EXEC",
+        "requested_by": "selfcheck",
+        "claim_id": "C-EXEC",
+        "tool_needed": "terminal",
+        "command": fulfill_state["implementation_target"]["verify_commands"][0],
+        "why": "prove approved verifier execution can ground a claim",
+    }]
+    unsafe_request = {"id": "ER-BAD", "claim_id": "C-EXEC", "tool_needed": "terminal", "command": "cat ~/.hermes/.env", "why": "should be rejected"}
+    bare_diff_request = {"id": "ER-DIFF", "claim_id": "C-EXEC", "tool_needed": "terminal", "command": "git diff", "why": "full diff should be rejected"}
+    anti_drift_request = {"id": "ER-DRIFT", "claim_id": "C-EXEC", "tool_needed": "terminal", "command": f"{sys.executable} {os.path.join(HERMES_HOME, 'scripts', 'anti_drift_guard.py')} check-anchors --json --out /tmp/drift.json", "why": "write flag should be rejected"}
+    malformed_request = {"id": "ER-MAL", "status": "malformed", "malformed_request": True, "malformed_reason": "evidence request must be an object"}
+    safe_check = classify_evidence_request_safety(fulfill_requests[0], state=fulfill_state)
+    unsafe_check = classify_evidence_request_safety(unsafe_request, state=fulfill_state)
+    bare_diff_check = classify_evidence_request_safety(bare_diff_request, state=fulfill_state)
+    anti_drift_check = classify_evidence_request_safety(anti_drift_request, state=fulfill_state)
+    malformed_check = classify_evidence_request_safety(malformed_request, state=fulfill_state)
+    json_redacted = redact_evidence_text('{"api_key":"abcdef1234567890","safe":"visible"}')
+    fulfill_report = fulfill_evidence_requests(fulfill_requests, state=fulfill_state, cwd=HERMES_HOME, timeout=10, max_requests=1, dry_run=False)
+    updated_state = update_state_with_fulfilled_evidence(fulfill_state, fulfill_report)
+    report["evidence_fulfillment_matrix"] = {
+        "safe_allowed": {k: v for k, v in safe_check.items() if k != "argv"},
+        "unsafe_allowed": unsafe_check,
+        "bare_diff_allowed": bare_diff_check,
+        "anti_drift_allowed": anti_drift_check,
+        "malformed_allowed": malformed_check,
+        "json_redaction_sample": json_redacted,
+        "truth_gate": updated_state.get("truth_gate"),
+        "fulfillment_summary": {k: fulfill_report.get(k) for k in ("processed_count", "approved_count", "rejected_count", "succeeded_count", "failed_count")},
+    }
+    _append_analysis_check(report, "evidence_fulfillment", "safe_verify_command_allowed", safe_check.get("allowed") is True, safe_check)
+    _append_analysis_check(report, "evidence_fulfillment", "credential_path_rejected", unsafe_check.get("allowed") is False and "credential" in str(unsafe_check.get("reason", "")), unsafe_check)
+    _append_analysis_check(report, "evidence_fulfillment", "full_git_diff_rejected", bare_diff_check.get("allowed") is False, bare_diff_check)
+    _append_analysis_check(report, "evidence_fulfillment", "anti_drift_write_flag_rejected", anti_drift_check.get("allowed") is False, anti_drift_check)
+    _append_analysis_check(report, "evidence_fulfillment", "malformed_request_rejected", malformed_check.get("allowed") is False and "object" in str(malformed_check.get("reason", "")), malformed_check)
+    _append_analysis_check(report, "evidence_fulfillment", "json_style_secret_redacted", "abcdef1234567890" not in json_redacted and "[REDACTED]" in json_redacted and "visible" in json_redacted, json_redacted)
+    _append_analysis_check(report, "evidence_fulfillment", "approved_request_executes", fulfill_report.get("succeeded_count") == 1 and fulfill_report.get("failed_count") == 0, fulfill_report)
+    _append_analysis_check(report, "evidence_fulfillment", "fulfilled_evidence_updates_truth_gate", updated_state.get("truth_gate", {}).get("can_certify_truth") is True and updated_state.get("truth_gate", {}).get("truth_status") == "grounded", updated_state.get("truth_gate"))
 
     clean_plans = [
         {"meta": {"planner_model": "model-a"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
@@ -2756,6 +3332,7 @@ def run_fanout(
     truth_gate = evaluate_truth_gate(evidence_bundle)
     state["evidence_bundle"] = evidence_bundle
     state["truth_gate"] = truth_gate
+    _write_json_atomic(os.path.join(tick_dir, "state.json"), state)
 
     # ── 6. Fan-out: 为每个 planner 生成计划 ──
     plan_files = []
@@ -3014,6 +3591,19 @@ def cli():
     selfcheck_p.add_argument("--json", action="store_true", help="Emit full JSON report")
     selfcheck_p.add_argument("--no-temp-audit", action="store_true", help="Skip temporary RMCS certification fixture audit")
 
+    # ── evidence request fulfillment ──
+    fulfill_p = sub.add_parser("fulfill-evidence", help="Execute allowlisted read-only evidence_requests and optionally update state.json")
+    fulfill_p.add_argument("--state-file", default="", help="State JSON to update/use for verify-command allowlist; defaults to <tick>/state.json when --tick-dir is set")
+    fulfill_p.add_argument("--tick-dir", default="", help="Read evidence_requests from discussion/merged/plans in a tick dir")
+    fulfill_p.add_argument("--requests-file", default="", help="JSON file containing evidence_requests or one request object")
+    fulfill_p.add_argument("--request-json", action="append", default=[], help="Inline evidence request JSON object (repeatable)")
+    fulfill_p.add_argument("--out-state", default="", help="Write updated state JSON with fulfilled evidence")
+    fulfill_p.add_argument("--out-report", default="", help="Write fulfillment report JSON")
+    fulfill_p.add_argument("--cwd", default=HERMES_HOME, help="Working directory for approved commands")
+    fulfill_p.add_argument("--timeout", type=int, default=30, help="Per-command timeout in seconds")
+    fulfill_p.add_argument("--max-requests", type=int, default=20, help="Maximum evidence requests to process")
+    fulfill_p.add_argument("--dry-run", action="store_true", help="Classify/approve requests without executing")
+
     # ── cleanup ──
     sub.add_parser("cleanup", help="Clean all old TICK_DIRs")
 
@@ -3178,6 +3768,53 @@ def cli():
                 if not check.get("ok"):
                     print(f"  [{check.get('severity', 'error')}] {check.get('category')}.{check.get('name')}: {check.get('detail')}")
         if report.get("status") != "PASS":
+            sys.exit(2)
+
+    elif args.cmd == "fulfill-evidence":
+        state_file = args.state_file
+        if not state_file and args.tick_dir:
+            candidate = os.path.join(os.path.expanduser(args.tick_dir), "state.json")
+            if os.path.exists(candidate):
+                state_file = candidate
+        state = _read_json_file(state_file, default={}) if state_file else {}
+        if state_file and not isinstance(state, dict):
+            print(f"Error: invalid state JSON object: {state_file}", file=sys.stderr)
+            sys.exit(2)
+        requests: List[dict] = []
+        if args.tick_dir:
+            requests.extend(load_evidence_requests_from_tick(args.tick_dir))
+        if args.requests_file:
+            requests.extend(load_evidence_requests_from_file(args.requests_file))
+        for raw_req in args.request_json or []:
+            try:
+                req = json.loads(raw_req)
+                if not isinstance(req, dict):
+                    raise ValueError("request JSON must be an object")
+                requests.extend(collect_evidence_requests([{"meta": {"planner_model": "inline"}, "evidence_requests": [req]}]))
+            except (json.JSONDecodeError, ValueError) as e:
+                print(f"Error: invalid --request-json: {e}", file=sys.stderr)
+                sys.exit(2)
+        if not requests and isinstance(state, dict):
+            requests.extend(collect_evidence_requests([state]))
+        report = fulfill_evidence_requests(
+            requests,
+            state=state,
+            cwd=args.cwd,
+            timeout=args.timeout,
+            max_requests=args.max_requests,
+            dry_run=args.dry_run,
+        )
+        if args.out_report:
+            _write_json_atomic(args.out_report, report)
+        if args.out_state:
+            if not isinstance(state, dict):
+                print("Error: --out-state requires a valid state object", file=sys.stderr)
+                sys.exit(2)
+            updated = update_state_with_fulfilled_evidence(state, report)
+            _write_json_atomic(args.out_state, updated)
+            report["updated_state_file"] = os.path.abspath(os.path.expanduser(args.out_state))
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+        if report.get("rejected_count", 0) or report.get("failed_count", 0):
             sys.exit(2)
 
     elif args.cmd == "cleanup":
