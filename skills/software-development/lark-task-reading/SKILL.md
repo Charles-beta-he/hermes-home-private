@@ -26,6 +26,19 @@ The goal is not to copy one project's code into another. The goal is to preserve
 - Override scopes with comma-separated `LARK_TASK_PREFERRED_SCOPES`, e.g. `UVISA-2.0新版开发,OtherProject`.
 - Preserve read-only collection during dry runs: no Lark comments, no status writes, no task mutation.
 
+## Operational boundary: skill knowledge vs project runtime
+
+A Hermes skill is a playbook, not an executable adapter. Loading this skill must not by itself imply that `arc-dispatch` or `github-dispatch` source files should be opened, imported, symlinked, or executed.
+
+For user-facing requests such as "读取 Lark 任务", "看一下 UVISA-2.0 新版开发分类下关于我的任务", or "列出我的任务":
+
+1. Treat the source of truth as the Lark/Feishu Task API or an explicitly configured Hermes-native helper.
+2. Do **not** scan old Desktop/archive duplicates looking for `run.sh`, `collector.py`, `orchestrator.py`, `router.py`, or `lark_task_reader.py`.
+3. Do **not** execute a project pipeline from a copied or archived path, especially paths under desktop cleanup folders.
+4. Only inspect or run `arc-dispatch` / `github-dispatch` code when the user explicitly asks to debug, migrate, compare, or operate that dispatch project.
+
+The project files are reference implementations for pattern extraction. Normal task reading should be read-only and should not depend on whichever historical project copy happens to be discoverable first.
+
 ## Fusion map: arc-dispatch + github-dispatch
 
 Keep these strengths together when changing either project.
@@ -229,9 +242,16 @@ python3 ~/.hermes/scripts/skill-steward.py --graph-check --json
 
 After Python compile checks, delete generated `__pycache__/*.pyc` if the repo tracks/deletes pyc files, so commits do not include bytecode churn.
 
-## Operational commands
+## Project-pipeline commands
+
+Use these only after intentionally choosing a live dispatch project as the runtime target, and run them from that project's canonical git root. They are **not** the default way to answer a normal "read my Lark tasks" request.
 
 ```bash
+# First prove the runtime target is the intended project, not an archive/duplicate copy
+pwd
+git rev-parse --show-toplevel 2>/dev/null || true
+git status --short
+
 # Default: prefer UVISA-2.0新版开发, fall back to all incomplete tasks
 ./run.sh --mode collect-only --dry-run
 
