@@ -297,13 +297,26 @@ def newest_discussion_result(since: float) -> Path | None:
 def run_consult(state_file: Path, tier: str, quorum: int, max_rounds: int, timeout: int) -> dict[str, Any]:
     cmd = build_consult_run_command(state_file, tier=tier, quorum=quorum, max_rounds=max_rounds, timeout=timeout)
     start = time.time()
-    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=max(timeout * quorum + 120, timeout + 120), check=False)
+    outer_timeout = max(timeout * quorum + 120, timeout + 120)
+    try:
+        proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=outer_timeout, check=False)
+        returncode: int | str = proc.returncode
+        stdout_tail = (proc.stdout or "")[-3000:]
+        stderr_tail = (proc.stderr or "")[-3000:]
+        timed_out = False
+    except subprocess.TimeoutExpired as exc:
+        returncode = "timeout"
+        stdout_tail = ((exc.output or "") if isinstance(exc.output, str) else "")[-3000:]
+        stderr_tail = ((exc.stderr or "") if isinstance(exc.stderr, str) else "")[-3000:]
+        timed_out = True
     discussion_path = newest_discussion_result(start)
     return {
         "cmd": cmd,
-        "returncode": proc.returncode,
-        "stdout_tail": (proc.stdout or "")[-3000:],
-        "stderr_tail": (proc.stderr or "")[-3000:],
+        "returncode": returncode,
+        "timed_out": timed_out,
+        "timeout_seconds": outer_timeout,
+        "stdout_tail": stdout_tail,
+        "stderr_tail": stderr_tail,
         "discussion_result_path": str(discussion_path) if discussion_path else "",
     }
 

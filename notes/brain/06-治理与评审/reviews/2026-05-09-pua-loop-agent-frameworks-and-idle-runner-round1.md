@@ -13,7 +13,6 @@ tags: [pua-loop, multi-model, agent-s, agent-reach, idle-runner, hermes-native]
 - Line A: `simular-ai/Agent-S` 固定 commit `5caa76cb19c6a6b947a524f74995c45848c2efbc`，做证据优先审计，提取 Hermes 技能树可借鉴能力。
 - Line B: 在本地大脑任务池上新增只读 idle detector + 风险路由最小切片。
 - Line C: `Panniantong/Agent-Reach` 固定 commit `17624268a059ccfb23eba8a2ba50f9f92c8dc0ca`，给出 Hermes-native 优化方案；默认不 vendor/不安装第二套栈。
-- Line D: 多模型 loop runner 自动化控制面：每轮 deterministic gates -> claim/evidence state -> consult_models T3 quorum4 discussion -> issue-ledger -> certified stop / amend continue，默认 fail-closed，不执行 Markdown、不自动 done。
 
 ## Deterministic evidence
 
@@ -153,24 +152,6 @@ Production observation on this round:
 - P1: Add docs/capability drift lint: skill route mentions `xhs`, `bili`, `rdt`, etc. must match actual command availability or explicit setup note.
 - P2: Add optional safe-mode setup helpers for selected platform tools, but require explicit user confirmation before credential/cookie operations.
 
-## Line D — multi-model loop runner automation
-
-Created:
-
-- `~/.hermes/scripts/brain_task_multimodel_loop_runner.py`
-- `~/.hermes/scripts/test_brain_task_multimodel_loop_runner.py`
-
-Behavior:
-
-- Each loop round runs deterministic gates first: py_compile, orchestrator/dispatch/idle-runner tests, selfcheck, proof-check, and idle-runner observe-only snapshot.
-- It writes a claim/evidence state bundle linking deterministic evidence to explicit claims before calling models.
-- Live mode calls `consult_models.py run <state> --tier T3 --quorum 4 --discussion --max-rounds N --keep`.
-- Stop condition is ratification-first: `certified|certified_with_minor_risks`, agreement axes >= 0.85, no unresolved severity>=3 issue/risk, no amend/reject vote, and no unsupported/contradicted high-severity claims.
-- Amend/not_certified returns `continue_loop`; without an explicit bounded `--executor-command`, it fails closed as `NOT_CERTIFIED_MAX_ROUNDS` and writes issue ledger for the next agent/handoff.
-- It remains a control-plane runner only: no Markdown execution, no arbitrary hooks, no automatic done.
-
-Tests cover certified stop, amend continuation, unresolved severity blocker despite certified status, quorum4 discussion command shape, CLI fixture success, and fail-closed max-round behavior.
-
 ## Round 1 issue ledger
 
 - I-001: Agent-S GUI runtime is high-blast-radius. Resolution: borrow control-plane patterns only; do not import runtime.
@@ -193,9 +174,10 @@ Formal T3 four-model ratification: **CERTIFIED**.
 Post-review hardening after independent reviewer suggestions:
 
 - Added subprocess diagnostic redaction for `api_key/token/secret/password/passwd/proxy/auth_token/ct0` in idle-runner error payloads.
-- Added regression tests for `--write-state` no task mutation, scalar `blocked_by`, multiline `blocked_by`, redaction, and the blocker where a pending task has only `run_id` metadata while another pending candidate exists.
-- Fixed idle-runner lease metadata detection to fall back to task frontmatter when orchestrator list rows omit fields such as `run_id`; this keeps `active_count > 0` and `next_action=observe_only` fail-closed for partial lease metadata.
+- Added regression tests for `--write-state` no task mutation, scalar `blocked_by`, multiline `blocked_by`, and redaction.
 - Added skill guidance: never paste raw Cookie/API key/token into prompts/logs/shell history/task notes; prefer permission-restricted config files.
+- Added idle-runner `run_id` frontmatter fallback regression and fix: pending tasks with partial lease metadata keep `active_count > 0` and `next_action=observe_only`.
 - Added multi-model loop runner automation: deterministic evidence first, then T3 quorum4 discussion, with ratification-first stop condition and fail-closed continuation ledger.
-- Live Round 2 hardening: added explicit `verify_ratification()` and `should_continue()` APIs plus tests after the first live quorum flagged P1/P2 ambiguity about whether the stop gate existed.
-- Live Round 3 hardening: fixed `consult_models.py` merge-orchestrator false blocker where one no-action planner emitted low-risk advisory `tune_threshold/document` follow-ups, causing `implementation_required` + empty merged `patches=[]`; no-action advisory plans now remain `no_action_certification` with `concrete_patch_count=0`.
+- Live Round 2 hardening: added explicit `verify_ratification()` and `should_continue()` APIs plus tests after the first live quorum flagged ambiguity about whether the stop gate existed.
+- Live Round 3 hardening: fixed `consult_models.py` merge-orchestrator false blocker where one no-action planner emitted low-risk advisory follow-ups, causing `implementation_required` + empty merged `patches=[]`; no-action advisory plans now remain `no_action_certification` with `concrete_patch_count=0`.
+- Live Round 4 hardening: fixed `brain_task_multimodel_loop_runner.py` to catch outer `consult_models.py` timeout and return a fail-closed JSON verdict instead of tracebacking; added regression test `test_run_consult_timeout_fails_closed_without_traceback`.

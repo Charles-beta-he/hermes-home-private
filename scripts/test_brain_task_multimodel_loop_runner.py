@@ -89,6 +89,21 @@ def test_unresolved_high_severity_issue_blocks_even_if_status_certified():
     assert "open_high_severity_issue" in verdict["blocking_reasons"], verdict
 
 
+def test_run_consult_timeout_fails_closed_without_traceback():
+    module = load_module()
+    original_run = module.subprocess.run
+    def fake_run(*args, **kwargs):
+        raise module.subprocess.TimeoutExpired(cmd=args[0], timeout=kwargs.get("timeout", 1), output="partial-out", stderr="partial-err")
+    module.subprocess.run = fake_run
+    try:
+        result = module.run_consult(Path("/tmp/state.json"), tier="T3", quorum=4, max_rounds=3, timeout=1)
+    finally:
+        module.subprocess.run = original_run
+    assert result["returncode"] == "timeout", result
+    assert result["timed_out"] is True, result
+    assert "discussion_result_path" in result, result
+
+
 def test_build_consult_command_uses_quorum4_discussion_and_keep():
     module = load_module()
     cmd = module.build_consult_run_command(Path("/tmp/state.json"), tier="T3", quorum=4, max_rounds=5, timeout=180)
@@ -155,6 +170,7 @@ if __name__ == "__main__":
     test_should_continue_inverts_ratification_api()
     test_amend_vote_continues_loop()
     test_unresolved_high_severity_issue_blocks_even_if_status_certified()
+    test_run_consult_timeout_fails_closed_without_traceback()
     test_build_consult_command_uses_quorum4_discussion_and_keep()
     test_cli_fixture_certified_exits_zero_and_writes_state()
     test_cli_fixture_not_certified_max_rounds_fails_closed()
