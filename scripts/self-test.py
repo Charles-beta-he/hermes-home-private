@@ -230,6 +230,9 @@ for script_name in (
     "multi-model-smoke-every4h-wrapper.py",
     "multi-model-smoke-daily-full-wrapper.py",
     "multi-brain-nightly-wrapper.py",
+    "model-diversity-monitor.py",
+    "autonomy-precondition.py",
+    "autonomy-write-guard.py",
 ):
     r = subprocess.run(
         [sys.executable, "-m", "py_compile", os.path.join(HERMES_HOME, f"scripts/{script_name}")],
@@ -410,6 +413,16 @@ for test_name, label in (
         test(label, lambda r=r: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
     else:
         test(label, lambda test_name=test_name: (False, f"{test_name} not found"))
+
+# model diversity + autonomy fail-closed gates
+model_autonomy_test = os.path.join(HERMES_HOME, "scripts/test_model_diversity_and_autonomy_gates.py")
+if os.path.exists(model_autonomy_test):
+    r = subprocess.run([sys.executable, model_autonomy_test], capture_output=True, text=True, timeout=15)
+    m = re.search(r"Ran (\d+) tests", r.stderr + r.stdout)
+    count_label = f"{m.group(1)}/{m.group(1)}" if m else "gate"
+    test(f"model-diversity/autonomy gate tests ({count_label})", lambda r=r: (r.returncode == 0, r.stderr[:300] or r.stdout[-300:]))
+else:
+    test("model-diversity/autonomy gate tests", lambda: (False, "test file not found"))
 
 # cross-patch safety tests (5 tests: non-unique, --apply guard, verify pass, rollback, cost)
 test_safety = os.path.join(HERMES_HOME, "scripts/test_cross_patch_safety.py")

@@ -469,6 +469,49 @@ class TestModelRouterQuota(unittest.TestCase):
             finally:
                 sys.argv = old_argv
 
+    def test_router_readiness_fails_closed_on_dominance_or_quota(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._get_pricing = lambda: None
+            router.load_config = lambda: {"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["gpt-5.5", "deepseek-v4-pro"], "epsilon": 0.0, "min_traces_per_model": 1}
+            router._model_available = lambda model, config=None: True
+            router._quota_filter_candidates = lambda candidates, config=None: ([m for m in candidates if m != "gpt-5.5"], [], {})
+            def fake_run_json(cmd, timeout=30):
+                joined = " ".join(cmd)
+                if "model-diversity-monitor.py" in joined:
+                    return {"dominance_warning": True, "dominant_model": "gpt-5.5", "dominant_share": 1.0}, {"returncode": 0}
+                if "model_quota.py" in joined:
+                    return {"ok": False, "status": "FAIL_CLOSED", "failure_count": 1}, {"returncode": 2}
+                return {}, {"returncode": 0}
+            router._run_json_command = fake_run_json
+            report = router.router_readiness(config=router.load_config())
+            self.assertFalse(report["ok"])
+            self.assertIn("dominance_warning", report["failed_checks"])
+            self.assertIn("quota_confidence_failed", report["failed_checks"])
+            self.assertEqual(report["eligible_non_dominant_alternates"], ["deepseek-v4-pro"])
+            self.assertFalse(report["certification_gate"]["can_certify_autonomy"])
+            self.assertFalse(report["certification_gate"]["can_promote_budget_handoff"])
+            self.assertFalse(report["certification_gate"]["automatic_rebalance_performed"])
+            self.assertIn("warm_up_eligible_non_dominant_alternates", report["certification_gate"]["recommended_next_actions"])
+
+    def test_router_readiness_passes_when_diversity_and_quota_pass(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._get_pricing = lambda: None
+            router._model_available = lambda model, config=None: True
+            router._quota_filter_candidates = lambda candidates, config=None: (list(candidates), [], {})
+            def fake_run_json(cmd, timeout=30):
+                joined = " ".join(cmd)
+                if "model-diversity-monitor.py" in joined:
+                    return {"dominance_warning": False, "dominant_model": "gpt-5.5", "dominant_share": 0.25}, {"returncode": 0}
+                if "model_quota.py" in joined:
+                    return {"ok": True, "status": "PASS", "failure_count": 0}, {"returncode": 0}
+                return {}, {"returncode": 0}
+            router._run_json_command = fake_run_json
+            report = router.router_readiness(config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["gpt-5.5", "deepseek-v4-pro"], "epsilon": 0.0, "min_traces_per_model": 1})
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["status"], "PASS")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

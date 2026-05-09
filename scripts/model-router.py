@@ -766,6 +766,112 @@ def _skipped_model_entries(decision: Dict[str, Any]) -> List[Dict[str, Any]]:
     return skipped
 
 
+def _run_json_command(cmd: List[str], timeout: int = 30) -> Tuple[Optional[dict], dict]:
+    meta = {"cmd": cmd, "returncode": None, "stderr": "", "stdout_tail": ""}
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    except Exception as exc:
+        meta["error"] = repr(exc)
+        return None, meta
+    meta["returncode"] = proc.returncode
+    meta["stderr"] = (proc.stderr or "")[-1000:]
+    meta["stdout_tail"] = (proc.stdout or "")[-1000:]
+    try:
+        return json.loads(proc.stdout or "{}"), meta
+    except Exception as exc:
+        meta["error"] = f"json_parse_failed: {exc}"
+        return None, meta
+
+
+def _eligible_alternates(candidate_models: List[str], dominant_model: Optional[str], config: Optional[dict]) -> Tuple[List[str], dict]:
+    candidates = [m for m in candidate_models if m and m != dominant_model and _model_available(m, config=config)]
+    allowed, skipped, snapshots = _quota_filter_candidates(candidates, config=config)
+    return allowed, {"candidate_models": candidates, "quota_skipped": skipped, "quota_snapshot": snapshots}
+
+
+def router_readiness(
+    threshold: float = 0.80,
+    window: int = 500,
+    min_quota_confidence: float = 0.50,
+    config: Optional[dict] = None,
+) -> dict:
+    """Fail-closed router readiness gate for multi-model certification/autonomy.
+
+    This gate intentionally does not mutate routing decisions. It makes router
+    skew visible to promotion gates and identifies eligible non-dominant models
+    before any caller may claim budget handoff/autonomous execution readiness.
+    """
+    config = config if config is not None else load_config()
+    scripts_dir = os.path.dirname(os.path.abspath(__file__))
+    diversity_cmd = [
+        sys.executable, os.path.join(scripts_dir, "model-diversity-monitor.py"),
+        "--json", "--threshold", str(threshold), "--window", str(window),
+    ]
+    diversity, diversity_meta = _run_json_command(diversity_cmd, timeout=60)
+    quota_cmd = [
+        sys.executable, os.path.join(scripts_dir, "model_quota.py"), "confidence-gate",
+        "--json", "--min-confidence", str(min_quota_confidence),
+    ]
+    quota, quota_meta = _run_json_command(quota_cmd, timeout=60)
+    pt = _get_pricing()
+    if pt:
+        candidate_models = sorted(set(pt.get_candidate_models("codegen") + pt.get_candidate_models("reviewer") + pt.get_candidate_models("arbiter")))
+    elif config:
+        candidate_models = list(config.get("candidate_models", []))
+    else:
+        candidate_models = []
+    dominant_model = diversity.get("dominant_model") if isinstance(diversity, dict) else None
+    alternates, alternate_meta = _eligible_alternates(candidate_models, dominant_model, config=config)
+    failures: List[str] = []
+    if not isinstance(diversity, dict):
+        failures.append("diversity_report_unavailable")
+    elif diversity.get("dominance_warning"):
+        failures.append("dominance_warning")
+        if not alternates:
+            failures.append("no_eligible_non_dominant_alternates")
+    if not isinstance(quota, dict):
+        failures.append("quota_confidence_unavailable")
+    elif not quota.get("ok"):
+        failures.append("quota_confidence_failed")
+    status = "PASS" if not failures else "FAIL_CLOSED"
+    recommended_next_actions: List[str] = []
+    if isinstance(diversity, dict) and diversity.get("dominance_warning"):
+        recommended_next_actions.append("warm_up_eligible_non_dominant_alternates")
+    if not isinstance(quota, dict) or not quota.get("ok"):
+        recommended_next_actions.append("refresh_quota_confidence_or_lower_risk_tier")
+    if not recommended_next_actions:
+        recommended_next_actions.append("certification_gate_clear")
+    certification_gate = {
+        "schema_version": 1,
+        "status": status,
+        "can_certify_autonomy": not failures,
+        "can_promote_budget_handoff": not failures,
+        "automatic_rebalance_performed": False,
+        "route_mutation_allowed": False,
+        "blocking_failures": list(failures),
+        "recommended_next_actions": recommended_next_actions,
+        "policy": "readiness is a fail-closed certification gate only; it reports alternates but never changes the active model route automatically",
+    }
+    return {
+        "schema_version": 1,
+        "status": status,
+        "ok": not failures,
+        "failed_checks": failures,
+        "certification_gate": certification_gate,
+        "dominant_model": dominant_model,
+        "dominant_share": diversity.get("dominant_share") if isinstance(diversity, dict) else None,
+        "candidate_models": candidate_models,
+        "eligible_non_dominant_alternates": alternates,
+        "rebalance_required": bool(isinstance(diversity, dict) and diversity.get("dominance_warning")),
+        "rebalance_policy": "promotion/autonomy fails closed while dominance_warning is true; prefer eligible_non_dominant_alternates for warm-up before rerun",
+        "diversity": diversity,
+        "diversity_meta": diversity_meta,
+        "quota_confidence": quota,
+        "quota_meta": quota_meta,
+        "alternate_meta": alternate_meta,
+    }
+
+
 def log_decision(decision, task_class=None):
     os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
     selected = decision.get("model")
@@ -812,6 +918,13 @@ def cli():
 
     status = sub.add_parser("status", help="显示路由状态")
     status.add_argument("--quota", action="store_true", help="显示 quota snapshot")
+
+    readiness = sub.add_parser("readiness", help="Fail-closed router readiness gate for certification/autonomy")
+    readiness.add_argument("--json", action="store_true")
+    readiness.add_argument("--gate", action="store_true")
+    readiness.add_argument("--threshold", type=float, default=0.80)
+    readiness.add_argument("--window", type=int, default=500)
+    readiness.add_argument("--min-quota-confidence", type=float, default=0.50)
 
     pr = sub.add_parser("probe", help="探测所有 provider 可用性 (auth check, no token spend)")
     pr.add_argument("--json", action="store_true", help="输出 JSON 而不是表格")
@@ -907,6 +1020,21 @@ def cli():
             else:
                 models = config.get("candidate_models", [])
             print(model_quota.render_table(model_quota.snapshot_models(models)))
+
+    elif args.cmd == "readiness":
+        report = router_readiness(
+            threshold=args.threshold,
+            window=args.window,
+            min_quota_confidence=args.min_quota_confidence,
+            config=config,
+        )
+        if args.json:
+            print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
+        else:
+            print(f"router_readiness: {report['status']} failures={report['failed_checks']}")
+            print(f"dominant={report.get('dominant_model')} share={report.get('dominant_share')} alternates={report.get('eligible_non_dominant_alternates')}")
+        if args.gate and not report.get("ok"):
+            sys.exit(2)
 
     elif args.cmd == "probe":
         report = probe_all_providers(verbose=False)

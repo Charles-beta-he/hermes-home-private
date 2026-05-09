@@ -381,6 +381,31 @@ class TestModelQuota(unittest.TestCase):
             self.assertEqual(skipped[0]["reason"], "quota_exhausted_until_reset")
             self.assertEqual(skipped[0]["seconds_until_reset"], 300)
 
+    def test_quota_confidence_gate_fails_closed_for_unknown_or_unobservable(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            report = mq.assess_quota_confidence(["gpt-5.5", "deepseek-v4-pro"], min_confidence=0.5)
+            self.assertFalse(report["ok"])
+            self.assertEqual(report["status"], "FAIL_CLOSED")
+            statuses = {item["model"]: item["status"] for item in report["failures"]}
+            self.assertEqual(statuses["gpt-5.5"], "unobservable")
+            self.assertEqual(statuses["deepseek-v4-pro"], "unknown")
+
+    def test_quota_confidence_gate_passes_for_exact_confident_ok_snapshot(self):
+        with tempfile.TemporaryDirectory() as td:
+            state_dir = Path(td) / "state"
+            state_dir.mkdir(parents=True)
+            (state_dir / "model_quota_state.json").write_text(json.dumps({
+                "deepseek::deepseek-v4-pro": {
+                    "model": "deepseek-v4-pro", "provider": "deepseek", "status": "ok",
+                    "observability": "exact", "quota_type": "billing_balance", "confidence": 0.9,
+                }
+            }), encoding="utf-8")
+            mq = load_model_quota(td)
+            report = mq.assess_quota_confidence(["deepseek-v4-pro"], min_confidence=0.5)
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["status"], "PASS")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

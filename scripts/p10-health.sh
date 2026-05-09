@@ -131,7 +131,7 @@ SYNTH_RATIO=$(python3 -c "print(round($SYNTH_COUNT / max($TRACE_COUNT, 1), 3))")
 # receive SIGPIPE, turning a real ALL PASS into a false health failure.
 SELF_TEST_LOG="$HERMES_HOME/logs/p10-health-self-test.log"
 SELF_TEST_META=$(python3 - "$HERMES_HOME" "$SELF_TEST_LOG" <<'PY'
-import json, subprocess, sys
+import json, re, subprocess, sys
 from pathlib import Path
 home = Path(sys.argv[1]).expanduser()
 log = Path(sys.argv[2]).expanduser()
@@ -140,14 +140,19 @@ cmd = [sys.executable, str(home / 'scripts' / 'self-test.py')]
 try:
     proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=90)
     out = proc.stdout or ''
-    ok = proc.returncode == 0 and 'ALL PASS' in out
+    summary = re.search(r'Self-Test Results:\s*(\d+)\s*/\s*(\d+)\s*passed', out)
+    passed = int(summary.group(1)) if summary else out.count('✓')
+    total = int(summary.group(2)) if summary else passed
+    ok = proc.returncode == 0 and passed == total and 'ALL PASS' in out
     status = 'ok' if ok else 'failed'
 except subprocess.TimeoutExpired as e:
     out = (e.stdout or '') if isinstance(e.stdout, str) else ''
+    passed = out.count('✓')
+    total = passed
     ok = False
     status = 'timeout'
 log.write_text(out, encoding='utf-8')
-print(json.dumps({'ok': ok, 'status': status, 'check_count': out.count('✓'), 'log': str(log)}, ensure_ascii=False))
+print(json.dumps({'ok': ok, 'status': status, 'check_count': passed, 'check_total': total, 'log': str(log)}, ensure_ascii=False))
 PY
 )
 SELF_TEST_PASS=$(python3 -c "import json; d=json.loads('''$SELF_TEST_META'''); print('true' if d.get('ok') else 'false')")
@@ -168,7 +173,54 @@ if ps aux | grep '[h]ermes_cli.main gateway' > /dev/null 2>&1; then
   GATEWAY_RUNNING=true
 fi
 
-# ── 7. Compute V(t) ──
+# ── 7. Model Diversity Readiness ──
+# This is a fail-closed readiness gate for multi-model certification/autonomy.
+# It is reported separately from V(t) so core operational health does not
+# masquerade as certified multi-model readiness.
+MODEL_DIVERSITY_META=$(python3 - "$HERMES_HOME" <<'PY'
+import json, subprocess, sys
+from pathlib import Path
+home = Path(sys.argv[1]).expanduser()
+cmd = [sys.executable, str(home / 'scripts' / 'model-diversity-monitor.py'), '--json', '--gate']
+try:
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+    try:
+        data = json.loads(proc.stdout or '{}')
+    except Exception:
+        data = {'parse_error': (proc.stdout or '')[-500:]}
+    print(json.dumps({'ok': proc.returncode == 0, 'returncode': proc.returncode, 'data': data, 'stderr': (proc.stderr or '')[-500:]}, ensure_ascii=False))
+except Exception as e:
+    print(json.dumps({'ok': False, 'returncode': None, 'data': {}, 'stderr': repr(e)}, ensure_ascii=False))
+PY
+)
+MODEL_DIVERSITY_OK=$(python3 -c "import json; d=json.loads('''$MODEL_DIVERSITY_META'''); print('true' if d.get('ok') else 'false')")
+MODEL_DIVERSITY_DOMINANT=$(python3 -c "import json; d=json.loads('''$MODEL_DIVERSITY_META''').get('data') or {}; print(d.get('dominant_model') or '')")
+MODEL_DIVERSITY_SHARE=$(python3 -c "import json; d=json.loads('''$MODEL_DIVERSITY_META''').get('data') or {}; print(d.get('dominant_share') or 0)")
+MODEL_DIVERSITY_TOTAL=$(python3 -c "import json; d=json.loads('''$MODEL_DIVERSITY_META''').get('data') or {}; print(d.get('total_calls') or 0)")
+
+MODEL_ROUTER_META=$(python3 - "$HERMES_HOME" <<'PY'
+import json, subprocess, sys
+from pathlib import Path
+home = Path(sys.argv[1]).expanduser()
+cmd = [sys.executable, str(home / 'scripts' / 'model-router.py'), 'readiness', '--json', '--gate']
+try:
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+    try:
+        data = json.loads(proc.stdout or '{}')
+    except Exception:
+        data = {'parse_error': (proc.stdout or '')[-500:]}
+    print(json.dumps({'ok': proc.returncode == 0, 'returncode': proc.returncode, 'data': data, 'stderr': (proc.stderr or '')[-500:]}, ensure_ascii=False))
+except Exception as e:
+    print(json.dumps({'ok': False, 'returncode': None, 'data': {}, 'stderr': repr(e)}, ensure_ascii=False))
+PY
+)
+MODEL_ROUTER_OK=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin); print('true' if d.get('ok') else 'false')")
+MODEL_ROUTER_FAILURES=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; print(','.join(d.get('failed_checks') or []))")
+MODEL_ROUTER_REBALANCE=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; print('true' if d.get('rebalance_required') else 'false')")
+MODEL_QUOTA_OK=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; q=d.get('quota_confidence') or {}; print('true' if q.get('ok') else 'false')")
+MODEL_QUOTA_FAILURES=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; q=d.get('quota_confidence') or {}; print(q.get('failure_count') or 0)")
+
+# ── 8. Compute V(t) ──
 # V(t) = [self_test_pass, main_pass_rate, cron_health, 1-synth_ratio, gateway_running]
 V_SELF=$( [[ "$SELF_TEST_PASS" == "true" ]] && echo 1.0 || echo 0.0 )
 V_MAIN_PR=$MAIN_PR
@@ -199,6 +251,15 @@ WARNINGS=()
 [[ "$GATEWAY_RUNNING" != "true" ]] && WARNINGS+=("gateway not running")
 [[ $MEMORY_SIZE -gt 2200 ]] && WARNINGS+=("memory file > 2.2KB, may have ghosts")
 [[ "$SELF_TEST_PASS" != "true" ]] && WARNINGS+=("self-test not all-pass")
+if [[ "$MODEL_DIVERSITY_OK" != "true" ]]; then
+    WARNINGS+=("model diversity gate failed: dominant=${MODEL_DIVERSITY_DOMINANT:-unknown} share=$MODEL_DIVERSITY_SHARE total=$MODEL_DIVERSITY_TOTAL")
+fi
+if [[ "$MODEL_QUOTA_OK" != "true" ]]; then
+    WARNINGS+=("model quota confidence gate failed: failures=$MODEL_QUOTA_FAILURES")
+fi
+if [[ "$MODEL_ROUTER_OK" != "true" ]]; then
+    WARNINGS+=("model router readiness gate failed: failures=${MODEL_ROUTER_FAILURES:-unknown}")
+fi
 # Raw skill count alone is not a P10 health failure once the governed steward
 # audit exists. Skill-steward owns actionable ecosystem warnings (zombies,
 # broken refs, conflicts, coverage). Keep only an extreme ungoverned-sprawl
@@ -246,7 +307,16 @@ print(json.dumps({
         'memory_bytes': $MEMORY_SIZE,
         'memory_lines': $MEMORY_LINES,
         'gateway_running': $( [[ "$GATEWAY_RUNNING" == "true" ]] && echo 'True' || echo 'False' ),
-        'self_test_count': $SELF_TEST_COUNT
+        'self_test_count': $SELF_TEST_COUNT,
+        'model_diversity_gate': $( [[ "$MODEL_DIVERSITY_OK" == "true" ]] && echo 'True' || echo 'False' ),
+        'model_diversity_dominant_model': '$MODEL_DIVERSITY_DOMINANT',
+        'model_diversity_dominant_share': $MODEL_DIVERSITY_SHARE,
+        'model_diversity_total_calls': $MODEL_DIVERSITY_TOTAL,
+        'model_quota_confidence_gate': $( [[ "$MODEL_QUOTA_OK" == "true" ]] && echo 'True' || echo 'False' ),
+        'model_quota_failure_count': $MODEL_QUOTA_FAILURES,
+        'model_router_readiness_gate': $( [[ "$MODEL_ROUTER_OK" == "true" ]] && echo 'True' || echo 'False' ),
+        'model_router_failures': '$MODEL_ROUTER_FAILURES',
+        'model_router_rebalance_required': $( [[ "$MODEL_ROUTER_REBALANCE" == "true" ]] && echo 'True' || echo 'False' )
     },
     'warnings': $WARNINGS_JSON,
     'grade': '$(
@@ -281,6 +351,9 @@ else
     echo "    overall_pr:    $OVERALL_PR"
     echo "    skills:        $SKILL_COUNT (+$STAGING_COUNT staging)"
     echo "    memory:        ${MEMORY_SIZE}B / ${MEMORY_LINES} lines"
+    echo "    model_diversity_gate: $MODEL_DIVERSITY_OK (dominant=${MODEL_DIVERSITY_DOMINANT:-none} share=$MODEL_DIVERSITY_SHARE total=$MODEL_DIVERSITY_TOTAL)"
+    echo "    model_quota_confidence_gate: $MODEL_QUOTA_OK (failures=$MODEL_QUOTA_FAILURES)"
+    echo "    model_router_readiness_gate: $MODEL_ROUTER_OK (failures=${MODEL_ROUTER_FAILURES:-none} rebalance_required=$MODEL_ROUTER_REBALANCE)"
     echo ""
     if [[ ${#WARNINGS[@]} -gt 0 ]]; then
         echo "  ⚠ Warnings:"

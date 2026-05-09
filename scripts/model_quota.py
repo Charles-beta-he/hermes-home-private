@@ -44,6 +44,8 @@ VALID_QUOTA_STATUSES = {"ok", "low", "unknown", "unobservable", "exhausted", "ra
 DEFAULT_STALE_AFTER_SECONDS = 300
 LOW_TOKEN_THRESHOLD = _env_int("HERMES_QUOTA_LOW_TOKEN_THRESHOLD", 1000)
 LOW_REQUEST_THRESHOLD = _env_int("HERMES_QUOTA_LOW_REQUEST_THRESHOLD", 3)
+DEFAULT_T3_MODELS = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+CONFIDENCE_BLOCKING_STATUSES = {"low", "unknown", "unobservable", "exhausted", "rate_limited", "malformed", "unavailable"}
 
 SUBSCRIPTION_PROVIDERS = {"openai-codex", "qwen-oauth"}
 HEADER_TOKEN_KEYS = (
@@ -634,6 +636,74 @@ def gate_models(
     return allowed, skipped
 
 
+def assess_quota_confidence(
+    models: List[str],
+    min_confidence: float = 0.50,
+    config: Optional[dict] = None,
+    providers: Optional[dict] = None,
+    fail_statuses: Optional[set] = None,
+) -> dict:
+    """Fail-closed readiness assessment for budget handoff / certification.
+
+    Routing can keep unknown/unobservable providers eligible for low-risk use, but
+    budget handoff and autonomous execution require an explicit confidence gate.
+    Missing state is converted through snapshot_models() into unknown or
+    unobservable snapshots so absence of evidence is never treated as readiness.
+    """
+    models = [m for m in (models or []) if m]
+    min_confidence = max(0.0, min(1.0, _to_float(min_confidence, default=0.50) or 0.50))
+    fail_statuses = fail_statuses or CONFIDENCE_BLOCKING_STATUSES
+    snapshots = snapshot_models(models, config=config, providers=providers)
+    failures: List[dict] = []
+    passes: List[dict] = []
+    for key, snap in sorted((snapshots or {}).items()):
+        if not isinstance(snap, dict):
+            failures.append({"key": str(key), "status": "malformed", "reason": "non_dict_snapshot", "confidence": 0.0})
+            continue
+        model = snap.get("model")
+        status = str(snap.get("status") or "unknown").strip()
+        confidence = _to_float(snap.get("confidence"), default=0.0) or 0.0
+        entry = {
+            "key": str(key),
+            "model": model,
+            "provider": snap.get("provider"),
+            "status": status,
+            "observability": snap.get("observability"),
+            "quota_type": snap.get("quota_type"),
+            "confidence": round(confidence, 4),
+            "source": snap.get("source"),
+            "remaining_tokens": snap.get("remaining_tokens"),
+            "remaining_requests": snap.get("remaining_requests"),
+            "remaining_usd": snap.get("remaining_usd"),
+            "reset_at": snap.get("reset_at"),
+        }
+        reasons: List[str] = []
+        if status in fail_statuses:
+            reasons.append(f"status_{status}")
+        if confidence < min_confidence:
+            reasons.append("low_confidence")
+        if reasons:
+            entry["reasons"] = reasons
+            failures.append(entry)
+        else:
+            passes.append(entry)
+    status = "PASS" if not failures else "FAIL_CLOSED"
+    return {
+        "schema_version": 1,
+        "status": status,
+        "ok": not failures,
+        "models_checked": models,
+        "min_confidence": min_confidence,
+        "blocking_statuses": sorted(fail_statuses),
+        "pass_count": len(passes),
+        "failure_count": len(failures),
+        "passes": passes,
+        "failures": failures,
+        "snapshots": snapshots,
+        "policy": "unknown/unobservable/low/exhausted quota is allowed for low-risk routing only; budget handoff and autonomy fail closed",
+    }
+
+
 def probe_deepseek_balance(model: str = "deepseek-v4-pro", timeout: int = 10) -> Optional[dict]:
     env_file = _load_env_file()
     key = os.environ.get("DEEPSEEK_API_KEY") or env_file.get("DEEPSEEK_API_KEY")
@@ -716,6 +786,12 @@ def cli() -> None:
     record.add_argument("--usage-json", default="{}")
     record.add_argument("--error", default="")
 
+    confidence_gate = sub.add_parser("confidence-gate", help="Fail-closed quota confidence readiness gate")
+    confidence_gate.add_argument("--json", action="store_true")
+    confidence_gate.add_argument("--gate", action="store_true", help="Exit non-zero when readiness is not PASS")
+    confidence_gate.add_argument("--min-confidence", type=float, default=0.50)
+    confidence_gate.add_argument("--model", action="append", default=[], help="Model to check; defaults to T3 certification set")
+
     probe = sub.add_parser("probe", help="Probe non-token balance endpoints where available")
     probe.add_argument("--deepseek", action="store_true")
     probe.add_argument("--json", action="store_true")
@@ -739,6 +815,16 @@ def cli() -> None:
             sys.exit(2)
         snap = record_call(args.model, args.provider or None, ok=args.ok, headers=headers, usage=usage, error=args.error)
         print(json.dumps(snap, indent=2, ensure_ascii=False, sort_keys=True))
+    elif args.cmd == "confidence-gate":
+        report = assess_quota_confidence(args.model or DEFAULT_T3_MODELS, min_confidence=args.min_confidence)
+        if args.json:
+            print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
+        else:
+            print(render_table(report.get("snapshots", {})))
+            print(f"quota_confidence_gate: {report['status']} failures={report['failure_count']} min_confidence={report['min_confidence']}")
+        if args.gate and not report.get("ok"):
+            sys.exit(2)
+
     elif args.cmd == "probe":
         snaps = {}
         if args.deepseek:
