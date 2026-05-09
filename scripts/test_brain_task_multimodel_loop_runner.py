@@ -53,6 +53,20 @@ def test_certified_discussion_stops_loop():
     assert verdict["blocking_reasons"] == [], verdict
 
 
+def test_verify_ratification_exposes_explicit_pass_reasons_api():
+    module = load_module()
+    passed, reasons = module.verify_ratification(certified_discussion())
+    assert passed is True
+    assert reasons == []
+
+
+def test_should_continue_inverts_ratification_api():
+    module = load_module()
+    should_continue, reason = module.should_continue(certified_discussion())
+    assert should_continue is False
+    assert reason == "all_criteria_met"
+
+
 def test_amend_vote_continues_loop():
     module = load_module()
     data = certified_discussion()
@@ -61,6 +75,9 @@ def test_amend_vote_continues_loop():
     assert verdict["done"] is False, verdict
     assert verdict["next_action"] == "continue_loop", verdict
     assert "non_approve_vote" in verdict["blocking_reasons"], verdict
+    should_continue, reason = module.should_continue(data)
+    assert should_continue is True
+    assert "non_approve_vote" in reason
 
 
 def test_unresolved_high_severity_issue_blocks_even_if_status_certified():
@@ -134,6 +151,8 @@ def test_cli_fixture_not_certified_max_rounds_fails_closed():
 
 if __name__ == "__main__":
     test_certified_discussion_stops_loop()
+    test_verify_ratification_exposes_explicit_pass_reasons_api()
+    test_should_continue_inverts_ratification_api()
     test_amend_vote_continues_loop()
     test_unresolved_high_severity_issue_blocks_even_if_status_certified()
     test_build_consult_command_uses_quorum4_discussion_and_keep()

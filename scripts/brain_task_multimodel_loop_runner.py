@@ -195,6 +195,31 @@ def open_high_severity(items: Any) -> list[dict[str, Any]]:
 
 
 def evaluate_discussion(discussion: dict[str, Any]) -> dict[str, Any]:
+    passed, reasons = verify_ratification(discussion)
+    status = str(discussion.get("status") or "not_certified").strip().lower()
+    models = discussion.get("models_consulted") or []
+    open_issues = open_high_severity(discussion.get("issue_ledger") or [])
+    open_risks = open_high_severity(discussion.get("remaining_risks") or [])
+    return {
+        "done": passed,
+        "next_action": "LOOP_DONE" if passed else "continue_loop",
+        "blocking_reasons": reasons,
+        "status": status,
+        "model_count": len(models),
+        "open_high_severity_issue_count": len(open_issues),
+        "open_high_severity_remaining_risk_count": len(open_risks),
+    }
+
+
+def verify_ratification(discussion: dict[str, Any]) -> tuple[bool, list[str]]:
+    """Return whether a discussion_result satisfies the stop gate.
+
+    This is the explicit ratification verifier required by the loop contract:
+    status certified, quorum-style model count, agreement threshold, closed
+    high-severity ledger, approve votes, best_within_constraints, and grounded
+    truth assessment. It intentionally returns reasons instead of raising so the
+    issue ledger can drive the next loop round.
+    """
     reasons: list[str] = []
     status = str(discussion.get("status") or "not_certified").strip().lower()
     if status not in CERTIFIED_STATUSES:
@@ -246,16 +271,16 @@ def evaluate_discussion(discussion: dict[str, Any]) -> dict[str, Any]:
         except Exception:
             reasons.append("evidence_coverage_invalid")
 
-    done = not reasons
-    return {
-        "done": done,
-        "next_action": "LOOP_DONE" if done else "continue_loop",
-        "blocking_reasons": sorted(set(reasons)),
-        "status": status,
-        "model_count": len(models),
-        "open_high_severity_issue_count": len(open_issues),
-        "open_high_severity_remaining_risk_count": len(open_risks),
-    }
+    deduped = sorted(set(reasons))
+    return not deduped, deduped
+
+
+def should_continue(discussion: dict[str, Any]) -> tuple[bool, str]:
+    """Invert verify_ratification() for the driver stop/continue boundary."""
+    passed, reasons = verify_ratification(discussion)
+    if passed:
+        return False, "all_criteria_met"
+    return True, ",".join(reasons)
 
 
 def newest_discussion_result(since: float) -> Path | None:

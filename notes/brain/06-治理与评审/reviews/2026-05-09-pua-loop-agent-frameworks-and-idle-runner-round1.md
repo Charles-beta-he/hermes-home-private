@@ -197,3 +197,4 @@ Post-review hardening after independent reviewer suggestions:
 - Fixed idle-runner lease metadata detection to fall back to task frontmatter when orchestrator list rows omit fields such as `run_id`; this keeps `active_count > 0` and `next_action=observe_only` fail-closed for partial lease metadata.
 - Added skill guidance: never paste raw Cookie/API key/token into prompts/logs/shell history/task notes; prefer permission-restricted config files.
 - Added multi-model loop runner automation: deterministic evidence first, then T3 quorum4 discussion, with ratification-first stop condition and fail-closed continuation ledger.
+- Live Round 2 hardening: added explicit `verify_ratification()` and `should_continue()` APIs plus tests after the first live quorum flagged P1/P2 ambiguity about whether the stop gate existed.
