@@ -330,6 +330,45 @@ Next round entrypoint:
 
 Interpretation: PUA-loop closed the recoverable local blockers without falsifying provider facts. The system is locally green and safer, but full autonomy/budget-handoff certification is intentionally still blocked by provider quota observability.
 
+## 6.5 Provider quota unobservability policy evidence
+
+Verification timestamp: 2026-05-09T09:15:19Z.
+
+Additional local slice landed after 6.4:
+- `multi-model-smoke.py` now probes Xiaomi MiMo through the direct OpenAI-compatible API route instead of only through the Hermes subprocess route, so Hermes can inspect real response headers when the provider exposes them.
+- Bounded live smoke was rerun for MiMo, OpenAI-Codex/gpt-5.5, and Claude Opus:
+  - `python3 ~/.hermes/scripts/multi-model-smoke.py --model mimo-v2.5-pro --model gpt-5.5 --model claude-opus-4-7 --repeat 1 --route 'probe:quota-policy-r2:{model}' --timeout 90 --probe-deepseek-balance`: exit 0, 3/3 passed, run_id=d47fb613.
+  - MiMo direct API succeeded but returned no quota/rate-limit/balance headers; quota state records `source=direct_api_no_quota_headers`, `quota_type=provider_api_no_quota_headers`, `confidence=0.35`, and `status=unobservable`.
+  - OpenAI-Codex/gpt-5.5 and Claude CLI routes succeeded, but both are subprocess/OAuth routes that expose no response headers to Hermes; quota state records `source=subprocess_success_no_quota_headers`, `status=unobservable`, `confidence=0.3`.
+  - DeepSeek balance probe remained exact and fresh: `remaining_usd=34.98`, `observability=exact`, `confidence=0.85`.
+- `model_quota.py` now has `snapshot_unobservable_success()` to distinguish real runtime availability evidence from budget evidence. A successful call with no quota headers is recorded as `unobservable`, never as budget-ready `ok`.
+- `quota_observability_evidence()` now emits explicit `counts.total` and `counts.usable`, so router readiness can require a positive strict schema instead of inferring pass from truthiness.
+- `model-router.py` strict quota gate now requires explicit `passes`, matching snapshots, sufficient confidence, timestamp evidence including `last_updated`, and `observability_evidence.counts.usable/total`; hollow `{"ok": true}` shells remain fail-closed.
+- New policy artifact: `/Users/charles/.hermes/config/model_quota_observability_policy.json` documents provider-specific allowed scope. Current unobservable providers are allowed only for `low_risk_routing` / `actual_usage_smoke`; they are forbidden for `budget_handoff_certification`, `broad_autonomous_execution`, and `external_write_certification`.
+- Skill reference updated: `multi-model-thinking/references/provider-quota-observability-and-rebalance.md` now documents `direct_api_no_quota_headers` / `subprocess_success_no_quota_headers` actions and the rule that unobservable success must not become budget evidence.
+
+Commands run in this slice:
+- `python3 -m py_compile ~/.hermes/scripts/model_quota.py ~/.hermes/scripts/model-router.py ~/.hermes/scripts/multi-model-smoke.py ~/.hermes/scripts/test_model_quota.py ~/.hermes/scripts/test_model_router_quota.py`: exit 0.
+- `python3 ~/.hermes/scripts/test_model_quota.py`: 30/30 OK.
+- `python3 ~/.hermes/scripts/test_model_router_quota.py`: 32/32 OK.
+- `python3 -m json.tool ~/.hermes/config/model_quota_observability_policy.json >/dev/null`: exit 0.
+- `python3 ~/.hermes/scripts/model_quota.py confidence-gate --json --gate`: exit 2 by design; status=FAIL_CLOSED, pass_count=1, failure_count=3, counts total=4 usable=1 exact=1 unobservable=3 stale=0; refresh_actions=`provider_unobservable_lower_risk_tier_or_documented_policy`,`use_api_route_for_headers_or_lower_risk_tier`.
+- `python3 ~/.hermes/scripts/model-router.py readiness --json --gate`: exit 2 by design; failed_checks=`quota_confidence_failed`, rebalance_required=false, dominant_share=0.736.
+- `python3 ~/.hermes/scripts/autonomy-precondition.py --mode budget-handoff --json --gate`: exit 2 by design; failed_required_checks=`quota_confidence`,`router_readiness`.
+- `python3 ~/.hermes/scripts/model-diversity-monitor.py --json --gate`: exit 0; dominance_warning=false, dominant_share=0.736.
+- `python3 ~/.hermes/scripts/self-test.py`: exit 0; 71/71 passed, ALL PASS.
+- `bash ~/.hermes/scripts/p10-health.sh --json`: exit 0; grade=A, V=0.9862, self_test=1.0, model_diversity_gate=true, model_quota_confidence_gate=false, model_router_readiness_gate=false.
+- `python3 ~/.hermes/scripts/verify-evolution-event.py ~/.hermes/notes/evolution/2026-05-09-hermes-v013-update-fusion-plan.md ~/.hermes/config/model_quota_observability_policy.json --repo=/Users/charles/.hermes/hermes-agent`: exit 0; Final: COMPLIANT.
+- `python3 ~/.hermes/scripts/ratification_gate.py --json`: exit 2 by design; deterministic_gate_status=PASS, truth_status=grounded/can_certify_truth=true, ratification_status=NOT_CERTIFIED, final_integration_status=LOCAL_COMPLETE_UNRATIFIED.
+
+Current blocker status after this loop:
+- RESOLVED: the previous unknown/stale quota ambiguity has been converted into explicit, fresh, provider-scoped evidence: 3 providers are intentionally `unobservable`, not unchecked.
+- RESOLVED: router quota gate no longer accepts hollow success shells and can consume the stricter positive schema from `model_quota.py`.
+- STILL BLOCKING BY DESIGN: Claude, OpenAI-Codex/gpt-5.5, and MiMo do not provide usable quota/budget evidence through the available routes. They remain valid for low-risk real smoke/routing evidence but not for budget handoff or broad autonomous execution.
+- STILL BLOCKING BY DESIGN: budget-handoff and autonomous execution remain fail-closed until exact/estimated quota evidence or a separately reviewed risk acceptance policy exists.
+
+Interpretation: this loop intentionally improves truthfulness rather than making gates green. The correct certification status remains `truth_grounded_advisory` / `not_certified_for_autonomous_execution`; no full certification is claimed.
+
 ## 7. Upgrade survival
 
 Level 0 artifacts under ~/.hermes/ survive upstream git pull:
@@ -344,6 +383,8 @@ Level 0 artifacts under ~/.hermes/ survive upstream git pull:
 - /Users/charles/.hermes/scripts/test_model_diversity_and_autonomy_gates.py
 - /Users/charles/.hermes/scripts/self-test.py
 - /Users/charles/.hermes/scripts/p10-health.sh
+- /Users/charles/.hermes/config/model_quota_observability_policy.json
+- /Users/charles/.hermes/skills/software-development/multi-model-thinking/references/provider-quota-observability-and-rebalance.md
 - /Users/charles/.hermes/scripts/test_cross_patch_safety.py
 No vendor-core patch has been applied in this advisory tick.
 No remote push required.

@@ -817,6 +817,7 @@ def _quota_gate_passed(quota: Any) -> bool:
         "models_checked",
         "pass_count",
         "failure_count",
+        "passes",
         "failures",
         "snapshots",
         "observability_evidence",
@@ -830,10 +831,19 @@ def _quota_gate_passed(quota: Any) -> bool:
     status_raw = quota.get("status")
     status = str(status_raw).strip().upper() if isinstance(status_raw, str) else ""
     models_checked = quota.get("models_checked")
+    passes = quota.get("passes")
     failures = quota.get("failures")
     snapshots = quota.get("snapshots")
     observability = quota.get("observability_evidence")
+    min_confidence = _finite_number(quota.get("min_confidence", 0.0))
+    if min_confidence is None:
+        return False
     if not isinstance(models_checked, list) or not models_checked or any(not isinstance(m, str) or not m.strip() for m in models_checked):
+        return False
+    models = [str(m).strip() for m in models_checked]
+    if len(set(models)) != len(models):
+        return False
+    if not isinstance(passes, list) or len(passes) != len(models):
         return False
     if not isinstance(failures, list) or failures:
         return False
@@ -841,7 +851,66 @@ def _quota_gate_passed(quota: Any) -> bool:
         return False
     if not isinstance(observability, dict) or not observability:
         return False
-    if pass_count != len(models_checked) or failure_count != 0:
+    if pass_count != len(models) or failure_count != 0:
+        return False
+    def _has_timestamp(entry: dict) -> bool:
+        return bool(entry.get("last_updated") or entry.get("updated_at") or entry.get("last_seen_at") or entry.get("recorded_at") or entry.get("timestamp"))
+
+    pass_models = set()
+    for entry in passes:
+        if not isinstance(entry, dict):
+            return False
+        model = str(entry.get("model") or "").strip()
+        status_entry = str(entry.get("status") or "").strip().lower()
+        if not model or status_entry not in {"ok", "pass", "available"}:
+            return False
+        pass_models.add(model)
+        confidence = _finite_number(entry.get("confidence"))
+        if confidence is None or confidence < min_confidence:
+            return False
+        if not _has_timestamp(entry):
+            return False
+    if pass_models != set(models):
+        return False
+    for model in models:
+        snap = snapshots.get(model)
+        if snap is None:
+            for key, candidate in snapshots.items():
+                if key == model or str(key).endswith("::" + model):
+                    snap = candidate
+                    break
+                if isinstance(candidate, dict) and str(candidate.get("model") or "").strip() == model:
+                    snap = candidate
+                    break
+        if not isinstance(snap, dict):
+            return False
+        if str(snap.get("model") or "").strip() != model:
+            return False
+        snap_status = str(snap.get("status") or "").strip().lower()
+        if snap_status not in {"ok", "pass", "available"}:
+            return False
+        confidence = _finite_number(snap.get("confidence"))
+        if confidence is None or confidence < min_confidence:
+            return False
+        if not _has_timestamp(snap):
+            return False
+    counts = observability.get("counts")
+    by_model = observability.get("by_model")
+    if not isinstance(counts, dict) or not isinstance(by_model, dict):
+        return False
+    usable_models = set()
+    for key, entry in by_model.items():
+        if not isinstance(entry, dict):
+            return False
+        model = str(entry.get("model") or "").strip()
+        if not model and isinstance(key, str):
+            model = key.split("::")[-1]
+        if model in models and entry.get("evidence_state") == "usable":
+            usable_models.add(model)
+    if usable_models != set(models):
+        return False
+    usable = _nonnegative_int_value(counts.get("usable"))
+    if usable is not None and usable < len(models):
         return False
     return quota.get("ok") is True and status in {"PASS", "OK"}
 

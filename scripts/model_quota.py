@@ -350,6 +350,44 @@ def snapshot_from_error(
     return snap
 
 
+def snapshot_unobservable_success(
+    model: str,
+    provider: str,
+    *,
+    source: str,
+    quota_type: str,
+    header_names: Optional[List[str]] = None,
+    usage: Optional[dict] = None,
+    evidence_note: str = "successful_call_without_quota_headers",
+    confidence: float = 0.35,
+) -> dict:
+    """Record a real successful call that exposed no quota/balance evidence.
+
+    This is positive runtime availability evidence, not budget evidence. It keeps
+    routing/actionability honest by distinguishing "not checked" from "checked,
+    but provider route is unobservable", while still failing confidence gates.
+    """
+    snap = default_snapshot(model, provider)
+    snap.update({
+        "status": "unobservable",
+        "observability": "unobservable",
+        "quota_type": quota_type,
+        "remaining_tokens": None,
+        "remaining_requests": None,
+        "remaining_usd": None,
+        "reset_at": None,
+        "source": source,
+        "confidence": max(0.0, min(float(confidence), 0.49)),
+        "usage": usage or {},
+        "header_names": sorted({str(k).lower() for k in (header_names or [])}),
+        "evidence_note": evidence_note,
+        "policy_scope": "low_risk_routing_only; not_budget_handoff_certification",
+        "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS,
+        "last_updated": now_iso(),
+    })
+    return snap
+
+
 def load_state(path: str = STATE_FILE) -> dict:
     try:
         with open(path) as f:
@@ -722,6 +760,8 @@ def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) 
     generated = datetime.now(timezone.utc)
     by_model = {}
     counts = {
+        "total": 0,
+        "usable": 0,
         "exact": 0,
         "estimated": 0,
         "unknown": 0,
@@ -732,6 +772,7 @@ def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) 
     }
     refresh_actions = []
     for key, snap in sorted((snapshots or {}).items()):
+        counts["total"] += 1
         if not isinstance(snap, dict):
             counts["malformed"] += 1
             by_model[str(key)] = {
@@ -770,8 +811,15 @@ def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) 
         provider = str(snap.get("provider") or "unknown")
         status = str(snap.get("status") or "unknown")
         usable_for_budget = status == "ok" and confidence >= min_confidence and not stale
+        if usable_for_budget:
+            counts["usable"] += 1
         if observability == "unobservable":
-            refresh_action = "manual_budget_confirmation_or_lower_risk_tier"
+            if str(snap.get("source") or "").startswith("direct_api_no_quota_headers"):
+                refresh_action = "provider_unobservable_lower_risk_tier_or_documented_policy"
+            elif str(snap.get("source") or "").startswith("subprocess_success_no_quota_headers"):
+                refresh_action = "use_api_route_for_headers_or_lower_risk_tier"
+            else:
+                refresh_action = "manual_budget_confirmation_or_lower_risk_tier"
         elif not usable_for_budget and provider == "deepseek":
             refresh_action = "probe_deepseek_balance"
         elif not usable_for_budget and (status in {"unknown", "malformed", "unavailable"} or stale or confidence < min_confidence):

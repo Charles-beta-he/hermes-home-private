@@ -35,8 +35,9 @@ def load_router(temp_home: str):
 
 def quota_pass_payload(models=None):
     models = models or ["gpt-5.5", "deepseek-v4-pro"]
+    timestamp = "2026-05-09T00:00:00Z"
     snapshots = {
-        model: {"model": model, "status": "ok", "confidence": 1.0, "updated_at": "2026-05-09T00:00:00Z"}
+        model: {"model": model, "status": "ok", "confidence": 1.0, "last_updated": timestamp}
         for model in models
     }
     return {
@@ -48,10 +49,14 @@ def quota_pass_payload(models=None):
         "blocking_statuses": ["exhausted", "low", "unknown", "unobservable"],
         "pass_count": len(models),
         "failure_count": 0,
-        "passes": [],
+        "passes": [{"model": model, "status": "ok", "confidence": 1.0, "last_updated": timestamp} for model in models],
         "failures": [],
         "snapshots": snapshots,
-        "observability_evidence": {"schema_version": 1, "counts": {"usable": len(models), "total": len(models)}},
+        "observability_evidence": {
+            "schema_version": 1,
+            "counts": {"usable": len(models), "total": len(models)},
+            "by_model": {model: {"model": model, "evidence_state": "usable"} for model in models},
+        },
     }
 
 
@@ -709,6 +714,41 @@ class TestModelRouterQuota(unittest.TestCase):
                     return {"dominance_warning": False, "gate_failed": False, "diversity_warnings": 0, "route_diversity_signals": {}, "dominant_model": "gpt-5.5", "dominant_share": 0.25}, {"returncode": 0}
                 if "model_quota.py" in joined:
                     return {"ok": True}, {"returncode": 0}
+                return {}, {"returncode": 0}
+            router._run_json_command = fake_run_json
+            report = router.router_readiness(config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["gpt-5.5", "deepseek-v4-pro"], "epsilon": 0.0, "min_traces_per_model": 1})
+            self.assertFalse(report["ok"], report)
+            self.assertIn("quota_confidence_failed", report["failed_checks"])
+            self.assertFalse(report["certification_gate"]["can_certify_autonomy"], report)
+
+
+    def test_router_readiness_fails_closed_on_hollow_quota_success_shell(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._get_pricing = lambda: None
+            router._model_available = lambda model, config=None, log_unavailable=True: True
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "gpt-5.5", "count": 50, "pass_rate": 0.9, "score": 0.9, "avg_dur": 1},
+                {"model": "deepseek-v4-pro", "count": 50, "pass_rate": 0.8, "score": 0.8, "avg_dur": 1},
+            ]
+            def fake_run_json(cmd, timeout=30):
+                joined = " ".join(cmd)
+                if "model-diversity-monitor.py" in joined:
+                    return {"dominance_warning": False, "gate_failed": False, "diversity_warnings": 0, "route_diversity_signals": [], "dominant_model": "gpt-5.5", "dominant_share": 0.25}, {"returncode": 0}
+                if "model_quota.py" in joined:
+                    return {
+                        "schema_version": 1,
+                        "ok": True,
+                        "status": "PASS",
+                        "models_checked": ["gpt-5.5", "deepseek-v4-pro"],
+                        "min_confidence": 0.5,
+                        "pass_count": 2,
+                        "failure_count": 0,
+                        "passes": [{"model": "gpt-5.5"}, {"model": "deepseek-v4-pro"}],
+                        "failures": [],
+                        "snapshots": {"hollow": {"status": "ok"}},
+                        "observability_evidence": {"counts": {"total": 2, "usable": 2}},
+                    }, {"returncode": 0}
                 return {}, {"returncode": 0}
             router._run_json_command = fake_run_json
             report = router.router_readiness(config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["gpt-5.5", "deepseek-v4-pro"], "epsilon": 0.0, "min_traces_per_model": 1})

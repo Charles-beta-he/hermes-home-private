@@ -38,18 +38,25 @@ except Exception:  # pragma: no cover - defensive runtime isolation
 MODELS: Dict[str, Dict[str, Any]] = {
     "gpt-5.5": {
         "provider": "openai-codex",
+        "unobservable_on_success_no_headers": "oauth_subscription_no_quota_headers",
         "cmd": ["hermes", "chat", "-q", "{prompt}", "--provider", "openai-codex", "--model", "gpt-5.5", "--quiet", "--ignore-rules", "--max-turns", "1", "--source", "tool"],
         "in": 0.0,
         "out": 0.0,
     },
     "mimo-v2.5-pro": {
         "provider": "xiaomi",
+        "direct": "openai_chat",
+        "api_model": "mimo-v2.5-pro",
+        "api_key_env": "XIAOMI_API_KEY",
+        "base_url_env": "XIAOMI_BASE_URL",
+        "base_url_default": "https://token-plan-cn.xiaomimimo.com/v1",
         "cmd": ["hermes", "chat", "-q", "{prompt}", "--provider", "xiaomi", "--model", "mimo-v2.5-pro", "--quiet", "--ignore-rules", "--max-turns", "1", "--source", "tool"],
         "in": 2.4,
         "out": 9.6,
     },
     "claude-opus-4-7": {
         "provider": "anthropic",
+        "unobservable_on_success_no_headers": "external_cli_no_quota_headers",
         "cmd": ["claude", "-p", "{prompt}", "--model", "opus", "--max-turns", "1", "--allowedTools", ""],
         "in": 15.0,
         "out": 75.0,
@@ -173,6 +180,38 @@ def run_deepseek(prompt: str, timeout: int, env: dict) -> Tuple[bool, str, float
         return False, "", time.perf_counter() - t0, repr(e), {}
 
 
+def run_openai_chat(model: str, prompt: str, timeout: int, env: dict) -> Tuple[bool, str, float, str, Dict[str, str]]:
+    spec = MODELS[model]
+    key = env.get(str(spec.get("api_key_env") or ""))
+    base = (env.get(str(spec.get("base_url_env") or "")) or spec.get("base_url_default") or "").rstrip("/")
+    api_model = str(spec.get("api_model") or model)
+    if not key:
+        return False, "", 0.0, f"{spec.get('api_key_env')} missing", {}
+    if not base:
+        return False, "", 0.0, f"{spec.get('base_url_env')} missing", {}
+    body = json.dumps({"model": api_model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 16, "temperature": 0}).encode()
+    req = urllib.request.Request(
+        f"{base}/chat/completions",
+        data=body,
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+    )
+    t0 = time.perf_counter()
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            headers = dict(resp.headers.items())
+            raw = resp.read().decode("utf-8", "replace")
+        dt = time.perf_counter() - t0
+        data = json.loads(raw)
+        usage = data.get("usage", {}) or {}
+        content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        return True, json.dumps({"content": content, "usage": usage}, ensure_ascii=False), dt, "", headers
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")[:500]
+        return False, "", time.perf_counter() - t0, f"HTTP {e.code}: {body}", dict(e.headers.items()) if e.headers else {}
+    except Exception as e:
+        return False, "", time.perf_counter() - t0, repr(e), {}
+
+
 def maybe_probe_deepseek_balance(enabled: bool) -> Optional[dict]:
     if not enabled or model_quota is None:
         return None
@@ -243,6 +282,15 @@ def main(argv=None) -> int:
                         usage = {}
                 tin = int(usage.get("prompt_tokens") or estimate_tokens(prompt))
                 tout = int(usage.get("completion_tokens") or estimate_tokens(out or "ACK"))
+            elif spec.get("direct") == "openai_chat":
+                ok, out, dt, err, headers = run_openai_chat(model, prompt, args.timeout, env)
+                if out:
+                    try:
+                        usage = json.loads(out).get("usage", {}) or {}
+                    except Exception:
+                        usage = {}
+                tin = int(usage.get("prompt_tokens") or estimate_tokens(prompt))
+                tout = int(usage.get("completion_tokens") or estimate_tokens(out or "ACK"))
             else:
                 ok, out, dt, err = run_subprocess(model, prompt, args.timeout)
                 tin = estimate_tokens(prompt)
@@ -257,9 +305,34 @@ def main(argv=None) -> int:
             # headers are exact budget evidence. DeepSeek exact balance is handled
             # by --probe-deepseek-balance; response headers are recorded only when
             # the provider exposes them.
-            if model_quota is not None and has_quota_headers(headers):
+            if model_quota is not None:
                 try:
-                    model_quota.record_call(model=model, provider=spec["provider"], ok=ok, headers=headers, usage=usage, error=err)
+                    if has_quota_headers(headers):
+                        model_quota.record_call(model=model, provider=spec["provider"], ok=ok, headers=headers, usage=usage, error=err)
+                    elif ok and spec.get("direct") == "openai_chat":
+                        snap = model_quota.snapshot_unobservable_success(
+                            model=model,
+                            provider=spec["provider"],
+                            source="direct_api_no_quota_headers",
+                            quota_type="provider_api_no_quota_headers",
+                            header_names=list(headers.keys()),
+                            usage=usage,
+                            evidence_note="direct API success exposed no quota or rate-limit headers",
+                            confidence=0.35,
+                        )
+                        model_quota.record_snapshot(snap)
+                    elif ok and spec.get("unobservable_on_success_no_headers"):
+                        snap = model_quota.snapshot_unobservable_success(
+                            model=model,
+                            provider=spec["provider"],
+                            source="subprocess_success_no_quota_headers",
+                            quota_type=str(spec.get("unobservable_on_success_no_headers")),
+                            header_names=[],
+                            usage=usage,
+                            evidence_note="external CLI/OAuth route succeeded but exposes no response headers to Hermes",
+                            confidence=0.3,
+                        )
+                        model_quota.record_snapshot(snap)
                 except Exception:
                     pass
             rec = {

@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "status": "active_low_risk_only",
+  "generated_at": "2026-05-09T09:00:00Z",
+  "purpose": "Make provider quota unobservability explicit without promoting it to budget-handoff or autonomous-execution certification.",
+  "global_rule": {
+    "unknown_or_unobservable_quota": "allowed_for_low_risk_routing_only",
+    "budget_handoff": "fail_closed_without_exact_or_estimated_quota_evidence",
+    "autonomous_execution": "fail_closed_without_exact_or_estimated_quota_evidence_and_enable_file",
+    "external_writes": "require_autonomy_write_guard_and_surface_allowlist"
+  },
+  "provider_routes": {
+    "openai-codex::gpt-5.5": {
+      "observability": "unobservable_via_oauth_subscription_route",
+      "latest_probe_kind": "subprocess_success_no_quota_headers",
+      "allowed_scope": ["low_risk_routing", "actual_usage_smoke"],
+      "forbidden_scope": ["budget_handoff_certification", "broad_autonomous_execution", "external_write_certification"],
+      "next_action": "manual_budget_confirmation_or_lower_risk_tier"
+    },
+    "anthropic::claude-opus-4-7": {
+      "observability": "unobservable_via_claude_cli_route_without_anthropic_api_key",
+      "latest_probe_kind": "subprocess_success_no_quota_headers",
+      "allowed_scope": ["low_risk_routing", "actual_usage_smoke"],
+      "forbidden_scope": ["budget_handoff_certification", "broad_autonomous_execution", "external_write_certification"],
+      "next_action": "use_api_route_for_headers_or_lower_risk_tier"
+    },
+    "xiaomi::mimo-v2.5-pro": {
+      "observability": "direct_api_success_no_quota_headers",
+      "latest_probe_kind": "direct_api_no_quota_headers",
+      "allowed_scope": ["low_risk_routing", "actual_usage_smoke"],
+      "forbidden_scope": ["budget_handoff_certification", "broad_autonomous_execution", "external_write_certification"],
+      "next_action": "provider_unobservable_lower_risk_tier_or_documented_policy"
+    },
+    "deepseek::deepseek-v4-pro": {
+      "observability": "exact_billing_balance_endpoint",
+      "allowed_scope": ["low_risk_routing", "budget_evidence_when_fresh"],
+      "forbidden_scope": ["use_after_stale_after_seconds_without_refresh"],
+      "next_action": "probe_deepseek_balance_when_stale"
+    }
+  }
+}

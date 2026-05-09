@@ -389,6 +389,8 @@ class TestModelQuota(unittest.TestCase):
             self.assertEqual(report["status"], "FAIL_CLOSED")
             self.assertIn("observability_evidence", report)
             evidence = report["observability_evidence"]
+            self.assertEqual(evidence["counts"]["total"], 2)
+            self.assertEqual(evidence["counts"]["usable"], 0)
             self.assertEqual(evidence["counts"]["unobservable"], 1)
             self.assertEqual(evidence["counts"]["unknown"], 1)
             self.assertIn("manual_budget_confirmation_or_lower_risk_tier", evidence["refresh_actions"])
@@ -412,6 +414,8 @@ class TestModelQuota(unittest.TestCase):
             report = mq.assess_quota_confidence(["deepseek-v4-pro"], min_confidence=0.5)
             self.assertTrue(report["ok"])
             self.assertEqual(report["status"], "PASS")
+            self.assertEqual(report["observability_evidence"]["counts"]["total"], 1)
+            self.assertEqual(report["observability_evidence"]["counts"]["usable"], 1)
 
     def test_quota_confidence_gate_fails_closed_for_stale_exact_snapshot(self):
         with tempfile.TemporaryDirectory() as td:
@@ -510,6 +514,56 @@ class TestModelQuota(unittest.TestCase):
             self.assertEqual(blocker["error_class"], "rate_limit")
             state = json.loads(Path(state_path).read_text())
             self.assertEqual(state["deepseek::deepseek-v4-pro"]["status"], "exhausted")
+    def test_unobservable_success_snapshot_is_actionable_but_not_budget_ready(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            snap = mq.snapshot_unobservable_success(
+                "mimo-v2.5-pro",
+                "xiaomi",
+                source="direct_api_no_quota_headers",
+                quota_type="provider_api_no_quota_headers",
+                header_names=["Date", "X-Mife-Upstream-Status"],
+                usage={"prompt_tokens": 10, "completion_tokens": 2},
+            )
+            self.assertEqual(snap["status"], "unobservable")
+            self.assertEqual(snap["observability"], "unobservable")
+            self.assertLess(snap["confidence"], 0.5)
+            mq.record_snapshot(snap)
+            report = mq.assess_quota_confidence(["mimo-v2.5-pro"], providers={"mimo-v2.5-pro": "xiaomi"})
+            self.assertFalse(report["ok"])
+            self.assertEqual(report["failures"][0]["reasons"], ["status_unobservable", "low_confidence"])
+            evidence = mq.quota_observability_evidence({"xiaomi::mimo-v2.5-pro": snap})
+            self.assertEqual(
+                evidence["by_model"]["xiaomi::mimo-v2.5-pro"]["refresh_action"],
+                "provider_unobservable_lower_risk_tier_or_documented_policy",
+            )
+
+    def test_unobservable_success_does_not_downgrade_fresh_exact_snapshot(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            state_path = str(Path(td) / "state" / "model_quota_state.json")
+            exact = {
+                "model": "deepseek-v4-pro",
+                "provider": "deepseek",
+                "status": "ok",
+                "observability": "exact",
+                "quota_type": "billing_balance",
+                "remaining_usd": 34.98,
+                "confidence": 0.85,
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "stale_after_seconds": 300,
+                "source": "balance_endpoint",
+            }
+            mq.record_snapshot(exact, state_path=state_path)
+            unobservable = mq.snapshot_unobservable_success(
+                "deepseek-v4-pro",
+                "deepseek",
+                source="direct_api_no_quota_headers",
+                quota_type="provider_api_no_quota_headers",
+            )
+            preserved = mq.record_snapshot(unobservable, state_path=state_path)
+            self.assertEqual(preserved["observability"], "exact")
+            self.assertTrue(preserved["preserved_from_lower_confidence_update"])
 
 
 if __name__ == "__main__":
