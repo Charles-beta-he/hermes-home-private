@@ -387,13 +387,89 @@ def append_log(entry: dict, path: str = LOG_FILE) -> None:
         f.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
 
 
-def record_snapshot(snapshot: dict, state_path: str = STATE_FILE, log_path: str = LOG_FILE) -> dict:
+def _snapshot_age_seconds(snapshot: dict) -> Optional[int]:
+    updated = _parse_utc_datetime((snapshot or {}).get("last_updated")) if isinstance(snapshot, dict) else None
+    if updated is None:
+        return None
+    return int(max(0, (datetime.now(timezone.utc) - updated).total_seconds()))
+
+
+def _is_snapshot_stale(snapshot: dict) -> bool:
+    if not isinstance(snapshot, dict):
+        return True
+    age = _snapshot_age_seconds(snapshot)
+    if age is None:
+        return True
+    stale_after = _to_float(snapshot.get("stale_after_seconds"), default=DEFAULT_STALE_AFTER_SECONDS)
+    return bool(stale_after and stale_after > 0 and age > stale_after)
+
+
+def _quota_snapshot_quality(snapshot: dict) -> Tuple[int, float]:
+    """Return comparable evidence quality for update ordering.
+
+    Higher tier is better. Exhaustion/rate-limit evidence is intentionally high
+    because safety blockers must overwrite optimistic prior snapshots. Empty
+    response headers are low-quality and must not erase a fresh exact balance.
+    """
+    if not isinstance(snapshot, dict):
+        return (0, 0.0)
+    status = str(snapshot.get("status") or "unknown")
+    observability = str(snapshot.get("observability") or "unknown")
+    quota_type = str(snapshot.get("quota_type") or "unknown")
+    confidence = _to_float(snapshot.get("confidence"), default=0.0) or 0.0
+    if status in {"exhausted", "rate_limited"}:
+        return (5, confidence)
+    if observability in {"exact", "window_exact"} or observability.startswith("exact"):
+        return (4, confidence)
+    if observability.startswith("estimated"):
+        return (3, confidence)
+    if quota_type in {"rate_limit_window", "billing_balance"} and confidence >= 0.5:
+        return (3, confidence)
+    if status == "low":
+        return (2, confidence)
+    if observability == "unobservable":
+        return (1, confidence)
+    return (0, confidence)
+
+
+def _should_replace_snapshot(existing: Optional[dict], incoming: dict) -> Tuple[bool, str]:
+    if not isinstance(existing, dict):
+        return True, "no_existing_snapshot"
+    existing_quality = _quota_snapshot_quality(existing)
+    incoming_quality = _quota_snapshot_quality(incoming)
+    if str(incoming.get("status") or "") in {"exhausted", "rate_limited"}:
+        return True, "incoming_safety_blocker"
+    if _is_snapshot_stale(existing):
+        return True, "existing_stale"
+    if incoming_quality[0] > existing_quality[0]:
+        return True, "incoming_higher_observability"
+    if incoming_quality[0] == existing_quality[0] and incoming_quality[1] >= existing_quality[1]:
+        return True, "incoming_equal_or_higher_confidence"
+    return False, "preserve_higher_confidence_existing_snapshot"
+
+
+def record_snapshot(snapshot: dict, state_path: str = STATE_FILE, log_path: str = LOG_FILE, *, preserve_higher_confidence: bool = True) -> dict:
     state = load_state(state_path)
     key = quota_key(snapshot.get("provider", "unknown"), snapshot.get("model", "unknown"))
-    state[key] = snapshot
-    save_state(state, state_path)
-    append_log({"ts": now_iso(), "event": "quota_snapshot", "key": key, "snapshot": snapshot}, log_path)
-    return snapshot
+    existing = state.get(key) if isinstance(state, dict) else None
+    should_replace, reason = _should_replace_snapshot(existing, snapshot) if preserve_higher_confidence else (True, "forced_replace")
+    if should_replace:
+        state[key] = snapshot
+        save_state(state, state_path)
+        append_log({"ts": now_iso(), "event": "quota_snapshot", "key": key, "snapshot": snapshot, "update_reason": reason}, log_path)
+        return snapshot
+    preserved = dict(existing)
+    preserved["preserved_from_lower_confidence_update"] = True
+    preserved["ignored_update"] = {
+        "status": snapshot.get("status"),
+        "observability": snapshot.get("observability"),
+        "source": snapshot.get("source"),
+        "confidence": snapshot.get("confidence"),
+        "last_updated": snapshot.get("last_updated"),
+        "reason": reason,
+    }
+    append_log({"ts": now_iso(), "event": "quota_snapshot_preserved", "key": key, "snapshot": preserved, "incoming": snapshot, "update_reason": reason}, log_path)
+    return preserved
 
 
 def record_call(
@@ -636,6 +712,98 @@ def gate_models(
     return allowed, skipped
 
 
+def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) -> dict:
+    """Summarize quota observability as machine-readable evidence.
+
+    This is deliberately separate from the pass/fail decision so downstream
+    gates can cite why a provider is or is not safe for budget handoff without
+    treating absence of data as success.
+    """
+    generated = datetime.now(timezone.utc)
+    by_model = {}
+    counts = {
+        "exact": 0,
+        "estimated": 0,
+        "unknown": 0,
+        "unobservable": 0,
+        "malformed": 0,
+        "stale": 0,
+        "low_confidence": 0,
+    }
+    refresh_actions = []
+    for key, snap in sorted((snapshots or {}).items()):
+        if not isinstance(snap, dict):
+            counts["malformed"] += 1
+            by_model[str(key)] = {
+                "status": "malformed",
+                "observability": "malformed",
+                "confidence": 0.0,
+                "evidence_state": "invalid_snapshot",
+                "refresh_action": "repair_model_quota_state_json",
+            }
+            refresh_actions.append("repair_model_quota_state_json")
+            continue
+        observability = str(snap.get("observability") or "unknown")
+        if observability in counts:
+            counts[observability] += 1
+        elif observability.startswith("exact"):
+            counts["exact"] += 1
+        elif observability.startswith("estimated"):
+            counts["estimated"] += 1
+        else:
+            counts["unknown"] += 1
+        confidence = _to_float(snap.get("confidence"), default=0.0) or 0.0
+        updated = _parse_utc_datetime(snap.get("last_updated"))
+        age_seconds = None
+        stale = False
+        if updated is not None:
+            age_seconds = int(max(0, (generated - updated).total_seconds()))
+            stale_after = _to_float(snap.get("stale_after_seconds"), default=DEFAULT_STALE_AFTER_SECONDS)
+            stale = bool(stale_after and stale_after > 0 and age_seconds > stale_after)
+        else:
+            stale = True
+        if stale:
+            counts["stale"] += 1
+        if confidence < min_confidence:
+            counts["low_confidence"] += 1
+        refresh_action = "none"
+        provider = str(snap.get("provider") or "unknown")
+        status = str(snap.get("status") or "unknown")
+        usable_for_budget = status == "ok" and confidence >= min_confidence and not stale
+        if observability == "unobservable":
+            refresh_action = "manual_budget_confirmation_or_lower_risk_tier"
+        elif not usable_for_budget and provider == "deepseek":
+            refresh_action = "probe_deepseek_balance"
+        elif not usable_for_budget and (status in {"unknown", "malformed", "unavailable"} or stale or confidence < min_confidence):
+            refresh_action = "record_provider_response_headers"
+        if refresh_action != "none":
+            refresh_actions.append(refresh_action)
+        by_model[str(key)] = {
+            "model": snap.get("model"),
+            "provider": snap.get("provider"),
+            "status": status,
+            "observability": observability,
+            "quota_type": snap.get("quota_type"),
+            "confidence": round(confidence, 4),
+            "source": snap.get("source"),
+            "last_updated": snap.get("last_updated"),
+            "age_seconds": age_seconds,
+            "stale": stale,
+            "reset_at": snap.get("reset_at"),
+            "evidence_state": "usable" if usable_for_budget else "not_sufficient_for_budget_handoff",
+            "refresh_action": refresh_action,
+        }
+    return {
+        "schema_version": 1,
+        "generated_at": _format_utc_iso(generated),
+        "min_confidence": min_confidence,
+        "counts": counts,
+        "by_model": by_model,
+        "refresh_actions": sorted(set(refresh_actions)),
+        "policy": "quota observability evidence is advisory for routing but mandatory for budget-handoff/autonomy certification",
+    }
+
+
 def assess_quota_confidence(
     models: List[str],
     min_confidence: float = 0.50,
@@ -663,6 +831,16 @@ def assess_quota_confidence(
         model = snap.get("model")
         status = str(snap.get("status") or "unknown").strip()
         confidence = _to_float(snap.get("confidence"), default=0.0) or 0.0
+        updated = _parse_utc_datetime(snap.get("last_updated"))
+        age_seconds = None
+        stale = False
+        if updated is None:
+            stale = True
+        else:
+            now = datetime.now(timezone.utc)
+            age_seconds = int(max(0, (now - updated).total_seconds()))
+            stale_after = _to_float(snap.get("stale_after_seconds"), default=DEFAULT_STALE_AFTER_SECONDS)
+            stale = bool(stale_after and stale_after > 0 and age_seconds > stale_after)
         entry = {
             "key": str(key),
             "model": model,
@@ -676,12 +854,17 @@ def assess_quota_confidence(
             "remaining_requests": snap.get("remaining_requests"),
             "remaining_usd": snap.get("remaining_usd"),
             "reset_at": snap.get("reset_at"),
+            "last_updated": snap.get("last_updated"),
+            "age_seconds": age_seconds,
+            "stale": stale,
         }
         reasons: List[str] = []
         if status in fail_statuses:
             reasons.append(f"status_{status}")
         if confidence < min_confidence:
             reasons.append("low_confidence")
+        if stale:
+            reasons.append("stale_quota_evidence" if updated is not None else "missing_quota_timestamp")
         if reasons:
             entry["reasons"] = reasons
             failures.append(entry)
@@ -700,6 +883,7 @@ def assess_quota_confidence(
         "passes": passes,
         "failures": failures,
         "snapshots": snapshots,
+        "observability_evidence": quota_observability_evidence(snapshots, min_confidence=min_confidence),
         "policy": "unknown/unobservable/low/exhausted quota is allowed for low-risk routing only; budget handoff and autonomy fail closed",
     }
 

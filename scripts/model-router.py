@@ -14,6 +14,7 @@ v2 新增: 时间感知评分 (pricing.py), task_tier 过滤, select_pair 配对
 
 import argparse
 import json
+import math
 import os
 import random
 import sys
@@ -64,7 +65,7 @@ _PROVIDER_ENV = {
     "deepseek": "DEEPSEEK_API_KEY",
 }
 
-def _model_available(model: str, config: Optional[dict] = None) -> bool:
+def _model_available(model: str, config: Optional[dict] = None, log_unavailable: bool = True) -> bool:
     """Check if a model's provider likely has credentials configured.
     Returns True if: (a) no env var known, (b) env var set, (c) OAuth-based provider.
     Returns False when a known provider's required auth is explicitly empty/unset.
@@ -106,7 +107,7 @@ def _model_available(model: str, config: Optional[dict] = None) -> bool:
         # Claude CLI has its own auth (device code / session)
         import shutil
         available = shutil.which("claude") is not None
-    if not available:
+    if not available and log_unavailable:
         _log_unavailable_provider(provider, model, env_var)
     return available
 
@@ -783,10 +784,137 @@ def _run_json_command(cmd: List[str], timeout: int = 30) -> Tuple[Optional[dict]
         return None, meta
 
 
+def _finite_number(value: Any) -> Optional[float]:
+    if isinstance(value, bool):
+        return None
+    try:
+        parsed = float(value)
+    except Exception:
+        return None
+    return parsed if math.isfinite(parsed) else None
+
+
+def _nonnegative_int_value(value: Any) -> Optional[int]:
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value if value >= 0 else None
+
+
+def _valid_optional_unit_number(value: Any) -> bool:
+    if value is None:
+        return True
+    parsed = _finite_number(value)
+    return parsed is not None and 0.0 <= parsed <= 1.0
+
+
+def _quota_gate_passed(quota: Any) -> bool:
+    if not isinstance(quota, dict) or not quota:
+        return False
+    required_fields = {
+        "schema_version",
+        "ok",
+        "status",
+        "models_checked",
+        "pass_count",
+        "failure_count",
+        "failures",
+        "snapshots",
+        "observability_evidence",
+    }
+    if not required_fields.issubset(quota):
+        return False
+    if quota.get("schema_version") != 1:
+        return False
+    failure_count = _nonnegative_int_value(quota.get("failure_count"))
+    pass_count = _nonnegative_int_value(quota.get("pass_count"))
+    status_raw = quota.get("status")
+    status = str(status_raw).strip().upper() if isinstance(status_raw, str) else ""
+    models_checked = quota.get("models_checked")
+    failures = quota.get("failures")
+    snapshots = quota.get("snapshots")
+    observability = quota.get("observability_evidence")
+    if not isinstance(models_checked, list) or not models_checked or any(not isinstance(m, str) or not m.strip() for m in models_checked):
+        return False
+    if not isinstance(failures, list) or failures:
+        return False
+    if not isinstance(snapshots, dict) or not snapshots:
+        return False
+    if not isinstance(observability, dict) or not observability:
+        return False
+    if pass_count != len(models_checked) or failure_count != 0:
+        return False
+    return quota.get("ok") is True and status in {"PASS", "OK"}
+
+
+def _model_available_for_readiness(model: str, config: Optional[dict] = None) -> bool:
+    try:
+        return _model_available(model, config=config, log_unavailable=False)
+    except TypeError:
+        # Tests and downstream integrations may monkeypatch the older two-arg
+        # callable. Preserve compatibility; the production implementation above
+        # remains side-effect-free for readiness.
+        return _model_available(model, config=config)
+
+
 def _eligible_alternates(candidate_models: List[str], dominant_model: Optional[str], config: Optional[dict]) -> Tuple[List[str], dict]:
-    candidates = [m for m in candidate_models if m and m != dominant_model and _model_available(m, config=config)]
+    # Readiness is an observe-only certification gate. Avoid provider availability
+    # transition writes while computing advisory alternates.
+    candidates = [m for m in candidate_models if m and m != dominant_model and _model_available_for_readiness(m, config=config)]
     allowed, skipped, snapshots = _quota_filter_candidates(candidates, config=config)
-    return allowed, {"candidate_models": candidates, "quota_skipped": skipped, "quota_snapshot": snapshots}
+    return allowed, {"candidate_models": candidates, "quota_skipped": skipped, "quota_snapshot": snapshots, "read_only": True}
+
+
+def _build_rebalance_plan(diversity: Optional[dict], alternates: List[str], threshold: float, window: int) -> dict:
+    """Return a deterministic, non-mutating warm-up plan for diversity skew.
+
+    The plan answers: if the current window is dominated by one model, how many
+    future non-dominant calls must be routed before a fresh readiness check can
+    plausibly pass? It never changes routing by itself.
+    """
+    if not isinstance(diversity, dict) or not diversity.get("dominance_warning"):
+        return {
+            "schema_version": 1,
+            "action": "no_rebalance_needed",
+            "required_non_dominant_calls": 0,
+            "target_threshold": threshold,
+            "window": window,
+            "per_model_targets": {},
+            "policy": "plan only; router readiness never mutates active routing automatically",
+        }
+    stats = diversity.get("model_stats") or {}
+    total_calls = int(diversity.get("total_calls") or 0)
+    dominant = diversity.get("dominant_model")
+    dominant_total = 0
+    if dominant in stats and isinstance(stats.get(dominant), dict):
+        dominant_total = int(stats[dominant].get("total") or 0)
+    elif total_calls and diversity.get("dominant_share") is not None:
+        dominant_total = int(round(float(diversity.get("dominant_share") or 0) * total_calls))
+    threshold = max(0.01, min(0.99, float(threshold or 0.80)))
+    if not total_calls:
+        total_calls = max(1, int(window or 1))
+    required = max(0, math.ceil((dominant_total / threshold) - total_calls))
+    if window and window > 0:
+        required = min(required, int(window))
+    per_model_targets: Dict[str, int] = {}
+    if alternates and required:
+        base, extra = divmod(required, len(alternates))
+        for idx, model in enumerate(alternates):
+            per_model_targets[model] = base + (1 if idx < extra else 0)
+    return {
+        "schema_version": 1,
+        "action": "warm_up_non_dominant_alternates" if alternates else "blocked_no_eligible_alternates",
+        "dominant_model": dominant,
+        "current_dominant_calls": dominant_total,
+        "current_total_calls": total_calls,
+        "current_dominant_share": diversity.get("dominant_share"),
+        "target_threshold": threshold,
+        "window": window,
+        "required_non_dominant_calls": required,
+        "eligible_alternates": alternates,
+        "per_model_targets": per_model_targets,
+        "rerun_gate_after": "model-router.py readiness --json --gate",
+        "policy": "plan only; router readiness never mutates active routing automatically",
+    }
 
 
 def router_readiness(
@@ -823,23 +951,77 @@ def router_readiness(
     dominant_model = diversity.get("dominant_model") if isinstance(diversity, dict) else None
     alternates, alternate_meta = _eligible_alternates(candidate_models, dominant_model, config=config)
     failures: List[str] = []
-    if not isinstance(diversity, dict):
+    diversity_returncode = diversity_meta.get("returncode") if isinstance(diversity_meta, dict) else None
+    quota_returncode = quota_meta.get("returncode") if isinstance(quota_meta, dict) else None
+    route_diversity_signals = diversity.get("route_diversity_signals") if isinstance(diversity, dict) else None
+    route_diversity_signals_shape_valid = isinstance(route_diversity_signals, (dict, list))
+    diversity_warnings_value = _nonnegative_int_value(diversity.get("diversity_warnings")) if isinstance(diversity, dict) else None
+    diversity_shape_valid = (
+        isinstance(diversity, dict)
+        and isinstance(diversity.get("dominance_warning"), bool)
+        and isinstance(diversity.get("gate_failed"), bool)
+        and diversity_warnings_value is not None
+        and route_diversity_signals_shape_valid
+        and _valid_optional_unit_number(diversity.get("dominant_share"))
+        and ("total_calls" not in diversity or _nonnegative_int_value(diversity.get("total_calls")) is not None)
+        and ("window" not in diversity or _nonnegative_int_value(diversity.get("window")) is not None)
+        and ("min_samples" not in diversity or _nonnegative_int_value(diversity.get("min_samples")) is not None)
+        and ("threshold" not in diversity or _valid_optional_unit_number(diversity.get("threshold")))
+    )
+    try:
+        rebalance_plan = _build_rebalance_plan(
+            diversity if diversity_shape_valid else None,
+            alternates,
+            threshold,
+            window,
+        )
+        rebalance_plan_failed = False
+    except Exception as exc:
+        rebalance_plan = {
+            "schema_version": 1,
+            "action": "rebalance_plan_unavailable",
+            "error": type(exc).__name__,
+            "policy": "plan only; router readiness never mutates active routing automatically",
+        }
+        rebalance_plan_failed = True
+    diversity_unavailable = (
+        not isinstance(diversity, dict)
+        or not diversity
+        or not diversity_shape_valid
+    )
+    if diversity_unavailable:
         failures.append("diversity_report_unavailable")
-    elif diversity.get("dominance_warning"):
-        failures.append("dominance_warning")
-        if not alternates:
-            failures.append("no_eligible_non_dominant_alternates")
-    if not isinstance(quota, dict):
+    elif diversity_returncode not in (0, None):
+        failures.append("diversity_monitor_nonzero_exit")
+    if rebalance_plan_failed:
+        failures.append("rebalance_plan_unavailable")
+    if diversity_shape_valid:
+        if diversity["dominance_warning"]:
+            failures.append("dominance_warning")
+            if not alternates:
+                failures.append("no_eligible_non_dominant_alternates")
+        if diversity["gate_failed"] or (diversity_warnings_value or 0) > 0 or bool(diversity["route_diversity_signals"]):
+            failures.append("diversity_gate_failed")
+    quota_ok = _quota_gate_passed(quota)
+    if quota_returncode not in (0, None):
         failures.append("quota_confidence_unavailable")
-    elif not quota.get("ok"):
+    elif not isinstance(quota, dict) or not quota:
+        failures.append("quota_confidence_unavailable")
+    elif not quota_ok:
         failures.append("quota_confidence_failed")
     status = "PASS" if not failures else "FAIL_CLOSED"
     recommended_next_actions: List[str] = []
-    if isinstance(diversity, dict) and diversity.get("dominance_warning"):
+    if "dominance_warning" in failures:
         recommended_next_actions.append("warm_up_eligible_non_dominant_alternates")
-    if not isinstance(quota, dict) or not quota.get("ok"):
+    if "diversity_report_unavailable" in failures or "rebalance_plan_unavailable" in failures:
+        recommended_next_actions.append("rerun_diversity_monitor_and_preserve_artifact")
+    if "diversity_monitor_nonzero_exit" in failures:
+        recommended_next_actions.append("inspect_preserved_diversity_gate_artifact")
+    if "diversity_gate_failed" in failures:
+        recommended_next_actions.append("resolve_diversity_gate_failures")
+    if "quota_confidence_unavailable" in failures or "quota_confidence_failed" in failures or not quota_ok:
         recommended_next_actions.append("refresh_quota_confidence_or_lower_risk_tier")
-    if not recommended_next_actions:
+    if not failures and not recommended_next_actions:
         recommended_next_actions.append("certification_gate_clear")
     certification_gate = {
         "schema_version": 1,
@@ -863,6 +1045,7 @@ def router_readiness(
         "candidate_models": candidate_models,
         "eligible_non_dominant_alternates": alternates,
         "rebalance_required": bool(isinstance(diversity, dict) and diversity.get("dominance_warning")),
+        "rebalance_plan": rebalance_plan,
         "rebalance_policy": "promotion/autonomy fails closed while dominance_warning is true; prefer eligible_non_dominant_alternates for warm-up before rerun",
         "diversity": diversity,
         "diversity_meta": diversity_meta,

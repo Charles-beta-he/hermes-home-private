@@ -387,6 +387,12 @@ class TestModelQuota(unittest.TestCase):
             report = mq.assess_quota_confidence(["gpt-5.5", "deepseek-v4-pro"], min_confidence=0.5)
             self.assertFalse(report["ok"])
             self.assertEqual(report["status"], "FAIL_CLOSED")
+            self.assertIn("observability_evidence", report)
+            evidence = report["observability_evidence"]
+            self.assertEqual(evidence["counts"]["unobservable"], 1)
+            self.assertEqual(evidence["counts"]["unknown"], 1)
+            self.assertIn("manual_budget_confirmation_or_lower_risk_tier", evidence["refresh_actions"])
+            self.assertIn("probe_deepseek_balance", evidence["refresh_actions"])
             statuses = {item["model"]: item["status"] for item in report["failures"]}
             self.assertEqual(statuses["gpt-5.5"], "unobservable")
             self.assertEqual(statuses["deepseek-v4-pro"], "unknown")
@@ -399,12 +405,111 @@ class TestModelQuota(unittest.TestCase):
                 "deepseek::deepseek-v4-pro": {
                     "model": "deepseek-v4-pro", "provider": "deepseek", "status": "ok",
                     "observability": "exact", "quota_type": "billing_balance", "confidence": 0.9,
+                    "last_updated": datetime.now(timezone.utc).isoformat(), "stale_after_seconds": 300,
                 }
             }), encoding="utf-8")
             mq = load_model_quota(td)
             report = mq.assess_quota_confidence(["deepseek-v4-pro"], min_confidence=0.5)
             self.assertTrue(report["ok"])
             self.assertEqual(report["status"], "PASS")
+
+    def test_quota_confidence_gate_fails_closed_for_stale_exact_snapshot(self):
+        with tempfile.TemporaryDirectory() as td:
+            state_dir = Path(td) / "state"
+            state_dir.mkdir(parents=True)
+            stale = datetime.now(timezone.utc) - timedelta(hours=1)
+            (state_dir / "model_quota_state.json").write_text(json.dumps({
+                "deepseek::deepseek-v4-pro": {
+                    "model": "deepseek-v4-pro", "provider": "deepseek", "status": "ok",
+                    "observability": "exact", "quota_type": "billing_balance", "confidence": 0.9,
+                    "last_updated": stale.isoformat(), "stale_after_seconds": 300,
+                }
+            }), encoding="utf-8")
+            mq = load_model_quota(td)
+            report = mq.assess_quota_confidence(["deepseek-v4-pro"], min_confidence=0.5)
+            self.assertFalse(report["ok"])
+            self.assertEqual(report["status"], "FAIL_CLOSED")
+            self.assertEqual(report["failures"][0]["reasons"], ["stale_quota_evidence"])
+            self.assertTrue(report["observability_evidence"]["by_model"]["deepseek::deepseek-v4-pro"]["stale"])
+
+    def test_quota_confidence_gate_fails_closed_for_missing_quota_timestamp(self):
+        with tempfile.TemporaryDirectory() as td:
+            state_dir = Path(td) / "state"
+            state_dir.mkdir(parents=True)
+            (state_dir / "model_quota_state.json").write_text(json.dumps({
+                "deepseek::deepseek-v4-pro": {
+                    "model": "deepseek-v4-pro", "provider": "deepseek", "status": "ok",
+                    "observability": "exact", "quota_type": "billing_balance", "confidence": 0.9,
+                }
+            }), encoding="utf-8")
+            mq = load_model_quota(td)
+            report = mq.assess_quota_confidence(["deepseek-v4-pro"], min_confidence=0.5)
+            self.assertFalse(report["ok"])
+            self.assertEqual(report["status"], "FAIL_CLOSED")
+            self.assertEqual(report["failures"][0]["reasons"], ["missing_quota_timestamp"])
+    def test_record_snapshot_preserves_fresh_exact_balance_from_empty_response_headers(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            state_path = str(Path(td) / "state" / "model_quota_state.json")
+            log_path = str(Path(td) / "logs" / "model-quota.jsonl")
+            exact = {
+                "model": "deepseek-v4-pro",
+                "provider": "deepseek",
+                "status": "ok",
+                "observability": "exact",
+                "quota_type": "billing_balance",
+                "remaining_usd": 34.98,
+                "confidence": 0.85,
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "stale_after_seconds": 300,
+                "source": "balance_endpoint",
+            }
+            mq.record_snapshot(exact, state_path=state_path, log_path=log_path)
+            preserved = mq.record_call(
+                model="deepseek-v4-pro",
+                provider="deepseek",
+                ok=True,
+                headers={"date": "Sat, 09 May 2026 08:52:00 GMT"},
+                usage={"prompt_tokens": 28, "completion_tokens": 2},
+                state_path=state_path,
+                log_path=log_path,
+            )
+            self.assertEqual(preserved["observability"], "exact")
+            self.assertEqual(preserved["remaining_usd"], 34.98)
+            self.assertTrue(preserved["preserved_from_lower_confidence_update"])
+            state = json.loads(Path(state_path).read_text())
+            self.assertEqual(state["deepseek::deepseek-v4-pro"]["observability"], "exact")
+            self.assertNotIn("preserved_from_lower_confidence_update", state["deepseek::deepseek-v4-pro"])
+
+    def test_record_snapshot_allows_safety_blocker_to_replace_exact_balance(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            state_path = str(Path(td) / "state" / "model_quota_state.json")
+            exact = {
+                "model": "deepseek-v4-pro",
+                "provider": "deepseek",
+                "status": "ok",
+                "observability": "exact",
+                "quota_type": "billing_balance",
+                "remaining_usd": 34.98,
+                "confidence": 0.85,
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+                "stale_after_seconds": 300,
+                "source": "balance_endpoint",
+            }
+            mq.record_snapshot(exact, state_path=state_path)
+            blocker = mq.record_call(
+                model="deepseek-v4-pro",
+                provider="deepseek",
+                ok=False,
+                headers={"retry-after": "60"},
+                error="HTTP 429 rate_limit exceeded",
+                state_path=state_path,
+            )
+            self.assertEqual(blocker["status"], "exhausted")
+            self.assertEqual(blocker["error_class"], "rate_limit")
+            state = json.loads(Path(state_path).read_text())
+            self.assertEqual(state["deepseek::deepseek-v4-pro"]["status"], "exhausted")
 
 
 if __name__ == "__main__":

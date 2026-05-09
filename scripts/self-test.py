@@ -226,6 +226,7 @@ for script_name in (
     "consult_models.py",
     "model_quota.py",
     "p10-health-safe.py",
+    "multi-model-smoke.py",
     "multi-model-smoke-safe.py",
     "multi-model-smoke-every4h-wrapper.py",
     "multi-model-smoke-daily-full-wrapper.py",
