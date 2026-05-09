@@ -19,7 +19,9 @@ from typing import Any
 HOME = Path.home()
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", HOME / ".hermes")).expanduser()
 SCRIPTS = HERMES_HOME / "scripts"
-DEFAULT_ALLOWLIST = HERMES_HOME / "config" / "autonomy-write-allowlist.json"
+DEFAULT_ALLOWLIST = Path(
+    os.environ.get("HERMES_AUTONOMY_WRITE_ALLOWLIST", str(HERMES_HOME / "config" / "autonomy-write-allowlist.json"))
+).expanduser()
 WRITE_SURFACES = {
     "goal",
     "kanban-worker",
@@ -31,6 +33,7 @@ WRITE_SURFACES = {
 }
 READONLY_MODES = {"read", "dry-run", "dispatch-hint"}
 WRITE_MODES = {"budget-handoff", "autonomous-execution"}
+CONTROL_PLANE_OPERATIONS = {"claim-and-handoff"}
 
 
 def load_allowlist(path: Path) -> set[str]:
@@ -66,7 +69,7 @@ def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> d
     known_surface = surface in WRITE_SURFACES
     add("known_write_surface", known_surface, surface=surface, known=sorted(WRITE_SURFACES))
 
-    if operation in READONLY_MODES or mode == "dispatch-hint":
+    if operation in READONLY_MODES:
         pre = run_precondition("dispatch-hint")
         add("dispatch_hint_precondition", pre["ok"], precondition=pre)
         failed = [c["name"] for c in checks if not c.get("ok")]
@@ -80,6 +83,26 @@ def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> d
             "failed_required_checks": failed,
             "checks": checks,
             "policy": "read/dry-run surfaces may pass with dispatch-hint only; no external write authorized",
+        }
+
+    if operation in CONTROL_PLANE_OPERATIONS:
+        allowlisted = surface in allowlist
+        add("surface_allowlisted", allowlisted, allowlist_path=str(allowlist_path), allowlist=sorted(allowlist))
+        control_plane_mode_ok = mode == "dispatch-hint"
+        add("control_plane_mode_is_dispatch_hint", control_plane_mode_ok, allowed_modes=["dispatch-hint"])
+        pre = run_precondition("dispatch-hint")
+        add("dispatch_hint_precondition", pre["ok"], precondition=pre)
+        failed = [c["name"] for c in checks if not c.get("ok")]
+        return {
+            "schema_version": 1,
+            "surface": surface,
+            "operation": operation,
+            "mode": mode,
+            "status": "PASS" if not failed else "FAIL_CLOSED",
+            "ok": not failed,
+            "failed_required_checks": failed,
+            "checks": checks,
+            "policy": "bounded control-plane handoffs may mutate local task state only after surface allowlist and dispatch-hint precondition PASS; no task execution or external write authorized",
         }
 
     allowlisted = surface in allowlist
@@ -100,6 +123,19 @@ def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> d
         "checks": checks,
         "policy": "side-effecting writes require known surface, explicit allowlist, explicit mode, and autonomy-precondition PASS",
     }
+
+
+def guard_or_raise(surface: str, operation: str, mode: str, allowlist_path: Path | None = None) -> dict[str, Any]:
+    """Reusable caller-side guard.
+
+    Side-effecting integrations should call this immediately before performing
+    writes. It returns the full evidence object on PASS and raises
+    PermissionError with the same evidence JSON on FAIL_CLOSED.
+    """
+    result = evaluate(surface, operation, mode, allowlist_path or DEFAULT_ALLOWLIST)
+    if not result.get("ok"):
+        raise PermissionError(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:

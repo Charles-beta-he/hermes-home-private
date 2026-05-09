@@ -34,6 +34,7 @@ def make_env_and_vault():
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(root / "autorun-state")
     env["HERMES_BRAIN_DISPATCH_TICK_STATE_DIR"] = str(root / "tick-state")
     env["HERMES_BRAIN_DISPATCH_TICK_LOG_DIR"] = str(root / "tick-logs")
+    env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(root / "autonomy-write-allowlist.json")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     return td, vault, env
 
@@ -81,6 +82,7 @@ def test_tick_autorun_bridge_is_opt_in_and_fail_closed():
         assert task_row(env, task_id)["status"] == "pending"
 
         env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
         enabled_tick = json.loads(run([sys.executable, str(TICK), "--print-always", "--no-state", "--autorun"], env).stdout)
         assert enabled_tick["status"] == "OK", enabled_tick
         assert enabled_tick["autorun"]["status"] == "OK"
@@ -89,6 +91,32 @@ def test_tick_autorun_bridge_is_opt_in_and_fail_closed():
         assert task_row(env, task_id)["status"] == "claimed"
 
 
+def test_tick_print_always_records_no_agent_observability_policy():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        payload = json.loads(run([sys.executable, str(TICK), "--print-always", "--no-state"], env).stdout)
+        assert payload["observability"]["schema"] == "brain_task_dispatch_tick_observability_v1", payload
+        assert payload["observability"]["stdout_policy"] == "print_always", payload
+        assert payload["observability"]["printed"] is True, payload
+        assert payload["observability"]["log_file"], payload
+        assert "--print-always" in payload["observability"]["recovery_command"], payload
+
+
+def test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id = add_task(env)
+        payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state"], env).stdout)
+        assert payload["schema"] == "brain_task_dispatch_tick_summary_v1", payload
+        assert payload["status"] == "OK", payload
+        assert payload["stdout_policy"] == "summary", payload
+        assert "log_file" in payload and payload["log_file"], payload
+        assert "autorun" not in payload, payload
+        assert task_row(env, task_id)["status"] == "pending"
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
+    test_tick_print_always_records_no_agent_observability_policy()
+    test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun()
     print("PASS")

@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -33,6 +34,11 @@ AUTORUN_STATE_DIR = Path(os.environ.get("HERMES_BRAIN_AUTORUN_STATE_DIR", str(Pa
 AUTORUN_ALLOWLIST = AUTORUN_STATE_DIR / "auto_run_allowlist.json"
 AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
 AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
+HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
+AUTONOMY_WRITE_GUARD = HERMES_HOME / "scripts" / "autonomy-write-guard.py"
+AUTONOMY_WRITE_ALLOWLIST = Path(
+    os.environ.get("HERMES_AUTONOMY_WRITE_ALLOWLIST", str(HERMES_HOME / "config" / "autonomy-write-allowlist.json"))
+).expanduser()
 VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "blocked", "done", "archived", "expired"]
 STATUS_ALIASES = {"completed": "done"}  # legacy notes may use completed; normalize as terminal done.
 ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review", "blocked"}
@@ -88,6 +94,35 @@ def parse_dt(value: Any) -> datetime | None:
         return dt.astimezone(TZ)
     except Exception:
         return None
+
+
+def _load_autonomy_write_guard():
+    spec = importlib.util.spec_from_file_location("autonomy_write_guard", AUTONOMY_WRITE_GUARD)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"autonomy write guard unavailable: {AUTONOMY_WRITE_GUARD}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def guard_autorun_claim_and_handoff(task_id: str, actor: str) -> dict[str, Any]:
+    """Fail closed before local task-pool autorun mutates claim/handoff state."""
+    guard = _load_autonomy_write_guard()
+    evidence = guard.guard_or_raise("kanban-worker", "claim-and-handoff", "dispatch-hint", AUTONOMY_WRITE_ALLOWLIST)
+    evidence.setdefault("caller", "brain_task_orchestrator.auto-claim-and-handoff")
+    evidence.setdefault("task_id", task_id)
+    evidence.setdefault("actor", actor)
+    return evidence
+
+
+def parse_guard_error(exc: BaseException) -> dict[str, Any]:
+    try:
+        data = json.loads(str(exc))
+        if isinstance(data, dict):
+            return data
+    except Exception:
+        pass
+    return {"status": "FAIL_CLOSED", "ok": False, "error": str(exc)}
 
 
 def slugify(text: str) -> str:
@@ -1293,6 +1328,28 @@ def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
     task = find_task(str(eligibility["task_id"]))
     if not task.is_dispatchable():
         return {"status": "PASS", "claimed": False, "eligible": False, "reasons": ["task_not_dispatchable_after_eligibility"], "task_id": task.id, "safety": "fail-closed; no execution"}
+    try:
+        write_guard = guard_autorun_claim_and_handoff(task.id, args.actor)
+    except PermissionError as exc:
+        return {
+            "status": "FAIL_CLOSED",
+            "claimed": False,
+            "eligible": True,
+            "task_id": task.id,
+            "reasons": ["autonomy_write_guard_failed"],
+            "write_guard": parse_guard_error(exc),
+            "safety": "fail-closed; no claim, no handoff, no execution",
+        }
+    except Exception as exc:
+        return {
+            "status": "FAIL_CLOSED",
+            "claimed": False,
+            "eligible": True,
+            "task_id": task.id,
+            "reasons": ["autonomy_write_guard_unavailable"],
+            "write_guard": parse_guard_error(exc),
+            "safety": "fail-closed; no claim, no handoff, no execution",
+        }
     stamp = now()
     run_id = f"autorun-{stamp.strftime('%Y%m%d%H%M%S')}-{task.id[:24]}"
     claim = command_claim(argparse.Namespace(task=task.id, actor=args.actor, ttl_minutes=args.ttl_minutes, run_id=run_id, reason="auto-claim-and-handoff", force=False, json=True))
@@ -1341,6 +1398,7 @@ def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
         "handoff": str(handoff_path),
         "proof_hash": proof_hash,
         "proof_log": str(AUTORUN_PROOF_LOG),
+        "write_guard": write_guard,
         "safety": "claimed-and-handoff-only; does not execute task body or mark done",
     }
 

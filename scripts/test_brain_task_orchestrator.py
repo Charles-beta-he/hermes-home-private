@@ -30,6 +30,7 @@ def make_env_and_vault():
     env = os.environ.copy()
     env["HERMES_BRAIN_VAULT"] = str(vault)
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(Path(td.name) / "state")
+    env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     return td, vault, env
 
@@ -310,6 +311,14 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
         assert eligible["allowlist_hit"] is True
         assert eligible["mode"] == "allow"
 
+        guard_blocked = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--ttl-minutes", "15", "--json", check=False).stdout)
+        assert guard_blocked["status"] == "FAIL_CLOSED", guard_blocked
+        assert guard_blocked["claimed"] is False
+        assert "autonomy_write_guard_failed" in guard_blocked["reasons"]
+        assert "surface_allowlisted" in guard_blocked["write_guard"]["failed_required_checks"]
+        assert "status: pending" in task_path.read_text(encoding="utf-8")
+
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
         handoff = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--ttl-minutes", "15", "--json").stdout)
         assert handoff["status"] == "OK", handoff
         assert handoff["claimed"] is True
@@ -341,6 +350,7 @@ def test_autorun_done_requires_valid_proof_hash():
         state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
         state_dir.mkdir(parents=True, exist_ok=True)
         (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
         handoff = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--json").stdout)
         proof_hash = handoff["proof_hash"]
 
