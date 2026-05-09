@@ -1487,6 +1487,58 @@ def _is_conditional_advisory_patch(patch: dict) -> bool:
     return any(marker in rationale for marker in conditional_markers)
 
 
+def _plan_declares_no_action(plan: dict) -> bool:
+    """Return true when a planner explicitly frames its output as no-action certification."""
+    if not isinstance(plan, dict):
+        return False
+    diagnosis = plan.get("diagnosis") if isinstance(plan.get("diagnosis"), dict) else {}
+    root = str(diagnosis.get("root_cause_class") or "").strip().lower()
+    summary = str(diagnosis.get("summary") or "").strip().lower()
+    if root in {"no_action", "noop", "certification_only", "already_satisfied"}:
+        return True
+    no_action_markers = (
+        "all acceptance criteria satisfied",
+        "no severity>=3 blockers remain",
+        "no blockers remain",
+        "no change needed",
+        "operating as designed",
+        "current gates already pass",
+    )
+    return any(marker in summary for marker in no_action_markers)
+
+
+def _is_no_action_advisory_patch(patch: dict, plan: dict) -> bool:
+    """Classify low-risk follow-up ideas under a no-action plan as advisory.
+
+    Some planners certify the current system as complete but still emit low-risk
+    tune/document/observability follow-ups. Treating those as concrete blockers
+    creates a false noop-vs-change contradiction and prevents certification even
+    though the same plan says the acceptance criteria are already satisfied.
+    """
+    if not isinstance(patch, dict) or not _plan_declares_no_action(plan):
+        return False
+    op = str(patch.get("op", "")).strip().lower()
+    if op not in {"tune_threshold", "document", "update_docs", "add_observability", "add_metric"}:
+        return False
+    risk = str(patch.get("risk", "")).strip().lower()
+    blast = str(patch.get("blast_radius", "")).strip().lower()
+    if risk and risk not in {"low", "p2", "p3", "minor"}:
+        return False
+    rationale = str(patch.get("rationale", "")).strip().lower()
+    advisory_markers = (
+        "non-blocking",
+        "warning",
+        "observability",
+        "document",
+        "maintainer",
+        "tech debt",
+        "current gates already pass",
+        "without breaking current flow",
+    )
+    safe_scope = (not blast) or blast in {"single_tier", "single-file", "single_file", "none"}
+    return safe_scope and any(marker in rationale for marker in advisory_markers)
+
+
 def _planner_patch_summary(plans: List[dict]) -> dict:
     """Summarize planner patch intent after advisory/noop normalization.
 
@@ -1533,7 +1585,7 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
             op = str(patch_obj.get("op", "")).strip().lower()
             if op == "noop":
                 summary["noop_patch_count"] += 1
-            elif _is_conditional_advisory_patch(patch_obj):
+            elif _is_conditional_advisory_patch(patch_obj) or _is_no_action_advisory_patch(patch_obj, plan):
                 summary["conditional_advisory_patch_count"] += 1
             else:
                 summary["concrete_patch_count"] += 1
@@ -1594,7 +1646,7 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
             # A noop patch is an explicit certification/no-change vote, not a proposed
             # implementation delta. Heterogeneous noop ids alone should not create false
             # blockers, but noop-vs-real-change is still a real disagreement below.
-            if op == "noop" or _is_conditional_advisory_patch(patch):
+            if op == "noop" or _is_conditional_advisory_patch(patch) or _is_no_action_advisory_patch(patch, plan):
                 noop_seen = True
                 continue
             non_noop_seen = True
@@ -2038,9 +2090,25 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
         {"meta": {"planner_model": "model-b"}, "patches": [{"target_file": "scripts/consult_models.py", "op": "add_guard", "rationale": "concrete unresolved change"}]},
     ]
     conflict_discussion = run_discussion_rounds(conflict_plans, current_best={"patches": []}, models=["model-a", "model-b"], offline=True, evidence_bundle=supported_bundle)
-    report["discussion_matrix"] = {"clean": clean_discussion.get("status"), "conflict": conflict_discussion.get("status")}
+    advisory_plans = [
+        {"meta": {"planner_model": "model-a"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
+        {"meta": {"planner_model": "model-b"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
+        {"meta": {"planner_model": "model-c"}, "patches": [{"op": "noop", "rationale": "no change needed"}]},
+        {
+            "meta": {"planner_model": "model-d"},
+            "diagnosis": {"root_cause_class": "no_action", "summary": "all acceptance criteria satisfied; no severity>=3 blockers remain"},
+            "patches": [
+                {"target_file": "scripts/example.py", "op": "tune_threshold", "risk": "low", "rationale": "Non-blocking observability follow-up for a warning; current gates already pass."},
+                {"target_file": "scripts/example.py", "op": "document", "risk": "low", "rationale": "Document intentional fail-closed behavior for maintainers."},
+            ],
+        },
+    ]
+    advisory_summary = _planner_patch_summary(advisory_plans)
+    advisory_discussion = run_discussion_rounds(advisory_plans, current_best={"patches": [], "planner_patch_summary": advisory_summary}, models=["model-a", "model-b", "model-c", "model-d"], offline=True, evidence_bundle=supported_bundle)
+    report["discussion_matrix"] = {"clean": clean_discussion.get("status"), "conflict": conflict_discussion.get("status"), "advisory": advisory_discussion.get("status")}
     _append_analysis_check(report, "discussion", "offline_clean_discussion_certifies", clean_discussion.get("status") in {"certified", "certified_with_minor_risks"}, clean_discussion.get("reasons"))
     _append_analysis_check(report, "discussion", "offline_conflict_discussion_fails_closed", conflict_discussion.get("status") == "not_certified" and conflict_discussion.get("remaining_risks"), {"status": conflict_discussion.get("status"), "risks": conflict_discussion.get("remaining_risks")})
+    _append_analysis_check(report, "discussion", "offline_no_action_advisory_certifies", advisory_discussion.get("status") in {"certified", "certified_with_minor_risks"} and advisory_summary.get("certification_intent") == "no_action_certification" and advisory_summary.get("concrete_patch_count") == 0, {"status": advisory_discussion.get("status"), "summary": advisory_summary, "risks": advisory_discussion.get("remaining_risks")})
 
     if include_temp_audit:
         with tempfile.TemporaryDirectory(prefix="consult-models-selfcheck-") as td:

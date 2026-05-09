@@ -198,3 +198,4 @@ Post-review hardening after independent reviewer suggestions:
 - Added skill guidance: never paste raw Cookie/API key/token into prompts/logs/shell history/task notes; prefer permission-restricted config files.
 - Added multi-model loop runner automation: deterministic evidence first, then T3 quorum4 discussion, with ratification-first stop condition and fail-closed continuation ledger.
 - Live Round 2 hardening: added explicit `verify_ratification()` and `should_continue()` APIs plus tests after the first live quorum flagged P1/P2 ambiguity about whether the stop gate existed.
+- Live Round 3 hardening: fixed `consult_models.py` merge-orchestrator false blocker where one no-action planner emitted low-risk advisory `tune_threshold/document` follow-ups, causing `implementation_required` + empty merged `patches=[]`; no-action advisory plans now remain `no_action_certification` with `concrete_patch_count=0`.
