@@ -115,6 +115,55 @@ def test_build_consult_command_uses_quorum4_discussion_and_keep():
     assert "--max-rounds 5" in joined, cmd
 
 
+def test_ratification_artifact_exports_explicit_acceptance_fields():
+    module = load_module()
+    artifact = module.build_ratification_artifact(
+        certified_discussion(),
+        {"done": True, "next_action": "LOOP_DONE", "blocking_reasons": []},
+        discussion_result_path=Path("/tmp/discussion_result.json"),
+        issue_ledger_path=Path("/tmp/issue-ledger.json"),
+        state_path=Path("/tmp/state.json"),
+    )
+    assert artifact["consult_models"]["discussion_result_status"] == "certified", artifact
+    assert artifact["consult_models"]["agreement_matrix"]["approach"] == 0.95, artifact
+    assert len(artifact["consult_models"]["ratification_votes"]) == 4, artifact
+    assert artifact["consult_models"]["best_within_constraints_by_model"]["claude"] is True, artifact
+    assert artifact["consult_models"]["issue_ledger"][0]["status"] == "resolved", artifact
+    assert artifact["consult_models"]["remaining_risks"] == [], artifact
+    assert artifact["verifier"]["done"] is True, artifact
+
+
+def test_build_state_payload_records_quota_probe_and_ratification_export_claims():
+    module = load_module()
+    state = module.build_state_payload("q", {"status": "PASS", "commands": [], "failures": []}, 1)
+    claim_ids = {claim["id"] for claim in state["claims"]}
+    evidence_types = {evidence.get("type") for evidence in state["evidence"]}
+    assert "C-003" in claim_ids, state
+    assert "C-004" in claim_ids, state
+    assert "runner_capability_probe" in evidence_types, state
+    assert "model_quota_probe" in evidence_types, state
+    assert state["budget"]["model_quota_probe"]["status"] in {"ok", "unknown", "unavailable"}, state
+
+
+def test_ratification_selfcheck_cli_dumps_certification_artifact():
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        fixture = write_json(root / "discussion_result.json", certified_discussion())
+        r = subprocess.run([
+            sys.executable,
+            str(SCRIPT),
+            "ratification-selfcheck",
+            "--discussion-result",
+            str(fixture),
+            "--json",
+        ], capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr or r.stdout
+        payload = json.loads(r.stdout)
+        assert payload["status"] == "PASS", payload
+        assert payload["artifact"]["consult_models"]["discussion_result_status"] == "certified", payload
+        assert payload["artifact"]["consult_models"]["best_within_constraints_by_model"], payload
+
+
 def test_cli_fixture_certified_exits_zero_and_writes_state():
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -172,6 +221,9 @@ if __name__ == "__main__":
     test_unresolved_high_severity_issue_blocks_even_if_status_certified()
     test_run_consult_timeout_fails_closed_without_traceback()
     test_build_consult_command_uses_quorum4_discussion_and_keep()
+    test_ratification_artifact_exports_explicit_acceptance_fields()
+    test_build_state_payload_records_quota_probe_and_ratification_export_claims()
+    test_ratification_selfcheck_cli_dumps_certification_artifact()
     test_cli_fixture_certified_exits_zero_and_writes_state()
     test_cli_fixture_not_certified_max_rounds_fails_closed()
     print("PASS")
