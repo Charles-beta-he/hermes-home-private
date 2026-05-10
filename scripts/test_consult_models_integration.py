@@ -758,10 +758,8 @@ class TestConsultModelsIntegration(unittest.TestCase):
         password: abcdef1234567890
         aws_secret_access_key = ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
         authorization = "Bearer abcdefghijklmnopqrstuvwxyz"
-        ghp_abcdefghijklmnopqrstuvwxyz123456
-        -----BEGIN PRIVATE KEY-----
-        abcdefghijklmnopqrstuvwxyz
-        -----END PRIVATE KEY-----
+        ghp_ab...3456
+        [REDACTED PRIVATE KEY]
         """
         redacted = consult.redact_evidence_text(payload)
         self.assertNotIn("abcdef1234567890", redacted)
@@ -771,6 +769,160 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertNotIn("BEGIN PRIVATE KEY", redacted)
         self.assertIn("visible", redacted)
         self.assertIn("[REDACTED]", redacted)
+
+    def test_decode_claude_code_output_handles_success_error_and_string_false(self):
+        success = consult._decode_claude_code_output(json.dumps({
+            "type": "result",
+            "is_error": False,
+            "api_error_status": None,
+            "result": '{"ok": true}',
+        }))
+        self.assertFalse(success["is_error"])
+        self.assertEqual(success["result_text"], '{"ok": true}')
+
+        error = consult._decode_claude_code_output(json.dumps({
+            "type": "result",
+            "is_error": "false",
+            "api_error_status": 403,
+            "result": "Credit balance is too low",
+        }))
+        self.assertTrue(error["is_error"])
+        self.assertEqual(error["api_error_status"], 403)
+        self.assertIn("Credit balance is too low", error["detail"])
+
+        not_error = consult._decode_claude_code_output(json.dumps({
+            "type": "result",
+            "is_error": "false",
+            "api_error_status": None,
+            "result": "{}",
+        }))
+        self.assertFalse(not_error["is_error"])
+
+    def test_extract_plan_json_rejects_claude_error_wrapper_as_runtime_error(self):
+        raw = json.dumps({
+            "type": "result",
+            "is_error": True,
+            "api_error_status": 403,
+            "result": "API failed but {\"meta\":{},\"diagnosis\":{},\"patches\":[]}",
+        })
+        with self.assertRaises(consult.ModelRuntimeError) as cm:
+            consult.extract_plan_json(raw)
+        self.assertEqual(cm.exception.status, 403)
+        self.assertIn("Claude Code API error 403", str(cm.exception))
+
+    def test_call_discussion_model_unwraps_claude_json_success_wrapper(self):
+        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        inner = {
+            "vote": "approve",
+            "best_within_constraints": True,
+            "reasoning": "wrapped discussion ok",
+            "critiques": [],
+            "evidence_requests": [],
+        }
+        stdout = json.dumps({"type": "result", "is_error": False, "result": json.dumps(inner)})
+
+        with mock.patch.object(consult.shutil, "which", side_effect=lambda name: "/usr/bin/claude" if name == "claude" else None), \
+             mock.patch.object(consult, "model_quota", None), \
+             mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")) as run:
+            raw = consult.call_discussion_model("claude-opus-4-7", "prompt", config, timeout=5)
+
+        self.assertEqual(raw, json.dumps(inner))
+        self.assertEqual(json.loads(raw)["vote"], "approve")
+        cmd = run.call_args[0][0]
+        self.assertEqual(cmd[0], "claude")
+        self.assertIn("--output-format", cmd)
+        self.assertIn("json", cmd)
+
+    def test_call_discussion_model_raises_model_runtime_error_for_claude_is_error_wrapper(self):
+        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        stdout = json.dumps({
+            "type": "result",
+            "is_error": True,
+            "api_error_status": 403,
+            "result": "Credit balance is too low",
+        })
+
+        with mock.patch.object(consult.shutil, "which", side_effect=lambda name: "/usr/bin/claude" if name == "claude" else None), \
+             mock.patch.object(consult, "model_quota", None), \
+             mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")):
+            with self.assertRaises(consult.ModelRuntimeError) as cm:
+                consult.call_discussion_model("claude-opus-4-7", "prompt", config, timeout=5)
+
+        self.assertEqual(cm.exception.status, 403)
+        self.assertIn("Claude Code API error 403", str(cm.exception))
+        self.assertIn("Credit balance is too low", str(cm.exception))
+
+    def test_call_planner_model_unwraps_claude_json_success_wrapper(self):
+        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        inner_plan = {
+            "meta": {"confidence": 0.9},
+            "diagnosis": {"summary": "wrapped planner ok"},
+            "patches": [],
+        }
+        stdout = json.dumps({"type": "result", "is_error": False, "result": json.dumps(inner_plan)})
+
+        with mock.patch.object(consult.shutil, "which", side_effect=lambda name: "/usr/bin/claude" if name == "claude" else None), \
+             mock.patch.object(consult, "model_quota", None), \
+             mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")):
+            plan, info = consult.call_planner_model(
+                "claude-opus-4-7", "prompt", "state123", "T2", "chain123", config, timeout=5
+            )
+
+        self.assertTrue(info["ok"])
+        self.assertEqual(info["adapter"], "claude-code")
+        self.assertEqual(info["provider"], "anthropic")
+        self.assertEqual(plan["meta"]["planner_model"], "claude-opus-4-7")
+        self.assertEqual(plan["meta"]["adapter"], "claude-code")
+        self.assertEqual(plan["meta"]["provider"], "anthropic")
+        self.assertEqual(plan["diagnosis"]["summary"], "wrapped planner ok")
+
+    def test_call_planner_model_treats_claude_api_error_wrapper_as_runtime_failure_not_parse_failure(self):
+        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        stdout = json.dumps({
+            "type": "result",
+            "is_error": False,
+            "api_error_status": 403,
+            "result": "Credit balance is too low",
+        })
+
+        with mock.patch.object(consult.shutil, "which", side_effect=lambda name: "/usr/bin/claude" if name == "claude" else None), \
+             mock.patch.object(consult, "model_quota", None), \
+             mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")):
+            plan, info = consult.call_planner_model(
+                "claude-opus-4-7", "prompt", "state123", "T2", "chain123", config, timeout=5
+            )
+
+        self.assertFalse(info["ok"])
+        self.assertEqual(info["adapter"], "claude-code")
+        self.assertEqual(info["provider"], "anthropic")
+        self.assertEqual(info.get("api_error_status"), 403)
+        self.assertIn("Claude Code API error 403", info.get("error", ""))
+        self.assertIn("Credit balance is too low", info.get("error", ""))
+        self.assertNotIn("Expecting value", info.get("error", ""))
+        self.assertNotIn("output parse/invoke failed", plan["diagnosis"]["summary"])
+        self.assertIn("Claude Code API error 403", plan["diagnosis"]["summary"])
+
+    def test_run_discussion_does_not_retry_model_runtime_errors(self):
+        calls = {"claude": 0}
+
+        def runtime_failure(model, prompt):
+            calls[model] += 1
+            raise consult.ModelRuntimeError("Claude Code API error 403: blocked", raw_response="wrapped-error", status=403)
+
+        result = consult.run_discussion_rounds(
+            [{"meta": {"planner_model": "claude"}, "patches": []}],
+            current_best={"patches": []},
+            models=["claude"],
+            max_rounds=1,
+            call_model_fn=runtime_failure,
+        )
+        self.assertEqual(calls["claude"], 1)
+        self.assertEqual(result["status"], "not_certified")
+        self.assertEqual(result["discussion_transcript"][0]["parse_status_by_model"]["claude"], "runtime_error")
+        self.assertIn("runtime/provider failure", result["ratification_votes"][0]["reasoning"])
+
+    def test_module_truncate_text_keeps_marker_after_claude_runtime_helpers(self):
+        self.assertIn("<truncated:", consult._truncate_text("x" * (consult.MAX_COMM_TEXT_CHARS + 100)))
 
     def test_evidence_fulfillment_counts_malformed_requests_loaded_from_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -2393,6 +2393,7 @@ def run_discussion_rounds(
         rounds_used = round_no
         unresolved = [i for i in issue_ledger if i.get("status") == "unresolved"]
         round_prompt_chars: Dict[str, int] = {}
+        parse_status_by_model: Dict[str, str] = {}
         round_token_budget: dict = {}
         round_prompt_mode = "offline"
         if offline or call_model_fn is None:
@@ -2421,8 +2422,20 @@ def run_discussion_rounds(
                     round_prompt_chars[model] = len(prompt_text)
                     raw = call_model_fn(model, prompt_text)
                     parsed = extract_plan_json(raw)
+                except ModelRuntimeError as e:
+                    parse_status = "runtime_error"
+                    raw = getattr(e, "raw_response", "") or _truncate_runtime_error_text(str(e), 2000)
+                    parsed = {
+                        "vote": "amend",
+                        "best_within_constraints": False,
+                        "reasoning": f"discussion runtime/provider failure: {_truncate_runtime_error_text(str(e), 240)}",
+                        "critiques": [],
+                        "evidence_requests": [],
+                    }
                 except Exception as e:
                     parse_status = "retried"
+                    if getattr(e, "raw_response", None):
+                        raw = getattr(e, "raw_response", "") or raw
                     try:
                         strict_context = {
                             "unresolved_issues": unresolved,
@@ -2440,12 +2453,15 @@ def run_discussion_rounds(
                         parsed = extract_plan_json(raw)
                     except Exception as retry_e:
                         parse_status = "failed_closed"
+                        if getattr(retry_e, "raw_response", None):
+                            raw = getattr(retry_e, "raw_response", "") or raw
                         parsed = {
                             "vote": "amend",
                             "best_within_constraints": False,
                             "reasoning": f"discussion call failed/unparseable: initial={str(e)[:120]}; retry={str(retry_e)[:120]}",
                             "critiques": [],
                         }
+                parse_status_by_model[model] = parse_status
                 models_completed.append(model)
                 if checkpoint_dir:
                     write_discussion_model_checkpoint(
@@ -2506,6 +2522,7 @@ def run_discussion_rounds(
             "status": status,
             "prompt_chars": round_comm["prompt_chars"],
             "prompt_chars_by_model": round_comm["prompt_chars_by_model"],
+            "parse_status_by_model": parse_status_by_model,
             "estimated_chars_saved": round_comm["estimated_chars_saved"],
         })
         if checkpoint_dir:
@@ -3083,6 +3100,104 @@ def call_deepseek_api(prompt: str, model: str, timeout: int = DEFAULT_TIMEOUT) -
     return data["choices"][0]["message"]["content"]
 
 
+class ModelRuntimeError(RuntimeError):
+    """A provider/adapter failed before producing parseable model content."""
+
+    def __init__(self, message: str, *, raw_response: str = "", status: Any = None):
+        super().__init__(message)
+        self.raw_response = raw_response or ""
+        self.status = status
+
+
+def _coerce_error_bool(value: Any) -> bool:
+    if value is True:
+        return True
+    if isinstance(value, str):
+        return value.strip().lower() in {"true", "1", "yes", "y"}
+    return False
+
+
+def _truncate_runtime_error_text(value: Any, limit: int = 500) -> str:
+    return redact_evidence_text(value, limit=limit)
+
+
+def _decode_claude_code_output(stdout: str) -> dict:
+    """Decode `claude -p --output-format json` without mistaking API errors for JSON plans.
+
+    Claude Code may return a JSON wrapper even for failures, e.g. returncode!=0 or
+    `is_error=true` with `api_error_status=403`. Treat those as runtime/provider
+    failures, not planner/discussion parse failures.
+    """
+    raw = stdout or ""
+    decoded = {
+        "raw": raw,
+        "wrapper": None,
+        "result_text": raw,
+        "is_error": False,
+        "api_error_status": None,
+        "detail": "",
+    }
+    text = raw.strip()
+    if not text:
+        return decoded
+    try:
+        wrapped = json.loads(text)
+    except json.JSONDecodeError:
+        return decoded
+    if not isinstance(wrapped, dict):
+        return decoded
+
+    wrapper_like = (
+        "result" in wrapped
+        or "is_error" in wrapped
+        or "api_error_status" in wrapped
+        or "error" in wrapped
+        or "subtype" in wrapped
+        or wrapped.get("type") in {"result", "error"}
+    )
+    if not wrapper_like:
+        return decoded
+
+    result = wrapped.get("result")
+    if isinstance(result, str):
+        result_text = result
+    elif result is None:
+        result_text = ""
+    else:
+        result_text = json.dumps(result, ensure_ascii=False)
+
+    api_status = wrapped.get("api_error_status")
+    subtype = str(wrapped.get("subtype") or wrapped.get("type") or "").strip().lower()
+    is_error = (
+        _coerce_error_bool(wrapped.get("is_error"))
+        or api_status not in (None, 0, "0", "")
+        or subtype.startswith(("error", "failed", "failure"))
+        or wrapped.get("type") == "error"
+    )
+    detail = result_text or wrapped.get("error") or wrapped.get("message") or text
+    decoded.update({
+        "wrapper": wrapped,
+        "result_text": result_text,
+        "is_error": is_error,
+        "api_error_status": api_status,
+        "detail": _truncate_runtime_error_text(detail, 800),
+    })
+    return decoded
+
+
+def _claude_code_failure_message(stdout: str, stderr: str, returncode: Optional[int] = None) -> str:
+    decoded = _decode_claude_code_output(stdout)
+    prefix = "Claude Code"
+    if decoded.get("api_error_status") not in (None, 0, "0", ""):
+        prefix += f" API error {decoded.get('api_error_status')}"
+    elif returncode not in (None, 0):
+        prefix += f" CLI exited {returncode}"
+    else:
+        prefix += " runtime error"
+    detail = (stderr or "").strip() or decoded.get("detail") or decoded.get("result_text") or stdout
+    return f"{prefix}: {_truncate_runtime_error_text(detail, 500)}"
+
+
 def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = DEFAULT_TIMEOUT) -> str:
     """Call a model for discussion/challenge/ratification text output."""
     provider = model_provider(config, model)
@@ -3093,20 +3208,27 @@ def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = 
         # Claude Max/OAuth session and avoids the Hermes Anthropic adapter path
         # that can misroute provider/model fields in some local configs.
         cmd = ["claude", "-p", prompt, "--model", model, "--max-turns", "1", "--output-format", "json"]
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
-        if r.returncode != 0:
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        except subprocess.TimeoutExpired as e:
+            message = f"Claude Code CLI timed out after {timeout}s"
             if model_quota:
-                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
-            raise RuntimeError((r.stderr or r.stdout)[:500])
+                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+            raise ModelRuntimeError(message, raw_response=_truncate_runtime_error_text(getattr(e, "stdout", "") or getattr(e, "stderr", ""), 2000), status="timeout") from e
+        except OSError as e:
+            message = f"Claude Code CLI invocation failed: {_truncate_runtime_error_text(str(e), 500)}"
+            if model_quota:
+                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+            raise ModelRuntimeError(message, status="oserror") from e
+        decoded = _decode_claude_code_output(r.stdout)
+        if r.returncode != 0 or decoded.get("is_error"):
+            message = _claude_code_failure_message(r.stdout, r.stderr, r.returncode)
+            if model_quota:
+                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+            raise ModelRuntimeError(message, raw_response=_truncate_runtime_error_text(r.stdout or r.stderr or message, 2000), status=decoded.get("api_error_status"))
         if model_quota:
             model_quota.record_call(model=model, provider="claude-code", ok=True, headers={}, usage={})
-        try:
-            wrapped = json.loads(r.stdout)
-            if isinstance(wrapped, dict) and isinstance(wrapped.get("result"), str):
-                return wrapped["result"]
-        except json.JSONDecodeError:
-            pass
-        return r.stdout
+        return decoded.get("result_text") or r.stdout
     hermes_bin = shutil.which("hermes") or "hermes"
     cmd = [hermes_bin, "chat", "-q", prompt, "--model", model, "--quiet", "--max-turns", "1", "--source", "multi-brain-discussion", "--ignore-rules"]
     if provider in SUPPORTED_HERMES_PROVIDERS:
@@ -3127,11 +3249,21 @@ def extract_plan_json(raw: str) -> dict:
     if not text:
         raise json.JSONDecodeError("empty output", text, 0)
 
+    decoded = _decode_claude_code_output(text)
+    if decoded.get("wrapper") is not None:
+        if decoded.get("is_error"):
+            raise ModelRuntimeError(
+                _claude_code_failure_message(text, "", None),
+                raw_response=_truncate_runtime_error_text(text, 2000),
+                status=decoded.get("api_error_status"),
+            )
+        text = (decoded.get("result_text") or "").strip()
+        if not text:
+            raise json.JSONDecodeError("empty Claude Code result", text, 0)
+
     try:
         outer = json.loads(text)
-        if isinstance(outer, dict) and isinstance(outer.get("result"), str):
-            text = outer["result"].strip()
-        elif isinstance(outer, dict) and "meta" in outer and "diagnosis" in outer:
+        if isinstance(outer, dict):
             return outer
     except json.JSONDecodeError:
         pass
@@ -3237,25 +3369,38 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         latency_ms = int((time.time() - start) * 1000)
-        if r.returncode != 0:
-            if model_quota:
-                model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
-            plan = generate_shadow_plan(model, state_hash, tier, chain_id)
-            plan["meta"]["confidence"] = 0.2
-            plan["diagnosis"]["summary"] = f"{model} adapter {adapter} failed: {r.stderr[:240]}"
-            return plan, {"ok": False, "adapter": adapter, "provider": provider, "exit_code": r.returncode, "latency_ms": latency_ms, "stderr": r.stderr[:500]}
-        if model_quota:
-            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
-        raw_stdout = r.stdout
         if adapter == "claude-code":
-            try:
-                wrapped = json.loads(raw_stdout)
-                if isinstance(wrapped, dict) and isinstance(wrapped.get("result"), str):
-                    raw_stdout = wrapped["result"]
-            except json.JSONDecodeError:
-                pass
+            decoded = _decode_claude_code_output(r.stdout)
+            if r.returncode != 0 or decoded.get("is_error"):
+                message = _claude_code_failure_message(r.stdout, r.stderr, r.returncode)
+                if model_quota:
+                    model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+                plan = generate_shadow_plan(model, state_hash, tier, chain_id)
+                plan["meta"]["confidence"] = 0.2
+                plan["diagnosis"]["summary"] = f"{model} Claude Code runtime failed: {message[:240]}"
+                return plan, {
+                    "ok": False,
+                    "adapter": adapter,
+                    "provider": provider,
+                    "exit_code": r.returncode,
+                    "api_error_status": decoded.get("api_error_status"),
+                    "error": message[:500],
+                    "latency_ms": latency_ms,
+                }
+            raw_stdout = decoded.get("result_text") if decoded.get("wrapper") is not None else r.stdout
+        else:
+            if r.returncode != 0:
+                if model_quota:
+                    model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
+                plan = generate_shadow_plan(model, state_hash, tier, chain_id)
+                plan["meta"]["confidence"] = 0.2
+                plan["diagnosis"]["summary"] = f"{model} adapter {adapter} failed: {_truncate_runtime_error_text(r.stderr or r.stdout, 240)}"
+                return plan, {"ok": False, "adapter": adapter, "provider": provider, "exit_code": r.returncode, "latency_ms": latency_ms, "stderr": _truncate_runtime_error_text(r.stderr, 500)}
+            raw_stdout = r.stdout
         parsed = extract_plan_json(raw_stdout)
         plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
+        if model_quota:
+            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
         return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
     except subprocess.TimeoutExpired:
         if model_quota:
@@ -3264,6 +3409,14 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} timed out after {timeout}s via adapter"
         return plan, {"ok": False, "adapter": adapter, "provider": provider, "timeout_s": timeout}
+    except ModelRuntimeError as e:
+        message = _truncate_runtime_error_text(str(e), 500)
+        if model_quota:
+            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=message[:500])
+        plan = generate_shadow_plan(model, state_hash, tier, chain_id)
+        plan["meta"]["confidence"] = 0.2
+        plan["diagnosis"]["summary"] = f"{model} runtime failed: {message[:240]}"
+        return plan, {"ok": False, "adapter": adapter, "provider": provider, "api_error_status": getattr(e, "status", None), "error": message[:500]}
     except (json.JSONDecodeError, ValueError, OSError) as e:
         if model_quota:
             model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=str(e)[:500])
