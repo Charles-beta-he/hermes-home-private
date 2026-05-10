@@ -110,6 +110,29 @@ ratification_artifact: artifact:mission-incident-mm-advisory
     task_path.write_text(text, encoding="utf-8")
 
 
+def add_mission_node_fields(task_path, *, mission_id="mission-alpha", node_id="node-a", depends_on=None, gates=None):
+    depends_on = depends_on or []
+    gates = gates or []
+    text = task_path.read_text(encoding="utf-8")
+    marker = "evidence: []"
+    fields = (
+        f"mission_id: {mission_id}\n"
+        f"mission_node_id: {node_id}\n"
+        f"mission_node_depends_on: {json.dumps(depends_on, ensure_ascii=False)}\n"
+        f"permission_gates: {json.dumps(gates, ensure_ascii=False)}\n"
+    )
+    text = text.replace('concepts: ["task"]', 'concepts: ["missions", "mission-node"]', 1)
+    text = text.replace(marker, fields + marker, 1)
+    task_path.write_text(text, encoding="utf-8")
+
+
+def mark_task_done_directly(task_path):
+    text = task_path.read_text(encoding="utf-8")
+    text = text.replace("status: pending", "status: done", 1)
+    text = text.replace("evidence: []", "evidence:\n  - command: fixture done PASS", 1)
+    task_path.write_text(text, encoding="utf-8")
+
+
 def test_mission_envelope_schema_is_enforced_fail_closed():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -527,6 +550,78 @@ def test_lane_architecture_alignment_and_work_priority_gate():
         assert any("evolution architecture alignment missing" in f for f in selfcheck["failures"]), selfcheck
 
 
+def test_mission_dag_dashboard_progress_and_ready_nodes():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        a_id, a_path = add_task(env, title="Mission DAG A done", priority="P1", project="mission-project")
+        b_id, b_path = add_task(env, title="Mission DAG B ready", priority="P1", project="mission-project")
+        c_id, c_path = add_task(env, title="Mission DAG C blocked", priority="P1", project="mission-project")
+        add_mission_node_fields(a_path, node_id="node-a")
+        add_mission_node_fields(b_path, node_id="node-b", depends_on=["node-a"])
+        add_mission_node_fields(c_path, node_id="node-c", depends_on=["node-b"])
+        mark_task_done_directly(a_path)
+
+        rows = json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"]
+        row_b = next(r for r in rows if r["id"] == b_id)
+        row_c = next(r for r in rows if r["id"] == c_id)
+        assert row_b["mission_node_ready"] is True, row_b
+        assert row_c["mission_node_ready"] is False, row_c
+        assert any("waiting_for_dependency:node-b" in x for x in row_c["mission_node_blockers"]), row_c
+
+        dry = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+        assert dry["dispatchable"] is True, dry
+        assert dry["next"]["id"] == b_id, dry
+
+        dash = json.loads(run(env, "dashboard", "--write", "--json").stdout)
+        summary = next(s for s in dash["mission_summaries"] if s["mission_id"] == "mission-alpha")
+        assert summary["total_nodes"] == 3, summary
+        assert summary["done_nodes"] == 1, summary
+        assert summary["ready_nodes"] == ["node-b"], summary
+        assert any(b["node"] == "node-c" and "waiting_for_dependency:node-b" in b["blockers"] for b in summary["blocked_nodes"]), summary
+        dashboard_text = Path(dash["dashboard"]).read_text(encoding="utf-8")
+        assert "## Mission DAG Progress" in dashboard_text
+        assert "mission-alpha" in dashboard_text
+
+
+def test_mission_dag_cycle_fails_boundary_and_dispatch():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        a_id, a_path = add_task(env, title="Mission DAG cycle A", priority="P1", project="mission-cycle")
+        b_id, b_path = add_task(env, title="Mission DAG cycle B", priority="P1", project="mission-cycle")
+        add_mission_node_fields(a_path, mission_id="mission-cycle", node_id="node-a", depends_on=["node-b"])
+        add_mission_node_fields(b_path, mission_id="mission-cycle", node_id="node-b", depends_on=["node-a"])
+
+        boundary = json.loads(run(env, "boundary-check", "--json", check=False).stdout)
+        assert boundary["status"] == "FAIL", boundary
+        assert any(i.get("reason") == "mission_dag_cycle" for i in boundary["invalid"]), boundary
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        assert next(r for r in rows if r["id"] == a_id)["dispatchable"] is False
+        assert next(r for r in rows if r["id"] == b_id)["dispatchable"] is False
+
+
+def test_autorun_runner_pauses_on_pending_permission_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Mission runner asks human", priority="P1", project="mission-runner")
+        add_mission_node_fields(task_path, mission_id="mission-runner", node_id="ask-human", gates=["ask-human:pending"])
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
+
+        eligibility = json.loads(run(env, "eligibility-check", "--task", task_id, "--json").stdout)
+        assert eligibility["eligible"] is False, eligibility
+        assert "permission_gate_pending" in eligibility["reasons"], eligibility
+
+        runner = json.loads(run(env, "autorun-runner", "--task", task_id, "--actor", "hermes-autorun", "--json").stdout)
+        assert runner["status"] == "PASS", runner
+        assert runner["runner_status"] == "paused_permission_gate", runner
+        assert runner["claimed"] is False, runner
+        assert "status: pending" in task_path.read_text(encoding="utf-8")
+
+
 def test_autorun_eligibility_and_handoff_are_fail_closed():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -719,6 +814,9 @@ def main():
     test_lifecycle_transition_retry_sets_delay_and_count()
     test_lifecycle_fail_closed_edges()
     test_lane_architecture_alignment_and_work_priority_gate()
+    test_mission_dag_dashboard_progress_and_ready_nodes()
+    test_mission_dag_cycle_fails_boundary_and_dispatch()
+    test_autorun_runner_pauses_on_pending_permission_gate()
     test_autorun_eligibility_and_handoff_are_fail_closed()
     test_autorun_kill_switches_and_evolution_preemption_gate()
     test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed()

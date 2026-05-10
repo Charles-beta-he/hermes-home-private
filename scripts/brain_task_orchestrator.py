@@ -241,7 +241,7 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         "mission_schema_version", "mission_id", "mission_title", "mission_objective", "mission_constraints",
         "red_lines", "non_goals", "evidence_refs", "acceptance_criteria", "dag_nodes", "checkpoint_states",
         "permission_gates", "handoff_artifacts", "proof_artifacts", "rollback_signal", "certification_status",
-        "ratification_artifact",
+        "ratification_artifact", "mission_node_id", "mission_node_depends_on", "mission_node_kind",
         "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary", "evidence", "concepts"
     ]
     keys = preferred + [k for k in fm.keys() if k not in preferred]
@@ -311,7 +311,15 @@ def is_mission_envelope_fm(fm: dict[str, Any]) -> bool:
     concepts = {x.lower() for x in list_value(fm.get("concepts"))}
     if "mission-envelope" in concepts:
         return True
-    return any(str(fm.get(field) or "").strip() for field in MISSION_ENVELOPE_REQUIRED_FIELDS)
+    # Child mission nodes may carry mission_id / permission_gates without being
+    # the full mission envelope. Treat only strong envelope fields as opt-in.
+    envelope_markers = {
+        "mission_schema_version", "mission_title", "mission_objective",
+        "red_lines", "non_goals", "acceptance_criteria", "dag_nodes",
+        "checkpoint_states", "handoff_artifacts", "proof_artifacts",
+        "rollback_signal", "certification_status", "ratification_artifact",
+    }
+    return any(str(fm.get(field) or "").strip() for field in envelope_markers)
 
 
 def mission_envelope_missing(fm: dict[str, Any]) -> list[str]:
@@ -345,6 +353,135 @@ def mission_envelope_missing(fm: dict[str, Any]) -> list[str]:
 
 def mission_envelope_valid(fm: dict[str, Any]) -> bool:
     return not mission_envelope_missing(fm)
+
+
+def mission_node_id(task: "Task") -> str:
+    return str(task.fm.get("mission_node_id") or task.id).strip()
+
+
+def is_mission_node(task: "Task") -> bool:
+    return bool(str(task.fm.get("mission_id") or "").strip() and (task.fm.get("mission_node_id") or "mission-node" in {x.lower() for x in list_value(task.fm.get("concepts"))}))
+
+
+def permission_gate_pending(task: "Task") -> bool:
+    for gate in list_value(task.fm.get("permission_gates")):
+        g = gate.lower()
+        if any(token in g for token in ("ask-human", "human", "permission")) and not any(done in g for done in ("approved", "granted", "pass", "done", "ok")):
+            return True
+    return False
+
+
+def mission_groups(tasks: list["Task"] | None = None) -> dict[str, list["Task"]]:
+    groups: dict[str, list["Task"]] = {}
+    for t in (tasks if tasks is not None else iter_tasks()):
+        mid = str(t.fm.get("mission_id") or "").strip()
+        if mid and is_mission_node(t):
+            groups.setdefault(mid, []).append(t)
+    return groups
+
+
+def mission_dag_invalids(tasks: list["Task"] | None = None) -> list[dict[str, Any]]:
+    invalid: list[dict[str, Any]] = []
+    for mid, group in mission_groups(tasks).items():
+        by_node: dict[str, "Task"] = {}
+        for t in group:
+            node = mission_node_id(t)
+            if node in by_node:
+                invalid.append({"mission_id": mid, "task": t.id, "node": node, "reason": "mission_dag_duplicate_node"})
+            by_node[node] = t
+        graph: dict[str, list[str]] = {}
+        for t in group:
+            node = mission_node_id(t)
+            deps = list_value(t.fm.get("mission_node_depends_on"))
+            graph[node] = deps
+            for dep in deps:
+                if dep not in by_node and dep not in {x.id for x in group}:
+                    invalid.append({"mission_id": mid, "task": t.id, "node": node, "dependency": dep, "reason": "mission_dag_missing_dependency"})
+        visiting: set[str] = set()
+        visited: set[str] = set()
+        cycle_nodes: set[str] = set()
+
+        def dfs(node: str, stack: list[str]) -> None:
+            if node in visiting:
+                if node in stack:
+                    cycle_nodes.update(stack[stack.index(node):])
+                else:
+                    cycle_nodes.add(node)
+                return
+            if node in visited:
+                return
+            visiting.add(node)
+            for dep in graph.get(node, []):
+                if dep in by_node:
+                    dfs(dep, stack + [dep])
+            visiting.remove(node)
+            visited.add(node)
+
+        for node in list(graph):
+            dfs(node, [node])
+        for node in sorted(cycle_nodes):
+            invalid.append({"mission_id": mid, "task": by_node[node].id, "node": node, "reason": "mission_dag_cycle"})
+    return invalid
+
+
+def mission_node_blockers(task: "Task") -> list[str]:
+    if not is_mission_node(task):
+        return []
+    blockers: list[str] = []
+    mid = str(task.fm.get("mission_id") or "").strip()
+    group = mission_groups().get(mid, [])
+    by_node = {mission_node_id(t): t for t in group}
+    by_task = {t.id: t for t in group}
+    invalid = mission_dag_invalids(group)
+    for item in invalid:
+        if item.get("task") == task.id:
+            blockers.append(str(item.get("reason")))
+    for dep in list_value(task.fm.get("mission_node_depends_on")):
+        dep_task = by_node.get(dep) or by_task.get(dep)
+        if dep_task is None:
+            blockers.append(f"missing_dependency:{dep}")
+        elif dep_task.status != "done":
+            blockers.append(f"waiting_for_dependency:{dep}")
+    if permission_gate_pending(task):
+        blockers.append("permission_gate_pending")
+    return sorted(set(blockers))
+
+
+def mission_node_ready(task: "Task") -> bool:
+    return is_mission_node(task) and not mission_node_blockers(task) and task.is_dispatchable(ignore_mission_node=True)
+
+
+def mission_dag_summaries(tasks: list["Task"] | None = None) -> list[dict[str, Any]]:
+    tasks = tasks if tasks is not None else iter_tasks()
+    invalid = mission_dag_invalids(tasks)
+    invalid_by_mission: dict[str, list[dict[str, Any]]] = {}
+    for item in invalid:
+        invalid_by_mission.setdefault(str(item.get("mission_id") or ""), []).append(item)
+    summaries: list[dict[str, Any]] = []
+    for mid, group in sorted(mission_groups(tasks).items()):
+        ready: list[str] = []
+        blocked: list[dict[str, Any]] = []
+        done = 0
+        for t in sorted(group, key=lambda x: mission_node_id(x)):
+            node = mission_node_id(t)
+            if t.status == "done":
+                done += 1
+            blockers = mission_node_blockers(t)
+            if mission_node_ready(t):
+                ready.append(node)
+            elif blockers:
+                blocked.append({"node": node, "task": t.id, "status": t.status, "blockers": blockers})
+        total = len(group)
+        summaries.append({
+            "mission_id": mid,
+            "total_nodes": total,
+            "done_nodes": done,
+            "ready_nodes": ready,
+            "blocked_nodes": blocked,
+            "invalid": invalid_by_mission.get(mid, []),
+            "progress_percent": int((done / total) * 100) if total else 0,
+        })
+    return summaries
 
 
 @dataclasses.dataclass
@@ -438,7 +575,7 @@ class Task:
             score -= 1000
         return score
 
-    def is_dispatchable(self, at: datetime | None = None) -> bool:
+    def is_dispatchable(self, at: datetime | None = None, *, ignore_mission_node: bool = False) -> bool:
         at = at or now()
         if self.status in TERMINAL_STATUSES:
             return False
@@ -454,6 +591,8 @@ class Task:
             return False
         if is_mission_envelope_fm(self.fm) and not mission_envelope_valid(self.fm):
             return False
+        if not ignore_mission_node and mission_node_blockers(self):
+            return False
         return True
 
     def row(self) -> dict[str, Any]:
@@ -467,6 +606,10 @@ class Task:
             "architecture_target": self.architecture_target,
             "architecture_aligned": self.architecture_aligned(),
             "mission_id": str(self.fm.get("mission_id") or ""),
+            "mission_node_id": mission_node_id(self) if is_mission_node(self) else "",
+            "mission_node_depends_on": list_value(self.fm.get("mission_node_depends_on")),
+            "mission_node_blockers": mission_node_blockers(self),
+            "mission_node_ready": mission_node_ready(self),
             "mission_envelope": is_mission_envelope_fm(self.fm),
             "mission_envelope_valid": mission_envelope_valid(self.fm),
             "mission_envelope_missing": mission_envelope_missing(self.fm),
@@ -1103,6 +1246,7 @@ def render_dashboard() -> tuple[str, str]:
     tasks = sorted_tasks(include_done=False)
     all_tasks = iter_tasks()
     c = counts(all_tasks)
+    mission_summaries = mission_dag_summaries(all_tasks)
     stamp = iso()
     top_rows = tasks[:25]
     table = ["| Rank | Score | Lane | Architecture | Priority | Status | Task | Project | Lease / Due |", "|---:|---:|---|---|---|---|---|---|---|"]
@@ -1113,6 +1257,14 @@ def render_dashboard() -> tuple[str, str]:
         arch = t.architecture_target or ("aligned" if t.architecture_aligned() else "missing")
         table.append(f"| {i} | {t.score()} | {t.lane} | {arch} | {t.priority} | {t.status} | {obsidian_link(t.path)} | {t.project} | {marker or lease or due} |")
     table_text = "\n".join(table)
+    mission_table = ["| Mission | Progress | Done / Total | Ready Nodes | Blocked Nodes | Invalid |", "|---|---:|---:|---|---|---|"]
+    for m in mission_summaries:
+        blocked = "; ".join(f"{b['node']}({','.join(b['blockers'])})" for b in m.get("blocked_nodes", []))
+        invalid = "; ".join(str(i.get("reason")) + ":" + str(i.get("node", i.get("task", ""))) for i in m.get("invalid", []))
+        mission_table.append(
+            f"| {m['mission_id']} | {m['progress_percent']}% | {m['done_nodes']} / {m['total_nodes']} | {', '.join(m.get('ready_nodes', [])) or '-'} | {blocked or '-'} | {invalid or '-'} |"
+        )
+    mission_table_text = "\n".join(mission_table)
     dashboard = f"""---
 type: dashboard
 status: active
@@ -1168,6 +1320,10 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
 ## Sorted Active Task Pool
 
 {table_text}
+
+## Mission DAG Progress
+
+{mission_table_text}
 
 ## Safety Invariants
 
@@ -1443,6 +1599,7 @@ def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
             invalid.append({"task": t.id, "path": str(t.path), "lane": t.lane, "reason": "invalid_lane"})
         if t.status in CLAIM_BOUND_STATUSES and not (t.fm.get("claimed_by") and t.fm.get("claim_expires_at") and t.fm.get("run_id")):
             invalid.append({"task": t.id, "path": str(t.path), "status": t.status, "reason": "claim_bound_status_missing_lease_metadata"})
+    invalid.extend(mission_dag_invalids(tasks))
     boundary_index: dict[str, list[str]] = {}
     for t in dispatchable:
         boundary_index.setdefault(task_parallel_boundary_key(t), []).append(t.id)
@@ -1577,7 +1734,13 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
     elif not allowlist_hit:
         reasons.append("allowlist_miss")
     if task and not task.is_dispatchable():
-        reasons.append("task_not_dispatchable")
+        blockers = mission_node_blockers(task)
+        if "permission_gate_pending" in blockers:
+            reasons.append("permission_gate_pending")
+        elif blockers:
+            reasons.append("mission_node_blocked")
+        else:
+            reasons.append("task_not_dispatchable")
     proof_ok, proof_failures = verify_autorun_proof_chain()
     if not proof_ok:
         reasons.append("proof_chain_invalid")
@@ -1725,6 +1888,31 @@ def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def command_autorun_runner(args: argparse.Namespace) -> dict[str, Any]:
+    """Proof-gated bounded autorun bridge. It may claim + handoff only."""
+    eligibility = command_eligibility_check(args)
+    if not eligibility.get("eligible"):
+        reasons = eligibility.get("reasons", [])
+        runner_status = "paused_permission_gate" if "permission_gate_pending" in reasons else "denied"
+        return {
+            "status": "PASS",
+            "runner_status": runner_status,
+            "claimed": False,
+            "eligible": False,
+            "task_id": eligibility.get("task_id", ""),
+            "reasons": reasons,
+            "warnings": eligibility.get("warnings", []),
+            "safety": "bounded runner did not execute task body, did not claim, and did not mark done",
+        }
+    handoff = command_auto_claim_and_handoff(args)
+    return {
+        "status": handoff.get("status", "OK"),
+        "runner_status": "handoff_created" if handoff.get("claimed") else "denied",
+        **handoff,
+        "safety": "bounded runner stops after claim+handoff+proof head; no Markdown execution; no automatic done",
+    }
+
+
 def command_dashboard(args: argparse.Namespace) -> dict[str, Any]:
     ensure_inbox()
     dashboard, pool = render_dashboard()
@@ -1733,7 +1921,7 @@ def command_dashboard(args: argparse.Namespace) -> dict[str, Any]:
         atomic_write(DASHBOARD, dashboard)
         atomic_write(SORTED_POOL, pool)
         atomic_write(CONTROL_CENTER, control)
-    return {"status": "OK", "write": bool(args.write), "dashboard": str(DASHBOARD), "sorted_pool": str(SORTED_POOL), "control_center": str(CONTROL_CENTER), "active_count": len(sorted_tasks())}
+    return {"status": "OK", "write": bool(args.write), "dashboard": str(DASHBOARD), "sorted_pool": str(SORTED_POOL), "control_center": str(CONTROL_CENTER), "active_count": len(sorted_tasks()), "mission_summaries": mission_dag_summaries(iter_tasks())}
 
 
 def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
@@ -1922,6 +2110,13 @@ def build_parser() -> argparse.ArgumentParser:
     ahp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
     ahp.add_argument("--json", action="store_true")
 
+    arp = sub.add_parser("autorun-runner")
+    arp.add_argument("--task", default="")
+    arp.add_argument("--actor", default="hermes-autorun")
+    arp.add_argument("--ttl-minutes", type=int, default=60)
+    arp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
+    arp.add_argument("--json", action="store_true")
+
     sp = sub.add_parser("selfcheck")
     sp.add_argument("--json", action="store_true")
     return p
@@ -1965,6 +2160,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_eligibility_check(args), args.json)
     if args.cmd == "auto-claim-and-handoff":
         return print_result(command_auto_claim_and_handoff(args), args.json)
+    if args.cmd == "autorun-runner":
+        return print_result(command_autorun_runner(args), args.json)
     if args.cmd == "selfcheck":
         return print_result(command_selfcheck(args), args.json)
     raise SystemExit(2)
