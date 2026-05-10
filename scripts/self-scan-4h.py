@@ -11,6 +11,10 @@ HEALTH_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/health
 DB_PATH = os.path.join(SKILLS_DIR, "bayesian-agent", "confidence-db.json")
 RESULTS_PATH = os.path.join(SKILLS_DIR, "darwin-skill", "results.tsv")
 
+def get_vdot(record):
+    """Return V̇ across historical schema aliases (Vdot and V_dot)."""
+    return record.get("Vdot", record.get("V_dot", 0))
+
 def check_health():
     issues = []
     
@@ -20,7 +24,7 @@ def check_health():
             records = [json.loads(l) for l in f if l.strip()]
         if len(records) >= 2:
             recent = records[-3:]
-            vdots = [r.get("Vdot", 0) for r in recent]
+            vdots = [get_vdot(r) for r in recent]
             if all(v < -0.05 for v in vdots):
                 issues.append(f"CRITICAL: V̇ 连续 3 次负值 ({vdots})")
             elif vdots[-1] < -0.05:

@@ -12,6 +12,10 @@ DB_PATH = os.path.join(SKILLS_DIR, "bayesian-agent", "confidence-db.json")
 RESULTS_PATH = os.path.join(SKILLS_DIR, "darwin-skill", "results.tsv")
 DASHBOARD_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/evolution-dashboard.md")
 
+def get_vdot(record):
+    """Return V̇ across historical schema aliases (Vdot and V_dot)."""
+    return record.get('Vdot', record.get('V_dot', 0))
+
 def refresh():
     with open(DB_PATH, "r") as f:
         conf_db = json.load(f)
@@ -45,7 +49,7 @@ def refresh():
     if health_records:
         latest = health_records[-1]
         v = latest.get('V', 0.86)
-        vdot = latest.get('Vdot', 0)
+        vdot = get_vdot(latest)
         lines.append(f"  V = {v:.4f}")
         lines.append(f"  V̇ = {float(vdot):+.4f}")
         lines.append(f"  记录数: {len(health_records)}")
