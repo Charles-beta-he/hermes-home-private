@@ -11,6 +11,7 @@ With    --fix: apply patches when needed.
 """
 
 import re
+import json
 import os
 import sys
 import subprocess
@@ -135,6 +136,263 @@ register(
     r'# 2\. DeepSeek / Kimi thinking mode.*?needs_empty_reasoning',
     "Reposition 'reasoning' promotion before DeepSeek empty-string fallback",
     _fix_step_ordering,
+)
+
+
+
+# ── Check 3a: MemoryManager provider registration rollback ─────────────
+def _fix_memory_manager_provider_rollback(path):
+    with open(path, "r") as f:
+        content = f.read()
+
+    old = """        self._providers.append(provider)
+
+        # Index tool names → provider for routing
+        for schema in provider.get_tool_schemas():
+            tool_name = schema.get(\"name\", \"\")
+            if tool_name and tool_name not in self._tool_to_provider:
+                self._tool_to_provider[tool_name] = provider
+            elif tool_name in self._tool_to_provider:
+                logger.warning(
+                    \"Memory tool name conflict: '%s' already registered by %s, \"
+                    \"ignoring from %s\",
+                    tool_name,
+                    self._tool_to_provider[tool_name].name,
+                    provider.name,
+                )
+
+        logger.info(
+            \"Memory provider '%s' registered (%d tools)\",
+            provider.name,
+            len(provider.get_tool_schemas()),
+        )"""
+
+    new = """        self._providers.append(provider)
+
+        # Index tool names → provider for routing
+        # If get_tool_schemas() fails (dirty/uninitialized provider),
+        # roll back the registration to prevent global state pollution.
+        try:
+            schemas = list(provider.get_tool_schemas())
+            for schema in schemas:
+                tool_name = schema.get(\"name\", \"\")
+                if tool_name and tool_name not in self._tool_to_provider:
+                    self._tool_to_provider[tool_name] = provider
+                elif tool_name in self._tool_to_provider:
+                    logger.warning(
+                        \"Memory tool name conflict: '%s' already registered by %s, \"
+                        \"ignoring from %s\",
+                        tool_name,
+                        self._tool_to_provider[tool_name].name,
+                        provider.name,
+                    )
+        except Exception:
+            logger.error(
+                \"Memory provider '%s' failed get_tool_schemas(), rolling back registration\",
+                provider.name,
+            )
+            self._providers.remove(provider)
+            if not is_builtin:
+                self._has_external = False
+            return
+
+        logger.info(
+            \"Memory provider '%s' registered (%d tools)\",
+            provider.name,
+            len(schemas),
+        )"""
+
+    if old in content:
+        content = content.replace(old, new)
+        with open(path, "w") as f:
+            f.write(content)
+        return True
+    return False
+
+register(
+    "memory_manager_provider_rollback",
+    "agent/memory_manager.py",
+    r'self\._providers\.append\(provider\)\s+# Index tool names → provider for routing\s+for schema in provider\.get_tool_schemas\(\):',
+    "Wrap provider.get_tool_schemas() with rollback so failed memory providers do not pollute global state",
+    _fix_memory_manager_provider_rollback,
+)
+
+
+# ── Check 3b: prompt_builder memory ghost prevention ───────────────────
+def _fix_prompt_builder_ghost_prevention(path):
+    with open(path, "r") as f:
+        content = f.read()
+    if "GHOST PREVENTION: Never save WIP status" in content:
+        return False
+    old = """    \"Imperative phrasing gets re-read as a directive in later sessions and can \"
+    \"cause repeated work or override the user's current request. Procedures and \"
+    \"workflows belong in skills, not memory.\"
+)"""
+    new = """    \"Imperative phrasing gets re-read as a directive in later sessions and can \"
+    \"cause repeated work or override the user's current request. Procedures and \"
+    \"workflows belong in skills, not memory.\\n\"
+    \"GHOST PREVENTION: Never save WIP status, session-local state, or \\\"this session\\\" \"
+    \"context to memory. These become stale ghosts after context compression — \"
+    \"they survive as past-tense entries that future sessions treat as current. \"
+    \"Before memory.write, ask: \\\"Will this fact still be true in 10 sessions?\\\" \"
+    \"If no, don't save it.\"
+)"""
+    if old in content:
+        content = content.replace(old, new)
+        with open(path, "w") as f:
+            f.write(content)
+        return True
+    return False
+
+register(
+    "prompt_builder_ghost_prevention",
+    "agent/prompt_builder.py",
+    r'workflows belong in skills, not memory\."\s*\)',
+    "Add durable-memory ghost prevention guidance to MEMORY_GUIDANCE",
+    _fix_prompt_builder_ghost_prevention,
+)
+
+
+# ── Check 3c: context compressor anti-ghost compaction rules ────────────
+def _fix_context_compressor_anti_ghost(path):
+    with open(path, "r") as f:
+        content = f.read()
+    if "CRITICAL — ANTI-GHOST RULES:" in content:
+        return False
+    old = '''Update the summary using this exact structure. PRESERVE all existing information that is still relevant. ADD new completed actions to the numbered list (continue numbering). Move items from "In Progress" to "Completed Actions" when done. Move answered questions to "Resolved Questions". Update "Active State" to reflect current state. Remove information only if it is clearly obsolete. CRITICAL: Update "## Active Task" to reflect the user's most recent unfulfilled request — this is the most important field for task continuity.
+
+{_template_sections}"""'''
+    new = '''Update the summary using this exact structure. PRESERVE all existing information that is still relevant. ADD new completed actions to the numbered list (continue numbering). Move items from "In Progress" to "Completed Actions" when done. Move answered questions to "Resolved Questions". Update "Active State" to reflect current state. Remove information only if it is clearly obsolete. CRITICAL: Update "## Active Task" to reflect the user's most recent unfulfilled request — this is the most important field for task continuity.
+
+CRITICAL — ANTI-GHOST RULES:
+1. REMOVE any numeric counters or stats that refer to memory usage, token counts, or session-local state — these are ALWAYS stale
+2. REMOVE any sentence that says "This session..." or "Currently working on..." — rewrite to describe what was DONE, not what "is" happening
+3. TIMESTAMPS from the previous summary are ALWAYS outdated — drop them unless they refer to permanent external events
+4. If the PREVIOUS SUMMARY describes work now COMPLETE (confirmed by new turns), move it to "Completed Actions"
+5. NEVER carry forward "Memory at" or system metrics — they are now misleading
+
+{_template_sections}"""'''
+    if old in content:
+        content = content.replace(old, new)
+        with open(path, "w") as f:
+            f.write(content)
+        return True
+    return False
+
+register(
+    "context_compressor_anti_ghost",
+    "agent/context_compressor.py",
+    r'(?s)^(?!.*CRITICAL — ANTI-GHOST RULES:).*Update the summary using this exact structure\..*?\{_template_sections\}"""',
+    "Add anti-ghost rules to incremental context compression prompt",
+    _fix_context_compressor_anti_ghost,
+)
+
+
+# ── Check 3d: MCP RPC timeout guard (all operations) ─────────────────
+def _check_mcp_rpc_timeout_guard(path):
+    with open(path, "r") as f:
+        content = f.read()
+    if "async def _mcp_rpc_call(" in content and "_MCP_SAFETY_NET_SEC" in content:
+        return False  # No issue — helper exists
+    # Can't auto-fix a 6-location patch via regex. Report and suggest manual re-apply.
+    return False
+
+register(
+    "mcp_rpc_timeout_guard",
+    "tools/mcp_tool.py",
+    r'(?s)async def _call\(\):\s+async with server\._rpc_lock:\s+result = await server\.session\.call_tool',
+    "Centralize MCP RPC lock+timeout in _mcp_rpc_call helper (all 5 operations). "
+    "If missing after upgrade, re-apply from backup or run apply-mcp-timeout-patch.py",
+    _check_mcp_rpc_timeout_guard,
+)
+
+
+# ── Check 3e: macOS launchd gateway nofile limit ────────────────────────
+def _fix_launchd_gateway_nofile_limit(path):
+    with open(path, "r") as f:
+        content = f.read()
+    if "<key>SoftResourceLimits</key>" in content and "<key>NumberOfFiles</key>" in content:
+        return False
+
+    old = """    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>"""
+    new = """    <key>RunAtLoad</key>
+    <true/>
+
+    <key>SoftResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>4096</integer>
+    </dict>
+
+    <key>HardResourceLimits</key>
+    <dict>
+        <key>NumberOfFiles</key>
+        <integer>8192</integer>
+    </dict>
+    
+    <key>KeepAlive</key>"""
+    if old in content:
+        content = content.replace(old, new)
+        with open(path, "w") as f:
+            f.write(content)
+        return True
+    return False
+
+register(
+    "launchd_gateway_nofile_limit",
+    "hermes_cli/gateway.py",
+    r'(?s)<key>RunAtLoad</key>\s*<true/>\s*<key>KeepAlive</key>',
+    "Add launchd SoftResourceLimits/HardResourceLimits NumberOfFiles so gateway does not inherit macOS soft nofile=256",
+    _fix_launchd_gateway_nofile_limit,
+)
+
+
+# ── Check 3f: gateway FD watchdog governance ─────────────────────────
+WATCHDOG_FILE = os.path.expanduser("~/.hermes/scripts/gateway_fd_watchdog.py")
+
+def check_gateway_fd_watchdog():
+    """Verify the update-safe FD watchdog exists and returns a strict sample."""
+    if not os.path.exists(WATCHDOG_FILE):
+        return f"MISSING: {WATCHDOG_FILE}"
+    if not os.access(WATCHDOG_FILE, os.X_OK):
+        return f"MISSING_EXECUTABLE_BIT: {WATCHDOG_FILE}"
+    compile_result = subprocess.run(
+        [sys.executable, "-m", "py_compile", WATCHDOG_FILE],
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    if compile_result.returncode != 0:
+        return f"PY_COMPILE_FAILED: {compile_result.stderr.strip()[:300]}"
+    sample_result = subprocess.run(
+        [sys.executable, WATCHDOG_FILE, "--json", "--no-record"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    if sample_result.returncode not in (0, 2):
+        return f"SAMPLE_FAILED rc={sample_result.returncode}: {(sample_result.stderr or sample_result.stdout).strip()[:300]}"
+    try:
+        sample = json.loads(sample_result.stdout)
+    except Exception as exc:
+        return f"SAMPLE_JSON_INVALID: {exc}"
+    required = {"schema_version", "sampled_at", "status", "actions", "fd", "limits"}
+    missing = sorted(required - set(sample))
+    if missing:
+        return f"SAMPLE_MISSING_KEYS: {missing}"
+    actions = sample.get("actions") or {}
+    if actions.get("auto_restart") is not False or actions.get("auto_kill") is not False:
+        return "UNSAFE_ACTIONS_ENABLED"
+    return f"OK ({sample.get('status')} fd={(sample.get('fd') or {}).get('numeric_fd_count')})"
+
+register(
+    "gateway_fd_watchdog",
+    ".",
+    None,
+    "Verify update-safe Gateway FD watchdog exists, is executable, returns strict JSON, and does not auto-restart",
 )
 
 
@@ -278,7 +536,9 @@ def main():
 
             # Memory & steward checks use their own logic
         if needle is None:
-            if "memory" in name:
+            if "gateway_fd_watchdog" in name:
+                result = check_gateway_fd_watchdog()
+            elif "memory" in name:
                 result = check_memory_ghosts()
             elif "steward" in name:
                 result = check_steward_liveness()
@@ -288,7 +548,7 @@ def main():
                 result = check_skill_quality()
             else:
                 result = ""
-            if result == "OK":
+            if result == "OK" or (isinstance(result, str) and result.startswith("OK (")):
                 print(f"    ✅ {result}")
                 statuses.append((name, "OK"))
             elif result and result.startswith("GHOSTS"):
@@ -342,7 +602,7 @@ def main():
     print("═" * 56)
 
     ok_count = sum(1 for _, s in statuses if s == "OK")
-    fix_count = sum(1 for _, s in statuses if "FIX" in s)
+    fix_count = sum(1 for _, s in statuses if s == "FIXED")
     warn_count = sum(1 for _, s in statuses if s in ("NEEDS_FIX", "MANUAL", "DORMANT", "GHOSTS", "MISSING"))
 
     for name, status in statuses:
