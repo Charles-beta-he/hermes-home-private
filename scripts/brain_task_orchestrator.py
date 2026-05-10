@@ -32,6 +32,8 @@ DEFAULT_WORKFLOW = "[[08-模板/task-workflow-contract-template]]"
 AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN"
 AUTORUN_STATE_DIR = Path(os.environ.get("HERMES_BRAIN_AUTORUN_STATE_DIR", str(Path.home() / ".hermes" / "state"))).expanduser()
 AUTORUN_ALLOWLIST = AUTORUN_STATE_DIR / "auto_run_allowlist.json"
+AUTORUN_POLICY = AUTORUN_STATE_DIR / "auto_run_policy.json"
+AUTORUN_KILL_SWITCH = AUTORUN_STATE_DIR / "auto_run_kill_switch"
 AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
 AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
@@ -200,7 +202,7 @@ def yaml_scalar(v: Any) -> str:
 
 
 def render_frontmatter(fm: dict[str, Any]) -> str:
-    preferred = ["type", "lane", "layer", "status", "priority", "created", "updated", "expires_at", "project", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract", "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "evidence", "concepts"]
+    preferred = ["type", "lane", "layer", "status", "priority", "created", "updated", "expires_at", "project", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract", "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary", "evidence", "concepts"]
     keys = preferred + [k for k in fm.keys() if k not in preferred]
     out = ["---"]
     for k in keys:
@@ -387,6 +389,7 @@ class Task:
             "retry_count": self.fm.get("retry_count") or 0,
             "next_attempt_at": self.fm.get("next_attempt_at") or "",
             "expires_at": self.fm.get("expires_at") or "",
+            "parallel_boundary": self.fm.get("parallel_boundary") or task_parallel_boundary_key(self),
             "stale_claim": self.is_stale_claim(),
             "expired": self.is_expired(),
             "dispatchable": self.is_dispatchable(),
@@ -702,7 +705,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
     lane_arg = (getattr(args, "lane", "auto") or "auto").strip().lower()
     if lane_arg != "auto" and lane_arg not in VALID_LANES:
         raise SystemExit(f"lane must be one of {['auto', *VALID_LANES]}")
-    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""))
+    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", parallel_boundary=getattr(args, "parallel_boundary", "") or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""))
     created = now()
     expires = parse_dt(args.expires_at) if args.expires_at else created + timedelta(days=args.expires_days)
     slug = slugify(title)
@@ -736,6 +739,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "retry_count": 0,
         "next_attempt_at": "",
         "workspace": args.workspace or "",
+        "parallel_boundary": getattr(args, "parallel_boundary", "") or "",
         "evidence": [],
         "concepts": concepts,
     }
@@ -763,7 +767,7 @@ def parse_inbox_line(line: str) -> dict[str, Any] | None:
         k, v = p.split(":", 1)
         k = k.strip().lower()
         v = v.strip()
-        if k in {"priority", "project", "concepts", "expires_at", "objective", "lane", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence"}:
+        if k in {"priority", "project", "concepts", "expires_at", "objective", "lane", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "parallel_boundary"}:
             meta[k] = v
         elif k in {"expires", "due"}:
             meta["expires_at"] = v
@@ -847,7 +851,7 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
         ns = argparse.Namespace(
             title=meta["title"], priority=meta.get("priority", "P2"), project=meta.get("project", "inbox"), status="pending",
             expires_at=meta.get("expires_at") or "", expires_days=args.expires_days, concepts=meta.get("concepts", "task,inbox"),
-            lane=meta.get("lane", "auto"), architecture_target=meta.get("architecture_target", ""), capability_delta=meta.get("capability_delta", ""), anti_drift_check=meta.get("anti_drift_check", ""), acceptance_evidence=meta.get("acceptance_evidence", ""),
+            lane=meta.get("lane", "auto"), architecture_target=meta.get("architecture_target", ""), capability_delta=meta.get("capability_delta", ""), anti_drift_check=meta.get("anti_drift_check", ""), acceptance_evidence=meta.get("acceptance_evidence", ""), parallel_boundary=meta.get("parallel_boundary", ""),
             layer="L3", workflow_contract=DEFAULT_WORKFLOW, workspace="", objective=meta.get("objective") or meta["title"], accept="Task has proof log and terminal status."
         )
         result = command_add(ns) if args.write else {"id": slugify(meta["title"]), "link": "dry-run"}
@@ -1044,6 +1048,8 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
   "must_reconcile_before_dispatch": true,
   "must_transition_via_graph": true,
   "safe_dispatch_tick": "python3 ~/.hermes/scripts/brain_task_dispatch_tick.py",
+  "boundary_check": "python3 ~/.hermes/scripts/brain_task_orchestrator.py boundary-check --json",
+  "parallel_dispatch_dry_run": "python3 ~/.hermes/scripts/brain_task_orchestrator.py parallel-dispatch-dry-run --max-agents 3 --json",
   "skill_route_matrix": "[[07-仪表盘/Agent技能树路由矩阵]]"
 }}
 ```
@@ -1161,6 +1167,12 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py next --json
 # 生成安全派发 dry-run，不认领、不执行
 python3 ~/.hermes/scripts/brain_task_orchestrator.py dispatch-dry-run --json
 
+# 检查任务池边界：lane、架构对齐、并行冲突、kill switch
+python3 ~/.hermes/scripts/brain_task_orchestrator.py boundary-check --json
+
+# 生成多 Agent 并行派发 dry-run；按 work 优先、parallel_boundary/workspace/project 隔离
+python3 ~/.hermes/scripts/brain_task_orchestrator.py parallel-dispatch-dry-run --max-agents 3 --json
+
 # 安全 tick：收件箱 ingest + reconcile + dashboard + dispatch hint
 python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always
 
@@ -1207,6 +1219,7 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor herme
 - 临近 `expires_at` 或 stale `claim_expires_at` 自动上浮
 - terminal 状态不进入默认 active pool
 - dispatch lane order: `work` → `advisory` → `evolution`；自进化不能抢占 work 交付。
+- `parallel_boundary` / `workspace` / `project` 定义多 Agent 并行隔离边界；同边界同一 dry-run 只派发一个任务。
 - `lane: evolution` 必须带 `architecture_target` / `capability_delta` / `anti_drift_check` / `acceptance_evidence`，否则 fail-closed 不派发。
 
 ## 5. 安全边界
@@ -1291,6 +1304,128 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
     return {"status": status, "checked_count": checked, "failures": failures, "warnings": warnings, "legacy_body_evidence": legacy_body_evidence}
 
 
+def task_parallel_boundary_key(task: Task) -> str:
+    explicit = str(task.fm.get("parallel_boundary") or "").strip()
+    if explicit:
+        return f"boundary:{explicit}"
+    workspace = str(task.fm.get("workspace") or "").strip()
+    if workspace:
+        return f"workspace:{workspace}"
+    if task.lane == "evolution" and task.architecture_target:
+        return f"evolution:{task.architecture_target}"
+    project = str(task.project or "").strip()
+    if project:
+        return f"project:{project}"
+    return f"task:{task.id}"
+
+
+def dispatch_prompt_for_row(row: dict[str, Any]) -> str:
+    return (
+        "Execute this local-brain task only after claiming it. "
+        "Treat the task note as canonical workpad; reconcile first; verify; record proof; release/done/retry. "
+        f"Task: {row['link']} ({row['id']}) priority={row['priority']} status={row['status']} "
+        f"lane={row['lane']} project={row['project']}"
+    )
+
+
+def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
+    tasks = iter_tasks()
+    dispatchable = dispatchable_tasks()
+    invalid: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+    dispatchable_by_lane = {lane: 0 for lane in VALID_LANES}
+    for t in dispatchable:
+        dispatchable_by_lane[t.lane] = dispatchable_by_lane.get(t.lane, 0) + 1
+    for t in tasks:
+        missing_alignment = architecture_alignment_missing(t.fm)
+        if missing_alignment:
+            invalid.append({"task": t.id, "path": str(t.path), "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
+        if t.lane not in VALID_LANES:
+            invalid.append({"task": t.id, "path": str(t.path), "lane": t.lane, "reason": "invalid_lane"})
+        if t.status in CLAIM_BOUND_STATUSES and not (t.fm.get("claimed_by") and t.fm.get("claim_expires_at") and t.fm.get("run_id")):
+            invalid.append({"task": t.id, "path": str(t.path), "status": t.status, "reason": "claim_bound_status_missing_lease_metadata"})
+    boundary_index: dict[str, list[str]] = {}
+    for t in dispatchable:
+        boundary_index.setdefault(task_parallel_boundary_key(t), []).append(t.id)
+    for key, ids in sorted(boundary_index.items()):
+        if len(ids) > 1:
+            warnings.append({"boundary_key": key, "tasks": ids, "reason": "parallel_boundary_conflict"})
+    gates = {
+        "work_lane_available": dispatchable_by_lane.get("work", 0) > 0,
+        "autorun_enabled": os.environ.get(AUTORUN_ENV_FLAG) == "1",
+        "kill_switch_env_set": os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1",
+        "kill_switch_file_present": AUTORUN_KILL_SWITCH.exists(),
+        "evolution_preempted_by_work": dispatchable_by_lane.get("work", 0) > 0 and dispatchable_by_lane.get("evolution", 0) > 0,
+    }
+    status = "PASS" if not invalid else "FAIL"
+    return {
+        "status": status,
+        "schema": "local_brain_task_boundary_v1",
+        "generated_at": iso(),
+        "task_count": len(tasks),
+        "dispatchable_count": len(dispatchable),
+        "dispatchable_by_lane": dispatchable_by_lane,
+        "gates": gates,
+        "invalid_count": len(invalid),
+        "invalid": invalid,
+        "warnings": warnings,
+        "safety": "fail-closed invariants for taskpool boundaries and parallel dry-run selection",
+    }
+
+
+def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str, Any]]]:
+    candidates = dispatchable_tasks()
+    work_available = any(t.lane == "work" for t in candidates)
+    selected: list[Task] = []
+    skipped: list[dict[str, Any]] = []
+    used_boundaries: dict[str, str] = {}
+    for t in candidates:
+        if work_available and t.lane != "work":
+            skipped.append({"id": t.id, "lane": t.lane, "reason": "lane_preempted_by_work", "path": str(t.path)})
+            continue
+        boundary_key = task_parallel_boundary_key(t)
+        if boundary_key in used_boundaries:
+            skipped.append({"id": t.id, "lane": t.lane, "reason": "parallel_boundary_conflict", "boundary_key": boundary_key, "conflicts_with": used_boundaries[boundary_key], "path": str(t.path)})
+            continue
+        if len(selected) >= max_agents:
+            skipped.append({"id": t.id, "lane": t.lane, "reason": "capacity_exceeded", "boundary_key": boundary_key, "path": str(t.path)})
+            continue
+        selected.append(t)
+        used_boundaries[boundary_key] = t.id
+    return selected, skipped
+
+
+def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
+    max_agents = int(getattr(args, "max_agents", 3) or 3)
+    if max_agents < 1:
+        raise SystemExit("--max-agents must be >= 1")
+    boundary = command_boundary_check(args)
+    if boundary.get("status") != "PASS":
+        return {"status": "FAIL", "dry_run": True, "dispatchable": False, "reason": "boundary_check_failed", "boundary": boundary, "safety": "dry-run only; no claim or execution"}
+    selected, skipped = select_parallel_dispatch(max_agents)
+    dispatch_plan = []
+    for t in selected:
+        row = t.row()
+        dispatch_plan.append({
+            "id": t.id,
+            "boundary_key": task_parallel_boundary_key(t),
+            "claim_command": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py claim {t.id} --actor hermes --ttl-minutes 60",
+            "execution_prompt": dispatch_prompt_for_row(row),
+        })
+    return {
+        "status": "OK",
+        "dry_run": True,
+        "dispatchable": bool(selected),
+        "max_agents": max_agents,
+        "selected_count": len(selected),
+        "selected": [t.row() for t in selected],
+        "skipped": skipped,
+        "dispatch_plan": dispatch_plan,
+        "boundary": boundary,
+        "safety": "dry-run only; does not claim, execute, or mark tasks done",
+    }
+
+
 def command_next(args: argparse.Namespace) -> dict[str, Any]:
     reconcile_result = None
     if not getattr(args, "no_reconcile", False):
@@ -1309,11 +1444,7 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     if not nxt.get("next"):
         return {"status": "OK", "dry_run": True, "dispatchable": False, "message": nxt["message"]}
     row = nxt["next"]
-    prompt = (
-        "Execute this local-brain task only after claiming it. "
-        "Treat the task note as canonical workpad; reconcile first; verify; record proof; release/done/retry. "
-        f"Task: {row['link']} ({row['id']}) priority={row['priority']} status={row['status']} project={row['project']}"
-    )
+    prompt = dispatch_prompt_for_row(row)
     return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "safety": "dry-run only; does not claim or execute"}
 
 
@@ -1336,6 +1467,12 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
     allowlist_hit = bool(task and autorun_allowlist_matches(task, allowlist))
     if os.environ.get(AUTORUN_ENV_FLAG) != "1":
         reasons.append("autorun_disabled")
+    if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1":
+        reasons.append("kill_switch_env_set")
+    if AUTORUN_KILL_SWITCH.exists():
+        reasons.append("kill_switch_file_present")
+    if task and task.lane != "work" and any(t.lane == "work" and t.id != task.id for t in dispatchable_tasks()):
+        reasons.append("work_lane_available")
     if not allowlist:
         reasons.append("allowlist_empty")
     elif not allowlist_hit:
@@ -1361,8 +1498,9 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         "task_id": task.id if task else "",
         "task": row,
         "allowlist": str(AUTORUN_ALLOWLIST),
+        "policy": str(AUTORUN_POLICY),
         "allowlist_hit": allowlist_hit,
-        "kill_switch": os.environ.get(AUTORUN_ENV_FLAG) != "1",
+        "kill_switch": bool(os.environ.get(AUTORUN_ENV_FLAG) != "1" or os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1" or AUTORUN_KILL_SWITCH.exists()),
         "required_proof": ["proof:<sha256:...> required before autorun-originated done"],
         "budget_ceiling": None,
     }
@@ -1530,6 +1668,10 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     proof_ok, proof_failures = verify_autorun_proof_chain()
     if not proof_ok:
         failures.extend(proof_failures)
+    boundary = command_boundary_check(argparse.Namespace(json=True))
+    if boundary.get("status") != "PASS":
+        for item in boundary.get("invalid", []):
+            failures.append(f"task boundary violation {item.get('reason')}: {item.get('task')}")
     if AUTORUN_HANDOFF_DIR.exists():
         try:
             handoff_count = sum(1 for _ in AUTORUN_HANDOFF_DIR.glob("*.md"))
@@ -1542,7 +1684,7 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     if CONTROL_CENTER.exists() and "处理本地大脑任务收件箱" not in CONTROL_CENTER.read_text(encoding="utf-8"):
         failures.append("control center missing natural-language trigger")
     status = "PASS" if not failures else "FAIL"
-    return {"status": status, "task_count": len(iter_tasks()), "failures": failures, "warnings": warnings, "paths": {"dashboard": str(DASHBOARD), "control_center": str(CONTROL_CENTER), "sorted_pool": str(SORTED_POOL), "inbox": str(INBOX)}}
+    return {"status": status, "task_count": len(iter_tasks()), "failures": failures, "warnings": warnings, "boundary": boundary, "paths": {"dashboard": str(DASHBOARD), "control_center": str(CONTROL_CENTER), "sorted_pool": str(SORTED_POOL), "inbox": str(INBOX)}}
 
 
 def print_result(result: dict[str, Any], as_json: bool) -> int:
@@ -1579,6 +1721,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--layer", default="L3")
     ap.add_argument("--workflow-contract", default=DEFAULT_WORKFLOW)
     ap.add_argument("--workspace", default="")
+    ap.add_argument("--parallel-boundary", default="")
     ap.add_argument("--objective", default="")
     ap.add_argument("--accept", default="")
     ap.add_argument("--json", action="store_true")
@@ -1660,6 +1803,13 @@ def build_parser() -> argparse.ArgumentParser:
     ddp = sub.add_parser("dispatch-dry-run")
     ddp.add_argument("--json", action="store_true")
 
+    bcp = sub.add_parser("boundary-check")
+    bcp.add_argument("--json", action="store_true")
+
+    pdp = sub.add_parser("parallel-dispatch-dry-run")
+    pdp.add_argument("--max-agents", type=int, default=3)
+    pdp.add_argument("--json", action="store_true")
+
     ecp = sub.add_parser("eligibility-check")
     ecp.add_argument("--task", default="")
     ecp.add_argument("--actor", default="hermes-autorun")
@@ -1708,6 +1858,10 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_next(args), args.json)
     if args.cmd == "dispatch-dry-run":
         return print_result(command_dispatch_dry_run(args), args.json)
+    if args.cmd == "boundary-check":
+        return print_result(command_boundary_check(args), args.json)
+    if args.cmd == "parallel-dispatch-dry-run":
+        return print_result(command_parallel_dispatch_dry_run(args), args.json)
     if args.cmd == "eligibility-check":
         return print_result(command_eligibility_check(args), args.json)
     if args.cmd == "auto-claim-and-handoff":

@@ -112,6 +112,23 @@ def test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun():
         assert payload["stdout_policy"] == "summary", payload
         assert "log_file" in payload and payload["log_file"], payload
         assert "autorun" not in payload, payload
+        assert payload["dispatch_hint"]["task_id"] == task_id, payload
+        assert payload["dispatch_hint"]["safety"] == "hint_only", payload
+        assert task_row(env, task_id)["status"] == "pending"
+
+
+def test_tick_summary_autorun_step_denial_is_visible_and_non_mutating():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id = add_task(env)
+        payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state", "--autorun-step"], env).stdout)
+        assert payload["schema"] == "brain_task_dispatch_tick_summary_v1", payload
+        assert payload["status"] == "OK", payload
+        assert payload["dispatch_hint"]["task_id"] == task_id, payload
+        assert payload["autorun"]["requested"] is True, payload
+        assert payload["autorun"]["claimed"] is False, payload
+        assert payload["autorun"]["advanced"] is False, payload
+        assert "autorun_disabled" in payload["autorun"]["reasons"], payload
         assert task_row(env, task_id)["status"] == "pending"
 
 
@@ -119,4 +136,5 @@ if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
     test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun()
+    test_tick_summary_autorun_step_denial_is_visible_and_non_mutating()
     print("PASS")

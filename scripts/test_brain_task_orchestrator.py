@@ -53,6 +53,34 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
     return created["id"], Path(created["created"])
 
 
+def add_evolution_task(env, title="优化本地任务池自进化", priority="P0"):
+    r = run(
+        env,
+        "add",
+        title,
+        "--priority",
+        priority,
+        "--project",
+        "self-improvement",
+        "--lane",
+        "evolution",
+        "--architecture-target",
+        "taskpool",
+        "--capability-delta",
+        "bounded autorun safety",
+        "--anti-drift-check",
+        "work lane must not be preempted",
+        "--acceptance-evidence",
+        "eligibility-check blocks evolution while work is available",
+        "--expires-at",
+        "2099-01-01",
+        "--json",
+    )
+    created = json.loads(r.stdout)
+    assert created["status"] == "OK"
+    return created["id"], Path(created["created"])
+
+
 def test_add_list_claim_release_dashboard_inbox_selfcheck():
     td, vault, env = make_env_and_vault()
     with td:
@@ -477,6 +505,84 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
         assert row["claimed_by"] == "hermes-autorun"
 
 
+def test_autorun_kill_switches_and_evolution_preemption_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        work_id, _ = add_task(env, title="客户 work 任务必须优先", priority="P1", project="client-work")
+        evolution_id, _ = add_evolution_task(env, priority="P0")
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([work_id, evolution_id], ensure_ascii=False), encoding="utf-8")
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+
+        env["HERMES_LOCAL_BRAIN_AUTORUN_KILL"] = "1"
+        env_killed = json.loads(run(env, "eligibility-check", "--task", work_id, "--json").stdout)
+        assert env_killed["eligible"] is False, env_killed
+        assert "kill_switch_env_set" in env_killed["reasons"], env_killed
+        env.pop("HERMES_LOCAL_BRAIN_AUTORUN_KILL")
+
+        (state_dir / "auto_run_kill_switch").write_text("maintenance\n", encoding="utf-8")
+        file_killed = json.loads(run(env, "eligibility-check", "--task", work_id, "--json").stdout)
+        assert file_killed["eligible"] is False, file_killed
+        assert "kill_switch_file_present" in file_killed["reasons"], file_killed
+        (state_dir / "auto_run_kill_switch").unlink()
+
+        blocked_evolution = json.loads(run(env, "eligibility-check", "--task", evolution_id, "--json").stdout)
+        assert blocked_evolution["eligible"] is False, blocked_evolution
+        assert "work_lane_available" in blocked_evolution["reasons"], blocked_evolution
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        assert next(r for r in rows if r["id"] == work_id)["status"] == "pending"
+        assert next(r for r in rows if r["id"] == evolution_id)["status"] == "pending"
+
+
+def test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        first_id, first_path = add_task(env, title="并行任务 A", priority="P1", project="client-a")
+        second_id, second_path = add_task(env, title="并行任务 B 同 workspace", priority="P1", project="client-b")
+        third_id, third_path = add_task(env, title="并行任务 C", priority="P2", project="client-c")
+        evolution_id, evolution_path = add_evolution_task(env, priority="P0")
+        for p in (first_path, second_path):
+            text = p.read_text(encoding="utf-8")
+            text = text.replace("workspace: ", "workspace: /tmp/shared-client-workspace", 1)
+            p.write_text(text, encoding="utf-8")
+        third_text = third_path.read_text(encoding="utf-8").replace("workspace: ", "workspace: /tmp/independent-client-workspace", 1)
+        third_path.write_text(third_text, encoding="utf-8")
+        run(env, "dashboard", "--write", "--json")
+
+        boundary = json.loads(run(env, "boundary-check", "--json").stdout)
+        assert boundary["status"] == "PASS", boundary
+        assert boundary["schema"] == "local_brain_task_boundary_v1"
+        assert boundary["dispatchable_by_lane"]["work"] == 3, boundary
+        assert boundary["dispatchable_by_lane"]["evolution"] == 1, boundary
+        assert boundary["gates"]["work_lane_available"] is True, boundary
+
+        dry = json.loads(run(env, "parallel-dispatch-dry-run", "--max-agents", "3", "--json").stdout)
+        assert dry["status"] == "OK", dry
+        assert dry["dry_run"] is True
+        assert dry["selected_count"] == 2, dry
+        selected_ids = [row["id"] for row in dry["selected"]]
+        assert first_id in selected_ids
+        assert third_id in selected_ids
+        assert second_id not in selected_ids
+        assert evolution_id not in selected_ids
+        assert all(row["lane"] == "work" for row in dry["selected"])
+        assert any(s["id"] == second_id and s["reason"] == "parallel_boundary_conflict" for s in dry["skipped"]), dry
+        assert any(s["id"] == evolution_id and s["reason"] == "lane_preempted_by_work" for s in dry["skipped"]), dry
+        assert all("claim_command" in item and "execution_prompt" in item for item in dry["dispatch_plan"]), dry
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        assert next(r for r in rows if r["id"] == first_id)["status"] == "pending"
+        assert next(r for r in rows if r["id"] == second_id)["status"] == "pending"
+        assert next(r for r in rows if r["id"] == third_id)["status"] == "pending"
+        assert next(r for r in rows if r["id"] == evolution_id)["status"] == "pending"
+
+        bad_text = evolution_path.read_text(encoding="utf-8").replace("capability_delta: bounded autorun safety", "capability_delta: ", 1)
+        evolution_path.write_text(bad_text, encoding="utf-8")
+        bad_boundary = json.loads(run(env, "boundary-check", "--json", check=False).stdout)
+        assert bad_boundary["status"] == "FAIL", bad_boundary
+        assert any(i.get("reason") == "evolution_architecture_alignment_missing" for i in bad_boundary["invalid"]), bad_boundary
+
+
 def test_autorun_done_requires_valid_proof_hash():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -528,6 +634,8 @@ def main():
     test_lifecycle_fail_closed_edges()
     test_lane_architecture_alignment_and_work_priority_gate()
     test_autorun_eligibility_and_handoff_are_fail_closed()
+    test_autorun_kill_switches_and_evolution_preemption_gate()
+    test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed()
     test_autorun_done_requires_valid_proof_hash()
     test_proof_check_flags_persisted_autorun_done_without_proof_hash()
     print("PASS")

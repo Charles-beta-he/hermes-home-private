@@ -24,6 +24,7 @@ from typing import Any
 TZ = timezone(timedelta(hours=8))
 HOME = Path.home()
 SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_orchestrator.py"
+AUTORUN_STEP_SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_autorun_step.py"
 STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME / ".hermes" / "state"))).expanduser()
 LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
@@ -36,6 +37,10 @@ def iso() -> str:
 
 def run_json(args: list[str]) -> dict[str, Any]:
     cmd = [sys.executable, str(SCRIPT), *args]
+    return run_cmd_json(cmd)
+
+
+def run_cmd_json(cmd: list[str]) -> dict[str, Any]:
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     out = (r.stdout or "").strip()
     err = (r.stderr or "").strip()
@@ -74,6 +79,7 @@ def main() -> int:
     parser.add_argument("--summary", action="store_true", help="Always print a compact JSON summary suitable for cron no_agent heartbeat delivery")
     parser.add_argument("--no-state", action="store_true", help="Do not suppress repeated notifications")
     parser.add_argument("--autorun", action="store_true", help="Opt-in bridge: run auto-claim-and-handoff after all safe tick gates pass")
+    parser.add_argument("--autorun-step", action="store_true", help="Opt-in bounded runner: claim, run static allowlisted command IDs, and stop at review")
     args = parser.parse_args()
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
@@ -92,7 +98,14 @@ def main() -> int:
     if errors:
         event["status"] = "ERROR"
 
-    if args.autorun and not errors:
+    if args.autorun_step and not errors:
+        event["autorun"] = run_cmd_json([sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"])
+        if event["autorun"].get("status") not in {"OK", "PASS"}:
+            errors.append({"step": "autorun_step", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout")})
+            event["status"] = "ERROR"
+            event["errors"] = errors
+        event["post_autorun_dispatch"] = run_json(["dispatch-dry-run", "--json"])
+    elif args.autorun and not errors:
         event["autorun"] = run_json(["auto-claim-and-handoff", "--json"])
         if event["autorun"].get("status") not in {"OK", "PASS"}:
             errors.append({"step": "autorun", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout")})
@@ -115,6 +128,32 @@ def main() -> int:
     will_print = bool(args.summary or args.print_always or noteworthy)
     print_reason = "summary" if args.summary else ("print_always" if args.print_always else ("noteworthy" if noteworthy else "suppressed_no_change"))
     recovery_command = f"python3 {Path(__file__).expanduser()} --print-always --no-state"
+    dispatch_hint = {
+        "task_id": next_id,
+        "title": next_task.get("title", ""),
+        "lane": next_task.get("lane", ""),
+        "priority": next_task.get("priority", ""),
+        "project": next_task.get("project", ""),
+        "claim_command": (event.get("dispatch") or {}).get("claim_command", ""),
+        "safety": "hint_only",
+    }
+    autorun_raw = event.get("autorun") if isinstance(event.get("autorun"), dict) else {}
+    autorun_summary = {
+        "requested": bool(args.autorun or args.autorun_step),
+        "step_mode": "bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none"),
+        "present": "autorun" in event,
+        "status": autorun_raw.get("status"),
+        "eligible": bool(autorun_raw.get("eligible")),
+        "claimed": bool(autorun_raw.get("claimed")),
+        "advanced": bool(autorun_raw.get("advanced")),
+        "task_id": autorun_raw.get("task_id") or autorun_raw.get("task") or "",
+        "to_status": autorun_raw.get("to_status", ""),
+        "reasons": autorun_raw.get("reasons", []),
+        "proof_hash": autorun_raw.get("proof_hash", ""),
+        "handoff": autorun_raw.get("handoff", ""),
+        "claim_expires_at": autorun_raw.get("claim_expires_at", ""),
+        "safety": autorun_raw.get("safety", ""),
+    }
     summary_payload = {
         "schema": "brain_task_dispatch_tick_summary_v1",
         "generated_at": event["generated_at"],
@@ -127,14 +166,11 @@ def main() -> int:
         "stdout_policy": "summary",
         "log_file": str(LOG_FILE),
         "state_file": str(STATE_FILE),
+        "dispatch_hint": dispatch_hint,
         "recovery_command": recovery_command,
     }
-    if args.autorun:
-        summary_payload["autorun"] = {
-            "present": "autorun" in event,
-            "claimed": bool((event.get("autorun") or {}).get("claimed")),
-            "status": (event.get("autorun") or {}).get("status"),
-        }
+    if args.autorun or args.autorun_step:
+        summary_payload["autorun"] = autorun_summary
     event["observability"] = {
         "schema": "brain_task_dispatch_tick_observability_v1",
         "stdout_policy": stdout_policy,
