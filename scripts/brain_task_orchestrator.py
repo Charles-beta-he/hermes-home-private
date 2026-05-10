@@ -54,6 +54,39 @@ ARCHITECTURE_TARGETS = {
     "local-brain", "skill-graph", "provider-quota", "taskpool",
 }
 EVOLUTION_ALIGNMENT_FIELDS = ("architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence")
+MISSION_ENVELOPE_REQUIRED_FIELDS = (
+    "mission_schema_version",
+    "mission_id",
+    "mission_title",
+    "mission_objective",
+    "mission_constraints",
+    "red_lines",
+    "non_goals",
+    "evidence_refs",
+    "acceptance_criteria",
+    "dag_nodes",
+    "checkpoint_states",
+    "permission_gates",
+    "handoff_artifacts",
+    "proof_artifacts",
+    "rollback_signal",
+    "certification_status",
+    "ratification_artifact",
+)
+MISSION_ENVELOPE_LIST_FIELDS = {
+    "mission_constraints",
+    "red_lines",
+    "non_goals",
+    "evidence_refs",
+    "acceptance_criteria",
+    "dag_nodes",
+    "checkpoint_states",
+    "permission_gates",
+    "handoff_artifacts",
+    "proof_artifacts",
+}
+MISSION_STRUCTURED_REF_FIELDS = {"evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact"}
+MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_minor_risks", "certified"}
 
 # Formal lifecycle contract. Markdown task notes remain canonical; this graph is
 # the local control-plane guardrail for agents, cron ticks, and multi-model
@@ -202,7 +235,15 @@ def yaml_scalar(v: Any) -> str:
 
 
 def render_frontmatter(fm: dict[str, Any]) -> str:
-    preferred = ["type", "lane", "layer", "status", "priority", "created", "updated", "expires_at", "project", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract", "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary", "evidence", "concepts"]
+    preferred = [
+        "type", "lane", "layer", "status", "priority", "created", "updated", "expires_at", "project",
+        "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract",
+        "mission_schema_version", "mission_id", "mission_title", "mission_objective", "mission_constraints",
+        "red_lines", "non_goals", "evidence_refs", "acceptance_criteria", "dag_nodes", "checkpoint_states",
+        "permission_gates", "handoff_artifacts", "proof_artifacts", "rollback_signal", "certification_status",
+        "ratification_artifact",
+        "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary", "evidence", "concepts"
+    ]
     keys = preferred + [k for k in fm.keys() if k not in preferred]
     out = ["---"]
     for k in keys:
@@ -264,6 +305,46 @@ def architecture_alignment_missing(fm: dict[str, Any]) -> list[str]:
 
 def architecture_aligned(fm: dict[str, Any]) -> bool:
     return not architecture_alignment_missing(fm)
+
+
+def is_mission_envelope_fm(fm: dict[str, Any]) -> bool:
+    concepts = {x.lower() for x in list_value(fm.get("concepts"))}
+    if "mission-envelope" in concepts:
+        return True
+    return any(str(fm.get(field) or "").strip() for field in MISSION_ENVELOPE_REQUIRED_FIELDS)
+
+
+def mission_envelope_missing(fm: dict[str, Any]) -> list[str]:
+    if not is_mission_envelope_fm(fm):
+        return []
+    missing: list[str] = []
+    for field in MISSION_ENVELOPE_REQUIRED_FIELDS:
+        value = fm.get(field)
+        if field in MISSION_ENVELOPE_LIST_FIELDS:
+            if not list_value(value):
+                missing.append(field)
+        elif not str(value or "").strip():
+            missing.append(field)
+    for field in MISSION_ENVELOPE_LIST_FIELDS:
+        if field not in MISSION_STRUCTURED_REF_FIELDS:
+            continue
+        for item in list_value(fm.get(field)):
+            if not evidence_is_structured(item):
+                missing.append(f"{field}:structured_ref")
+                break
+    ratification = str(fm.get("ratification_artifact") or "").strip()
+    if ratification and not evidence_is_structured(ratification):
+        missing.append("ratification_artifact:structured_ref")
+    certification = str(fm.get("certification_status") or "").strip()
+    if certification and certification not in MISSION_CERTIFICATION_STATUSES:
+        missing.append("certification_status:known_status")
+    if certification == "certified" and not ratification.startswith(("file:", "artifact:", "url:", "proof:")):
+        missing.append("certified_requires_ratification_artifact")
+    return sorted(set(missing))
+
+
+def mission_envelope_valid(fm: dict[str, Any]) -> bool:
+    return not mission_envelope_missing(fm)
 
 
 @dataclasses.dataclass
@@ -371,6 +452,8 @@ class Task:
             return False
         if self.lane == "evolution" and not self.architecture_aligned():
             return False
+        if is_mission_envelope_fm(self.fm) and not mission_envelope_valid(self.fm):
+            return False
         return True
 
     def row(self) -> dict[str, Any]:
@@ -383,6 +466,10 @@ class Task:
             "lane": self.lane,
             "architecture_target": self.architecture_target,
             "architecture_aligned": self.architecture_aligned(),
+            "mission_id": str(self.fm.get("mission_id") or ""),
+            "mission_envelope": is_mission_envelope_fm(self.fm),
+            "mission_envelope_valid": mission_envelope_valid(self.fm),
+            "mission_envelope_missing": mission_envelope_missing(self.fm),
             "project": self.project,
             "claimed_by": self.fm.get("claimed_by") or "",
             "claim_expires_at": self.fm.get("claim_expires_at") or "",
@@ -610,6 +697,9 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     missing_alignment = architecture_alignment_missing(task.fm)
     if missing_alignment and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
         failures.append(f"evolution_architecture_alignment_missing: {missing_alignment}")
+    missing_mission = mission_envelope_missing(task.fm)
+    if missing_mission and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
+        failures.append(f"mission envelope missing {missing_mission}: {task.id}")
     if force and reason.lower() in {"", "not specified", "none"}:
         failures.append("--force requires --reason so manual overrides are auditable")
     if to_status == from_status:
@@ -930,6 +1020,9 @@ def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:
             invalid.append({"task": t.id, "status": t.status, "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
+        missing_mission = mission_envelope_missing(t.fm)
+        if missing_mission:
+            invalid.append({"task": t.id, "status": t.status, "fields": missing_mission, "reason": "mission_envelope_missing"})
         if t.status not in LIFECYCLE_TRANSITIONS:
             invalid.append({"task": t.id, "status": t.status, "reason": "status_not_in_lifecycle_graph"})
         claim_fields = [k for k in ("claimed_by", "claim_expires_at", "run_id") if t.fm.get(k)]
@@ -1278,6 +1371,9 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
     checked = 0
     legacy_body_evidence: list[str] = []
     for t in iter_tasks():
+        missing_mission = mission_envelope_missing(t.fm)
+        if missing_mission:
+            failures.append(f"mission envelope missing {missing_mission}: {t.id}")
         if t.status != "done" and not args.include_active:
             continue
         checked += 1
@@ -1340,6 +1436,9 @@ def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:
             invalid.append({"task": t.id, "path": str(t.path), "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
+        missing_mission = mission_envelope_missing(t.fm)
+        if missing_mission:
+            invalid.append({"task": t.id, "path": str(t.path), "fields": missing_mission, "reason": "mission_envelope_missing"})
         if t.lane not in VALID_LANES:
             invalid.append({"task": t.id, "path": str(t.path), "lane": t.lane, "reason": "invalid_lane"})
         if t.status in CLAIM_BOUND_STATUSES and not (t.fm.get("claimed_by") and t.fm.get("claim_expires_at") and t.fm.get("run_id")):

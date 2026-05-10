@@ -81,6 +81,90 @@ def add_evolution_task(env, title="优化本地任务池自进化", priority="P0
     return created["id"], Path(created["created"])
 
 
+def add_mission_envelope_fields(task_path, *, valid=True):
+    text = task_path.read_text(encoding="utf-8")
+    marker = "evidence: []"
+    fields = """
+mission_schema_version: v1
+mission_id: mission-test-envelope
+mission_title: Mission test envelope
+mission_objective: Prove mission envelope schema is enforced by taskpool gates
+mission_constraints: [\"no-markdown-execution\", \"work-lane-priority\"]
+red_lines: [\"do-not-bypass-review\"]
+non_goals: [\"broad-autonomous-runner\"]
+evidence_refs: [\"file:/tmp/mission-evidence.json\"]
+acceptance_criteria: [\"selfcheck-pass\", \"proof-check-pass\"]
+dag_nodes: [\"schema\", \"validator\", \"verification\"]
+checkpoint_states: [\"schema_added\", \"tests_pass\"]
+permission_gates: [\"selfcheck_pass\", \"proof_check_pass\", \"dispatch_dry_run_parse\"]
+handoff_artifacts: [\"artifact:mission-handoff\"]
+proof_artifacts: [\"artifact:mission-proof\"]
+rollback_signal: revert scoped orchestrator mission-envelope patch
+certification_status: advisory
+ratification_artifact: artifact:mission-incident-mm-advisory
+""".lstrip()
+    if not valid:
+        fields = fields.replace("mission_id: mission-test-envelope\n", "", 1)
+    text = text.replace("concepts: [\"task\"]", "concepts: [\"missions\", \"mission-envelope\", \"proof-gate\"]", 1)
+    text = text.replace(marker, fields + marker, 1)
+    task_path.write_text(text, encoding="utf-8")
+
+
+def test_mission_envelope_schema_is_enforced_fail_closed():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        mission_id, mission_path = add_evolution_task(env, title="Mission envelope schema gate", priority="P0")
+        add_mission_envelope_fields(mission_path, valid=False)
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        mission_row = next(r for r in rows if r["id"] == mission_id)
+        assert mission_row["mission_envelope_valid"] is False
+        assert "mission_id" in mission_row["mission_envelope_missing"]
+        assert mission_row["dispatchable"] is False
+
+        selfcheck = json.loads(run(env, "selfcheck", "--json", check=False).stdout)
+        assert selfcheck["status"] == "FAIL", selfcheck
+        assert any(("mission envelope missing" in f or "mission_envelope_missing" in f) and "mission" in f for f in selfcheck["failures"]), selfcheck
+
+        proof = json.loads(run(env, "proof-check", "--include-active", "--json", check=False).stdout)
+        assert proof["status"] == "FAIL", proof
+        assert any("mission envelope missing" in f and "mission_id" in f for f in proof["failures"]), proof
+
+
+def test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        mission_id, mission_path = add_evolution_task(env, title="Mission envelope valid", priority="P0")
+        add_mission_envelope_fields(mission_path, valid=True)
+        work_id, _ = add_task(env, title="客户 work P0 不能被 mission 抢占", priority="P0", project="client-work")
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        mission_row = next(r for r in rows if r["id"] == mission_id)
+        assert mission_row["mission_envelope_valid"] is True
+        assert mission_row["dispatchable"] is True
+        assert mission_row["mission_id"] == "mission-test-envelope"
+        assert json.loads(run(env, "dispatch-dry-run", "--json").stdout)["next"]["id"] == work_id
+
+        run(env, "claim", mission_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        claimed_to_review = run(env, "transition", mission_id, "--to", "review", "--actor", "tester", "--evidence", "command: direct review", "--json", check=False)
+        assert claimed_to_review.returncode != 0
+        assert "illegal lifecycle transition: claimed -> review" in claimed_to_review.stderr
+
+        running = json.loads(run(env, "transition", mission_id, "--to", "running", "--actor", "tester", "--json").stdout)
+        assert running["to_status"] == "running"
+        review = json.loads(run(env, "transition", mission_id, "--to", "review", "--actor", "tester", "--evidence", "command: mission verifier PASS", "--json").stdout)
+        assert review["to_status"] == "review"
+        done = json.loads(run(env, "done", mission_id, "--actor", "tester", "--evidence", "artifact:mission-proof", "--json").stdout)
+        assert done["status"] == "OK", done
+
+        dash = json.loads(run(env, "dashboard", "--write", "--json").stdout)
+        assert Path(dash["dashboard"]).exists()
+        selfcheck = json.loads(run(env, "selfcheck", "--json").stdout)
+        assert selfcheck["status"] == "PASS", selfcheck
+        proof = json.loads(run(env, "proof-check", "--include-active", "--json").stdout)
+        assert proof["status"] == "PASS", proof
+
+
 def test_add_list_claim_release_dashboard_inbox_selfcheck():
     td, vault, env = make_env_and_vault()
     with td:
@@ -628,6 +712,8 @@ def test_proof_check_flags_persisted_autorun_done_without_proof_hash():
 
 
 def main():
+    test_mission_envelope_schema_is_enforced_fail_closed()
+    test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
