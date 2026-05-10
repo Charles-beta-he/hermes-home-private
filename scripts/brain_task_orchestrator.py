@@ -45,6 +45,13 @@ ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review
 TERMINAL_STATUSES = {"done", "archived", "expired"}
 PRIORITY_WEIGHT = {"P0": 400, "P1": 300, "P2": 200, "P3": 100}
 STATUS_WEIGHT = {"retry": 60, "running": 50, "claimed": 45, "blocked": 40, "review": 35, "pending": 30, "proposed": 10, "done": -100, "archived": -120, "expired": -130}
+VALID_LANES = ["work", "evolution", "advisory"]
+LANE_SORT_WEIGHT = {"work": 0, "advisory": 1, "evolution": 2}
+ARCHITECTURE_TARGETS = {
+    "L0", "L1", "L2", "L3", "L4", "L5", "LX",
+    "local-brain", "skill-graph", "provider-quota", "taskpool",
+}
+EVOLUTION_ALIGNMENT_FIELDS = ("architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence")
 
 # Formal lifecycle contract. Markdown task notes remain canonical; this graph is
 # the local control-plane guardrail for agents, cron ticks, and multi-model
@@ -193,7 +200,7 @@ def yaml_scalar(v: Any) -> str:
 
 
 def render_frontmatter(fm: dict[str, Any]) -> str:
-    preferred = ["type", "layer", "status", "priority", "created", "updated", "expires_at", "project", "workflow_contract", "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "evidence", "concepts"]
+    preferred = ["type", "lane", "layer", "status", "priority", "created", "updated", "expires_at", "project", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract", "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "evidence", "concepts"]
     keys = preferred + [k for k in fm.keys() if k not in preferred]
     out = ["---"]
     for k in keys:
@@ -220,6 +227,41 @@ def atomic_write(path: Path, text: str) -> None:
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
+
+
+def list_value(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(x).strip() for x in value if str(x).strip()]
+    if value in (None, ""):
+        return []
+    return [x.strip() for x in str(value).split(",") if x.strip()]
+
+
+def infer_lane(fm: dict[str, Any]) -> str:
+    raw = str(fm.get("lane") or "").strip().lower()
+    if raw in VALID_LANES:
+        return raw
+    concepts = " ".join(list_value(fm.get("concepts"))).lower()
+    haystack = f"{fm.get('project') or ''} {concepts} {fm.get('type') or ''}".lower()
+    if any(token in haystack for token in ("evolution", "self-improvement", "自进化", "skill-graph", "provider-quota")):
+        return "evolution"
+    if any(token in haystack for token in ("advisory", "research", "analysis", "分析")):
+        return "advisory"
+    return "work"
+
+
+def architecture_alignment_missing(fm: dict[str, Any]) -> list[str]:
+    if infer_lane(fm) != "evolution":
+        return []
+    missing = [field for field in EVOLUTION_ALIGNMENT_FIELDS if not str(fm.get(field) or "").strip()]
+    target = str(fm.get("architecture_target") or "").strip()
+    if target and target not in ARCHITECTURE_TARGETS:
+        missing.append("architecture_target:known_target")
+    return missing
+
+
+def architecture_aligned(fm: dict[str, Any]) -> bool:
+    return not architecture_alignment_missing(fm)
 
 
 @dataclasses.dataclass
@@ -249,6 +291,17 @@ class Task:
     @property
     def project(self) -> str:
         return str(self.fm.get("project") or "")
+
+    @property
+    def lane(self) -> str:
+        return infer_lane(self.fm)
+
+    @property
+    def architecture_target(self) -> str:
+        return str(self.fm.get("architecture_target") or "")
+
+    def architecture_aligned(self) -> bool:
+        return architecture_aligned(self.fm)
 
     def expires_at(self) -> datetime | None:
         return parse_dt(self.fm.get("expires_at"))
@@ -314,6 +367,8 @@ class Task:
             return False
         if self.status == "retry" and not self.is_retry_due(at):
             return False
+        if self.lane == "evolution" and not self.architecture_aligned():
+            return False
         return True
 
     def row(self) -> dict[str, Any]:
@@ -323,6 +378,9 @@ class Task:
             "status": self.status,
             "priority": self.priority,
             "score": self.score(),
+            "lane": self.lane,
+            "architecture_target": self.architecture_target,
+            "architecture_aligned": self.architecture_aligned(),
             "project": self.project,
             "claimed_by": self.fm.get("claimed_by") or "",
             "claim_expires_at": self.fm.get("claim_expires_at") or "",
@@ -379,9 +437,13 @@ def sorted_tasks(include_done: bool = False) -> list[Task]:
     return sorted(rows, key=lambda t: (-t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id))
 
 
+def dispatch_sort_key(t: Task) -> tuple[int, int, datetime, str, str]:
+    return (LANE_SORT_WEIGHT.get(t.lane, 1), -t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id)
+
+
 def dispatchable_tasks() -> list[Task]:
     rows = [t for t in iter_tasks() if t.is_dispatchable()]
-    return sorted(rows, key=lambda t: (-t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id))
+    return sorted(rows, key=dispatch_sort_key)
 
 
 def evidence_is_structured(e: str) -> bool:
@@ -542,6 +604,9 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     if from_status not in VALID_STATUSES:
         failures.append(f"invalid current status {from_status}: {task.id}")
         return failures, warnings
+    missing_alignment = architecture_alignment_missing(task.fm)
+    if missing_alignment and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
+        failures.append(f"evolution_architecture_alignment_missing: {missing_alignment}")
     if force and reason.lower() in {"", "not specified", "none"}:
         failures.append("--force requires --reason so manual overrides are auditable")
     if to_status == from_status:
@@ -634,7 +699,10 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
     title = args.title.strip()
     if args.status not in INITIAL_TASK_STATUSES:
         raise SystemExit(f"add can only create initial statuses {sorted(INITIAL_TASK_STATUSES)}; use transition/reconcile for lifecycle changes")
-    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", concepts=args.concepts or "task")
+    lane_arg = (getattr(args, "lane", "auto") or "auto").strip().lower()
+    if lane_arg != "auto" and lane_arg not in VALID_LANES:
+        raise SystemExit(f"lane must be one of {['auto', *VALID_LANES]}")
+    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""))
     created = now()
     expires = parse_dt(args.expires_at) if args.expires_at else created + timedelta(days=args.expires_days)
     slug = slugify(title)
@@ -645,8 +713,11 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         path = TASKS_DIR / f"{created.date().isoformat()}-{slug}-{i}.md"
         i += 1
     concepts = [x.strip() for x in (args.concepts or "task").split(",") if x.strip()]
+    preliminary = {"lane": "" if lane_arg == "auto" else lane_arg, "project": args.project, "concepts": concepts, "type": "task"}
+    lane = infer_lane(preliminary)
     fm = {
         "type": "task",
+        "lane": lane,
         "layer": args.layer,
         "status": args.status,
         "priority": args.priority,
@@ -654,6 +725,10 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "updated": iso(created),
         "expires_at": iso(expires) if expires else "",
         "project": args.project,
+        "architecture_target": getattr(args, "architecture_target", "") or "",
+        "capability_delta": getattr(args, "capability_delta", "") or "",
+        "anti_drift_check": getattr(args, "anti_drift_check", "") or "",
+        "acceptance_evidence": getattr(args, "acceptance_evidence", "") or "",
         "workflow_contract": args.workflow_contract,
         "claimed_by": "",
         "claim_expires_at": "",
@@ -664,6 +739,9 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "evidence": [],
         "concepts": concepts,
     }
+    missing_alignment = architecture_alignment_missing(fm)
+    if missing_alignment:
+        raise SystemExit(f"evolution tasks require architecture alignment fields; missing/invalid={missing_alignment}")
     body = f"# Task - {title}\n\n## Objective\n\n{args.objective or title}\n\n## Acceptance Criteria\n\n- [ ] {args.accept or 'Observable result is recorded in Proof Log.'}\n\n## Plan / Workpad\n\n- [ ] Reconcile current state before execution.\n- [ ] Execute the smallest verifiable slice.\n- [ ] Record proof and update status.\n\n## Validation\n\n| Command / Check | Status | Evidence |\n|---|---|---|\n| brain_task_orchestrator list | pending | |\n\n## Proof Log\n\n- {iso(created)}: Task created from local-brain control point.\n\n## Blockers / Confusions\n\n- None.\n\n## Final Handoff\n\n- Status:\n- Evidence:\n- Residual risk:\n"
     atomic_write(path, render_frontmatter(fm) + "\n" + body)
     return {"status": "OK", "created": str(path), "id": path.stem, "link": obsidian_link(path)}
@@ -685,7 +763,7 @@ def parse_inbox_line(line: str) -> dict[str, Any] | None:
         k, v = p.split(":", 1)
         k = k.strip().lower()
         v = v.strip()
-        if k in {"priority", "project", "concepts", "expires_at", "objective"}:
+        if k in {"priority", "project", "concepts", "expires_at", "objective", "lane", "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence"}:
             meta[k] = v
         elif k in {"expires", "due"}:
             meta["expires_at"] = v
@@ -769,6 +847,7 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
         ns = argparse.Namespace(
             title=meta["title"], priority=meta.get("priority", "P2"), project=meta.get("project", "inbox"), status="pending",
             expires_at=meta.get("expires_at") or "", expires_days=args.expires_days, concepts=meta.get("concepts", "task,inbox"),
+            lane=meta.get("lane", "auto"), architecture_target=meta.get("architecture_target", ""), capability_delta=meta.get("capability_delta", ""), anti_drift_check=meta.get("anti_drift_check", ""), acceptance_evidence=meta.get("acceptance_evidence", ""),
             layer="L3", workflow_contract=DEFAULT_WORKFLOW, workspace="", objective=meta.get("objective") or meta["title"], accept="Task has proof log and terminal status."
         )
         result = command_add(ns) if args.write else {"id": slugify(meta["title"]), "link": "dry-run"}
@@ -844,6 +923,9 @@ def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
             if target not in VALID_STATUSES:
                 invalid.append({"task": "__schema__", "status": state, "target": target, "reason": "transition_target_invalid_status"})
     for t in tasks:
+        missing_alignment = architecture_alignment_missing(t.fm)
+        if missing_alignment:
+            invalid.append({"task": t.id, "status": t.status, "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
         if t.status not in LIFECYCLE_TRANSITIONS:
             invalid.append({"task": t.id, "status": t.status, "reason": "status_not_in_lifecycle_graph"})
         claim_fields = [k for k in ("claimed_by", "claim_expires_at", "run_id") if t.fm.get(k)]
@@ -926,12 +1008,13 @@ def render_dashboard() -> tuple[str, str]:
     c = counts(all_tasks)
     stamp = iso()
     top_rows = tasks[:25]
-    table = ["| Rank | Score | Priority | Status | Task | Project | Lease / Due |", "|---:|---:|---|---|---|---|---|"]
+    table = ["| Rank | Score | Lane | Architecture | Priority | Status | Task | Project | Lease / Due |", "|---:|---:|---|---|---|---|---|---|---|"]
     for i, t in enumerate(top_rows, 1):
         due = t.fm.get("expires_at") or ""
         lease = t.fm.get("claim_expires_at") or ""
         marker = "stale lease" if t.is_stale_claim() else ("expired" if t.is_expired() else "")
-        table.append(f"| {i} | {t.score()} | {t.priority} | {t.status} | {obsidian_link(t.path)} | {t.project} | {marker or lease or due} |")
+        arch = t.architecture_target or ("aligned" if t.architecture_aligned() else "missing")
+        table.append(f"| {i} | {t.score()} | {t.lane} | {arch} | {t.priority} | {t.status} | {obsidian_link(t.path)} | {t.project} | {marker or lease or due} |")
     table_text = "\n".join(table)
     dashboard = f"""---
 type: dashboard
@@ -1123,6 +1206,8 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor herme
 - retry/running/claimed/pending 优先于 proposed
 - 临近 `expires_at` 或 stale `claim_expires_at` 自动上浮
 - terminal 状态不进入默认 active pool
+- dispatch lane order: `work` → `advisory` → `evolution`；自进化不能抢占 work 交付。
+- `lane: evolution` 必须带 `architecture_target` / `capability_delta` / `anti_drift_check` / `acceptance_evidence`，否则 fail-closed 不派发。
 
 ## 5. 安全边界
 
@@ -1422,6 +1507,9 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
         if not p.exists():
             failures.append(f"missing required path: {p}")
     for t in iter_tasks():
+        missing_alignment = architecture_alignment_missing(t.fm)
+        if missing_alignment:
+            failures.append(f"evolution architecture alignment missing {missing_alignment}: {t.path}")
         if t.status not in VALID_STATUSES:
             failures.append(f"invalid status {t.status}: {t.path}")
         if t.status not in LIFECYCLE_TRANSITIONS:
@@ -1483,6 +1571,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--expires-at", default="")
     ap.add_argument("--expires-days", type=int, default=30)
     ap.add_argument("--concepts", default="task")
+    ap.add_argument("--lane", default="auto", choices=["auto", *VALID_LANES])
+    ap.add_argument("--architecture-target", default="", choices=["", *sorted(ARCHITECTURE_TARGETS)])
+    ap.add_argument("--capability-delta", default="")
+    ap.add_argument("--anti-drift-check", default="")
+    ap.add_argument("--acceptance-evidence", default="")
     ap.add_argument("--layer", default="L3")
     ap.add_argument("--workflow-contract", default=DEFAULT_WORKFLOW)
     ap.add_argument("--workspace", default="")

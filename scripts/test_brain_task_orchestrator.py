@@ -89,8 +89,12 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         control_center = Path(dash["control_center"]).read_text(encoding="utf-8")
         assert "处理本地大脑任务收件箱" in control_center
         assert "lifecycle --json" in control_center
+        assert "dispatch lane order" in control_center
         assert "transition TASK_ID" in control_center
-        assert "lifecycle_transitions" in Path(dash["dashboard"]).read_text(encoding="utf-8")
+        dashboard_text = Path(dash["dashboard"]).read_text(encoding="utf-8")
+        assert "lifecycle_transitions" in dashboard_text
+        assert "Lane" in dashboard_text
+        assert "Architecture" in dashboard_text
 
         inbox = vault / "05-实践与项目" / "tasks" / "任务收件箱.md"
         inbox_text = inbox.read_text(encoding="utf-8")
@@ -279,6 +283,138 @@ def test_lifecycle_fail_closed_edges():
         assert "invalid evidence shape" in missing_path_evidence.stderr
 
 
+def test_lane_architecture_alignment_and_work_priority_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        evo = json.loads(run(
+            env,
+            "add",
+            "验证自进化架构对齐门禁",
+            "--priority",
+            "P0",
+            "--project",
+            "hermes-evolution",
+            "--lane",
+            "evolution",
+            "--architecture-target",
+            "L3",
+            "--capability-delta",
+            "reduce ghost task signals",
+            "--anti-drift-check",
+            "mapped to L0-L5; no runtime mutation without evidence",
+            "--acceptance-evidence",
+            "command: selfcheck PASS",
+            "--expires-at",
+            "2099-01-01",
+            "--json",
+        ).stdout)
+        work = json.loads(run(
+            env,
+            "add",
+            "修复生产产品任务",
+            "--priority",
+            "P1",
+            "--project",
+            "uvisa-app-2.0-work",
+            "--lane",
+            "work",
+            "--expires-at",
+            "2099-01-01",
+            "--json",
+        ).stdout)
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        evo_row = next(r for r in rows if r["id"] == evo["id"])
+        work_row = next(r for r in rows if r["id"] == work["id"])
+        assert evo_row["lane"] == "evolution"
+        assert evo_row["architecture_target"] == "L3"
+        assert evo_row["architecture_aligned"] is True
+        assert evo_row["dispatchable"] is True
+        assert work_row["lane"] == "work"
+
+        nxt = json.loads(run(env, "next", "--json").stdout)["next"]
+        assert nxt["id"] == work["id"], nxt
+        assert nxt["lane"] == "work"
+
+        bad = run(
+            env,
+            "add",
+            "缺少架构对齐字段的自进化任务",
+            "--priority",
+            "P1",
+            "--project",
+            "hermes-evolution",
+            "--lane",
+            "evolution",
+            "--json",
+            check=False,
+        )
+        assert bad.returncode != 0
+        assert "evolution tasks require architecture alignment" in bad.stderr
+
+        blank = run(
+            env,
+            "add",
+            "空白字段绕过自进化门禁",
+            "--priority",
+            "P1",
+            "--project",
+            "hermes-evolution",
+            "--lane",
+            "evolution",
+            "--architecture-target",
+            "L3",
+            "--capability-delta",
+            "   ",
+            "--anti-drift-check",
+            "mapped to L0-L5",
+            "--acceptance-evidence",
+            "command: selfcheck PASS",
+            "--json",
+            check=False,
+        )
+        assert blank.returncode != 0
+        assert "capability_delta" in blank.stderr
+
+        bad_lane = run(
+            env,
+            "add",
+            "非法 lane 不得静默降级",
+            "--priority",
+            "P1",
+            "--project",
+            "local-brain",
+            "--lane",
+            "not-a-lane",
+            "--json",
+            check=False,
+        )
+        assert bad_lane.returncode != 0
+
+        legacy_id, legacy_path = add_task(env, title="手工遗留自进化任务缺少架构字段", priority="P1", project="manual-work")
+        legacy_text = legacy_path.read_text(encoding="utf-8")
+        legacy_text = legacy_text.replace("lane: work", "lane: evolution", 1)
+        legacy_text = legacy_text.replace("architecture_target: ", "architecture_target: ", 1)
+        legacy_path.write_text(legacy_text, encoding="utf-8")
+
+        legacy_rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        legacy_row = next(r for r in legacy_rows if r["id"] == legacy_id)
+        assert legacy_row["architecture_aligned"] is False
+        assert legacy_row["dispatchable"] is False
+
+        legacy_claim = run(env, "claim", legacy_id, "--actor", "tester", "--json", check=False)
+        assert legacy_claim.returncode != 0
+        assert "evolution_architecture_alignment_missing" in legacy_claim.stderr
+
+        lifecycle = json.loads(run(env, "lifecycle", "--json", check=False).stdout)
+        assert lifecycle["status"] == "FAIL", lifecycle
+        assert any(i.get("reason") == "evolution_architecture_alignment_missing" for i in lifecycle["invalid"]), lifecycle
+
+        selfcheck = json.loads(run(env, "selfcheck", "--json", check=False).stdout)
+        assert selfcheck["status"] == "FAIL", selfcheck
+        assert any("evolution architecture alignment missing" in f for f in selfcheck["failures"]), selfcheck
+
+
 def test_autorun_eligibility_and_handoff_are_fail_closed():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -390,6 +526,7 @@ def main():
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
     test_lifecycle_fail_closed_edges()
+    test_lane_architecture_alignment_and_work_priority_gate()
     test_autorun_eligibility_and_handoff_are_fail_closed()
     test_autorun_done_requires_valid_proof_hash()
     test_proof_check_flags_persisted_autorun_done_without_proof_hash()

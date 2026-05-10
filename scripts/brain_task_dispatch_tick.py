@@ -71,6 +71,7 @@ def append_log(event: dict[str, Any]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Safe local-brain task dispatch tick")
     parser.add_argument("--print-always", action="store_true", help="Always print the event JSON")
+    parser.add_argument("--summary", action="store_true", help="Always print a compact JSON summary suitable for cron no_agent heartbeat delivery")
     parser.add_argument("--no-state", action="store_true", help="Do not suppress repeated notifications")
     parser.add_argument("--autorun", action="store_true", help="Opt-in bridge: run auto-claim-and-handoff after all safe tick gates pass")
     args = parser.parse_args()
@@ -107,14 +108,60 @@ def main() -> int:
     event["log_file"] = str(LOG_FILE)
     event["state_file"] = str(STATE_FILE)
 
-    append_log(event)
-
     previous = load_state() if not args.no_state else {}
     changed = next_id and next_id != previous.get("last_notified_task_id")
     noteworthy = bool(errors or event["reconcile_action_count"] or event["ingested_count"] or changed)
-    save_state({"updated_at": event["generated_at"], "last_notified_task_id": next_id, "last_status": event["status"], "last_dispatchable": event["dispatchable"]})
+    stdout_policy = "summary" if args.summary else ("print_always" if args.print_always else "noteworthy_only")
+    will_print = bool(args.summary or args.print_always or noteworthy)
+    print_reason = "summary" if args.summary else ("print_always" if args.print_always else ("noteworthy" if noteworthy else "suppressed_no_change"))
+    recovery_command = f"python3 {Path(__file__).expanduser()} --print-always --no-state"
+    summary_payload = {
+        "schema": "brain_task_dispatch_tick_summary_v1",
+        "generated_at": event["generated_at"],
+        "status": event["status"],
+        "dispatchable": event["dispatchable"],
+        "next_task_id": event["next_task_id"],
+        "reconcile_action_count": event["reconcile_action_count"],
+        "ingested_count": event["ingested_count"],
+        "error_count": len(errors),
+        "stdout_policy": "summary",
+        "log_file": str(LOG_FILE),
+        "state_file": str(STATE_FILE),
+        "recovery_command": recovery_command,
+    }
+    if args.autorun:
+        summary_payload["autorun"] = {
+            "present": "autorun" in event,
+            "claimed": bool((event.get("autorun") or {}).get("claimed")),
+            "status": (event.get("autorun") or {}).get("status"),
+        }
+    event["observability"] = {
+        "schema": "brain_task_dispatch_tick_observability_v1",
+        "stdout_policy": stdout_policy,
+        "printed": will_print,
+        "print_reason": print_reason,
+        "noteworthy": noteworthy,
+        "summary_available": True,
+        "log_file": str(LOG_FILE),
+        "state_file": str(STATE_FILE),
+        "recovery_command": recovery_command,
+        "no_agent_note": "Default no-change ticks may intentionally emit empty stdout; use --summary for heartbeat or --print-always for full JSON.",
+    }
 
-    if args.print_always or noteworthy:
+    append_log(event)
+    save_state({
+        "updated_at": event["generated_at"],
+        "last_notified_task_id": next_id,
+        "last_status": event["status"],
+        "last_dispatchable": event["dispatchable"],
+        "last_log_file": str(LOG_FILE),
+        "last_stdout_policy": stdout_policy,
+        "last_print_reason": print_reason,
+    })
+
+    if args.summary:
+        print(json.dumps(summary_payload, ensure_ascii=False, indent=2, sort_keys=True))
+    elif args.print_always or noteworthy:
         print(json.dumps(event, ensure_ascii=False, indent=2))
     return 0 if event["status"] == "OK" else 2
 
