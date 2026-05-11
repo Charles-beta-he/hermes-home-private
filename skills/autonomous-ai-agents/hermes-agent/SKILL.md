@@ -179,6 +179,12 @@ hermes cron status          Scheduler status
 Operational troubleshooting pattern:
 - If `last_status=error` with no delivery error and the message is "Agent completed but produced empty response", treat it as a cron-agent/wrapper problem before blaming the scheduler.
 - Prefer script-first cron jobs: put deterministic work in `~/.hermes/scripts/<job>.py`, emit JSON/JSONL, and make the cron prompt only summarize injected output in 2-3 lines with "Always produce a non-empty final response."
+- If a cron job reports `Script not found: /path/script.py arg1 arg2`, check whether the job's `script` field contains arguments and the scheduler is treating the whole string as a filename. Verify the underlying file and run `python3 /path/script.py arg1 arg2` manually before claiming the script is absent; report scheduler wrapper parsing separately from the script's real return status.
+- Minimal operational fix for cron `script` arguments: do **not** patch scheduler parsing or store shell commands in `script`. Create small no-space wrapper scripts under `~/.hermes/scripts/` (for example `pipeline_tick_tick.py` that `os.execv(sys.executable, [sys.executable, target, "tick"])`), then update jobs with `hermes cron edit <job_id> --script wrapper.py`. This preserves the scheduler containment model and survives Hermes updates.
+- When auditing cron parameter/script issues, enumerate every job whose `script` contains whitespace from `~/.hermes/cron/jobs.json`, reproduce with `cron.scheduler._run_job_script(<script>)`, and treat `last_status=ok` as insufficient proof because non-`no_agent` jobs can inject script errors into an LLM prompt and still finish `ok`.
+- For cron jobs that drive local task pools/envelope buses, watch for two coupled failure modes: (1) `script` values like `pipeline_tick.py tick` being parsed as one path instead of path+argv, and (2) `human_escape` counting all historical `FAILED`/`BLOCKED` rows, causing permanent熔断. In reviewer mode, recommend structured `script` + `script_args`, fail-closed script status, and human ack/watermark semantics. See `references/cron-taskpool-script-args-and-human-escape.md`.
+- For envelope executors that spawn `hermes chat`, verify process lifecycle as well as DB state: `ps -ax -o pid,etime,command | grep -E 'envelope_executor|hermes chat'` should show no orphan worker after timeout/completion. Run workers in their own process group (`start_new_session=True`) and kill the whole process group on timeout/SIGTERM; otherwise the envelope may be marked FAILED/PENDING while the old worker keeps editing concurrently.
+- For `deliver=origin` jobs, `last_delivery_error: no delivery target resolved for deliver=origin` is a delivery binding problem, not necessarily a job/runtime failure. Prefer explicit delivery targets for recurring status reports after checking user intent.
 - For long-running multi-model jobs, wrap them with explicit timeouts and record `timeout_recorded`/`degraded_recorded`; then run a lightweight health/score script afterward so the cron still leaves an auditable result.
 - After editing a job, use `hermes cron run <id>` or the cronjob tool's run action, wait for scheduler execution, then re-check `hermes cron list` and any health script. Do not assume `next_run_at` change means it already ran.
 - `last_run_at=null` is not automatically a failure for daily/weekly jobs; compare `next_run_at` with current time and distinguish first-run-pending from missed windows.
@@ -499,6 +505,8 @@ Voice commands: `/voice on` (voice-to-voice), `/voice tts` (always voice), `/voi
 
 For long autonomous loops, single-session tool-call limits, and permission problems, use `references/tool-budget-and-permission-gates.md`: batch mechanical calls into scripts, externalize state into durable artifacts, split work into resumable ticks, use subagents/background jobs for long work, and enforce least-privilege typed tool proxies with dry-run-first external effects.
 
+For the specific `Iteration budget reached (N/N) — response may be incomplete` failure mode in cron/task-pool/idle-runner work, use `references/p10-iteration-budget-loop.md`: diagnose effective caps, run a bounded task tick, write a durable handoff, and require structured proof before done.
+
 ### Spawning Additional Hermes Instances
 
 Run additional Hermes processes as fully independent subprocesses — separate sessions, tools, and environments.
@@ -614,6 +622,10 @@ Check logs first:
 grep -i "failed to send\|error" ~/.hermes/logs/gateway.log | tail -20
 ```
 
+Background process watch notifications can be stale: if a `[IMPORTANT: Background process ... matched watch pattern ...]` event is followed by `poll=not_found` or closed ports, verify process/port liveness before acting. For the repair pattern (event metadata, stale classifier, CLI/gateway drain gates, tombstone poll UX, and regression tests), see `references/background-watch-notifications.md`.
+
+Gateway file-descriptor exhaustion can surface as cron/script/tool failures with `[Errno 24] Too many open files`. Diagnose `ulimit -n`, gateway PID, `lsof -p <pid>`, numeric FD count/max FD, and FD type distribution before blaming the script. If the gateway is near its limit (for example `ulimit -n=256`, numeric FDs≈252, many IPv4 sockets), complete the job via fallback commands when possible, report the script failure, recommend `hermes gateway restart`, raise `nofile` to 1024–4096, and investigate socket lifecycle leaks. See `references/gateway-fd-exhaustion.md`.
+
 Common gateway problems:
 - **Gateway dies on SSH logout**: Enable linger: `sudo loginctl enable-linger $USER`
 - **Gateway dies on WSL2 close**: WSL2 requires `systemd=true` in `/etc/wsl.conf` for systemd services to work. Without it, gateway falls back to `nohup` (dies when session closes).
@@ -630,6 +642,8 @@ If `auxiliary` tasks (vision, compression, session_search) fail silently, the `a
 hermes config set auxiliary.vision.provider <your_provider>
 hermes config set auxiliary.vision.model <model_name>
 ```
+
+For context-compression failures that mention a Nous 401 after another provider timed out, use `references/auxiliary-compression-provider-fallback.md`. Key pitfall: the surfaced Nous 401 may be the *second* failure in the fallback chain, not the original cause; inspect `agent.auxiliary_client` logs and credential expiry before changing config.
 
 ---
 
