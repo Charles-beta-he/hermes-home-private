@@ -221,6 +221,11 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
     td, vault, env = make_env_and_vault()
     with td:
         task_id, _ = add_task(env)
+        dashboard_file = vault / "07-仪表盘" / "待完成任务运行态.md"
+        sorted_pool_file = vault / "05-实践与项目" / "tasks" / "任务池-排序.md"
+        assert dashboard_file.exists(), "add must refresh derived dashboard immediately"
+        assert sorted_pool_file.exists(), "add must refresh sorted pool immediately"
+        assert task_id in dashboard_file.read_text(encoding="utf-8")
 
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         assert rows and rows[0]["id"] == task_id
@@ -236,6 +241,9 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
 
         claim = json.loads(run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json").stdout)
         assert claim["claimed_by"] == "tester"
+        assert claim["derived_refresh"]["status"] == "OK"
+        claimed_dashboard = dashboard_file.read_text(encoding="utf-8")
+        assert "| claimed |" in claimed_dashboard
 
         denied = run(env, "release", task_id, "--actor", "other", "--json", check=False)
         assert denied.returncode != 0
@@ -245,6 +253,8 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
 
         rel = json.loads(run(env, "release", task_id, "--actor", "tester", "--to-status", "pending", "--json").stdout)
         assert rel["to_status"] == "pending"
+        assert rel["derived_refresh"]["status"] == "OK"
+        assert "| pending |" in dashboard_file.read_text(encoding="utf-8")
 
         dash = json.loads(run(env, "dashboard", "--write", "--json").stdout)
         assert Path(dash["dashboard"]).exists()
@@ -259,6 +269,8 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert "lifecycle_transitions" in dashboard_text
         assert "Lane" in dashboard_text
         assert "Architecture" in dashboard_text
+        assert "Every canonical task-note mutation command regenerates derived views" in dashboard_text
+        assert "## Multimodel Intervention / PUA-loop Round State" in dashboard_text
 
         inbox = vault / "05-实践与项目" / "tasks" / "任务收件箱.md"
         inbox_text = inbox.read_text(encoding="utf-8")
@@ -269,6 +281,7 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         inbox.write_text(inbox_text, encoding="utf-8")
         ing = json.loads(run(env, "ingest-inbox", "--write", "--json").stdout)
         assert ing["created_count"] >= 1
+        assert ing["derived_refresh"]["status"] == "OK"
         assert "<!-- ingested:" in inbox.read_text(encoding="utf-8")
 
         no_proof = run(env, "done", task_id, "--actor", "tester", "--json", check=False)
@@ -940,6 +953,66 @@ def test_discussion_task_binding_stamp_closes_target_binding_gap():
         assert after["decision"] == "LOOP_DONE", after
 
 
+def test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dashboard():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        vault = root / "brain"
+        tasks_dir = vault / "05-实践与项目" / "tasks"
+        dashboard_dir = vault / "07-仪表盘"
+        tasks_dir.mkdir(parents=True)
+        dashboard_dir.mkdir(parents=True)
+        mod.VAULT = vault
+        mod.TASKS_DIR = tasks_dir
+        mod.DASHBOARD = dashboard_dir / "待完成任务运行态.md"
+        mod.CONTROL_CENTER = dashboard_dir / "待完成任务控制台.md"
+        mod.SORTED_POOL = tasks_dir / "任务池-排序.md"
+        mod.INBOX = tasks_dir / "任务收件箱.md"
+
+        task_path = tasks_dir / "2026-05-12-mm-round.md"
+        task_body = "# Task - mm round\n\n## Proof Log\n"
+        task = mod.Task(path=task_path, fm={"type": "task", "status": "pending", "priority": "P0", "lane": "evolution", "project": "self-improvement", "certification_status": "certified"}, body=task_body)
+        mod.save_task(task)
+        assert mod.is_mission_envelope_fm(task.fm) is False
+
+        failed_gate = {"status": "fail", "decision": "continue_loop", "failures": ["agreement|low", "vote_reject"]}
+        result = mod.write_multimodel_result_to_task(task, failed_gate, "/tmp/discussion-fail.json", "/tmp/state.json")
+        assert result["status"] == "OK", result
+        assert result["passed"] is False, result
+        text = task_path.read_text(encoding="utf-8")
+        assert "multimodel_status: not_certified" in text
+        assert "certification_status:" not in text
+        assert "multimodel_round_status: failed" in text
+        assert "multimodel_last_gate_status: FAIL" in text
+        assert "multimodel_ratification_artifact:" not in text
+        assert "agreement|low" in text and "vote_reject" in text
+        dashboard_text = mod.DASHBOARD.read_text(encoding="utf-8")
+        assert "## Multimodel Intervention / PUA-loop Round State" in dashboard_text
+        assert "failed" in dashboard_text and "CONTINUE_LOOP" in dashboard_text
+        assert "agreement\\|low" in dashboard_text
+        assert mod.mission_envelope_missing(mod.find_task(task.id).fm) == []
+
+        pass_gate = {"status": "pass", "decision": "loop_done", "failures": []}
+        passed = mod.write_multimodel_result_to_task(mod.find_task(task.id), pass_gate, "/tmp/discussion-pass.json", "/tmp/state.json")
+        assert passed["passed"] is True, passed
+        certified_text = task_path.read_text(encoding="utf-8")
+        assert "multimodel_status: certified" in certified_text
+        assert "certification_status:" not in certified_text
+        assert "multimodel_ratification_artifact: /tmp/discussion-pass.json" in certified_text
+        assert mod.mission_envelope_missing(mod.find_task(task.id).fm) == []
+
+        failed_after_pass = mod.write_multimodel_result_to_task(mod.find_task(task.id), failed_gate, "/tmp/discussion-fail-after-pass.json", "/tmp/state.json")
+        assert failed_after_pass["passed"] is False, failed_after_pass
+        reverted_text = task_path.read_text(encoding="utf-8")
+        assert "multimodel_status: not_certified" in reverted_text
+        assert "certification_status:" not in reverted_text
+        assert "multimodel_ratification_artifact:" not in reverted_text
+        assert mod.mission_envelope_missing(mod.find_task(task.id).fm) == []
+        reverted_dashboard = mod.DASHBOARD.read_text(encoding="utf-8")
+        assert "/tmp/discussion-fail-after-pass.json" in reverted_dashboard
+        assert "/tmp/discussion-pass.json" not in reverted_dashboard
+
+
 def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -1350,6 +1423,7 @@ def main():
     test_mission_dag_cycle_fails_boundary_and_dispatch()
     test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
     test_discussion_task_binding_stamp_closes_target_binding_gap()
+    test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dashboard()
     test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics()
     test_autonomy_readiness_reports_complete_fail_closed_architecture()
     test_autorun_runner_pauses_on_pending_permission_gate()

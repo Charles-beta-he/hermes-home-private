@@ -301,7 +301,10 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         "mission_schema_version", "mission_id", "mission_title", "mission_objective", "mission_constraints",
         "red_lines", "non_goals", "evidence_refs", "acceptance_criteria", "dag_nodes", "checkpoint_states",
         "permission_gates", "handoff_artifacts", "proof_artifacts", "rollback_signal", "certification_status",
-        "ratification_artifact", "mission_node_id", "mission_node_depends_on", "mission_node_kind",
+        "ratification_artifact", "multimodel_status", "multimodel_ratification_artifact",
+        "multimodel_last_checked_at", "multimodel_round_status", "multimodel_last_gate_status",
+        "multimodel_last_decision", "multimodel_last_discussion_artifact", "multimodel_last_state_path",
+        "multimodel_last_failures", "mission_node_id", "mission_node_depends_on", "mission_node_kind",
         "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary",
         "allowed_globs", "forbidden_globs", "loc_budget", "conflict_group", "parallel_group",
         "workspace_isolation", "merge_gate", "evidence", "concepts"
@@ -463,7 +466,7 @@ def is_mission_envelope_fm(fm: dict[str, Any]) -> bool:
         "mission_schema_version", "mission_title", "mission_objective",
         "red_lines", "non_goals", "acceptance_criteria", "dag_nodes",
         "checkpoint_states", "handoff_artifacts", "proof_artifacts",
-        "rollback_signal", "certification_status", "ratification_artifact",
+        "rollback_signal", "ratification_artifact",
     }
     return any(str(fm.get(field) or "").strip() for field in envelope_markers)
 
@@ -859,51 +862,57 @@ def multimodel_failure_taxonomy(discussion: dict[str, Any] | None, failures: lis
 
 
 def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], discussion_path: str, state_path: str) -> dict[str, Any]:
-    """Write multimodel ratification result to task frontmatter.
+    """Write every PUA-loop multi-model round result back to the task note.
 
-    Called when ratification_gate returns PASS/LOOP_DONE. Updates:
-    - multimodel_status: certified / not_certified
-    - multimodel_ratification_artifact: path to discussion result
+    PASS/LOOP_DONE certifies the task and stores the ratification artifact.  Any
+    non-pass round is still recorded as the latest round state so cron/humans do
+    not see a silent no-op.  The gate remains fail-closed: non-pass never sets a
+    pass artifact and never suppresses future intervention.
     """
-    passed = gate_result.get("status") == "PASS" and gate_result.get("decision") == "LOOP_DONE"
-    status_value = "certified" if passed else "not_certified"
+    gate_status = str(gate_result.get("status") or "SKIP").upper()
+    decision = str(gate_result.get("decision") or "").upper()
+    passed = gate_status == "PASS" and decision == "LOOP_DONE"
+    if not decision:
+        decision = "LOOP_DONE" if passed else "CONTINUE_LOOP"
+    failures = gate_result.get("failures") if isinstance(gate_result.get("failures"), list) else []
+    failure_summary = [str(f) for f in failures[:8]]
+    if not failure_summary and gate_result.get("reason"):
+        failure_summary = [str(gate_result.get("reason"))]
+    round_status = "passed" if passed else ("failed" if gate_status == "FAIL" else "skipped")
+
     updates = {
-        "multimodel_status": status_value,
-        "multimodel_ratification_artifact": discussion_path,
+        "multimodel_status": "certified" if passed else "not_certified",
+        "multimodel_last_checked_at": iso(),
+        "multimodel_round_status": round_status,
+        "multimodel_last_gate_status": gate_status,
+        "multimodel_last_decision": decision,
+        "multimodel_last_discussion_artifact": discussion_path,
+        "multimodel_last_state_path": state_path,
+        "multimodel_last_failures": failure_summary,
     }
-    updates["certification_status"] = status_value
+    mission_envelope = is_mission_envelope_fm(task.fm)
+    if mission_envelope:
+        updates["certification_status"] = "certified" if passed else "not_certified"
+    if passed:
+        updates["multimodel_ratification_artifact"] = discussion_path
 
-    path = Path(task.path)
-    content = path.read_text(encoding="utf-8")
-    lines = content.split("\n")
-
-    if not lines or lines[0].strip() != "---":
-        return {"status": "SKIP", "reason": "no_frontmatter", "task_id": task.id}
-    end_idx = None
-    for i in range(1, len(lines)):
-        if lines[i].strip() == "---":
-            end_idx = i
-            break
-    if end_idx is None:
-        return {"status": "SKIP", "reason": "unclosed_frontmatter", "task_id": task.id}
-
-    fm_lines = lines[1:end_idx]
-    body_lines = lines[end_idx + 1:]
-
-    existing_keys: set[str] = set()
-    for i, line in enumerate(fm_lines):
-        for key, value in updates.items():
-            if line.startswith(f"{key}:"):
-                fm_lines[i] = f"{key}: {value}"
-                existing_keys.add(key)
-
-    for key, value in updates.items():
-        if key not in existing_keys:
-            fm_lines.append(f"{key}: {value}")
-
-    new_content = "\n".join(["---"] + fm_lines + ["---"] + body_lines)
-    path.write_text(new_content, encoding="utf-8")
-    return {"status": "OK", "task_id": task.id, "updates": updates, "passed": passed}
+    task.fm.update(updates)
+    if not mission_envelope:
+        task.fm.pop("certification_status", None)
+    if not passed:
+        # A later failed/skipped round must invalidate any stale PASS artifact as
+        # current proof. Historical artifacts remain in the Proof Log/body, but
+        # frontmatter must reflect the latest fail-closed certification state.
+        task.fm.pop("multimodel_ratification_artifact", None)
+    task.body += (
+        f"\n- {iso()}: Multimodel PUA-loop round `{round_status}`. "
+        f"Gate `{gate_status}`, decision `{decision}`. "
+        f"Discussion `{discussion_path or 'missing'}`. "
+        f"Failures: {json.dumps(failure_summary, ensure_ascii=False)}\n"
+    )
+    save_task(task)
+    derived_refresh = refresh_derived_task_views("multimodel-round")
+    return {"status": "OK", "task_id": task.id, "updates": updates, "passed": passed, "derived_refresh": derived_refresh}
 
 
 def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
@@ -1111,6 +1120,10 @@ class Task:
             "multimodel_status": task_multimodel_status(self),
             "multimodel_ratification_artifact": task_multimodel_artifact(self),
             "multimodel_passed": task_multimodel_passed(self),
+            "multimodel_round_status": str(self.fm.get("multimodel_round_status") or ""),
+            "multimodel_last_gate_status": str(self.fm.get("multimodel_last_gate_status") or ""),
+            "multimodel_last_decision": str(self.fm.get("multimodel_last_decision") or ""),
+            "multimodel_last_failures": list_value(self.fm.get("multimodel_last_failures")),
             "project": self.project,
             "claimed_by": self.fm.get("claimed_by") or "",
             "claim_expires_at": self.fm.get("claim_expires_at") or "",
@@ -1133,6 +1146,11 @@ class Task:
 def obsidian_link(path: Path) -> str:
     rel = path.relative_to(VAULT).with_suffix("")
     return "[[" + str(rel) + "]]"
+
+
+def markdown_table_cell(value: Any, limit: int | None = None) -> str:
+    text = str(value or "-").replace("\r", " ").replace("\n", " ").replace("|", "\\|")
+    return text[:limit] if limit else text
 
 
 def iter_tasks(include_generated: bool = False) -> list[Task]:
@@ -1164,6 +1182,29 @@ def find_task(task_id: str) -> Task:
 
 def save_task(task: Task) -> None:
     atomic_write(task.path, render_frontmatter(task.fm) + "\n" + task.body.lstrip("\n"))
+
+
+def refresh_derived_task_views(reason: str = "task_mutation") -> dict[str, Any]:
+    """Regenerate taskpool derived views after a canonical task-note mutation.
+
+    Markdown task notes remain the source of truth, but stale dashboard/sorted
+    pool files break the human/cron control loop.  Mutating commands therefore
+    refresh derived views in the same process after the canonical write commits.
+    """
+    ensure_inbox()
+    dashboard, pool = render_dashboard()
+    control = render_control_center()
+    atomic_write(DASHBOARD, dashboard)
+    atomic_write(SORTED_POOL, pool)
+    atomic_write(CONTROL_CENTER, control)
+    return {
+        "status": "OK",
+        "reason": reason,
+        "dashboard": str(DASHBOARD),
+        "sorted_pool": str(SORTED_POOL),
+        "control_center": str(CONTROL_CENTER),
+        "generated_at": iso(),
+    }
 
 
 def sorted_tasks(include_done: bool = False) -> list[Task]:
@@ -1560,7 +1601,8 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         raise SystemExit(f"evolution tasks require architecture alignment fields; missing/invalid={missing_alignment}")
     body = f"# Task - {title}\n\n## Objective\n\n{args.objective or title}\n\n## Acceptance Criteria\n\n- [ ] {args.accept or 'Observable result is recorded in Proof Log.'}\n\n## Plan / Workpad\n\n- [ ] Reconcile current state before execution.\n- [ ] Execute the smallest verifiable slice.\n- [ ] Record proof and update status.\n\n## Validation\n\n| Command / Check | Status | Evidence |\n|---|---|---|\n| brain_task_orchestrator list | pending | |\n\n## Proof Log\n\n- {iso(created)}: Task created from local-brain control point.\n\n## Blockers / Confusions\n\n- None.\n\n## Final Handoff\n\n- Status:\n- Evidence:\n- Residual risk:\n"
     atomic_write(path, render_frontmatter(fm) + "\n" + body)
-    return {"status": "OK", "created": str(path), "id": path.stem, "link": obsidian_link(path)}
+    derived_refresh = refresh_derived_task_views("add")
+    return {"status": "OK", "created": str(path), "id": path.stem, "link": obsidian_link(path), "derived_refresh": derived_refresh}
 
 
 def parse_inbox_line(line: str) -> dict[str, Any] | None:
@@ -1670,9 +1712,11 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
         created.append(result)
         suffix = f" <!-- ingested: {result.get('link', result.get('id'))} -->"
         new_lines.append(line.replace("- [ ]", "- [x]", 1) + suffix if args.write else line)
+    derived_refresh = None
     if args.write and created:
         atomic_write(INBOX, "\n".join(new_lines) + "\n")
-    return {"status": "OK", "write": bool(args.write), "created_count": len(created), "created": created, "inbox": str(INBOX)}
+        derived_refresh = refresh_derived_task_views("ingest-inbox")
+    return {"status": "OK", "write": bool(args.write), "created_count": len(created), "created": created, "inbox": str(INBOX), "derived_refresh": derived_refresh}
 
 
 def command_claim(args: argparse.Namespace) -> dict[str, Any]:
@@ -1689,7 +1733,8 @@ def command_claim(args: argparse.Namespace) -> dict[str, Any]:
     if run_id:
         t.fm["run_id"] = run_id
     save_task(t)
-    return {"status": "OK", "task": t.id, "claimed_by": args.actor, "claim_expires_at": t.fm["claim_expires_at"], "warnings": warnings, "path": str(t.path)}
+    derived_refresh = refresh_derived_task_views("claim")
+    return {"status": "OK", "task": t.id, "claimed_by": args.actor, "claim_expires_at": t.fm["claim_expires_at"], "warnings": warnings, "path": str(t.path), "derived_refresh": derived_refresh}
 
 
 def command_release(args: argparse.Namespace) -> dict[str, Any]:
@@ -1702,7 +1747,8 @@ def command_release(args: argparse.Namespace) -> dict[str, Any]:
         raise SystemExit("; ".join(failures))
     apply_lifecycle_status(t, args.to_status, args.actor, reason=args.reason, force=args.force)
     save_task(t)
-    return {"status": "OK", "task": t.id, "to_status": args.to_status, "warnings": warnings, "path": str(t.path)}
+    derived_refresh = refresh_derived_task_views("release")
+    return {"status": "OK", "task": t.id, "to_status": args.to_status, "warnings": warnings, "path": str(t.path), "derived_refresh": derived_refresh}
 
 
 def command_done(args: argparse.Namespace) -> dict[str, Any]:
@@ -1714,8 +1760,9 @@ def command_done(args: argparse.Namespace) -> dict[str, Any]:
         raise SystemExit("; ".join(failures))
     apply_lifecycle_status(t, "done", args.actor, evidence=args.evidence, reason=args.reason, force=args.force)
     save_task(t)
+    derived_refresh = refresh_derived_task_views("done")
     evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
-    return {"status": "OK", "task": t.id, "path": str(t.path), "evidence_count": len(evidence), "warnings": warnings}
+    return {"status": "OK", "task": t.id, "path": str(t.path), "evidence_count": len(evidence), "warnings": warnings, "derived_refresh": derived_refresh}
 
 
 def command_retry(args: argparse.Namespace) -> dict[str, Any]:
@@ -1725,7 +1772,8 @@ def command_retry(args: argparse.Namespace) -> dict[str, Any]:
         raise SystemExit("; ".join(failures))
     apply_lifecycle_status(t, "retry", args.actor, reason=args.reason, delay_minutes=args.delay_minutes)
     save_task(t)
-    return {"status": "OK", "task": t.id, "retry_count": t.fm.get("retry_count") or 0, "next_attempt_at": t.fm["next_attempt_at"], "warnings": warnings, "path": str(t.path)}
+    derived_refresh = refresh_derived_task_views("retry")
+    return {"status": "OK", "task": t.id, "retry_count": t.fm.get("retry_count") or 0, "next_attempt_at": t.fm["next_attempt_at"], "warnings": warnings, "path": str(t.path), "derived_refresh": derived_refresh}
 
 
 def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
@@ -1806,6 +1854,7 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
         raise SystemExit("; ".join(failures))
     apply_lifecycle_status(t, to_status, args.actor, evidence=args.evidence, reason=args.reason, ttl_minutes=args.ttl_minutes, delay_minutes=args.delay_minutes, force=args.force)
     save_task(t)
+    derived_refresh = refresh_derived_task_views("transition")
     return {
         "status": "OK",
         "task": t.id,
@@ -1814,6 +1863,7 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
         "warnings": warnings,
         "path": str(t.path),
         "next_allowed": allowed_next_statuses(to_status),
+        "derived_refresh": derived_refresh,
     }
 
 
@@ -1847,6 +1897,21 @@ def render_dashboard() -> tuple[str, str]:
             f"| {m['mission_id']} | {m['progress_percent']}% | {m['done_nodes']} / {m['total_nodes']} | {', '.join(m.get('ready_nodes', [])) or '-'} | {blocked or '-'} | {invalid or '-'} |"
         )
     mission_table_text = "\n".join(mission_table)
+    multimodel_rows = [
+        t for t in tasks
+        if task_multimodel_intervention_required(t) or task_multimodel_status(t) or str(t.fm.get("multimodel_round_status") or "")
+    ][:15]
+    multimodel_table = ["| Task | Required | Last Round | Gate | Decision | Failures | Artifact |", "|---|---|---|---|---|---|---|"]
+    for t in multimodel_rows:
+        failures = "; ".join(list_value(t.fm.get("multimodel_last_failures")))
+        latest_round = str(t.fm.get("multimodel_round_status") or "")
+        latest_artifact = str(t.fm.get("multimodel_last_discussion_artifact") or "")
+        artifact = task_multimodel_artifact(t) if latest_round == "passed" else latest_artifact
+        artifact = artifact or latest_artifact
+        multimodel_table.append(
+            f"| {obsidian_link(t.path)} | {task_multimodel_intervention_required(t)} | {markdown_table_cell(latest_round)} | {markdown_table_cell(t.fm.get('multimodel_last_gate_status'))} | {markdown_table_cell(t.fm.get('multimodel_last_decision'))} | {markdown_table_cell(failures, 120)} | {markdown_table_cell(artifact)} |"
+        )
+    multimodel_table_text = "\n".join(multimodel_table)
     dashboard = f"""---
 type: dashboard
 status: active
@@ -1912,10 +1977,15 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
 
 {mission_table_text}
 
+## Multimodel Intervention / PUA-loop Round State
+
+{multimodel_table_text}
+
 ## Safety Invariants
 
 - Markdown task notes are canonical.
 - This dashboard and `任务池-排序.md` are derived views.
+- Every canonical task-note mutation command regenerates derived views in-process.
 - Claim before work; release/archive after proof.
 - Reconcile stale leases before dispatch.
 - `done` requires structured evidence (`command:`, `file:`, `search:`, `brainctl:`, `artifact:`, `url:`).
@@ -2133,7 +2203,8 @@ def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
             if args.write:
                 save_task(t)
             actions.append({"task": t.id, "action": action, "write": bool(args.write), "path": str(t.path)})
-    return {"status": "OK", "write": bool(args.write), "action_count": len(actions), "actions": actions}
+    derived_refresh = refresh_derived_task_views("reconcile") if args.write and actions else None
+    return {"status": "OK", "write": bool(args.write), "action_count": len(actions), "actions": actions, "derived_refresh": derived_refresh}
 
 
 def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
@@ -2857,16 +2928,14 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
     result["gate"] = gate_result or {"status": "SKIP", "reason": "no_discussion_result"}
     result["discussion_path"] = discussion_path
 
-    # Step 4: On PASS, write to task frontmatter (D6)
-    if gate_result.get("status") == "PASS" and gate_result.get("decision") == "LOOP_DONE":
-        task = find_task(task_id)
-        if task:
-            mutate_result = write_multimodel_result_to_task(task, gate_result, discussion_path, state_path)
-            result["task_mutation"] = mutate_result
-        else:
-            result["task_mutation"] = {"status": "SKIP", "reason": "task_not_found"}
+    # Step 4: Persist every round outcome.  PASS certifies; non-PASS records
+    # fail-closed state so the next tick/human sees why the loop continues.
+    round_gate = gate_result or {"status": "SKIP", "decision": "continue_loop", "reason": "no_discussion_result", "failures": ["no_discussion_result"]}
+    task = find_task(task_id)
+    if task:
+        result["task_mutation"] = write_multimodel_result_to_task(task, round_gate, discussion_path, state_path)
     else:
-        result["task_mutation"] = {"status": "SKIP", "reason": "gate_not_passed"}
+        result["task_mutation"] = {"status": "SKIP", "reason": "task_not_found"}
 
     # D4: convergence stats
     result["convergence"] = multimodel_convergence_stats()
@@ -2944,15 +3013,14 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
     result["gate"] = gate_result or {"status": "SKIP", "reason": "no_discussion_result"}
     result["discussion_path"] = discussion_path
 
-    # Step 4: Mutate on PASS
-    if gate_result.get("status") == "PASS" and gate_result.get("decision") == "LOOP_DONE":
-        task = find_task(task_id)
-        if task:
-            result["task_mutation"] = write_multimodel_result_to_task(task, gate_result, discussion_path, state_path)
-        else:
-            result["task_mutation"] = {"status": "SKIP", "reason": "task_not_found"}
+    # Step 4: Persist every round outcome. PASS certifies; non-PASS records
+    # fail-closed state for the next PUA-loop iteration.
+    round_gate = gate_result or {"status": "SKIP", "decision": "continue_loop", "reason": "no_discussion_result", "failures": ["no_discussion_result"]}
+    task = find_task(task_id)
+    if task:
+        result["task_mutation"] = write_multimodel_result_to_task(task, round_gate, discussion_path, state_path)
     else:
-        result["task_mutation"] = {"status": "SKIP", "reason": "gate_not_passed"}
+        result["task_mutation"] = {"status": "SKIP", "reason": "task_not_found"}
 
     return result
 
@@ -4410,6 +4478,7 @@ def command_permission_migrate(args: argparse.Namespace) -> dict[str, Any]:
             t.fm.update(changed)
             t.body += f"\n- {iso()}: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {json.dumps(changed, ensure_ascii=False)}\n"
             save_task(t)
+    derived_refresh = refresh_derived_task_views("permission-migrate") if write and actions else None
     return {
         "status": "OK",
         "schema": "local_brain_task_permission_migration_v1",
@@ -4418,19 +4487,22 @@ def command_permission_migrate(args: argparse.Namespace) -> dict[str, Any]:
         "action_count": len(actions),
         "actions": actions,
         "lane_defaults": taxonomy.LANE_AUTHORITY_DEFAULTS,
+        "derived_refresh": derived_refresh,
         "safety": "dry-run by default; --apply only writes frontmatter defaults and audit body line",
     }
 
 
 def command_dashboard(args: argparse.Namespace) -> dict[str, Any]:
     ensure_inbox()
-    dashboard, pool = render_dashboard()
-    control = render_control_center()
     if args.write:
-        atomic_write(DASHBOARD, dashboard)
-        atomic_write(SORTED_POOL, pool)
-        atomic_write(CONTROL_CENTER, control)
-    return {"status": "OK", "write": bool(args.write), "dashboard": str(DASHBOARD), "sorted_pool": str(SORTED_POOL), "control_center": str(CONTROL_CENTER), "active_count": len(sorted_tasks()), "mission_summaries": mission_dag_summaries(iter_tasks()), "multimodel_convergence": multimodel_convergence_stats()}
+        derived_refresh = refresh_derived_task_views("dashboard")
+    else:
+        # Render once for parity with --write and to catch template errors, but
+        # do not mutate derived files in dry-run mode.
+        render_dashboard()
+        render_control_center()
+        derived_refresh = None
+    return {"status": "OK", "write": bool(args.write), "dashboard": str(DASHBOARD), "sorted_pool": str(SORTED_POOL), "control_center": str(CONTROL_CENTER), "active_count": len(sorted_tasks()), "mission_summaries": mission_dag_summaries(iter_tasks()), "multimodel_convergence": multimodel_convergence_stats(), "derived_refresh": derived_refresh}
 
 
 def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
