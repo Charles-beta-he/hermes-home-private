@@ -2314,27 +2314,36 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
     except Exception as exc:
         result["run_discussion"] = {"status": "ERROR", "error": str(exc)}
 
-    # Step 3: Gate
+    # Step 3: Gate — find the correct tick for THIS task
     discussion_path = ""
     gate_result: dict[str, Any] = {}
     if result.get("run_discussion", {}).get("status") == "OK":
-        tick_dirs = sorted(Path(os.path.expanduser("~/.hermes")).glob("tick-*"), key=lambda p: p.stat().st_mtime, reverse=True)
-        for tick_dir in tick_dirs[:5]:
+        # Look for tick directories created during our discussion (within last 10 min)
+        import time
+        cutoff = time.time() - 600
+        tick_dirs = sorted(
+            (p for p in Path(os.path.expanduser("~/.hermes")).glob("tick-*")
+             if p.stat().st_mtime > cutoff),
+            key=lambda p: p.stat().st_mtime, reverse=True
+        )
+        for tick_dir in tick_dirs[:10]:
             candidate = tick_dir / "discussion_result.json"
-            if candidate.exists():
-                try:
-                    discussion = json.loads(candidate.read_text(encoding="utf-8"))
-                    # Verify this tick is for our task by checking state file
-                    tick_state = tick_dir / "state.json"
-                    if tick_state.exists():
-                        tick_state_data = json.loads(tick_state.read_text(encoding="utf-8"))
-                        if task_id not in str(tick_state_data.get("question", "")):
-                            continue
-                    gate_result = ratification_gate_result(discussion)
-                    discussion_path = str(candidate)
-                    break
-                except Exception:
-                    continue
+            if not candidate.exists():
+                continue
+            try:
+                # Match by checking state.json question contains our task_id
+                tick_state = tick_dir / "state.json"
+                if tick_state.exists():
+                    ts = json.loads(tick_state.read_text(encoding="utf-8"))
+                    question = str(ts.get("question", ""))
+                    if task_id not in question and task_id[:40] not in question:
+                        continue
+                discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                gate_result = ratification_gate_result(discussion)
+                discussion_path = str(candidate)
+                break
+            except Exception:
+                continue
 
     result["gate"] = gate_result or {"status": "SKIP", "reason": "no_discussion_result"}
     result["discussion_path"] = discussion_path
