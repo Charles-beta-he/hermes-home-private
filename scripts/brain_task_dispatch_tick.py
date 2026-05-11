@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -29,6 +30,76 @@ STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME
 LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
 LOG_FILE = LOG_DIR / "brain_task_dispatch_tick.jsonl"
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 120.0
+DEFAULT_TERMINATE_GRACE_SECONDS = 5.0
+
+
+def positive_float_env(name: str, default: float) -> float:
+    raw = os.environ.get(name, "")
+    if not raw:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def command_timeout_seconds() -> float:
+    return positive_float_env("HERMES_BRAIN_DISPATCH_TICK_COMMAND_TIMEOUT_SECONDS", DEFAULT_COMMAND_TIMEOUT_SECONDS)
+
+
+def terminate_grace_seconds() -> float:
+    return positive_float_env("HERMES_BRAIN_DISPATCH_TICK_TERMINATE_GRACE_SECONDS", DEFAULT_TERMINATE_GRACE_SECONDS)
+
+
+def _timeout_output(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return str(value)
+
+
+def _signal_process_group(proc: subprocess.Popen[Any], sig: int) -> bool:
+    try:
+        pgid = os.getpgid(proc.pid)
+        os.killpg(pgid, sig)
+        return True
+    except ProcessLookupError:
+        return True
+    except Exception:
+        return False
+
+
+def _terminate_process_tree(proc: subprocess.Popen[Any]) -> bool:
+    """Terminate a timed-out command and its process group.
+
+    Multi-model steps can spawn long-running child model calls. Killing only the
+    immediate process leaves orphan consult_models.py children running. Starting
+    commands in a new session and killing the process group keeps timeout
+    handling fail-closed and resource-safe.
+    """
+    if _signal_process_group(proc, signal.SIGTERM):
+        return True
+    try:
+        proc.terminate()
+    except Exception:
+        try:
+            proc.kill()
+        except Exception:
+            return False
+    return False
+
+
+def _kill_process_tree(proc: subprocess.Popen[Any]) -> bool:
+    if _signal_process_group(proc, signal.SIGKILL):
+        return True
+    try:
+        proc.kill()
+        return False
+    except Exception:
+        return False
 
 
 def iso() -> str:
@@ -41,17 +112,46 @@ def run_json(args: list[str]) -> dict[str, Any]:
 
 
 def run_cmd_json(cmd: list[str]) -> dict[str, Any]:
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-    out = (r.stdout or "").strip()
-    err = (r.stderr or "").strip()
-    if r.returncode != 0:
-        return {"status": "ERROR", "cmd": cmd, "returncode": r.returncode, "stdout": out, "stderr": err}
+    timeout = command_timeout_seconds()
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    )
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        process_group_terminated = _terminate_process_tree(proc)
+        process_group_killed = False
+        try:
+            out, err = proc.communicate(timeout=terminate_grace_seconds())
+        except subprocess.TimeoutExpired:
+            process_group_killed = _kill_process_tree(proc)
+            out, err = proc.communicate()
+        return {
+            "status": "ERROR",
+            "cmd": cmd,
+            "returncode": "timeout",
+            "timeout_seconds": timeout,
+            "terminate_grace_seconds": terminate_grace_seconds(),
+            "stdout": _timeout_output(out)[-4000:],
+            "stderr": _timeout_output(err)[-4000:],
+            "reason": "subprocess_timeout",
+            "process_group_terminated": process_group_terminated,
+            "process_group_killed": process_group_killed,
+        }
+    out = (out or "").strip()
+    err = (err or "").strip()
+    if proc.returncode != 0:
+        return {"status": "ERROR", "cmd": cmd, "returncode": proc.returncode, "stdout": out, "stderr": err}
     try:
         data = json.loads(out) if out else {"status": "OK"}
     except Exception as exc:
-        data = {"status": "ERROR", "cmd": cmd, "returncode": r.returncode, "stdout": out, "stderr": err, "parse_error": str(exc)}
+        data = {"status": "ERROR", "cmd": cmd, "returncode": proc.returncode, "stdout": out, "stderr": err, "parse_error": str(exc)}
     data.setdefault("cmd", cmd)
-    data.setdefault("returncode", r.returncode)
+    data.setdefault("returncode", proc.returncode)
     return data
 
 
@@ -80,6 +180,7 @@ def main() -> int:
     parser.add_argument("--no-state", action="store_true", help="Do not suppress repeated notifications")
     parser.add_argument("--autorun", action="store_true", help="Opt-in bridge: run auto-claim-and-handoff after all safe tick gates pass")
     parser.add_argument("--autorun-step", action="store_true", help="Opt-in bounded runner: claim, run static allowlisted command IDs, and stop at review")
+    parser.add_argument("--multimodel-step", action="store_true", help="Opt-in expensive multi-model step; still requires HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1")
     args = parser.parse_args()
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
@@ -100,11 +201,20 @@ def main() -> int:
             "summary": (event.get("evidence_spine") or {}).get("summary", {}),
         })
 
-    # D2: auto-step when env var is set — runs build->discussion->gate->mutate for top task
-    if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
+    # D2: expensive multi-model auto-step is double-gated: explicit CLI flag + env var.
+    # Ambient HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 must not turn safe summary
+    # cron ticks into long-running model calls.
+    if args.multimodel_step and os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
         event["multimodel_step"] = run_json(["multimodel-intervention-step", "--json"])
         if event["multimodel_step"].get("status") not in allowed_statuses:
-            errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout")})
+            errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout"), "reason": event["multimodel_step"].get("reason")})
+    elif args.multimodel_step and not errors:
+        event["multimodel_step"] = {
+            "status": "SKIP",
+            "reason": "autorun_multimodel_disabled",
+            "env_flag": "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL",
+            "safety": "set HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 to enable",
+        }
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
 
     for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch"]:
