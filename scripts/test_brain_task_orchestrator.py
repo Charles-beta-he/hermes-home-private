@@ -663,6 +663,17 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert gate_pass["status"] == "PASS", gate_pass
         assert gate_pass["decision"] == "LOOP_DONE", gate_pass
 
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace(
+            "evidence: []",
+            f"multimodel_status: certified\nmultimodel_ratification_artifact: {good}\nevidence: []",
+            1,
+        )
+        task_path.write_text(text, encoding="utf-8")
+        passed_row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert passed_row["multimodel_passed"] is True, passed_row
+        assert passed_row["multimodel_intervention_required"] is False, passed_row
+
         mismatched_target = task_path.parent / "discussion-mismatched-target.json"
         mismatched_target.write_text(good.read_text(encoding="utf-8").replace(task_id, "2026-05-10-other-task", 1), encoding="utf-8")
         gate_mismatched = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(mismatched_target), "--json", check=False).stdout)
@@ -679,6 +690,10 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert "model_count_below_required:2/4" in gate_partial_models["failures"], gate_partial_models
         assert "missing_required_model_vote:deepseek-v4-pro" in gate_partial_models["failures"], gate_partial_models
         assert "missing_required_model_vote:mimo-v2.5-pro" in gate_partial_models["failures"], gate_partial_models
+        task_path.write_text(task_path.read_text(encoding="utf-8").replace(str(good), str(partial_models), 1), encoding="utf-8")
+        failed_row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert failed_row["multimodel_passed"] is False, failed_row
+        assert failed_row["multimodel_intervention_required"] is True, failed_row
 
         bad = task_path.parent / "discussion-bad.json"
         bad.write_text(json.dumps({

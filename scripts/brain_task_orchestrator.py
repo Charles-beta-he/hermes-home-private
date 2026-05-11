@@ -644,10 +644,36 @@ def task_multimodel_artifact(task: "Task") -> str:
     ).strip()
 
 
+def resolve_local_artifact_path(ref: str) -> Path | None:
+    """Resolve a local structured artifact reference without accepting opaque proof labels."""
+    text = (ref or "").strip()
+    if not text:
+        return None
+    if text.startswith("file:"):
+        text = text[len("file:"):]
+    # Only local JSON files can be used as ratification proof for taskpool pass state.
+    if text.startswith(("artifact:", "proof:", "command:", "search:", "brainctl:", "url:")):
+        return None
+    p = Path(os.path.expanduser(text))
+    if not p.is_absolute():
+        return None
+    return p
+
+
 def task_multimodel_passed(task: "Task") -> bool:
     status = task_multimodel_status(task)
     artifact = task_multimodel_artifact(task)
-    return status in MULTIMODEL_PASS_STATUSES and (not artifact or evidence_is_structured(artifact))
+    if status not in MULTIMODEL_PASS_STATUSES or not artifact:
+        return False
+    artifact_path = resolve_local_artifact_path(artifact)
+    if not artifact_path or not artifact_path.exists() or artifact_path.suffix != ".json":
+        return False
+    try:
+        discussion = json.loads(artifact_path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    gate = ratification_gate_result(discussion, expected_task=task)
+    return gate.get("status") == "PASS" and gate.get("decision") == "LOOP_DONE"
 
 
 def multimodel_convergence_stats(tasks: list["Task"] | None = None) -> dict[str, Any]:
