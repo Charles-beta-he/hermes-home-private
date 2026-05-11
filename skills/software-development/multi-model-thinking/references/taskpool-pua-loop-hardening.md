@@ -25,6 +25,14 @@ When a task appears as a high score (for example `score >= 400`) and has not bec
 
 Human reports and watchdogs should include this classification and the exact next gate, so the user sees “why not done” instead of a vague long-running task.
 
+## Landing in Hermes taskpool
+
+The taskpool `multimodel-intervention-*` commands must generate T3/quorum-4 run commands for PUA-loop closeout. A T2/quorum-3 artifact is only advisory for high-risk/closeout tasks and should be classified as `not_certified` by `ratification-gate` when the task requires full certification.
+
+`taskpool_watch_report.py` should classify high-score unfinished tasks by state (`stale_claim_stuck`, `review_gate_not_closed`, `not_dispatchable`, `active_high_score`) and print the exact next gate.
+
+Common pitfall: do not let the dry-run plan say “PUA-loop requires T3 4/4” while the generated `run_discussion_command` still uses `--tier T2 --quorum 3`. That creates the Score445 symptom: evidence looks approved, but the local ratification gate correctly refuses `done` because DeepSeek/4th vote and target binding are missing.
+
 ## Fail-closed invariants to enforce
 
 Evidence-spine and dispatch tick:

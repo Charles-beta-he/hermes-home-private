@@ -38,6 +38,7 @@ AUTORUN_POLICY = AUTORUN_STATE_DIR / "auto_run_policy.json"
 AUTORUN_KILL_SWITCH = AUTORUN_STATE_DIR / "auto_run_kill_switch"
 AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
 AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
+PARALLEL_HANDOFF_DIR = AUTORUN_STATE_DIR / "parallel_handoffs"
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
 AUTONOMY_WRITE_GUARD = HERMES_HOME / "scripts" / "autonomy-write-guard.py"
 AUTONOMY_WRITE_ALLOWLIST = Path(
@@ -2052,6 +2053,71 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
     return {"status": status, "checked_count": checked, "failures": failures, "warnings": warnings, "legacy_body_evidence": legacy_body_evidence}
 
 
+def infer_conflict_group_from_task(task: Task) -> str:
+    """Infer a conflict group from task metadata for boundary isolation.
+
+    Auto-derives conflict groups from task title, concepts, project, and
+    allowed_globs when no explicit conflict_group is set. This enables
+    parallel dispatch to separate tasks touching different subsystems
+    within the same workspace.
+
+    Resolution order:
+    1. explicit conflict_group field (pass-through)
+    2. title/concepts/project pattern matching
+    3. allowed_globs file path patterns
+    4. '' (no inference possible)
+    """
+    # Patterns: (regex, group_name). Order matters: first match wins.
+    _INFER_PATTERNS: list[tuple[str, str]] = [
+        (r"(?i)(skill|技能)", "hermes-skills"),
+        (r"(?i)(memory|记忆)", "hermes-memory"),
+        (r"(?i)(config|配置|设置)", "hermes-config"),
+        (r"(?i)(hook|钩子)", "hermes-hooks"),
+        (r"(?i)(plugin|插件)", "hermes-plugins"),
+        (r"(?i)(gateway|网关)", "hermes-gateway"),
+        (r"(?i)(cron|定时|调度)", "hermes-cron"),
+        (r"(?i)(task.?pool|任务池|task.?boundary|任务边界|dispatch|分派)", "hermes-taskpool"),
+        (r"(?i)(orchestrat|编排)", "hermes-orchestrator"),
+        (r"(?i)(agent.?team|multi.?agent|多agent|并行)", "hermes-agent-team"),
+        (r"(?i)(brain.?sync|sync.?brain|同步)", "hermes-brain-sync"),
+        (r"(?i)(model.?router|provider|quota|配额)", "hermes-model-router"),
+        (r"(?i)(evolution|自进化|self.?improve)", "hermes-evolution"),
+        (r"(?i)(uvisa|u-visa)", "uvisa-app"),
+        (r"(?i)(rowboat)", "rowboat"),
+    ]
+    _FILE_PATTERNS: list[tuple[str, str]] = [
+        ("~/.hermes/skills/", "hermes-skills"),
+        ("~/.hermes/config/", "hermes-config"),
+        ("~/.hermes/hooks/", "hermes-hooks"),
+        ("~/.hermes/plugins/", "hermes-plugins"),
+        ("~/.hermes/scripts/brain_task_", "hermes-taskpool"),
+        ("~/.hermes/scripts/agent_team_", "hermes-agent-team"),
+        ("~/.hermes/scripts/sync-brain", "hermes-brain-sync"),
+        ("~/.hermes/scripts/model_", "hermes-model-router"),
+        ("~/.hermes/cron/", "hermes-cron"),
+        ("~/.hermes/memory/", "hermes-memory"),
+    ]
+    # Already has explicit conflict_group
+    explicit = str(task.fm.get("conflict_group") or "").strip()
+    if explicit:
+        return explicit
+    # Build haystack from title, concepts, project
+    title = task.title or ""
+    concepts = " ".join(list_value(task.fm.get("concepts")))
+    project = task.project or ""
+    haystack = f"{title} {concepts} {project}"
+    for pattern, group in _INFER_PATTERNS:
+        if re.search(pattern, haystack):
+            return group
+    # Try allowed_globs
+    allowed_raw = str(task.fm.get("allowed_globs") or "").strip()
+    if allowed_raw:
+        for path_pat, group in _FILE_PATTERNS:
+            if path_pat in allowed_raw:
+                return group
+    return ""
+
+
 def task_parallel_boundary_key(task: Task) -> str:
     """Compute the isolation boundary key for parallel dispatch.
 
@@ -2059,10 +2125,11 @@ def task_parallel_boundary_key(task: Task) -> str:
     1. explicit `parallel_boundary` field
     2. `workspace_isolation` = worktree/copy → per-task isolation (each task is its own boundary)
     3. `conflict_group` + workspace → fine-grained conflict isolation
-    4. `workspace` → workspace-level isolation
-    5. evolution lane + architecture_target
-    6. project
-    7. task id (self-isolating)
+    4. inferred conflict_group + workspace → auto-derived from task metadata
+    5. `workspace` → workspace-level isolation
+    6. evolution lane + architecture_target
+    7. project
+    8. task id (self-isolating)
     """
     explicit = str(task.fm.get("parallel_boundary") or "").strip()
     if explicit:
@@ -2077,6 +2144,12 @@ def task_parallel_boundary_key(task: Task) -> str:
     workspace = str(task.fm.get("workspace") or "").strip()
     if conflict and workspace:
         return f"conflict:{workspace}:{conflict}"
+    # v3: infer conflict_group from task metadata when workspace is shared
+    # This separates tasks touching different subsystems within the same workspace
+    if workspace and not conflict:
+        inferred = infer_conflict_group_from_task(task)
+        if inferred:
+            return f"conflict:{workspace}:{inferred}"
     if workspace:
         return f"workspace:{workspace}"
     if task.lane == "evolution" and task.architecture_target:
@@ -2477,8 +2550,8 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
         "intervention_required": bool(reasons),
         "pua_loop": {
             "mode": "continue_until_multimodel_pass",
-            "round_gate": "run deterministic checks -> build claim/evidence state -> consult_models.py --discussion -> ratification-gate; continue if gate != PASS",
-            "completion_signal": "LOOP_DONE only after ratification-gate PASS and local deterministic gates pass",
+            "round_gate": "run deterministic checks -> build target-bound claim/evidence state -> consult_models.py --tier T3 --quorum 4 --discussion -> ratification-gate; continue if gate != PASS",
+            "completion_signal": "LOOP_DONE only after target-bound 4/4 ratification-gate PASS and local deterministic gates pass",
         },
         "state_path": str(state_path),
         "build_state_command": (
@@ -2495,7 +2568,7 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
             f"{evidence_args} "
             f"--file {shlex.quote(str(task.path))} --out {state_arg}"
         ),
-        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T2 --quorum 3 --discussion --max-rounds 3 --keep",
+        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T3 --quorum 4 --discussion --max-rounds 3 --keep",
         "gate_command_template": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task {task_arg} --discussion-result DISCUSSION_RESULT_JSON --json",
         "safety": "dry-run intervention plan only; no claim, no task mutation, no arbitrary hook execution",
     }
@@ -3305,6 +3378,64 @@ Claim has already been acquired. Work only within the task's stated workspace/co
 """
 
 
+def render_parallel_handoff(task: Task, claim: dict[str, Any], boundary_info: dict[str, Any], actor: str, run_id: str, batch_id: str, batch_index: int) -> str:
+    """Render a per-task handoff artifact for parallel dispatch.
+
+    Includes boundary constraints (allowed/forbidden globs, loc_budget,
+    workspace_isolation, merge_gate) so the consuming runner knows exactly
+    what it is allowed to touch.
+    """
+    allowed = list_value(task.fm.get("allowed_globs"))
+    forbidden = list_value(task.fm.get("forbidden_globs"))
+    loc_budget = str(task.fm.get("loc_budget") or "").strip()
+    ws_isolation = str(task.fm.get("workspace_isolation") or "").strip()
+    merge_gate = str(task.fm.get("merge_gate") or "").strip()
+    conflict_group = str(task.fm.get("conflict_group") or "").strip()
+    parallel_group_val = str(task.fm.get("parallel_group") or "").strip()
+    workspace = str(task.fm.get("workspace") or "").strip()
+    return f"""# Parallel Handoff — {task.title}
+
+- task_id: `{task.id}`
+- task_link: {obsidian_link(task.path)}
+- actor: `{actor}`
+- run_id: `{run_id}`
+- batch_id: `{batch_id}`
+- batch_index: {batch_index}
+- claim_expires_at: `{task.fm.get('claim_expires_at') or ''}`
+
+## Boundary Constraints
+
+- boundary_key: `{boundary_info.get('boundary_key', '')}`
+- workspace: `{workspace}`
+- workspace_isolation: `{ws_isolation or 'none'}`
+- conflict_group: `{conflict_group or '(auto-inferred)'}`
+- parallel_group: `{parallel_group or '(none)'}`
+- allowed_globs: {json.dumps(allowed, ensure_ascii=False) if allowed else '(none)'}
+- forbidden_globs: {json.dumps(forbidden, ensure_ascii=False) if forbidden else '(none)'}
+- loc_budget: `{loc_budget or '(unlimited)'}`
+- merge_gate: `{merge_gate or 'manual'}`
+
+## Safety Contract
+
+- Do NOT execute Markdown task body as a script.
+- Do NOT modify files outside allowed_globs.
+- Do NOT touch files matching forbidden_globs.
+- Do NOT exceed loc_budget lines changed.
+- Do NOT mark the task done from this handoff.
+- Runner must perform bounded execution within boundary constraints,
+  write concrete evidence, transition `running -> review`, and only
+  then use proof-gated `review -> done`.
+- If any gate fails, release/retry/block; never force close.
+- This handoff is part of batch `{batch_id}` with {boundary_info.get('batch_size', '?')} task(s).
+
+## Claim Result
+
+```json
+{json.dumps(claim, ensure_ascii=False, indent=2)}
+```
+"""
+
+
 def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
     eligibility = command_eligibility_check(args)
     if not eligibility.get("eligible"):
@@ -3393,6 +3524,240 @@ def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
         "write_guard": write_guard,
         "safety": "claimed-and-handoff-only; does not execute task body or mark done",
     }
+
+
+def command_parallel_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
+    """Parallel claim and handoff: claim a non-conflicting batch and emit handoff artifacts.
+
+    Default mode is dry-run (plan only). Use --write to actually claim tasks
+    and generate per-task handoff artifacts with boundary constraints.
+
+    Fail-closed: if any claim in a batch fails, all previously claimed tasks
+    in this batch are released.
+    """
+    max_agents = int(getattr(args, "max_agents", 3) or 3)
+    if max_agents < 1:
+        raise SystemExit("--max-agents must be >= 1")
+    dry_run = not getattr(args, "write", False)
+    actor = getattr(args, "actor", "hermes-parallel")
+    ttl_minutes = int(getattr(args, "ttl_minutes", 60) or 60)
+    prepare_worktrees = getattr(args, "prepare_worktrees", False)
+
+    # Step 1: boundary-check must pass
+    boundary = command_boundary_check(args)
+    if boundary.get("status") != "PASS":
+        return {
+            "status": "FAIL",
+            "dry_run": True,
+            "claimed": False,
+            "reason": "boundary_check_failed",
+            "boundary": boundary,
+            "safety": "fail-closed; no claim, no handoff, no execution",
+        }
+
+    # Step 2: select non-conflicting parallel batch
+    selected, skipped = select_parallel_dispatch(max_agents)
+    if not selected:
+        return {
+            "status": "OK",
+            "dry_run": dry_run,
+            "claimed": False,
+            "selected_count": 0,
+            "selected": [],
+            "skipped": skipped,
+            "reason": "no_eligible_tasks",
+            "safety": "dry-run only" if dry_run else "no tasks to claim",
+        }
+
+    # Step 3: build dispatch plan
+    dispatch_plan = []
+    for idx, t in enumerate(selected):
+        row = t.row()
+        dispatch_plan.append({
+            "id": t.id,
+            "index": idx,
+            "boundary_key": task_parallel_boundary_key(t),
+            "parallel_group": parallel_group_key(t),
+            "conflict_group": str(t.fm.get("conflict_group") or "").strip(),
+            "workspace": str(t.fm.get("workspace") or "").strip(),
+            "workspace_isolation": str(t.fm.get("workspace_isolation") or "").strip(),
+            "claim_command": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py claim {t.id} --actor {actor} --ttl-minutes {ttl_minutes}",
+            "execution_prompt": dispatch_prompt_for_row(row),
+        })
+
+    # Dry-run: return plan only, no claims, no handoffs
+    if dry_run:
+        return {
+            "status": "OK",
+            "dry_run": True,
+            "claimed": False,
+            "max_agents": max_agents,
+            "selected_count": len(selected),
+            "selected": [t.row() for t in selected],
+            "skipped": skipped,
+            "dispatch_plan": dispatch_plan,
+            "boundary": boundary,
+            "safety": "dry-run only; does not claim, execute, or mark tasks done",
+        }
+
+    # Step 4: --write mode: atomic batch claim
+    stamp = now()
+    batch_id = f"parallel-{stamp.strftime('%Y%m%d%H%M%S')}-{len(selected)}"
+    claimed_tasks: list[dict[str, Any]] = []
+    failed_claims: list[dict[str, Any]] = []
+    handoff_paths: list[str] = []
+
+    def _rollback_all():
+        """Release all claimed tasks in this batch (fail-closed)."""
+        for ct in claimed_tasks:
+            try:
+                command_release(argparse.Namespace(
+                    task=ct["task_id"], actor=actor,
+                    to_status="pending",
+                    reason=f"parallel batch rollback; batch={batch_id}",
+                    force=True, json=True,
+                ))
+            except Exception:
+                pass
+
+    try:
+        PARALLEL_HANDOFF_DIR.mkdir(parents=True, exist_ok=True)
+
+        for idx, t in enumerate(selected):
+            run_id = f"{batch_id}-agent{idx}-{t.id[:24]}"
+            try:
+                write_guard = guard_autorun_claim_and_handoff(t.id, actor)
+            except PermissionError as exc:
+                failed_claims.append({
+                    "task_id": t.id, "reason": "write_guard_failed",
+                    "error": parse_guard_error(exc),
+                })
+                _rollback_all()
+                return {
+                    "status": "FAIL_CLOSED",
+                    "dry_run": False,
+                    "claimed": False,
+                    "batch_id": batch_id,
+                    "claimed_tasks": claimed_tasks,
+                    "failed_claims": failed_claims,
+                    "reason": "write_guard_failed_during_batch",
+                    "safety": "fail-closed; all claims rolled back",
+                }
+            except Exception as exc:
+                failed_claims.append({
+                    "task_id": t.id, "reason": "write_guard_unavailable",
+                    "error": str(exc),
+                })
+                _rollback_all()
+                return {
+                    "status": "FAIL_CLOSED",
+                    "dry_run": False,
+                    "claimed": False,
+                    "batch_id": batch_id,
+                    "claimed_tasks": claimed_tasks,
+                    "failed_claims": failed_claims,
+                    "reason": "write_guard_unavailable_during_batch",
+                    "safety": "fail-closed; all claims rolled back",
+                }
+
+            claim = command_claim(argparse.Namespace(
+                task=t.id, actor=actor, ttl_minutes=ttl_minutes,
+                run_id=run_id, reason=f"parallel-claim-and-handoff; batch={batch_id}",
+                force=False, json=True,
+            ))
+
+            # Read-back verification
+            claimed_task = find_task(t.id)
+            readback_failures = []
+            if claimed_task.status != "claimed":
+                readback_failures.append(f"status mismatch: {claimed_task.status}")
+            if str(claimed_task.fm.get("claimed_by") or "") != actor:
+                readback_failures.append(f"claimed_by mismatch: {claimed_task.fm.get('claimed_by')}")
+            if str(claimed_task.fm.get("run_id") or "") != run_id:
+                readback_failures.append(f"run_id mismatch: {claimed_task.fm.get('run_id')}")
+            if not claimed_task.fm.get("claim_expires_at"):
+                readback_failures.append("claim_expires_at missing")
+
+            if readback_failures:
+                failed_claims.append({
+                    "task_id": t.id, "reason": "readback_mismatch",
+                    "failures": readback_failures,
+                })
+                _rollback_all()
+                return {
+                    "status": "ERROR",
+                    "dry_run": False,
+                    "claimed": False,
+                    "batch_id": batch_id,
+                    "claimed_tasks": claimed_tasks,
+                    "failed_claims": failed_claims,
+                    "reason": "claim_readback_mismatch",
+                    "safety": "fail-closed; all claims rolled back",
+                }
+
+            # Generate handoff artifact
+            boundary_info = {
+                "boundary_key": task_parallel_boundary_key(t),
+                "batch_size": len(selected),
+                "batch_id": batch_id,
+            }
+            handoff_path = PARALLEL_HANDOFF_DIR / f"{run_id}.md"
+            proof_hash = append_autorun_proof_event({
+                "event": "parallel_handoff_created",
+                "task": t.id,
+                "actor": actor,
+                "run_id": run_id,
+                "batch_id": batch_id,
+                "batch_index": idx,
+                "handoff": str(handoff_path),
+                "safety": "parallel-claimed-and-handoff-only; no execution; no done",
+            })
+            atomic_write(handoff_path, render_parallel_handoff(
+                claimed_task, claim, boundary_info, actor, run_id, batch_id, idx,
+            ))
+
+            claimed_tasks.append({
+                "task_id": t.id,
+                "run_id": run_id,
+                "claim_expires_at": claim.get("claim_expires_at"),
+                "handoff": str(handoff_path),
+                "proof_hash": proof_hash,
+                "boundary_key": boundary_info["boundary_key"],
+                "write_guard": write_guard,
+            })
+            handoff_paths.append(str(handoff_path))
+
+    except Exception as exc:
+        _rollback_all()
+        return {
+            "status": "ERROR",
+            "dry_run": False,
+            "claimed": False,
+            "batch_id": batch_id,
+            "claimed_tasks": claimed_tasks,
+            "failed_claims": failed_claims,
+            "reason": "batch_claim_exception",
+            "error": str(exc),
+            "safety": "fail-closed; all claims rolled back on exception",
+        }
+
+    result: dict[str, Any] = {
+        "status": "OK",
+        "dry_run": False,
+        "claimed": True,
+        "batch_id": batch_id,
+        "max_agents": max_agents,
+        "claimed_count": len(claimed_tasks),
+        "claimed_tasks": claimed_tasks,
+        "skipped": skipped,
+        "handoff_dir": str(PARALLEL_HANDOFF_DIR),
+        "handoff_paths": handoff_paths,
+        "boundary": boundary,
+        "safety": "parallel-claimed-and-handoff-only; does not execute task bodies or mark done",
+    }
+    if prepare_worktrees:
+        result["worktree_note"] = "--prepare-worktrees is P2; worktree isolation not yet implemented. Use workspace_isolation=worktree in task metadata."
+    return result
 
 
 def command_autorun_runner(args: argparse.Namespace) -> dict[str, Any]:
@@ -3918,6 +4283,14 @@ def build_parser() -> argparse.ArgumentParser:
     pdp = sub.add_parser("parallel-dispatch-dry-run")
     pdp.add_argument("--max-agents", type=int, default=3)
     pdp.add_argument("--json", action="store_true")
+
+    pchp = sub.add_parser("parallel-claim-and-handoff")
+    pchp.add_argument("--max-agents", type=int, default=3)
+    pchp.add_argument("--write", action="store_true", help="Actually claim tasks (default is dry-run)")
+    pchp.add_argument("--actor", default="hermes-parallel")
+    pchp.add_argument("--ttl-minutes", type=int, default=60)
+    pchp.add_argument("--prepare-worktrees", action="store_true", help="P2 placeholder: prepare git worktrees for isolation")
+    pchp.add_argument("--json", action="store_true")
 
     mip = sub.add_parser("multimodel-intervention-dry-run")
     mip.add_argument("--task", default="")
