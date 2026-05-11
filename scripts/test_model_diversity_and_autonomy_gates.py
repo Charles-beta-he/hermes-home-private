@@ -26,6 +26,31 @@ def load_script(name: str, path: Path):
 model_diversity = load_script("model_diversity_monitor", SCRIPTS / "model-diversity-monitor.py")
 autonomy = load_script("autonomy_precondition", SCRIPTS / "autonomy-precondition.py")
 write_guard = load_script("autonomy_write_guard", SCRIPTS / "autonomy-write-guard.py")
+permission_taxonomy = load_script("permission_taxonomy", SCRIPTS / "permission_taxonomy.py")
+
+
+class PermissionTaxonomyTests(unittest.TestCase):
+    def test_taskpool_surface_and_yolo_authority_are_first_class(self):
+        self.assertIn("taskpool", permission_taxonomy.WRITE_SURFACES)
+        self.assertIn("yolo-execution", permission_taxonomy.AUTHORITY_TIERS)
+        self.assertGreater(
+            permission_taxonomy.authority_rank("yolo-execution"),
+            permission_taxonomy.authority_rank("autonomous-execution"),
+        )
+        yolo = permission_taxonomy.describe_authority("yolo-execution")
+        self.assertTrue(yolo["approval_bypass"])
+        self.assertTrue(yolo["lifecycle_proof_required"])
+        self.assertFalse(yolo["may_complete_task"])
+
+    def test_complete_operation_is_lifecycle_gated_not_authority_gated(self):
+        decision = permission_taxonomy.evaluate_authority(
+            surface="taskpool",
+            operation="complete",
+            authority="yolo-execution",
+            allowlist={"taskpool"},
+        )
+        self.assertFalse(decision["ok"])
+        self.assertIn("requires_lifecycle_gate", decision["failed_required_checks"])
 
 
 class ModelDiversityGateTests(unittest.TestCase):
@@ -134,6 +159,21 @@ class AutonomyPreconditionGateTests(unittest.TestCase):
         self.assertEqual(data["status"], "FAIL_CLOSED")
         self.assertEqual(data["failed_required_checks"], ["explicit_autonomy_enable_file"])
 
+    @patch.object(autonomy, "check_enable_file", return_value={"name": "explicit_autonomy_enable_file", "ok": True})
+    @patch.object(autonomy, "check_router_readiness", return_value={"name": "router_readiness", "ok": True})
+    @patch.object(autonomy, "check_quota", return_value={"name": "quota_confidence", "ok": True})
+    @patch.object(autonomy, "check_diversity", return_value={"name": "model_diversity_gate", "ok": True})
+    @patch.object(autonomy, "check_p10", return_value={"name": "p10_health", "ok": True})
+    def test_yolo_execution_is_highest_approval_tier_but_not_completion_proof(self, _p10, _div, _quota, _router, _enable):
+        code, data = self._run_gate(["--mode", "yolo-execution"])
+        self.assertEqual(code, 0)
+        self.assertEqual(data["status"], "PASS")
+        self.assertEqual(data["authority_tier"], "yolo-execution")
+        self.assertTrue(data["approval_bypass"])
+        self.assertTrue(data["lifecycle_proof_required"])
+        self.assertFalse(data["may_complete_task"])
+        self.assertIn("explicit_autonomy_enable_file", data["required_checks"])
+
 
 class AutonomyWriteGuardTests(unittest.TestCase):
     @patch.object(write_guard, "run_precondition", return_value={"ok": True, "data": {"status": "PASS"}, "returncode": 0})
@@ -158,6 +198,46 @@ class AutonomyWriteGuardTests(unittest.TestCase):
             result = write_guard.evaluate("google-workspace", "write", "budget-handoff", allow)
         self.assertFalse(result["ok"])
         self.assertIn("autonomy_precondition", result["failed_required_checks"])
+
+    @patch.object(write_guard, "run_precondition", return_value={"ok": False, "data": {"status": "FAIL_CLOSED"}, "returncode": 2})
+    def test_guard_or_raise_exposes_fail_closed_evidence_to_callers(self, _pre):
+        with tempfile.TemporaryDirectory() as td:
+            allow = Path(td) / "allow.json"
+            allow.write_text(json.dumps(["goal"]), encoding="utf-8")
+            with self.assertRaises(PermissionError) as cm:
+                write_guard.guard_or_raise("goal", "write", "budget-handoff", allow)
+        data = json.loads(str(cm.exception))
+        self.assertEqual(data["status"], "FAIL_CLOSED")
+        self.assertIn("autonomy_precondition", data["failed_required_checks"])
+
+    @patch.object(write_guard, "run_precondition", return_value={"ok": True, "data": {"status": "PASS"}, "returncode": 0})
+    def test_taskpool_claim_and_handoff_is_known_control_plane_surface(self, _pre):
+        with tempfile.TemporaryDirectory() as td:
+            allow = Path(td) / "allow.json"
+            allow.write_text(json.dumps(["taskpool"]), encoding="utf-8")
+            result = write_guard.evaluate("taskpool", "claim-and-handoff", "dispatch-hint", allow)
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(result["status"], "PASS")
+
+    @patch.object(write_guard, "run_precondition", return_value={"ok": True, "data": {"status": "PASS"}, "returncode": 0})
+    def test_allowlist_unknown_surface_fails_closed_even_for_known_request(self, _pre):
+        with tempfile.TemporaryDirectory() as td:
+            allow = Path(td) / "allow.json"
+            allow.write_text(json.dumps(["goal", "unknown-surface"]), encoding="utf-8")
+            result = write_guard.evaluate("goal", "write", "budget-handoff", allow)
+        self.assertFalse(result["ok"])
+        self.assertIn("unknown_allowlisted_surface", result["failed_required_checks"])
+
+    @patch.object(write_guard, "run_precondition", return_value={"ok": True, "data": {"status": "PASS"}, "returncode": 0})
+    def test_yolo_execution_can_authorize_execution_but_not_task_completion(self, _pre):
+        with tempfile.TemporaryDirectory() as td:
+            allow = Path(td) / "allow.json"
+            allow.write_text(json.dumps(["taskpool"]), encoding="utf-8")
+            execute_result = write_guard.evaluate("taskpool", "execute", "yolo-execution", allow)
+            complete_result = write_guard.evaluate("taskpool", "complete", "yolo-execution", allow)
+        self.assertTrue(execute_result["ok"], execute_result)
+        self.assertFalse(complete_result["ok"], complete_result)
+        self.assertIn("requires_lifecycle_gate", complete_result["failed_required_checks"])
 
 
 if __name__ == "__main__":

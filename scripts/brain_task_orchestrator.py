@@ -40,6 +40,12 @@ AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
 AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
 PARALLEL_HANDOFF_DIR = AUTORUN_STATE_DIR / "parallel_handoffs"
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
+SCRIPTS_DIR = HERMES_HOME / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+import permission_taxonomy as taxonomy  # noqa: E402
+
 AUTONOMY_WRITE_GUARD = HERMES_HOME / "scripts" / "autonomy-write-guard.py"
 AUTONOMY_WRITE_ALLOWLIST = Path(
     os.environ.get("HERMES_AUTONOMY_WRITE_ALLOWLIST", str(HERMES_HOME / "config" / "autonomy-write-allowlist.json"))
@@ -53,6 +59,14 @@ TASKPOOL_CRON_JOB_NAMES = [
     "multimodel-intervention-step",
     "local-brain-taskpool-auto-completer",
 ]
+SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES = {
+    "ok",
+    "ok_with_task_blocker",
+    "retryable_runtime_timeout",
+    "truth_grounded_advisory_not_ratified",
+    "certification_not_certified",
+    "certification_long_running",
+}
 VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "blocked", "done", "archived", "expired"]
 STATUS_ALIASES = {"completed": "done"}  # legacy notes may use completed; normalize as terminal done.
 ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review", "blocked"}
@@ -195,7 +209,7 @@ def _load_autonomy_write_guard():
 def guard_autorun_claim_and_handoff(task_id: str, actor: str) -> dict[str, Any]:
     """Fail closed before local task-pool autorun mutates claim/handoff state."""
     guard = _load_autonomy_write_guard()
-    evidence = guard.guard_or_raise("kanban-worker", "claim-and-handoff", "dispatch-hint", AUTONOMY_WRITE_ALLOWLIST)
+    evidence = guard.guard_or_raise("taskpool", "claim-and-handoff", "dispatch-hint", AUTONOMY_WRITE_ALLOWLIST)
     evidence.setdefault("caller", "brain_task_orchestrator.auto-claim-and-handoff")
     evidence.setdefault("task_id", task_id)
     evidence.setdefault("actor", actor)
@@ -283,6 +297,7 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
     preferred = [
         "type", "lane", "layer", "status", "priority", "created", "updated", "expires_at", "project",
         "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract",
+        "required_authority", "max_authority", "permission_tier", "write_surfaces", "completion_gate", "lane_semantics",
         "mission_schema_version", "mission_id", "mission_title", "mission_objective", "mission_constraints",
         "red_lines", "non_goals", "evidence_refs", "acceptance_criteria", "dag_nodes", "checkpoint_states",
         "permission_gates", "handoff_artifacts", "proof_artifacts", "rollback_signal", "certification_status",
@@ -418,6 +433,24 @@ def architecture_alignment_missing(fm: dict[str, Any]) -> list[str]:
 
 def architecture_aligned(fm: dict[str, Any]) -> bool:
     return not architecture_alignment_missing(fm)
+
+
+def task_permission_contract_for_fm(fm: dict[str, Any]) -> dict[str, Any]:
+    return taxonomy.task_permission_contract(fm, infer_lane(fm))
+
+
+def permission_validation_failures(fm: dict[str, Any]) -> list[str]:
+    return task_permission_contract_for_fm(fm).get("validation_failures", [])
+
+
+def apply_permission_defaults(fm: dict[str, Any]) -> dict[str, Any]:
+    contract = task_permission_contract_for_fm(fm)
+    for key in ("required_authority", "max_authority", "write_surfaces", "completion_gate", "lane_semantics"):
+        if fm.get(key) in (None, "", []):
+            fm[key] = contract.get(key)
+    if fm.get("permission_tier") in (None, "", []):
+        fm["permission_tier"] = fm.get("required_authority")
+    return fm
 
 
 def is_mission_envelope_fm(fm: dict[str, Any]) -> bool:
@@ -1058,6 +1091,13 @@ class Task:
             "lane": self.lane,
             "architecture_target": self.architecture_target,
             "architecture_aligned": self.architecture_aligned(),
+            "required_authority": task_permission_contract_for_fm(self.fm).get("required_authority"),
+            "max_authority": task_permission_contract_for_fm(self.fm).get("max_authority"),
+            "permission_tier": task_permission_contract_for_fm(self.fm).get("permission_tier"),
+            "write_surfaces": task_permission_contract_for_fm(self.fm).get("write_surfaces"),
+            "completion_gate": task_permission_contract_for_fm(self.fm).get("completion_gate"),
+            "lane_semantics": task_permission_contract_for_fm(self.fm).get("lane_semantics"),
+            "permission_validation_failures": permission_validation_failures(self.fm),
             "mission_id": str(self.fm.get("mission_id") or ""),
             "mission_node_id": mission_node_id(self) if is_mission_node(self) else "",
             "mission_node_depends_on": list_value(self.fm.get("mission_node_depends_on")),
@@ -1312,7 +1352,7 @@ def has_active_claim(task: Task, at: datetime | None = None) -> bool:
     return bool(task.fm.get("claimed_by") and task.fm.get("run_id") and lease and lease >= at)
 
 
-def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] | None = None, reason: str = "", force: bool = False) -> tuple[list[str], list[str]]:
+def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] | None = None, reason: str = "", force: bool = False, authority: str = "") -> tuple[list[str], list[str]]:
     """Return (failures, warnings) for a proposed lifecycle transition."""
     evidence = evidence or []
     reason = (reason or "").strip()
@@ -1355,6 +1395,8 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
         failures.append("running must be entered from claimed so lease ownership is explicit")
     if to_status in REASON_REQUIRED_TO and reason.lower() in {"", "not specified", "none"}:
         failures.append(f"transition to {to_status} requires --reason")
+    if to_status == "done" and taxonomy.normalize_authority(authority) == "yolo-execution":
+        failures.append("yolo-execution cannot complete task; requires_lifecycle_gate review_to_done with normal proof-gated done authority")
     if to_status in EVIDENCE_REQUIRED_TO and not evidence:
         failures.append(f"transition to {to_status} requires structured --evidence")
     invalid_evidence = [e for e in evidence if not evidence_is_structured(str(e))]
@@ -1466,6 +1508,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "evidence": [],
         "concepts": concepts,
     }
+    apply_permission_defaults(fm)
     missing_alignment = architecture_alignment_missing(fm)
     if missing_alignment:
         raise SystemExit(f"evolution tasks require architecture alignment fields; missing/invalid={missing_alignment}")
@@ -1620,7 +1663,7 @@ def command_done(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
     if not args.evidence:
         raise SystemExit("done requires at least one structured --evidence entry, e.g. 'command: pytest PASS' or 'file:/path/to/proof.md'")
-    failures, warnings = lifecycle_gate(t, "done", args.actor, args.evidence, args.reason, args.force)
+    failures, warnings = lifecycle_gate(t, "done", args.actor, args.evidence, args.reason, args.force, getattr(args, "authority", ""))
     if failures:
         raise SystemExit("; ".join(failures))
     apply_lifecycle_status(t, "done", args.actor, evidence=args.evidence, reason=args.reason, force=args.force)
@@ -1656,6 +1699,9 @@ def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
         missing_mission = mission_envelope_missing(t.fm)
         if missing_mission:
             invalid.append({"task": t.id, "status": t.status, "fields": missing_mission, "reason": "mission_envelope_missing"})
+        permission_failures = permission_validation_failures(t.fm)
+        if permission_failures:
+            invalid.append({"task": t.id, "status": t.status, "fields": permission_failures, "reason": "permission_contract_invalid"})
         if t.status not in LIFECYCLE_TRANSITIONS:
             invalid.append({"task": t.id, "status": t.status, "reason": "status_not_in_lifecycle_graph"})
         claim_fields = [k for k in ("claimed_by", "claim_expires_at", "run_id") if t.fm.get(k)]
@@ -1709,7 +1755,7 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
     from_status = t.status
     to_status = STATUS_ALIASES.get(args.to_status, args.to_status)
-    failures, warnings = lifecycle_gate(t, to_status, args.actor, args.evidence, args.reason, args.force)
+    failures, warnings = lifecycle_gate(t, to_status, args.actor, args.evidence, args.reason, args.force, getattr(args, "authority", ""))
     if failures:
         raise SystemExit("; ".join(failures))
     apply_lifecycle_status(t, to_status, args.actor, evidence=args.evidence, reason=args.reason, ttl_minutes=args.ttl_minutes, delay_minutes=args.delay_minutes, force=args.force)
@@ -2222,6 +2268,9 @@ def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
             invalid.append({"task": t.id, "path": str(t.path), "fields": missing_mission, "reason": "mission_envelope_missing"})
         if t.lane not in VALID_LANES:
             invalid.append({"task": t.id, "path": str(t.path), "lane": t.lane, "reason": "invalid_lane"})
+        permission_failures = permission_validation_failures(t.fm)
+        if permission_failures:
+            invalid.append({"task": t.id, "path": str(t.path), "fields": permission_failures, "reason": "permission_contract_invalid"})
         if t.status in CLAIM_BOUND_STATUSES and not (t.fm.get("claimed_by") and t.fm.get("claim_expires_at") and t.fm.get("run_id")):
             invalid.append({"task": t.id, "path": str(t.path), "status": t.status, "reason": "claim_bound_status_missing_lease_metadata"})
     invalid.extend(mission_dag_invalids(tasks))
@@ -3925,15 +3974,87 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
         blockers.append("typescript_unused_symbol_baseline_blocker")
     if "full build" in lower or "build" in lower:
         blockers.append("full_build_baseline_check")
+    retryable_runtime_timeout = (
+        "request timed out" in lower
+        or "runtimeerror: request timed out" in lower
+        or "subprocess_timeout" in lower
+        or "timeout_recorded" in lower
+    )
+    if retryable_runtime_timeout:
+        blockers.append("retryable_runtime_timeout")
     bounded_completed = (
         ("bounded slice" in lower or "有界" in last_error)
         and ("-> review" in lower or "running -> review" in lower or "状态已从" in last_error)
         and ("pass:" in lower or "32 tests passed" in lower or "proof-check" in lower)
     )
     baseline_blocker = bool(blockers) and any(token in lower for token in ("baseline", "unrelated", "ts6133", "full build"))
+    advisory_evidence_ready = any(token in lower for token in (
+        "truth_grounded_advisory_not_ratified",
+        "evidence化 advisory",
+        "advisory slice",
+        "advisory evidence",
+        "advisory report",
+    ))
+    ratification_pending_or_blocked = any(token in lower for token in (
+        "尚未产生可确认的 discussion_result",
+        "no_discussion_result",
+        "discussion_result.json",
+        "certification_manifest.json",
+        "cannot closeout",
+        "不能 closeout",
+        "cannot done",
+        "不能 done",
+        "not_certified",
+        "not ratified",
+        "未通过认证",
+        "ratification",
+        "t3 仍在运行",
+        "t3 still running",
+    ))
+    truth_grounded_advisory_not_ratified = advisory_evidence_ready and ratification_pending_or_blocked
+    not_certified_signal = any(token in lower for token in (
+        "not_certified",
+        "not certified",
+        "未通过认证",
+        "vote_reject",
+        "agreement_low",
+        "ratification failed",
+        "认证失败",
+    ))
+    long_running_certification = any(token in lower for token in (
+        "t3 仍在运行",
+        "t3 still running",
+        "still running",
+        "background process",
+        "尚未产生可确认的 discussion_result",
+        "waiting for ratification",
+        "等待 ratification",
+    ))
+    if truth_grounded_advisory_not_ratified:
+        blockers.append("ratification_pending")
+    elif not_certified_signal:
+        blockers.append("certification_not_certified")
+    elif long_running_certification:
+        blockers.append("certification_long_running")
     if last_status == "error" and bounded_completed and baseline_blocker:
         semantic_status = "ok_with_task_blocker"
         task_result = "review_with_baseline_blocker"
+        safe_for_next_tick = True
+    elif last_status == "error" and truth_grounded_advisory_not_ratified:
+        semantic_status = "truth_grounded_advisory_not_ratified"
+        task_result = "task_evidence_ready_waiting_for_ratification"
+        safe_for_next_tick = True
+    elif last_status == "error" and not_certified_signal:
+        semantic_status = "certification_not_certified"
+        task_result = "task_certification_failed_requires_retry_or_handoff"
+        safe_for_next_tick = True
+    elif last_status == "error" and long_running_certification:
+        semantic_status = "certification_long_running"
+        task_result = "task_certification_still_running_wait_for_result"
+        safe_for_next_tick = True
+    elif last_status == "error" and retryable_runtime_timeout:
+        semantic_status = "retryable_runtime_timeout"
+        task_result = "scheduler_retry_or_deterministic_replacement_required"
         safe_for_next_tick = True
     elif last_status == "ok":
         semantic_status = "ok"
@@ -3954,7 +4075,7 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
         "safe_for_next_tick": safe_for_next_tick,
         "last_status": last_status,
         "last_error_tail": redact_for_evidence(last_error),
-        "policy": "bounded slice reaching review with unrelated baseline blocker is task evidence/blocker, not scheduler crash",
+        "policy": "bounded slice reaching review with unrelated baseline blocker, retryable runtime timeout, not-certified ratification, long-running certification, or truth-grounded advisory awaiting ratification is task-level evidence/blocker, not scheduler crash",
     }
 
 
@@ -3966,6 +4087,7 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
     boundary = command_boundary_check(argparse.Namespace(json=True))
     parallel = command_parallel_dispatch_dry_run(argparse.Namespace(max_agents=max_agents, json=True))
     multimodel = command_multimodel_intervention_dry_run(argparse.Namespace(task="", max_tasks=5, json=True))
+    permission_audit = command_permission_audit(argparse.Namespace(json=True))
     cron = load_cron_jobs_snapshot(TASKPOOL_CRON_JOB_NAMES)
     auto_job = next((j for j in cron.get("jobs", []) if j.get("name") == "local-brain-taskpool-auto-completer"), None)
     auto_semantics = classify_auto_completer_job(auto_job)
@@ -3982,8 +4104,9 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
         {"claim_id": "C-TP-002", "text": "Proof and selfcheck gates are observable before any review->done closeout.", "supported_by": ["E-TP-GATES"]},
         {"claim_id": "C-TP-003", "text": "Parallel dispatch is dry-run only and enforces work-lane preemption / boundary isolation.", "supported_by": ["E-TP-DISPATCH"]},
         {"claim_id": "C-TP-004", "text": "Autorun and multimodel autorun flags are explicit and fail-closed when disabled.", "supported_by": ["E-TP-AUTORUN"]},
-        {"claim_id": "C-TP-005", "text": "Auto-completer baseline blockers are classified separately from scheduler health.", "supported_by": ["E-TP-AUTO-COMPLETER"]},
+        {"claim_id": "C-TP-005", "text": "Auto-completer baseline blockers, retryable runtime timeouts, not-certified ratification, long-running certification, and truth-grounded advisory awaiting ratification are classified separately from scheduler health.", "supported_by": ["E-TP-AUTO-COMPLETER"]},
         {"claim_id": "C-TP-006", "text": "Multimodel convergence/pass-rate is observable together with failure taxonomy via ratification gate.", "supported_by": ["E-TP-MULTIMODEL"]},
+        {"claim_id": "C-TP-007", "text": "Taskpool permissions are classified separately from lifecycle completion; yolo-execution cannot mark done.", "supported_by": ["E-TP-PERMISSIONS"]},
     ]
     evidence = [
         {"evidence_id": "E-TP-COUNTS", "type": "snapshot", "supports": ["C-TP-001"], "payload": counts},
@@ -3992,13 +4115,14 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
         {"evidence_id": "E-TP-AUTORUN", "type": "policy_state", "supports": ["C-TP-004"], "payload": autorun},
         {"evidence_id": "E-TP-AUTO-COMPLETER", "type": "cron_semantics", "supports": ["C-TP-005"], "payload": {"cron_job": auto_job, "classification": auto_semantics}},
         {"evidence_id": "E-TP-MULTIMODEL", "type": "dry_run", "supports": ["C-TP-006"], "payload": {"convergence": multimodel.get("convergence", {}), "queued_count": multimodel.get("queued_count"), "selected_task_id": multimodel.get("selected_task_id"), "taxonomy_schema": "local_brain_multimodel_failure_taxonomy_v1"}},
+        {"evidence_id": "E-TP-PERMISSIONS", "type": "permission_audit", "supports": ["C-TP-007"], "payload": permission_audit},
         {"evidence_id": "E-TP-CRON", "type": "scheduler_state", "supports": ["C-TP-004", "C-TP-005"], "payload": cron},
     ]
     cron_job_names = {str(j.get("name") or "") for j in cron.get("jobs", []) if isinstance(j, dict)}
     cron_required_present = sorted(set(TASKPOOL_CRON_JOB_NAMES) - cron_job_names)
     cron_observable = cron.get("status") == "OK" and not cron_required_present
-    auto_completer_safe = auto_semantics.get("semantic_status") in {"ok", "ok_with_task_blocker"} and auto_semantics.get("safe_for_next_tick") is True
-    gate_status = "PASS" if proof.get("status") == "PASS" and selfcheck.get("status") == "PASS" and boundary.get("status") == "PASS" and cron_observable and auto_completer_safe else "WARN"
+    auto_completer_safe = auto_semantics.get("semantic_status") in SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES and auto_semantics.get("safe_for_next_tick") is True
+    gate_status = "PASS" if proof.get("status") == "PASS" and selfcheck.get("status") == "PASS" and boundary.get("status") == "PASS" and permission_audit.get("status") == "PASS" and cron_observable and auto_completer_safe else "WARN"
     status = "OK" if gate_status == "PASS" else "FAIL"
     return {
         "status": status,
@@ -4017,6 +4141,12 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
             "autorun_enabled": autorun["autorun_enabled"],
             "multimodel_pass_rate": (multimodel.get("convergence") or {}).get("pass_rate"),
             "multimodel_trigger_rate": (multimodel.get("convergence") or {}).get("trigger_rate"),
+            "permission_audit": permission_audit.get("status"),
+            "permission_taxonomy_status": permission_audit.get("status"),
+            "unknown_surfaces": permission_audit.get("invalid", []),
+            "yolo_execution_defined": "yolo-execution" in taxonomy.AUTHORITY_TIERS,
+            "yolo_done_bypass_possible": False,
+            "taskpool_surface_known": "taskpool" in taxonomy.WRITE_SURFACES,
             "auto_completer_semantic_status": auto_semantics.get("semantic_status"),
             "auto_completer_safe_for_next_tick": auto_semantics.get("safe_for_next_tick"),
             "cron_status": cron.get("status"),
@@ -4105,19 +4235,20 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
     autorun_allowlist = load_autorun_allowlist()
     multimodel_allowlist = load_multimodel_allowlist()
     write_allowlist, write_allowlist_status = load_json_list_file(AUTONOMY_WRITE_ALLOWLIST)
-    write_surface_allowed = "kanban-worker" in {str(x).strip() for x in write_allowlist if isinstance(x, str)}
+    write_allowed_surfaces = {str(x).strip() for x in write_allowlist if isinstance(x, str)}
+    write_surface_allowed = "taskpool" in write_allowed_surfaces
     spine_summary = evidence_spine.get("summary") or {}
     counts = spine_summary.get("counts") or {}
     evidence_ids = {str(e.get("evidence_id")) for e in evidence_spine.get("evidence", []) if isinstance(e, dict)}
     required_evidence_ids = {
         "E-TP-COUNTS", "E-TP-GATES", "E-TP-DISPATCH", "E-TP-AUTORUN",
-        "E-TP-AUTO-COMPLETER", "E-TP-MULTIMODEL", "E-TP-CRON",
+        "E-TP-AUTO-COMPLETER", "E-TP-MULTIMODEL", "E-TP-PERMISSIONS", "E-TP-CRON",
     }
     checks = [
         {"id": "CHK-EVIDENCE-SPINE", "passed": evidence_spine.get("status") == "OK" and required_evidence_ids <= evidence_ids, "evidence": "E-TP-* stable IDs"},
         {"id": "CHK-GATES", "passed": evidence_spine.get("gate_status") == "PASS" and spine_summary.get("selfcheck") == "PASS" and spine_summary.get("proof_check") == "PASS" and spine_summary.get("boundary_check") == "PASS", "evidence": "selfcheck/proof-check/boundary-check"},
         {"id": "CHK-CRON-OBSERVABILITY", "passed": spine_summary.get("cron_status") == "OK" and not spine_summary.get("cron_required_missing"), "evidence": "required taskpool cron jobs are readable and present", "missing": spine_summary.get("cron_required_missing", [])},
-        {"id": "CHK-AUTO-COMPLETER-SEMANTICS", "passed": spine_summary.get("auto_completer_semantic_status") in {"ok", "ok_with_task_blocker"} and spine_summary.get("auto_completer_safe_for_next_tick") is True, "evidence": "auto-completer cron status is semantically safe"},
+        {"id": "CHK-AUTO-COMPLETER-SEMANTICS", "passed": spine_summary.get("auto_completer_semantic_status") in SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES and spine_summary.get("auto_completer_safe_for_next_tick") is True, "evidence": "auto-completer cron status is semantically safe"},
         {"id": "CHK-PROOF-CHAIN", "passed": proof_ok, "evidence": str(AUTORUN_PROOF_LOG), "failures": proof_failures},
         {"id": "CHK-WORK-PREEMPTION", "passed": bool((counts.get("by_lane") or {}).get("work", 0)) and int(spine_summary.get("parallel_selected_count") or 0) >= 1, "evidence": "parallel-dispatch-dry-run work lane selection"},
         {"id": "CHK-STALE-CLAIMS", "passed": int(counts.get("stale_claims") or 0) == 0, "evidence": "canonical task counts"},
@@ -4138,7 +4269,7 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
     if write_allowlist_status != "ok":
         activation_blockers.append(f"write_allowlist_{write_allowlist_status}")
     elif not write_surface_allowed:
-        activation_blockers.append("write_surface_kanban_worker_not_allowlisted")
+        activation_blockers.append("write_surface_taskpool_not_allowlisted")
     if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1" or AUTORUN_KILL_SWITCH.exists():
         activation_blockers.append("kill_switch_active")
 
@@ -4175,8 +4306,73 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
             "multimodel_count": len(multimodel_allowlist),
             "write_allowlist_path": str(AUTONOMY_WRITE_ALLOWLIST),
             "write_allowlist_status": write_allowlist_status,
-            "write_surface_kanban_worker_allowed": write_surface_allowed,
+            "write_surface_taskpool_allowed": write_surface_allowed,
+            "write_allowed_surfaces": sorted(write_allowed_surfaces),
         },
+    }
+
+
+def command_permission_audit(args: argparse.Namespace) -> dict[str, Any]:
+    tasks = iter_tasks()
+    invalid: list[dict[str, Any]] = []
+    missing_fields: list[dict[str, Any]] = []
+    by_lane = {lane: 0 for lane in VALID_LANES}
+    for t in tasks:
+        by_lane[t.lane] = by_lane.get(t.lane, 0) + 1
+        failures = permission_validation_failures(t.fm)
+        if failures:
+            invalid.append({"task": t.id, "path": str(t.path), "lane": t.lane, "failures": failures})
+        for field in ("required_authority", "max_authority", "write_surfaces", "completion_gate"):
+            if t.fm.get(field) in (None, "", []):
+                missing_fields.append({"task": t.id, "path": str(t.path), "lane": t.lane, "field": field, "default": task_permission_contract_for_fm(t.fm).get(field)})
+    yolo = taxonomy.describe_authority("yolo-execution")
+    checks = [
+        {"id": "CHK-TASKPOOL-SURFACE", "passed": "taskpool" in taxonomy.WRITE_SURFACES, "evidence": "permission_taxonomy.WRITE_SURFACES"},
+        {"id": "CHK-YOLO-HIGHEST", "passed": taxonomy.authority_rank("yolo-execution") > taxonomy.authority_rank("autonomous-execution"), "evidence": "AUTHORITY_TIERS rank"},
+        {"id": "CHK-YOLO-NO-COMPLETE", "passed": yolo.get("may_complete_task") is False and yolo.get("lifecycle_proof_required") is True, "evidence": "describe_authority(yolo-execution)"},
+        {"id": "CHK-TASK-PERMISSION-FIELDS", "passed": not invalid, "evidence": "permission_validation_failures over canonical tasks"},
+    ]
+    failures = [c["id"] for c in checks if not c.get("passed")]
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "schema": "local_brain_task_permission_audit_v1",
+        "generated_at": iso(),
+        "task_count": len(tasks),
+        "by_lane": by_lane,
+        "checks": checks,
+        "failures": failures,
+        "invalid": invalid,
+        "missing_fields": missing_fields,
+        "lane_defaults": taxonomy.LANE_AUTHORITY_DEFAULTS,
+        "yolo_invariant": yolo,
+        "policy": "--yolo is highest execution-approval authority; task completion remains review->done plus evidence/proof gated",
+    }
+
+
+def command_permission_migrate(args: argparse.Namespace) -> dict[str, Any]:
+    write = bool(getattr(args, "apply", False)) and not bool(getattr(args, "dry_run", False))
+    actions: list[dict[str, Any]] = []
+    for t in iter_tasks(include_generated=False):
+        before = dict(t.fm)
+        after = dict(t.fm)
+        apply_permission_defaults(after)
+        changed = {k: after.get(k) for k in ("required_authority", "max_authority", "permission_tier", "write_surfaces", "completion_gate", "lane_semantics") if before.get(k) != after.get(k)}
+        if not changed:
+            continue
+        actions.append({"task": t.id, "path": str(t.path), "lane": t.lane, "changes": changed, "write": write})
+        if write:
+            t.fm.update(changed)
+            t.body += f"\n- {iso()}: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {json.dumps(changed, ensure_ascii=False)}\n"
+            save_task(t)
+    return {
+        "status": "OK",
+        "schema": "local_brain_task_permission_migration_v1",
+        "write": write,
+        "dry_run": not write,
+        "action_count": len(actions),
+        "actions": actions,
+        "lane_defaults": taxonomy.LANE_AUTHORITY_DEFAULTS,
+        "safety": "dry-run by default; --apply only writes frontmatter defaults and audit body line",
     }
 
 
@@ -4202,6 +4398,9 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:
             failures.append(f"evolution architecture alignment missing {missing_alignment}: {t.path}")
+        permission_failures = permission_validation_failures(t.fm)
+        if permission_failures:
+            failures.append(f"permission contract invalid {permission_failures}: {t.path}")
         if t.status not in VALID_STATUSES:
             failures.append(f"invalid status {t.status}: {t.path}")
         if t.status not in LIFECYCLE_TRANSITIONS:
@@ -4320,6 +4519,7 @@ def build_parser() -> argparse.ArgumentParser:
     dp.add_argument("task")
     dp.add_argument("--actor", default="hermes")
     dp.add_argument("--evidence", action="append", default=[])
+    dp.add_argument("--authority", default="", choices=["", *taxonomy.AUTHORITY_TIERS])
     dp.add_argument("--reason", default="")
     dp.add_argument("--force", action="store_true")
     dp.add_argument("--json", action="store_true")
@@ -4342,6 +4542,7 @@ def build_parser() -> argparse.ArgumentParser:
     trp.add_argument("task")
     trp.add_argument("--to", dest="to_status", required=True, choices=VALID_STATUSES)
     trp.add_argument("--actor", default="hermes")
+    trp.add_argument("--authority", default="", choices=["", *taxonomy.AUTHORITY_TIERS])
     trp.add_argument("--reason", default="")
     trp.add_argument("--evidence", action="append", default=[])
     trp.add_argument("--ttl-minutes", type=int, default=60)
@@ -4429,6 +4630,14 @@ def build_parser() -> argparse.ArgumentParser:
     arp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
     arp.add_argument("--json", action="store_true")
 
+    pap = sub.add_parser("permission-audit")
+    pap.add_argument("--json", action="store_true")
+
+    pmp = sub.add_parser("permission-migrate")
+    pmp.add_argument("--dry-run", action="store_true", help="show changes without writing")
+    pmp.add_argument("--apply", action="store_true", help="write default permission fields")
+    pmp.add_argument("--json", action="store_true")
+
     sp = sub.add_parser("selfcheck")
     sp.add_argument("--json", action="store_true")
     return p
@@ -4488,6 +4697,10 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_auto_claim_and_handoff(args), args.json)
     if args.cmd == "autorun-runner":
         return print_result(command_autorun_runner(args), args.json)
+    if args.cmd == "permission-audit":
+        return print_result(command_permission_audit(args), args.json)
+    if args.cmd == "permission-migrate":
+        return print_result(command_permission_migrate(args), args.json)
     if args.cmd == "selfcheck":
         return print_result(command_selfcheck(args), args.json)
     raise SystemExit(2)

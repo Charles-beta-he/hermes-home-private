@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Write-surface guard for Hermes autonomy-capable integrations.
 
-This is the small, reusable enforcement wrapper for /goal, Kanban, watchers,
-Teams/Google Workspace writes, gateway fanout, or any future side-effecting
-surface. It does not perform the write itself; callers must call this first and
-proceed only when ok=true.
+This reusable fail-closed wrapper is intentionally about *authority* only. It
+never completes task lifecycle state; callers must still pass their own
+proof/lifecycle gates (for taskpool: running -> review -> done).
 """
 from __future__ import annotations
 
@@ -19,21 +18,18 @@ from typing import Any
 HOME = Path.home()
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", HOME / ".hermes")).expanduser()
 SCRIPTS = HERMES_HOME / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+import permission_taxonomy as taxonomy  # noqa: E402
+
 DEFAULT_ALLOWLIST = Path(
     os.environ.get("HERMES_AUTONOMY_WRITE_ALLOWLIST", str(HERMES_HOME / "config" / "autonomy-write-allowlist.json"))
 ).expanduser()
-WRITE_SURFACES = {
-    "goal",
-    "kanban-worker",
-    "watcher",
-    "teams",
-    "google-workspace",
-    "gateway-fanout",
-    "cron-no-agent",
-}
-READONLY_MODES = {"read", "dry-run", "dispatch-hint"}
-WRITE_MODES = {"budget-handoff", "autonomous-execution"}
-CONTROL_PLANE_OPERATIONS = {"claim-and-handoff"}
+WRITE_SURFACES = taxonomy.WRITE_SURFACES
+READONLY_MODES = taxonomy.READONLY_OPERATIONS
+WRITE_MODES = {"budget-handoff", "autonomous-execution", "yolo-execution"}
+CONTROL_PLANE_OPERATIONS = taxonomy.CONTROL_PLANE_OPERATIONS
 
 
 def load_allowlist(path: Path) -> set[str]:
@@ -42,11 +38,11 @@ def load_allowlist(path: Path) -> set[str]:
     except Exception:
         return set()
     if isinstance(data, list):
-        return {str(x) for x in data if x}
+        return {str(x).strip() for x in data if str(x).strip()}
     if isinstance(data, dict):
         values = data.get("allow") or data.get("surfaces") or []
         if isinstance(values, list):
-            return {str(x) for x in values if x}
+            return {str(x).strip() for x in values if str(x).strip()}
     return set()
 
 
@@ -62,14 +58,42 @@ def run_precondition(mode: str) -> dict[str, Any]:
 
 def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> dict[str, Any]:
     allowlist = load_allowlist(allowlist_path)
-    checks = []
+    operation = str(operation or "write").strip()
+    mode = taxonomy.normalize_authority(mode)
+    checks: list[dict[str, Any]] = []
+
     def add(name: str, ok: bool, **extra: Any) -> None:
         checks.append({"name": name, "ok": bool(ok), **extra})
 
-    known_surface = surface in WRITE_SURFACES
-    add("known_write_surface", known_surface, surface=surface, known=sorted(WRITE_SURFACES))
+    authority_decision = taxonomy.evaluate_authority(surface, operation, mode, allowlist)
+    for c in authority_decision.get("checks", []):
+        # Preserve legacy check names while adding shared taxonomy coverage.
+        checks.append(c)
 
-    if operation in READONLY_MODES:
+    unknown_allow = taxonomy.unknown_allowlisted_surfaces(allowlist)
+    if unknown_allow:
+        # Fail closed even if the requested surface itself is known. This catches
+        # drift where config grants authority to a surface not represented in the
+        # audited taxonomy.
+        add("allowlist_taxonomy_closed", False, unknown_allowlisted_surfaces=unknown_allow)
+
+    if operation in taxonomy.LIFECYCLE_GATED_OPERATIONS:
+        failed = [c["name"] for c in checks if not c.get("ok")]
+        return {
+            "schema_version": 1,
+            "surface": surface,
+            "operation": operation,
+            "mode": mode,
+            "authority_tier": mode,
+            "status": "PASS" if not failed else "FAIL_CLOSED",
+            "ok": not failed,
+            "failed_required_checks": failed,
+            "checks": checks,
+            "policy": "task completion is lifecycle/proof gated; --yolo may never satisfy review->done",
+            "authority": taxonomy.describe_authority(mode),
+        }
+
+    if operation in taxonomy.READONLY_OPERATIONS:
         pre = run_precondition("dispatch-hint")
         add("dispatch_hint_precondition", pre["ok"], precondition=pre)
         failed = [c["name"] for c in checks if not c.get("ok")]
@@ -78,16 +102,16 @@ def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> d
             "surface": surface,
             "operation": operation,
             "mode": mode,
+            "authority_tier": mode,
             "status": "PASS" if not failed else "FAIL_CLOSED",
             "ok": not failed,
             "failed_required_checks": failed,
             "checks": checks,
             "policy": "read/dry-run surfaces may pass with dispatch-hint only; no external write authorized",
+            "authority": taxonomy.describe_authority(mode),
         }
 
     if operation in CONTROL_PLANE_OPERATIONS:
-        allowlisted = surface in allowlist
-        add("surface_allowlisted", allowlisted, allowlist_path=str(allowlist_path), allowlist=sorted(allowlist))
         control_plane_mode_ok = mode == "dispatch-hint"
         add("control_plane_mode_is_dispatch_hint", control_plane_mode_ok, allowed_modes=["dispatch-hint"])
         pre = run_precondition("dispatch-hint")
@@ -98,18 +122,19 @@ def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> d
             "surface": surface,
             "operation": operation,
             "mode": mode,
+            "authority_tier": mode,
             "status": "PASS" if not failed else "FAIL_CLOSED",
             "ok": not failed,
             "failed_required_checks": failed,
             "checks": checks,
             "policy": "bounded control-plane handoffs may mutate local task state only after surface allowlist and dispatch-hint precondition PASS; no task execution or external write authorized",
+            "authority": taxonomy.describe_authority(mode),
         }
 
-    allowlisted = surface in allowlist
-    add("surface_allowlisted", allowlisted, allowlist_path=str(allowlist_path), allowlist=sorted(allowlist))
     requested_mode_ok = mode in WRITE_MODES
     add("write_mode_is_explicit", requested_mode_ok, allowed_modes=sorted(WRITE_MODES))
-    pre = run_precondition(mode if mode in WRITE_MODES else "budget-handoff")
+    pre_mode = mode if mode in WRITE_MODES else "budget-handoff"
+    pre = run_precondition(pre_mode)
     add("autonomy_precondition", pre["ok"], precondition=pre)
     failed = [c["name"] for c in checks if not c.get("ok")]
     return {
@@ -117,11 +142,13 @@ def evaluate(surface: str, operation: str, mode: str, allowlist_path: Path) -> d
         "surface": surface,
         "operation": operation,
         "mode": mode,
+        "authority_tier": mode,
         "status": "PASS" if not failed else "FAIL_CLOSED",
         "ok": not failed,
         "failed_required_checks": failed,
         "checks": checks,
-        "policy": "side-effecting writes require known surface, explicit allowlist, explicit mode, and autonomy-precondition PASS",
+        "policy": "side-effecting writes require known surface, explicit allowlist, explicit mode, and autonomy-precondition PASS; --yolo only bypasses command approval prompts",
+        "authority": taxonomy.describe_authority(mode),
     }
 
 
@@ -142,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Fail-closed guard before Hermes write-capable surfaces")
     parser.add_argument("--surface", required=True)
     parser.add_argument("--operation", default="write")
-    parser.add_argument("--mode", choices=["dispatch-hint", "budget-handoff", "autonomous-execution"], default="dispatch-hint")
+    parser.add_argument("--mode", choices=taxonomy.AUTHORITY_TIERS, default="dispatch-hint")
     parser.add_argument("--allowlist", default=str(DEFAULT_ALLOWLIST))
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--gate", action="store_true")

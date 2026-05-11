@@ -23,6 +23,11 @@ from typing import Any
 HOME = Path.home()
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", HOME / ".hermes")).expanduser()
 SCRIPTS = HERMES_HOME / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+import permission_taxonomy as taxonomy  # noqa: E402
+
 DEFAULT_ENABLE_FILE = HERMES_HOME / "state" / "autonomy-execution.enabled"
 T3_MODELS = {"claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"}
 
@@ -124,7 +129,7 @@ def check_enable_file(path: Path) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Fail-closed precondition gate before Hermes autonomy promotion")
-    parser.add_argument("--mode", choices=["dispatch-hint", "budget-handoff", "autonomous-execution"], default="dispatch-hint")
+    parser.add_argument("--mode", choices=taxonomy.AUTHORITY_TIERS, default="dispatch-hint")
     parser.add_argument("--json", action="store_true", help="Accepted for CLI consistency; output is always JSON")
     parser.add_argument("--gate", action="store_true", help="Accepted for CLI consistency; non-zero on FAIL_CLOSED")
     parser.add_argument("--threshold", type=float, default=0.80)
@@ -136,21 +141,29 @@ def main(argv: list[str] | None = None) -> int:
     checks = [check_p10()]
     required = ["p10_health"]
 
-    if args.mode in {"budget-handoff", "autonomous-execution"}:
+    if args.mode in {"budget-handoff", "autonomous-execution", "yolo-execution"}:
         checks.append(check_diversity(args.threshold, args.window))
         checks.append(check_quota(args.min_quota_confidence))
         checks.append(check_router_readiness(args.threshold, args.window, args.min_quota_confidence))
         required.extend(["model_diversity_gate", "quota_confidence", "router_readiness"])
 
-    if args.mode == "autonomous-execution":
+    if args.mode in {"autonomous-execution", "yolo-execution"}:
         checks.append(check_enable_file(Path(args.enable_file).expanduser()))
         required.append("explicit_autonomy_enable_file")
 
+    authority = taxonomy.describe_authority(args.mode)
     by_name = {c["name"]: c for c in checks}
     failed = [name for name in required if not by_name.get(name, {}).get("ok")]
     result = {
         "schema_version": 1,
         "mode": args.mode,
+        "authority_tier": authority["authority_tier"],
+        "approval_bypass": authority["approval_bypass"],
+        "lifecycle_proof_required": authority["lifecycle_proof_required"],
+        "may_complete_task": authority["may_complete_task"],
+        "required_lifecycle_gate": authority["required_lifecycle_gate"],
+        "required_evidence_prefixes": authority["required_evidence_prefixes"],
+        "proof_hash_required_for_autorun": authority["proof_hash_required_for_autorun"],
         "status": "PASS" if not failed else "FAIL_CLOSED",
         "ok": not failed,
         "failed_required_checks": failed,
@@ -160,6 +173,7 @@ def main(argv: list[str] | None = None) -> int:
             "dispatch_hint": "local health only; no task execution or external writes",
             "budget_handoff": "requires diversity, quota confidence, and router readiness gates",
             "autonomous_execution": "requires budget_handoff gates plus explicit local enable file",
+            "yolo_execution": "highest command-approval authority; lifecycle/proof gates still required and may_complete_task=false",
         },
     }
     print(json.dumps(result, indent=2, ensure_ascii=False))

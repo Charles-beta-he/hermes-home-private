@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -37,7 +38,23 @@ def make_env_and_vault():
     vault = Path(td.name) / "brain"
     (vault / "05-实践与项目" / "tasks").mkdir(parents=True)
     (vault / "07-仪表盘").mkdir(parents=True)
+    hermes_home = Path(td.name) / "hermes-home"
+    scripts_dir = hermes_home / "scripts"
+    scripts_dir.mkdir(parents=True)
+    real_scripts = Path.home() / ".hermes" / "scripts"
+    for name in ("autonomy-write-guard.py", "autonomy-precondition.py", "permission_taxonomy.py"):
+        shutil.copy2(real_scripts / name, scripts_dir / name)
+    fake_p10 = scripts_dir / "p10-health.sh"
+    fake_p10.write_text(
+        "#!/usr/bin/env bash\n"
+        "cat <<'JSON'\n"
+        '{"grade":"A","components":{"self_test":1.0},"warnings":[],"details":{"test_fixture":true}}\n'
+        "JSON\n",
+        encoding="utf-8",
+    )
+    fake_p10.chmod(0o755)
     env = os.environ.copy()
+    env["HERMES_HOME"] = str(hermes_home)
     env["HERMES_BRAIN_VAULT"] = str(vault)
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(Path(td.name) / "state")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
@@ -270,6 +287,80 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
 
         selfcheck = json.loads(run(env, "selfcheck", "--json").stdout)
         assert selfcheck["status"] == "PASS", selfcheck
+
+
+def add_permission_fields(task_path, *, authority="yolo-execution", completion_gate="review-to-done"):
+    text = task_path.read_text(encoding="utf-8")
+    marker = "evidence: []"
+    fields = (
+        f"required_authority: autonomous-execution\n"
+        f"max_authority: {authority}\n"
+        f"write_surfaces: [\"taskpool\"]\n"
+        f"completion_gate: {completion_gate}\n"
+        f"permission_tier: {authority}\n"
+    )
+    text = text.replace(marker, fields + marker, 1)
+    task_path.write_text(text, encoding="utf-8")
+
+
+def test_permission_audit_and_migration_expose_lane_specific_authority_contracts():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        work_id, _ = add_task(env, title="Lark 交付权限分类", priority="P0", project="uvisa-lark")
+        evo_id, _ = add_evolution_task(env, title="自进化权限分类", priority="P0")
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        by_id = {r["id"]: r for r in rows}
+        assert by_id[work_id]["required_authority"] == "autonomous-execution"
+        assert by_id[work_id]["max_authority"] == "yolo-execution"
+        assert by_id[work_id]["completion_gate"] == "project-evidence-review-done"
+        assert by_id[evo_id]["required_authority"] == "budget-handoff"
+        assert by_id[evo_id]["max_authority"] == "autonomous-execution"
+        assert by_id[evo_id]["completion_gate"] == "ratification-or-selfcheck-review-done"
+
+        audit = json.loads(run(env, "permission-audit", "--json").stdout)
+        assert audit["status"] == "PASS", audit
+        assert audit["yolo_invariant"]["may_complete_task"] is False
+        assert audit["lane_defaults"]["work"]["max_authority"] == "yolo-execution"
+
+        dry = json.loads(run(env, "permission-migrate", "--dry-run", "--json").stdout)
+        assert dry["status"] == "OK", dry
+        assert dry["write"] is False
+        assert dry["action_count"] >= 1
+
+
+def test_yolo_authority_cannot_bypass_task_done_lifecycle_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="验证 yolo 不等于 done")
+        add_permission_fields(task_path, authority="yolo-execution")
+
+        bypass = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--authority",
+            "yolo-execution",
+            "--force",
+            "--reason",
+            "try yolo closeout",
+            "--evidence",
+            "command: yolo closeout attempted",
+            "--json",
+            check=False,
+        )
+        assert bypass.returncode != 0
+        assert "requires_lifecycle_gate" in bypass.stderr or "yolo-execution cannot complete" in bypass.stderr
+
+        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: review PASS", "--json")
+        done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final PASS", "--json").stdout)
+        assert done["status"] == "OK", done
 
 
 def test_lifecycle_transition_gate_and_audit():
@@ -876,6 +967,69 @@ def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics(
         assert spine["summary"]["auto_completer_semantic_status"] == "ok_with_task_blocker", spine
 
         cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "RuntimeError: Request timed out."},
+        ]}, ensure_ascii=False), encoding="utf-8")
+        timeout_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
+        timeout_classification = next(e for e in timeout_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
+        assert timeout_spine["status"] == "OK", timeout_spine
+        assert timeout_spine["gate_status"] == "PASS", timeout_spine
+        assert timeout_classification["semantic_status"] == "retryable_runtime_timeout", timeout_classification
+        assert timeout_classification["safe_for_next_tick"] is True, timeout_classification
+
+        cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "已形成 Rowboat → Hermes 的证据化 advisory slice。已启动 target-bound T3 consult_models.py run --tier T3 --quorum 4 --discussion；尚未产生可确认的 discussion_result.json。因此本任务不能 closeout / done；当前只能标为 truth_grounded_advisory_not_ratified。若 T3 timeout / not_certified，则保留 advisory evidence。"},
+        ]}, ensure_ascii=False), encoding="utf-8")
+        advisory_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
+        advisory_classification = next(e for e in advisory_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
+        assert advisory_spine["status"] == "OK", advisory_spine
+        assert advisory_spine["gate_status"] == "PASS", advisory_spine
+        assert advisory_classification["semantic_status"] == "truth_grounded_advisory_not_ratified", advisory_classification
+        assert advisory_classification["task_result"] == "task_evidence_ready_waiting_for_ratification", advisory_classification
+        assert advisory_classification["safe_for_next_tick"] is True, advisory_classification
+
+        cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "ratification failed: status=not_certified agreement_low vote_reject; task requires retry/handoff, scheduler should keep ticking"},
+        ]}, ensure_ascii=False), encoding="utf-8")
+        not_certified_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
+        not_certified_classification = next(e for e in not_certified_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
+        assert not_certified_spine["status"] == "OK", not_certified_spine
+        assert not_certified_spine["gate_status"] == "PASS", not_certified_spine
+        assert not_certified_classification["semantic_status"] == "certification_not_certified", not_certified_classification
+        assert not_certified_classification["task_result"] == "task_certification_failed_requires_retry_or_handoff", not_certified_classification
+        assert not_certified_classification["safe_for_next_tick"] is True, not_certified_classification
+
+        cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "certification background process still running; waiting for ratification and final certification_manifest.json"},
+        ]}, ensure_ascii=False), encoding="utf-8")
+        long_running_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
+        long_running_classification = next(e for e in long_running_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
+        assert long_running_spine["status"] == "OK", long_running_spine
+        assert long_running_spine["gate_status"] == "PASS", long_running_spine
+        assert long_running_classification["semantic_status"] == "certification_long_running", long_running_classification
+        assert long_running_classification["task_result"] == "task_certification_still_running_wait_for_result", long_running_classification
+        assert long_running_classification["safe_for_next_tick"] is True, long_running_classification
+
+        cron_path.write_text(json.dumps({"jobs": [
             {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"}
         ]}, ensure_ascii=False), encoding="utf-8")
         missing_cron = json.loads(run(env, "evidence-spine", "--json", check=False).stdout)
@@ -928,7 +1082,7 @@ def test_autorun_runner_pauses_on_pending_permission_gate():
         state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
         state_dir.mkdir(parents=True, exist_ok=True)
         (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
-        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
 
         eligibility = json.loads(run(env, "eligibility-check", "--task", task_id, "--json").stdout)
         assert eligibility["eligible"] is False, eligibility
@@ -980,7 +1134,7 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
         assert "surface_allowlisted" in guard_blocked["write_guard"]["failed_required_checks"]
         assert "status: pending" in task_path.read_text(encoding="utf-8")
 
-        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
         handoff = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--ttl-minutes", "15", "--json").stdout)
         assert handoff["status"] == "OK", handoff
         assert handoff["claimed"] is True
@@ -1113,7 +1267,7 @@ def test_autorun_done_requires_valid_proof_hash():
         state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
         state_dir.mkdir(parents=True, exist_ok=True)
         (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
-        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["kanban-worker"], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
         handoff = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--json").stdout)
         proof_hash = handoff["proof_hash"]
 
