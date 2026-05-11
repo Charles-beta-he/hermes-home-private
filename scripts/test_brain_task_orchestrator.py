@@ -289,7 +289,7 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert selfcheck["status"] == "PASS", selfcheck
 
 
-def add_permission_fields(task_path, *, authority="yolo-execution", completion_gate="review-to-done"):
+def add_permission_fields(task_path, *, authority="yolo-execution", completion_gate="project-evidence-review-done"):
     text = task_path.read_text(encoding="utf-8")
     marker = "evidence: []"
     fields = (
@@ -306,7 +306,7 @@ def add_permission_fields(task_path, *, authority="yolo-execution", completion_g
 def test_permission_audit_and_migration_expose_lane_specific_authority_contracts():
     td, _vault, env = make_env_and_vault()
     with td:
-        work_id, _ = add_task(env, title="Lark 交付权限分类", priority="P0", project="uvisa-lark")
+        work_id, work_path = add_task(env, title="Lark 交付权限分类", priority="P0", project="uvisa-lark")
         evo_id, _ = add_evolution_task(env, title="自进化权限分类", priority="P0")
 
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
@@ -322,6 +322,11 @@ def test_permission_audit_and_migration_expose_lane_specific_authority_contracts
         assert audit["status"] == "PASS", audit
         assert audit["yolo_invariant"]["may_complete_task"] is False
         assert audit["lane_defaults"]["work"]["max_authority"] == "yolo-execution"
+
+        legacy_text = work_path.read_text(encoding="utf-8")
+        for field in ("required_authority", "max_authority", "write_surfaces", "completion_gate", "permission_tier"):
+            legacy_text = "\n".join(line for line in legacy_text.splitlines() if not line.startswith(f"{field}:")) + "\n"
+        work_path.write_text(legacy_text, encoding="utf-8")
 
         dry = json.loads(run(env, "permission-migrate", "--dry-run", "--json").stdout)
         assert dry["status"] == "OK", dry
@@ -359,8 +364,36 @@ def test_yolo_authority_cannot_bypass_task_done_lifecycle_gate():
         run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
         run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
         run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: review PASS", "--json")
-        done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final PASS", "--json").stdout)
+        done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final unit-test PASS", "--json").stdout)
         assert done["status"] == "OK", done
+
+
+def test_done_requires_lane_specific_completion_gate_evidence():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        work_id, _work_path = add_task(env, title="Lark work completion gate", priority="P0", project="uvisa-lark")
+        run(env, "claim", work_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", work_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", work_id, "--to", "review", "--actor", "tester", "--evidence", "command: review unit-test PASS", "--json")
+
+        work_bad = run(env, "done", work_id, "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json", check=False)
+        assert work_bad.returncode != 0
+        assert "project-evidence-review-done" in work_bad.stderr
+
+        work_done = json.loads(run(env, "done", work_id, "--actor", "tester", "--evidence", "command: project unit-test PASS", "--json").stdout)
+        assert work_done["status"] == "OK", work_done
+
+        evolution_id, _evo_path = add_evolution_task(env, title="Self evolution completion gate", priority="P0")
+        run(env, "claim", evolution_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", evolution_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", evolution_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json")
+
+        evo_bad = run(env, "done", evolution_id, "--actor", "tester", "--evidence", "command: project build PASS", "--json", check=False)
+        assert evo_bad.returncode != 0
+        assert "ratification-or-selfcheck-review-done" in evo_bad.stderr
+
+        evo_done = json.loads(run(env, "done", evolution_id, "--actor", "tester", "--evidence", "artifact:ratification discussion_result certified", "--json").stdout)
+        assert evo_done["status"] == "OK", evo_done
 
 
 def test_lifecycle_transition_gate_and_audit():
@@ -403,7 +436,7 @@ def test_lifecycle_transition_gate_and_audit():
         assert done_without_evidence.returncode != 0
         assert "requires structured --evidence" in done_without_evidence.stderr
 
-        done = json.loads(run(env, "transition", task_id, "--to", "done", "--actor", "tester", "--evidence", "command: final lifecycle PASS", "--json").stdout)
+        done = json.loads(run(env, "transition", task_id, "--to", "done", "--actor", "tester", "--evidence", "command: final lifecycle unit-test PASS", "--json").stdout)
         assert done["from_status"] == "review"
         assert done["to_status"] == "done"
         assert done["next_allowed"] == ["archived"]
@@ -1274,7 +1307,7 @@ def test_autorun_done_requires_valid_proof_hash():
         run(env, "transition", task_id, "--to", "running", "--actor", "hermes-autorun", "--json")
         run(env, "transition", task_id, "--to", "review", "--actor", "hermes-autorun", "--evidence", "command: bounded runner PASS", "--json")
 
-        missing_proof = run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", "command: final PASS", "--json", check=False)
+        missing_proof = run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", "command: final unit-test PASS", "--json", check=False)
         assert missing_proof.returncode != 0
         assert "autorun closure requires proof:<sha256:" in missing_proof.stderr
 
@@ -1282,7 +1315,7 @@ def test_autorun_done_requires_valid_proof_hash():
         assert bad_proof.returncode != 0
         assert "autorun proof hash not found or chain verification failed" in bad_proof.stderr
 
-        done = json.loads(run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", f"proof:{proof_hash}", "--evidence", "command: final PASS", "--json").stdout)
+        done = json.loads(run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", f"proof:{proof_hash}", "--evidence", "command: final unit-test PASS", "--json").stdout)
         assert done["status"] == "OK", done
         proof_check = json.loads(run(env, "proof-check", "--json").stdout)
         assert proof_check["status"] == "PASS", proof_check
@@ -1306,6 +1339,9 @@ def main():
     test_mission_envelope_schema_is_enforced_fail_closed()
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
+    test_permission_audit_and_migration_expose_lane_specific_authority_contracts()
+    test_yolo_authority_cannot_bypass_task_done_lifecycle_gate()
+    test_done_requires_lane_specific_completion_gate_evidence()
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
     test_lifecycle_fail_closed_edges()
