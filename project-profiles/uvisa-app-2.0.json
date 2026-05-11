@@ -1,0 +1,124 @@
+{
+  "project": "uvisa-app-2.0",
+  "display_name": "UVISA 2.0 C端前端 + 后端契约联动",
+  "tech_stack": {
+    "frontend": "React 19 + Vite + TypeScript + Zustand + Tailwind",
+    "backend": "Java Spring Boot multi-module Maven",
+    "frontend_test": "Vitest + React Testing Library + Playwright/browser-harness",
+    "backend_test": "Maven/JUnit; use openjdk@21"
+  },
+  "paths": {
+    "frontend": "/Users/charles/Desktop/folder/work/uvisa-app-2.0",
+    "backend": "/Users/charles/Desktop/folder/work/uvisa-backend",
+    "workpad": "/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md"
+  },
+  "conventions": [
+    "Before product/UI/architecture/test claims, read AGENTS.md and Workpad section 12 boot capsule.",
+    "Do not delete features, routes, buttons, or displayed fields to make dead UI disappear.",
+    "Do not use mock success to hide real-backend drift.",
+    "Classify every Lark task as frontend-only, backend-owned, or frontend-backend contract work before editing.",
+    "Backend code is writable for this project; if evidence-first/multi-model analysis says backend is the correct fix, edit backend with TDD and commit it separately.",
+    "Frontend and backend commits must remain scoped per repo; default local commit, push only when user explicitly requires remote frontend build validation.",
+    "Project test credentials, OTP values, Railway session details, and secrets stay only in project Workpad/runtime evidence, never in global memory or public docs."
+  ],
+  "backend_contract_policy": {
+    "rationale": "Many backend APIs are still missing, incomplete, or contract-drifted; frontend-only regression can miss these failures.",
+    "must_scan_backend_when": [
+      "The task touches authentication, OTP, PIN/payment password, 2FA, device/session security, KYC, card, wallet, topup, exchange, remittance, notification, account/profile, or any money/status/time/order field.",
+      "The frontend uses a mock, compatibility alias, fallback, placeholder, hardcoded success, or a TODO around an API.",
+      "The PRD/product logic depends on backend source-of-truth semantics rather than pure display text/style."
+    ],
+    "required_analysis": [
+      "Read frontend service/store/screen path and the corresponding backend controller/service/entity/repository path.",
+      "Verify canonical vs legacy endpoint shapes, auth requirements, envelope shape, field naming, state transitions, and error semantics.",
+      "If backend is incomplete or unsafe, do not close by frontend shim alone; implement backend TDD fix or record explicit backend blocker/follow-up if out of scope."
+    ]
+  },
+  "regression_coverage_policy": {
+    "frontend_unit_and_build": "Covers component/service mapping, i18n, local guards, type/build regressions; does not prove real backend correctness.",
+    "mock_server_or_fixture_tests": "Only covers expected contract fixtures; cannot certify real backend endpoints or business state transitions.",
+    "playwright_with_live_or_local_backend": "Can expose route/auth/envelope/field/backend runtime errors and is required for cross-stack product acceptance when backend semantics matter.",
+    "backend_compile_and_targeted_tests": "Required when backend code is changed; use openjdk@21 and targeted module tests first, then compile/package as feasible.",
+    "closeout_rule": "Task completion claims must distinguish UI regression PASS, product logic PASS, backend contract PASS, and deployment/build monitoring PASS."
+  },
+  "test_cmds": {
+    "frontend_targeted": "pnpm exec vitest run <changed-test> --reporter=verbose",
+    "frontend_full": "pnpm test",
+    "frontend_build": "pnpm run build",
+    "frontend_product_logic": "pnpm exec playwright test tests/product-logic-prd.spec.ts --reporter=line",
+    "backend_compile": "JAVA_HOME=\"$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home\" mvn -pl api/api-public -am -DskipTests compile",
+    "backend_targeted_test": "JAVA_HOME=\"$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home\" mvn -pl <module> -Dtest=<TestClass> test"
+  },
+  "acceptance": [
+    "Relevant frontend targeted tests pass.",
+    "pnpm test and pnpm run build pass after frontend changes unless a pre-existing blocker is explicitly evidenced.",
+    "Backend-related tasks include backend source inspection and, if changed, targeted backend tests plus compile/package evidence using openjdk@21.",
+    "For cross-stack changes, browser/Playwright acceptance uses local frontend connected to local real backend or a clearly labeled live/test backend; mock is comparison only.",
+    "PRD/product logic claims are written to PRODUCT_USER_LOGIC_TEST_CASES.md; page/UI/function claims are written to UI_TEST_CASES.md.",
+    "After frontend changes requested for Lark closeout, push frontend code and monitor the remote frontend package/build status to success/healthy or record an explicit blocker.",
+    "Backend deployment status is not required for this user's current UVISA frontend-task closeout unless the user explicitly asks for backend deploy verification."
+  ],
+  "forbidden": [
+    "Claiming a task done from frontend unit/build alone when backend semantics are involved.",
+    "Masking backend missing APIs with mock success or silent frontend fallback without documenting the backend owner/blocker.",
+    "Treating Railway/staging as a substitute for deterministic local tests.",
+    "Recording OTPs, tokens, cookies, or credentials in repo docs, global memory, TG messages, or public artifacts.",
+    "Pushing backend deploy expectations for this workflow when the user only asked to monitor frontend remote build."
+  ],
+  "multi_model_policy": {
+    "task_solution": "For each Lark task, prepare an evidence bundle that includes frontend, backend, PRD/product docs, UI/product ledgers, and ADRs as applicable.",
+    "required_models_for_full_certification": [
+      "claude-opus-4-7",
+      "gpt-5.5",
+      "deepseek-v4-pro",
+      "mimo-v2.5-pro"
+    ],
+    "full_certification_rule": "Full certification requires all four expected models to participate and no unresolved severity>=3 blockers; planner quorum without discussion_result is advisory only."
+  },
+  "local_fullstack_browser_acceptance": {
+    "purpose": "Use browser/Playwright to validate frontend and backend together by running local frontend through a real local backend, not mock-server.",
+    "default_topology": {
+      "backend": "Spring Boot app on http://localhost:8080 (verify /actuator/health before UI claims)",
+      "frontend": "Vite dev server on http://localhost:5173 with /api proxied to backend via VITE_DEV_API_PROXY_TARGET=http://localhost:8080",
+      "api_base_rule": "Keep VITE_API_BASE unset for local proxy mode, or set it explicitly only when CORS is confirmed; proxy mode avoids browser CORS noise."
+    },
+    "required_steps": [
+      "Capture git status/log in both frontend and backend repos.",
+      "Start backend dependencies, then backend app with openjdk@21; verify health and exact service paths with curl before browser claims.",
+      "Start frontend with VITE_DEV_API_PROXY_TARGET=http://localhost:8080 pnpm run dev -- --host localhost.",
+      "Use browser/Playwright at http://localhost:5173 to operate the real user flow; inspect console/network/storage and redact sensitive OTP/token data.",
+      "Classify findings by owner: frontend, backend, test seed/config, or product/PRD ambiguity.",
+      "If backend code changed, run backend targeted tests/compile; if frontend changed, run frontend targeted/full tests and build.",
+      "Record evidence paths in UI_TEST_CASES.md / PRODUCT_USER_LOGIC_TEST_CASES.md / Workpad as applicable."
+    ],
+    "not_a_substitute_for": [
+      "Frontend unit/build gates",
+      "Backend targeted tests after backend code changes",
+      "Remote frontend build monitoring after pushed frontend changes"
+    ]
+  },
+  "lark_task_execution_policy": {
+    "primary_goal": "Complete the assigned Lark task acceptance, not run an open-ended product/backend audit.",
+    "optimization_rule": "Choose the best safe solution within project red lines, but keep implementation and verification tightly aligned with the concrete Lark task requirement.",
+    "classification_required": [
+      "frontend-only",
+      "backend-owned",
+      "frontend-backend contract",
+      "cross-cutting infrastructure",
+      "regression-proof already-satisfied task"
+    ],
+    "backend_task_classification": "For tasks involving backend semantics or missing/problematic APIs, multi-model analysis must classify whether the correct landing point is backend, frontend, or cross-stack before implementation.",
+    "verification_focus": [
+      "Task-specific acceptance path from Lark description/comments/docs/prototype.",
+      "No feature/field/precision loss while satisfying the task.",
+      "Backend inspection/fix only to the depth needed for the task acceptance and safety red lines.",
+      "Local deterministic evidence first; multi-model ratification validates direction/blockers rather than expanding scope endlessly.",
+      "PUA-loop continues until task acceptance, deterministic gates, required multi-model gate, scoped commit/push/remote-frontend-build/TG closeout are complete."
+    ],
+    "scope_control": [
+      "Do not let backend-aware testing become broad backend modernization unless the task or multi-model blocker requires it.",
+      "If a discovered backend defect is outside task acceptance, record it as follow-up unless it blocks or endangers the current task.",
+      "If Lark task and broader PRD/product docs conflict, prefer the explicit Lark task for this delivery and record the conflict."
+    ]
+  }
+}

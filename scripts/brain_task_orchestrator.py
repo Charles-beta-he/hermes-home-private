@@ -1191,6 +1191,50 @@ def evidence_is_structured(e: str) -> bool:
     return p.is_absolute() and p.exists()
 
 
+def _evidence_blob(evidence: list[str]) -> str:
+    return "\n".join(str(e or "").strip().lower() for e in evidence)
+
+
+def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
+    """Validate lane-specific done evidence beyond generic structured evidence.
+
+    Authority such as --yolo may approve execution, but task completion is a
+    different lifecycle operation.  Work/Lark tasks need project evidence;
+    self-evolution needs ratification/selfcheck proof; advisory tasks need a
+    deposited evidence/report artifact.  This prevents one lane's lightest proof
+    from closing another lane's work.
+    """
+    contract = task_permission_contract_for_fm(task.fm)
+    lane = task.lane
+    gate = str(contract.get("completion_gate") or "").strip()
+    blob = _evidence_blob(evidence)
+    failures: list[str] = []
+
+    def has_any(tokens: tuple[str, ...]) -> bool:
+        return any(token in blob for token in tokens)
+
+    if not gate:
+        return ["completion_gate:missing"]
+    if gate == "project-evidence-review-done":
+        if lane != "work":
+            failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
+        if not has_any(("test", "build", "lint", "playwright", "browser", "curl", "mvn", "pytest", "vitest", "npm", "pnpm", "yarn", "railway", "git diff --check", "commit", "project evidence", "verification")):
+            failures.append("project-evidence-review-done requires test/build/browser/curl/commit/project-verification evidence")
+    elif gate == "ratification-or-selfcheck-review-done":
+        if lane != "evolution":
+            failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
+        if not has_any(("ratification", "discussion_result", "certification_manifest", "selfcheck", "proof", "proof-check", "evidence-spine", "usage-score", "p10-health", "proof:sha256:")):
+            failures.append("ratification-or-selfcheck-review-done requires ratification artifact or deterministic selfcheck/proof evidence")
+    elif gate == "advisory-evidence-review-done":
+        if lane != "advisory":
+            failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
+        if not has_any(("advisory", "report", "analysis", "evidence", "artifact:", "file:", "url:")):
+            failures.append("advisory-evidence-review-done requires deposited advisory evidence/report artifact")
+    else:
+        failures.append(f"completion_gate:unknown:{gate}")
+    return failures
+
+
 def canonical_json(data: dict[str, Any]) -> str:
     return json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
@@ -1402,6 +1446,8 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     invalid_evidence = [e for e in evidence if not evidence_is_structured(str(e))]
     if invalid_evidence:
         failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url:/proof: prefixes or an existing absolute path")
+    if to_status == "done" and evidence:
+        failures.extend(completion_gate_failures(task, evidence))
     if to_status == "done" and is_autorun_context(task, actor):
         proof_hashes = [str(e)[len("proof:") :] for e in evidence if str(e).startswith("proof:sha256:")]
         if not proof_hashes:

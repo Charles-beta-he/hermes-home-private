@@ -177,7 +177,12 @@ When evaluating pipeline optimizations, apply "拒绝丢失功能与精准度" p
 ## Definition of Done
 
 - [ ] **Outcome**: 任务功能实现，构建通过，无已知 bug
-- [ ] **Process**: 理解任务 → 定位范围 → 执行修改 → 构建验证 → 自审 → 输出 verdict
+- [ ] **Endpoint semantics / same credential surface**: 对登录后设置的 PIN、支付密码、2FA、设备等安全类任务，必须追踪“设置 → 校验 → 修改”是否写读同一后端字段/服务。不要只按 UI 文案选择 endpoint；若用户文案叫“支付密码”但后端真实模型是 payment PIN，则 exchange/rebind/change 都必须保持同一 `/pin/*` surface。参考 `references/uvisa-payment-pin-surface.md`。
+- [ ] **Token-issuing path parity**: 对 auth/session/device/PIN-skip 类任务，必须枚举所有前端可签发/消费 AuthToken 的路径（OTP `/auth/login`、legacy `/auth/verify`、password `/auth/login-with-password`、必要时 refresh），逐一确认后端路由存在且返回同一安全契约字段。不要因为主 OTP path PASS 就 closeout；例如 trusted-device persistence 需要 password-login path 同样返回 backend source-of-truth `currentDeviceTrusted`。参考 `references/uvisa-auth-token-issuing-paths.md`。
+- [ ] **Auth failure rate-limit semantics**: 对登录/OTP/PIN/支付密码错误次数、锁定提示类任务，计数点必须跟具体失败原因一致，不要把 endpoint 调用次数当成错误次数。例如 password-login 锁定只应在后端确认 `PASSWORD_INVALID` 后触发 `login:password:email` rate-limit；成功登录、账号不存在、冻结等不应消耗“密码错误”次数。前端 `auth.loginPwd.rateLimited` 必须使用任务要求的锁定文案，不复用通用请求限流文案。参考 `references/uvisa-auth-rate-limit-semantics.md`。
+- [ ] **Backend-aware regression gate**: If a frontend/Lark task touches auth, OTP, PIN/payment password, 2FA, device/session security, KYC, card, wallet, topup, exchange, remittance, notification, account/profile, money/status/time/order fields, payee/remittance account validation, or PRD source-of-truth semantics, classify it as frontend-only / backend-owned / FE-BE contract before closeout. Read the corresponding backend controller/service/entity/repository. Frontend unit/build/mock regression is not enough to certify backend correctness; if the backend is incomplete/unsafe and write permission exists, fix backend with TDD and verify locally, otherwise record an explicit backend blocker/follow-up. For validation-format tasks (e.g. SWIFT/IBAN character set/length), prefer a dual guard: immediate frontend form validation plus backend contract validation for direct API calls; do not silently normalize away invalid separators when the task asks to reject them.
+- [ ] **Remote package/deploy monitor**: 对 UVISA/Railway 相关 Lark 任务，完成本地验证后必须检查相关远端 Railway/package/deploy 打包状态；只有 success/healthy + 本地检查通过才算 fully closed。用户当前 UVISA 前端任务偏好：前端代码修改后需要 push 并校验远程前端打包状态；无需关注后端部署状态，除非用户明确要求或任务本身是后端部署验证。失败/取消/超时/无权限访问时输出 `warn` 或 `reject`，并在 summary 中写明 remote blocker；不要记录 Railway token/cookie/OTP/私有 session 数据。
+- [ ] **Process**: 理解任务 → 定位范围 → 执行修改 → 构建验证 → 远端打包监控 → 自审 → 输出 verdict
 - [ ] **Style**: 遵循项目代码风格，最小改动，不引入无关变更
 - [ ] **Efficiency**: 不重复读取已理解的文件，不做范围外探索
 
@@ -250,7 +255,7 @@ def extract_json(text: str, key: str = "verdict") -> dict:
                 return json.loads(line)
             except json.JSONDecodeError:
                 continue
-    
+
     # Strategy 2: Regex with greedy matching
     matches = list(re.finditer(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', text, re.DOTALL))
     for m in reversed(matches):
@@ -260,7 +265,7 @@ def extract_json(text: str, key: str = "verdict") -> dict:
                 return data
         except json.JSONDecodeError:
             continue
-    
+
     # Strategy 3: Find JSON blocks
     json_pattern = re.compile(r'\{[^}]+\}', re.DOTALL)
     for match in json_pattern.finditer(text):
@@ -270,7 +275,7 @@ def extract_json(text: str, key: str = "verdict") -> dict:
                 return data
         except:
             continue
-    
+
     raise ValueError(f"No JSON with '{key}' found")
 ```
 
@@ -282,7 +287,7 @@ Send notifications through hermes messaging toolset:
 def notify(message: str, level: str = "info"):
     emoji = {"info": "ℹ️", "success": "✅", "warning": "⚠️", "error": "❌"}.get(level, "ℹ️")
     full_message = f"{emoji} {message}"
-    
+
     subprocess.run(
         ["hermes", "chat", "-q", f"发送通知消息：{full_message}", "--toolsets", "messaging"],
         capture_output=True, text=True, timeout=30,
