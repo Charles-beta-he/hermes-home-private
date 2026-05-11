@@ -616,6 +616,9 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert selected["criteria"]["long_term_goal"], selected
         assert selected["criteria"]["one_shot_landing"], selected
         assert "consult_models.py run" in selected["run_discussion_command"], selected
+        assert "--tier T3" in selected["run_discussion_command"], selected
+        assert "--quorum 4" in selected["run_discussion_command"], selected
+        assert "target-bound 4/4" in selected["pua_loop"]["completion_signal"], selected
         assert "ratification-gate" in selected["gate_command_template"], selected
         assert "status: pending" in task_path.read_text(encoding="utf-8")
 
