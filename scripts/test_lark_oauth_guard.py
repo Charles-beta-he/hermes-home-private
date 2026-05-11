@@ -95,7 +95,7 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertTrue(plan.should_spawn)
 
     def test_public_result_redacts_token_key(self):
-        original_token = "eyJhbGciverylongtokenpayload_for_redaction_7890"
+        original_token = "eyJhbGci-verylongtokenpayload-7890"
         result = {"ok": True, "token_status": {"token_key": original_token}}
         public = self.mod.redact_result(result)
         redacted = public["token_status"]["token_key"]
@@ -105,6 +105,10 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertTrue(redacted.endswith("7890"))
         self.assertNotIn("verylongtokenpayload", redacted)
         self.assertNotEqual(redacted, original_token)
+
+    def test_redact_secret_boundary_preserves_short_values_only(self):
+        self.assertEqual(self.mod.redact_secret("x" * 15), "x" * 15)
+        self.assertEqual(self.mod.redact_secret("a" * 16), "aaaaaaaa...aaaa")
 
     def test_public_result_redacts_top_level_secrets(self):
         result = {
