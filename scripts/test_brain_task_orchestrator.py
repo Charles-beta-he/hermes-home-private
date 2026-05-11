@@ -600,6 +600,89 @@ def test_mission_dag_cycle_fails_boundary_and_dispatch():
         assert next(r for r in rows if r["id"] == b_id)["dispatchable"] is False
 
 
+def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_evolution_task(env, title="pua-loop 自动触发介入与多模型任务池分解", priority="P0")
+        intervention = json.loads(run(env, "multimodel-intervention-dry-run", "--json").stdout)
+        assert intervention["status"] == "OK", intervention
+        assert intervention["intervention_required"] is True, intervention
+        assert intervention["selected_task_id"] == task_id, intervention
+        selected = intervention["selected"]
+        assert selected["pua_loop"]["mode"] == "continue_until_multimodel_pass", selected
+        assert selected["criteria"]["accuracy"], selected
+        assert selected["criteria"]["long_term_goal"], selected
+        assert selected["criteria"]["one_shot_landing"], selected
+        assert "consult_models.py run" in selected["run_discussion_command"], selected
+        assert "ratification-gate" in selected["gate_command_template"], selected
+        assert "status: pending" in task_path.read_text(encoding="utf-8")
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        row = next(r for r in rows if r["id"] == task_id)
+        assert row["multimodel_intervention_required"] is True, row
+        assert "p0_evolution_blast_radius" in row["multimodel_intervention_reasons"], row
+
+        good = task_path.parent / "discussion-good.json"
+        good.write_text(json.dumps({
+            "status": "certified",
+            "issue_ledger": [{"id": "I-001", "severity": 3, "status": "resolved"}],
+            "ratification_votes": [
+                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
+                {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
+                {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.92, "implementation_order": 0.88},
+            "truth_status": "certified",
+            "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
+            "final_design": {
+                "long_term_goal_alignment": True,
+                "next_slice": "patch taskpool intervention gate",
+                "acceptance_evidence": ["command:test PASS"],
+                "rollback_boundary": "revert scoped orchestrator patch"
+            },
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_pass = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(good), "--json").stdout)
+        assert gate_pass["status"] == "PASS", gate_pass
+        assert gate_pass["decision"] == "LOOP_DONE", gate_pass
+
+        bad = task_path.parent / "discussion-bad.json"
+        bad.write_text(json.dumps({
+            "status": "certified",
+            "issue_ledger": [{"id": "I-002", "severity": 4, "status": "unresolved"}],
+            "ratification_votes": [{"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True}],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.7, "implementation_order": 0.9},
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_fail = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(bad), "--json", check=False).stdout)
+        assert gate_fail["status"] == "FAIL", gate_fail
+        assert gate_fail["decision"] == "continue_loop", gate_fail
+        assert any("unresolved_severity_4" in f for f in gate_fail["failures"]), gate_fail
+        assert any("missing_required_model_vote" in f for f in gate_fail["failures"]), gate_fail
+
+        weak_shell = task_path.parent / "discussion-weak-shell.json"
+        weak_shell.write_text(json.dumps({
+            "status": "certified",
+            "issue_ledger": [],
+            "ratification_votes": [
+                {"model": "claude", "vote": "approve", "best_within_constraints": True},
+                {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
+                {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
+                {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.9, "implementation_order": 0.9},
+            "truth_status": "certified",
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_weak = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(weak_shell), "--json", check=False).stdout)
+        assert gate_weak["status"] == "FAIL", gate_weak
+        assert gate_weak["decision"] == "continue_loop", gate_weak
+        assert any("missing_required_model_vote:claude-opus-4-7" in f for f in gate_weak["failures"]), gate_weak
+        assert any("unexpected_vote_model:claude" in f for f in gate_weak["failures"]), gate_weak
+        assert "one_shot_plan_missing" in gate_weak["failures"], gate_weak
+        # Shape B: no evidence_bundle -> accuracy_criterion_missing; no final_design -> final_design_missing
+        assert "accuracy_criterion_missing" in gate_weak["failures"], gate_weak
+        assert "final_design_missing" in gate_weak["failures"], gate_weak
+
+
 def test_autorun_runner_pauses_on_pending_permission_gate():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -816,6 +899,7 @@ def main():
     test_lane_architecture_alignment_and_work_priority_gate()
     test_mission_dag_dashboard_progress_and_ready_nodes()
     test_mission_dag_cycle_fails_boundary_and_dispatch()
+    test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
     test_autorun_runner_pauses_on_pending_permission_gate()
     test_autorun_eligibility_and_handoff_are_fail_closed()
     test_autorun_kill_switches_and_evolution_preemption_gate()

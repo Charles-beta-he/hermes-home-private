@@ -57,6 +57,34 @@ def add_task(env):
     return data["id"]
 
 
+def add_multimodel_task(env):
+    r = run([
+        sys.executable,
+        str(ORCH),
+        "add",
+        "pua-loop 自动触发介入与多模型任务池分解",
+        "--priority",
+        "P0",
+        "--project",
+        "self-improvement",
+        "--lane",
+        "evolution",
+        "--architecture-target",
+        "taskpool",
+        "--capability-delta",
+        "automatic multimodel intervention",
+        "--anti-drift-check",
+        "ratification gate decides loop done or continue",
+        "--acceptance-evidence",
+        "ratification-gate PASS plus deterministic gates",
+        "--expires-at",
+        "2099-01-01",
+        "--json",
+    ], env)
+    data = json.loads(r.stdout)
+    return data["id"]
+
+
 def task_row(env, task_id):
     rows = json.loads(run([sys.executable, str(ORCH), "list", "--json"], env).stdout)["rows"]
     return next(r for r in rows if r["id"] == task_id)
@@ -132,9 +160,26 @@ def test_tick_summary_autorun_step_denial_is_visible_and_non_mutating():
         assert task_row(env, task_id)["status"] == "pending"
 
 
+def test_tick_summary_surfaces_multimodel_intervention_hint():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id = add_multimodel_task(env)
+        payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state"], env).stdout)
+        assert payload["schema"] == "brain_task_dispatch_tick_summary_v1", payload
+        assert payload["status"] == "OK", payload
+        mm = payload["multimodel_intervention"]
+        assert mm["intervention_required"] is True, payload
+        assert mm["task_id"] == task_id, payload
+        assert "accuracy" in mm["criteria"], payload
+        assert "p0_evolution_blast_radius" in mm["trigger_reasons"], payload
+        assert "ratification-gate" in mm["gate_command_template"], payload
+        assert task_row(env, task_id)["status"] == "pending"
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
     test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun()
     test_tick_summary_autorun_step_denial_is_visible_and_non_mutating()
+    test_tick_summary_surfaces_multimodel_intervention_hint()
     print("PASS")

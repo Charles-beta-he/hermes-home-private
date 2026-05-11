@@ -87,10 +87,11 @@ def main() -> int:
     event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
     event["proof_check"] = run_json(["proof-check", "--json"])
+    event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
 
     errors = []
-    for key in ["ingest", "reconcile", "dashboard", "proof_check", "dispatch"]:
+    for key in ["ingest", "reconcile", "dashboard", "proof_check", "multimodel_intervention", "dispatch"]:
         item = event.get(key, {})
         if item.get("status") not in {"OK", "PASS"}:
             errors.append({"step": key, "status": item.get("status"), "stderr": item.get("stderr"), "stdout": item.get("stdout")})
@@ -118,12 +119,16 @@ def main() -> int:
     event["dispatchable"] = bool((event.get("dispatch") or {}).get("dispatchable"))
     event["reconcile_action_count"] = int((event.get("reconcile") or {}).get("action_count") or 0)
     event["ingested_count"] = int((event.get("ingest") or {}).get("created_count") or 0)
+    mm_selected_id = str((event.get("multimodel_intervention") or {}).get("selected_task_id") or "")
+    event["multimodel_intervention_required"] = bool((event.get("multimodel_intervention") or {}).get("intervention_required"))
+    event["multimodel_intervention_task_id"] = mm_selected_id
     event["log_file"] = str(LOG_FILE)
     event["state_file"] = str(STATE_FILE)
 
     previous = load_state() if not args.no_state else {}
     changed = next_id and next_id != previous.get("last_notified_task_id")
-    noteworthy = bool(errors or event["reconcile_action_count"] or event["ingested_count"] or changed)
+    mm_changed = mm_selected_id and mm_selected_id != previous.get("last_multimodel_intervention_task_id")
+    noteworthy = bool(errors or event["reconcile_action_count"] or event["ingested_count"] or changed or mm_changed)
     stdout_policy = "summary" if args.summary else ("print_always" if args.print_always else "noteworthy_only")
     will_print = bool(args.summary or args.print_always or noteworthy)
     print_reason = "summary" if args.summary else ("print_always" if args.print_always else ("noteworthy" if noteworthy else "suppressed_no_change"))
@@ -138,6 +143,17 @@ def main() -> int:
         "safety": "hint_only",
     }
     autorun_raw = event.get("autorun") if isinstance(event.get("autorun"), dict) else {}
+    mm_raw = event.get("multimodel_intervention") if isinstance(event.get("multimodel_intervention"), dict) else {}
+    mm_selected = mm_raw.get("selected") if isinstance(mm_raw.get("selected"), dict) else {}
+    multimodel_summary = {
+        "intervention_required": bool(mm_raw.get("intervention_required")),
+        "task_id": str(mm_raw.get("selected_task_id") or ""),
+        "queued_count": int(mm_raw.get("queued_count") or 0),
+        "criteria": mm_raw.get("criteria", []),
+        "trigger_reasons": mm_selected.get("trigger_reasons", []),
+        "gate_command_template": mm_selected.get("gate_command_template", ""),
+        "safety": mm_raw.get("safety", ""),
+    }
     autorun_summary = {
         "requested": bool(args.autorun or args.autorun_step),
         "step_mode": "bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none"),
@@ -163,6 +179,7 @@ def main() -> int:
         "reconcile_action_count": event["reconcile_action_count"],
         "ingested_count": event["ingested_count"],
         "error_count": len(errors),
+        "multimodel_intervention": multimodel_summary,
         "stdout_policy": "summary",
         "log_file": str(LOG_FILE),
         "state_file": str(STATE_FILE),
@@ -190,6 +207,8 @@ def main() -> int:
         "last_notified_task_id": next_id,
         "last_status": event["status"],
         "last_dispatchable": event["dispatchable"],
+        "last_multimodel_intervention_task_id": mm_selected_id,
+        "last_multimodel_intervention_required": event["multimodel_intervention_required"],
         "last_log_file": str(LOG_FILE),
         "last_stdout_policy": stdout_policy,
         "last_print_reason": print_reason,

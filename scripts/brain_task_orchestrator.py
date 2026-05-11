@@ -14,6 +14,7 @@ import importlib.util
 import json
 import os
 import re
+import shlex
 import shutil
 import sys
 import tempfile
@@ -87,6 +88,25 @@ MISSION_ENVELOPE_LIST_FIELDS = {
 }
 MISSION_STRUCTURED_REF_FIELDS = {"evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact"}
 MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_minor_risks", "certified"}
+MULTIMODEL_PASS_STATUSES = {"certified", "certified_with_minor_risks"}
+REQUIRED_RATIFICATION_MODELS = ("claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
+MULTIMODEL_ACCURACY_KEYWORDS = {
+    # High-precision only: <=10 hits in 56-task pool. "evidence"/"truth"/
+    # "certification"/"ratification" removed — too common in task notes.
+    "token", "oauth", "quota", "kyc", "支付", "资金",
+    "权限", "事实源",
+}
+MULTIMODEL_LONG_TERM_KEYWORDS = {
+    # Tightened: removed local-brain(50), l3(43), evolution(35), skill(31),
+    # 治理(22), taskpool(17), 任务池(13) — all too common.
+    "p10", "l4", "l5", "lx", "技能树", "控制面", "控制台",
+}
+MULTIMODEL_ONE_SHOT_KEYWORDS = {
+    # Tightened: removed workflow(34), 方案(24), 落地(22), loop(20),
+    # mission(18), playbook(12), 闭环(12), pua-loop(13), dag(7) — too common.
+    "一次落地", "迁移", "拆解", "介入", "融合", "分解",
+    "自动触发",
+}
 
 # Formal lifecycle contract. Markdown task notes remain canonical; this graph is
 # the local control-plane guardrail for agents, cron ticks, and multi-model
@@ -484,6 +504,123 @@ def mission_dag_summaries(tasks: list["Task"] | None = None) -> list[dict[str, A
     return summaries
 
 
+def task_search_text(task: "Task") -> str:
+    """Full search text including body/metadata. Used for general search."""
+    concepts = " ".join(list_value(task.fm.get("concepts")))
+    fields = [
+        task.id,
+        task.title,
+        task.body,
+        concepts,
+        task.project,
+        task.lane,
+        task.architecture_target,
+        str(task.fm.get("objective") or ""),
+        str(task.fm.get("acceptance_evidence") or ""),
+        str(task.fm.get("capability_delta") or ""),
+        str(task.fm.get("anti_drift_check") or ""),
+    ]
+    return "\n".join(fields).lower()
+
+
+def task_keyword_text(task: "Task") -> str:
+    """Narrow keyword search: title + concepts only. Avoids body/metadata noise."""
+    concepts = " ".join(list_value(task.fm.get("concepts")))
+    return f"{task.title}\n{concepts}".lower()
+
+
+def has_any_keyword(text: str, keywords: set[str]) -> bool:
+    return any(k.lower() in text for k in keywords)
+
+
+def task_multimodel_status(task: "Task") -> str:
+    return str(
+        task.fm.get("multimodel_status")
+        or task.fm.get("certification_status")
+        or task.fm.get("multi_model_status")
+        or ""
+    ).strip()
+
+
+def task_multimodel_artifact(task: "Task") -> str:
+    return str(
+        task.fm.get("multimodel_ratification_artifact")
+        or task.fm.get("ratification_artifact")
+        or task.fm.get("discussion_result")
+        or ""
+    ).strip()
+
+
+def task_multimodel_passed(task: "Task") -> bool:
+    status = task_multimodel_status(task)
+    artifact = task_multimodel_artifact(task)
+    return status in MULTIMODEL_PASS_STATUSES and (not artifact or evidence_is_structured(artifact))
+
+
+def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
+    """Return automatic multi-model intervention reasons for active task notes.
+
+    Trigger policy is intentionally deterministic and local-only: model agreement is
+    never treated as evidence here. The command surfaces when to invoke the live
+    consult_models.py PUA-loop gate; it does not mutate task state or execute hooks.
+
+    Trigger strategy: structural-first, keyword-supplemented.
+    - Strong structural triggers fire immediately (P0+evolution, retry>=2).
+    - Keywords only add reasons when at least one structural reason exists.
+    - Requires >= 2 reasons to fire (prevents noise from single weak signals).
+    - Keyword search uses title + concepts only (not body/metadata).
+    """
+    if task.status in TERMINAL_STATUSES or task_multimodel_passed(task):
+        return []
+    reasons: list[str] = []
+
+    # --- Strong structural triggers (fire immediately) ---
+    if task.priority == "P0" and task.lane == "evolution":
+        reasons.append("p0_evolution_blast_radius")
+    if task.retry_count() >= 2:
+        reasons.append("loop_non_convergence")
+    if task.is_stale_claim():
+        reasons.append("stale_claim")
+
+    # --- Structural signals (need keyword or another signal to fire) ---
+    if task.status in {"running", "review"}:
+        reasons.append("closeout_ratification")
+    if task.priority == "P0":
+        reasons.append("P0_priority")
+    if task.lane == "evolution":
+        reasons.append("evolution_lane")
+    if task.architecture_target:
+        reasons.append("architecture_target")
+    if is_mission_envelope_fm(task.fm):
+        reasons.append("mission_envelope")
+    if task.lane == "evolution" and not str(task.fm.get("acceptance_evidence") or "").strip():
+        reasons.append("missing_acceptance_evidence")
+
+    # --- Keyword signals (title + concepts only; only add if structural exists) ---
+    kw_text = task_keyword_text(task)
+    structural_count = len(reasons)
+    if structural_count > 0:
+        if has_any_keyword(kw_text, MULTIMODEL_ACCURACY_KEYWORDS):
+            reasons.append("accuracy_keyword")
+        if has_any_keyword(kw_text, MULTIMODEL_LONG_TERM_KEYWORDS):
+            reasons.append("long_term_keyword")
+        if has_any_keyword(kw_text, MULTIMODEL_ONE_SHOT_KEYWORDS):
+            reasons.append("one_shot_keyword")
+
+    unique = sorted(set(reasons))
+    # Strong triggers fire alone; everything else needs >= 2 signals.
+    strong = {"p0_evolution_blast_radius", "loop_non_convergence", "stale_claim"}
+    if strong & set(unique):
+        return unique
+    if len(unique) >= 2:
+        return unique
+    return []
+
+
+def task_multimodel_intervention_required(task: "Task") -> bool:
+    return bool(task_multimodel_intervention_reasons(task))
+
+
 @dataclasses.dataclass
 class Task:
     path: Path
@@ -613,6 +750,11 @@ class Task:
             "mission_envelope": is_mission_envelope_fm(self.fm),
             "mission_envelope_valid": mission_envelope_valid(self.fm),
             "mission_envelope_missing": mission_envelope_missing(self.fm),
+            "multimodel_intervention_required": task_multimodel_intervention_required(self),
+            "multimodel_intervention_reasons": task_multimodel_intervention_reasons(self),
+            "multimodel_status": task_multimodel_status(self),
+            "multimodel_ratification_artifact": task_multimodel_artifact(self),
+            "multimodel_passed": task_multimodel_passed(self),
             "project": self.project,
             "claimed_by": self.fm.get("claimed_by") or "",
             "claim_expires_at": self.fm.get("claim_expires_at") or "",
@@ -1295,6 +1437,8 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
   "safe_dispatch_tick": "python3 ~/.hermes/scripts/brain_task_dispatch_tick.py",
   "boundary_check": "python3 ~/.hermes/scripts/brain_task_orchestrator.py boundary-check --json",
   "parallel_dispatch_dry_run": "python3 ~/.hermes/scripts/brain_task_orchestrator.py parallel-dispatch-dry-run --max-agents 3 --json",
+  "multimodel_intervention_dry_run": "python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --json",
+  "pua_loop_ratification_gate": "python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task TASK_ID --discussion-result DISCUSSION_RESULT_JSON --json",
   "skill_route_matrix": "[[07-仪表盘/Agent技能树路由矩阵]]"
 }}
 ```
@@ -1307,6 +1451,8 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
 - 直接创建任务：`python3 ~/.hermes/scripts/brain_task_orchestrator.py add "任务标题" --priority P1 --project local-brain`
 - 技能路由入口：[[07-仪表盘/Agent技能树路由矩阵]]
 - 安全派发 tick：`python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always`
+- 多模型自动介入 dry-run：`python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --json`
+- PUA-loop ratification gate：`python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task TASK_ID --discussion-result DISCUSSION_RESULT_JSON --json`
 
 ## Counts
 
@@ -1449,13 +1595,28 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py proof-check --json
 python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor hermes --reason "失败原因" --delay-minutes 60
 ```
 
-## 4. 多模型分解触发点
+## 4. 多模型自动触发与介入
 
-当任务过大、跨层级、影响事实源或需要排序取舍时，对 Hermes 说：
+不再依赖“对 Hermes 说”作为唯一触发。安全 tick / dispatch dry-run 会自动计算 `multimodel_intervention`：
 
-- `多模型分解本地大脑任务池并排序`
-- `pua-loop 多模型思考推进本地大脑任务池`
-- `处理本地大脑任务收件箱，然后多模型拆解 P0/P1/P2`
+```bash
+# 扫描全任务池，输出需要多模型介入的队列（不改文件、不跑模型）
+python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --json
+
+# 对单个任务生成 PUA-loop 多模型介入计划
+python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --task TASK_ID --json
+
+# 每轮多模型 discussion 完成后，用 gate 决定 LOOP_DONE 还是 continue_loop
+python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task TASK_ID --discussion-result /path/to/discussion_result.json --json
+```
+
+自动介入标准固定为三条，缺一不可：
+
+1. 准确性：claim/evidence state 先行；模型一致不等于证据。
+2. 长期目标：保留 lane / project / architecture_target；work 交付优先于 evolution 自进化。
+3. 可一次落地方案：必须给出可直接执行的下一切片、验收证据与回滚边界。
+
+PUA-loop 停止条件：每轮先 deterministic gates，再 `consult_models.py --tier T3 --quorum 4 --discussion --keep`，最后 `ratification-gate`。只有 gate 返回 `PASS` / `LOOP_DONE` 才能停；否则继续下一轮。
 
 多模型只做分解、质疑、排序、认证；事实更新仍落回 Markdown task note / review / dashboard。
 
@@ -1701,7 +1862,314 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
         return {"status": "OK", "dry_run": True, "dispatchable": False, "message": nxt["message"]}
     row = nxt["next"]
     prompt = dispatch_prompt_for_row(row)
-    return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "safety": "dry-run only; does not claim or execute"}
+    intervention = command_multimodel_intervention_dry_run(argparse.Namespace(task=row["id"], max_tasks=1, json=True))
+    return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "multimodel_intervention": intervention, "safety": "dry-run only; does not claim or execute"}
+
+
+def multimodel_intervention_sort_key(task: Task) -> tuple[int, int, int, datetime, str]:
+    reasons = task_multimodel_intervention_reasons(task)
+    return (-len(reasons), LANE_SORT_WEIGHT.get(task.lane, 1), -task.score(), task.expires_at() or datetime.max.replace(tzinfo=TZ), task.id)
+
+
+def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
+    reasons = task_multimodel_intervention_reasons(task)
+    state_dir = HERMES_HOME / "state" / "taskpool-multimodel"
+    state_path = state_dir / f"{task.id}-state.json"
+    question = (
+        "Local-brain taskpool PUA-loop intervention: verify decomposition and next action for "
+        f"task {task.id} using accuracy, long-term-goal alignment, and one-shot landing feasibility."
+    )
+    context = {
+        "task_id": task.id,
+        "task_path": str(task.path),
+        "title": task.title,
+        "lane": task.lane,
+        "priority": task.priority,
+        "project": task.project,
+        "status": task.status,
+        "architecture_target": task.architecture_target,
+        "trigger_reasons": reasons,
+        "source_of_truth": "Markdown task note frontmatter/body",
+    }
+    context_arg = shlex.quote(json.dumps(context, ensure_ascii=False, sort_keys=True))
+    question_arg = shlex.quote(question)
+    state_arg = shlex.quote(str(state_path))
+    task_arg = shlex.quote(task.id)
+    return {
+        "schema": "local_brain_multimodel_intervention_v1",
+        "task": task.row(),
+        "criteria": {
+            "accuracy": "claim/evidence state must ground task facts; model agreement alone is insufficient",
+            "long_term_goal": "solution must preserve lane/project/architecture_target and not let evolution preempt work delivery",
+            "one_shot_landing": "output must be a directly executable next slice with acceptance evidence and rollback boundary",
+        },
+        "trigger_reasons": reasons,
+        "intervention_required": bool(reasons),
+        "pua_loop": {
+            "mode": "continue_until_multimodel_pass",
+            "round_gate": "run deterministic checks -> build claim/evidence state -> consult_models.py --discussion -> ratification-gate; continue if gate != PASS",
+            "completion_signal": "LOOP_DONE only after ratification-gate PASS and local deterministic gates pass",
+        },
+        "state_path": str(state_path),
+        "build_state_command": (
+            f"mkdir -p {shlex.quote(str(state_dir))} && "
+            f"python3 ~/.hermes/scripts/consult_models.py state {question_arg} "
+            f"--context-json {context_arg} "
+            "--constraint 'accuracy > speed; evidence-first; no model-name authority' "
+            "--constraint 'preserve long-term lane/project/architecture target; work lane wins over evolution' "
+            "--constraint 'final answer must be a one-shot landable slice with tests/evidence/rollback' "
+            "--accept 'discussion_result status certified or certified_with_minor_risks with no unresolved severity>=3 issues' "
+            f"--file {shlex.quote(str(task.path))} --out {state_arg}"
+        ),
+        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T3 --quorum 4 --discussion --max-rounds 5 --keep",
+        "gate_command_template": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task {task_arg} --discussion-result DISCUSSION_RESULT_JSON --json",
+        "safety": "dry-run intervention plan only; no claim, no task mutation, no arbitrary hook execution",
+    }
+
+
+def command_multimodel_intervention_dry_run(args: argparse.Namespace) -> dict[str, Any]:
+    tasks = iter_tasks()
+    if getattr(args, "task", ""):
+        candidates = [find_task(args.task)]
+    else:
+        candidates = [t for t in tasks if t.status not in TERMINAL_STATUSES]
+    intervention_tasks = [t for t in candidates if task_multimodel_intervention_required(t)]
+    intervention_tasks = sorted(intervention_tasks, key=multimodel_intervention_sort_key)
+    max_tasks = max(1, int(getattr(args, "max_tasks", 5) or 5))
+    plans = [build_multimodel_intervention_plan(t) for t in intervention_tasks[:max_tasks]]
+    selected = plans[0] if plans else None
+    return {
+        "status": "OK",
+        "dry_run": True,
+        "schema": "local_brain_multimodel_intervention_queue_v1",
+        "generated_at": iso(),
+        "intervention_required": bool(plans),
+        "selected_task_id": selected["task"]["id"] if selected else "",
+        "selected": selected,
+        "queued_count": len(intervention_tasks),
+        "plans": plans,
+        "criteria": ["accuracy", "long_term_goal", "one_shot_landing"],
+        "safety": "dry-run only; this surfaces automatic intervention points but does not run models or edit tasks",
+    }
+
+
+def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
+    """Fail-closed ratification gate for PUA-loop multi-model discussions.
+
+    Accepts two canonical shapes produced by consult_models.py:
+
+    Shape A (explicit criteria): top-level ``criteria_satisfied`` dict with
+    ``accuracy``, ``long_term_goal``, ``one_shot_landing`` all True, plus
+    ``final_design`` with ``next_slice``, ``acceptance_evidence``,
+    ``rollback_boundary``.
+
+    Shape B (derived from consult_models discussion): ``status: certified``,
+    4 canonical model votes all approve, ``agreement_matrix`` >= 0.85,
+    ``issue_ledger`` empty, ``truth_status`` grounded, ``evidence_bundle``
+    with all claims verified, ``fanout_certification`` multi_model_certified,
+    ``verification`` with guard_metrics, ``rollback_signal`` with
+    auto_rollback_if condition.
+
+    Both shapes require all 7 checks to pass. Any failure -> continue_loop.
+    """
+    failures: list[str] = []
+    warnings: list[str] = []
+    if not isinstance(discussion, dict):
+        return {
+            "status": "FAIL",
+            "failures": ["discussion_result_not_object"],
+            "warnings": warnings,
+            "decision": "continue_loop",
+        }
+
+    # --- 1. certification status ---
+    status = str(discussion.get("status") or discussion.get("certification_status") or "").strip()
+    if status not in MULTIMODEL_PASS_STATUSES:
+        failures.append(f"status_not_passed:{status or 'missing'}")
+
+    # --- 2. issue ledger: no unresolved severity>=3 ---
+    issues = discussion.get("issue_ledger") or discussion.get("issues") or []
+    if not isinstance(issues, list):
+        failures.append("issue_ledger_not_list")
+        issues = []
+    for issue in issues:
+        if not isinstance(issue, dict):
+            failures.append("issue_not_object")
+            continue
+        try:
+            severity = int(issue.get("severity") or 0)
+        except Exception:
+            severity = 0
+            warnings.append(f"issue_severity_unparseable:{issue.get('id', '')}")
+        issue_status = str(issue.get("status") or "").strip()
+        if severity >= 3 and issue_status not in {"resolved", "accepted_risk", "duplicate", "noop", "non_blocking", "non-blocking"}:
+            failures.append(f"unresolved_severity_{severity}:{issue.get('id', 'unknown')}")
+
+    # --- 3. canonical four-model votes ---
+    votes = discussion.get("ratification_votes") or discussion.get("votes") or []
+    if not isinstance(votes, list) or not votes:
+        failures.append("ratification_votes_missing")
+        votes = []
+
+    vote_models: list[str] = []
+    seen_models: set[str] = set()
+    for vote in votes:
+        if not isinstance(vote, dict):
+            failures.append("vote_not_object")
+            continue
+        model = str(vote.get("model") or "").strip()
+        if not model:
+            failures.append("vote_model_missing")
+        else:
+            vote_models.append(model)
+            if model in seen_models:
+                failures.append(f"duplicate_vote_model:{model}")
+            seen_models.add(model)
+        v = str(vote.get("vote") or vote.get("verdict") or "").lower()
+        if v not in {"approve", "approved", "pass", "certify"}:
+            failures.append(f"non_approve_vote:{model or 'unknown'}:{v or 'missing'}")
+        if vote.get("best_within_constraints") is not True:
+            failures.append(f"best_within_constraints_missing:{model or 'unknown'}")
+
+    vote_model_set = set(vote_models)
+    for required in REQUIRED_RATIFICATION_MODELS:
+        if required not in vote_model_set:
+            failures.append(f"missing_required_model_vote:{required}")
+    for model in vote_model_set:
+        if model not in REQUIRED_RATIFICATION_MODELS:
+            failures.append(f"unexpected_vote_model:{model}")
+
+    # --- 4. agreement matrix >= 0.85 on all axes ---
+    matrix = discussion.get("agreement_matrix") or {}
+    if isinstance(matrix, dict):
+        for axis in ("framing", "approach", "implementation_order"):
+            if axis in matrix:
+                try:
+                    if float(matrix[axis]) < 0.85:
+                        failures.append(f"agreement_below_threshold:{axis}:{matrix[axis]}")
+                except Exception:
+                    failures.append(f"agreement_unparseable:{axis}")
+    else:
+        failures.append("agreement_matrix_not_object")
+
+    # --- 5. truth gate (supports nested truth_assessment) ---
+    truth = str(discussion.get("truth_status") or discussion.get("truth") or "").lower()
+    if not truth:
+        ta = discussion.get("truth_assessment") or {}
+        if isinstance(ta, dict):
+            truth = str(ta.get("truth_status") or "").lower()
+    if not truth:
+        fd = discussion.get("final_design") or {}
+        if isinstance(fd, dict):
+            fd_ta = fd.get("truth_assessment") or {}
+            if isinstance(fd_ta, dict):
+                truth = str(fd_ta.get("truth_status") or "").lower()
+    if truth and any(token in truth for token in ("not_certified", "unsupported", "contradicted", "no_claims")):
+        failures.append(f"truth_gate_failed:{truth}")
+
+    # --- 6. criteria: accuracy + long_term_goal + one_shot_landing ---
+    # Shape A: explicit criteria_satisfied dict
+    criteria = discussion.get("criteria_satisfied")
+    if isinstance(criteria, dict):
+        if criteria.get("accuracy") is not True:
+            failures.append("accuracy_criterion_missing")
+        if criteria.get("long_term_goal") is not True:
+            failures.append("long_term_goal_alignment_missing")
+        if criteria.get("one_shot_landing") is not True:
+            failures.append("one_shot_plan_missing")
+    else:
+        # Shape B: derive from evidence_bundle, fanout_certification, verification
+        fd = discussion.get("final_design") or {}
+        if not isinstance(fd, dict):
+            fd = {}
+
+        # accuracy: evidence_bundle grounding all claims verified
+        eb = fd.get("evidence_bundle") or discussion.get("evidence_bundle") or {}
+        grounding = eb.get("grounding") or {} if isinstance(eb, dict) else {}
+        all_verified = bool(grounding) and all(
+            str(g.get("truth_status") or "") == "verified_by_evidence"
+            for g in grounding.values() if isinstance(g, dict)
+        )
+        if not all_verified:
+            failures.append("accuracy_criterion_missing")
+
+        # long_term_goal: fanout_certification.multi_model_certified
+        fc = fd.get("fanout_certification") or discussion.get("fanout_certification") or {}
+        if not isinstance(fc, dict) or fc.get("multi_model_certified") is not True:
+            # fallback: check if status is certified (implies multi-model approval)
+            if status not in MULTIMODEL_PASS_STATUSES:
+                failures.append("long_term_goal_alignment_missing")
+
+        # one_shot_landing: verification has guard_metrics AND rollback_signal has condition
+        ver = fd.get("verification") or {}
+        rs = fd.get("rollback_signal") or {}
+        has_guard = isinstance(ver, dict) and isinstance(ver.get("guard_metrics"), list) and ver["guard_metrics"]
+        has_rollback = isinstance(rs, dict) and str(rs.get("auto_rollback_if") or "").strip()
+        if not has_guard:
+            failures.append("one_shot_plan_missing")
+            warnings.append("verification.guard_metrics missing or empty")
+        if not has_rollback:
+            warnings.append("rollback_signal.auto_rollback_if missing")
+
+    # --- 7. final_design: must exist with actionable structure ---
+    final_design = discussion.get("final_design")
+    if not isinstance(final_design, dict):
+        failures.append("final_design_missing")
+    else:
+        # Shape A: explicit next_slice / acceptance_evidence / rollback_boundary
+        has_next_slice = bool(str(final_design.get("next_slice") or "").strip())
+        has_acceptance = isinstance(final_design.get("acceptance_evidence"), list) and bool(final_design["acceptance_evidence"])
+        has_rollback_boundary = bool(str(final_design.get("rollback_boundary") or "").strip())
+
+        # Shape B: diagnosis + verification + rollback_signal
+        has_diagnosis = isinstance(final_design.get("diagnosis"), dict) and (
+            str(final_design["diagnosis"].get("root_cause_class") or "").strip()
+            or str(final_design["diagnosis"].get("summary") or "").strip()
+        )
+        has_verification = isinstance(final_design.get("verification"), dict)
+        has_rollback_signal = isinstance(final_design.get("rollback_signal"), dict) and (
+            str(final_design["rollback_signal"].get("auto_rollback_if") or "").strip()
+        )
+
+        shape_a = has_next_slice and has_acceptance and has_rollback_boundary
+        shape_b = has_diagnosis and has_verification and has_rollback_signal
+
+        if not shape_a and not shape_b:
+            # Neither shape has actionable structure
+            missing = []
+            if not has_next_slice and not has_diagnosis:
+                missing.append("next_slice_or_diagnosis")
+            if not has_acceptance and not has_verification:
+                missing.append("acceptance_evidence_or_verification")
+            if not has_rollback_boundary and not has_rollback_signal:
+                missing.append("rollback_boundary_or_signal")
+            for m in missing:
+                failures.append(f"final_design_{m}_missing")
+
+    return {
+        "status": "PASS" if not failures else "FAIL",
+        "failures": sorted(set(failures)),
+        "warnings": warnings,
+        "decision": "LOOP_DONE" if not failures else "continue_loop",
+    }
+
+
+def command_ratification_gate(args: argparse.Namespace) -> dict[str, Any]:
+    path = Path(args.discussion_result).expanduser()
+    if not path.exists():
+        return {"status": "FAIL", "decision": "continue_loop", "failures": [f"discussion_result_missing:{path}"], "warnings": [], "task_id": args.task}
+    try:
+        discussion = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        return {"status": "FAIL", "decision": "continue_loop", "failures": [f"discussion_result_unreadable:{exc}"], "warnings": [], "task_id": args.task, "discussion_result": str(path)}
+    result = ratification_gate_result(discussion)
+    result.update({
+        "task_id": args.task,
+        "discussion_result": str(path),
+        "criteria": ["accuracy", "long_term_goal", "one_shot_landing"],
+        "safety": "read-only gate; PASS means pua-loop may stop, FAIL means continue iteration",
+    })
+    return result
 
 
 def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
@@ -1968,8 +2436,12 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
             warnings.append(f"autorun handoff directory count unavailable: {exc}")
     if DASHBOARD.exists() and "DERIVED VIEW — NOT SOURCE OF TRUTH" not in DASHBOARD.read_text(encoding="utf-8"):
         failures.append("dashboard missing derived-view warning")
-    if CONTROL_CENTER.exists() and "处理本地大脑任务收件箱" not in CONTROL_CENTER.read_text(encoding="utf-8"):
-        failures.append("control center missing natural-language trigger")
+    if CONTROL_CENTER.exists():
+        control_text = CONTROL_CENTER.read_text(encoding="utf-8")
+        if "处理本地大脑任务收件箱" not in control_text:
+            failures.append("control center missing natural-language trigger")
+        if "multimodel-intervention-dry-run" not in control_text or "ratification-gate" not in control_text:
+            failures.append("control center missing automatic multi-model intervention trigger/gate")
     status = "PASS" if not failures else "FAIL"
     return {"status": status, "task_count": len(iter_tasks()), "failures": failures, "warnings": warnings, "boundary": boundary, "paths": {"dashboard": str(DASHBOARD), "control_center": str(CONTROL_CENTER), "sorted_pool": str(SORTED_POOL), "inbox": str(INBOX)}}
 
@@ -2097,6 +2569,16 @@ def build_parser() -> argparse.ArgumentParser:
     pdp.add_argument("--max-agents", type=int, default=3)
     pdp.add_argument("--json", action="store_true")
 
+    mip = sub.add_parser("multimodel-intervention-dry-run")
+    mip.add_argument("--task", default="")
+    mip.add_argument("--max-tasks", type=int, default=5)
+    mip.add_argument("--json", action="store_true")
+
+    rgp = sub.add_parser("ratification-gate")
+    rgp.add_argument("--task", required=True)
+    rgp.add_argument("--discussion-result", required=True)
+    rgp.add_argument("--json", action="store_true")
+
     ecp = sub.add_parser("eligibility-check")
     ecp.add_argument("--task", default="")
     ecp.add_argument("--actor", default="hermes-autorun")
@@ -2156,6 +2638,10 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_boundary_check(args), args.json)
     if args.cmd == "parallel-dispatch-dry-run":
         return print_result(command_parallel_dispatch_dry_run(args), args.json)
+    if args.cmd == "multimodel-intervention-dry-run":
+        return print_result(command_multimodel_intervention_dry_run(args), args.json)
+    if args.cmd == "ratification-gate":
+        return print_result(command_ratification_gate(args), args.json)
     if args.cmd == "eligibility-check":
         return print_result(command_eligibility_check(args), args.json)
     if args.cmd == "auto-claim-and-handoff":
