@@ -31,6 +31,7 @@ def make_env_and_vault():
     env["HERMES_BRAIN_VAULT"] = str(vault)
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(Path(td.name) / "state")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
+    env["HERMES_CRON_JOBS_PATH"] = str(Path(td.name) / "cron" / "jobs.json")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     return td, vault, env
 
@@ -681,6 +682,148 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         # Shape B: no evidence_bundle -> accuracy_criterion_missing; no final_design -> final_design_missing
         assert "accuracy_criterion_missing" in gate_weak["failures"], gate_weak
         assert "final_design_missing" in gate_weak["failures"], gate_weak
+        assert "failure_taxonomy" in gate_weak, gate_weak
+        assert "model_vote_missing" in gate_weak["failure_taxonomy"]["active_categories"], gate_weak
+        assert "criteria_missing" in gate_weak["failure_taxonomy"]["active_categories"], gate_weak
+
+        malformed = task_path.parent / "discussion-malformed-final-design.json"
+        malformed.write_text(json.dumps({
+            "status": "certified",
+            "final_design": "oops-not-a-dict",
+            "ratification_votes": [{"model": "fake", "vote": "approve", "best_within_constraints": True}],
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_malformed = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(malformed), "--json", check=False).stdout)
+        assert gate_malformed["status"] == "FAIL", gate_malformed
+        assert gate_malformed["decision"] == "continue_loop", gate_malformed
+        assert "failure_taxonomy" in gate_malformed, gate_malformed
+
+        malformed_votes = task_path.parent / "discussion-malformed-votes.json"
+        malformed_votes.write_text(json.dumps({
+            "status": "certified",
+            "models_consulted": 1,
+            "ratification_votes": 1,
+            "final_design": "oops-not-a-dict",
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_bad_votes = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(malformed_votes), "--json", check=False).stdout)
+        assert gate_bad_votes["status"] == "FAIL", gate_bad_votes
+        assert gate_bad_votes["decision"] == "continue_loop", gate_bad_votes
+        assert "models_consulted_not_list" in gate_bad_votes["failures"], gate_bad_votes
+        assert "provider_parse_error" in gate_bad_votes["failure_taxonomy"]["active_categories"], gate_bad_votes
+
+        malformed_models = task_path.parent / "discussion-malformed-models.json"
+        malformed_models.write_text(json.dumps({
+            "status": "certified",
+            "models_consulted": [{"model": "claude-opus-4-7"}],
+            "ratification_votes": [{"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True}],
+            "final_design": "oops-not-a-dict",
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_bad_models = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(malformed_models), "--json", check=False).stdout)
+        assert gate_bad_models["status"] == "FAIL", gate_bad_models
+        assert gate_bad_models["decision"] == "continue_loop", gate_bad_models
+        assert "models_consulted_invalid" in gate_bad_models["failures"], gate_bad_models
+
+
+def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, _task_path = add_evolution_task(env, title="pua-loop 自动触发介入与多模型任务池分解", priority="P0")
+        cron_path = Path(env["HERMES_CRON_JOBS_PATH"])
+        cron_path.parent.mkdir(parents=True, exist_ok=True)
+        cron_jobs = [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {
+                "id": "fixture-auto-completer",
+                "name": "local-brain-taskpool-auto-completer",
+                "enabled": True,
+                "schedule": "every 120m",
+                "last_status": "error",
+                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=super-secret-token-123456 Authorization: Bearer bearer-secret-1234567890 https://example.test/hook?access_token=query-secret-123456",
+                "last_delivery_error": "Bearer delivery-secret-1234567890",
+                "deliver": "telegram:private-secret-target",
+                "script": "/tmp/secret-script.sh",
+                "next_run_at": "2099-01-01T00:00:00+08:00",
+            },
+        ]
+        cron_path.write_text(json.dumps({"jobs": cron_jobs}, ensure_ascii=False), encoding="utf-8")
+
+        dry = json.loads(run(env, "multimodel-intervention-dry-run", "--json").stdout)
+        assert dry["selected_task_id"] == task_id, dry
+        assert "--evidence-json" in dry["selected"]["build_state_command"], dry["selected"]["build_state_command"]
+        assert "E-TASK-CANONICAL" in dry["selected"]["build_state_command"], dry["selected"]["build_state_command"]
+        run(env, "dashboard", "--write", "--json")
+
+        spine = json.loads(run(env, "evidence-spine", "--json").stdout)
+        assert spine["schema"] == "local_brain_taskpool_evidence_spine_v1", spine
+        assert spine["read_only"] is True, spine
+        evidence_ids = {e["evidence_id"] for e in spine["evidence"]}
+        assert {"E-TP-COUNTS", "E-TP-GATES", "E-TP-DISPATCH", "E-TP-AUTORUN", "E-TP-AUTO-COMPLETER", "E-TP-MULTIMODEL", "E-TP-CRON"} <= evidence_ids
+        auto_ev = next(e for e in spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")
+        cron_job = auto_ev["payload"]["cron_job"]
+        assert "last_error" not in cron_job, cron_job
+        assert "last_delivery_error" not in cron_job, cron_job
+        assert "deliver" not in cron_job, cron_job
+        assert "script" not in cron_job, cron_job
+        assert "super-secret-token" not in json.dumps(auto_ev, ensure_ascii=False), auto_ev
+        assert "bearer-secret" not in json.dumps(auto_ev, ensure_ascii=False), auto_ev
+        assert "query-secret" not in json.dumps(auto_ev, ensure_ascii=False), auto_ev
+        assert "delivery-secret" not in json.dumps(auto_ev, ensure_ascii=False), auto_ev
+        assert "private-secret-target" not in json.dumps(auto_ev, ensure_ascii=False), auto_ev
+        assert "secret-script" not in json.dumps(auto_ev, ensure_ascii=False), auto_ev
+        assert "[REDACTED]" in cron_job["last_error_tail"], cron_job
+        assert "[REDACTED]" in cron_job["last_delivery_error_tail"], cron_job
+        assert cron_job["schedule"] == "every 120m", cron_job
+        classification = auto_ev["payload"]["classification"]
+        assert classification["semantic_status"] == "ok_with_task_blocker", classification
+        assert classification["task_result"] == "review_with_baseline_blocker", classification
+        assert classification["safe_for_next_tick"] is True, classification
+        assert spine["summary"]["auto_completer_semantic_status"] == "ok_with_task_blocker", spine
+
+        cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"}
+        ]}, ensure_ascii=False), encoding="utf-8")
+        missing_cron = json.loads(run(env, "evidence-spine", "--json", check=False).stdout)
+        assert missing_cron["status"] == "FAIL", missing_cron
+        assert missing_cron["gate_status"] == "WARN", missing_cron
+        assert "local-brain-taskpool-auto-completer" in missing_cron["summary"]["cron_required_missing"], missing_cron
+
+
+def test_autonomy_readiness_reports_complete_fail_closed_architecture():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="无人值守自运行 ready check work task", priority="P1", project="client-work")
+        run(env, "dashboard", "--write", "--json")
+        cron_path = Path(env["HERMES_CRON_JOBS_PATH"])
+        cron_path.parent.mkdir(parents=True, exist_ok=True)
+        cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule_display": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "ok"},
+        ]}, ensure_ascii=False), encoding="utf-8")
+
+        readiness = json.loads(run(env, "autonomy-readiness", "--json").stdout)
+        assert readiness["schema"] == "local_brain_unattended_autonomy_readiness_v1", readiness
+        assert readiness["status"] == "PASS", readiness
+        assert readiness["architecture_complete"] is True, readiness
+        assert readiness["read_only"] is True, readiness
+        assert readiness["unattended_runtime_enabled"] is False, readiness
+        assert readiness["full_runtime_activation_ready"] is False, readiness
+        assert "autorun_env_disabled" in readiness["activation_blockers"], readiness
+        assert "multimodel_autorun_env_disabled" in readiness["activation_blockers"], readiness
+        assert "autorun_allowlist_empty" in readiness["activation_blockers"], readiness
+        assert readiness["eligibility_probe"]["task_id"] == task_id, readiness
+        assert readiness["ratification_verifier_selftest"]["status"] == "PASS", readiness
+        assert readiness["ratification_verifier_selftest"]["hollow_gate"]["status"] == "FAIL", readiness
+        assert "truth_gate_missing_positive_status" in readiness["ratification_verifier_selftest"]["hollow_gate"]["failures"], readiness
+        layer_names = set(readiness["control_plane_layers"].keys())
+        assert {"scheduler", "guardian", "worker_bridge", "proof_gate", "multi_model_ratifier", "reporter"} <= layer_names, readiness
+        assert "status: pending" in task_path.read_text(encoding="utf-8")
 
 
 def test_autorun_runner_pauses_on_pending_permission_gate():
@@ -838,6 +981,29 @@ def test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed():
         assert next(r for r in rows if r["id"] == third_id)["status"] == "pending"
         assert next(r for r in rows if r["id"] == evolution_id)["status"] == "pending"
 
+        first_text = first_path.read_text(encoding="utf-8")
+        first_text = first_text.replace(
+            "workspace: /tmp/shared-client-workspace",
+            "workspace: /tmp/shared-client-workspace\nallowed_globs: [\"src/**\"]\nforbidden_globs: [\"secrets/**\"]\nloc_budget: 5",
+            1,
+        )
+        first_path.write_text(first_text, encoding="utf-8")
+        bd_ok = json.loads(run(env, "boundary-diff-check", first_id, "--file", "src/app.py", "--diff-lines", "5", "--json").stdout)
+        assert bd_ok["status"] == "OK", bd_ok
+        bd_forbidden = json.loads(run(env, "boundary-diff-check", first_id, "--file", "secrets/key.txt", "--json", check=False).stdout)
+        assert bd_forbidden["status"] == "FAIL", bd_forbidden
+        assert any("forbidden_match" in v for v in bd_forbidden["boundary_diff"]["violations"]), bd_forbidden
+        bd_over_budget = json.loads(run(env, "boundary-diff-check", first_id, "--file", "src/app.py", "--diff-lines", "6", "--json", check=False).stdout)
+        assert bd_over_budget["status"] == "FAIL", bd_over_budget
+        assert bd_over_budget["loc_budget"]["over_budget"] == 1, bd_over_budget
+        bd_negative = json.loads(run(env, "boundary-diff-check", first_id, "--file", "src/app.py", "--diff-lines", "-1", "--json", check=False).stdout)
+        assert bd_negative["status"] == "FAIL", bd_negative
+        assert bd_negative["loc_budget"]["reason"] == "invalid_diff_line_count", bd_negative
+        first_path.write_text(first_path.read_text(encoding="utf-8").replace("loc_budget: 5", "loc_budget: many", 1), encoding="utf-8")
+        bd_bad_budget = json.loads(run(env, "boundary-diff-check", first_id, "--file", "src/app.py", "--diff-lines", "1", "--json", check=False).stdout)
+        assert bd_bad_budget["status"] == "FAIL", bd_bad_budget
+        assert "invalid_loc_budget:many" in bd_bad_budget["boundary_diff"]["violations"], bd_bad_budget
+
         bad_text = evolution_path.read_text(encoding="utf-8").replace("capability_delta: bounded autorun safety", "capability_delta: ", 1)
         evolution_path.write_text(bad_text, encoding="utf-8")
         bad_boundary = json.loads(run(env, "boundary-check", "--json", check=False).stdout)
@@ -900,6 +1066,8 @@ def main():
     test_mission_dag_dashboard_progress_and_ready_nodes()
     test_mission_dag_cycle_fails_boundary_and_dispatch()
     test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
+    test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics()
+    test_autonomy_readiness_reports_complete_fail_closed_architecture()
     test_autorun_runner_pauses_on_pending_permission_gate()
     test_autorun_eligibility_and_handoff_are_fail_closed()
     test_autorun_kill_switches_and_evolution_preemption_gate()

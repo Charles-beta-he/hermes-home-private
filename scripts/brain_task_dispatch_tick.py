@@ -87,10 +87,18 @@ def main() -> int:
     event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
     event["proof_check"] = run_json(["proof-check", "--json"])
+    event["evidence_spine"] = run_json(["evidence-spine", "--json"])
     event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
 
     errors = []
     allowed_statuses = {"OK", "PASS", "SKIP"}  # SKIP for multimodel_step when env var not set
+    if (event.get("evidence_spine") or {}).get("gate_status") not in {None, "PASS"}:
+        errors.append({
+            "step": "evidence_spine",
+            "status": (event.get("evidence_spine") or {}).get("status"),
+            "gate_status": (event.get("evidence_spine") or {}).get("gate_status"),
+            "summary": (event.get("evidence_spine") or {}).get("summary", {}),
+        })
 
     # D2: auto-step when env var is set — runs build->discussion->gate->mutate for top task
     if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
@@ -99,7 +107,7 @@ def main() -> int:
             errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout")})
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
 
-    for key in ["ingest", "reconcile", "dashboard", "proof_check", "multimodel_intervention", "multimodel_step", "dispatch"]:
+    for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch"]:
         item = event.get(key, {})
         if item and item.get("status") not in allowed_statuses:
             errors.append({"step": key, "status": item.get("status"), "stderr": item.get("stderr"), "stdout": item.get("stdout")})
@@ -152,6 +160,7 @@ def main() -> int:
     }
     autorun_raw = event.get("autorun") if isinstance(event.get("autorun"), dict) else {}
     mm_raw = event.get("multimodel_intervention") if isinstance(event.get("multimodel_intervention"), dict) else {}
+    evidence_spine_raw = event.get("evidence_spine") if isinstance(event.get("evidence_spine"), dict) else {}
     mm_selected = mm_raw.get("selected") if isinstance(mm_raw.get("selected"), dict) else {}
     multimodel_summary = {
         "intervention_required": bool(mm_raw.get("intervention_required")),
@@ -188,6 +197,12 @@ def main() -> int:
         "reconcile_action_count": event["reconcile_action_count"],
         "ingested_count": event["ingested_count"],
         "error_count": len(errors),
+        "evidence_spine": {
+            "status": evidence_spine_raw.get("status"),
+            "gate_status": evidence_spine_raw.get("gate_status"),
+            "summary": evidence_spine_raw.get("summary", {}),
+            "safety": evidence_spine_raw.get("safety", ""),
+        },
         "multimodel_intervention": multimodel_summary,
         "multimodel_step": (event.get("multimodel_step") or {}) if isinstance(event.get("multimodel_step"), dict) else {},
         "stdout_policy": "summary",

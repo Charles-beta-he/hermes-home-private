@@ -35,6 +35,17 @@ def make_env_and_vault():
     env["HERMES_BRAIN_DISPATCH_TICK_STATE_DIR"] = str(root / "tick-state")
     env["HERMES_BRAIN_DISPATCH_TICK_LOG_DIR"] = str(root / "tick-logs")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(root / "autonomy-write-allowlist.json")
+    env["HERMES_CRON_JOBS_PATH"] = str(root / "cron" / "jobs.json")
+    cron_path = Path(env["HERMES_CRON_JOBS_PATH"])
+    cron_path.parent.mkdir(parents=True, exist_ok=True)
+    cron_path.write_text(json.dumps({"jobs": [
+        {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule_display": "every 10m", "last_status": "ok"},
+        {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+        {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+        {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+        {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+        {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "ok"},
+    ]}, ensure_ascii=False), encoding="utf-8")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     return td, vault, env
 
@@ -137,6 +148,8 @@ def test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun():
         payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state"], env).stdout)
         assert payload["schema"] == "brain_task_dispatch_tick_summary_v1", payload
         assert payload["status"] == "OK", payload
+        assert payload["evidence_spine"]["status"] == "OK", payload
+        assert payload["evidence_spine"]["summary"]["counts"]["active"] >= 1, payload
         assert payload["stdout_policy"] == "summary", payload
         assert "log_file" in payload and payload["log_file"], payload
         assert "autorun" not in payload, payload
