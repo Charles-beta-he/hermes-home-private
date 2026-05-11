@@ -66,6 +66,7 @@ Ratification/certification verifier:
 - Do not build `set(models_consulted)` until it is confirmed to be a list of non-empty strings.
 - Failure taxonomy must also be defensive; diagnostic code must not crash while explaining a failed gate.
 - Exact participant identities matter at the certification boundary; aliases or duplicate/fake voters cannot satisfy full T3.
+- Treat `truth_can_certify=true` plus target binding as fact grounding only. If planner merge says `patches=[]` while `planner_patch_summary.certification_intent=implementation_required`, or if 3/4 planners vote noop but a lone minority concrete patch sets implementation intent, keep `not_certified` and classify as a merge/noop-vs-implementation arbitration issue. Do not auto-done; either downgrade the minority patch to advisory with explicit rationale, include the patch in `current_best.patches`, or require human/code-review signoff.
 
 Boundary/mission metadata:
 - `boundary-diff-check` must fail on malformed `loc_budget` and negative `--diff-lines`; treating bad budget as SKIP creates a bypass.
