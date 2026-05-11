@@ -2163,7 +2163,7 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
         result["run_discussion"] = {"status": "SKIP", "reason": "no_run_command"}
     else:
         try:
-            proc = subprocess.run(run_cmd, capture_output=True, text=True, timeout=600, shell=True)
+            proc = subprocess.run(run_cmd, capture_output=True, text=True, timeout=1200, shell=True)
             result["run_discussion"] = {
                 "status": "OK" if proc.returncode == 0 else "FAIL",
                 "returncode": proc.returncode,
