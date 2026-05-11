@@ -123,11 +123,89 @@ Exposed in `multimodel-intervention-dry-run --json` output under `convergence` k
 1. Check `HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1` env var (SKIP if unset)
 2. Find top intervention task via dry-run
 3. Build state file (`consult_models.py state` via shell=True for && chains)
-4. Run discussion (`consult_models.py run --discussion --tier T3 --quorum 4`)
+4. Run discussion (`consult_models.py run --discussion --tier T2 --quorum 3 --max-rounds 3`)
 5. Run ratification gate
 6. On PASS: write result to task frontmatter
 
 Integrated into `brain_task_dispatch_tick.py`: when env var is set, tick runs step after dry-run. `allowed_statuses` includes SKIP for when env var is not set.
+
+## Parallel multimodel step pattern
+
+`multimodel-intervention-parallel-step --max-workers N` processes multiple tasks concurrently:
+
+1. Dry-run selects top-2N intervention tasks
+2. Boundary conflict check: select tasks with unique `parallel_boundary`
+3. Allowlist check per task
+4. `ThreadPoolExecutor(max_workers=N)` runs `_run_single_task_pipeline()` for each
+5. Each worker independently runs: build_state → discussion → gate → mutate
+6. Results aggregated: passed/failed/errors + convergence stats
+
+Key design decisions (from T3 4-model discussion):
+- **ThreadPoolExecutor** over subprocess spawning (shared process, lower overhead)
+- **Boundary isolation** over global locks (different workspace/project boundaries = no conflict)
+- **Per-task gate** over batch gate (each task independently fail-closed)
+- **T2 tier** for taskpool automation (3 models, ~8min), T3 reserved for architecture decisions
+
+Tick integration: replace serial step with parallel step in cron job:
+```bash
+# Old (serial, 1 task per cycle):
+multimodel-intervention-step --json
+
+# New (parallel, 3 tasks per cycle):
+multimodel-intervention-parallel-step --max-workers 3 --json
+```
+
+## Tier selection strategy
+
+| Tier | Models | Time/task | Use case |
+|------|--------|-----------|----------|
+| T0 | mimo only | ~1min | Simple sanity check |
+| T1 | gpt + deepseek | ~3min | Low-risk review |
+| T2 | gpt + deepseek + mimo | ~8min | Advisory/routing only; not valid for final taskpool/Lark closeout |
+| T3 | claude + gpt + deepseek + mimo | ~15-20min | Required for high-score taskpool closeout, architecture decisions, safety-critical |
+
+For taskpool automation, T2 is sufficient. T3 adds Claude as producer+arbiter but doubles discussion time. Use T3 only for:
+- Architecture decisions affecting multiple components
+- Safety-critical changes (auth, money, data migration)
+- User explicitly requests 4-model certification
+
+## Gate flexible model count
+
+`ratification_gate_result()` uses `discussion.models_consulted` to determine expected models, not hardcoded `REQUIRED_RATIFICATION_MODELS`. This supports:
+- T2 (3 models: gpt-5.5, deepseek-v4-pro, mimo-v2.5-pro)
+- T3 (4 models: claude-opus-4-7, gpt-5.5, deepseek-v4-pro, mimo-v2.5-pro)
+
+```python
+expected_models = discussion.get("models_consulted") or list(REQUIRED_RATIFICATION_MODELS)
+expected_set = set(expected_models)
+```
+
+## Autorun enablement checklist
+
+Enabling full autorun requires 3 config files + 2 env vars:
+
+1. **Env vars** (persist to ~/.zshrc):
+   ```bash
+   export HERMES_LOCAL_BRAIN_AUTORUN=1
+   export HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1
+   ```
+
+2. **Autorun allowlist** (`~/.hermes/state/auto_run_allowlist.json`):
+   ```json
+   ["project:uvisa-app-2.0-work", "project:hermes-evolution"]
+   ```
+
+3. **Multimodel allowlist** (`~/.hermes/state/multimodel_intervention_allowlist.json`, optional):
+   ```json
+   ["project:uvisa-app-2.0-work", "project:hermes-evolution"]
+   ```
+   Empty/missing = all tasks eligible.
+
+4. **Autonomy write allowlist** (`~/.hermes/config/autonomy-write-allowlist.json`, REQUIRED):
+   ```json
+   ["taskpool", "kanban-worker"]
+   ```
+   Missing this file causes `auto-claim-and-handoff` to return `FAIL_CLOSED` with `autonomy_write_guard_failed`.
 
 ## Task state mutation on gate PASS
 
@@ -202,6 +280,103 @@ Pitfalls learned:
 - Outer `consult_models.py` timeouts must fail closed as structured runner output, not traceback. Catch `subprocess.TimeoutExpired`, preserve stdout/stderr tails and any newest matching `discussion_result.json`, mark `timed_out=true`, write the issue ledger, and return `NOT_CERTIFIED_MAX_ROUNDS` or equivalent safe status.
 - Preserve `NOT_CERTIFIED_MAX_ROUNDS` as a safe outcome. Without an explicit bounded executor command, the runner should write issue ledger and fail closed rather than self-applying arbitrary model suggestions.
 - Commit each successful hardening round locally with scoped files only; do not push unless requested.
+
+## build_state_command claims injection pitfall
+
+`consult_models.py state` without `--claim` flags produces `truth_status=no_claims` (0 claims). The ratification gate then fails with `accuracy_criterion_missing` and `truth_gate_failed:no_claims` even if the discussion was successful.
+
+Fix: always include explicit claims in `build_state_command`:
+```bash
+python3 ~/.hermes/scripts/consult_models.py state 'question' \
+  --context-json '{...}' \
+  --claim 'C-001:Task decomposition is accurate' \
+  --claim 'C-002:One-shot landing plan exists' \
+  --claim 'C-003:Long-term goal alignment preserved' \
+  --file /path/to/task.md --out /path/to/state.json
+```
+
+Claims must align with gate criteria:
+- C-001 → accuracy (claim/evidence grounding)
+- C-002 → one_shot_landing (next slice + evidence + rollback)
+- C-003 → long_term_goal (lane/project/architecture preservation)
+
+Without claims, `evidence_bundle.grounding` is empty → `all_verified` is False → gate FAIL.
+
+Observed: 2 real runs confirmed this. Run 1 (no claims): truth_status=no_claims, gate FAIL. Run 2 (3 claims): truth_status=unsupported (claims exist but not verified), gate FAIL but for correct reasons (models didn't verify claims, not missing claims).
+
+## Parallel tick directory matching pitfall
+
+When multiple `_run_single_task_pipeline()` workers run concurrently via ThreadPoolExecutor, each creates its own tick directory via `consult_models.py run`. The gate step must find the correct tick for each task.
+
+**Wrong**: Search all ticks, exact task_id match in question field → parallel workers can't find their tick because multiple ticks exist simultaneously.
+
+**Right**:
+```python
+import time
+cutoff = time.time() - 600  # only ticks from last 10 min
+tick_dirs = sorted(
+    (p for p in Path("~/.hermes").expanduser().glob("tick-*")
+     if p.stat().st_mtime > cutoff),
+    key=lambda p: p.stat().st_mtime, reverse=True
+)
+for tick_dir in tick_dirs[:10]:
+    tick_state = tick_dir / "state.json"
+    if tick_state.exists():
+        ts = json.loads(tick_state.read_text())
+        question = str(ts.get("question", ""))
+        if task_id not in question and task_id[:40] not in question:
+            continue  # not our tick
+    # ... proceed with gate
+```
+
+Key: use `task_id[:40]` for fuzzy match (task IDs can be 60+ chars, state question may truncate) and filter by `st_mtime > cutoff` to avoid matching stale ticks from previous runs.
+
+Observed: 2 of 3 parallel tasks returned gate=SKIP because tick matching failed before this fix.
+
+## Discussion timeout scaling pitfall
+
+`consult_models.py run` timeout must scale with tier and round count:
+- T3 (4 models × 5 rounds): 1200s minimum (observed: 3 models done at 600s, 4th timed out)
+- T2 (3 models × 3 rounds): 600s minimum
+- T2 (3 models × 1 round): 300s minimum
+
+The timeout is set in `_run_single_task_pipeline()` as `subprocess.run(..., timeout=1200)`.
+
+Observed: First T3 run with 600s timeout completed 3/4 models in round 2 before timing out. mimo-v2.5-pro was always the last to respond (retried parse status common).
+
+## state_path stale directory pitfall
+
+If a previous run created `state_path` as a directory (e.g., from a malformed shell command), `consult_models.py state --out <path>` fails with `IsADirectoryError: [Errno 21] Is a directory`.
+
+Fix: clean up before building:
+```python
+if state_path:
+    sp = Path(os.path.expanduser(state_path))
+    if sp.exists() and sp.is_dir():
+        import shutil
+        shutil.rmtree(sp, ignore_errors=True)
+```
+
+Observed: `2026-05-10-openai-*-state.json` was created as a directory by an earlier run, causing subsequent builds to fail.
+
+## tick errors variable ordering pitfall
+
+In `brain_task_dispatch_tick.py`, the `errors = []` initialization must come BEFORE any code that references `errors` (such as `if ... and not errors`). Placing it after the multimodel_step block causes `UnboundLocalError: local variable 'errors' referenced before assignment`.
+
+```python
+# CORRECT: errors initialized before use
+errors = []
+allowed_statuses = {"OK", "PASS", "SKIP"}
+if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
+    event["multimodel_step"] = run_json(...)
+```
+
+```python
+# WRONG: errors referenced before assignment
+if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:  # BUG
+    ...
+errors = []  # too late
+```
 
 ## Scoped commit rule
 
