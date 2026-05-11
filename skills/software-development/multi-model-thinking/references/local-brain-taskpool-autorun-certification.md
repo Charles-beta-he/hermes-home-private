@@ -27,6 +27,117 @@ For caller-level write-guard integration details, also apply `references/autonom
 9. `proof-check` must audit persisted autorun done notes for missing/invalid proof hash, not only enforce transition-time gates.
 10. Evidence shape matters: bare filesystem evidence should require an existing absolute path; use explicit prefixes such as `artifact:` for durable-but-not-local artifacts.
 
+## Intervention trigger design — structural-first keyword filtering
+
+When building automatic multi-model intervention triggers for task pools, keyword-based matching alone causes false-positive explosion. In a corpus of related tasks (e.g., all Hermes/local-brain development), common terms like "evidence", "architecture", "skill", "taskpool", "方案", "落地" appear in 60-90% of tasks, making keyword triggers useless for prioritization.
+
+### Pattern: structural-first, keyword-supplemented
+
+1. **Structural triggers are primary** — fire immediately on high-confidence signals:
+   - `P0 + evolution lane` → `p0_evolution_blast_radius` (strong, fires alone)
+   - `retry_count >= 2` → `loop_non_convergence` (strong, fires alone)
+   - `stale_claim` → `stale_claim` (strong, fires alone)
+
+2. **Structural signals need supplementing** — add as reasons but require ≥2 to fire:
+   - `status in {running, review}` → `closeout_ratification`
+   - `priority == P0` → `P0_priority`
+   - `lane == evolution` → `evolution_lane`
+   - `architecture_target` non-empty → `architecture_target`
+   - `mission_envelope` → `mission_envelope`
+
+3. **Keywords only add when structural exists** — never fire on keywords alone:
+   - Search **title + concepts only** (not body/metadata/objective)
+   - Use **high-precision keywords** (≤10 hits in corpus, not 30+)
+   - Add as supplementary reasons: `accuracy_keyword`, `long_term_keyword`, `one_shot_keyword`
+
+4. **Threshold**: ≥2 reasons to fire (prevents noise from single weak signals)
+
+### Keyword noise analysis methodology
+
+Before deploying keyword matching:
+```python
+# Count hit frequency per keyword across all tasks
+for kw in all_keywords:
+    count = sum(1 for t in tasks if kw.lower() in t.read_text().lower())
+    hit_counts[kw] = count
+
+# Remove noise: keywords hitting in >50% of corpus
+noise = {kw for kw, c in hit_counts.items() if c > len(tasks) * 0.5}
+
+# Keep signal: keywords hitting in 3-25% of corpus
+signal = {kw for kw, c in hit_counts.items() if 0.03 * len(tasks) <= c <= 0.25 * len(tasks)}
+```
+
+### Search scope restriction
+
+`task_search_text()` concatenates ALL fields (title+body+concepts+objective+acceptance_evidence+capability_delta+anti_drift_check+project+lane+architecture_target). This is too broad for keyword matching.
+
+Use `task_keyword_text()` which searches only `title + concepts`:
+```python
+def task_keyword_text(task):
+    concepts = " ".join(list_value(task.fm.get("concepts")))
+    return f"{task.title}\n{concepts}".lower()
+```
+
+### Observed results
+
+| Strategy | Trigger rate | Notes |
+|----------|-------------|-------|
+| Full-text + broad keywords | 98% (55/56) | Useless for prioritization |
+| Signal-only keywords (3-25 hits) | 80% (45/56) | Still too noisy |
+| Structural-first + tight keywords | 32% (18/56) | Actionable prioritization |
+
+## Ratification gate dual-shape pattern
+
+`ratification_gate_result()` in `brain_task_orchestrator.py` accepts two canonical shapes from `consult_models.py`:
+
+**Shape A (explicit criteria)**: top-level `criteria_satisfied` dict with `accuracy`, `long_term_goal`, `one_shot_landing` all True, plus `final_design` with `next_slice`, `acceptance_evidence`, `rollback_boundary`.
+
+**Shape B (derived from discussion)**: `status: certified`, 4 canonical model votes all approve, `agreement_matrix` >= 0.85, `issue_ledger` empty, `truth_status` grounded, `evidence_bundle` with all claims verified, `fanout_certification` multi_model_certified, `verification` with guard_metrics, `rollback_signal` with auto_rollback_if condition.
+
+Both shapes require all 7 checks to pass:
+1. Certification status in {certified, certified_with_minor_risks}
+2. Issue ledger: no unresolved severity>=3
+3. Canonical four-model votes (exact IDs: claude-opus-4-7, gpt-5.5, deepseek-v4-pro, mimo-v2.5-pro)
+4. Agreement matrix >= 0.85 on framing/approach/implementation_order
+5. Truth gate: truth_status not in {not_certified, unsupported, contradicted}
+6. Criteria: accuracy + long_term_goal + one_shot_landing (explicit or derived)
+7. final_design: actionable structure (Shape A fields OR Shape B diagnosis+verification+rollback_signal)
+
+Truth gate supports nested `truth_assessment.truth_status` and `final_design.truth_assessment.truth_status`.
+
+## Convergence stats pattern
+
+`multimodel_convergence_stats()` computes pool-wide convergence:
+- `total_active`: non-terminal tasks
+- `multimodel_passed`: tasks with multimodel_status in {certified, certified_with_minor_risks}
+- `multimodel_triggered`: tasks where `task_multimodel_intervention_required()` is True
+- `pass_rate`: passed / total
+- `trigger_rate`: triggered / total
+
+Exposed in `multimodel-intervention-dry-run --json` output under `convergence` key.
+
+## Auto-step with env var gating
+
+`multimodel-intervention-step` command executes one bounded step:
+1. Check `HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1` env var (SKIP if unset)
+2. Find top intervention task via dry-run
+3. Build state file (`consult_models.py state` via shell=True for && chains)
+4. Run discussion (`consult_models.py run --discussion --tier T3 --quorum 4`)
+5. Run ratification gate
+6. On PASS: write result to task frontmatter
+
+Integrated into `brain_task_dispatch_tick.py`: when env var is set, tick runs step after dry-run. `allowed_statuses` includes SKIP for when env var is not set.
+
+## Task state mutation on gate PASS
+
+`write_multimodel_result_to_task()` writes to task frontmatter on ratification PASS:
+- `multimodel_status: certified`
+- `multimodel_ratification_artifact: <path to discussion_result.json>`
+- `certification_status: certified` (compatibility)
+
+Uses frontmatter line-level update: finds existing keys and updates in-place, appends missing keys.
+
 ## Deterministic verification checklist
 
 Run these before asking models to certify:
