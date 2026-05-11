@@ -90,6 +90,7 @@ MISSION_ENVELOPE_LIST_FIELDS = {
 MISSION_STRUCTURED_REF_FIELDS = {"evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact"}
 MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_minor_risks", "certified"}
 MULTIMODEL_AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"
+MULTIMODEL_ALLOWLIST = AUTORUN_STATE_DIR / "multimodel_intervention_allowlist.json"
 MULTIMODEL_PASS_STATUSES = {"certified", "certified_with_minor_risks"}
 REQUIRED_RATIFICATION_MODELS = ("claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
 MULTIMODEL_ACCURACY_KEYWORDS = {
@@ -984,6 +985,22 @@ def append_autorun_proof_event(event: dict[str, Any]) -> str:
 def load_autorun_allowlist() -> list[Any]:
     try:
         data = json.loads(AUTORUN_ALLOWLIST.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return []
+    except Exception:
+        return []
+    return data if isinstance(data, list) else []
+
+
+def load_multimodel_allowlist() -> list[Any]:
+    """Load multimodel intervention allowlist. Same format as autorun allowlist.
+
+    If file doesn't exist, returns empty list (no filtering — all tasks eligible).
+    If file exists, only matching tasks can be auto-processed.
+    Supports: task_id, project, "project:xxx", "task:xxx", title, or dict entries.
+    """
+    try:
+        data = json.loads(MULTIMODEL_ALLOWLIST.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return []
     except Exception:
@@ -2064,6 +2081,10 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
             "safety": "set HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 to enable",
         }
 
+    # D8: allowlist gate (optional — if file exists, only matching tasks proceed)
+    allowlist = load_multimodel_allowlist()
+    allowlist_active = bool(allowlist)
+
     # Find top intervention task
     dry_run = command_multimodel_intervention_dry_run(argparse.Namespace(task=getattr(args, "task", ""), max_tasks=1, json=True))
     if not dry_run.get("intervention_required"):
@@ -2071,10 +2092,38 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
 
     selected = dry_run.get("selected")
     if not selected:
-        return {"status": "OK", "action": "no_intervention_needed"}
+        return {"status": "OK", "action": "no_intervention_needed", "convergence": dry_run.get("convergence", {})}
 
     task_info = selected.get("task", {})
     task_id = task_info.get("id", "")
+    task_project = task_info.get("project", "")
+    task_title = task_info.get("title", "")
+
+    # D8: allowlist check
+    if allowlist_active:
+        matched = False
+        for item in allowlist:
+            if isinstance(item, str):
+                token = item.strip()
+                if token in {task_id, f"task:{task_id}", task_project, f"project:{task_project}", task_title}:
+                    matched = True
+                    break
+            elif isinstance(item, dict):
+                tid = str(item.get("task_id") or item.get("id") or "").strip()
+                proj = str(item.get("project") or "").strip()
+                if (tid and tid == task_id) or (proj and proj == task_project):
+                    matched = True
+                    break
+        if not matched:
+            return {
+                "status": "SKIP",
+                "reason": "allowlist_miss",
+                "task_id": task_id,
+                "project": task_project,
+                "allowlist_active": True,
+                "safety": "task not in multimodel intervention allowlist",
+            }
+
     build_cmd = selected.get("build_state_command", "")
     run_cmd = selected.get("run_discussion_command", "")
     state_path = selected.get("state_path", "")
@@ -2085,12 +2134,19 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
         "generated_at": iso(),
         "task_id": task_id,
         "state_path": state_path,
+        "allowlist_active": allowlist_active,
     }
 
     # Step 1: Build state file (shell=True for && chains)
     if not build_cmd:
         result["build_state"] = {"status": "SKIP", "reason": "no_build_command"}
     else:
+        # Safety: ensure state_path is not a stale directory
+        if state_path:
+            sp = Path(os.path.expanduser(state_path))
+            if sp.exists() and sp.is_dir():
+                import shutil
+                shutil.rmtree(sp, ignore_errors=True)
         try:
             proc = subprocess.run(build_cmd, capture_output=True, text=True, timeout=120, shell=True)
             result["build_state"] = {
@@ -2591,7 +2647,7 @@ def command_dashboard(args: argparse.Namespace) -> dict[str, Any]:
         atomic_write(DASHBOARD, dashboard)
         atomic_write(SORTED_POOL, pool)
         atomic_write(CONTROL_CENTER, control)
-    return {"status": "OK", "write": bool(args.write), "dashboard": str(DASHBOARD), "sorted_pool": str(SORTED_POOL), "control_center": str(CONTROL_CENTER), "active_count": len(sorted_tasks()), "mission_summaries": mission_dag_summaries(iter_tasks())}
+    return {"status": "OK", "write": bool(args.write), "dashboard": str(DASHBOARD), "sorted_pool": str(SORTED_POOL), "control_center": str(CONTROL_CENTER), "active_count": len(sorted_tasks()), "mission_summaries": mission_dag_summaries(iter_tasks()), "multimodel_convergence": multimodel_convergence_stats()}
 
 
 def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
