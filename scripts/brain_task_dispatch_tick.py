@@ -88,12 +88,18 @@ def main() -> int:
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
     event["proof_check"] = run_json(["proof-check", "--json"])
     event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
+    # D2: auto-step when env var is set — runs build->discussion->gate->mutate for top task
+    if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
+        event["multimodel_step"] = run_json(["multimodel-intervention-step", "--json"])
+        if event["multimodel_step"].get("status") not in {"OK", "PASS", "SKIP"}:
+            errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout")})
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
 
     errors = []
-    for key in ["ingest", "reconcile", "dashboard", "proof_check", "multimodel_intervention", "dispatch"]:
+    allowed_statuses = {"OK", "PASS", "SKIP"}  # SKIP for multimodel_step when env var not set
+    for key in ["ingest", "reconcile", "dashboard", "proof_check", "multimodel_intervention", "multimodel_step", "dispatch"]:
         item = event.get(key, {})
-        if item.get("status") not in {"OK", "PASS"}:
+        if item and item.get("status") not in allowed_statuses:
             errors.append({"step": key, "status": item.get("status"), "stderr": item.get("stderr"), "stdout": item.get("stdout")})
     event["errors"] = errors
     if errors:
@@ -152,6 +158,7 @@ def main() -> int:
         "criteria": mm_raw.get("criteria", []),
         "trigger_reasons": mm_selected.get("trigger_reasons", []),
         "gate_command_template": mm_selected.get("gate_command_template", ""),
+        "convergence": mm_raw.get("convergence", {}),
         "safety": mm_raw.get("safety", ""),
     }
     autorun_summary = {
@@ -180,6 +187,7 @@ def main() -> int:
         "ingested_count": event["ingested_count"],
         "error_count": len(errors),
         "multimodel_intervention": multimodel_summary,
+        "multimodel_step": (event.get("multimodel_step") or {}) if isinstance(event.get("multimodel_step"), dict) else {},
         "stdout_policy": "summary",
         "log_file": str(LOG_FILE),
         "state_file": str(STATE_FILE),

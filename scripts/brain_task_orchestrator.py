@@ -16,6 +16,7 @@ import os
 import re
 import shlex
 import shutil
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timedelta, timezone
@@ -88,6 +89,7 @@ MISSION_ENVELOPE_LIST_FIELDS = {
 }
 MISSION_STRUCTURED_REF_FIELDS = {"evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact"}
 MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_minor_risks", "certified"}
+MULTIMODEL_AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"
 MULTIMODEL_PASS_STATUSES = {"certified", "certified_with_minor_risks"}
 REQUIRED_RATIFICATION_MODELS = ("claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
 MULTIMODEL_ACCURACY_KEYWORDS = {
@@ -555,6 +557,85 @@ def task_multimodel_passed(task: "Task") -> bool:
     status = task_multimodel_status(task)
     artifact = task_multimodel_artifact(task)
     return status in MULTIMODEL_PASS_STATUSES and (not artifact or evidence_is_structured(artifact))
+
+
+def multimodel_convergence_stats(tasks: list["Task"] | None = None) -> dict[str, Any]:
+    """Compute convergence statistics for multi-model intervention across the task pool."""
+    if tasks is None:
+        tasks = [t for t in iter_tasks() if t.status not in TERMINAL_STATUSES]
+    total = len(tasks)
+    passed = 0
+    pending = 0
+    triggered = 0
+    passed_ids: list[str] = []
+    pending_ids: list[str] = []
+    for t in tasks:
+        if task_multimodel_passed(t):
+            passed += 1
+            passed_ids.append(t.id)
+        elif task_multimodel_intervention_required(t):
+            triggered += 1
+            pending_ids.append(t.id)
+        else:
+            pending += 1
+    return {
+        "total_active": total,
+        "multimodel_passed": passed,
+        "multimodel_triggered": triggered,
+        "multimodel_not_triggered": pending,
+        "pass_rate": round(passed / total, 3) if total else 0.0,
+        "trigger_rate": round(triggered / total, 3) if total else 0.0,
+        "passed_ids": passed_ids[:10],
+        "pending_ids": pending_ids[:10],
+    }
+
+
+def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], discussion_path: str, state_path: str) -> dict[str, Any]:
+    """Write multimodel ratification result to task frontmatter.
+
+    Called when ratification_gate returns PASS/LOOP_DONE. Updates:
+    - multimodel_status: certified / not_certified
+    - multimodel_ratification_artifact: path to discussion result
+    """
+    passed = gate_result.get("status") == "PASS" and gate_result.get("decision") == "LOOP_DONE"
+    status_value = "certified" if passed else "not_certified"
+    updates = {
+        "multimodel_status": status_value,
+        "multimodel_ratification_artifact": discussion_path,
+    }
+    updates["certification_status"] = status_value
+
+    path = Path(task.path)
+    content = path.read_text(encoding="utf-8")
+    lines = content.split("\n")
+
+    if not lines or lines[0].strip() != "---":
+        return {"status": "SKIP", "reason": "no_frontmatter", "task_id": task.id}
+    end_idx = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            end_idx = i
+            break
+    if end_idx is None:
+        return {"status": "SKIP", "reason": "unclosed_frontmatter", "task_id": task.id}
+
+    fm_lines = lines[1:end_idx]
+    body_lines = lines[end_idx + 1:]
+
+    existing_keys: set[str] = set()
+    for i, line in enumerate(fm_lines):
+        for key, value in updates.items():
+            if line.startswith(f"{key}:"):
+                fm_lines[i] = f"{key}: {value}"
+                existing_keys.add(key)
+
+    for key, value in updates.items():
+        if key not in existing_keys:
+            fm_lines.append(f"{key}: {value}")
+
+    new_content = "\n".join(["---"] + fm_lines + ["---"] + body_lines)
+    path.write_text(new_content, encoding="utf-8")
+    return {"status": "OK", "task_id": task.id, "updates": updates, "passed": passed}
 
 
 def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
@@ -1438,6 +1519,7 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
   "boundary_check": "python3 ~/.hermes/scripts/brain_task_orchestrator.py boundary-check --json",
   "parallel_dispatch_dry_run": "python3 ~/.hermes/scripts/brain_task_orchestrator.py parallel-dispatch-dry-run --max-agents 3 --json",
   "multimodel_intervention_dry_run": "python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --json",
+  "multimodel_intervention_step": "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-step --json",
   "pua_loop_ratification_gate": "python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task TASK_ID --discussion-result DISCUSSION_RESULT_JSON --json",
   "skill_route_matrix": "[[07-仪表盘/Agent技能树路由矩阵]]"
 }}
@@ -1597,7 +1679,7 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py retry TASK_ID --actor herme
 
 ## 4. 多模型自动触发与介入
 
-不再依赖“对 Hermes 说”作为唯一触发。安全 tick / dispatch dry-run 会自动计算 `multimodel_intervention`：
+不再依赖"对 Hermes 说"作为唯一触发。安全 tick / dispatch dry-run 会自动计算 `multimodel_intervention`：
 
 ```bash
 # 扫描全任务池，输出需要多模型介入的队列（不改文件、不跑模型）
@@ -1606,9 +1688,19 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry
 # 对单个任务生成 PUA-loop 多模型介入计划
 python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --task TASK_ID --json
 
+# 自动执行一步：build state → run discussion → gate → mutate task（需 env var）
+HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-step --json
+
 # 每轮多模型 discussion 完成后，用 gate 决定 LOOP_DONE 还是 continue_loop
 python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task TASK_ID --discussion-result /path/to/discussion_result.json --json
 ```
+
+触发策略（结构性优先、关键词补充）：
+
+- 强结构性触发立即生效：P0+evolution、retry>=2、stale_claim。
+- 关键词仅在存在结构性信号时补充（title+concepts only）。
+- 需 >=2 信号才触发（防止单一弱信号噪音）。
+- 收敛统计在 dry-run 输出的 `convergence` 字段：total_active / multimodel_passed / multimodel_triggered / pass_rate。
 
 自动介入标准固定为三条，缺一不可：
 
@@ -1938,7 +2030,7 @@ def command_multimodel_intervention_dry_run(args: argparse.Namespace) -> dict[st
     max_tasks = max(1, int(getattr(args, "max_tasks", 5) or 5))
     plans = [build_multimodel_intervention_plan(t) for t in intervention_tasks[:max_tasks]]
     selected = plans[0] if plans else None
-    return {
+    result = {
         "status": "OK",
         "dry_run": True,
         "schema": "local_brain_multimodel_intervention_queue_v1",
@@ -1951,6 +2043,116 @@ def command_multimodel_intervention_dry_run(args: argparse.Namespace) -> dict[st
         "criteria": ["accuracy", "long_term_goal", "one_shot_landing"],
         "safety": "dry-run only; this surfaces automatic intervention points but does not run models or edit tasks",
     }
+    # D4: convergence stats
+    result["convergence"] = multimodel_convergence_stats()
+    return result
+
+
+def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, Any]:
+    """Execute one multimodel intervention step: build state -> run discussion -> gate -> mutate.
+
+    Gated by HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 env var (D5).
+    On gate PASS, writes multimodel_status to task frontmatter (D6).
+    Bounded to one task per invocation.
+    """
+    # D5: env var gate
+    if os.environ.get(MULTIMODEL_AUTORUN_ENV_FLAG) != "1":
+        return {
+            "status": "SKIP",
+            "reason": "autorun_multimodel_disabled",
+            "env_flag": MULTIMODEL_AUTORUN_ENV_FLAG,
+            "safety": "set HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 to enable",
+        }
+
+    # Find top intervention task
+    dry_run = command_multimodel_intervention_dry_run(argparse.Namespace(task=getattr(args, "task", ""), max_tasks=1, json=True))
+    if not dry_run.get("intervention_required"):
+        return {"status": "OK", "action": "no_intervention_needed", "convergence": dry_run.get("convergence", {})}
+
+    selected = dry_run.get("selected")
+    if not selected:
+        return {"status": "OK", "action": "no_intervention_needed"}
+
+    task_info = selected.get("task", {})
+    task_id = task_info.get("id", "")
+    build_cmd = selected.get("build_state_command", "")
+    run_cmd = selected.get("run_discussion_command", "")
+    state_path = selected.get("state_path", "")
+
+    result: dict[str, Any] = {
+        "status": "OK",
+        "schema": "local_brain_multimodel_intervention_step_v1",
+        "generated_at": iso(),
+        "task_id": task_id,
+        "state_path": state_path,
+    }
+
+    # Step 1: Build state file (shell=True for && chains)
+    if not build_cmd:
+        result["build_state"] = {"status": "SKIP", "reason": "no_build_command"}
+    else:
+        try:
+            proc = subprocess.run(build_cmd, capture_output=True, text=True, timeout=120, shell=True)
+            result["build_state"] = {
+                "status": "OK" if proc.returncode == 0 else "FAIL",
+                "returncode": proc.returncode,
+                "stdout_tail": proc.stdout[-500:] if proc.stdout else "",
+                "stderr_tail": proc.stderr[-500:] if proc.stderr else "",
+            }
+        except Exception as exc:
+            result["build_state"] = {"status": "ERROR", "error": str(exc)}
+
+    # Step 2: Run discussion (shell=True for && chains)
+    if not run_cmd:
+        result["run_discussion"] = {"status": "SKIP", "reason": "no_run_command"}
+    else:
+        try:
+            proc = subprocess.run(run_cmd, capture_output=True, text=True, timeout=600, shell=True)
+            result["run_discussion"] = {
+                "status": "OK" if proc.returncode == 0 else "FAIL",
+                "returncode": proc.returncode,
+                "stdout_tail": proc.stdout[-500:] if proc.stdout else "",
+                "stderr_tail": proc.stderr[-500:] if proc.stderr else "",
+            }
+        except Exception as exc:
+            result["run_discussion"] = {"status": "ERROR", "error": str(exc)}
+
+    # Step 3: Find discussion result and run gate
+    discussion_path = ""
+    gate_result: dict[str, Any] = {}
+    if result.get("run_discussion", {}).get("status") == "OK":
+        # Find the latest discussion_result.json in tick output dirs
+        tick_dirs = sorted(Path(os.path.expanduser("~/.hermes")).glob("tick-*"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for tick_dir in tick_dirs[:3]:
+            candidate = tick_dir / "discussion_result.json"
+            if candidate.exists():
+                try:
+                    discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    # Verify it's for our task by checking provenance or state_hash
+                    gate_result = ratification_gate_result(discussion)
+                    discussion_path = str(candidate)
+                    break
+                except Exception:
+                    continue
+
+    result["gate"] = gate_result or {"status": "SKIP", "reason": "no_discussion_result"}
+    result["discussion_path"] = discussion_path
+
+    # Step 4: On PASS, write to task frontmatter (D6)
+    if gate_result.get("status") == "PASS" and gate_result.get("decision") == "LOOP_DONE":
+        task = find_task(task_id)
+        if task:
+            mutate_result = write_multimodel_result_to_task(task, gate_result, discussion_path, state_path)
+            result["task_mutation"] = mutate_result
+        else:
+            result["task_mutation"] = {"status": "SKIP", "reason": "task_not_found"}
+    else:
+        result["task_mutation"] = {"status": "SKIP", "reason": "gate_not_passed"}
+
+    # D4: convergence stats
+    result["convergence"] = multimodel_convergence_stats()
+    result["safety"] = "bounded single-task step; gated by env var; fail-closed"
+    return result
 
 
 def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
@@ -2574,6 +2776,10 @@ def build_parser() -> argparse.ArgumentParser:
     mip.add_argument("--max-tasks", type=int, default=5)
     mip.add_argument("--json", action="store_true")
 
+    msp = sub.add_parser("multimodel-intervention-step")
+    msp.add_argument("--task", default="")
+    msp.add_argument("--json", action="store_true")
+
     rgp = sub.add_parser("ratification-gate")
     rgp.add_argument("--task", required=True)
     rgp.add_argument("--discussion-result", required=True)
@@ -2640,6 +2846,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_parallel_dispatch_dry_run(args), args.json)
     if args.cmd == "multimodel-intervention-dry-run":
         return print_result(command_multimodel_intervention_dry_run(args), args.json)
+    if args.cmd == "multimodel-intervention-step":
+        return print_result(command_multimodel_intervention_step(args), args.json)
     if args.cmd == "ratification-gate":
         return print_result(command_ratification_gate(args), args.json)
     if args.cmd == "eligibility-check":
