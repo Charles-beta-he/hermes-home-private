@@ -31,7 +31,21 @@ The taskpool `multimodel-intervention-*` commands must generate T3/quorum-4 run 
 
 `taskpool_watch_report.py` should classify high-score unfinished tasks by state (`stale_claim_stuck`, `review_gate_not_closed`, `not_dispatchable`, `active_high_score`) and print the exact next gate.
 
+After `consult_models.py run` creates `discussion_result.json`, the taskpool runner must stamp the exact task binding (`task_id`, `target_task_id`, `target_task_path`, and state hash/provenance) into the discussion artifact before calling `ratification-gate`. The gate must still fail on non-approve votes/unresolved issues, but it should not permanently fail with `target_task_binding_missing` when the runner knows the candidate came from the current task state.
+
 Common pitfall: do not let the dry-run plan say “PUA-loop requires T3 4/4” while the generated `run_discussion_command` still uses `--tier T2 --quorum 3`. That creates the Score445 symptom: evidence looks approved, but the local ratification gate correctly refuses `done` because DeepSeek/4th vote and target binding are missing.
+
+## User-pressure / repeated-prompt handling
+
+If the user repeats the same request such as “多模型思考如何避免这种情况，并pua-loop落地”, treat it as PUA pressure to continue landing, not as a request to restate the previous explanation. Each repeated loop should take one additional concrete step, for example:
+
+1. Poll any running background T3/quorum-4 process and report status only after acting.
+2. Add or tighten a regression test that would catch the exact failure mode.
+3. Patch stale skill/docs that still encode the old behavior.
+4. Re-run deterministic checks (`py_compile`, focused tests, dry-run command shape, `diff --check`).
+5. Make a scoped local commit and show the new commit hash.
+
+Do not output a near-duplicate summary unless no further safe tool action exists. The completion standard is “wrong path becomes impossible or test-failing”, not “agent promises to remember”.
 
 ## Fail-closed invariants to enforce
 

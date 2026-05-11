@@ -2722,8 +2722,12 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
             if candidate.exists():
                 try:
                     discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    task_obj = find_task(task_id)
+                    if task_obj:
+                        result["binding_stamp"] = stamp_discussion_task_binding(candidate, task_obj, state_path)
+                        discussion = json.loads(candidate.read_text(encoding="utf-8"))
                     # Verify it's for our task by checking provenance or state_hash
-                    gate_result = ratification_gate_result(discussion, expected_task=find_task(task_id))
+                    gate_result = ratification_gate_result(discussion, expected_task=task_obj)
                     discussion_path = str(candidate)
                     break
                 except Exception:
@@ -2806,7 +2810,11 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
                     if task_id not in question and task_id[:40] not in question:
                         continue
                 discussion = json.loads(candidate.read_text(encoding="utf-8"))
-                gate_result = ratification_gate_result(discussion, expected_task=find_task(task_id))
+                task_obj = find_task(task_id)
+                if task_obj:
+                    result["binding_stamp"] = stamp_discussion_task_binding(candidate, task_obj, state_path)
+                    discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                gate_result = ratification_gate_result(discussion, expected_task=task_obj)
                 discussion_path = str(candidate)
                 break
             except Exception:
@@ -2925,6 +2933,62 @@ def command_multimodel_intervention_parallel_step(args: argparse.Namespace) -> d
         "convergence": multimodel_convergence_stats(),
         "safety": "parallel step with boundary isolation; each task gated independently",
     }
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def stamp_discussion_task_binding(discussion_path: Path, task: "Task", state_path: str = "") -> dict[str, Any]:
+    """Persist a machine-parseable task binding into a discussion artifact.
+
+    consult_models.py discussions preserve the evidence bundle, but the root
+    artifact may not include the source task id/path. The ratification gate is
+    intentionally fail-closed on missing target binding, so the taskpool runner
+    stamps the exact task identity after locating the discussion and before
+    evaluating the gate. This is provenance metadata only; it never changes the
+    model votes, issue ledger, or certification status.
+    """
+    discussion_path = Path(discussion_path)
+    discussion = json.loads(discussion_path.read_text(encoding="utf-8"))
+    if not isinstance(discussion, dict):
+        raise ValueError("discussion_result_not_object")
+
+    provenance = {
+        "schema_version": 1,
+        "task_id": task.id,
+        "task_path": str(task.path),
+        "state_path": str(Path(os.path.expanduser(state_path))) if state_path else "",
+        "state_sha256": _sha256_file(Path(os.path.expanduser(state_path))) if state_path and Path(os.path.expanduser(state_path)).is_file() else "",
+        "stamped_at": iso(),
+    }
+
+    discussion["task_id"] = task.id
+    discussion["target_task_id"] = task.id
+    discussion["target_task_path"] = str(task.path)
+    discussion["taskpool_binding"] = provenance
+
+    context = discussion.get("context")
+    if not isinstance(context, dict):
+        context = {"_previous_context": context} if context is not None else {}
+    context.update({"task_id": task.id, "task_path": str(task.path), "target_task_id": task.id, "target_task_path": str(task.path)})
+    discussion["context"] = context
+
+    final_design = discussion.get("final_design")
+    if isinstance(final_design, dict):
+        meta = final_design.get("meta")
+        if not isinstance(meta, dict):
+            meta = {}
+        meta.setdefault("target_task_id", task.id)
+        meta.setdefault("target_task_path", str(task.path))
+        final_design["meta"] = meta
+
+    discussion_path.write_text(json.dumps(discussion, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return provenance
 
 
 def _ratification_binding_candidates(discussion: dict[str, Any]) -> list[str]:

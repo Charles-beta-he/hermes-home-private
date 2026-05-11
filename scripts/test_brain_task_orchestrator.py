@@ -4,6 +4,7 @@ Run with: python3 ~/.hermes/scripts/test_brain_task_orchestrator.py
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -12,6 +13,15 @@ import tempfile
 from pathlib import Path
 
 SCRIPT = Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"
+
+
+def load_orchestrator_module():
+    spec = importlib.util.spec_from_file_location("brain_task_orchestrator_under_test", SCRIPT)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def run(env, *args, check=True):
@@ -746,6 +756,51 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert "models_consulted_invalid" in gate_bad_models["failures"], gate_bad_models
 
 
+def test_discussion_task_binding_stamp_closes_target_binding_gap():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        task_path = root / "2026-05-10-score445.md"
+        task_path.write_text("# Score445 task\n", encoding="utf-8")
+        state_path = root / "state.json"
+        state_path.write_text(json.dumps({"question": "target-bound state"}), encoding="utf-8")
+        task = mod.Task(path=task_path, fm={"status": "review", "priority": "P0"}, body="# Score445 task\n")
+        discussion_path = root / "discussion_result.json"
+        discussion = {
+            "status": "certified",
+            "models_consulted": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"],
+            "issue_ledger": [],
+            "ratification_votes": [
+                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
+                {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
+                {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.9, "implementation_order": 0.9},
+            "truth_status": "grounded",
+            "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
+            "final_design": {
+                "next_slice": "land task-bound ratification",
+                "acceptance_evidence": ["command:test PASS"],
+                "rollback_boundary": "revert orchestrator stamp patch",
+            },
+        }
+        discussion_path.write_text(json.dumps(discussion, ensure_ascii=False), encoding="utf-8")
+        before = mod.ratification_gate_result(discussion, expected_task=task)
+        assert before["status"] == "FAIL", before
+        assert "target_task_binding_missing" in before["failures"], before
+
+        stamp = mod.stamp_discussion_task_binding(discussion_path, task, str(state_path))
+        stamped = json.loads(discussion_path.read_text(encoding="utf-8"))
+        assert stamp["task_id"] == task.id, stamp
+        assert stamped["target_task_id"] == task.id, stamped
+        assert stamped["context"]["target_task_path"] == str(task_path), stamped
+        assert stamped["taskpool_binding"]["state_sha256"], stamped
+        after = mod.ratification_gate_result(stamped, expected_task=task)
+        assert after["status"] == "PASS", after
+        assert after["decision"] == "LOOP_DONE", after
+
+
 def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -1089,6 +1144,7 @@ def main():
     test_mission_dag_dashboard_progress_and_ready_nodes()
     test_mission_dag_cycle_fails_boundary_and_dispatch()
     test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
+    test_discussion_task_binding_stamp_closes_target_binding_gap()
     test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics()
     test_autonomy_readiness_reports_complete_fail_closed_architecture()
     test_autorun_runner_pauses_on_pending_permission_gate()
