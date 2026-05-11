@@ -2028,6 +2028,9 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
             "--constraint 'preserve long-term lane/project/architecture target; work lane wins over evolution' "
             "--constraint 'final answer must be a one-shot landable slice with tests/evidence/rollback' "
             "--accept 'discussion_result status certified or certified_with_minor_risks with no unresolved severity>=3 issues' "
+            f"--claim 'C-001:Task decomposition is accurate — the identified task, lane, priority, and trigger reasons match the canonical task note' "
+            f"--claim 'C-002:One-shot landing plan exists — a directly executable next slice with acceptance evidence and rollback boundary can be produced' "
+            f"--claim 'C-003:Long-term goal alignment — the solution preserves lane/project/architecture_target and does not let evolution preempt work delivery' "
             f"--file {shlex.quote(str(task.path))} --out {state_arg}"
         ),
         "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T3 --quorum 4 --discussion --max-rounds 5 --keep",
