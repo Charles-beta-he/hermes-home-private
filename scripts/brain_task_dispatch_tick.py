@@ -88,15 +88,17 @@ def main() -> int:
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
     event["proof_check"] = run_json(["proof-check", "--json"])
     event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
-    # D2: auto-step when env var is set — runs build->discussion->gate->mutate for top task
-    if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
-        event["multimodel_step"] = run_json(["multimodel-intervention-step", "--json"])
-        if event["multimodel_step"].get("status") not in {"OK", "PASS", "SKIP"}:
-            errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout")})
-    event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
 
     errors = []
     allowed_statuses = {"OK", "PASS", "SKIP"}  # SKIP for multimodel_step when env var not set
+
+    # D2: auto-step when env var is set — runs build->discussion->gate->mutate for top task
+    if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
+        event["multimodel_step"] = run_json(["multimodel-intervention-step", "--json"])
+        if event["multimodel_step"].get("status") not in allowed_statuses:
+            errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout")})
+    event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
+
     for key in ["ingest", "reconcile", "dashboard", "proof_check", "multimodel_intervention", "multimodel_step", "dispatch"]:
         item = event.get(key, {})
         if item and item.get("status") not in allowed_statuses:
