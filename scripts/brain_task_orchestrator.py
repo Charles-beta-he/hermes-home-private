@@ -2650,7 +2650,7 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
                 try:
                     discussion = json.loads(candidate.read_text(encoding="utf-8"))
                     # Verify it's for our task by checking provenance or state_hash
-                    gate_result = ratification_gate_result(discussion)
+                    gate_result = ratification_gate_result(discussion, expected_task=find_task(task_id))
                     discussion_path = str(candidate)
                     break
                 except Exception:
@@ -2733,7 +2733,7 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
                     if task_id not in question and task_id[:40] not in question:
                         continue
                 discussion = json.loads(candidate.read_text(encoding="utf-8"))
-                gate_result = ratification_gate_result(discussion)
+                gate_result = ratification_gate_result(discussion, expected_task=find_task(task_id))
                 discussion_path = str(candidate)
                 break
             except Exception:
@@ -2854,7 +2854,84 @@ def command_multimodel_intervention_parallel_step(args: argparse.Namespace) -> d
     }
 
 
-def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
+def _ratification_binding_candidates(discussion: dict[str, Any]) -> list[str]:
+    """Extract explicit task target bindings from a discussion artifact.
+
+    Only explicit task identity/path fields count. Patch target files are not a
+    safe binding because implementation files can legitimately differ from the
+    task note; the gate must bind the certification artifact to the requested
+    task note, not merely to some touched file.
+    """
+    candidates: list[str] = []
+
+    def add(value: Any) -> None:
+        if isinstance(value, (str, int)):
+            text = str(value).strip()
+            if text and text not in candidates:
+                candidates.append(text)
+
+    id_keys = {"task_id", "target_task_id", "selected_task_id", "source_task_id", "canonical_task_id"}
+    path_keys = {"task_path", "target_task_path", "canonical_task_path"}
+    containers: list[Any] = [discussion]
+    for key in ("context", "task", "target_task", "source_task", "canonical_task"):
+        value = discussion.get(key)
+        if isinstance(value, dict):
+            containers.append(value)
+    final_design = discussion.get("final_design")
+    if isinstance(final_design, dict):
+        for key in ("meta", "context", "task", "target_task", "source_task", "canonical_task"):
+            value = final_design.get(key)
+            if isinstance(value, dict):
+                containers.append(value)
+    evidence_bundle = discussion.get("evidence_bundle")
+    if isinstance(evidence_bundle, dict):
+        value = evidence_bundle.get("context")
+        if isinstance(value, dict):
+            containers.append(value)
+
+    for container in containers:
+        if not isinstance(container, dict):
+            continue
+        for key in id_keys | path_keys:
+            add(container.get(key))
+    return candidates
+
+
+def _binding_matches_expected(candidate: str, expected_task: "Task") -> bool:
+    text = candidate.strip()
+    if not text:
+        return False
+    expected_path = str(expected_task.path)
+    expected_name = expected_task.path.name
+    expected_stem = expected_task.path.stem
+    if text in {expected_task.id, expected_path, expected_name, expected_stem}:
+        return True
+    expanded = str(Path(os.path.expanduser(text))) if ("/" in text or text.endswith(".md")) else text
+    if expanded in {expected_path, expected_name, expected_stem}:
+        return True
+    try:
+        p = Path(os.path.expanduser(text))
+        if p.name == expected_name or p.stem == expected_stem:
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _format_binding_for_failure(candidate: str) -> str:
+    text = candidate.strip()
+    if not text:
+        return "missing"
+    try:
+        p = Path(os.path.expanduser(text))
+        if p.suffix == ".md":
+            return p.stem
+    except Exception:
+        pass
+    return text
+
+
+def ratification_gate_result(discussion: dict[str, Any], expected_task: "Task" | None = None) -> dict[str, Any]:
     """Fail-closed ratification gate for PUA-loop multi-model discussions.
 
     Accepts two canonical shapes produced by consult_models.py:
@@ -2883,7 +2960,17 @@ def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
             "decision": "continue_loop",
         }
 
-    # --- 1. certification status ---
+    # --- 1. target binding (CLI/autorun closeout must not accept a stale artifact from another task) ---
+    if expected_task is not None:
+        binding_candidates = _ratification_binding_candidates(discussion)
+        if not binding_candidates:
+            failures.append("target_task_binding_missing")
+        else:
+            mismatches = [candidate for candidate in binding_candidates if not _binding_matches_expected(candidate, expected_task)]
+            if mismatches:
+                failures.append(f"target_task_mismatch:{_format_binding_for_failure(mismatches[0])}")
+
+    # --- 2. certification status ---
     status = str(discussion.get("status") or discussion.get("certification_status") or "").strip()
     if status not in MULTIMODEL_PASS_STATUSES:
         failures.append(f"status_not_passed:{status or 'missing'}")
@@ -2933,26 +3020,39 @@ def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
             failures.append(f"best_within_constraints_missing:{model or 'unknown'}")
 
     vote_model_set = set(vote_models)
-    # Flexible model requirement: use models_consulted from discussion if present,
-    # otherwise fall back to REQUIRED_RATIFICATION_MODELS. Supports T2 (3 models)
-    # and T3 (4 models) without hardcoding.
+    required_set = set(REQUIRED_RATIFICATION_MODELS)
+    if len(vote_model_set) < len(required_set):
+        failures.append(f"model_count_below_required:{len(vote_model_set)}/{len(required_set)}")
+    if len(vote_model_set) > len(required_set):
+        failures.append(f"model_count_above_required:{len(vote_model_set)}/{len(required_set)}")
+
+    # All certification closeouts require the canonical four-model panel. The
+    # artifact may omit models_consulted for backward compatibility, but if it
+    # declares consulted models, that declaration must also cover the full panel.
     raw_expected_models = discussion.get("models_consulted")
-    if raw_expected_models is None or raw_expected_models == []:
-        expected_models = list(REQUIRED_RATIFICATION_MODELS)
-    elif not isinstance(raw_expected_models, list):
-        failures.append("models_consulted_not_list")
-        expected_models = list(REQUIRED_RATIFICATION_MODELS)
-    else:
-        expected_models = []
-        for item in raw_expected_models:
-            if not isinstance(item, str) or not item.strip():
-                failures.append("models_consulted_invalid")
-                continue
-            expected_models.append(item.strip())
-        if not expected_models:
-            failures.append("models_consulted_empty")
-            expected_models = list(REQUIRED_RATIFICATION_MODELS)
-    expected_set = set(expected_models)
+    consulted_models: list[str] = []
+    if raw_expected_models is not None and raw_expected_models != []:
+        if not isinstance(raw_expected_models, list):
+            failures.append("models_consulted_not_list")
+        else:
+            for item in raw_expected_models:
+                if not isinstance(item, str) or not item.strip():
+                    failures.append("models_consulted_invalid")
+                    continue
+                consulted_models.append(item.strip())
+            consulted_set = set(consulted_models)
+            if len(consulted_set) < len(required_set):
+                failures.append(f"models_consulted_below_required:{len(consulted_set)}/{len(required_set)}")
+            for required in required_set:
+                if required not in consulted_set:
+                    failures.append(f"missing_required_model_consulted:{required}")
+            for model in consulted_set:
+                if model not in required_set:
+                    failures.append(f"unexpected_consulted_model:{model}")
+    elif raw_expected_models == []:
+        failures.append("models_consulted_empty")
+
+    expected_set = required_set
     for required in expected_set:
         if required not in vote_model_set:
             failures.append(f"missing_required_model_vote:{required}")
@@ -3098,7 +3198,10 @@ def command_ratification_gate(args: argparse.Namespace) -> dict[str, Any]:
         discussion = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
         return {"status": "FAIL", "decision": "continue_loop", "failures": [f"discussion_result_unreadable:{exc}"], "warnings": [], "task_id": args.task, "discussion_result": str(path)}
-    result = ratification_gate_result(discussion)
+    expected_task = None
+    if str(getattr(args, "task", "") or "").strip():
+        expected_task = find_task(args.task)
+    result = ratification_gate_result(discussion, expected_task=expected_task)
     result.update({
         "task_id": args.task,
         "discussion_result": str(path),

@@ -33,6 +33,7 @@ def make_env_and_vault():
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
     env["HERMES_CRON_JOBS_PATH"] = str(Path(td.name) / "cron" / "jobs.json")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
+    env.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
     return td, vault, env
 
 
@@ -626,6 +627,8 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         good = task_path.parent / "discussion-good.json"
         good.write_text(json.dumps({
             "status": "certified",
+            "task_id": task_id,
+            "context": {"task_id": task_id, "task_path": str(task_path)},
             "issue_ledger": [{"id": "I-001", "severity": 3, "status": "resolved"}],
             "ratification_votes": [
                 {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
@@ -646,6 +649,23 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         gate_pass = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(good), "--json").stdout)
         assert gate_pass["status"] == "PASS", gate_pass
         assert gate_pass["decision"] == "LOOP_DONE", gate_pass
+
+        mismatched_target = task_path.parent / "discussion-mismatched-target.json"
+        mismatched_target.write_text(good.read_text(encoding="utf-8").replace(task_id, "2026-05-10-other-task", 1), encoding="utf-8")
+        gate_mismatched = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(mismatched_target), "--json", check=False).stdout)
+        assert gate_mismatched["status"] == "FAIL", gate_mismatched
+        assert "target_task_mismatch:2026-05-10-other-task" in gate_mismatched["failures"], gate_mismatched
+
+        partial_models = task_path.parent / "discussion-partial-models.json"
+        partial = json.loads(good.read_text(encoding="utf-8"))
+        partial["models_consulted"] = ["claude-opus-4-7", "gpt-5.5"]
+        partial["ratification_votes"] = partial["ratification_votes"][:2]
+        partial_models.write_text(json.dumps(partial, ensure_ascii=False), encoding="utf-8")
+        gate_partial_models = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(partial_models), "--json", check=False).stdout)
+        assert gate_partial_models["status"] == "FAIL", gate_partial_models
+        assert "model_count_below_required:2/4" in gate_partial_models["failures"], gate_partial_models
+        assert "missing_required_model_vote:deepseek-v4-pro" in gate_partial_models["failures"], gate_partial_models
+        assert "missing_required_model_vote:mimo-v2.5-pro" in gate_partial_models["failures"], gate_partial_models
 
         bad = task_path.parent / "discussion-bad.json"
         bad.write_text(json.dumps({
