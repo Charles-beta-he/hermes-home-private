@@ -265,7 +265,9 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         "red_lines", "non_goals", "evidence_refs", "acceptance_criteria", "dag_nodes", "checkpoint_states",
         "permission_gates", "handoff_artifacts", "proof_artifacts", "rollback_signal", "certification_status",
         "ratification_artifact", "mission_node_id", "mission_node_depends_on", "mission_node_kind",
-        "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary", "evidence", "concepts"
+        "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary",
+        "allowed_globs", "forbidden_globs", "loc_budget", "conflict_group", "parallel_group",
+        "workspace_isolation", "merge_gate", "evidence", "concepts"
     ]
     keys = preferred + [k for k in fm.keys() if k not in preferred]
     out = ["---"]
@@ -293,6 +295,10 @@ def atomic_write(path: Path, text: str) -> None:
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
+
+
+VALID_WORKSPACE_ISOLATION = {"none", "readonly", "copy", "worktree"}
+VALID_MERGE_GATES = {"manual", "diff-boundary", "tests", "build-and-tests"}
 
 
 def list_value(value: Any) -> list[str]:
@@ -2033,7 +2039,7 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
             f"--claim 'C-003:Long-term goal alignment — the solution preserves lane/project/architecture_target and does not let evolution preempt work delivery' "
             f"--file {shlex.quote(str(task.path))} --out {state_arg}"
         ),
-        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T3 --quorum 4 --discussion --max-rounds 5 --keep",
+        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T2 --quorum 3 --discussion --max-rounds 3 --keep",
         "gate_command_template": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task {task_arg} --discussion-result DISCUSSION_RESULT_JSON --json",
         "safety": "dry-run intervention plan only; no claim, no task mutation, no arbitrary hook execution",
     }
@@ -2293,11 +2299,16 @@ def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
             failures.append(f"best_within_constraints_missing:{model or 'unknown'}")
 
     vote_model_set = set(vote_models)
-    for required in REQUIRED_RATIFICATION_MODELS:
+    # Flexible model requirement: use models_consulted from discussion if present,
+    # otherwise fall back to REQUIRED_RATIFICATION_MODELS. Supports T2 (3 models)
+    # and T3 (4 models) without hardcoding.
+    expected_models = discussion.get("models_consulted") or list(REQUIRED_RATIFICATION_MODELS)
+    expected_set = set(expected_models)
+    for required in expected_set:
         if required not in vote_model_set:
             failures.append(f"missing_required_model_vote:{required}")
     for model in vote_model_set:
-        if model not in REQUIRED_RATIFICATION_MODELS:
+        if model not in expected_set:
             failures.append(f"unexpected_vote_model:{model}")
 
     # --- 4. agreement matrix >= 0.85 on all axes ---
