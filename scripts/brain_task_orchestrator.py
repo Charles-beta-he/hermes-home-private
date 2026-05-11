@@ -301,6 +301,68 @@ VALID_WORKSPACE_ISOLATION = {"none", "readonly", "copy", "worktree"}
 VALID_MERGE_GATES = {"manual", "diff-boundary", "tests", "build-and-tests"}
 
 
+def validate_boundary_fields(fm: dict[str, Any]) -> list[str]:
+    """Deterministic validation of task-boundary metadata fields.
+
+    Returns a list of failure strings. Empty list means all present boundary
+    fields are valid. Missing optional fields are not failures — only
+    malformed values trigger failures. Fail-closed: unknown isolation modes
+    or merge gates are rejected.
+    """
+    failures: list[str] = []
+    # workspace_isolation: must be a known mode if present
+    ws_isolation = str(fm.get("workspace_isolation") or "").strip()
+    if ws_isolation and ws_isolation not in VALID_WORKSPACE_ISOLATION:
+        failures.append(f"workspace_isolation:unknown_mode:{ws_isolation}")
+    # merge_gate: must be a known gate if present
+    merge_gate = str(fm.get("merge_gate") or "").strip()
+    if merge_gate and merge_gate not in VALID_MERGE_GATES:
+        failures.append(f"merge_gate:unknown_gate:{merge_gate}")
+    # loc_budget: must be a positive integer if present
+    loc_budget_raw = str(fm.get("loc_budget") or "").strip()
+    if loc_budget_raw:
+        try:
+            loc_budget = int(loc_budget_raw)
+            if loc_budget <= 0:
+                failures.append(f"loc_budget:not_positive:{loc_budget_raw}")
+        except ValueError:
+            failures.append(f"loc_budget:not_integer:{loc_budget_raw}")
+    # allowed_globs: must be parseable glob list
+    allowed = fm.get("allowed_globs")
+    if allowed is not None:
+        globs = list_value(allowed)
+        if not globs:
+            failures.append("allowed_globs:empty_list")
+    # forbidden_globs: must be parseable glob list
+    forbidden = fm.get("forbidden_globs")
+    if forbidden is not None:
+        globs = list_value(forbidden)
+        if not globs:
+            failures.append("forbidden_globs:empty_list")
+    # conflict between allowed and forbidden: forbidden dominates
+    allowed_set = set(list_value(fm.get("allowed_globs")))
+    forbidden_set = set(list_value(fm.get("forbidden_globs")))
+    overlap = allowed_set & forbidden_set
+    if overlap:
+        failures.append(f"forbidden_dominates_overlap:{sorted(overlap)}")
+    # conflict_group / parallel_group: non-empty string if present (stable identifier)
+    for field in ("conflict_group", "parallel_group"):
+        val = str(fm.get(field) or "").strip()
+        if val and not re.fullmatch(r"[a-zA-Z0-9_\-./]+", val):
+            failures.append(f"{field}:invalid_identifier:{val}")
+    return failures
+
+
+def boundary_field_sort_key(task: Task) -> tuple[int, int, str]:
+    """Sort key for parallel dispatch that respects conflict_group/parallel_group."""
+    conflict = str(task.fm.get("conflict_group") or "").strip()
+    parallel = str(task.fm.get("parallel_group") or "").strip()
+    # Tasks with the same conflict_group must not be dispatched together
+    # Tasks with the same parallel_group CAN be dispatched together
+    # Priority: conflict_group > parallel_group > default
+    return (0 if conflict else 1, 0 if parallel else 1, task.id)
+
+
 def list_value(value: Any) -> list[str]:
     if isinstance(value, list):
         return [str(x).strip() for x in value if str(x).strip()]
@@ -2220,6 +2282,175 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
     return result
 
 
+def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> dict[str, Any]:
+    """Execute build->discussion->gate->mutate for a single task. Thread-safe."""
+    task_info = plan.get("task", {})
+    task_id = task_info.get("id", "")
+    build_cmd = plan.get("build_state_command", "")
+    run_cmd = plan.get("run_discussion_command", "")
+    state_path = plan.get("state_path", "")
+
+    result: dict[str, Any] = {
+        "task_id": task_id,
+        "state_path": state_path,
+    }
+
+    # Step 1: Build state
+    if state_path:
+        sp = Path(os.path.expanduser(state_path))
+        if sp.exists() and sp.is_dir():
+            import shutil
+            shutil.rmtree(sp, ignore_errors=True)
+    try:
+        proc = subprocess.run(build_cmd, capture_output=True, text=True, timeout=120, shell=True)
+        result["build_state"] = {"status": "OK" if proc.returncode == 0 else "FAIL", "returncode": proc.returncode}
+    except Exception as exc:
+        result["build_state"] = {"status": "ERROR", "error": str(exc)}
+
+    # Step 2: Run discussion
+    try:
+        proc = subprocess.run(run_cmd, capture_output=True, text=True, timeout=1200, shell=True)
+        result["run_discussion"] = {"status": "OK" if proc.returncode == 0 else "FAIL", "returncode": proc.returncode}
+    except Exception as exc:
+        result["run_discussion"] = {"status": "ERROR", "error": str(exc)}
+
+    # Step 3: Gate
+    discussion_path = ""
+    gate_result: dict[str, Any] = {}
+    if result.get("run_discussion", {}).get("status") == "OK":
+        tick_dirs = sorted(Path(os.path.expanduser("~/.hermes")).glob("tick-*"), key=lambda p: p.stat().st_mtime, reverse=True)
+        for tick_dir in tick_dirs[:5]:
+            candidate = tick_dir / "discussion_result.json"
+            if candidate.exists():
+                try:
+                    discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    # Verify this tick is for our task by checking state file
+                    tick_state = tick_dir / "state.json"
+                    if tick_state.exists():
+                        tick_state_data = json.loads(tick_state.read_text(encoding="utf-8"))
+                        if task_id not in str(tick_state_data.get("question", "")):
+                            continue
+                    gate_result = ratification_gate_result(discussion)
+                    discussion_path = str(candidate)
+                    break
+                except Exception:
+                    continue
+
+    result["gate"] = gate_result or {"status": "SKIP", "reason": "no_discussion_result"}
+    result["discussion_path"] = discussion_path
+
+    # Step 4: Mutate on PASS
+    if gate_result.get("status") == "PASS" and gate_result.get("decision") == "LOOP_DONE":
+        task = find_task(task_id)
+        if task:
+            result["task_mutation"] = write_multimodel_result_to_task(task, gate_result, discussion_path, state_path)
+        else:
+            result["task_mutation"] = {"status": "SKIP", "reason": "task_not_found"}
+    else:
+        result["task_mutation"] = {"status": "SKIP", "reason": "gate_not_passed"}
+
+    return result
+
+
+def command_multimodel_intervention_parallel_step(args: argparse.Namespace) -> dict[str, Any]:
+    """Execute multimodel intervention on multiple tasks in parallel.
+
+    Uses ThreadPoolExecutor(max_workers=N) keyed by parallel_boundary.
+    Each task runs independent build->discussion->gate->mutate pipeline.
+    Boundary conflict check ensures no two tasks share the same workspace.
+    """
+    if os.environ.get(MULTIMODEL_AUTORUN_ENV_FLAG) != "1":
+        return {"status": "SKIP", "reason": "autorun_multimodel_disabled"}
+
+    max_workers = max(1, int(getattr(args, "max_workers", 3) or 3))
+
+    # Get all intervention tasks
+    dry_run = command_multimodel_intervention_dry_run(
+        argparse.Namespace(task="", max_tasks=max_workers * 2, json=True)
+    )
+    if not dry_run.get("intervention_required"):
+        return {"status": "OK", "action": "no_intervention_needed", "convergence": dry_run.get("convergence", {})}
+
+    plans = dry_run.get("plans", [])
+    if not plans:
+        return {"status": "OK", "action": "no_intervention_needed"}
+
+    # Boundary conflict check: select tasks with unique boundaries
+    allowlist = load_multimodel_allowlist()
+    allowlist_active = bool(allowlist)
+    seen_boundaries: set[str] = set()
+    selected_plans: list[dict[str, Any]] = []
+    for plan in plans:
+        task_info = plan.get("task", {})
+        boundary = task_info.get("parallel_boundary", task_info.get("project", task_info.get("id", "")))
+        if boundary in seen_boundaries:
+            continue
+        # Allowlist check
+        if allowlist_active:
+            task_project = task_info.get("project", "")
+            task_id = task_info.get("id", "")
+            matched = False
+            for item in allowlist:
+                if isinstance(item, str):
+                    token = item.strip()
+                    if token in {task_id, f"task:{task_id}", task_project, f"project:{task_project}"}:
+                        matched = True
+                        break
+                elif isinstance(item, dict):
+                    proj = str(item.get("project") or "").strip()
+                    if proj and proj == task_project:
+                        matched = True
+                        break
+            if not matched:
+                continue
+        seen_boundaries.add(boundary)
+        selected_plans.append(plan)
+        if len(selected_plans) >= max_workers:
+            break
+
+    if not selected_plans:
+        return {"status": "OK", "action": "no_eligible_tasks", "convergence": dry_run.get("convergence", {})}
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    results: list[dict[str, Any]] = []
+    with ThreadPoolExecutor(max_workers=min(len(selected_plans), max_workers)) as executor:
+        futures = {
+            executor.submit(_run_single_task_pipeline, plan, allowlist_active): plan
+            for plan in selected_plans
+        }
+        for future in as_completed(futures):
+            plan = futures[future]
+            try:
+                task_result = future.result()
+                results.append(task_result)
+            except Exception as exc:
+                results.append({
+                    "task_id": plan.get("task", {}).get("id", ""),
+                    "error": str(exc),
+                    "gate": {"status": "ERROR"},
+                })
+
+    # Summary
+    passed = sum(1 for r in results if r.get("gate", {}).get("status") == "PASS")
+    failed = sum(1 for r in results if r.get("gate", {}).get("status") == "FAIL")
+    errors = sum(1 for r in results if r.get("gate", {}).get("status") in ("ERROR", "SKIP"))
+
+    return {
+        "status": "OK",
+        "schema": "local_brain_multimodel_parallel_step_v1",
+        "generated_at": iso(),
+        "max_workers": max_workers,
+        "tasks_processed": len(results),
+        "tasks_passed": passed,
+        "tasks_failed": failed,
+        "tasks_errors": errors,
+        "results": results,
+        "convergence": multimodel_convergence_stats(),
+        "safety": "parallel step with boundary isolation; each task gated independently",
+    }
+
+
 def ratification_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
     """Fail-closed ratification gate for PUA-loop multi-model discussions.
 
@@ -2850,6 +3081,10 @@ def build_parser() -> argparse.ArgumentParser:
     msp.add_argument("--task", default="")
     msp.add_argument("--json", action="store_true")
 
+    mpp = sub.add_parser("multimodel-intervention-parallel-step")
+    mpp.add_argument("--max-workers", type=int, default=3)
+    mpp.add_argument("--json", action="store_true")
+
     rgp = sub.add_parser("ratification-gate")
     rgp.add_argument("--task", required=True)
     rgp.add_argument("--discussion-result", required=True)
@@ -2918,6 +3153,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_multimodel_intervention_dry_run(args), args.json)
     if args.cmd == "multimodel-intervention-step":
         return print_result(command_multimodel_intervention_step(args), args.json)
+    if args.cmd == "multimodel-intervention-parallel-step":
+        return print_result(command_multimodel_intervention_parallel_step(args), args.json)
     if args.cmd == "ratification-gate":
         return print_result(command_ratification_gate(args), args.json)
     if args.cmd == "eligibility-check":
