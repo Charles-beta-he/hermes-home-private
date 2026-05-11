@@ -1359,6 +1359,44 @@ class TestConsultModelsIntegration(unittest.TestCase):
             self.assertTrue((tick / "final" / "certification_manifest.json").exists())
             self.assertTrue(manifest["artifacts"]["certification_manifest"]["exists"])
 
+    def test_audit_certification_rejects_alias_votes_when_expected_participants_are_canonical(self):
+        """Expected participants are a hard identity contract, not self-attested aliases."""
+        with tempfile.TemporaryDirectory() as td:
+            tick = Path(td)
+            (tick / "plans").mkdir()
+            aliases = ["claude", "codex", "deepseek", "mimo"]
+            canonical = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+            for model in aliases:
+                (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
+            fanout = consult.fanout_certification_status(4, 4, 4, 0)
+            truth = {"can_certify_truth": True}
+            votes = [{"model": m, "vote": "approve", "best_within_constraints": True} for m in aliases]
+            (tick / "merged_plan.json").write_text(json.dumps({
+                "patches": [],
+                "planner_patch_summary": {"concrete_patch_count": 0, "certification_intent": "no_action_certification"},
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+            }))
+            (tick / "discussion_result.json").write_text(json.dumps({
+                "status": "certified",
+                "expected_participants": canonical,
+                "models_consulted": aliases,
+                "fanout_certification": fanout,
+                "truth_assessment": truth,
+                "issue_ledger": [],
+                "ratification_votes": votes,
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+            }))
+
+            manifest = consult.audit_certification(str(tick), write=True)
+
+            self.assertEqual(manifest["status"], "not_certified")
+            self.assertFalse(manifest["can_claim_complete_certification"])
+            joined = "\n".join(manifest["reasons"])
+            self.assertIn("plan models do not match expected participants", joined)
+            self.assertIn("models_consulted do not match expected participants", joined)
+            self.assertIn("ratification approvals do not cover expected participants", joined)
+
     def test_audit_certification_rejects_malformed_plan_artifact(self):
         with tempfile.TemporaryDirectory() as td:
             tick = Path(td)

@@ -2121,12 +2121,39 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
             truth = evaluate_truth_gate(supported_bundle)
             merged = {"patches": [], "planner_patch_summary": _planner_patch_summary(_load_tick_plans(tick)), "fanout_certification": fanout, "truth_assessment": truth}
             votes = [{"model": model, "vote": "approve", "best_within_constraints": True} for model in ("model-a", "model-b")]
-            discussion = {"status": "certified", "fanout_certification": fanout, "truth_assessment": truth, "issue_ledger": [], "ratification_votes": votes, "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95}}
+            discussion = {"status": "certified", "models_consulted": ["model-a", "model-b"], "expected_participants": ["model-a", "model-b"], "fanout_certification": fanout, "truth_assessment": truth, "issue_ledger": [], "ratification_votes": votes, "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95}}
             _write_json_atomic(os.path.join(tick, "merged_plan.json"), merged)
             _write_json_atomic(os.path.join(tick, "discussion_result.json"), discussion)
             manifest = audit_certification(tick, write=True)
             report["temp_audit_manifest_status"] = manifest.get("status")
             _append_analysis_check(report, "certification_audit", "valid_temp_tick_certifies", manifest.get("can_claim_complete_certification") is True, manifest)
+
+            bad_tick = os.path.join(td, "tick-selfcheck-participant-alias")
+            bad_plans_dir = os.path.join(bad_tick, "plans")
+            os.makedirs(bad_plans_dir, exist_ok=True)
+            alias_models = ["claude", "codex", "deepseek", "mimo"]
+            canonical_models = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+            for model in alias_models:
+                _write_json_atomic(os.path.join(bad_plans_dir, f"{model}.json"), {"meta": {"planner_model": model}, "patches": [{"op": "noop", "rationale": "selfcheck noop"}]})
+            bad_fanout = fanout_certification_status(4, 4, 4, 0)
+            bad_merged = {"patches": [], "planner_patch_summary": _planner_patch_summary(_load_tick_plans(bad_tick)), "fanout_certification": bad_fanout, "truth_assessment": truth}
+            bad_votes = [{"model": model, "vote": "approve", "best_within_constraints": True} for model in alias_models]
+            bad_discussion = {"status": "certified", "models_consulted": alias_models, "expected_participants": canonical_models, "fanout_certification": bad_fanout, "truth_assessment": truth, "issue_ledger": [], "ratification_votes": bad_votes, "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95}}
+            _write_json_atomic(os.path.join(bad_tick, "merged_plan.json"), bad_merged)
+            _write_json_atomic(os.path.join(bad_tick, "discussion_result.json"), bad_discussion)
+            bad_manifest = audit_certification(bad_tick, write=False)
+            report["participant_identity_matrix"] = {
+                "alias_vs_canonical_status": bad_manifest.get("status"),
+                "alias_vs_canonical_reasons": bad_manifest.get("reasons", []),
+            }
+            _append_analysis_check(
+                report,
+                "certification_audit",
+                "expected_participant_identity_fail_closed",
+                bad_manifest.get("can_claim_complete_certification") is False
+                and any("expected participants" in reason for reason in bad_manifest.get("reasons", [])),
+                bad_manifest,
+            )
 
     report["status"] = "PASS" if report["summary"]["failed"] == 0 else "FAIL"
     report["summary"]["total"] = len(report.get("checks", []))
@@ -2565,6 +2592,7 @@ def run_discussion_rounds(
     return {
         "status": final_status["status"],
         "models_consulted": models,
+        "expected_participants": models,
         "rounds_used": rounds_used,
         "agreement_matrix": _agreement_from_issues(issue_ledger),
         "final_design": current_best,
@@ -2712,6 +2740,25 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
         plan_models.append(_plan_model(raw_plan, f"model_{idx}"))
     recomputed_patch_summary = _planner_patch_summary(audit_plans)
 
+    def _strict_nonempty_string_list(value: Any) -> Optional[List[str]]:
+        if value is None:
+            return None
+        if not isinstance(value, list):
+            return None
+        parsed: List[str] = []
+        for item in value:
+            if not isinstance(item, str) or not item.strip():
+                return None
+            parsed.append(item.strip())
+        return parsed
+
+    raw_expected_participants = source.get("expected_participants")
+    if raw_expected_participants is None and source is not merged:
+        raw_expected_participants = merged.get("expected_participants")
+    expected_participants = _strict_nonempty_string_list(raw_expected_participants)
+    raw_models_consulted = source.get("models_consulted")
+    models_consulted = _strict_nonempty_string_list(raw_models_consulted)
+
     fanout_schema_ok = False
     fanout_schema_errors: List[str] = []
     merged_fanout_schema_ok = False
@@ -2737,14 +2784,25 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
     merged_success_count = _strict_int(merged_fanout.get("success_count")) if merged_fanout else None
     expected_vote_count = planner_count if planner_count is not None else len(plan_files)
     valid_votes = [v for v in votes if isinstance(v, dict)]
-    vote_models = [str(v.get("model", "")) for v in valid_votes]
+    vote_models = [str(v.get("model", "")).strip() for v in valid_votes]
     vote_model_set = set(vote_models)
-    expected_model_set = set(plan_models)
+    plan_model_set = set(plan_models)
+    expected_model_set = set(expected_participants) if expected_participants is not None else plan_model_set
+    duplicate_expected_participants = sorted({m for m in (expected_participants or []) if (expected_participants or []).count(m) > 1})
+    duplicate_plan_models = sorted({m for m in plan_models if m and plan_models.count(m) > 1})
     duplicate_vote_models = sorted({m for m in vote_models if m and vote_models.count(m) > 1})
+    duplicate_consulted_models = sorted({m for m in (models_consulted or []) if (models_consulted or []).count(m) > 1})
     anonymous_vote_count = sum(1 for m in vote_models if not m)
     unexpected_vote_models = sorted(vote_model_set - expected_model_set) if expected_model_set else []
+    missing_vote_models = sorted(expected_model_set - vote_model_set) if expected_model_set else []
+    unexpected_plan_models = sorted(plan_model_set - expected_model_set) if expected_participants is not None else []
+    missing_plan_models = sorted(expected_model_set - plan_model_set) if expected_participants is not None else []
+    consulted_model_set = set(models_consulted or [])
+    unexpected_consulted_models = sorted(consulted_model_set - expected_model_set) if models_consulted is not None and expected_model_set else []
+    missing_consulted_models = sorted(expected_model_set - consulted_model_set) if models_consulted is not None and expected_model_set else []
     approvals = [v for v in valid_votes if str(v.get("vote", "")).lower() == "approve" and _strict_true(v.get("best_within_constraints"))]
-    approving_model_set = {str(v.get("model", "")) for v in approvals if v.get("model")}
+    approving_model_set = {str(v.get("model", "")).strip() for v in approvals if str(v.get("model", "")).strip()}
+    missing_expected_approvals = sorted(expected_model_set - approving_model_set) if expected_participants is not None else []
     rejects = [v for v in valid_votes if str(v.get("vote", "")).lower() == "reject"]
     unsigned = [v for v in valid_votes if not _strict_true(v.get("best_within_constraints"))]
     gates["issue_ledger_present"] = isinstance(raw_issue_ledger, list)
@@ -2758,6 +2816,16 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
     gates["merged_planner_count"] = merged_planner_count
     gates["merged_success_count"] = merged_success_count
     gates["plan_file_count"] = len(plan_files)
+    gates["expected_participants_present"] = raw_expected_participants is not None
+    gates["expected_participants_valid"] = raw_expected_participants is None or expected_participants is not None
+    gates["expected_participant_count"] = len(expected_participants or [])
+    gates["expected_participants_unique"] = not duplicate_expected_participants
+    gates["models_consulted_present"] = raw_models_consulted is not None
+    gates["models_consulted_valid"] = raw_models_consulted is None or models_consulted is not None
+    gates["models_consulted_unique"] = not duplicate_consulted_models
+    gates["plan_models_unique"] = not duplicate_plan_models
+    gates["plan_models_match_expected"] = expected_participants is None or (not unexpected_plan_models and not missing_plan_models and not duplicate_plan_models)
+    gates["models_consulted_match_expected"] = models_consulted is None or (not unexpected_consulted_models and not missing_consulted_models and not duplicate_consulted_models)
     gates["approval_count"] = len(approvals)
     gates["unique_approval_count"] = len(approving_model_set)
     gates["reject_count"] = len(rejects)
@@ -2765,7 +2833,8 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
     gates["all_votes_best_within_constraints"] = not unsigned
     gates["vote_models_unique"] = not duplicate_vote_models
     gates["vote_models_nonempty"] = anonymous_vote_count == 0
-    gates["vote_models_expected"] = not unexpected_vote_models
+    gates["vote_models_expected"] = not unexpected_vote_models and (expected_participants is None or not missing_vote_models)
+    gates["expected_participants_all_approved"] = expected_participants is None or not missing_expected_approvals
     gates["ratification_quorum_met"] = (
         gates["ratification_vote_count"] >= max(2, expected_vote_count - 1)
         and gates["unique_approval_count"] >= max(2, expected_vote_count - 1)
@@ -2832,10 +2901,29 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
         reasons.append("ratification_votes contains malformed entries")
     if not gates["vote_models_nonempty"]:
         reasons.append("ratification vote missing model identity")
+    if not gates["expected_participants_valid"]:
+        reasons.append("expected_participants missing or malformed")
+    if not gates["expected_participants_unique"]:
+        reasons.append(f"duplicate expected participants: {duplicate_expected_participants}")
+    if not gates["models_consulted_valid"]:
+        reasons.append("models_consulted missing or malformed")
+    if not gates["models_consulted_unique"]:
+        reasons.append(f"duplicate models_consulted entries: {duplicate_consulted_models}")
+    if not gates["plan_models_unique"]:
+        reasons.append(f"duplicate plan models: {duplicate_plan_models}")
+    if not gates["plan_models_match_expected"]:
+        reasons.append(f"plan models do not match expected participants: missing={missing_plan_models} unexpected={unexpected_plan_models}")
+    if not gates["models_consulted_match_expected"]:
+        reasons.append(f"models_consulted do not match expected participants: missing={missing_consulted_models} unexpected={unexpected_consulted_models}")
     if not gates["vote_models_unique"]:
         reasons.append(f"duplicate ratification votes: {duplicate_vote_models}")
     if not gates["vote_models_expected"]:
-        reasons.append(f"unexpected ratification vote models: {unexpected_vote_models}")
+        if missing_vote_models:
+            reasons.append(f"ratification votes missing expected participants: {missing_vote_models}")
+        if unexpected_vote_models:
+            reasons.append(f"unexpected ratification vote models: {unexpected_vote_models}")
+    if not gates["expected_participants_all_approved"]:
+        reasons.append(f"ratification approvals do not cover expected participants: missing={missing_expected_approvals}")
     if not truth:
         reasons.append("missing truth_assessment")
     elif not gates["truth_can_certify"]:
