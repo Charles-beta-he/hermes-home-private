@@ -186,6 +186,10 @@ Operational troubleshooting pattern:
 - For envelope executors that spawn `hermes chat`, verify process lifecycle as well as DB state: `ps -ax -o pid,etime,command | grep -E 'envelope_executor|hermes chat'` should show no orphan worker after timeout/completion. Run workers in their own process group (`start_new_session=True`) and kill the whole process group on timeout/SIGTERM; otherwise the envelope may be marked FAILED/PENDING while the old worker keeps editing concurrently.
 - For `deliver=origin` jobs, `last_delivery_error: no delivery target resolved for deliver=origin` is a delivery binding problem, not necessarily a job/runtime failure. Prefer explicit delivery targets for recurring status reports after checking user intent.
 - For long-running multi-model jobs, wrap them with explicit timeouts and record `timeout_recorded`/`degraded_recorded`; then run a lightweight health/score script afterward so the cron still leaves an auditable result.
+- Local-brain multimodel intervention scripts are guarded by an explicit safety flag: if `brain_task_orchestrator.py multimodel-intervention-parallel-step ... --json` returns `{"status":"SKIP","reason":"autorun_multimodel_disabled"}`, rerun with `HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1` rather than reporting an empty/no-op result. These runs can exceed normal terminal timeouts; start them as background processes with unbuffered output (`PYTHONUNBUFFERED=1`), poll/wait until exit, then summarize the JSON from the process log. Treat gate `SKIP` results such as `no_discussion_result` as task errors for reporting if the command summary counts them in `tasks_errors`.
+- Keep local-brain safe summary heartbeats cheap and explicit: do not let ambient `HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1` alone trigger expensive multimodel execution from `brain_task_dispatch_tick.py --summary`. Expensive steps should be double-gated by an explicit CLI flag plus env var, and subprocess timeouts should be recorded as structured JSON (`subprocess_timeout` / `timeout_recorded`) instead of crashing the cron tick.
+- When local-brain/taskpool cron jobs repeatedly time out, prefer the dynamic no-agent pattern in `references/local-brain-dynamic-cron.md`: collect cron/log evidence, classify provider-model mismatch separately from taskpool corruption, keep the cron tick short/event-gated, and move T3/quorum4 multi-model work into a pid-locked detached worker without weakening certification gates.
+- When `evidence-spine` is WARN only because `local-brain-taskpool-auto-completer` has `last_status=error`, inspect the semantic content before treating it as scheduler failure. `Request timed out`, `timeout_recorded`, `truth_grounded_advisory_not_ratified`, `not_certified`, missing `discussion_result.json`, or “T3 still running / cannot closeout” are usually retryable/task-level certification states; classify them separately and keep unknown errors fail-closed. Keep evidence-spine and autonomy-readiness using the same scheduler-safe semantic set, and add ratchet fixtures for each safe error class. See `references/taskpool-auto-completer-semantics.md`.
 - After editing a job, use `hermes cron run <id>` or the cronjob tool's run action, wait for scheduler execution, then re-check `hermes cron list` and any health script. Do not assume `next_run_at` change means it already ran.
 - `last_run_at=null` is not automatically a failure for daily/weekly jobs; compare `next_run_at` with current time and distinguish first-run-pending from missed windows.
 
@@ -235,6 +239,16 @@ hermes acp                  ACP server (IDE integration)
 hermes claw migrate         Migrate from OpenClaw
 hermes uninstall            Uninstall Hermes
 ```
+
+### Self-update operator flow
+
+When the user says `自更新`, `/update`, or asks to update Hermes itself, treat it as an operational update, not an explanation request:
+
+1. Run `hermes update` with a long timeout/background strategy. Updates can legitimately exceed a short terminal timeout during `git pull`/`pip install`; if the command times out, inspect the Hermes repo state before claiming failure.
+2. Run the post-update checker after the update. If `~/.hermes/scripts/post-update-check.py` exits `126`, it is usually not executable; run it as `python3 ~/.hermes/scripts/post-update-check.py` or `chmod +x` then rerun. Use `--fix` when the checker reports known repairable issues.
+3. Verify update state with `cd ~/.hermes/hermes-agent && git rev-list --left-right --count HEAD...origin/main`, `hermes --version`, and `hermes doctor` or the local verify script when available.
+4. If the user has private Hermes patches, follow `post-update-patch-healing` before/after `hermes update`; do not assume upstream preserved local vendor edits.
+5. Report concise status: updated/current, checker result, verification result, and whether anything remains manual. Do not stop after a timeout without follow-up evidence.
 
 ---
 
@@ -320,7 +334,7 @@ Type these during an interactive chat session.
 
 ---
 
-## Key Paths & Config
+### Key Paths & Config
 
 ```
 ~/.hermes/config.yaml       Main configuration
@@ -333,6 +347,10 @@ $HERMES_HOME/skills/        Installed skills
 ```
 
 Profiles use `~/.hermes/profiles/<name>/` with the same layout.
+
+### Private repo sync / reproducing a personal Hermes assistant
+
+When the user wants to sync or reproduce their Hermes personal assistant through GitHub/private Git, use `references/private-repo-personal-assistant-sync.md`. Key rule: never commit the whole `~/.hermes` and never upload raw persistent memory (`~/.hermes/memories/MEMORY.md`, `USER.md`, or `~/.hermes/memory/`). Sync only reviewed brain notes, skills, selected deterministic scripts, and sanitized config templates. Add fail-closed secret/raw-memory validation plus a pre-push guard; local commits are fine, but do not push unless explicitly approved.
 
 ### Auditing Project-Local Hermes Artifacts
 
@@ -382,6 +400,16 @@ Interpretation:
 - If the project-local file is byte-identical to the Hermes runtime copy, report that relationship explicitly.
 - Do not delete Hermes-related artifacts until project references, Hermes runtime references, and git tracked/untracked status have all been checked.
 - One-off patch scripts that modify vendor files should be migrated to an update-safe checker/plugin pattern; see `post-update-patch-healing`.
+
+### Local taskpool project-profile governance
+
+When working on Hermes local-brain/taskpool automation that dispatches Markdown tasks from the brain vault, remember that project profiles are a hard gate, not a hint:
+
+- `~/.hermes/scripts/brain_task_orchestrator.py` resolves task `project` frontmatter to `~/.hermes/project-profiles/<project>.json`, then slug fallback, then `hermes.json`.
+- Missing profile is **fail-closed**: the task becomes non-dispatchable and `claim` fails with `project_profile_missing`.
+- Worker dispatch injects project-profile context (tech stack, conventions, acceptance, forbidden rules) into the spawned agent prompt, so mismatched project IDs silently weaken execution quality even when dispatch still works.
+- When renaming a canonical project key (for example consolidating `foo-work` into `foo`), migrate task frontmatter and tests first, but keep a deprecated alias profile temporarily with the same constraints plus explicit alias metadata. Remove the alias only after searches/tests show no remaining references.
+- If two profiles describe the same project at different strictness levels, prefer one canonical profile and make any alias byte-equivalent in constraints except alias metadata. This prevents work tasks from inheriting weaker rules than the main project profile.
 
 ### Config Sections
 

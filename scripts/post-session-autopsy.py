@@ -40,13 +40,23 @@ USER_CORRECTION_SIGNS = [
     r"\btry\s+again\b", r"\bretry\b",
     r"\bthat['\u2019s]?\s+wrong\b",
     r"\bdid you\s+(even\s+)?(read|check|look)\b",
-    # 中文否定
+    # 中文否定/纠偏
     r"\b不对\b", r"\b错了\b", r"\b不是\b", r"\b不要\b",
     r"\b我说了\b", r"\b我说过\b",
     r"\b你(没|没有)\s*(听懂|理解|明白|看|检查)\b",
     r"\b重来\b", r"\b等一下\b",
     r"\b重新\b", r"\b换一种\b",
-    r"\b我说的是\b",
+    r"\b我说的是\b", r"揪出来", r"是否会触发", r"自我修正",
+]
+
+ITERATION_BUDGET_SIGNS = [
+    r"Iteration budget reached",
+    r"maximum number of tool-calling iterations allowed",
+    r"max(?:imum)?\s+(?:turns|iterations)\b",
+    r"tool[- ]?call(?:ing)?\s+(?:limit|budget)",
+    r"工具(?:调用)?上限",
+    r"工具调用次数",
+    r"上下文压缩.*工具",
 ]
 
 # 不再用正则匹配原始字符串（JSON 包含 "error": null 等 key 名文本）
@@ -249,6 +259,35 @@ def detect_corrections(messages):
     return corrections
 
 
+def detect_iteration_budget_events(messages):
+    """Detect agent/tool-call iteration budget saturation mentioned in the session."""
+    events = []
+    for i, m in enumerate(messages):
+        role = m.get("role", "")
+        text = extract_text(m)
+        if not text:
+            continue
+        for pattern in ITERATION_BUDGET_SIGNS:
+            if re.search(pattern, text, re.IGNORECASE):
+                context = ""
+                for j in range(i - 1, max(i - 4, -1), -1):
+                    ctx = extract_text(messages[j])
+                    if ctx:
+                        context = ctx[:200]
+                        break
+                events.append({
+                    "idx": i,
+                    "role": role,
+                    "pattern": pattern,
+                    "text": text[:200],
+                    "context": context,
+                    "classification": "control_system_saturation",
+                    "recommended_loop": "bounded_tick_handoff_then_resume",
+                })
+                break
+    return events
+
+
 def detect_tool_failures(messages):
     """检测工具调用失败（正确解析 JSON exit_code 和 error 字段）"""
     failures = []
@@ -357,6 +396,7 @@ def analyze_session(path, fname):
 
     task_type, type_scores = estimate_task_type(messages)
     corrections = detect_corrections(messages)
+    iteration_budget_events = detect_iteration_budget_events(messages)
     tool_failures = detect_tool_failures(messages)
     failure_groups = aggregate_failure_groups(tool_failures, session.get("session_start", ""))
     repetitive = detect_repetitive_patterns(messages)
@@ -386,7 +426,19 @@ def analyze_session(path, fname):
             "suggestion": "关注纠正模式是否重复出现"
         })
 
-    # 2. 工具失败 → 配置/脚本问题
+    # 2. Iteration/tool-call budget saturation → bounded handoff loop, not generic failure
+    if iteration_budget_events:
+        signals.append({
+            "type": "iteration_budget_saturation",
+            "severity": "high",
+            "count": len(iteration_budget_events),
+            "detail": f"检测到 {len(iteration_budget_events)} 次工具/迭代预算饱和信号；应触发 bounded tick + durable handoff + resume proof loop",
+            "context": iteration_budget_events[0].get("text", "")[:100],
+            "classification": "control_system_saturation",
+            "suggestion": "运行 iteration_budget_doctor.py 与 brain_task_budget_tick.py；不要仅提高 max_turns 或把 partial response 当完成",
+        })
+
+    # 3. 工具失败 → 配置/脚本问题
     if len(tool_failures) >= 3:
         # 统计失败的工具/错误签名
         worst_group = failure_groups[0] if failure_groups else {"tool_name": "unknown", "error_signature": "unknown", "count": len(tool_failures)}
@@ -410,7 +462,7 @@ def analyze_session(path, fname):
             "suggestion": "关注失败工具是否需要配置修复"
         })
 
-    # 3. 重复工具调用 → 可能需要优化 skill
+    # 4. 重复工具调用 → 可能需要优化 skill
     for r in repetitive:
         signals.append({
             "type": "repetitive_tool",
@@ -420,7 +472,7 @@ def analyze_session(path, fname):
             "suggestion": f"检查 {r['tool']} 的 workflow 是否可以优化"
         })
 
-    # 4. 任务类型 → 如果任务类型经常出现但没有对应 skill
+    # 5. 任务类型 → 如果任务类型经常出现但没有对应 skill
     if task_type == "unknown":
         signals.append({
             "type": "unknown_task_type",
@@ -431,8 +483,9 @@ def analyze_session(path, fname):
 
     # 计算健康分 (0-100)
     correction_penalty = min(len(corrections) * 5, 30)
+    budget_penalty = min(len(iteration_budget_events) * 12, 36)
     failure_penalty = min(len(tool_failures) * 8, 40)
-    health_score = max(0, 100 - correction_penalty - failure_penalty)
+    health_score = max(0, 100 - correction_penalty - budget_penalty - failure_penalty)
 
     result = {
         "session_id": session.get("session_id", fname),
@@ -444,11 +497,13 @@ def analyze_session(path, fname):
         "task_type": task_type,
         "type_scores": type_scores,
         "corrections_count": len(corrections),
+        "iteration_budget_count": len(iteration_budget_events),
         "tool_failures_count": len(tool_failures),
         "health_score": health_score,
         "signals": signals,
         # 详情
         "correction_details": corrections[:3],  # 最多 3 条详情
+        "iteration_budget_details": iteration_budget_events[:3],
         "failure_details": tool_failures[:3],
     }
     return result
@@ -463,6 +518,7 @@ def write_signals(result):
         "task_type": result["task_type"],
         "health_score": result["health_score"],
         "corrections": result["corrections_count"],
+        "iteration_budget_events": result.get("iteration_budget_count", 0),
         "failures": result["tool_failures_count"],
         "signals": result["signals"],
         "model": result["model"],
@@ -480,11 +536,13 @@ def print_report(results):
     print(f"{'=' * 60}")
 
     total_corrections = 0
+    total_budget_events = 0
     total_failures = 0
     all_signals = []
 
     for r in results:
         total_corrections += r["corrections_count"]
+        total_budget_events += r.get("iteration_budget_count", 0)
         total_failures += r["tool_failures_count"]
         all_signals.extend(r["signals"])
 
@@ -493,7 +551,7 @@ def print_report(results):
         print(f"  Messages: {r['message_count']}")
         print(f"  Task:     {r['task_type']}")
         print(f"  Health:   {r['health_score']}/100")
-        print(f"  Correct:  {r['corrections_count']} | Failures: {r['tool_failures_count']}")
+        print(f"  Correct:  {r['corrections_count']} | Budget: {r.get('iteration_budget_count', 0)} | Failures: {r['tool_failures_count']}")
 
         if r["signals"]:
             for s in r["signals"]:
@@ -502,7 +560,7 @@ def print_report(results):
 
     print(f"\n{'─' * 60}")
     print(f"  总计: {len(results)} sessions")
-    print(f"  纠正: {total_corrections} | 工具失败: {total_failures} | 信号: {len(all_signals)}")
+    print(f"  纠正: {total_corrections} | 预算饱和: {total_budget_events} | 工具失败: {total_failures} | 信号: {len(all_signals)}")
 
     # 提取高优先级信号
     high = [s for s in all_signals if s["severity"] == "high"]
@@ -557,7 +615,7 @@ def main():
         r = analyze_session(path, fname)
         if r:
             results.append(r)
-            print(f"  {fname}: health={r['health_score']}, corr={r['corrections_count']}, fail={r['tool_failures_count']}")
+            print(f"  {fname}: health={r['health_score']}, corr={r['corrections_count']}, budget={r.get('iteration_budget_count', 0)}, fail={r['tool_failures_count']}")
 
     if not results:
         print("No valid sessions found")
