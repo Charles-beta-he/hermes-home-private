@@ -1524,6 +1524,22 @@ def test_autorun_kill_switches_and_evolution_preemption_gate():
         blocked_evolution = json.loads(run(env, "eligibility-check", "--task", evolution_id, "--json").stdout)
         assert blocked_evolution["eligible"] is False, blocked_evolution
         assert "work_lane_available" in blocked_evolution["reasons"], blocked_evolution
+
+        # Explicit user override may globally switch the taskpool to evolution-first.
+        # The override must be durable in AUTORUN_STATE_DIR so cron/no-agent ticks inherit it.
+        (state_dir / "taskpool_priority_mode.json").write_text(
+            json.dumps({"mode": "evolution-first", "reason": "user override"}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        override_boundary = json.loads(run(env, "boundary-check", "--json").stdout)
+        assert override_boundary["gates"]["priority_mode"] == "evolution-first", override_boundary
+        assert override_boundary["gates"]["evolution_preempted_by_work"] is False, override_boundary
+        assert override_boundary["gates"]["work_preempted_by_evolution"] is True, override_boundary
+        override_next = json.loads(run(env, "next", "--json").stdout)
+        assert override_next["next"]["id"] == evolution_id, override_next
+        allowed_evolution = json.loads(run(env, "eligibility-check", "--task", evolution_id, "--json").stdout)
+        assert "work_lane_available" not in allowed_evolution["reasons"], allowed_evolution
+
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         assert next(r for r in rows if r["id"] == work_id)["status"] == "pending"
         assert next(r for r in rows if r["id"] == evolution_id)["status"] == "pending"
@@ -1564,6 +1580,17 @@ def test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed():
         assert any(s["id"] == second_id and s["reason"] == "parallel_boundary_conflict" for s in dry["skipped"]), dry
         assert any(s["id"] == evolution_id and s["reason"] == "lane_preempted_by_work" for s in dry["skipped"]), dry
         assert all("claim_command" in item and "execution_prompt" in item for item in dry["dispatch_plan"]), dry
+
+        # Global evolution-first switch flips the dispatch batch selection without
+        # mutating tasks or weakening boundary isolation.
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "taskpool_priority_mode.json").write_text(json.dumps({"mode": "evolution-first"}, ensure_ascii=False), encoding="utf-8")
+        dry_evolution = json.loads(run(env, "parallel-dispatch-dry-run", "--max-agents", "3", "--json").stdout)
+        assert dry_evolution["selected_count"] == 1, dry_evolution
+        assert [row["id"] for row in dry_evolution["selected"]] == [evolution_id], dry_evolution
+        assert any(s["id"] == first_id and s["reason"] == "lane_preempted_by_evolution" for s in dry_evolution["skipped"]), dry_evolution
+
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         assert next(r for r in rows if r["id"] == first_id)["status"] == "pending"
         assert next(r for r in rows if r["id"] == second_id)["status"] == "pending"

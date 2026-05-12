@@ -80,7 +80,13 @@ TERMINAL_STATUSES = {"done", "archived", "expired"}
 PRIORITY_WEIGHT = {"P0": 400, "P1": 300, "P2": 200, "P3": 100}
 STATUS_WEIGHT = {"retry": 60, "running": 50, "claimed": 45, "blocked": 40, "review": 35, "pending": 30, "proposed": 10, "done": -100, "archived": -120, "expired": -130}
 VALID_LANES = ["work", "evolution", "advisory"]
-LANE_SORT_WEIGHT = {"work": 0, "advisory": 1, "evolution": 2}
+DEFAULT_TASKPOOL_PRIORITY_MODE = "work-first"
+VALID_TASKPOOL_PRIORITY_MODES = {"work-first", "evolution-first"}
+TASKPOOL_PRIORITY_MODE_FILE = AUTORUN_STATE_DIR / "taskpool_priority_mode.json"
+LANE_SORT_WEIGHT_BY_MODE = {
+    "work-first": {"work": 0, "advisory": 1, "evolution": 2},
+    "evolution-first": {"evolution": 0, "work": 1, "advisory": 2},
+}
 ARCHITECTURE_TARGETS = {
     "L0", "L1", "L2", "L3", "L4", "L5", "LX",
     "local-brain", "skill-graph", "provider-quota", "taskpool",
@@ -502,6 +508,43 @@ def atomic_write(path: Path, text: str) -> None:
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
+
+
+def normalize_taskpool_priority_mode(raw: str | None) -> str:
+    mode = str(raw or "").strip().lower().replace("_", "-")
+    aliases = {
+        "work": "work-first",
+        "work-first": "work-first",
+        "product-first": "work-first",
+        "default": "work-first",
+        "evolution": "evolution-first",
+        "evolution-first": "evolution-first",
+        "self-evolution": "evolution-first",
+        "self-optimization": "evolution-first",
+        "self-optimisation": "evolution-first",
+    }
+    return aliases.get(mode, DEFAULT_TASKPOOL_PRIORITY_MODE)
+
+
+def taskpool_priority_mode() -> str:
+    env_mode = os.environ.get("HERMES_TASKPOOL_PRIORITY_MODE")
+    if env_mode:
+        return normalize_taskpool_priority_mode(env_mode)
+    try:
+        data = json.loads(TASKPOOL_PRIORITY_MODE_FILE.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            return normalize_taskpool_priority_mode(str(data.get("mode") or ""))
+        if isinstance(data, str):
+            return normalize_taskpool_priority_mode(data)
+    except FileNotFoundError:
+        pass
+    except Exception:
+        return DEFAULT_TASKPOOL_PRIORITY_MODE
+    return DEFAULT_TASKPOOL_PRIORITY_MODE
+
+
+def lane_sort_weight() -> dict[str, int]:
+    return LANE_SORT_WEIGHT_BY_MODE.get(taskpool_priority_mode(), LANE_SORT_WEIGHT_BY_MODE[DEFAULT_TASKPOOL_PRIORITY_MODE])
 
 
 VALID_WORKSPACE_ISOLATION = {"none", "readonly", "copy", "worktree"}
@@ -1503,7 +1546,8 @@ def sorted_tasks(include_done: bool = False) -> list[Task]:
 
 
 def dispatch_sort_key(t: Task) -> tuple[int, int, datetime, str, str]:
-    return (LANE_SORT_WEIGHT.get(t.lane, 1), -t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id)
+    weights = lane_sort_weight()
+    return (weights.get(t.lane, 1), -t.score(), t.expires_at() or datetime.max.replace(tzinfo=TZ), t.priority, t.id)
 
 
 def dispatchable_tasks() -> list[Task]:
@@ -2787,12 +2831,16 @@ def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
                 "reason": "parallel_boundary_conflict",
                 "details": details,
             })
+    priority_mode = taskpool_priority_mode()
     gates = {
         "work_lane_available": dispatchable_by_lane.get("work", 0) > 0,
         "autorun_enabled": os.environ.get(AUTORUN_ENV_FLAG) == "1",
         "kill_switch_env_set": os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1",
         "kill_switch_file_present": AUTORUN_KILL_SWITCH.exists(),
-        "evolution_preempted_by_work": dispatchable_by_lane.get("work", 0) > 0 and dispatchable_by_lane.get("evolution", 0) > 0,
+        "priority_mode": priority_mode,
+        "priority_mode_file": str(TASKPOOL_PRIORITY_MODE_FILE),
+        "evolution_preempted_by_work": priority_mode == "work-first" and dispatchable_by_lane.get("work", 0) > 0 and dispatchable_by_lane.get("evolution", 0) > 0,
+        "work_preempted_by_evolution": priority_mode == "evolution-first" and dispatchable_by_lane.get("work", 0) > 0 and dispatchable_by_lane.get("evolution", 0) > 0,
     }
     status = "PASS" if not invalid else "FAIL"
     return {
@@ -2936,14 +2984,19 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
       boundary keys, so they naturally pass the boundary check.
     """
     candidates = dispatchable_tasks()
+    priority_mode = taskpool_priority_mode()
     work_available = any(t.lane == "work" for t in candidates)
+    evolution_available = any(t.lane == "evolution" for t in candidates)
     selected: list[Task] = []
     skipped: list[dict[str, Any]] = []
     used_boundaries: dict[str, str] = {}  # boundary_key -> first task_id
     boundary_parallel_groups: dict[str, str] = {}  # boundary_key -> parallel_group of first task
     for t in candidates:
-        if work_available and t.lane != "work":
-            skipped.append({"id": t.id, "lane": t.lane, "reason": "lane_preempted_by_work", "path": str(t.path)})
+        if priority_mode == "work-first" and work_available and t.lane != "work":
+            skipped.append({"id": t.id, "lane": t.lane, "reason": "lane_preempted_by_work", "path": str(t.path), "priority_mode": priority_mode})
+            continue
+        if priority_mode == "evolution-first" and evolution_available and t.lane != "evolution":
+            skipped.append({"id": t.id, "lane": t.lane, "reason": "lane_preempted_by_evolution", "path": str(t.path), "priority_mode": priority_mode})
             continue
         boundary_key = task_parallel_boundary_key(t)
         t_pg = parallel_group_key(t)
@@ -2994,6 +3047,7 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
         "dry_run": True,
         "dispatchable": bool(selected),
         "max_agents": max_agents,
+        "priority_mode": taskpool_priority_mode(),
         "selected_count": len(selected),
         "selected": [t.row() for t in selected],
         "skipped": skipped,
@@ -3028,7 +3082,8 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
 
 def multimodel_intervention_sort_key(task: Task) -> tuple[int, int, int, datetime, str]:
     reasons = task_multimodel_intervention_reasons(task)
-    return (-len(reasons), LANE_SORT_WEIGHT.get(task.lane, 1), -task.score(), task.expires_at() or datetime.max.replace(tzinfo=TZ), task.id)
+    weights = lane_sort_weight()
+    return (-len(reasons), weights.get(task.lane, 1), -task.score(), task.expires_at() or datetime.max.replace(tzinfo=TZ), task.id)
 
 
 def multimodel_state_evidence_args(task: Task, reasons: list[str]) -> str:
@@ -3965,8 +4020,12 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         reasons.append("kill_switch_env_set")
     if AUTORUN_KILL_SWITCH.exists():
         reasons.append("kill_switch_file_present")
-    if task and task.lane != "work" and any(t.lane == "work" and t.id != task.id for t in dispatchable_tasks()):
+    priority_mode = taskpool_priority_mode()
+    dispatchable_now = dispatchable_tasks()
+    if priority_mode == "work-first" and task and task.lane != "work" and any(t.lane == "work" and t.id != task.id for t in dispatchable_now):
         reasons.append("work_lane_available")
+    if priority_mode == "evolution-first" and task and task.lane != "evolution" and any(t.lane == "evolution" and t.id != task.id for t in dispatchable_now):
+        reasons.append("evolution_lane_available")
     if not allowlist:
         reasons.append("allowlist_empty")
     elif not allowlist_hit:
@@ -3993,6 +4052,7 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         "status": "PASS",
         "eligible": eligible,
         "mode": "allow" if eligible else "deny",
+        "priority_mode": priority_mode,
         "reasons": sorted(set(reasons)),
         "warnings": warnings,
         "task_id": task.id if task else "",
@@ -4712,7 +4772,7 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
     claims = [
         {"claim_id": "C-TP-001", "text": "Taskpool status counts are derived from canonical Markdown task notes.", "supported_by": ["E-TP-COUNTS"]},
         {"claim_id": "C-TP-002", "text": "Proof and selfcheck gates are observable before any review->done closeout.", "supported_by": ["E-TP-GATES"]},
-        {"claim_id": "C-TP-003", "text": "Parallel dispatch is dry-run only and enforces work-lane preemption / boundary isolation.", "supported_by": ["E-TP-DISPATCH"]},
+        {"claim_id": "C-TP-003", "text": "Parallel dispatch is dry-run only and enforces explicit priority-mode preemption plus boundary isolation.", "supported_by": ["E-TP-DISPATCH"]},
         {"claim_id": "C-TP-004", "text": "Autorun and multimodel autorun flags are explicit and fail-closed when disabled.", "supported_by": ["E-TP-AUTORUN"]},
         {"claim_id": "C-TP-005", "text": "Auto-completer baseline blockers, retryable runtime timeouts, not-certified ratification, long-running certification, and truth-grounded advisory awaiting ratification are classified separately from scheduler health.", "supported_by": ["E-TP-AUTO-COMPLETER"]},
         {"claim_id": "C-TP-006", "text": "Multimodel convergence/pass-rate is observable together with failure taxonomy via ratification gate.", "supported_by": ["E-TP-MULTIMODEL"]},
@@ -4747,7 +4807,10 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
             "proof_check": proof.get("status"),
             "selfcheck": selfcheck.get("status"),
             "boundary_check": boundary.get("status"),
+            "priority_mode": taskpool_priority_mode(),
+            "priority_mode_file": str(TASKPOOL_PRIORITY_MODE_FILE),
             "parallel_selected_count": parallel.get("selected_count"),
+            "parallel_selected_lanes": [str(row.get("lane") or "") for row in parallel.get("selected", []) if isinstance(row, dict)],
             "autorun_enabled": autorun["autorun_enabled"],
             "multimodel_pass_rate": (multimodel.get("convergence") or {}).get("pass_rate"),
             "multimodel_trigger_rate": (multimodel.get("convergence") or {}).get("trigger_rate"),
@@ -4854,13 +4917,19 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
         "E-TP-COUNTS", "E-TP-GATES", "E-TP-DISPATCH", "E-TP-AUTORUN",
         "E-TP-AUTO-COMPLETER", "E-TP-MULTIMODEL", "E-TP-PERMISSIONS", "E-TP-CRON",
     }
+    priority_mode = taskpool_priority_mode()
+    selected_lanes = set(spine_summary.get("parallel_selected_lanes") or [])
+    by_lane = counts.get("by_lane") or {}
+    priority_lane = "evolution" if priority_mode == "evolution-first" else "work"
+    priority_lane_available = bool(by_lane.get(priority_lane, 0))
+    priority_lane_selected = priority_lane in selected_lanes or (not selected_lanes and int(spine_summary.get("parallel_selected_count") or 0) >= 1)
     checks = [
         {"id": "CHK-EVIDENCE-SPINE", "passed": evidence_spine.get("status") == "OK" and required_evidence_ids <= evidence_ids, "evidence": "E-TP-* stable IDs"},
         {"id": "CHK-GATES", "passed": evidence_spine.get("gate_status") == "PASS" and spine_summary.get("selfcheck") == "PASS" and spine_summary.get("proof_check") == "PASS" and spine_summary.get("boundary_check") == "PASS", "evidence": "selfcheck/proof-check/boundary-check"},
         {"id": "CHK-CRON-OBSERVABILITY", "passed": spine_summary.get("cron_status") == "OK" and not spine_summary.get("cron_required_missing"), "evidence": "required taskpool cron jobs are readable and present", "missing": spine_summary.get("cron_required_missing", [])},
         {"id": "CHK-AUTO-COMPLETER-SEMANTICS", "passed": spine_summary.get("auto_completer_semantic_status") in SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES and spine_summary.get("auto_completer_safe_for_next_tick") is True, "evidence": "auto-completer cron status is semantically safe"},
         {"id": "CHK-PROOF-CHAIN", "passed": proof_ok, "evidence": str(AUTORUN_PROOF_LOG), "failures": proof_failures},
-        {"id": "CHK-WORK-PREEMPTION", "passed": bool((counts.get("by_lane") or {}).get("work", 0)) and int(spine_summary.get("parallel_selected_count") or 0) >= 1, "evidence": "parallel-dispatch-dry-run work lane selection"},
+        {"id": "CHK-PRIORITY-MODE-PREEMPTION", "passed": priority_lane_available and priority_lane_selected, "evidence": f"parallel-dispatch-dry-run selected priority lane {priority_lane}", "priority_mode": priority_mode, "selected_lanes": sorted(selected_lanes)},
         {"id": "CHK-STALE-CLAIMS", "passed": int(counts.get("stale_claims") or 0) == 0, "evidence": "canonical task counts"},
         {"id": "CHK-AUTORUN-BRIDGE", "passed": eligibility.get("status") == "PASS" and (eligibility.get("eligible") is True or "autorun_disabled" in eligibility.get("reasons", []) or "allowlist_empty" in eligibility.get("reasons", []) or "allowlist_miss" in eligibility.get("reasons", [])), "evidence": "eligibility-check is fail-closed and non-mutating"},
         {"id": "CHK-RATIFICATION-VERIFIER", "passed": verifier.get("status") == "PASS", "evidence": "ratification verifier pass+hollow-shell fail selftest"},
