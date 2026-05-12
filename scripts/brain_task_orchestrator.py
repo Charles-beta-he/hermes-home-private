@@ -39,6 +39,10 @@ AUTORUN_KILL_SWITCH = AUTORUN_STATE_DIR / "auto_run_kill_switch"
 AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
 AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
 PARALLEL_HANDOFF_DIR = AUTORUN_STATE_DIR / "parallel_handoffs"
+BUDGET_SIGNALS_PATH = AUTORUN_STATE_DIR / "budget_signals.jsonl"
+GOVERNANCE_RATCHET_PATH = AUTORUN_STATE_DIR / "governance_ratchet.json"
+MAX_T3_ROUNDS_BEFORE_THROTTLE = 3
+MAX_T3_ROUNDS_BEFORE_PAUSE = 5
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
 PROJECT_PROFILES_DIR = Path(os.environ.get("HERMES_PROJECT_PROFILES_DIR", str(HERMES_HOME / "project-profiles"))).expanduser()
 SCRIPTS_DIR = HERMES_HOME / "scripts"
@@ -873,6 +877,34 @@ def task_multimodel_passed(task: "Task") -> bool:
     return gate.get("status") == "PASS" and gate.get("decision") == "LOOP_DONE"
 
 
+def _frontmatter_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def task_multimodel_advisory_completed(task: "Task") -> bool:
+    """Return True when an advisory-only multimodel round already consumed weak triggers.
+
+    Advisory rounds are deliberately not certification authority: they must not set
+    ``multimodel_passed`` or close a task.  But once the advisory gate itself passed
+    and was recorded as PASS_ADVISORY_ONLY, rerunning the same weak advisory trigger
+    every tick is pure scheduler churn.  Strong certification triggers (stale claim,
+    P0 evolution blast radius, retry non-convergence) are handled separately and can
+    still preempt this consumed-advisory state.
+    """
+    status = task_multimodel_status(task)
+    gate_status = str(task.fm.get("multimodel_last_gate_status") or "").strip().upper()
+    advisory_only = _frontmatter_bool(task.fm.get("multimodel_advisory_only"))
+    discussion_artifact = str(task.fm.get("multimodel_last_discussion_artifact") or "").strip()
+    return (
+        status in {"advisory_completed", "not_certified"}
+        and gate_status == "PASS_ADVISORY_ONLY"
+        and advisory_only
+        and bool(discussion_artifact)
+    )
+
+
 def multimodel_convergence_stats(tasks: list["Task"] | None = None) -> dict[str, Any]:
     """Compute convergence statistics for multi-model intervention across the task pool."""
     if tasks is None:
@@ -1033,16 +1065,27 @@ def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], d
     gate_status = str(gate_result.get("status") or "SKIP").upper()
     decision = str(gate_result.get("decision") or "").upper()
     passed = gate_status == "PASS" and decision == "LOOP_DONE"
+    advisory_completed = gate_status == "PASS_ADVISORY_ONLY"
     if not decision:
         decision = "LOOP_DONE" if passed else "CONTINUE_LOOP"
     failures = gate_result.get("failures") if isinstance(gate_result.get("failures"), list) else []
     failure_summary = [str(f) for f in failures[:8]]
     if not failure_summary and gate_result.get("reason"):
         failure_summary = [str(gate_result.get("reason"))]
-    round_status = "passed" if passed else ("failed" if gate_status == "FAIL" else "skipped")
+    if passed:
+        round_status = "passed"
+    elif advisory_completed:
+        round_status = "advisory_passed"
+    else:
+        round_status = "failed" if gate_status == "FAIL" else "skipped"
+
+    advisory_reasons = task_multimodel_advisory_reasons(task)
+    cert_reasons = task_multimodel_certification_reasons(task)
+    is_advisory_only = advisory_completed or (not passed and not cert_reasons and bool(advisory_reasons))
+    multimodel_status = "certified" if passed else ("advisory_completed" if advisory_completed else "not_certified")
 
     updates = {
-        "multimodel_status": "certified" if passed else "not_certified",
+        "multimodel_status": multimodel_status,
         "multimodel_last_checked_at": iso(),
         "multimodel_round_status": round_status,
         "multimodel_last_gate_status": gate_status,
@@ -1050,6 +1093,10 @@ def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], d
         "multimodel_last_discussion_artifact": discussion_path,
         "multimodel_last_state_path": state_path,
         "multimodel_last_failures": failure_summary,
+        "multimodel_advisory_only": is_advisory_only,
+        "multimodel_certification_authority": bool(cert_reasons) or passed,
+        "multimodel_advisory_reasons": advisory_reasons,
+        "multimodel_certification_reasons": cert_reasons,
     }
     mission_envelope = is_mission_envelope_fm(task.fm)
     if mission_envelope:
@@ -1076,6 +1123,45 @@ def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], d
     return {"status": "OK", "task_id": task.id, "updates": updates, "passed": passed, "derived_refresh": derived_refresh}
 
 
+def load_governance_adjustments() -> dict[str, Any]:
+    """Load latest governance ratchet output for threshold tuning."""
+    if not GOVERNANCE_RATCHET_PATH.exists():
+        return {}
+    try:
+        return json.loads(GOVERNANCE_RATCHET_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def task_multimodel_round_count(task: "Task") -> int:
+    """Count how many multimodel rounds this task has been through."""
+    body = task.body or ""
+    return body.count("Multimodel PUA-loop round")
+
+
+def task_multimodel_economy_gate(task: "Task") -> dict[str, Any]:
+    """Apply loop economy rules: throttle or pause tasks with too many failed rounds."""
+    rounds = task_multimodel_round_count(task)
+    last_status = str(task.fm.get("multimodel_round_status") or "")
+    last_decision = str(task.fm.get("multimodel_last_decision") or "").upper()
+
+    if rounds >= MAX_T3_ROUNDS_BEFORE_PAUSE and last_status == "failed":
+        return {
+            "action": "pause",
+            "reason": f"task has {rounds} failed T3 rounds (max={MAX_T3_ROUNDS_BEFORE_PAUSE}); requires human review or targeted evidence fix",
+            "allowed_tier": "none",
+            "rounds": rounds,
+        }
+    if rounds >= MAX_T3_ROUNDS_BEFORE_THROTTLE and last_status == "failed":
+        return {
+            "action": "throttle",
+            "reason": f"task has {rounds} failed T3 rounds (throttle={MAX_T3_ROUNDS_BEFORE_THROTTLE}); downgrading to T2 advisory",
+            "allowed_tier": "T2_advisory",
+            "rounds": rounds,
+        }
+    return {"action": "allow", "allowed_tier": "any", "rounds": rounds}
+
+
 def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     """Return automatic multi-model intervention reasons for active task notes.
 
@@ -1083,8 +1169,9 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     never treated as evidence here. The command surfaces when to invoke the live
     consult_models.py PUA-loop gate; it does not mutate task state or execute hooks.
 
-    Trigger strategy: structural-first, keyword-supplemented.
+    Trigger strategy: structural-first, keyword-supplemented, signal-consumed.
     - Strong structural triggers fire immediately (P0+evolution, retry>=2).
+    - Budget signals from doctor --emit-signal upgrade weak signals to T1/T2.
     - Keywords only add reasons when at least one structural reason exists.
     - Requires >= 2 reasons to fire (prevents noise from single weak signals).
     - Keyword search uses title + concepts only (not body/metadata).
@@ -1100,6 +1187,11 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
         reasons.append("loop_non_convergence")
     if task.is_stale_claim():
         reasons.append("stale_claim")
+
+    # Advisory-only PASS consumes weak advisory triggers, but never masks strong
+    # certification triggers above.
+    if task_multimodel_advisory_completed(task) and not reasons:
+        return []
 
     # --- Structural signals (need keyword or another signal to fire) ---
     if task.status in {"running", "review"}:
@@ -1127,8 +1219,21 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
             reasons.append("one_shot_keyword")
 
     unique = sorted(set(reasons))
-    # Strong triggers fire alone; everything else needs >= 2 signals.
     strong = {"p0_evolution_blast_radius", "loop_non_convergence", "stale_claim"}
+    # Budget signal upgrade: if doctor emitted recent high-severity signals,
+    # boost any weak trigger to T2 advisory level.
+    if not (strong & set(unique)) and BUDGET_SIGNALS_PATH.exists():
+        try:
+            lines = BUDGET_SIGNALS_PATH.read_text(encoding="utf-8").splitlines()[-20:]
+            for raw in reversed(lines):
+                sig = json.loads(raw)
+                if sig.get("severity") in ("high", "critical") and sig.get("recommended_tier") in ("T2_advisory", "T3_advisory"):
+                    if "iteration_budget_signal" not in unique:
+                        unique.append("iteration_budget_signal")
+                        break
+        except Exception:
+            pass
+    # Strong triggers fire alone; everything else needs >= 2 signals.
     if strong & set(unique):
         return unique
     if len(unique) >= 2:
@@ -1138,6 +1243,18 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
 
 def task_multimodel_intervention_required(task: "Task") -> bool:
     return bool(task_multimodel_intervention_reasons(task))
+
+
+def task_multimodel_advisory_reasons(task: "Task") -> list[str]:
+    reasons = task_multimodel_intervention_reasons(task)
+    strong_certification = {"p0_evolution_blast_radius", "loop_non_convergence", "stale_claim"}
+    return sorted([r for r in reasons if r not in strong_certification])
+
+
+def task_multimodel_certification_reasons(task: "Task") -> list[str]:
+    reasons = task_multimodel_intervention_reasons(task)
+    strong_certification = {"p0_evolution_blast_radius", "loop_non_convergence", "stale_claim"}
+    return sorted([r for r in reasons if r in strong_certification])
 
 
 @dataclasses.dataclass
@@ -1890,6 +2007,57 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
     return {"status": "OK", "write": bool(args.write), "created_count": len(created), "created": created, "inbox": str(INBOX), "derived_refresh": derived_refresh}
 
 
+def maybe_stream_multimodel_intervention(task: "Task") -> dict[str, Any]:
+    """Event-driven multimodel intervention: spawn immediately on lifecycle transition.
+
+    Called after claim/running transitions. If the task is triggered for
+    multimodel intervention and passes economy gate, spawns a background
+    worker to process it without waiting for the next cron tick.
+
+    Returns: status dict with action taken.
+    """
+    if not task_multimodel_intervention_required(task):
+        return {"action": "skip", "reason": "not_triggered"}
+
+    economy = task_multimodel_economy_gate(task)
+    if economy["action"] == "pause":
+        return {"action": "skip", "reason": "economy_pause", "economy": economy}
+
+    # Check if already being processed (has recent multimodel check)
+    last_checked = str(task.fm.get("multimodel_last_checked_at") or "")
+    if last_checked:
+        try:
+            from datetime import datetime, timezone, timedelta
+            checked_dt = datetime.fromisoformat(last_checked.replace("Z", "+00:00"))
+            if datetime.now(timezone.utc) - checked_dt < timedelta(minutes=30):
+                return {"action": "skip", "reason": "recently_checked", "last_checked": last_checked}
+        except Exception:
+            pass
+
+    # Spawn background worker for this single task
+    import subprocess as _sp
+    env = os.environ.copy()
+    env["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = "1"
+    cmd = [
+        sys.executable, str(HERMES_HOME / "scripts" / "brain_task_orchestrator.py"),
+        "multimodel-intervention-step", "--task", task.id, "--json",
+    ]
+    log_path = HERMES_HOME / "logs" / "multimodel_streaming.jsonl"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    logf = log_path.open("a", encoding="utf-8")
+    try:
+        proc = _sp.Popen(cmd, stdout=logf, stderr=_sp.STDOUT, text=True, start_new_session=True, env=env)
+        return {
+            "action": "spawned",
+            "pid": proc.pid,
+            "task_id": task.id,
+            "recommended_tier": economy.get("allowed_tier", "any"),
+            "economy": economy,
+        }
+    except Exception as exc:
+        return {"action": "spawn_failed", "error": str(exc)}
+
+
 def command_claim(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
     active_claim = has_active_claim(t)
@@ -1905,7 +2073,11 @@ def command_claim(args: argparse.Namespace) -> dict[str, Any]:
         t.fm["run_id"] = run_id
     save_task(t)
     derived_refresh = refresh_derived_task_views("claim")
-    return {"status": "OK", "task": t.id, "claimed_by": args.actor, "claim_expires_at": t.fm["claim_expires_at"], "warnings": warnings, "path": str(t.path), "derived_refresh": derived_refresh}
+
+    # Event-driven streaming: immediately trigger multimodel if needed
+    streaming = maybe_stream_multimodel_intervention(t)
+
+    return {"status": "OK", "task": t.id, "claimed_by": args.actor, "claim_expires_at": t.fm["claim_expires_at"], "warnings": warnings, "path": str(t.path), "derived_refresh": derived_refresh, "multimodel_streaming": streaming}
 
 
 def command_release(args: argparse.Namespace) -> dict[str, Any]:
@@ -2029,6 +2201,12 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
     apply_lifecycle_status(t, to_status, args.actor, evidence=args.evidence, reason=args.reason, ttl_minutes=args.ttl_minutes, delay_minutes=args.delay_minutes, force=args.force)
     save_task(t)
     derived_refresh = refresh_derived_task_views("transition")
+
+    # Event-driven streaming: trigger multimodel on running/review transitions
+    streaming = {}
+    if to_status in {"running", "review"}:
+        streaming = maybe_stream_multimodel_intervention(t)
+
     return {
         "status": "OK",
         "task": t.id,
@@ -2038,6 +2216,7 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
         "path": str(t.path),
         "next_allowed": allowed_next_statuses(to_status),
         "derived_refresh": derived_refresh,
+        "multimodel_streaming": streaming,
     }
 
 
@@ -2886,6 +3065,32 @@ def multimodel_state_evidence_args(task: Task, reasons: list[str]) -> str:
 
 def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
     reasons = task_multimodel_intervention_reasons(task)
+    advisory_reasons = task_multimodel_advisory_reasons(task)
+    cert_reasons = task_multimodel_certification_reasons(task)
+
+    # Loop economy gate
+    economy = task_multimodel_economy_gate(task)
+    if economy["action"] == "pause":
+        return {
+            "schema": "local_brain_multimodel_intervention_v1",
+            "task": task.row(),
+            "trigger_reasons": reasons,
+            "advisory_reasons": advisory_reasons,
+            "certification_reasons": cert_reasons,
+            "advisory_only": True,
+            "recommended_tier": "none",
+            "intervention_required": False,
+            "economy_gate": economy,
+            "state_path": "",
+            "build_state_command": "",
+            "run_discussion_command": "",
+        }
+
+    # Apply economy throttle to tier
+    if economy["action"] == "throttle" and cert_reasons:
+        advisory_reasons = advisory_reasons + cert_reasons
+        cert_reasons = []
+
     state_dir = HERMES_HOME / "state" / "taskpool-multimodel"
     state_path = state_dir / f"{task.id}-state.json"
     question = (
@@ -2918,7 +3123,12 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
             "one_shot_landing": "output must be a directly executable next slice with acceptance evidence and rollback boundary",
         },
         "trigger_reasons": reasons,
+        "advisory_reasons": advisory_reasons,
+        "certification_reasons": cert_reasons,
+        "advisory_only": bool(advisory_reasons) and not bool(cert_reasons),
+        "recommended_tier": "T3_certification" if cert_reasons else ("T2_advisory" if len(reasons) >= 3 else "T1_advisory"),
         "intervention_required": bool(reasons),
+        "economy_gate": economy,
         "pua_loop": {
             "mode": "continue_until_multimodel_pass",
             "round_gate": "run deterministic checks -> build target-bound claim/evidence state -> consult_models.py --tier T3 --quorum 4 --discussion -> ratification-gate; continue if gate != PASS",
@@ -3037,6 +3247,9 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
     run_cmd = selected.get("run_discussion_command", "")
     state_path = selected.get("state_path", "")
 
+    recommended_tier = selected.get("recommended_tier", "T3_certification")
+    advisory_only_plan = selected.get("advisory_only", False)
+
     result: dict[str, Any] = {
         "status": "OK",
         "schema": "local_brain_multimodel_intervention_step_v1",
@@ -3044,6 +3257,9 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
         "task_id": task_id,
         "state_path": state_path,
         "allowlist_active": allowlist_active,
+        "recommended_tier": recommended_tier,
+        "advisory_only": advisory_only_plan,
+        "tier_routing": "advisory" if advisory_only_plan else "certification",
     }
 
     # Step 1: Build state file (shell=True for && chains)
@@ -3110,6 +3326,8 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
     # Step 4: Persist every round outcome.  PASS certifies; non-PASS records
     # fail-closed state so the next tick/human sees why the loop continues.
     round_gate = gate_result or {"status": "SKIP", "decision": "continue_loop", "reason": "no_discussion_result", "failures": ["no_discussion_result"]}
+    if advisory_only_plan and round_gate.get("status") == "PASS" and str(round_gate.get("decision", "")).upper() == "LOOP_DONE":
+        round_gate = {**round_gate, "status": "PASS_ADVISORY_ONLY", "decision": "continue_loop", "advisory_block": "advisory_only_task_cannot_authorize_done"}
     task = find_task(task_id)
     if task:
         result["task_mutation"] = write_multimodel_result_to_task(task, round_gate, discussion_path, state_path)
@@ -3195,6 +3413,9 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
     # Step 4: Persist every round outcome. PASS certifies; non-PASS records
     # fail-closed state for the next PUA-loop iteration.
     round_gate = gate_result or {"status": "SKIP", "decision": "continue_loop", "reason": "no_discussion_result", "failures": ["no_discussion_result"]}
+    advisory_only_plan = plan.get("advisory_only", False)
+    if advisory_only_plan and round_gate.get("status") == "PASS" and str(round_gate.get("decision", "")).upper() == "LOOP_DONE":
+        round_gate = {**round_gate, "status": "PASS_ADVISORY_ONLY", "decision": "continue_loop", "advisory_block": "advisory_only_task_cannot_authorize_done"}
     task = find_task(task_id)
     if task:
         result["task_mutation"] = write_multimodel_result_to_task(task, round_gate, discussion_path, state_path)

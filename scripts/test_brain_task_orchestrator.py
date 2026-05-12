@@ -1078,6 +1078,62 @@ def test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dash
         assert "/tmp/discussion-pass.json" not in reverted_dashboard
 
 
+def test_advisory_only_pass_is_consumed_without_certification_authority():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        vault = root / "brain"
+        tasks_dir = vault / "05-实践与项目" / "tasks"
+        dashboard_dir = vault / "07-仪表盘"
+        tasks_dir.mkdir(parents=True)
+        dashboard_dir.mkdir(parents=True)
+        mod.VAULT = vault
+        mod.TASKS_DIR = tasks_dir
+        mod.DASHBOARD = dashboard_dir / "待完成任务运行态.md"
+        mod.CONTROL_CENTER = dashboard_dir / "待完成任务控制台.md"
+        mod.SORTED_POOL = tasks_dir / "任务池-排序.md"
+        mod.INBOX = tasks_dir / "任务收件箱.md"
+
+        task_path = tasks_dir / "2026-05-12-advisory-only.md"
+        task = mod.Task(
+            path=task_path,
+            fm={
+                "type": "task",
+                "status": "pending",
+                "priority": "P1",
+                "lane": "evolution",
+                "project": "hermes-agent",
+                "architecture_target": "provider-quota",
+                "concepts": ["provider-quota", "accuracy"],
+            },
+            body="# Task - advisory only provider-quota accuracy\n\n## Proof Log\n",
+        )
+        mod.save_task(task)
+        before = mod.find_task(task.id)
+        assert mod.task_multimodel_intervention_required(before) is True
+        assert "evolution_lane" in mod.task_multimodel_advisory_reasons(before)
+
+        advisory_gate = {"status": "PASS_ADVISORY_ONLY", "decision": "continue_loop", "failures": []}
+        result = mod.write_multimodel_result_to_task(before, advisory_gate, "/tmp/discussion-advisory.json", "/tmp/state-advisory.json")
+        assert result["passed"] is False, result
+        assert result["updates"]["multimodel_status"] == "advisory_completed", result
+        assert result["updates"]["multimodel_round_status"] == "advisory_passed", result
+        assert result["updates"]["multimodel_advisory_only"] is True, result
+        assert result["updates"]["multimodel_certification_authority"] is False, result
+
+        after = mod.find_task(task.id)
+        assert mod.task_multimodel_passed(after) is False
+        assert mod.task_multimodel_advisory_completed(after) is True
+        assert mod.task_multimodel_intervention_required(after) is False
+        text = task_path.read_text(encoding="utf-8")
+        assert "multimodel_status: advisory_completed" in text
+        assert "multimodel_round_status: advisory_passed" in text
+        assert "multimodel_ratification_artifact:" not in text
+
+        after.fm["retry_count"] = 2
+        assert "loop_non_convergence" in mod.task_multimodel_intervention_reasons(after)
+
+
 def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics():
     td, _vault, env = make_env_and_vault()
     with td:
