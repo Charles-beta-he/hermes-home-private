@@ -71,6 +71,7 @@ SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES = {
     "truth_grounded_advisory_not_ratified",
     "certification_not_certified",
     "certification_long_running",
+    "recursive_evidence_spine_self_lock",
 }
 VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "blocked", "done", "archived", "expired"]
 STATUS_ALIASES = {"completed": "done"}  # legacy notes may use completed; normalize as terminal done.
@@ -169,7 +170,8 @@ LIFECYCLE_TRANSITIONS: dict[str, list[str]] = {
 }
 REASON_REQUIRED_TO = {"retry", "blocked"}
 EVIDENCE_REQUIRED_TO = {"review", "done"}
-CLAIM_BOUND_STATUSES = {"claimed", "running", "review"}
+CLAIM_BOUND_STATUSES = {"claimed", "running"}
+PROFILE_GATED_STATUSES = CLAIM_BOUND_STATUSES | {"review", "done"}
 INITIAL_TASK_STATUSES = {"proposed", "pending"}
 RECONCILE_STALE_CLAIM_STATUSES = {"pending", "blocked", "expired"}
 RECONCILE_OVER_RETRY_STATUSES = {"blocked", "expired"}
@@ -972,6 +974,8 @@ def load_cron_jobs_snapshot(names: list[str] | None = None) -> dict[str, Any]:
             "last_status": job.get("last_status"),
             "last_error_tail": redact_for_evidence(last_error),
             "last_delivery_error_tail": redact_for_evidence(last_delivery_error),
+            "_last_error_raw": last_error,
+            "_last_delivery_error_raw": last_delivery_error,
             "delivery_configured": bool(job.get("deliver")),
             "script_configured": bool(job.get("script")),
             "no_agent": job.get("no_agent"),
@@ -1412,6 +1416,7 @@ class Task:
             "project_profile_error": str(project_profile.get("error") or ""),
             "claimed_by": self.fm.get("claimed_by") or "",
             "claim_expires_at": self.fm.get("claim_expires_at") or "",
+            "run_id": self.fm.get("run_id") or "",
             "retry_count": self.fm.get("retry_count") or 0,
             "next_attempt_at": self.fm.get("next_attempt_at") or "",
             "expires_at": self.fm.get("expires_at") or "",
@@ -1738,13 +1743,13 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
         failures.append(f"invalid current status {from_status}: {task.id}")
         return failures, warnings
     missing_alignment = architecture_alignment_missing(task.fm)
-    if missing_alignment and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
+    if missing_alignment and to_status in PROFILE_GATED_STATUSES and not force:
         failures.append(f"evolution_architecture_alignment_missing: {missing_alignment}")
     missing_profile = project_profile_failures(task)
-    if missing_profile and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
+    if missing_profile and to_status in PROFILE_GATED_STATUSES and not force:
         failures.extend(missing_profile)
     missing_mission = mission_envelope_missing(task.fm)
-    if missing_mission and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
+    if missing_mission and to_status in PROFILE_GATED_STATUSES and not force:
         failures.append(f"mission envelope missing {missing_mission}: {task.id}")
     if force and reason.lower() in {"", "not specified", "none"}:
         failures.append("--force requires --reason so manual overrides are auditable")
@@ -4491,11 +4496,69 @@ def task_counts_snapshot(tasks: list[Task]) -> dict[str, Any]:
     }
 
 
+def parse_first_json_object(text: str) -> dict[str, Any] | None:
+    start = text.find("{")
+    if start < 0:
+        return None
+    try:
+        data, _end = json.JSONDecoder().raw_decode(text[start:])
+    except Exception:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def auto_completer_recursive_self_lock(last_error: str) -> bool:
+    """Detect dynamic-runner → tick → evidence-spine self-locks.
+
+    The auto-completer cron can legitimately be the only reason evidence-spine
+    is WARN: its previous tick failed because evidence-spine saw that same prior
+    auto-completer error.  Once this classifier recognizes the state, the next
+    evidence-spine run becomes PASS.  Unknown/non-structured errors still fail
+    closed.
+    """
+    if "taskpool_dynamic_runner_v1" not in last_error:
+        return False
+    root = parse_first_json_object(last_error.split("stdout:", 1)[-1])
+    if not root or root.get("schema") != "taskpool_dynamic_runner_v1":
+        return False
+    root_summary = root.get("summary") if isinstance(root.get("summary"), dict) else {}
+    if root_summary.get("status") != "ERROR" or str(root_summary.get("error_count") or "") != "1":
+        return False
+    tick = root.get("tick") if isinstance(root.get("tick"), dict) else {}
+    tick_cmd_parts = tick.get("cmd") if isinstance(tick.get("cmd"), list) else []
+    tick_cmd_basenames = {Path(str(part)).name for part in tick_cmd_parts}
+    if "brain_task_dispatch_tick.py" not in tick_cmd_basenames or "--summary" not in {str(part) for part in tick_cmd_parts}:
+        return False
+    if str(tick.get("returncode") or "") != "2":
+        return False
+    tick_payload = parse_first_json_object(str(tick.get("stdout") or "")) or {}
+    evidence_spine = tick_payload.get("evidence_spine") if isinstance(tick_payload.get("evidence_spine"), dict) else {}
+    spine_summary = evidence_spine.get("summary") if isinstance(evidence_spine.get("summary"), dict) else {}
+    tick_summary_is_single_dispatch_error = (
+        tick_payload.get("schema") == "brain_task_dispatch_tick_summary_v1"
+        and tick_payload.get("error_count") == 1
+    )
+    structured_self_lock = (
+        tick_summary_is_single_dispatch_error
+        and evidence_spine.get("status") in {"FAIL", "ERROR"}
+        and spine_summary.get("auto_completer_semantic_status") == "error"
+        and spine_summary.get("auto_completer_safe_for_next_tick") is False
+    )
+    legacy_generic_self_lock = (
+        tick_summary_is_single_dispatch_error
+        and evidence_spine.get("status") == "ERROR"
+        and evidence_spine.get("gate_status") in {None, ""}
+        and not spine_summary
+        and "brain_task_dispatch_tick.py" in str(tick_payload.get("recovery_command") or "")
+    )
+    return tick_payload.get("status") == "ERROR" and (structured_self_lock or legacy_generic_self_lock)
+
+
 def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
     if not job:
         return {"semantic_status": "missing", "task_result": "unknown", "blockers": [], "safe_for_next_tick": False}
     last_status = str(job.get("last_status") or "")
-    last_error = str(job.get("last_error") or job.get("last_error_tail") or "")
+    last_error = str(job.get("_last_error_raw") or job.get("last_error") or job.get("last_error_tail") or "")
     lower = last_error.lower()
     blockers: list[str] = []
     if "ts6133" in lower or "unused" in lower:
@@ -4558,6 +4621,9 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
         "waiting for ratification",
         "等待 ratification",
     ))
+    recursive_self_lock = auto_completer_recursive_self_lock(last_error)
+    if recursive_self_lock:
+        blockers.append("recursive_evidence_spine_self_lock")
     if truth_grounded_advisory_not_ratified:
         blockers.append("ratification_pending")
     elif not_certified_signal:
@@ -4584,6 +4650,10 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
         semantic_status = "retryable_runtime_timeout"
         task_result = "scheduler_retry_or_deterministic_replacement_required"
         safe_for_next_tick = True
+    elif last_status == "error" and recursive_self_lock:
+        semantic_status = "recursive_evidence_spine_self_lock"
+        task_result = "scheduler_recursive_gate_waiting_for_next_tick"
+        safe_for_next_tick = True
     elif last_status == "ok":
         semantic_status = "ok"
         task_result = "completed_or_noop"
@@ -4607,6 +4677,16 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
+def sanitize_cron_snapshot_for_evidence(cron: dict[str, Any]) -> dict[str, Any]:
+    sanitized = dict(cron)
+    sanitized["jobs"] = [
+        {k: v for k, v in job.items() if not str(k).startswith("_")}
+        for job in cron.get("jobs", [])
+        if isinstance(job, dict)
+    ]
+    return sanitized
+
+
 def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
     tasks = iter_tasks()
     counts = task_counts_snapshot(tasks)
@@ -4619,6 +4699,8 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
     cron = load_cron_jobs_snapshot(TASKPOOL_CRON_JOB_NAMES)
     auto_job = next((j for j in cron.get("jobs", []) if j.get("name") == "local-brain-taskpool-auto-completer"), None)
     auto_semantics = classify_auto_completer_job(auto_job)
+    sanitized_cron = sanitize_cron_snapshot_for_evidence(cron)
+    sanitized_auto_job = {k: v for k, v in auto_job.items() if not str(k).startswith("_")} if isinstance(auto_job, dict) else None
     autorun = {
         "autorun_enabled": os.environ.get(AUTORUN_ENV_FLAG) == "1",
         "multimodel_autorun_enabled": os.environ.get(MULTIMODEL_AUTORUN_ENV_FLAG) == "1",
@@ -4641,10 +4723,10 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
         {"evidence_id": "E-TP-GATES", "type": "command_result", "supports": ["C-TP-002"], "payload": {"proof_check": proof, "selfcheck": selfcheck}},
         {"evidence_id": "E-TP-DISPATCH", "type": "dry_run", "supports": ["C-TP-003"], "payload": {"boundary": boundary, "parallel_dispatch": parallel}},
         {"evidence_id": "E-TP-AUTORUN", "type": "policy_state", "supports": ["C-TP-004"], "payload": autorun},
-        {"evidence_id": "E-TP-AUTO-COMPLETER", "type": "cron_semantics", "supports": ["C-TP-005"], "payload": {"cron_job": auto_job, "classification": auto_semantics}},
+        {"evidence_id": "E-TP-AUTO-COMPLETER", "type": "cron_semantics", "supports": ["C-TP-005"], "payload": {"cron_job": sanitized_auto_job, "classification": auto_semantics}},
         {"evidence_id": "E-TP-MULTIMODEL", "type": "dry_run", "supports": ["C-TP-006"], "payload": {"convergence": multimodel.get("convergence", {}), "queued_count": multimodel.get("queued_count"), "selected_task_id": multimodel.get("selected_task_id"), "taxonomy_schema": "local_brain_multimodel_failure_taxonomy_v1"}},
         {"evidence_id": "E-TP-PERMISSIONS", "type": "permission_audit", "supports": ["C-TP-007"], "payload": permission_audit},
-        {"evidence_id": "E-TP-CRON", "type": "scheduler_state", "supports": ["C-TP-004", "C-TP-005"], "payload": cron},
+        {"evidence_id": "E-TP-CRON", "type": "scheduler_state", "supports": ["C-TP-004", "C-TP-005"], "payload": sanitized_cron},
     ]
     cron_job_names = {str(j.get("name") or "") for j in cron.get("jobs", []) if isinstance(j, dict)}
     cron_required_present = sorted(set(TASKPOOL_CRON_JOB_NAMES) - cron_job_names)
@@ -4939,11 +5021,11 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
             failures.append(f"status missing lifecycle transition contract {t.status}: {t.path}")
         if t.priority not in PRIORITY_WEIGHT:
             warnings.append(f"unknown priority {t.priority}: {t.path}")
-        if t.status in {"claimed", "running", "review"} and not t.fm.get("claimed_by"):
+        if t.status in CLAIM_BOUND_STATUSES and not t.fm.get("claimed_by"):
             failures.append(f"claim-bound status missing claimed_by: {t.path}")
-        if t.status in {"claimed", "running", "review"} and not t.fm.get("claim_expires_at"):
+        if t.status in CLAIM_BOUND_STATUSES and not t.fm.get("claim_expires_at"):
             failures.append(f"claim-bound status missing claim_expires_at: {t.path}")
-        if t.status in {"claimed", "running", "review"} and not t.fm.get("run_id"):
+        if t.status in CLAIM_BOUND_STATUSES and not t.fm.get("run_id"):
             failures.append(f"claim-bound status missing run_id: {t.path}")
         if t.status not in TERMINAL_STATUSES and not t.fm.get("expires_at"):
             warnings.append(f"active task missing expires_at: {t.path}")

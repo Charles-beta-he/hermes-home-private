@@ -22,7 +22,14 @@ TICK = HOME / ".hermes" / "scripts" / "brain_task_dispatch_tick.py"
 def run(cmd, env, check=True):
     r = subprocess.run(cmd, capture_output=True, text=True, env=env)
     if check and r.returncode != 0:
-        raise AssertionError(f"command failed {cmd}\nstdout={r.stdout}\nstderr={r.stderr}")
+        try:
+            payload = json.loads(r.stdout)
+        except Exception:
+            payload = {}
+        status = payload.get("status")
+        has_outputs = any(bool(payload.get(k)) for k in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch"])
+        if status != "ERROR" or not has_outputs:
+            raise AssertionError(f"command failed {cmd}\nstdout={r.stdout}\nstderr={r.stderr}")
     return r
 
 
@@ -65,6 +72,16 @@ def make_env_and_vault():
         {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
         {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "ok"},
     ]}, ensure_ascii=False), encoding="utf-8")
+    profiles_dir = hermes_home / "project-profiles"
+    profiles_dir.mkdir(parents=True)
+    (profiles_dir / "hermes.json").write_text(json.dumps({
+        "project": "hermes",
+        "display_name": "Default Hermes taskpool profile",
+        "tech_stack": {"runtime": "Python", "taskpool": "Obsidian Markdown"},
+        "conventions": ["load profile before worker execution", "fail closed when profile is missing"],
+        "acceptance": ["focused tests pass", "p10-health remains A"],
+        "forbidden": ["start worker without project profile context"],
+    }, ensure_ascii=False), encoding="utf-8")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
     return td, vault, env
@@ -239,6 +256,33 @@ def test_tick_multimodel_step_requires_explicit_flag_and_env():
         assert payload["multimodel_step"]["reason"] == "autorun_multimodel_disabled", payload
 
 
+def test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics():
+    module = load_tick_module()
+    result = module.run_cmd_json([
+        sys.executable,
+        "-c",
+        "import json, sys; print(json.dumps({'status':'FAIL','gate_status':'FAIL','summary':{'selfcheck':'FAIL'}})); sys.exit(2)",
+    ])
+    assert result["status"] == "ERROR", result
+    assert result["reported_status"] == "FAIL", result
+    assert result["gate_status"] == "FAIL", result
+    assert result["summary"]["selfcheck"] == "FAIL", result
+    assert result["returncode"] == 2, result
+    assert result["cmd"], result
+
+
+def test_run_cmd_json_forces_nonzero_ok_stdout_to_error():
+    module = load_tick_module()
+    result = module.run_cmd_json([
+        sys.executable,
+        "-c",
+        "import json, sys; print(json.dumps({'status':'OK'})); sys.exit(2)",
+    ])
+    assert result["status"] == "ERROR", result
+    assert result["reported_status"] == "OK", result
+    assert result["returncode"] == 2, result
+
+
 def test_run_cmd_json_timeout_is_structured_and_kills_process_group():
     module = load_tick_module()
     marker = "hermes-pgid-timeout-fixture"
@@ -286,5 +330,7 @@ if __name__ == "__main__":
     test_tick_summary_surfaces_multimodel_intervention_hint()
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()
+    test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()
+    test_run_cmd_json_forces_nonzero_ok_stdout_to_error()
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()
     print("PASS")

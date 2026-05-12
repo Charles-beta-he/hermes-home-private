@@ -93,6 +93,11 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
     return created["id"], Path(created["created"])
 
 
+def task_row(env, task_id):
+    rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+    return next(r for r in rows if r["id"] == task_id)
+
+
 def add_evolution_task(env, title="优化本地任务池自进化", priority="P0"):
     r = run(
         env,
@@ -358,6 +363,15 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert running2["to_status"] == "running"
         review2 = json.loads(run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: unit-test PASS", "--json").stdout)
         assert review2["to_status"] == "review"
+        review_row = task_row(env, task_id)
+        assert review_row["status"] == "review"
+        assert review_row["claimed_by"] == ""
+        assert review_row["claim_expires_at"] == ""
+        assert review_row["run_id"] == ""
+        review_lifecycle = json.loads(run(env, "lifecycle", "--json").stdout)
+        assert review_lifecycle["status"] == "PASS", review_lifecycle
+        review_selfcheck = json.loads(run(env, "selfcheck", "--json").stdout)
+        assert review_selfcheck["status"] == "PASS", review_selfcheck
         done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final unit-test PASS", "--json").stdout)
         assert done["status"] == "OK"
         proof = json.loads(run(env, "proof-check", "--json").stdout)
@@ -1255,6 +1269,107 @@ def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics(
         assert long_running_classification["semantic_status"] == "certification_long_running", long_running_classification
         assert long_running_classification["task_result"] == "task_certification_still_running_wait_for_result", long_running_classification
         assert long_running_classification["safe_for_next_tick"] is True, long_running_classification
+
+        nested_self_lock = {
+            "schema": "taskpool_dynamic_runner_v1",
+            "changed": True,
+            "multimodel_dynamic": {"returncode": 0, "stdout": json.dumps({"status": "OK", "action": "started_worker"}, ensure_ascii=False)},
+            "summary": {"status": "ERROR", "error_count": 1, "auto_completer_semantic_status": "error"},
+            "tick": {
+                "cmd": [sys.executable, str(Path.home() / ".hermes" / "scripts" / "brain_task_dispatch_tick.py"), "--summary", "--autorun-step", "--no-state"],
+                "returncode": 2,
+                "stdout": json.dumps({
+                    "schema": "brain_task_dispatch_tick_summary_v1",
+                    "status": "ERROR",
+                    "error_count": 1,
+                    "recovery_command": "python3 /Users/charles/.hermes/scripts/brain_task_dispatch_tick.py --print-always --no-state",
+                    "evidence_spine": {
+                        "status": "ERROR",
+                        "gate_status": None,
+                        "summary": {},
+                    },
+                }, ensure_ascii=False),
+            },
+        }
+        cron_path.write_text(json.dumps({"jobs": [
+            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
+            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
+            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "Script exited with code 2\nstdout:\n" + json.dumps(nested_self_lock, ensure_ascii=False)},
+        ]}, ensure_ascii=False), encoding="utf-8")
+        recursive_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
+        recursive_classification = next(e for e in recursive_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
+        assert recursive_spine["status"] == "OK", recursive_spine
+        assert recursive_spine["gate_status"] == "PASS", recursive_spine
+        assert recursive_classification["semantic_status"] == "recursive_evidence_spine_self_lock", recursive_classification
+        assert recursive_classification["task_result"] == "scheduler_recursive_gate_waiting_for_next_tick", recursive_classification
+        assert recursive_classification["safe_for_next_tick"] is True, recursive_classification
+        recursive_auto_payload = next(e for e in recursive_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]
+        recursive_cron_payload = next(e for e in recursive_spine["evidence"] if e["evidence_id"] == "E-TP-CRON")["payload"]
+        assert all(not str(k).startswith("_") for k in recursive_auto_payload["cron_job"]), recursive_auto_payload
+        assert all(
+            all(not str(k).startswith("_") for k in job)
+            for job in recursive_cron_payload.get("jobs", [])
+        ), recursive_cron_payload
+
+        mod = load_orchestrator_module()
+        unrelated_evidence_failure = json.loads(json.dumps(nested_self_lock))
+        unrelated_evidence_failure["tick"]["cmd"] = [sys.executable, str(Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"), "evidence-spine", "--json"]
+        assert not mod.auto_completer_recursive_self_lock("Script exited with code 2\nstdout:\n" + json.dumps(unrelated_evidence_failure, ensure_ascii=False))
+        malformed_runner = json.loads(json.dumps(nested_self_lock))
+        malformed_runner["summary"] = {"status": "ERROR", "error_count": 2}
+        assert not mod.auto_completer_recursive_self_lock("Script exited with code 2\nstdout:\n" + json.dumps(malformed_runner, ensure_ascii=False))
+        wrong_recovery = json.loads(json.dumps(nested_self_lock))
+        wrong_recovery["tick"]["stdout"] = json.dumps({
+            "schema": "brain_task_dispatch_tick_summary_v1",
+            "status": "ERROR",
+            "error_count": 1,
+            "recovery_command": "python3 /tmp/not_dispatch.py --print-always",
+            "evidence_spine": {"status": "ERROR", "gate_status": None, "summary": {}},
+        }, ensure_ascii=False)
+        assert not mod.auto_completer_recursive_self_lock("Script exited with code 2\nstdout:\n" + json.dumps(wrong_recovery, ensure_ascii=False))
+        for bad_returncode in ["ERROR", "error", "timeout", 1, None]:
+            bad_returncode_runner = json.loads(json.dumps(nested_self_lock))
+            if bad_returncode is None:
+                bad_returncode_runner["tick"].pop("returncode", None)
+            else:
+                bad_returncode_runner["tick"]["returncode"] = bad_returncode
+            assert not mod.auto_completer_recursive_self_lock(
+                "Script exited with code 2\nstdout:\n" + json.dumps(bad_returncode_runner, ensure_ascii=False)
+            ), bad_returncode_runner
+        structured_self_lock = json.loads(json.dumps(nested_self_lock))
+        structured_self_lock["tick"]["stdout"] = json.dumps({
+            "schema": "brain_task_dispatch_tick_summary_v1",
+            "status": "ERROR",
+            "error_count": 1,
+            "evidence_spine": {
+                "status": "ERROR",
+                "gate_status": "WARN",
+                "summary": {
+                    "auto_completer_semantic_status": "error",
+                    "auto_completer_safe_for_next_tick": False,
+                },
+            },
+        }, ensure_ascii=False)
+        assert mod.auto_completer_recursive_self_lock(
+            "Script exited with code 2\nstdout:\n" + json.dumps(structured_self_lock, ensure_ascii=False)
+        ), structured_self_lock
+        structured_extra_error = json.loads(json.dumps(structured_self_lock))
+        structured_extra_payload = json.loads(structured_extra_error["tick"]["stdout"])
+        structured_extra_payload["error_count"] = 2
+        structured_extra_error["tick"]["stdout"] = json.dumps(structured_extra_payload, ensure_ascii=False)
+        assert not mod.auto_completer_recursive_self_lock(
+            "Script exited with code 2\nstdout:\n" + json.dumps(structured_extra_error, ensure_ascii=False)
+        ), structured_extra_error
+        structured_wrong_schema = json.loads(json.dumps(structured_self_lock))
+        structured_wrong_payload = json.loads(structured_wrong_schema["tick"]["stdout"])
+        structured_wrong_payload["schema"] = "other_tick_summary_v1"
+        structured_wrong_schema["tick"]["stdout"] = json.dumps(structured_wrong_payload, ensure_ascii=False)
+        assert not mod.auto_completer_recursive_self_lock(
+            "Script exited with code 2\nstdout:\n" + json.dumps(structured_wrong_schema, ensure_ascii=False)
+        ), structured_wrong_schema
 
         cron_path.write_text(json.dumps({"jobs": [
             {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"}

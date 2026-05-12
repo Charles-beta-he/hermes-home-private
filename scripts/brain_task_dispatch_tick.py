@@ -144,14 +144,19 @@ def run_cmd_json(cmd: list[str]) -> dict[str, Any]:
         }
     out = (out or "").strip()
     err = (err or "").strip()
-    if proc.returncode != 0:
-        return {"status": "ERROR", "cmd": cmd, "returncode": proc.returncode, "stdout": out, "stderr": err}
     try:
         data = json.loads(out) if out else {"status": "OK"}
     except Exception as exc:
         data = {"status": "ERROR", "cmd": cmd, "returncode": proc.returncode, "stdout": out, "stderr": err, "parse_error": str(exc)}
+    if not isinstance(data, dict):
+        data = {"status": "ERROR", "cmd": cmd, "returncode": proc.returncode, "stdout": out, "stderr": err, "parse_error": "json payload is not an object"}
     data.setdefault("cmd", cmd)
     data.setdefault("returncode", proc.returncode)
+    if proc.returncode != 0:
+        data.setdefault("reported_status", data.get("status"))
+        data["status"] = "ERROR"
+        data.setdefault("stdout", out)
+        data.setdefault("stderr", err)
     return data
 
 
@@ -192,6 +197,7 @@ def main() -> int:
     event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
 
     errors = []
+    errored_steps: set[str] = set()
     allowed_statuses = {"OK", "PASS", "SKIP"}  # SKIP for multimodel_step when env var not set
     if (event.get("evidence_spine") or {}).get("gate_status") not in {None, "PASS"}:
         errors.append({
@@ -200,6 +206,7 @@ def main() -> int:
             "gate_status": (event.get("evidence_spine") or {}).get("gate_status"),
             "summary": (event.get("evidence_spine") or {}).get("summary", {}),
         })
+        errored_steps.add("evidence_spine")
 
     # D2: expensive multi-model auto-step is double-gated: explicit CLI flag + env var.
     # Ambient HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 must not turn safe summary
@@ -218,9 +225,12 @@ def main() -> int:
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
 
     for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch"]:
+        if key in errored_steps:
+            continue
         item = event.get(key, {})
         if item and item.get("status") not in allowed_statuses:
             errors.append({"step": key, "status": item.get("status"), "stderr": item.get("stderr"), "stdout": item.get("stdout")})
+            errored_steps.add(key)
     event["errors"] = errors
     if errors:
         event["status"] = "ERROR"
@@ -272,12 +282,24 @@ def main() -> int:
     mm_raw = event.get("multimodel_intervention") if isinstance(event.get("multimodel_intervention"), dict) else {}
     evidence_spine_raw = event.get("evidence_spine") if isinstance(event.get("evidence_spine"), dict) else {}
     mm_selected = mm_raw.get("selected") if isinstance(mm_raw.get("selected"), dict) else {}
+    trigger_reasons = mm_selected.get("trigger_reasons", [])
+    advisory_reasons = mm_selected.get("advisory_reasons", [])
+    cert_reasons = mm_selected.get("certification_reasons", [])
+    if not advisory_reasons and not cert_reasons and trigger_reasons:
+        strong = {"p0_evolution_blast_radius", "loop_non_convergence", "stale_claim"}
+        advisory_reasons = [r for r in trigger_reasons if r not in strong]
+        cert_reasons = [r for r in trigger_reasons if r in strong]
+    recommended_tier = "T3_certification" if cert_reasons else ("T2_advisory" if len(trigger_reasons) >= 3 else "T1_advisory")
     multimodel_summary = {
         "intervention_required": bool(mm_raw.get("intervention_required")),
         "task_id": str(mm_raw.get("selected_task_id") or ""),
         "queued_count": int(mm_raw.get("queued_count") or 0),
         "criteria": mm_raw.get("criteria", []),
-        "trigger_reasons": mm_selected.get("trigger_reasons", []),
+        "trigger_reasons": trigger_reasons,
+        "advisory_reasons": advisory_reasons,
+        "certification_reasons": cert_reasons,
+        "recommended_tier": recommended_tier,
+        "advisory_only": bool(advisory_reasons) and not bool(cert_reasons),
         "gate_command_template": mm_selected.get("gate_command_template", ""),
         "convergence": mm_raw.get("convergence", {}),
         "safety": mm_raw.get("safety", ""),
