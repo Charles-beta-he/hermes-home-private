@@ -40,6 +40,7 @@ AUTORUN_PROOF_LOG = AUTORUN_STATE_DIR / "auto_run_proof.jsonl"
 AUTORUN_HANDOFF_DIR = AUTORUN_STATE_DIR / "auto_run_handoffs"
 PARALLEL_HANDOFF_DIR = AUTORUN_STATE_DIR / "parallel_handoffs"
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
+PROJECT_PROFILES_DIR = Path(os.environ.get("HERMES_PROJECT_PROFILES_DIR", str(HERMES_HOME / "project-profiles"))).expanduser()
 SCRIPTS_DIR = HERMES_HOME / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
@@ -232,6 +233,166 @@ def slugify(text: str) -> str:
     s = re.sub(r"\s+", "-", s).strip("-")
     s = re.sub(r"[^a-z0-9\-\u4e00-\u9fff]+", "", s)
     return s[:80] or "task"
+
+
+def project_profile_candidates(project: str) -> list[Path]:
+    """Return project-specific candidates followed by hermes fallback.
+
+    Project profiles are local JSON evidence, not remote configuration.  Exact
+    project names are allowed when they are safe filenames; slug fallback handles
+    task IDs/projects that contain spaces or punctuation.  The final hermes.json
+    fallback is still a real profile and must exist before execution.
+    """
+    project = str(project or "").strip()
+    candidates: list[Path] = []
+    if project:
+        safe_exact = re.sub(r"[^A-Za-z0-9._-]", "-", project).strip(".-")
+        if safe_exact:
+            candidates.append(PROJECT_PROFILES_DIR / f"{safe_exact}.json")
+        slug = slugify(project)
+        slug_path = PROJECT_PROFILES_DIR / f"{slug}.json"
+        if slug_path not in candidates:
+            candidates.append(slug_path)
+    fallback = PROJECT_PROFILES_DIR / "hermes.json"
+    if fallback not in candidates:
+        candidates.append(fallback)
+    return candidates
+
+
+def profile_alias_values(profile: dict[str, Any]) -> set[str]:
+    aliases: set[str] = set()
+    for key in ("project", "profile_id", "canonical_project"):
+        value = profile.get(key)
+        if isinstance(value, str) and value.strip():
+            aliases.add(value.strip())
+    raw_aliases = profile.get("aliases") or profile.get("project_aliases") or []
+    if isinstance(raw_aliases, str):
+        raw_aliases = [raw_aliases]
+    if isinstance(raw_aliases, list):
+        for value in raw_aliases:
+            if isinstance(value, str) and value.strip():
+                aliases.add(value.strip())
+    return aliases
+
+
+def project_profile_alias_candidates(project: str, known: list[Path]) -> list[Path]:
+    """Find canonical profiles that explicitly claim project as an alias.
+
+    This keeps project profiles SSOT-compliant: historical task project names can
+    route to one canonical JSON file without maintaining duplicate profile files.
+    Invalid unrelated JSON files are ignored during alias discovery; if an exact
+    candidate is invalid, load_project_profile still reports it fail-closed.
+    """
+    project = str(project or "").strip()
+    if not project or not PROJECT_PROFILES_DIR.exists():
+        return []
+    known_set = set(known)
+    matches: list[Path] = []
+    fallback = PROJECT_PROFILES_DIR / "hermes.json"
+    for path in sorted(PROJECT_PROFILES_DIR.glob("*.json")):
+        if path in known_set or path == fallback:
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(data, dict) and project in profile_alias_values(data):
+            matches.append(path)
+    return matches
+
+
+def load_project_profile(project: str) -> dict[str, Any]:
+    direct_candidates = project_profile_candidates(project)
+    fallback = PROJECT_PROFILES_DIR / "hermes.json"
+    non_fallback = [p for p in direct_candidates if p != fallback]
+    alias_candidates = project_profile_alias_candidates(project, direct_candidates)
+    candidates = non_fallback + alias_candidates
+    if fallback not in candidates:
+        candidates.append(fallback)
+    direct_set = set(non_fallback)
+    for path in candidates:
+        if not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            return {
+                "status": "invalid",
+                "missing": True,
+                "project": project,
+                "path": str(path),
+                "error": f"invalid_project_profile_json:{exc}",
+                "candidates": [str(p) for p in candidates],
+            }
+        if not isinstance(data, dict):
+            return {
+                "status": "invalid",
+                "missing": True,
+                "project": project,
+                "path": str(path),
+                "error": "project_profile_not_object",
+                "candidates": [str(p) for p in candidates],
+            }
+        status = "fallback" if path == fallback else ("project" if path in direct_set else "alias")
+        return {
+            "status": status,
+            "missing": False,
+            "project": project,
+            "canonical_project": str(data.get("project") or project),
+            "path": str(path),
+            "profile": data,
+            "candidates": [str(p) for p in candidates],
+        }
+    return {
+        "status": "missing",
+        "missing": True,
+        "project": project,
+        "path": "",
+        "error": "project_profile_missing",
+        "candidates": [str(p) for p in candidates],
+    }
+
+
+def project_profile_failures(task_or_fm: Any) -> list[str]:
+    if isinstance(task_or_fm, Task):
+        project = task_or_fm.project
+    else:
+        project = str((task_or_fm or {}).get("project") or "")
+    result = load_project_profile(project)
+    if result.get("missing"):
+        return [f"project_profile_missing:{project or '(empty-project)'}"]
+    return []
+
+
+def compact_profile_value(value: Any, *, max_items: int = 8) -> str:
+    if isinstance(value, dict):
+        parts = [f"{k}={v}" for k, v in list(value.items())[:max_items]]
+        return "; ".join(parts)
+    if isinstance(value, list):
+        return "; ".join(str(x) for x in value[:max_items])
+    return str(value or "")
+
+
+def format_project_profile_context(project: str) -> str:
+    result = load_project_profile(project)
+    if result.get("missing"):
+        return (
+            "PROJECT PROFILE: MISSING (FAIL-CLOSED)\n"
+            f"Project: {project or '(empty-project)'}\n"
+            f"Expected candidates: {', '.join(result.get('candidates', []))}\n"
+            "Do not start a worker or claim/handoff this task until a project-specific profile or hermes.json fallback exists."
+        )
+    profile = result.get("profile") if isinstance(result.get("profile"), dict) else {}
+    lines = [
+        "PROJECT PROFILE:",
+        f"Status: {result.get('status')}",
+        f"Path: {result.get('path')}",
+        f"Name: {profile.get('display_name') or profile.get('project') or project}",
+    ]
+    for key in ("tech_stack", "paths", "conventions", "test_cmd", "build_cmd", "acceptance", "forbidden", "backend_contract_policy", "regression_coverage_policy"):
+        if key in profile and profile.get(key) not in (None, "", [], {}):
+            lines.append(f"{key}: {compact_profile_value(profile.get(key))}")
+    return "\n".join(lines)
 
 
 def split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
@@ -1084,6 +1245,8 @@ class Task:
             return False
         if self.lane == "evolution" and not self.architecture_aligned():
             return False
+        if project_profile_failures(self):
+            return False
         if is_mission_envelope_fm(self.fm) and not mission_envelope_valid(self.fm):
             return False
         if not ignore_mission_node and mission_node_blockers(self):
@@ -1091,6 +1254,7 @@ class Task:
         return True
 
     def row(self) -> dict[str, Any]:
+        project_profile = load_project_profile(self.project)
         return {
             "id": self.id,
             "title": self.title,
@@ -1125,6 +1289,10 @@ class Task:
             "multimodel_last_decision": str(self.fm.get("multimodel_last_decision") or ""),
             "multimodel_last_failures": list_value(self.fm.get("multimodel_last_failures")),
             "project": self.project,
+            "project_profile_status": str(project_profile.get("status") or "missing"),
+            "project_profile_missing": bool(project_profile.get("missing")),
+            "project_profile_path": str(project_profile.get("path") or ""),
+            "project_profile_error": str(project_profile.get("error") or ""),
             "claimed_by": self.fm.get("claimed_by") or "",
             "claim_expires_at": self.fm.get("claim_expires_at") or "",
             "retry_count": self.fm.get("retry_count") or 0,
@@ -1455,6 +1623,9 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     missing_alignment = architecture_alignment_missing(task.fm)
     if missing_alignment and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
         failures.append(f"evolution_architecture_alignment_missing: {missing_alignment}")
+    missing_profile = project_profile_failures(task)
+    if missing_profile and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
+        failures.extend(missing_profile)
     missing_mission = mission_envelope_missing(task.fm)
     if missing_mission and to_status in (CLAIM_BOUND_STATUSES | {"done"}) and not force:
         failures.append(f"mission envelope missing {missing_mission}: {task.id}")
@@ -1790,6 +1961,9 @@ def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:
             invalid.append({"task": t.id, "status": t.status, "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
+        missing_profile = project_profile_failures(t)
+        if missing_profile:
+            invalid.append({"task": t.id, "status": t.status, "fields": missing_profile, "reason": "project_profile_missing"})
         missing_mission = mission_envelope_missing(t.fm)
         if missing_mission:
             invalid.append({"task": t.id, "status": t.status, "fields": missing_mission, "reason": "mission_envelope_missing"})
@@ -2360,11 +2534,13 @@ def parallel_group_key(task: Task) -> str:
 
 
 def dispatch_prompt_for_row(row: dict[str, Any]) -> str:
+    profile_context = format_project_profile_context(str(row.get("project") or ""))
     return (
         "Execute this local-brain task only after claiming it. "
         "Treat the task note as canonical workpad; reconcile first; verify; record proof; release/done/retry. "
         f"Task: {row['link']} ({row['id']}) priority={row['priority']} status={row['status']} "
-        f"lane={row['lane']} project={row['project']}"
+        f"lane={row['lane']} project={row['project']}\n\n"
+        f"{profile_context}"
     )
 
 
@@ -2380,6 +2556,9 @@ def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:
             invalid.append({"task": t.id, "path": str(t.path), "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
+        missing_profile = project_profile_failures(t)
+        if missing_profile:
+            invalid.append({"task": t.id, "path": str(t.path), "fields": missing_profile, "reason": "project_profile_missing"})
         missing_mission = mission_envelope_missing(t.fm)
         if missing_mission:
             invalid.append({"task": t.id, "path": str(t.path), "fields": missing_mission, "reason": "mission_envelope_missing"})
@@ -3602,6 +3781,7 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def render_autorun_handoff(task: Task, claim: dict[str, Any], proof_hash: str, actor: str) -> str:
+    profile_context = format_project_profile_context(task.project)
     return f"""# Auto-Claim Handoff — {task.title}
 
 - task_id: `{task.id}`
@@ -3622,6 +3802,12 @@ def render_autorun_handoff(task: Task, claim: dict[str, Any], proof_hash: str, a
 ## Suggested Runner Prompt
 
 Claim has already been acquired. Work only within the task's stated workspace/contract, verify with deterministic commands, append proof, and close through lifecycle gates.
+
+## Project Profile
+
+```text
+{profile_context}
+```
 
 ## Claim Result
 
@@ -3646,6 +3832,7 @@ def render_parallel_handoff(task: Task, claim: dict[str, Any], boundary_info: di
     conflict_group = str(task.fm.get("conflict_group") or "").strip()
     parallel_group_val = str(task.fm.get("parallel_group") or "").strip()
     workspace = str(task.fm.get("workspace") or "").strip()
+    profile_context = format_project_profile_context(task.project)
     return f"""# Parallel Handoff — {task.title}
 
 - task_id: `{task.id}`
@@ -3655,6 +3842,12 @@ def render_parallel_handoff(task: Task, claim: dict[str, Any], boundary_info: di
 - batch_id: `{batch_id}`
 - batch_index: {batch_index}
 - claim_expires_at: `{task.fm.get('claim_expires_at') or ''}`
+
+## Project Profile
+
+```text
+{profile_context}
+```
 
 ## Boundary Constraints
 

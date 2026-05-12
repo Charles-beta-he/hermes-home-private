@@ -1,26 +1,179 @@
 {
   "project": "uvisa-app-2.0",
-  "display_name": "UVISA 2.0 C端前端 + 后端契约联动",
+  "display_name": "UVISA 2.0 全栈项目 (前端 + 后端整体)",
+  "project_identity": {
+    "description": "UVISA 2.0 是一个前后端一体化项目，不是两个独立项目。前端(React SPA)和后端(Spring Boot API)共享同一个产品目标、同一份 PRD、同一套验收标准。任何 Lark 任务的改动都必须从前端→后端→契约全链路考虑，禁止只改前端不管后端或只给空壳接口不填实现。",
+    "single_project_rule": "前后端是一个项目的两个模块，不是一个项目调用另一个项目的 API。任务分类时优先使用 fullstack-integrated，只有纯 UI 样式/纯后端批处理才分别归类为 frontend-only / backend-only。",
+    "frontend_repo": "/Users/charles/Desktop/folder/work/uvisa-app-2.0",
+    "backend_repo": "/Users/charles/Desktop/folder/work/uvisa-backend"
+  },
   "tech_stack": {
     "frontend": "React 19 + Vite + TypeScript + Zustand + Tailwind",
-    "backend": "Java Spring Boot multi-module Maven",
+    "backend": "Java 21 Spring Boot multi-module Maven (api-public / api-admin / domain / platform / integration)",
     "frontend_test": "Vitest + React Testing Library + Playwright/browser-harness",
-    "backend_test": "Maven/JUnit; use openjdk@21"
+    "backend_test": "Maven/JUnit; JAVA_HOME must be openjdk@21"
   },
   "paths": {
     "frontend": "/Users/charles/Desktop/folder/work/uvisa-app-2.0",
     "backend": "/Users/charles/Desktop/folder/work/uvisa-backend",
     "workpad": "/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md"
   },
+  "fullstack_domain_map": {
+    "_description": "前端页面 → 后端服务/Controller 的映射关系。每个域的改动都必须同时检查前端 service/store/screen 和后端 controller/service/domain。",
+    "auth": {
+      "frontend": [
+        "src/screens/auth/",
+        "src/services/auth.service.ts",
+        "src/stores/auth.store.ts"
+      ],
+      "backend": [
+        "api/api-public/.../AuthController.java",
+        "app/.../auth/AuthService.java",
+        "app/.../auth/OtpService.java",
+        "app/.../security/JwtTokenService.java"
+      ]
+    },
+    "wallet": {
+      "frontend": [
+        "src/screens/home/",
+        "src/services/wallet.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../WalletController.java",
+        "domain/wallet/.../WalletViewService.java"
+      ]
+    },
+    "card": {
+      "frontend": [
+        "src/screens/card/",
+        "src/services/card.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../CardController.java",
+        "domain/identity/.../CardActivationService.java"
+      ]
+    },
+    "topup": {
+      "frontend": [
+        "src/screens/topup/",
+        "src/services/topup.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../TopupController.java"
+      ]
+    },
+    "exchange": {
+      "frontend": [
+        "src/screens/exchange/",
+        "src/services/exchange.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../ExchangeController.java",
+        "api/api-public/.../FxRateController.java",
+        "domain/fx/.../FxRateService.java"
+      ]
+    },
+    "remit": {
+      "frontend": [
+        "src/screens/remit/",
+        "src/services/remit.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../RemitController.java"
+      ]
+    },
+    "payout": {
+      "frontend": [
+        "src/screens/payment/",
+        "src/services/payout.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../PayoutController.java",
+        "domain/payout/.../PayoutAdminService.java"
+      ]
+    },
+    "wealth": {
+      "frontend": [
+        "src/screens/wealth/",
+        "src/services/wealth.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../WealthController.java",
+        "app/.../wealth/InterestAccrualJob.java"
+      ]
+    },
+    "kyc": {
+      "frontend": [
+        "src/services/kyc.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../kyc/KycController.java",
+        "api/api-public/.../kyc/KycWebhookController.java"
+      ]
+    },
+    "mfa": {
+      "frontend": [
+        "src/services/mfa.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../MfaController.java"
+      ]
+    },
+    "notification": {
+      "frontend": [
+        "src/services/notification.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../NotificationController.java"
+      ]
+    },
+    "me": {
+      "frontend": [
+        "src/screens/me/",
+        "src/services/"
+      ],
+      "backend": [
+        "api/api-public/.../MeController.java"
+      ]
+    },
+    "cs": {
+      "frontend": [
+        "src/services/cs.service.ts"
+      ],
+      "backend": [
+        "api/api-public/.../CsController.java",
+        "domain/cs/.../CsTicketService.java"
+      ]
+    }
+  },
   "conventions": [
+    "UVISA 2.0 是前后端一体化项目。前端和后端共享产品目标，不是两个独立项目。",
     "Before product/UI/architecture/test claims, read AGENTS.md and Workpad section 12 boot capsule.",
     "Do not delete features, routes, buttons, or displayed fields to make dead UI disappear.",
     "Do not use mock success to hide real-backend drift.",
-    "Classify every Lark task as frontend-only, backend-owned, or frontend-backend contract work before editing.",
-    "Backend code is writable for this project; if evidence-first/multi-model analysis says backend is the correct fix, edit backend with TDD and commit it separately.",
-    "Frontend and backend commits must remain scoped per repo; default local commit, push only when user explicitly requires remote frontend build validation.",
+    "后端修改必须完整落地：Controller + Service + Domain/Repository + 测试，禁止只写空壳 Controller 而不实现业务逻辑。",
+    "Lark 任务默认是 fullstack-integrated：前后端同时修改，同时验证。只有明确是纯 UI 样式或纯后端批处理才分别归类。",
+    "后端代码可写；如果多模型分析认为后端是正确的修复点，直接编辑后端代码，用 TDD，单独 commit。",
+    "前后端 commit 按 repo 分开；默认本地 commit，用户明确要求时才 push 前端。",
     "Project test credentials, OTP values, Railway session details, and secrets stay only in project Workpad/runtime evidence, never in global memory or public docs."
   ],
+  "backend_complete_landing_policy": {
+    "_rationale": "过去存在后端只写 Controller 空壳、不填 Service/Domain 实现的问题。此策略要求后端修改必须全链路落地。",
+    "definition": "后端完整落地 = Controller 入口 → Service 业务逻辑 → Domain/Repository 数据层 → 单元/集成测试 → 编译通过",
+    "required_layers": [
+      "Controller: 定义 API 端点、请求/响应 DTO、权限注解",
+      "Service: 实现业务逻辑，包含校验、状态流转、异常处理",
+      "Domain/Repository: 数据实体、持久化、查询方法",
+      "测试: 至少一个覆盖核心路径的 JUnit 测试"
+    ],
+    "forbidden_patterns": [
+      "Controller 方法返回 null / 空集合 / 硬编码 mock 值而无 TODO+issue 跟踪",
+      "Service 方法体为空或只有一行 return",
+      "新增 Entity/DTO 但无对应的 Repository 或 Service 使用",
+      "声称 API 已就绪但实际只有 HTTP 200 + 空 body"
+    ],
+    "verification": "编译通过(mvn compile) + 至少一个测试通过(mvn test -Dtest=XxxTest) + curl/Playwright 验证端点返回真实数据结构"
+  },
   "backend_contract_policy": {
     "rationale": "Many backend APIs are still missing, incomplete, or contract-drifted; frontend-only regression can miss these failures.",
     "must_scan_backend_when": [
@@ -29,9 +182,9 @@
       "The PRD/product logic depends on backend source-of-truth semantics rather than pure display text/style."
     ],
     "required_analysis": [
-      "Read frontend service/store/screen path and the corresponding backend controller/service/entity/repository path.",
+      "Read frontend service/store/screen path AND the corresponding backend controller/service/domain/repository path.",
       "Verify canonical vs legacy endpoint shapes, auth requirements, envelope shape, field naming, state transitions, and error semantics.",
-      "If backend is incomplete or unsafe, do not close by frontend shim alone; implement backend TDD fix or record explicit backend blocker/follow-up if out of scope."
+      "If backend is incomplete or unsafe, do not close by frontend shim alone; implement backend full-stack fix (Controller→Service→Domain→Test) or record explicit backend blocker/follow-up."
     ]
   },
   "regression_coverage_policy": {
@@ -47,12 +200,14 @@
     "frontend_build": "pnpm run build",
     "frontend_product_logic": "pnpm exec playwright test tests/product-logic-prd.spec.ts --reporter=line",
     "backend_compile": "JAVA_HOME=\"$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home\" mvn -pl api/api-public -am -DskipTests compile",
-    "backend_targeted_test": "JAVA_HOME=\"$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home\" mvn -pl <module> -Dtest=<TestClass> test"
+    "backend_targeted_test": "JAVA_HOME=\"$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home\" mvn -pl <module> -Dtest=<TestClass> test",
+    "backend_full_test": "JAVA_HOME=\"$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home\" mvn test"
   },
   "acceptance": [
     "Relevant frontend targeted tests pass.",
     "pnpm test and pnpm run build pass after frontend changes unless a pre-existing blocker is explicitly evidenced.",
-    "Backend-related tasks include backend source inspection and, if changed, targeted backend tests plus compile/package evidence using openjdk@21.",
+    "Backend-related tasks include backend source inspection and, if changed, full-stack landing (Controller→Service→Domain→Test) plus compile/package evidence using openjdk@21.",
+    "后端修改必须完整落地：不允许只有 Controller 没有 Service 实现。每一层都必须有真实业务逻辑。",
     "For cross-stack changes, browser/Playwright acceptance uses local frontend connected to local real backend or a clearly labeled live/test backend; mock is comparison only.",
     "PRD/product logic claims are written to PRODUCT_USER_LOGIC_TEST_CASES.md; page/UI/function claims are written to UI_TEST_CASES.md.",
     "After frontend changes requested for Lark closeout, push frontend code and monitor the remote frontend package/build status to success/healthy or record an explicit blocker.",
@@ -61,6 +216,9 @@
   "forbidden": [
     "Claiming a task done from frontend unit/build alone when backend semantics are involved.",
     "Masking backend missing APIs with mock success or silent frontend fallback without documenting the backend owner/blocker.",
+    "后端只写 Controller 空壳，不实现 Service/Domain 业务逻辑。",
+    "后端 API 声称就绪但实际返回 null/空/硬编码 mock，无 TODO+issue 跟踪。",
+    "将前后端当作两个独立项目分别处理，忽略全链路验证。",
     "Treating Railway/staging as a substitute for deterministic local tests.",
     "Recording OTPs, tokens, cookies, or credentials in repo docs, global memory, TG messages, or public artifacts.",
     "Pushing backend deploy expectations for this workflow when the user only asked to monitor frontend remote build."
@@ -98,15 +256,17 @@
     ]
   },
   "lark_task_execution_policy": {
-    "primary_goal": "Complete the assigned Lark task acceptance, not run an open-ended product/backend audit.",
+    "primary_goal": "Complete the assigned Lark task acceptance with fullstack coverage, not run an open-ended product/backend audit.",
+    "default_classification": "fullstack-integrated",
     "optimization_rule": "Choose the best safe solution within project red lines, but keep implementation and verification tightly aligned with the concrete Lark task requirement.",
     "classification_required": [
-      "frontend-only",
-      "backend-owned",
-      "frontend-backend contract",
+      "fullstack-integrated (default: 前后端同时修改)",
+      "frontend-only (纯 UI 样式/文案/i18n)",
+      "backend-only (纯后端批处理/定时任务/基础设施)",
       "cross-cutting infrastructure",
       "regression-proof already-satisfied task"
     ],
+    "fullstack_landing_rule": "Lark 任务默认按 fullstack-integrated 执行：前端 service/store/screen + 后端 controller/service/domain 同时修改，同时验证。禁止只改前端不管后端。",
     "backend_task_classification": "For tasks involving backend semantics or missing/problematic APIs, multi-model analysis must classify whether the correct landing point is backend, frontend, or cross-stack before implementation.",
     "verification_focus": [
       "Task-specific acceptance path from Lark description/comments/docs/prototype.",
@@ -120,5 +280,68 @@
       "If a discovered backend defect is outside task acceptance, record it as follow-up unless it blocks or endangers the current task.",
       "If Lark task and broader PRD/product docs conflict, prefer the explicit Lark task for this delivery and record the conflict."
     ]
-  }
+  },
+  "fullstack_verification": {
+    "script": "/Users/charles/Desktop/folder/work/uvisa-app-2.0/scripts/verify-fullstack.sh",
+    "state_schema": "fullstack_verify_v1",
+    "stages": [
+      {
+        "name": "be_compile",
+        "layer": "backend",
+        "required": true
+      },
+      {
+        "name": "be_test",
+        "layer": "backend",
+        "required": true
+      },
+      {
+        "name": "be_boot",
+        "layer": "backend",
+        "required": true
+      },
+      {
+        "name": "fe_test",
+        "layer": "frontend",
+        "required": true
+      },
+      {
+        "name": "fe_build",
+        "layer": "frontend",
+        "required": true
+      },
+      {
+        "name": "fe_dev",
+        "layer": "frontend",
+        "required": true
+      },
+      {
+        "name": "api_proxy",
+        "layer": "contract",
+        "required": true
+      },
+      {
+        "name": "browser_e2e",
+        "layer": "frontend",
+        "required": false
+      }
+    ],
+    "failure_taxonomy": {
+      "backend_startup": "be_boot",
+      "backend_health": "be_boot",
+      "backend_compile": "be_compile",
+      "backend_test": "be_test",
+      "frontend_startup": "fe_dev",
+      "frontend_test": "fe_test",
+      "frontend_build": "fe_build",
+      "api_contract": "api_proxy",
+      "browser_e2e": "browser_e2e",
+      "proxy_routing": "api_proxy"
+    },
+    "trigger_condition": "task_type == fullstack-integrated AND (backend_changed OR frontend_changed)",
+    "skip_condition": "task_type == frontend-only OR task_type == backend-only"
+  },
+  "aliases": [
+    "uvisa-app-2.0-work"
+  ]
 }

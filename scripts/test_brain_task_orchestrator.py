@@ -59,6 +59,17 @@ def make_env_and_vault():
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(Path(td.name) / "state")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
     env["HERMES_CRON_JOBS_PATH"] = str(Path(td.name) / "cron" / "jobs.json")
+    profiles_dir = hermes_home / "project-profiles"
+    profiles_dir.mkdir(parents=True)
+    (profiles_dir / "hermes.json").write_text(json.dumps({
+        "project": "hermes",
+        "display_name": "Default Hermes taskpool profile",
+        "tech_stack": {"runtime": "Python", "taskpool": "Obsidian Markdown"},
+        "conventions": ["load profile before worker execution", "fail closed when profile is missing"],
+        "test_cmd": "python3 ~/.hermes/scripts/test_brain_task_orchestrator.py",
+        "acceptance": ["focused tests pass", "p10-health remains A"],
+        "forbidden": ["start worker without project profile context"],
+    }, ensure_ascii=False), encoding="utf-8")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
     return td, vault, env
@@ -160,6 +171,60 @@ def mark_task_done_directly(task_path):
     text = text.replace("status: pending", "status: done", 1)
     text = text.replace("evidence: []", "evidence:\n  - command: fixture done PASS", 1)
     task_path.write_text(text, encoding="utf-8")
+
+
+def test_project_profile_is_injected_before_dispatch_and_missing_profile_fails_closed():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Client API worker needs profile", priority="P0", project="client-alpha")
+
+        fallback = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+        assert fallback["dispatchable"] is True, fallback
+        assert fallback["next"]["id"] == task_id, fallback
+        assert fallback["next"]["project_profile_status"] == "fallback", fallback
+        assert fallback["next"]["project_profile_path"].endswith("project-profiles/hermes.json"), fallback
+        assert "PROJECT PROFILE" in fallback["execution_prompt"], fallback["execution_prompt"]
+        assert "Default Hermes taskpool profile" in fallback["execution_prompt"], fallback["execution_prompt"]
+        assert "start worker without project profile context" in fallback["execution_prompt"], fallback["execution_prompt"]
+
+        profiles_dir = Path(env["HERMES_HOME"]) / "project-profiles"
+        (profiles_dir / "client-alpha.json").write_text(json.dumps({
+            "project": "client-alpha",
+            "aliases": ["client-alpha-work"],
+            "display_name": "Client Alpha React/Spring profile",
+            "tech_stack": {"frontend": "React 18 + TypeScript", "backend": "Spring Boot"},
+            "conventions": ["do not delete existing routes"],
+            "test_cmd": "npm test",
+            "build_cmd": "npm run build",
+            "acceptance": ["frontend build", "backend contract inspected"],
+            "forbidden": ["frontend mock-only closeout"],
+        }, ensure_ascii=False), encoding="utf-8")
+        project_specific = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+        assert project_specific["next"]["project_profile_status"] == "project", project_specific
+        assert "Client Alpha React/Spring profile" in project_specific["execution_prompt"], project_specific["execution_prompt"]
+        assert "React 18 + TypeScript" in project_specific["execution_prompt"], project_specific["execution_prompt"]
+
+        alias_id, _alias_path = add_task(env, title="Client Alpha legacy key uses canonical profile", priority="P2", project="client-alpha-work")
+        alias_rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        alias_row = next(r for r in alias_rows if r["id"] == alias_id)
+        assert alias_row["project_profile_status"] == "alias", alias_row
+        assert alias_row["project_profile_path"].endswith("project-profiles/client-alpha.json"), alias_row
+        assert alias_row["project_profile_missing"] is False, alias_row
+
+        (profiles_dir / "client-alpha.json").unlink()
+        (profiles_dir / "hermes.json").unlink()
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        row = next(r for r in rows if r["id"] == task_id)
+        assert row["project_profile_status"] == "missing", row
+        assert row["project_profile_missing"] is True, row
+        assert row["dispatchable"] is False, row
+        no_dispatch = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+        assert no_dispatch["dispatchable"] is False, no_dispatch
+        claim = run(env, "claim", task_id, "--json", check=False)
+        assert claim.returncode != 0, claim.stdout
+        assert "project_profile_missing" in (claim.stderr + claim.stdout)
+        assert "status: pending" in task_path.read_text(encoding="utf-8")
+
 
 
 def test_mission_envelope_schema_is_enforced_fail_closed():
@@ -599,7 +664,7 @@ def test_lane_architecture_alignment_and_work_priority_gate():
             "--priority",
             "P1",
             "--project",
-            "uvisa-app-2.0-work",
+            "uvisa-app-2.0",
             "--lane",
             "work",
             "--expires-at",
@@ -1031,7 +1096,7 @@ def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics(
                 "enabled": True,
                 "schedule": "every 120m",
                 "last_status": "error",
-                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=super-secret-token-123456 Authorization: Bearer bearer-secret-1234567890 https://example.test/hook?access_token=query-secret-123456",
+                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=super-secret-token-123456 Authorization: Bearer *** https://example.test/hook?access_token=***",
                 "last_delivery_error": "Bearer delivery-secret-1234567890",
                 "deliver": "telegram:private-secret-target",
                 "script": "/tmp/secret-script.sh",
@@ -1409,6 +1474,7 @@ def test_proof_check_flags_persisted_autorun_done_without_proof_hash():
 
 
 def main():
+    test_project_profile_is_injected_before_dispatch_and_missing_profile_fails_closed()
     test_mission_envelope_schema_is_enforced_fail_closed()
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
