@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Safe local-brain task dispatch tick.
 
-This is a control-plane tick, not an autonomous executor:
+This is normally a control-plane tick, not an autonomous executor:
 - ingests Obsidian inbox drafts into canonical task notes;
 - reconciles stale leases/expired tasks/due retries;
 - regenerates derived dashboards;
 - emits a dispatch hint for the next dispatchable task;
 - records a JSONL proof log.
 
-It never executes task Markdown, never runs arbitrary hooks, and never marks a task done.
+It never executes task Markdown or arbitrary hooks.  With explicit --autorun-step,
+it may run the bounded static runner and proof-gated review->done closer.
 """
 from __future__ import annotations
 
@@ -241,6 +242,12 @@ def main() -> int:
             errors.append({"step": "autorun_step", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout")})
             event["status"] = "ERROR"
             event["errors"] = errors
+        if not errors:
+            event["auto_close_review"] = run_json(["auto-close-review", "--json"])
+            if event["auto_close_review"].get("status") not in {"OK", "PASS"}:
+                errors.append({"step": "auto_close_review", "status": event["auto_close_review"].get("status"), "stderr": event["auto_close_review"].get("stderr"), "stdout": event["auto_close_review"].get("stdout")})
+                event["status"] = "ERROR"
+                event["errors"] = errors
         event["post_autorun_dispatch"] = run_json(["dispatch-dry-run", "--json"])
     elif args.autorun and not errors:
         event["autorun"] = run_json(["auto-claim-and-handoff", "--json"])
@@ -279,6 +286,7 @@ def main() -> int:
         "safety": "hint_only",
     }
     autorun_raw = event.get("autorun") if isinstance(event.get("autorun"), dict) else {}
+    auto_close_raw = event.get("auto_close_review") if isinstance(event.get("auto_close_review"), dict) else {}
     mm_raw = event.get("multimodel_intervention") if isinstance(event.get("multimodel_intervention"), dict) else {}
     evidence_spine_raw = event.get("evidence_spine") if isinstance(event.get("evidence_spine"), dict) else {}
     mm_selected = mm_raw.get("selected") if isinstance(mm_raw.get("selected"), dict) else {}
@@ -337,6 +345,15 @@ def main() -> int:
         },
         "multimodel_intervention": multimodel_summary,
         "multimodel_step": (event.get("multimodel_step") or {}) if isinstance(event.get("multimodel_step"), dict) else {},
+        "auto_close_review": {
+            "status": auto_close_raw.get("status"),
+            "closed_count": int(auto_close_raw.get("closed_count") or 0),
+            "skipped_count": int(auto_close_raw.get("skipped_count") or 0),
+            "error_count": int(auto_close_raw.get("error_count") or 0),
+            "closed": auto_close_raw.get("closed", []),
+            "skipped": auto_close_raw.get("skipped", []),
+            "safety": auto_close_raw.get("safety", ""),
+        },
         "stdout_policy": "summary",
         "log_file": str(LOG_FILE),
         "state_file": str(STATE_FILE),

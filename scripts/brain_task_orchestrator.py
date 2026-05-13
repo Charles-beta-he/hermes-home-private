@@ -2157,6 +2157,120 @@ def command_done(args: argparse.Namespace) -> dict[str, Any]:
     return {"status": "OK", "task": t.id, "path": str(t.path), "evidence_count": len(evidence), "warnings": warnings, "derived_refresh": derived_refresh}
 
 
+def _dedupe_evidence(items: list[str]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for item in items:
+        text = str(item or "").strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+    return out
+
+
+def auto_close_review_evidence(task: Task) -> list[str]:
+    """Build proof-gated evidence for automatic review -> done closeout.
+
+    The auto closer never invents task proof.  It can only reuse structured
+    evidence already deposited on the task and, for certified multi-model rounds,
+    land the ratification artifact as explicit completion evidence.
+    """
+    evidence = [str(e) for e in (task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else [])]
+    if task_multimodel_passed(task):
+        artifact = task_multimodel_artifact(task)
+        if artifact:
+            evidence.append(f"artifact:ratification multimodel certified {artifact}")
+    return _dedupe_evidence(evidence)
+
+
+def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
+    """Automatically close review tasks only when normal done gates pass.
+
+    This is the lifecycle counterpart to multimodel writeback: model consensus or
+    static runner output may put a task in review, but done still goes through the
+    same lane-specific completion_gate and autorun proof-hash checks as manual
+    closeout.
+    """
+    actor = args.actor
+    reason = args.reason or "auto-close review after proof-gated evidence"
+    max_tasks = max(1, int(args.max_tasks or 1))
+    candidates = [find_task(args.task)] if args.task else [t for t in sorted_tasks(include_done=False) if t.status == "review"]
+    candidates = candidates[:max_tasks]
+    closed: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+
+    for task in candidates:
+        base_evidence = auto_close_review_evidence(task)
+        base_failures, base_warnings = lifecycle_gate(task, "done", "hermes-auto-close-probe", base_evidence, reason, False, getattr(args, "authority", ""))
+        if base_failures:
+            skipped.append({
+                "action": "skip",
+                "task_id": task.id,
+                "title": task.title,
+                "lane": task.lane,
+                "failures": base_failures,
+                "warnings": base_warnings,
+                "evidence": base_evidence,
+                "safety": "base evidence did not satisfy done gate; no autorun proof minted",
+            })
+            continue
+        proof_hash = append_autorun_proof_event({
+            "event": "auto_review_close_attempt",
+            "task": task.id,
+            "actor": actor,
+            "base_evidence": base_evidence,
+            "lane": task.lane,
+            "completion_gate": task_permission_contract_for_fm(task.fm).get("completion_gate", ""),
+            "safety": "review_to_done_only; normal lifecycle_gate enforced; proof is audit evidence not completion proof",
+        })
+        evidence = _dedupe_evidence([f"proof:{proof_hash}", *base_evidence])
+        failures, warnings = lifecycle_gate(task, "done", actor, evidence, reason, False, getattr(args, "authority", ""))
+        if failures:
+            skipped.append({
+                "action": "skip",
+                "task_id": task.id,
+                "title": task.title,
+                "lane": task.lane,
+                "failures": failures,
+                "proof_hash": proof_hash,
+                "evidence": evidence,
+            })
+            continue
+        try:
+            apply_lifecycle_status(task, "done", actor, evidence=evidence, reason=reason, force=False)
+            save_task(task)
+            closed.append({
+                "action": "closed",
+                "task_id": task.id,
+                "title": task.title,
+                "lane": task.lane,
+                "proof_hash": proof_hash,
+                "evidence": evidence,
+                "warnings": warnings,
+            })
+        except Exception as exc:
+            errors.append({"action": "error", "task_id": task.id, "error": str(exc), "proof_hash": proof_hash})
+
+    derived_refresh = refresh_derived_task_views("auto-close-review") if closed else None
+    status = "OK" if not errors else "ERROR"
+    return {
+        "status": status,
+        "schema": "local_brain_auto_close_review_v1",
+        "generated_at": iso(),
+        "actor": actor,
+        "closed_count": len(closed),
+        "skipped_count": len(skipped),
+        "error_count": len(errors),
+        "closed": closed,
+        "skipped": skipped,
+        "errors": errors,
+        "derived_refresh": derived_refresh,
+        "safety": "automated review->done uses normal lifecycle_gate, lane completion_gate, structured evidence, and autorun proof hash",
+    }
+
+
 def command_retry(args: argparse.Namespace) -> dict[str, Any]:
     t = find_task(args.task)
     failures, warnings = lifecycle_gate(t, "retry", args.actor, reason=args.reason)
@@ -5207,6 +5321,14 @@ def build_parser() -> argparse.ArgumentParser:
     dp.add_argument("--force", action="store_true")
     dp.add_argument("--json", action="store_true")
 
+    acrp = sub.add_parser("auto-close-review")
+    acrp.add_argument("--task", default="")
+    acrp.add_argument("--actor", default="hermes-autorun-review-close")
+    acrp.add_argument("--max-tasks", type=int, default=5)
+    acrp.add_argument("--reason", default="")
+    acrp.add_argument("--authority", default="autonomous-execution", choices=["", *taxonomy.AUTHORITY_TIERS])
+    acrp.add_argument("--json", action="store_true")
+
     pcp = sub.add_parser("proof-check")
     pcp.add_argument("--include-active", action="store_true")
     pcp.add_argument("--json", action="store_true")
@@ -5342,6 +5464,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_release(args), args.json)
     if args.cmd == "done":
         return print_result(command_done(args), args.json)
+    if args.cmd == "auto-close-review":
+        return print_result(command_auto_close_review(args), args.json)
     if args.cmd == "proof-check":
         return print_result(command_proof_check(args), args.json)
     if args.cmd == "retry":

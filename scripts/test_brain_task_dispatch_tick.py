@@ -141,9 +141,44 @@ def load_tick_module():
     return module
 
 
-def task_row(env, task_id):
-    rows = json.loads(run([sys.executable, str(ORCH), "list", "--json"], env).stdout)["rows"]
+def task_row(env, task_id, include_done=False):
+    cmd = [sys.executable, str(ORCH), "list"]
+    if include_done:
+        cmd.append("--include-done")
+    cmd.append("--json")
+    rows = json.loads(run(cmd, env).stdout)["rows"]
     return next(r for r in rows if r["id"] == task_id)
+
+
+def add_review_evolution_task(env):
+    r = run([
+        sys.executable,
+        str(ORCH),
+        "add",
+        "验证 review 自动进入 done",
+        "--priority",
+        "P1",
+        "--project",
+        "self-improvement",
+        "--lane",
+        "evolution",
+        "--architecture-target",
+        "taskpool",
+        "--capability-delta",
+        "automatic review to done closeout",
+        "--anti-drift-check",
+        "normal lifecycle done gate remains enforced",
+        "--acceptance-evidence",
+        "selfcheck PASS closes review safely",
+        "--expires-at",
+        "2099-01-01",
+        "--json",
+    ], env)
+    task_id = json.loads(r.stdout)["id"]
+    run([sys.executable, str(ORCH), "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json"], env)
+    run([sys.executable, str(ORCH), "transition", task_id, "--to", "running", "--actor", "tester", "--json"], env)
+    run([sys.executable, str(ORCH), "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json"], env)
+    return task_id
 
 
 def test_tick_autorun_bridge_is_opt_in_and_fail_closed():
@@ -216,6 +251,19 @@ def test_tick_summary_autorun_step_denial_is_visible_and_non_mutating():
         assert payload["autorun"]["advanced"] is False, payload
         assert "autorun_disabled" in payload["autorun"]["reasons"], payload
         assert task_row(env, task_id)["status"] == "pending"
+
+
+def test_tick_autorun_step_auto_closes_review_tasks_with_done_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id = add_review_evolution_task(env)
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
+        payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state", "--autorun-step"], env).stdout)
+        assert payload["status"] == "OK", payload
+        assert payload["auto_close_review"]["closed_count"] == 1, payload
+        assert payload["auto_close_review"]["closed"][0]["task_id"] == task_id, payload
+        assert task_row(env, task_id, include_done=True)["status"] == "done"
 
 
 def test_tick_summary_surfaces_multimodel_intervention_hint():
@@ -327,6 +375,7 @@ if __name__ == "__main__":
     test_tick_print_always_records_no_agent_observability_policy()
     test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun()
     test_tick_summary_autorun_step_denial_is_visible_and_non_mutating()
+    test_tick_autorun_step_auto_closes_review_tasks_with_done_gate()
     test_tick_summary_surfaces_multimodel_intervention_hint()
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()

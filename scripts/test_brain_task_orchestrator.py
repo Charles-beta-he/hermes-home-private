@@ -488,6 +488,70 @@ def test_done_requires_lane_specific_completion_gate_evidence():
         assert evo_done["status"] == "OK", evo_done
 
 
+def test_auto_close_review_moves_only_proof_gated_reviews_to_done():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        # Work lane: review evidence without project/test/build proof must stay review.
+        blocked_id, _blocked_path = add_task(env, title="Auto close must not bypass work evidence", priority="P0", project="uvisa-lark")
+        run(env, "claim", blocked_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", blocked_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", blocked_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json")
+
+        # Evolution lane: deterministic selfcheck evidence is enough for automatic closeout.
+        evo_id, _evo_path = add_evolution_task(env, title="Auto close evolution selfcheck proof", priority="P1")
+        run(env, "claim", evo_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", evo_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", evo_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json")
+
+        # Evolution lane: certified multimodel artifact must be landed as ratification evidence.
+        mm_id, mm_path = add_evolution_task(env, title="Auto close evolution multimodel ratification", priority="P1")
+        discussion = mm_path.parent / "discussion-auto-close.json"
+        discussion.write_text(json.dumps({
+            "status": "certified",
+            "task_id": mm_id,
+            "context": {"task_id": mm_id, "task_path": str(mm_path)},
+            "issue_ledger": [{"id": "I-001", "severity": 3, "status": "resolved"}],
+            "ratification_votes": [
+                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
+                {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
+                {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.92, "implementation_order": 0.88},
+            "truth_status": "certified",
+            "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
+            "final_design": {
+                "long_term_goal_alignment": True,
+                "next_slice": "auto close certified review task",
+                "acceptance_evidence": ["command:test PASS"],
+                "rollback_boundary": "revert scoped auto close patch",
+            },
+        }, ensure_ascii=False), encoding="utf-8")
+        run(env, "claim", mm_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", mm_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", mm_id, "--to", "review", "--actor", "tester", "--evidence", "command: review handoff PASS", "--json")
+        text = mm_path.read_text(encoding="utf-8")
+        text = text.replace("\nevidence:", f"\nmultimodel_status: certified\nmultimodel_ratification_artifact: {discussion}\nevidence:", 1)
+        mm_path.write_text(text, encoding="utf-8")
+
+        close = json.loads(run(env, "auto-close-review", "--actor", "hermes-autorun-review-close", "--max-tasks", "10", "--json").stdout)
+        assert close["status"] == "OK", close
+        assert close["closed_count"] == 2, close
+        assert {item["task_id"] for item in close["closed"]} == {evo_id, mm_id}, close
+        assert any(item["task_id"] == blocked_id and item["action"] == "skip" for item in close["skipped"]), close
+
+        rows = {r["id"]: r for r in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"]}
+        assert rows[blocked_id]["status"] == "review", rows[blocked_id]
+        assert rows[evo_id]["status"] == "done", rows[evo_id]
+        assert rows[mm_id]["status"] == "done", rows[mm_id]
+        evo_text = Path(rows[evo_id]["path"]).read_text(encoding="utf-8")
+        mm_text = Path(rows[mm_id]["path"]).read_text(encoding="utf-8")
+        assert "proof:sha256:" in evo_text, evo_text
+        assert "artifact:ratification" in mm_text and str(discussion) in mm_text, mm_text
+        proof = json.loads(run(env, "proof-check", "--json").stdout)
+        assert proof["status"] == "PASS", proof
+
+
 def test_lifecycle_transition_gate_and_audit():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -1679,6 +1743,7 @@ def main():
     test_permission_audit_and_migration_expose_lane_specific_authority_contracts()
     test_yolo_authority_cannot_bypass_task_done_lifecycle_gate()
     test_done_requires_lane_specific_completion_gate_evidence()
+    test_auto_close_review_moves_only_proof_gated_reviews_to_done()
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
     test_lifecycle_fail_closed_edges()
