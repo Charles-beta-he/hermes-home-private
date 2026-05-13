@@ -1,0 +1,11 @@
+id,should_trigger,prompt,notes
+test-01,true,"Use multi-agent code review on this PR",Explicit invocation by feature name
+test-02,true,"I need a parallel code review with confidence filtering for this diff",Implicit trigger using core concepts
+test-03,true,"请对这个PR进行多agent并行审查，用置信度过滤噪声",Chinese implicit trigger with domain jargon
+test-04,true,"Run a 5-agent security/style/logic/perf/arch review on the latest commit",Contextual trigger with agent decomposition
+test-05,true,"Aggregate findings from multiple review agents and filter by severity threshold",Contextual trigger focusing on aggregation
+test-06,false,"Review my PR",Should trigger github-code-review (single-agent), not multi-agent
+test-07,false,"Run parallel tasks on these 3 files",Should trigger agent-team-parallel, not code review
+test-08,false,"Check this code for bugs",Ambiguous single-agent sufficient, should NOT trigger multi-agent
+test-09,false,"Set up a CI pipeline for code quality",DevOps task, not code review
+test-10,true,"我想做一次全面的代码审查，分别从安全、性能、架构多个维度并行检查",Chinese natural language describing multi-dimensional parallel review

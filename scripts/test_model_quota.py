@@ -124,6 +124,62 @@ class TestModelQuota(unittest.TestCase):
             self.assertIn("[REDACTED]", combined)
             self.assertEqual(snap["usage"], {"input_tokens": 10, "output_tokens": 5})
 
+    def test_sanitizer_redacts_secret_bearing_dictionary_keys(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            secret = "sk-secret-key-in-dict-key-123456"
+            cleaned = mq.sanitize_for_quota_evidence({
+                f"Authorization: Bearer {secret}": "value",
+                f"nested-{secret}": {"safe": "ok"},
+                "remaining_tokens": 123,
+            })
+            encoded = json.dumps(cleaned, ensure_ascii=False)
+            self.assertNotIn(secret, encoded)
+            self.assertNotIn("Authorization", encoded)
+            self.assertIn("[REDACTED_KEY]", cleaned)
+            self.assertIn("remaining_tokens", cleaned)
+            self.assertEqual(cleaned["remaining_tokens"], 123)
+
+    def test_record_snapshot_rewrites_sanitized_state_when_preserving_existing_snapshot(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            state_path = Path(td) / "state" / "model_quota_state.json"
+            log_path = Path(td) / "logs" / "model-quota.jsonl"
+            state_path.parent.mkdir(parents=True, exist_ok=True)
+            secret = "credential-value-should-not-survive-123456"
+            state_path.write_text(json.dumps({
+                "deepseek::deepseek-v4-pro": {
+                    "model": "deepseek-v4-pro",
+                    "provider": "deepseek",
+                    "status": "ok",
+                    "observability": "window_exact",
+                    "quota_type": "rate_limit_window",
+                    "confidence": 0.9,
+                    "remaining_tokens": 9999,
+                    f"api_key={secret}": "leak",
+                    "usage": {"prompt": f"please leak {secret}", "input_tokens": 1},
+                    "last_updated": mq.now_iso(),
+                    "stale_after_seconds": 300,
+                }
+            }))
+            incoming = {
+                "model": "deepseek-v4-pro",
+                "provider": "deepseek",
+                "status": "unobservable",
+                "observability": "unobservable",
+                "quota_type": "unknown",
+                "confidence": 0.1,
+                "last_updated": mq.now_iso(),
+                "stale_after_seconds": 300,
+            }
+            preserved = mq.record_snapshot(incoming, state_path=str(state_path), log_path=str(log_path))
+            persisted = state_path.read_text()
+            self.assertTrue(preserved["preserved_from_lower_confidence_update"])
+            self.assertNotIn(secret, persisted)
+            self.assertNotIn("please leak", persisted)
+            self.assertIn("[REDACTED_KEY]", persisted)
+            self.assertIn("remaining_tokens", persisted)
+
     def test_retry_after_seconds_is_normalized_to_reset_at_iso(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)

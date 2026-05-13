@@ -107,20 +107,38 @@ def redact_sensitive_text(text: Any) -> str:
     return redacted
 
 
+def _dedupe_clean_key(cleaned: dict, key: str) -> str:
+    """Return a deterministic key that cannot overwrite a prior redacted key."""
+    candidate = key or "[REDACTED_KEY]"
+    if candidate not in cleaned:
+        return candidate
+    suffix = 2
+    while f"{candidate}_{suffix}" in cleaned:
+        suffix += 1
+    return f"{candidate}_{suffix}"
+
+
 def sanitize_for_quota_evidence(value: Any) -> Any:
     """Recursively remove secrets from values persisted to quota state/logs/stdout.
 
-    This is intentionally conservative: any sensitive-looking key is replaced,
-    and string values are pattern-redacted even when the key itself is benign.
+    This is intentionally conservative: sensitive-looking keys are replaced,
+    all dictionary key text is pattern-redacted, and string values are pattern-
+    redacted even when the key itself is benign.
     """
     if isinstance(value, dict):
         cleaned = {}
         for key, item in value.items():
             key_text = str(key)
+            redacted_key = redact_sensitive_text(key_text)
             if SENSITIVE_KEY_RE.search(key_text):
-                cleaned[key_text] = "[REDACTED]"
+                safe_key = _dedupe_clean_key(cleaned, "[REDACTED_KEY]")
+                cleaned[safe_key] = "[REDACTED]"
+            elif key_text == "usage" and isinstance(item, dict):
+                safe_key = _dedupe_clean_key(cleaned, redacted_key)
+                cleaned[safe_key] = sanitize_usage(item)
             else:
-                cleaned[key_text] = sanitize_for_quota_evidence(item)
+                safe_key = _dedupe_clean_key(cleaned, redacted_key)
+                cleaned[safe_key] = sanitize_for_quota_evidence(item)
         return cleaned
     if isinstance(value, list):
         return [sanitize_for_quota_evidence(item) for item in value]
@@ -564,6 +582,10 @@ def _should_replace_snapshot(existing: Optional[dict], incoming: dict) -> Tuple[
 def record_snapshot(snapshot: dict, state_path: str = STATE_FILE, log_path: str = LOG_FILE, *, preserve_higher_confidence: bool = True) -> dict:
     snapshot = sanitize_for_quota_evidence(snapshot)
     state = load_state(state_path)
+    if isinstance(state, dict) and _STATE_LOAD_ERROR_KEY not in state:
+        # load_state() sanitizes in-memory data; persist that cleanup immediately
+        # so a preserved lower-quality update cannot leave old secrets on disk.
+        save_state(state, state_path)
     key = quota_key(snapshot.get("provider", "unknown"), snapshot.get("model", "unknown"))
     existing = state.get(key) if isinstance(state, dict) else None
     should_replace, reason = _should_replace_snapshot(existing, snapshot) if preserve_higher_confidence else (True, "forced_replace")
