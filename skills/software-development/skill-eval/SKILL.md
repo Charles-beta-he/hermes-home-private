@@ -160,6 +160,10 @@ Date: {date}
 
 When evaluating third-party skill ecosystems, use the Superpowers evidence-slice pattern as the minimum bar: source/license confirmation, complete capability matrix, 2 reproducible experiment designs, adopt/borrow/reject decision, and read-back validation. Example artifact: `/Users/charles/Documents/brain/05-实践与项目/projects/agent-skill-learning/superpowers-composable-evaluation-2026-05-13.md`.
 
+### Skill authoring creation gates
+
+Before creating or materially changing a Hermes skill, apply the skill-authoring creation gates captured in `/Users/charles/Documents/brain/05-实践与项目/projects/agent-skill-learning/skill-authoring-creation-gates-2026-05-13.md`: need/anti-proliferation gate, shape/frontmatter gate, 3 positive + 2 negative trigger prompts, deterministic/read-back verification, skill graph/steward gate, and closeout/commit evidence.
+
 ### For skills with Definition of Done (dogfood, uimax-audit, auto-optimize-loop, requesting-code-review, loop)
 
 The Definition of Done checkboxes map directly to eval checks:
