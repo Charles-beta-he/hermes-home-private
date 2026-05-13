@@ -17,6 +17,12 @@ spec.loader.exec_module(consult)
 
 
 class TestConsultModelsIntegration(unittest.TestCase):
+    def test_consult_tick_id_is_unique_under_same_second_parallel_runs(self):
+        ids = {consult.make_tick_id("abcdef1234567890") for _ in range(100)}
+        self.assertEqual(len(ids), 100)
+        for tick_id in ids:
+            self.assertRegex(tick_id, r"^\d{8}-\d{6}-\d{6}-p\d+-abcdef12-[0-9a-f]{8}$")
+
     def test_env_int_falls_back_on_invalid_value(self):
         """Invalid env integer values should not crash import-time config helpers."""
         self.assertEqual(consult._env_int("__HERMES_TEST_MISSING_INT__", "123"), 123)

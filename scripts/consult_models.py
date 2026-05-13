@@ -221,6 +221,13 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def make_tick_id(chain_id: str = "") -> str:
+    """Return a per-process unique tick id safe for parallel consult runs."""
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+    chain_prefix = re.sub(r"[^A-Za-z0-9]+", "", str(chain_id or "nochain"))[:8] or "nochain"
+    return f"{stamp}-p{os.getpid()}-{chain_prefix}-{uuid.uuid4().hex[:8]}"
+
+
 def _read_json_file(path: str, default: Any = None) -> Any:
     try:
         with open(os.path.expanduser(path)) as f:
@@ -3636,7 +3643,7 @@ def run_fanout(
     chain_id = str(uuid.uuid4())
 
     # ── 3. 创建 TICK_DIR ──
-    tick_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    tick_id = make_tick_id(chain_id)
     tick_dir = os.path.join(HERMES_HOME, f"tick-{tick_id}")
     plans_dir = os.path.join(tick_dir, "plans")
     os.makedirs(plans_dir, exist_ok=True)

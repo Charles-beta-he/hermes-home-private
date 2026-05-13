@@ -475,6 +475,23 @@ def test_done_requires_lane_specific_completion_gate_evidence():
         work_done = json.loads(run(env, "done", work_id, "--actor", "tester", "--evidence", "command: project unit-test PASS", "--json").stdout)
         assert work_done["status"] == "OK", work_done
 
+        real_api_id, real_api_path = add_task(env, title="Lark real API completion gate", priority="P0", project="uvisa-lark")
+        add_permission_fields(real_api_path, completion_gate="project-evidence-real-api-review-done")
+        run(env, "claim", real_api_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", real_api_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", real_api_id, "--to", "review", "--actor", "tester", "--evidence", "live_lark_snapshot:/tmp/lark_uvisa_live_tasks.json", "--json")
+
+        real_api_bad = run(env, "done", real_api_id, "--actor", "tester", "--evidence", "classification:/tmp/uvisa-real-api-classification.json", "--json", check=False)
+        assert real_api_bad.returncode != 0
+        assert "project-evidence-real-api-review-done requires test/build" in real_api_bad.stderr
+
+        real_api_done = json.loads(run(
+            env, "done", real_api_id, "--actor", "tester",
+            "--evidence", "command: pnpm build PASS; mvn compile PASS; real-api FE-BE verification PASS",
+            "--json",
+        ).stdout)
+        assert real_api_done["status"] == "OK", real_api_done
+
         evolution_id, _evo_path = add_evolution_task(env, title="Self evolution completion gate", priority="P0")
         run(env, "claim", evolution_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
         run(env, "transition", evolution_id, "--to", "running", "--actor", "tester", "--json")
@@ -1180,6 +1197,25 @@ def test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dash
         assert "/tmp/discussion-pass.json" not in reverted_dashboard
 
 
+def test_extracts_discussion_result_path_from_consult_stdout_to_avoid_parallel_tick_race():
+    mod = load_orchestrator_module()
+    stdout = json.dumps({
+        "status": "OK",
+        "discussion": {
+            "status": "certified",
+            "result_file": "/tmp/hermes/tick-20260513-035153/discussion_result.json",
+            "models_consulted": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"],
+        },
+    })
+    assert mod.extract_discussion_result_path_from_stdout(stdout) == "/tmp/hermes/tick-20260513-035153/discussion_result.json"
+
+    noisy_stdout = "prefix before json " + stdout + " trailing diagnostics"
+    assert mod.extract_discussion_result_path_from_stdout(noisy_stdout) == "/tmp/hermes/tick-20260513-035153/discussion_result.json"
+
+    stderr_like = "[consult_models] Done. Chain=abc Artifacts in /tmp/hermes/tick-20260513-035153/\n"
+    assert mod.extract_discussion_result_path_from_stdout(stderr_like) == "/tmp/hermes/tick-20260513-035153/discussion_result.json"
+
+
 def test_advisory_only_pass_is_consumed_without_certification_authority():
     mod = load_orchestrator_module()
     with tempfile.TemporaryDirectory() as td:
@@ -1804,6 +1840,8 @@ def main():
     test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
     test_discussion_task_binding_stamp_closes_target_binding_gap()
     test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dashboard()
+    test_extracts_discussion_result_path_from_consult_stdout_to_avoid_parallel_tick_race()
+    test_advisory_only_pass_is_consumed_without_certification_authority()
     test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics()
     test_autonomy_readiness_reports_complete_fail_closed_architecture()
     test_autorun_runner_pauses_on_pending_permission_gate()

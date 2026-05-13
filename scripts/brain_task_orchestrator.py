@@ -1101,6 +1101,61 @@ def multimodel_failure_taxonomy(discussion: dict[str, Any] | None, failures: lis
     }
 
 
+def extract_discussion_result_path_from_stdout(stdout: str) -> str:
+    """Extract consult_models.py discussion_result.json path from captured output.
+
+    Parallel intervention workers each own a subprocess stdout/stderr stream; using
+    that exact receipt avoids races when several tick-* dirs are created at once.
+    """
+    text = stdout or ""
+    if not text:
+        return ""
+
+    def _walk(obj: Any) -> str:
+        if isinstance(obj, dict):
+            value = obj.get("result_file")
+            if isinstance(value, str) and value.endswith("discussion_result.json"):
+                return value
+            for child in obj.values():
+                found = _walk(child)
+                if found:
+                    return found
+        elif isinstance(obj, list):
+            for child in obj:
+                found = _walk(child)
+                if found:
+                    return found
+        return ""
+
+    try:
+        parsed = json.loads(text)
+        found = _walk(parsed)
+        if found:
+            return found
+    except Exception:
+        pass
+
+    start = text.find("{")
+    end = text.rfind("}")
+    if 0 <= start < end:
+        try:
+            parsed = json.loads(text[start : end + 1])
+            found = _walk(parsed)
+            if found:
+                return found
+        except Exception:
+            pass
+
+    match = re.search(r'"result_file"\s*:\s*"([^"]*discussion_result\.json)"', text)
+    if match:
+        return match.group(1)
+
+    artifact_match = re.search(r"Artifacts in\s+([^\s]+tick-[^\s/]+/?)(?:\s|$)", text)
+    if artifact_match:
+        return str(Path(artifact_match.group(1)).expanduser() / "discussion_result.json")
+    return ""
+
+
 def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], discussion_path: str, state_path: str) -> dict[str, Any]:
     """Write every PUA-loop multi-model round result back to the task note.
 
@@ -1559,7 +1614,10 @@ def evidence_is_structured(e: str) -> bool:
     e = (e or "").strip()
     if not e:
         return False
-    prefixes = ("command:", "file:", "search:", "brainctl:", "url:", "artifact:", "proof:")
+    prefixes = (
+        "command:", "file:", "search:", "brainctl:", "url:", "artifact:", "proof:",
+        "live_lark_snapshot:", "classification:",
+    )
     if e.startswith(prefixes):
         return True
     p = Path(os.path.expanduser(e))
@@ -1595,6 +1653,13 @@ def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
             failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
         if not has_any(("test", "build", "lint", "playwright", "browser", "curl", "mvn", "pytest", "vitest", "npm", "pnpm", "yarn", "railway", "git diff --check", "commit", "project evidence", "verification")):
             failures.append("project-evidence-review-done requires test/build/browser/curl/commit/project-verification evidence")
+    elif gate == "project-evidence-real-api-review-done":
+        if lane != "work":
+            failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
+        if not has_any(("test", "build", "lint", "playwright", "browser", "curl", "mvn", "pytest", "vitest", "npm", "pnpm", "yarn", "railway", "git diff --check", "commit", "verification")):
+            failures.append("project-evidence-real-api-review-done requires test/build/browser/curl/commit verification evidence")
+        if not has_any(("real-api", "real api", "真实接口", "backend", "frontend", "fe-be", "curl", "mvn")):
+            failures.append("project-evidence-real-api-review-done requires real-api/backend/frontend contract evidence")
     elif gate == "ratification-or-selfcheck-review-done":
         if lane != "evolution":
             failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
@@ -3485,11 +3550,15 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
     else:
         try:
             proc = subprocess.run(run_cmd, capture_output=True, text=True, timeout=1200, shell=True)
+            discussion_result_path = extract_discussion_result_path_from_stdout(
+                (proc.stdout or "") + "\n" + (proc.stderr or "")
+            )
             result["run_discussion"] = {
                 "status": "OK" if proc.returncode == 0 else "FAIL",
                 "returncode": proc.returncode,
                 "stdout_tail": proc.stdout[-500:] if proc.stdout else "",
                 "stderr_tail": proc.stderr[-500:] if proc.stderr else "",
+                "discussion_result_path": discussion_result_path,
             }
         except Exception as exc:
             result["run_discussion"] = {"status": "ERROR", "error": str(exc)}
@@ -3498,9 +3567,27 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
     discussion_path = ""
     gate_result: dict[str, Any] = {}
     if result.get("run_discussion", {}).get("status") == "OK":
-        # Find the latest discussion_result.json in tick output dirs
+        direct_path = str(result.get("run_discussion", {}).get("discussion_result_path") or "")
+        if direct_path:
+            candidate = Path(direct_path).expanduser()
+            if candidate.exists():
+                try:
+                    discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    task_obj = find_task(task_id)
+                    if task_obj:
+                        result["binding_stamp"] = stamp_discussion_task_binding(candidate, task_obj, state_path)
+                        discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    if advisory_only_plan:
+                        gate_result = advisory_round_gate_result(discussion)
+                    else:
+                        gate_result = ratification_gate_result(discussion, expected_task=task_obj)
+                    discussion_path = str(candidate)
+                except Exception:
+                    gate_result = {}
+                    discussion_path = ""
+        # Find the latest discussion_result.json in tick output dirs as a fallback.
         tick_dirs = sorted(Path(os.path.expanduser("~/.hermes")).glob("tick-*"), key=lambda p: p.stat().st_mtime, reverse=True)
-        for tick_dir in tick_dirs[:3]:
+        for tick_dir in ([] if gate_result else tick_dirs[:3]):
             candidate = tick_dir / "discussion_result.json"
             if candidate.exists():
                 try:
@@ -3566,7 +3653,14 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
     # Step 2: Run discussion
     try:
         proc = subprocess.run(run_cmd, capture_output=True, text=True, timeout=1200, shell=True)
-        result["run_discussion"] = {"status": "OK" if proc.returncode == 0 else "FAIL", "returncode": proc.returncode}
+        discussion_result_path = extract_discussion_result_path_from_stdout(
+            (proc.stdout or "") + "\n" + (proc.stderr or "")
+        )
+        result["run_discussion"] = {
+            "status": "OK" if proc.returncode == 0 else "FAIL",
+            "returncode": proc.returncode,
+            "discussion_result_path": discussion_result_path,
+        }
     except Exception as exc:
         result["run_discussion"] = {"status": "ERROR", "error": str(exc)}
 
@@ -3574,6 +3668,25 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
     discussion_path = ""
     gate_result: dict[str, Any] = {}
     if result.get("run_discussion", {}).get("status") == "OK":
+        direct_path = str(result.get("run_discussion", {}).get("discussion_result_path") or "")
+        if direct_path:
+            candidate = Path(direct_path).expanduser()
+            if candidate.exists():
+                try:
+                    discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    task_obj = find_task(task_id)
+                    if task_obj:
+                        result["binding_stamp"] = stamp_discussion_task_binding(candidate, task_obj, state_path)
+                        discussion = json.loads(candidate.read_text(encoding="utf-8"))
+                    advisory_only_plan = plan.get("advisory_only", False)
+                    if advisory_only_plan:
+                        gate_result = advisory_round_gate_result(discussion)
+                    else:
+                        gate_result = ratification_gate_result(discussion, expected_task=task_obj)
+                    discussion_path = str(candidate)
+                except Exception:
+                    gate_result = {}
+                    discussion_path = ""
         # Look for tick directories created during our discussion (within last 10 min)
         import time
         cutoff = time.time() - 600
@@ -3582,7 +3695,7 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
              if p.stat().st_mtime > cutoff),
             key=lambda p: p.stat().st_mtime, reverse=True
         )
-        for tick_dir in tick_dirs[:10]:
+        for tick_dir in ([] if gate_result else tick_dirs[:10]):
             candidate = tick_dir / "discussion_result.json"
             if not candidate.exists():
                 continue
