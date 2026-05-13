@@ -403,6 +403,24 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(summary["noop_patch_count"], 1)
         self.assertEqual(summary["conditional_advisory_patch_count"], 1)
 
+    def test_planner_patch_summary_names_unresolved_noop_vs_change_without_claiming_merge_dropped_patches(self):
+        """A lone concrete minority under noop majority is unresolved, not merged implementation_required."""
+        plans = [
+            {"meta": {"planner_model": "claude-opus-4-7"}, "patches": [{"op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "gpt-5.5"}, "patches": [{"op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "deepseek-v4-pro"}, "patches": [{"op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "mimo-v2.5-pro"}, "patches": [
+                {"id": "P-001", "target_file": "brain_task_orchestrator.py", "op": "tune_threshold", "rationale": "advisory-only rounds should not hard block closeout"},
+                {"id": "P-002", "target_file": "brain_task_orchestrator.py", "op": "modify_router_weight", "rationale": "skip low-confidence quota participants"},
+            ]},
+        ]
+        summary = consult._planner_patch_summary(plans)
+        self.assertEqual(summary["certification_intent"], "unresolved_noop_vs_change")
+        self.assertEqual(summary["concrete_patch_count"], 2)
+        self.assertEqual(summary["noop_only_model_count"], 3)
+        self.assertEqual(summary["concrete_model_count"], 1)
+        self.assertEqual(summary["models_with_concrete_patches"], ["mimo-v2.5-pro"])
+
     def test_discussion_packet_explains_empty_patches_for_no_action_certification(self):
         current_best = {
             "patches": [],

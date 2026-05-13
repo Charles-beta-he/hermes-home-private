@@ -1215,7 +1215,34 @@ def test_advisory_only_pass_is_consumed_without_certification_authority():
         assert mod.task_multimodel_intervention_required(before) is True
         assert "evolution_lane" in mod.task_multimodel_advisory_reasons(before)
 
-        advisory_gate = {"status": "PASS_ADVISORY_ONLY", "decision": "continue_loop", "failures": []}
+        advisory_plan = mod.build_multimodel_intervention_plan(before)
+        assert advisory_plan["advisory_only"] is True, advisory_plan
+        assert advisory_plan["certification_reasons"] == [], advisory_plan
+        assert advisory_plan["recommended_tier"] in {"T1_advisory", "T2_advisory"}, advisory_plan
+        assert "--tier T3" not in advisory_plan["run_discussion_command"], advisory_plan
+        assert "--quorum 4" not in advisory_plan["run_discussion_command"], advisory_plan
+        assert "advisory" in advisory_plan["pua_loop"]["round_gate"], advisory_plan
+
+        # A T1/T2 advisory artifact is consumed as advisory even when it is not a
+        # 4-model closeout certificate.  It must not be run through the T3
+        # ratification gate, otherwise model_count_below_required/Claude-missing
+        # failures make weak advisory triggers rerun forever.
+        t1_discussion = {
+            "status": "not_certified",
+            "models_consulted": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"],
+            "ratification_votes": [
+                {"model": "gpt-5.5", "vote": "amend"},
+                {"model": "mimo-v2.5-pro", "vote": "approve"},
+                {"model": "deepseek-v4-pro", "vote": "amend"},
+            ],
+            "issue_ledger": [{"id": "I-001", "severity": 3, "status": "unresolved"}],
+        }
+        advisory_gate = mod.advisory_round_gate_result(t1_discussion)
+        assert advisory_gate["status"] == "PASS_ADVISORY_ONLY", advisory_gate
+        assert advisory_gate["decision"] == "continue_loop", advisory_gate
+        assert advisory_gate["certification_authority"] is False, advisory_gate
+        assert "model_count_below_required" not in json.dumps(advisory_gate), advisory_gate
+
         result = mod.write_multimodel_result_to_task(before, advisory_gate, "/tmp/discussion-advisory.json", "/tmp/state-advisory.json")
         assert result["passed"] is False, result
         assert result["updates"]["multimodel_status"] == "advisory_completed", result

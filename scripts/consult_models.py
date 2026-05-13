@@ -374,15 +374,18 @@ def _finalize_packet_token_budget(packet: dict, raw_chars: int) -> dict:
         if len(json.dumps(packet, ensure_ascii=False)) == actual_packet_chars:
             return packet
     # Extremely unlikely fallback: keep telemetry honest even if JSON digit lengths did
-    # not converge inside the safety cap.
+    # not converge inside the safety cap.  Non-convergence of the self-referential
+    # packet_chars field is not evidence of zero manifest savings; only claim zero
+    # when the final packet is actually no smaller than the raw context.
     actual_packet_chars = len(json.dumps(packet, ensure_ascii=False))
+    chars_saved = max(0, raw_chars - actual_packet_chars)
     packet["token_budget"].update({
         "raw_context_chars": raw_chars,
         "packet_chars": actual_packet_chars,
-        "estimated_chars_saved": 0,
-        "estimated_tokens_saved": 0,
+        "estimated_chars_saved": chars_saved,
+        "estimated_tokens_saved": 0 if chars_saved <= 0 else _approx_tokens(chars_saved),
         "compression_ratio": round(actual_packet_chars / raw_chars, 4) if raw_chars else 1.0,
-        "policy": "size telemetry did not converge; no savings claimed",
+        "policy": "size telemetry did not converge; final-size savings reported",
     })
     return packet
 
@@ -517,6 +520,7 @@ def build_discussion_comm_packet(
             "If a fact needs omitted detail, emit evidence_requests rather than restating full context.",
             "Vote approve only if best_within_constraints and truth_gate permits certification.",
             "An empty current_best_summary.patches list is not by itself a blocker when current_best_summary.planner_patch_summary.certification_intent == 'no_action_certification' and concrete_patch_count == 0; treat it as evidence that planners explicitly signed off with noop/advisory patches, not as a dropped-patch contradiction.",
+            "When certification_intent == 'unresolved_noop_vs_change', do not claim current_best dropped implementation_required patches; resolve the explicit noop-vs-change issue ledger first, then either accept concrete patches or downgrade them to advisory/noop with evidence.",
         ],
         "required_output": {
             "critiques": [{"target_model": "...", "severity": 1, "claim": "...", "evidence": "evidence id/ref, not full blob", "correction": "...", "novel": True}],
@@ -1560,9 +1564,13 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
         "plans_non_list_patches_count": 0,
         "non_dict_patch_count": 0,
         "models_with_concrete_patches": [],
+        "models_with_noop_only_patches": [],
+        "concrete_model_count": 0,
+        "noop_only_model_count": 0,
         "certification_intent": "unknown",
     }
     concrete_models: List[str] = []
+    noop_only_models: List[str] = []
     for idx, plan in enumerate(plans or []):
         if not isinstance(plan, dict):
             summary["malformed_plan_count"] += 1
@@ -1570,6 +1578,7 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
         summary["planner_count"] += 1
         model = _plan_model(plan, f"model_{idx}")
         model_has_concrete = False
+        model_has_noop_or_advisory = False
         if "patches" not in plan:
             summary["plans_missing_patches_count"] += 1
             continue
@@ -1585,14 +1594,21 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
             op = str(patch_obj.get("op", "")).strip().lower()
             if op == "noop":
                 summary["noop_patch_count"] += 1
+                model_has_noop_or_advisory = True
             elif _is_conditional_advisory_patch(patch_obj) or _is_no_action_advisory_patch(patch_obj, plan):
                 summary["conditional_advisory_patch_count"] += 1
+                model_has_noop_or_advisory = True
             else:
                 summary["concrete_patch_count"] += 1
                 model_has_concrete = True
         if model_has_concrete:
             concrete_models.append(model)
+        elif model_has_noop_or_advisory:
+            noop_only_models.append(model)
     summary["models_with_concrete_patches"] = sorted(set(concrete_models))
+    summary["models_with_noop_only_patches"] = sorted(set(noop_only_models))
+    summary["concrete_model_count"] = len(summary["models_with_concrete_patches"])
+    summary["noop_only_model_count"] = len(summary["models_with_noop_only_patches"])
     malformed_count = (
         summary["malformed_plan_count"]
         + summary["plans_missing_patches_count"]
@@ -1603,6 +1619,8 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
         summary["certification_intent"] = "malformed_patch_data"
     elif summary["concrete_patch_count"] == 0 and summary["planner_count"] > 0:
         summary["certification_intent"] = "no_action_certification"
+    elif summary["concrete_patch_count"] > 0 and summary["noop_only_model_count"] > 0:
+        summary["certification_intent"] = "unresolved_noop_vs_change"
     elif summary["concrete_patch_count"] > 0:
         summary["certification_intent"] = "implementation_required"
     else:

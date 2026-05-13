@@ -3288,6 +3288,22 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
     question_arg = shlex.quote(question)
     state_arg = shlex.quote(str(state_path))
     task_arg = shlex.quote(task.id)
+    advisory_only = bool(advisory_reasons) and not bool(cert_reasons)
+    recommended_tier = "T3_certification" if cert_reasons else ("T2_advisory" if len(reasons) >= 3 else "T1_advisory")
+    consult_tier = "T3" if recommended_tier == "T3_certification" else recommended_tier.split("_", 1)[0]
+    consult_quorum_arg = " --quorum 4" if recommended_tier == "T3_certification" else ""
+    if advisory_only:
+        pua_loop = {
+            "mode": "advisory_until_signal_consumed",
+            "round_gate": f"run deterministic checks -> build target-bound claim/evidence state -> consult_models.py --tier {consult_tier} --discussion advisory round -> record PASS_ADVISORY_ONLY when advisory output passes; never authorize done",
+            "completion_signal": "advisory consumed only; LOOP_DONE remains reserved for certification-triggered target-bound 4/4 ratification-gate PASS",
+        }
+    else:
+        pua_loop = {
+            "mode": "continue_until_multimodel_pass",
+            "round_gate": "run deterministic checks -> build target-bound claim/evidence state -> consult_models.py --tier T3 --quorum 4 --discussion -> ratification-gate; continue if gate != PASS",
+            "completion_signal": "LOOP_DONE only after target-bound 4/4 ratification-gate PASS and local deterministic gates pass",
+        }
     return {
         "schema": "local_brain_multimodel_intervention_v1",
         "task": task.row(),
@@ -3299,15 +3315,11 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
         "trigger_reasons": reasons,
         "advisory_reasons": advisory_reasons,
         "certification_reasons": cert_reasons,
-        "advisory_only": bool(advisory_reasons) and not bool(cert_reasons),
-        "recommended_tier": "T3_certification" if cert_reasons else ("T2_advisory" if len(reasons) >= 3 else "T1_advisory"),
+        "advisory_only": advisory_only,
+        "recommended_tier": recommended_tier,
         "intervention_required": bool(reasons),
         "economy_gate": economy,
-        "pua_loop": {
-            "mode": "continue_until_multimodel_pass",
-            "round_gate": "run deterministic checks -> build target-bound claim/evidence state -> consult_models.py --tier T3 --quorum 4 --discussion -> ratification-gate; continue if gate != PASS",
-            "completion_signal": "LOOP_DONE only after target-bound 4/4 ratification-gate PASS and local deterministic gates pass",
-        },
+        "pua_loop": pua_loop,
         "state_path": str(state_path),
         "build_state_command": (
             f"mkdir -p {shlex.quote(str(state_dir))} && "
@@ -3323,7 +3335,7 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
             f"{evidence_args} "
             f"--file {shlex.quote(str(task.path))} --out {state_arg}"
         ),
-        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier T3 --quorum 4 --discussion --max-rounds 3 --keep",
+        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier {consult_tier}{consult_quorum_arg} --discussion --max-rounds 3 --keep",
         "gate_command_template": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task {task_arg} --discussion-result DISCUSSION_RESULT_JSON --json",
         "safety": "dry-run intervention plan only; no claim, no task mutation, no arbitrary hook execution",
     }
@@ -3497,8 +3509,10 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
                     if task_obj:
                         result["binding_stamp"] = stamp_discussion_task_binding(candidate, task_obj, state_path)
                         discussion = json.loads(candidate.read_text(encoding="utf-8"))
-                    # Verify it's for our task by checking provenance or state_hash
-                    gate_result = ratification_gate_result(discussion, expected_task=task_obj)
+                    if advisory_only_plan:
+                        gate_result = advisory_round_gate_result(discussion)
+                    else:
+                        gate_result = ratification_gate_result(discussion, expected_task=task_obj)
                     discussion_path = str(candidate)
                     break
                 except Exception:
@@ -3585,7 +3599,11 @@ def _run_single_task_pipeline(plan: dict[str, Any], allowlist_active: bool) -> d
                 if task_obj:
                     result["binding_stamp"] = stamp_discussion_task_binding(candidate, task_obj, state_path)
                     discussion = json.loads(candidate.read_text(encoding="utf-8"))
-                gate_result = ratification_gate_result(discussion, expected_task=task_obj)
+                advisory_only_plan = plan.get("advisory_only", False)
+                if advisory_only_plan:
+                    gate_result = advisory_round_gate_result(discussion)
+                else:
+                    gate_result = ratification_gate_result(discussion, expected_task=task_obj)
                 discussion_path = str(candidate)
                 break
             except Exception:
@@ -3839,6 +3857,36 @@ def _format_binding_for_failure(candidate: str) -> str:
     except Exception:
         pass
     return text
+
+
+def advisory_round_gate_result(discussion: dict[str, Any]) -> dict[str, Any]:
+    """Mark a completed T1/T2 advisory artifact as consumed, not certified.
+
+    Advisory-only taskpool interventions are routing/sanity signals. They should
+    not be promoted to LOOP_DONE, and they must not be evaluated by the canonical
+    T3 closeout gate that requires Claude+GPT+DeepSeek+MiMo. A parseable
+    consult_models artifact with at least one concrete model/vote is enough to
+    consume weak advisory triggers and stop scheduler churn; blockers inside the
+    artifact remain advisory provenance for the next human/worker slice.
+    """
+    if not isinstance(discussion, dict):
+        return {"status": "FAIL", "decision": "continue_loop", "failures": ["discussion_result_not_object"]}
+    raw_models = discussion.get("models_consulted") or []
+    raw_votes = discussion.get("ratification_votes") or discussion.get("votes") or []
+    models = [str(m).strip() for m in raw_models if isinstance(m, str) and str(m).strip()] if isinstance(raw_models, list) else []
+    vote_models = [str(v.get("model") or "").strip() for v in raw_votes if isinstance(v, dict) and str(v.get("model") or "").strip()] if isinstance(raw_votes, list) else []
+    participants = sorted(set(models + vote_models))
+    if not participants:
+        return {"status": "FAIL", "decision": "continue_loop", "failures": ["advisory_models_missing"]}
+    return {
+        "status": "PASS_ADVISORY_ONLY",
+        "decision": "continue_loop",
+        "failures": [],
+        "advisory_status": str(discussion.get("status") or discussion.get("certification_status") or "unknown"),
+        "models_consulted": participants,
+        "certification_authority": False,
+        "advisory_block": "advisory_only_task_cannot_authorize_done",
+    }
 
 
 def ratification_gate_result(discussion: dict[str, Any], expected_task: "Task" | None = None) -> dict[str, Any]:
