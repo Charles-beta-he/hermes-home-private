@@ -954,6 +954,30 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert passed_row["multimodel_passed"] is True, passed_row
         assert passed_row["multimodel_intervention_required"] is False, passed_row
 
+        # Economy-paused tasks are diagnostic backlog, not executable PUA-loop work.
+        # They must not be selected ahead of an actionable task with real state/run commands.
+        paused_id, paused_path = add_evolution_task(env, title="pua-loop 多模型长期不收敛暂停项", priority="P0")
+        actionable_id, _actionable_path = add_evolution_task(env, title="pua-loop 多模型下一条可执行项", priority="P1")
+        paused_text = paused_path.read_text(encoding="utf-8")
+        paused_text = paused_text.replace(
+            "status: pending",
+            "status: pending\nmultimodel_round_status: failed\nmultimodel_last_decision: CONTINUE_LOOP",
+            1,
+        )
+        paused_text += "\n" + "\n".join(f"- 2099-01-0{i}: Multimodel PUA-loop round `failed`." for i in range(1, 6)) + "\n"
+        paused_path.write_text(paused_text, encoding="utf-8")
+        economy_dry = json.loads(run(env, "multimodel-intervention-dry-run", "--json").stdout)
+        assert economy_dry["intervention_required"] is True, economy_dry
+        assert economy_dry["selected_task_id"] == actionable_id, economy_dry
+        assert economy_dry["selected"]["intervention_required"] is True, economy_dry
+        assert all(p.get("intervention_required") for p in economy_dry["plans"]), economy_dry
+        assert paused_id in [p["task"]["id"] for p in economy_dry["paused_plans"]], economy_dry
+
+        paused_only = json.loads(run(env, "multimodel-intervention-dry-run", "--task", paused_id, "--json").stdout)
+        assert paused_only["intervention_required"] is False, paused_only
+        assert paused_only["selected_task_id"] == "", paused_only
+        assert paused_only["paused_count"] == 1, paused_only
+
         mismatched_target = task_path.parent / "discussion-mismatched-target.json"
         mismatched_target.write_text(good.read_text(encoding="utf-8").replace(task_id, "2026-05-10-other-task", 1), encoding="utf-8")
         gate_mismatched = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(mismatched_target), "--json", check=False).stdout)

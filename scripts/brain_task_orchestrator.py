@@ -3338,7 +3338,14 @@ def command_multimodel_intervention_dry_run(args: argparse.Namespace) -> dict[st
     intervention_tasks = [t for t in candidates if task_multimodel_intervention_required(t)]
     intervention_tasks = sorted(intervention_tasks, key=multimodel_intervention_sort_key)
     max_tasks = max(1, int(getattr(args, "max_tasks", 5) or 5))
-    plans = [build_multimodel_intervention_plan(t) for t in intervention_tasks[:max_tasks]]
+
+    # Build before slicing so a higher-priority economy-paused task cannot hide
+    # the next actionable PUA-loop task.  Paused/throttled diagnostics remain
+    # visible in paused_plans, but executable runners consume only plans[].
+    all_plans = [build_multimodel_intervention_plan(t) for t in intervention_tasks]
+    actionable_plans = [p for p in all_plans if p.get("intervention_required")]
+    paused_plans = [p for p in all_plans if not p.get("intervention_required")]
+    plans = actionable_plans[:max_tasks]
     selected = plans[0] if plans else None
     result = {
         "status": "OK",
@@ -3349,9 +3356,12 @@ def command_multimodel_intervention_dry_run(args: argparse.Namespace) -> dict[st
         "selected_task_id": selected["task"]["id"] if selected else "",
         "selected": selected,
         "queued_count": len(intervention_tasks),
+        "actionable_count": len(actionable_plans),
+        "paused_count": len(paused_plans),
         "plans": plans,
+        "paused_plans": paused_plans[:max_tasks],
         "criteria": ["accuracy", "long_term_goal", "one_shot_landing"],
-        "safety": "dry-run only; this surfaces automatic intervention points but does not run models or edit tasks",
+        "safety": "dry-run only; plans[] are actionable; paused_plans[] are fail-closed diagnostics and are not executed",
     }
     # D4: convergence stats
     result["convergence"] = multimodel_convergence_stats()

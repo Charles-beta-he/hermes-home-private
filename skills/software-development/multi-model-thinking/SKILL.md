@@ -502,6 +502,7 @@ For UVISA specifically: `src/lib/validators.ts` is the shared validation infrast
 30. state_path stale directory 清理: consult_models.py --out 要求目标是文件路径。如果之前的 mkdir 或错误操作把 state_path 创建为目录，IsADirectoryError。step command 中 build_state 前检查 state_path 是否为目录，是则 shutil.rmtree。
 31. discussion timeout 经验值: 4 模型 × 5 rounds 每轮 ~2-3 分钟 = 10-15 分钟。DEFAULT_TIMEOUT=120s 是单模型超时，总进程 timeout 需 1200s。mimo-v2.5-pro 总是最后执行（串行模式），需要最多等待时间。round_001 的 mimo parse_status 通常是 "retried"（JSON 解析重试），这是正常的。
 32. PUA-loop convergence 追踪: multimodel_convergence_stats() 输出 total_active/multimodel_passed/multimodel_triggered/pass_rate/trigger_rate。pass_rate=0 且 trigger_rate>0.8 意味着所有触发的任务都未通过认证。首次 pass_rate>0 需要选择证据充分、模型共识度高的简单任务。复杂修复/评估任务天然分歧高（agreement<0.7）。
+33. Economy-paused 任务不能进入 executable plans[]：`build_multimodel_intervention_plan()` 对 5 轮失败/暂停任务会返回 `intervention_required=false`、空 build/run command。`multimodel-intervention-dry-run` 必须先 build 全部候选并分区为 actionable `plans[]` 与 diagnostic `paused_plans[]`，再选择 `selected`；否则最高分 paused 任务会被选中，step 看到空 command 后写入伪 `no_discussion_result`，导致 PUA-loop 静默空转。
 
 ## Taskpool 自动多模型介入 (2026-05-11)
 
