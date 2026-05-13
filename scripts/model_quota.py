@@ -12,6 +12,7 @@ import email.utils
 import json
 import math
 import os
+import re
 import sys
 import time
 import tempfile
@@ -47,6 +48,30 @@ LOW_REQUEST_THRESHOLD = _env_int("HERMES_QUOTA_LOW_REQUEST_THRESHOLD", 3)
 DEFAULT_T3_MODELS = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
 CONFIDENCE_BLOCKING_STATUSES = {"low", "unknown", "unobservable", "exhausted", "rate_limited", "malformed", "unavailable"}
 
+SENSITIVE_KEY_RE = re.compile(
+    r"(?i)(authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|auth[_-]?token|session[_-]?token|secret|password|passwd|cookie)"
+)
+SECRET_TEXT_PATTERNS = (
+    (re.compile(r"(?i)authorization\s*[:=]\s*(?:bearer|basic)?\s*[^\s,;]+"), "authorization: [REDACTED]"),
+    (re.compile(r"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{8,}"), "bearer [REDACTED]"),
+    (re.compile(r"(?i)\b(api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|token|secret|password|passwd|cookie)\s*[:=]\s*['\"]?[^'\"\s,;]+"), r"\1=[REDACTED]"),
+    (re.compile(r"(?i)([?&](?:api[_-]?key|access[_-]?token|refresh[_-]?token|id[_-]?token|token|secret|password|passwd)=)[^&\s]+"), r"\1[REDACTED]"),
+    (re.compile(r"(?i)\b(sk-[A-Za-z0-9_-]{12,}|xox[baprs]-[A-Za-z0-9-]+)\b"), "[REDACTED]"),
+)
+SAFE_USAGE_FIELDS = {
+    "input_tokens",
+    "output_tokens",
+    "prompt_tokens",
+    "completion_tokens",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+    "cached_tokens",
+    "total_tokens",
+    "tokens",
+    "cost_usd",
+    "latency_ms",
+}
+
 SUBSCRIPTION_PROVIDERS = {"openai-codex", "qwen-oauth"}
 HEADER_TOKEN_KEYS = (
     "x-ratelimit-remaining-tokens",
@@ -72,6 +97,54 @@ HEADER_RESET_KEYS = (
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def redact_sensitive_text(text: Any) -> str:
+    """Redact credential-looking substrings before quota evidence leaves memory."""
+    redacted = str(text or "")
+    for pattern, replacement in SECRET_TEXT_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
+
+
+def sanitize_for_quota_evidence(value: Any) -> Any:
+    """Recursively remove secrets from values persisted to quota state/logs/stdout.
+
+    This is intentionally conservative: any sensitive-looking key is replaced,
+    and string values are pattern-redacted even when the key itself is benign.
+    """
+    if isinstance(value, dict):
+        cleaned = {}
+        for key, item in value.items():
+            key_text = str(key)
+            if SENSITIVE_KEY_RE.search(key_text):
+                cleaned[key_text] = "[REDACTED]"
+            else:
+                cleaned[key_text] = sanitize_for_quota_evidence(item)
+        return cleaned
+    if isinstance(value, list):
+        return [sanitize_for_quota_evidence(item) for item in value]
+    if isinstance(value, tuple):
+        return [sanitize_for_quota_evidence(item) for item in value]
+    if isinstance(value, str):
+        return redact_sensitive_text(value)
+    return value
+
+
+def sanitize_usage(usage: Optional[dict]) -> dict:
+    """Keep only numeric metering fields; never persist prompt/completion text."""
+    if not isinstance(usage, dict):
+        return {}
+    cleaned: dict[str, Any] = {}
+    for key, value in usage.items():
+        key_text = str(key)
+        if key_text not in SAFE_USAGE_FIELDS:
+            continue
+        number = _to_float(value, default=None)
+        if number is None:
+            continue
+        cleaned[key_text] = number if not float(number).is_integer() else int(number)
+    return cleaned
 
 
 def _format_utc_iso(dt: datetime) -> str:
@@ -279,7 +352,7 @@ def snapshot_from_headers(model: str, provider: str, headers: dict, usage: Optio
     if remaining_tokens is None and remaining_requests is None and not reset_at:
         base.update({
             "source": "response_headers",
-            "usage": usage or {},
+            "usage": sanitize_usage(usage),
             "last_updated": now_iso(),
         })
         return base
@@ -291,10 +364,10 @@ def snapshot_from_headers(model: str, provider: str, headers: dict, usage: Optio
         "remaining_requests": remaining_requests,
         "reset_at": reset_at,
         "reset_after_seconds": reset_after_seconds,
-        "raw_reset": reset_raw,
+        "raw_reset": redact_sensitive_text(reset_raw),
         "source": "response_headers",
         "confidence": 0.9,
-        "usage": usage or {},
+        "usage": sanitize_usage(usage),
         "last_updated": now_iso(),
     })
     return base
@@ -331,7 +404,7 @@ def snapshot_from_error(
             "error_class": error_class,
             "reset_at": reset_at,
             "reset_after_seconds": reset_after,
-            "raw_retry_after": retry_after,
+            "raw_retry_after": redact_sensitive_text(retry_after),
             "source": "error_inference",
             "confidence": 0.7 if reset_at else 0.6,
         })
@@ -378,9 +451,9 @@ def snapshot_unobservable_success(
         "reset_at": None,
         "source": source,
         "confidence": max(0.0, min(float(confidence), 0.49)),
-        "usage": usage or {},
-        "header_names": sorted({str(k).lower() for k in (header_names or [])}),
-        "evidence_note": evidence_note,
+        "usage": sanitize_usage(usage),
+        "header_names": sorted({redact_sensitive_text(str(k).lower()) for k in (header_names or [])}),
+        "evidence_note": redact_sensitive_text(evidence_note),
         "policy_scope": "low_risk_routing_only; not_budget_handoff_certification",
         "stale_after_seconds": DEFAULT_STALE_AFTER_SECONDS,
         "last_updated": now_iso(),
@@ -400,10 +473,11 @@ def load_state(path: str = STATE_FILE) -> dict:
         return {_STATE_LOAD_ERROR_KEY: {"status": "malformed", "reason": "null_state"}}
     if not isinstance(data, dict):
         return {_STATE_LOAD_ERROR_KEY: {"status": "malformed", "reason": "non_dict_state"}}
-    return data
+    return sanitize_for_quota_evidence(data)
 
 
 def save_state(state: dict, path: str = STATE_FILE) -> None:
+    state = sanitize_for_quota_evidence(state)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix="model_quota_", suffix=".json", dir=os.path.dirname(path))
     try:
@@ -420,6 +494,7 @@ def save_state(state: dict, path: str = STATE_FILE) -> None:
 
 
 def append_log(entry: dict, path: str = LOG_FILE) -> None:
+    entry = sanitize_for_quota_evidence(entry)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "a") as f:
         f.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
@@ -487,6 +562,7 @@ def _should_replace_snapshot(existing: Optional[dict], incoming: dict) -> Tuple[
 
 
 def record_snapshot(snapshot: dict, state_path: str = STATE_FILE, log_path: str = LOG_FILE, *, preserve_higher_confidence: bool = True) -> dict:
+    snapshot = sanitize_for_quota_evidence(snapshot)
     state = load_state(state_path)
     key = quota_key(snapshot.get("provider", "unknown"), snapshot.get("model", "unknown"))
     existing = state.get(key) if isinstance(state, dict) else None

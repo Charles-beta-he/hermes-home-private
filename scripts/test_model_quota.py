@@ -96,6 +96,34 @@ class TestModelQuota(unittest.TestCase):
             self.assertIn("deepseek::deepseek-v4-pro", state)
             self.assertEqual(state["deepseek::deepseek-v4-pro"]["remaining_tokens"], 42)
 
+    def test_record_call_redacts_secrets_and_drops_prompt_text_before_persistence(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            secret = "credential-value-1234567890"
+            snap = mq.record_call(
+                model="deepseek-v4-pro",
+                provider="deepseek",
+                ok=True,
+                headers={
+                    "x-ratelimit-remaining-tokens": "42",
+                    "x-ratelimit-reset-tokens": f"Authorization: Bearer {secret}",
+                },
+                usage={
+                    "input_tokens": 10,
+                    "output_tokens": 5,
+                    "prompt": f"please leak {secret}",
+                    "OPENAI_API_KEY": secret,
+                },
+            )
+            state_path = Path(td) / "state" / "model_quota_state.json"
+            log_path = Path(td) / "logs" / "model-quota.jsonl"
+            combined = json.dumps(snap) + state_path.read_text() + log_path.read_text()
+            self.assertNotIn(secret, combined)
+            self.assertNotIn("please leak", combined)
+            self.assertNotIn("OPENAI_API_KEY", combined)
+            self.assertIn("[REDACTED]", combined)
+            self.assertEqual(snap["usage"], {"input_tokens": 10, "output_tokens": 5})
+
     def test_retry_after_seconds_is_normalized_to_reset_at_iso(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
