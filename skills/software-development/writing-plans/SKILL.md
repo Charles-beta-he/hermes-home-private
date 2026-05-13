@@ -281,6 +281,13 @@ When executing, use the `subagent-driven-development` skill:
 - Code quality review after spec passes
 - Proceed only when both reviews approve
 
+## Context Compaction Recovery
+
+For long-running or delegated work, make the plan file a recovery anchor, not just a design artifact:
+- Include a `Resume Protocol` section with: exact plan path, canonical task/workpad path, current step marker, completed steps, pending next action, blockers, and validation commands already run.
+- After context compaction, session restart, or subagent handoff, read the plan/workpad from disk before continuing and reconcile it against the taskpool status.
+- Do not keep progress only in chat/todo state; update the file after each verifiable slice so recovery from file alone is possible.
+
 ## Remember
 
 ```

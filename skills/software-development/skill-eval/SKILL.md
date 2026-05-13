@@ -13,7 +13,8 @@ Based on OpenAI's eval-skills methodology, adapted for Hermes Agent.
 
 ## When to Use
 
-- After creating or significantly updating a skill
+- After a session produces a new technique, add it to the governing class-level skill as either a concise SKILL.md pointer plus `references/<topic>.md`, or patch an existing reference. Avoid one-session-one-skill proliferation.
+- For session-derived skill updates, verify both the pointer and support file with `skill_view(name)` and `skill_view(name, file_path=...)` before reporting completion.
 - When a skill's trigger accuracy degrades (false positives/negatives)
 - Periodic quality audits of the skill library
 - Before publishing a skill to the hub
@@ -154,6 +155,10 @@ Date: {date}
 ```
 
 ## Integration with Existing Skills
+
+### External skill-learning evaluations
+
+When evaluating third-party skill ecosystems, use the Superpowers evidence-slice pattern as the minimum bar: source/license confirmation, complete capability matrix, 2 reproducible experiment designs, adopt/borrow/reject decision, and read-back validation. Example artifact: `/Users/charles/Documents/brain/05-实践与项目/projects/agent-skill-learning/superpowers-composable-evaluation-2026-05-13.md`.
 
 ### For skills with Definition of Done (dogfood, uimax-audit, auto-optimize-loop, requesting-code-review, loop)
 
