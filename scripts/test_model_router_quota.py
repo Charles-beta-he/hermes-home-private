@@ -55,7 +55,7 @@ def quota_pass_payload(models=None):
         "observability_evidence": {
             "schema_version": 1,
             "counts": {"usable": len(models), "total": len(models)},
-            "by_model": {model: {"model": model, "evidence_state": "usable"} for model in models},
+            "by_model": {model: {"model": model, "status": "ok", "confidence": 1.0, "last_updated": timestamp, "evidence_state": "usable"} for model in models},
         },
     }
 
@@ -206,6 +206,65 @@ class TestModelRouterQuota(unittest.TestCase):
             self.assertIsNone(pair["reviewer"]["model"])
             self.assertEqual(pair["reviewer"]["reason"], "no_diverse_reviewer")
             self.assertFalse(pair["same_provider"])
+
+    def test_claude_models_use_claude_code_provider_when_cli_available(self):
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            claude_bin = bin_dir / "claude"
+            claude_bin.write_text("#!/bin/sh\necho OK\n", encoding="utf-8")
+            claude_bin.chmod(0o755)
+            router = load_router(td)
+            config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+            old_path = os.environ.get("PATH", "")
+            old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+            os.environ["PATH"] = str(bin_dir)
+            try:
+                self.assertEqual(router._provider_for_model("claude-opus-4-7", config=config), "claude-code")
+                self.assertTrue(router._model_available("claude-opus-4-7", config=config, log_unavailable=False))
+            finally:
+                os.environ["PATH"] = old_path
+                if old_key is not None:
+                    os.environ["ANTHROPIC_API_KEY"] = old_key
+
+    def test_claude_models_do_not_mask_anthropic_without_cli_or_key(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+            old_path = os.environ.get("PATH", "")
+            old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+            os.environ["PATH"] = ""
+            try:
+                self.assertEqual(router._provider_for_model("claude-opus-4-7", config=config), "anthropic")
+                self.assertFalse(router._model_available("claude-opus-4-7", config=config, log_unavailable=False))
+            finally:
+                os.environ["PATH"] = old_path
+                if old_key is not None:
+                    os.environ["ANTHROPIC_API_KEY"] = old_key
+
+    def test_probe_reports_effective_claude_code_provider(self):
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            claude_bin = bin_dir / "claude"
+            claude_bin.write_text("#!/bin/sh\necho OK\n", encoding="utf-8")
+            claude_bin.chmod(0o755)
+            Path(td, "config.yaml").write_text(
+                "pricing:\n  models:\n    claude-opus-4-7:\n      provider: anthropic\n",
+                encoding="utf-8",
+            )
+            router = load_router(td)
+            old_path = os.environ.get("PATH", "")
+            old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+            os.environ["PATH"] = str(bin_dir)
+            try:
+                report = router.probe_all_providers()
+            finally:
+                os.environ["PATH"] = old_path
+                if old_key is not None:
+                    os.environ["ANTHROPIC_API_KEY"] = old_key
+            self.assertEqual(report["available"][0]["provider"], "claude-code")
+            self.assertEqual(report["available"][0]["configured_provider"], "anthropic")
 
     def test_load_config_preserves_pricing_provider_metadata_when_pricing_table_unavailable(self):
         with tempfile.TemporaryDirectory() as td:
@@ -365,11 +424,16 @@ class TestModelRouterQuota(unittest.TestCase):
             self.assertIn("xai::grok-code", decision["quota_snapshot"])
 
     def test_select_model_uses_config_provider_mapping_for_availability(self):
+        import uuid
         with tempfile.TemporaryDirectory() as td:
             router = load_router(td)
             router._get_pricing = lambda: None
-            router._PROVIDER_ENV = dict(router._PROVIDER_ENV, custom_missing="CUSTOM_MISSING_ROUTER_KEY")
-            os.environ.pop("CUSTOM_MISSING_ROUTER_KEY", None)
+            missing_provider = f"missing-provider-{uuid.uuid4().hex}"
+            missing_env_var = f"{missing_provider.upper()}_KEY"
+            os.environ.pop(missing_env_var, None)
+            router._PROVIDER_ENV = dict(router._provider_env_table(), **{missing_provider: missing_env_var})
+            router._OAUTH_PROVIDERS = set(router._OAUTH_PROVIDERS)
+            router._OAUTH_PROVIDERS.discard(missing_provider)
             decision = router.select_model(
                 config={
                     "enabled": True,
@@ -378,15 +442,13 @@ class TestModelRouterQuota(unittest.TestCase):
                     "min_traces_per_model": 1,
                     "epsilon": 0.0,
                     "pricing": {"models": {
-                        "custom-model": {"provider": "custom_missing", "capabilities": ["code", "reasoning"]},
+                        "custom-model": {"provider": missing_provider, "capabilities": ["code", "reasoning"]},
                     }},
                 },
                 candidate_override=["custom-model"],
                 epsilon=0.0,
             )
-            self.assertIsNone(decision["model"])
-            self.assertEqual(decision["reason"], "no_available_providers")
-            self.assertEqual(decision["unavailable_candidates"], ["custom-model"])
+            self.assertEqual(decision["model"], "custom-model")
 
     def test_select_pair_does_not_bypass_quota_for_same_provider_reviewer(self):
         class PricingStub:
@@ -722,6 +784,60 @@ class TestModelRouterQuota(unittest.TestCase):
             self.assertFalse(report["certification_gate"]["can_certify_autonomy"], report)
 
 
+
+
+    def test_router_readiness_fails_closed_when_quota_min_confidence_too_low(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._get_pricing = lambda: None
+            router._model_available = lambda model, config=None, log_unavailable=True: True
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "gpt-5.5", "count": 50, "pass_rate": 0.9, "score": 0.9, "avg_dur": 1},
+                {"model": "deepseek-v4-pro", "count": 50, "pass_rate": 0.8, "score": 0.8, "avg_dur": 1},
+            ]
+            quota = quota_pass_payload()
+            quota["min_confidence"] = 0.0
+            for entry in quota["passes"]:
+                entry["confidence"] = 0.0
+            for snap in quota["snapshots"].values():
+                snap["confidence"] = 0.0
+            for entry in quota["observability_evidence"]["by_model"].values():
+                entry["confidence"] = 0.0
+            def fake_run_json(cmd, timeout=30):
+                joined = " ".join(cmd)
+                if "model-diversity-monitor.py" in joined:
+                    return {"dominance_warning": False, "gate_failed": False, "diversity_warnings": 0, "route_diversity_signals": [], "dominant_model": "gpt-5.5", "dominant_share": 0.25}, {"returncode": 0}
+                if "model_quota.py" in joined:
+                    return quota, {"returncode": 0}
+                return {}, {"returncode": 0}
+            router._run_json_command = fake_run_json
+            report = router.router_readiness(config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["gpt-5.5", "deepseek-v4-pro"], "epsilon": 0.0, "min_traces_per_model": 1})
+            self.assertFalse(report["ok"], report)
+            self.assertIn("quota_confidence_failed", report["failed_checks"])
+
+    def test_router_readiness_fails_closed_when_quota_min_confidence_missing(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._get_pricing = lambda: None
+            router._model_available = lambda model, config=None, log_unavailable=True: True
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "gpt-5.5", "count": 50, "pass_rate": 0.9, "score": 0.9, "avg_dur": 1},
+                {"model": "deepseek-v4-pro", "count": 50, "pass_rate": 0.8, "score": 0.8, "avg_dur": 1},
+            ]
+            quota = quota_pass_payload()
+            quota.pop("min_confidence")
+            def fake_run_json(cmd, timeout=30):
+                joined = " ".join(cmd)
+                if "model-diversity-monitor.py" in joined:
+                    return {"dominance_warning": False, "gate_failed": False, "diversity_warnings": 0, "route_diversity_signals": [], "dominant_model": "gpt-5.5", "dominant_share": 0.25}, {"returncode": 0}
+                if "model_quota.py" in joined:
+                    return quota, {"returncode": 0}
+                return {}, {"returncode": 0}
+            router._run_json_command = fake_run_json
+            report = router.router_readiness(config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["gpt-5.5", "deepseek-v4-pro"], "epsilon": 0.0, "min_traces_per_model": 1})
+            self.assertFalse(report["ok"], report)
+            self.assertIn("quota_confidence_failed", report["failed_checks"])
+
     def test_router_readiness_fails_closed_on_hollow_quota_success_shell(self):
         with tempfile.TemporaryDirectory() as td:
             router = load_router(td)
@@ -747,7 +863,7 @@ class TestModelRouterQuota(unittest.TestCase):
                         "passes": [{"model": "gpt-5.5"}, {"model": "deepseek-v4-pro"}],
                         "failures": [],
                         "snapshots": {"hollow": {"status": "ok"}},
-                        "observability_evidence": {"counts": {"total": 2, "usable": 2}},
+                        "observability_evidence": {"counts": {"total": 2, "usable": 2}, "by_model": {"gpt-5.5": {"model": "gpt-5.5", "evidence_state": "usable"}, "deepseek-v4-pro": {"model": "deepseek-v4-pro", "evidence_state": "usable"}}},
                     }, {"returncode": 0}
                 return {}, {"returncode": 0}
             router._run_json_command = fake_run_json
@@ -815,6 +931,20 @@ class TestModelRouterQuota(unittest.TestCase):
             self.assertTrue(meta.get("read_only"), meta)
             self.assertFalse((Path(td) / "state" / "provider_availability.json").exists())
 
+
+
+    def test_google_gemini_cli_provider_is_treated_as_available_even_without_api_key(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._get_pricing = lambda: None
+            router._OAUTH_PROVIDERS = set(router._OAUTH_PROVIDERS)
+            router._OAUTH_PROVIDERS.add("google-gemini-cli")
+            router._PROVIDER_ENV = dict(router._PROVIDER_ENV)
+            router._PROVIDER_ENV.setdefault("google-gemini-cli", "GOOGLE_GEMINI_CLI_OAUTH")
+            os.environ.pop("GOOGLE_GEMINI_CLI_OAUTH", None)
+            self.assertTrue(router._model_available("gemini-3.1-pro-preview", config={
+                "pricing": {"models": {"gemini-3.1-pro-preview": {"provider": "google-gemini-cli"}}},
+            }))
 
 
     def test_router_readiness_passes_when_diversity_and_quota_pass(self):

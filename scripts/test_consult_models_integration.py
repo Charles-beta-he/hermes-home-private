@@ -73,6 +73,21 @@ class TestConsultModelsIntegration(unittest.TestCase):
         result = consult.model_provider(config, "unknown-model")
         self.assertEqual(result, "")
 
+    def test_effective_model_provider_prefers_claude_code_for_claude_cli(self):
+        """Canonical Claude models should use Claude Code OAuth/CLI when the CLI is available."""
+        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        with mock.patch.object(consult.shutil, "which", return_value="/tmp/claude"):
+            self.assertEqual(consult.effective_model_provider(config, "claude-opus-4-7"), "claude-code")
+            self.assertEqual(
+                consult._provider_map_for_models(["claude-opus-4-7"], config),
+                {"claude-opus-4-7": "claude-code"},
+            )
+
+    def test_effective_model_provider_preserves_anthropic_when_claude_cli_missing(self):
+        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        with mock.patch.object(consult.shutil, "which", return_value=None):
+            self.assertEqual(consult.effective_model_provider(config, "claude-opus-4-7"), "anthropic")
+
     def test_quorum_config_loads(self):
         """quorum.yaml should load with multi_brain enabled"""
         quorum_path = Path(os.path.expanduser("~/.hermes/config/quorum.yaml"))
@@ -496,9 +511,10 @@ class TestConsultModelsIntegration(unittest.TestCase):
             "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2999-04-28T09:00:00Z"},
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "unobservable"},
         }
-        allowed, skipped, attached = consult.filter_planners_by_quota(
-            ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
-        )
+        with mock.patch.object(consult.shutil, "which", return_value=None):
+            allowed, skipped, attached = consult.filter_planners_by_quota(
+                ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
+            )
         self.assertEqual(allowed, ["gpt-5.5"])
         self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
         self.assertEqual(skipped[0]["reason"], "quota_exhausted_until_reset")
@@ -516,12 +532,13 @@ class TestConsultModelsIntegration(unittest.TestCase):
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
             "deepseek::deepseek-v4-pro": {"model": "deepseek-v4-pro", "provider": "deepseek", "status": "ok"},
         }
-        selected, skipped, attached = consult.select_planners_for_fanout(
-            ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"],
-            q_count=2,
-            config=config,
-            quota_snapshot=snapshots,
-        )
+        with mock.patch.object(consult.shutil, "which", return_value=None):
+            selected, skipped, attached = consult.select_planners_for_fanout(
+                ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"],
+                q_count=2,
+                config=config,
+                quota_snapshot=snapshots,
+            )
         self.assertEqual(selected, ["gpt-5.5", "deepseek-v4-pro"])
         self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
         self.assertIn("deepseek::deepseek-v4-pro", attached)
@@ -536,9 +553,10 @@ class TestConsultModelsIntegration(unittest.TestCase):
             "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2000-01-01T00:00:00Z"},
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
         }
-        allowed, skipped, attached = consult.filter_planners_by_quota(
-            ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
-        )
+        with mock.patch.object(consult.shutil, "which", return_value=None):
+            allowed, skipped, attached = consult.filter_planners_by_quota(
+                ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
+            )
         self.assertEqual(allowed, ["claude-opus-4-7", "gpt-5.5"])
         self.assertEqual(skipped, [])
         self.assertEqual(attached["anthropic::claude-opus-4-7"]["status"], "reset_elapsed")
@@ -894,10 +912,10 @@ class TestConsultModelsIntegration(unittest.TestCase):
 
         self.assertTrue(info["ok"])
         self.assertEqual(info["adapter"], "claude-code")
-        self.assertEqual(info["provider"], "anthropic")
+        self.assertEqual(info["provider"], "claude-code")
         self.assertEqual(plan["meta"]["planner_model"], "claude-opus-4-7")
         self.assertEqual(plan["meta"]["adapter"], "claude-code")
-        self.assertEqual(plan["meta"]["provider"], "anthropic")
+        self.assertEqual(plan["meta"]["provider"], "claude-code")
         self.assertEqual(plan["diagnosis"]["summary"], "wrapped planner ok")
 
     def test_call_planner_model_treats_claude_api_error_wrapper_as_runtime_failure_not_parse_failure(self):
@@ -918,7 +936,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
 
         self.assertFalse(info["ok"])
         self.assertEqual(info["adapter"], "claude-code")
-        self.assertEqual(info["provider"], "anthropic")
+        self.assertEqual(info["provider"], "claude-code")
         self.assertEqual(info.get("api_error_status"), 403)
         self.assertIn("Claude Code API error 403", info.get("error", ""))
         self.assertIn("Credit balance is too low", info.get("error", ""))

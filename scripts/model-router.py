@@ -21,6 +21,7 @@ import sys
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 import subprocess
+import shutil
 import yaml
 
 # 延迟导入
@@ -55,7 +56,7 @@ def _get_pricing():
 
 
 # Known provider -> env var mapping for availability check
-_PROVIDER_ENV = {
+_DEFAULT_PROVIDER_ENV = {
     "openai-codex": "OPENAI_API_KEY",  # or OAuth session
     "anthropic": "ANTHROPIC_API_KEY",
     "xiaomi": "XIAOMI_API_KEY",
@@ -64,6 +65,51 @@ _PROVIDER_ENV = {
     "xai": "XAI_API_KEY",
     "deepseek": "DEEPSEEK_API_KEY",
 }
+
+
+def _provider_env_table() -> dict[str, str]:
+    """Return the statically configured provider-to-env mapping."""
+    return dict(_DEFAULT_PROVIDER_ENV)
+
+
+def _oauth_provider_set() -> set[str]:
+    """OAuth/external providers to treat as available without env keys."""
+    return {"openai-codex", "nous", "qwen-oauth", "google-gemini-cli", "claude-code"}
+
+
+def _is_claude_model(model: str) -> bool:
+    return "claude" in str(model or "").lower()
+
+
+def _claude_code_available() -> bool:
+    return shutil.which("claude") is not None
+
+
+def _effective_provider_for_model(model: str, configured_provider: str) -> str:
+    """Return the runtime provider used by local orchestration.
+
+    Claude Max/OAuth quota is exposed through the Claude Code CLI, not the
+    Hermes Anthropic API-key adapter. When a canonical Claude model is priced as
+    ``anthropic`` but ``claude`` is available, route local automation/probes to
+    ``claude-code`` so Anthropic API quota errors do not masquerade as Claude Max
+    exhaustion.
+    """
+    if _is_claude_model(model) and configured_provider in {"", "anthropic", "claude-code"} and _claude_code_available():
+        return "claude-code"
+    return configured_provider
+
+
+def _load_overlay_supported_providers() -> set[str]:
+    """Known supported provider identifiers for routing."""
+    providers: set[str] = set(_DEFAULT_PROVIDER_ENV)
+    providers.update({"nous", "qwen-oauth", "google-gemini-cli", "claude-code"})
+    return providers
+
+
+_PROVIDER_ENV = _provider_env_table()
+_OAUTH_PROVIDERS = _oauth_provider_set()
+OVERLAY_SUPPORTED_PROVIDERS = _load_overlay_supported_providers()
+
 
 def _model_available(model: str, config: Optional[dict] = None, log_unavailable: bool = True) -> bool:
     """Check if a model's provider likely has credentials configured.
@@ -78,10 +124,11 @@ def _model_available(model: str, config: Optional[dict] = None, log_unavailable:
         provider = pt.get_provider(model)
     if not provider:
         return True  # no provider info, assume available
-    # OAuth-based providers are always considered available (session-based auth)
-    if provider in ("openai-codex", "nous", "qwen-oauth"):
+    # OAuth/session-based providers are always considered available
+    if provider in _OAUTH_PROVIDERS:
         return True
-    env_var = _PROVIDER_ENV.get(provider)
+    provider_env = _provider_env_table()
+    env_var = provider_env.get(provider)
     if not env_var:
         return True  # unknown provider, assume available
     # Check: (1) shell env, (2) .env file, (3) hermes auth store
@@ -181,10 +228,11 @@ def probe_all_providers(verbose: bool = False) -> dict:
         return {"error": "pricing table not loadable", "available": [], "unavailable": []}
     available, unavailable = [], []
     for model, info in pt.models.items():
-        provider = info.get("provider", "")
+        configured_provider = info.get("provider", "")
+        provider = _effective_provider_for_model(model, configured_provider)
         env_var = _PROVIDER_ENV.get(provider)
         ok = _model_available(model)
-        entry = {"model": model, "provider": provider, "env_var": env_var}
+        entry = {"model": model, "provider": provider, "configured_provider": configured_provider, "env_var": env_var}
         if ok:
             available.append(entry)
         else:
@@ -289,14 +337,14 @@ def _provider_for_model(model_name: str, config: Optional[dict] = None) -> str:
             .get("provider")
         )
         if provider:
-            return provider
+            return _effective_provider_for_model(model_name, provider)
     pt = _get_pricing()
     if pt is not None:
         provider = pt.get_provider(model_name)
         if provider and provider != "unknown":
-            return provider
+            return _effective_provider_for_model(model_name, provider)
     if model_quota:
-        return model_quota.provider_for_model(model_name)
+        return _effective_provider_for_model(model_name, model_quota.provider_for_model(model_name))
     return "unknown"
 
 
@@ -807,7 +855,7 @@ def _valid_optional_unit_number(value: Any) -> bool:
     return parsed is not None and 0.0 <= parsed <= 1.0
 
 
-def _quota_gate_passed(quota: Any) -> bool:
+def _quota_gate_passed(quota: Any, expected_min_confidence: float = 0.50) -> bool:
     if not isinstance(quota, dict) or not quota:
         return False
     required_fields = {
@@ -815,6 +863,7 @@ def _quota_gate_passed(quota: Any) -> bool:
         "ok",
         "status",
         "models_checked",
+        "min_confidence",
         "pass_count",
         "failure_count",
         "passes",
@@ -835,8 +884,11 @@ def _quota_gate_passed(quota: Any) -> bool:
     failures = quota.get("failures")
     snapshots = quota.get("snapshots")
     observability = quota.get("observability_evidence")
-    min_confidence = _finite_number(quota.get("min_confidence", 0.0))
-    if min_confidence is None:
+    required_min = _finite_number(expected_min_confidence)
+    if required_min is None or required_min < 0.0 or required_min > 1.0:
+        return False
+    min_confidence = _finite_number(quota.get("min_confidence"))
+    if min_confidence is None or min_confidence < required_min or min_confidence > 1.0:
         return False
     if not isinstance(models_checked, list) or not models_checked or any(not isinstance(m, str) or not m.strip() for m in models_checked):
         return False
@@ -898,19 +950,50 @@ def _quota_gate_passed(quota: Any) -> bool:
     by_model = observability.get("by_model")
     if not isinstance(counts, dict) or not isinstance(by_model, dict):
         return False
+    usable = _nonnegative_int_value(counts.get("usable"))
+    total = _nonnegative_int_value(counts.get("total"))
+    if usable != len(models) or total != len(models):
+        return False
     usable_models = set()
+    snapshot_by_model = {}
+    for model in models:
+        snap = snapshots.get(model)
+        if snap is None:
+            for key, candidate in snapshots.items():
+                if isinstance(candidate, dict) and str(candidate.get("model") or "").strip() == model:
+                    snap = candidate
+                    break
+                if key == model or str(key).endswith("::" + model):
+                    snap = candidate
+                    break
+        if isinstance(snap, dict):
+            snapshot_by_model[model] = snap
     for key, entry in by_model.items():
         if not isinstance(entry, dict):
             return False
         model = str(entry.get("model") or "").strip()
         if not model and isinstance(key, str):
             model = key.split("::")[-1]
-        if model in models and entry.get("evidence_state") == "usable":
-            usable_models.add(model)
+        if model not in models:
+            continue
+        if entry.get("evidence_state") != "usable":
+            return False
+        entry_status = str(entry.get("status") or "").strip().lower()
+        if entry_status not in {"ok", "pass", "available"}:
+            return False
+        entry_confidence = _finite_number(entry.get("confidence"))
+        if entry_confidence is None or entry_confidence < min_confidence:
+            return False
+        if not _has_timestamp(entry):
+            return False
+        snap = snapshot_by_model.get(model)
+        if not snap:
+            return False
+        snap_confidence = _finite_number(snap.get("confidence"))
+        if snap_confidence is None or abs(entry_confidence - snap_confidence) > 0.0001:
+            return False
+        usable_models.add(model)
     if usable_models != set(models):
-        return False
-    usable = _nonnegative_int_value(counts.get("usable"))
-    if usable is not None and usable < len(models):
         return False
     return quota.get("ok") is True and status in {"PASS", "OK"}
 
@@ -1071,7 +1154,7 @@ def router_readiness(
                 failures.append("no_eligible_non_dominant_alternates")
         if diversity["gate_failed"] or (diversity_warnings_value or 0) > 0 or bool(diversity["route_diversity_signals"]):
             failures.append("diversity_gate_failed")
-    quota_ok = _quota_gate_passed(quota)
+    quota_ok = _quota_gate_passed(quota, expected_min_confidence=min_quota_confidence)
     if quota_returncode not in (0, None):
         failures.append("quota_confidence_unavailable")
     elif not isinstance(quota, dict) or not quota:

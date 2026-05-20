@@ -64,11 +64,31 @@ except ImportError:
 
 DEFAULT_TIMEOUT = 120  # per-planner timeout (seconds)
 TICK_CLEANUP_AGE = 86400  # 24h — 清理旧 TICK_DIR
-SUPPORTED_HERMES_PROVIDERS = {
-    "openai-codex", "anthropic", "xiaomi", "openrouter", "gemini", "xai",
-    "ollama-cloud", "huggingface", "zai", "kimi-coding", "kimi-coding-cn",
-    "stepfun", "minimax", "minimax-cn", "kilocode", "arcee", "nvidia",
-}
+def _load_supported_hermes_providers() -> set[str]:
+    """Return provider ids accepted by `hermes chat --provider`.
+
+    Static fallback keeps standalone script portability; Hermes overlays keep
+    OAuth/external providers such as google-gemini-cli from drifting out of
+    multi-brain invocation.
+    """
+    providers = {
+        "openai-codex", "anthropic", "claude-code", "xiaomi", "openrouter", "gemini", "google-gemini-cli", "xai",
+        "ollama-cloud", "huggingface", "zai", "kimi-coding", "kimi-coding-cn",
+        "stepfun", "minimax", "minimax-cn", "kilocode", "arcee", "nvidia",
+    }
+    try:
+        import importlib
+        agent_path = os.path.join(HERMES_HOME, "hermes-agent")
+        if agent_path not in sys.path:
+            sys.path.insert(0, agent_path)
+        provider_module = importlib.import_module("hermes_cli.providers")
+        providers.update(getattr(provider_module, "HERMES_OVERLAYS", {}).keys())
+    except Exception:
+        pass
+    return providers
+
+
+SUPPORTED_HERMES_PROVIDERS = _load_supported_hermes_providers()
 
 try:
     import model_quota
@@ -78,7 +98,7 @@ except Exception:  # quota must be best-effort, never break legacy fan-out impor
 
 def load_quorum() -> dict:
     """读取 quorum.yaml"""
-    path = os.path.join(CONFIG_DIR, "quorum.yaml")
+    path = os.environ.get("HERMES_QUORUM_CONFIG", os.path.join(CONFIG_DIR, "quorum.yaml"))
     if yaml is None:
         print("[consult_models] PyYAML unavailable; quorum.yaml skipped", file=sys.stderr)
         return {}
@@ -601,8 +621,84 @@ Rules:
 Keep patches ≤ 5. Be concrete. Confidence must be honest."""
 
 
+def build_conductor_enhanced_prompt(
+    state: dict,
+    state_hash: str,
+    model: str,
+    tier: str,
+    role_instruction: str = "",
+) -> str:
+    """Wrap build_planner_prompt with optional conductor role-specific instruction.
+
+    When role_instruction is non-empty, it is prepended to the planner prompt so
+    each model receives guidance tailored to its conductor role (scout/planner/
+    implementer/critic/verifier/architect/arbiter).  This does NOT replace the
+    existing planner prompt — it augments it.
+    """
+    base = build_planner_prompt(state, state_hash, model, tier)
+    if not role_instruction:
+        return base
+    return f"{role_instruction}\n\n---\n\n{base}"
+
+
+def generate_conductor_trace_for_consult(
+    selected_planners: List[str],
+    tier: str,
+    state: dict,
+    router_model: str = "",
+    profile_path: str = "",
+) -> dict:
+    """Produce a conductor_trace alongside the existing quorum-based discussion.
+
+    This is advisory-only: it records which models were assigned which roles
+    and whether the router_model was isolated from participants.  It does NOT
+    change the existing quorum/consensus logic.
+    """
+    try:
+        sys.path.insert(0, os.path.expanduser("~/.hermes/hermes-agent"))
+        from agent.conductor_runtime import MultiModelConductor
+
+        conductor = MultiModelConductor(
+            profile_path=profile_path or os.path.expanduser("~/.hermes/config/model_profiles.yaml")
+        )
+        task_context = {
+            "goal": state.get("question", ""),
+            "risk_level": state.get("risk_level", "medium"),
+            "multimodel_mode": "advisory",
+        }
+        plan = conductor.build_role_plan(
+            task_context=task_context,
+            router_model=router_model,
+            exclude_router_from_participants=True,
+        )
+        # Build role instruction map: model_id -> instruction
+        role_instructions: Dict[str, str] = {}
+        for entry in plan.get("role_plan", []):
+            model_id = entry.get("model", "")
+            role = entry.get("role", "")
+            if model_id and role:
+                role_instructions[model_id] = conductor.build_model_specific_instruction(
+                    model_id, role, task_context
+                )
+        return {
+            "conductor_trace": plan.get("conductor_trace", {}),
+            "role_plan": plan.get("role_plan", []),
+            "participant_models": plan.get("participant_models", []),
+            "role_instructions": role_instructions,
+            "conductor_enabled": conductor.is_enabled(),
+        }
+    except Exception as exc:
+        return {
+            "conductor_trace": {"error": str(exc), "fallback": True},
+            "role_plan": [],
+            "participant_models": selected_planners,
+            "role_instructions": {},
+            "conductor_enabled": False,
+        }
+
+
 def model_provider(config: dict, model: str) -> str:
-    """Resolve provider for a model from pricing config."""
+    """Resolve configured provider for a model from pricing config."""
     return (
         config.get("pricing", {})
         .get("models", {})
@@ -611,13 +707,35 @@ def model_provider(config: dict, model: str) -> str:
     )
 
 
+def _is_claude_model(model: str) -> bool:
+    return "claude" in str(model or "").lower()
+
+
+def _claude_code_available() -> bool:
+    return shutil.which("claude") is not None
+
+
+def effective_model_provider(config: dict, model: str) -> str:
+    """Resolve runtime provider for a model.
+
+    Canonical Claude models are often priced/configured as ``anthropic``, but
+    this local Hermes multi-model stack can and should use Claude Code OAuth/CLI
+    when available. This keeps quota/probe keys aligned with the actual call path
+    and prevents Anthropic API-key quota failures from incorrectly marking Claude
+    Max/Claude Code as exhausted.
+    """
+    provider = model_provider(config, model)
+    if not provider and model_quota:
+        provider = model_quota.provider_for_model(model, config)
+    if _is_claude_model(model) and provider in {"", "anthropic", "claude-code"} and _claude_code_available():
+        return "claude-code"
+    return provider or "unknown"
+
+
 def _provider_map_for_models(models: List[str], config: dict) -> Dict[str, str]:
     providers: Dict[str, str] = {}
     for model in models:
-        provider = model_provider(config, model)
-        if not provider and model_quota:
-            provider = model_quota.provider_for_model(model, config)
-        providers[model] = provider or "unknown"
+        providers[model] = effective_model_provider(config, model)
     return providers
 
 
@@ -1517,16 +1635,16 @@ def _plan_declares_no_action(plan: dict) -> bool:
     )
     return any(marker in summary for marker in no_action_markers)
 
-
 def _is_no_action_advisory_patch(patch: dict, plan: dict) -> bool:
     """Classify low-risk follow-up ideas under a no-action plan as advisory.
 
-    Some planners certify the current system as complete but still emit low-risk
-    tune/document/observability follow-ups. Treating those as concrete blockers
-    creates a false noop-vs-change contradiction and prevents certification even
-    though the same plan says the acceptance criteria are already satisfied.
+    Planner prompts sometimes include optional verifier/observability/doc ideas even
+    after they state the best current action is certification/no code change. Treating
+    those optional follow-ups as concrete implementation disagreement creates a false
+    noop-vs-change contradiction and prevents certification even when all models agree
+    no current implementation patch is needed.
     """
-    if not isinstance(patch, dict) or not _plan_declares_no_action(plan):
+    if not isinstance(patch, dict) or not isinstance(plan, dict):
         return False
     op = str(patch.get("op", "")).strip().lower()
     if op not in {"tune_threshold", "document", "update_docs", "add_observability", "add_metric"}:
@@ -1548,6 +1666,44 @@ def _is_no_action_advisory_patch(patch: dict, plan: dict) -> bool:
     )
     safe_scope = (not blast) or blast in {"single_tier", "single-file", "single_file", "none"}
     return safe_scope and any(marker in rationale for marker in advisory_markers)
+
+
+def _is_self_relaxing_governance_patch(patch: dict) -> bool:
+    """Defer patches that would make the current failed certification easier to pass.
+
+    A minority patch that changes ratification thresholds/gates is governance work,
+    not evidence that the current task is certified. Keeping it out of the current
+    patch disagreement avoids a self-unblocking loop: a failed certification must not
+    be resolved by lowering its own certification threshold.
+    """
+    if not isinstance(patch, dict):
+        return False
+    op = str(patch.get("op", "")).strip().lower()
+    if op not in {"tune_threshold", "relax_gate", "change_gate", "update_policy"}:
+        return False
+    target = str(patch.get("target_file") or patch.get("file") or "").strip().lower()
+    rationale = str(patch.get("rationale", "")).strip().lower()
+    governance_target = any(marker in target for marker in (
+        "brain_task_orchestrator.py",
+        "consult_models.py",
+        "ratification",
+        "certification",
+        "gate",
+        "control_plane",
+    ))
+    self_relaxing_rationale = any(marker in rationale for marker in (
+        "ratification gate",
+        "certification",
+        "single available model",
+        "single-model",
+        "single model",
+        "evidence_coverage=1.0",
+        "relax",
+        "threshold",
+        "quorum",
+        "unblock",
+    ))
+    return governance_target and self_relaxing_rationale
 
 
 def _planner_patch_summary(plans: List[dict]) -> dict:
@@ -1602,7 +1758,11 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
             if op == "noop":
                 summary["noop_patch_count"] += 1
                 model_has_noop_or_advisory = True
-            elif _is_conditional_advisory_patch(patch_obj) or _is_no_action_advisory_patch(patch_obj, plan):
+            elif (
+                _is_conditional_advisory_patch(patch_obj)
+                or _is_no_action_advisory_patch(patch_obj, plan)
+                or _is_self_relaxing_governance_patch(patch_obj)
+            ):
                 summary["conditional_advisory_patch_count"] += 1
                 model_has_noop_or_advisory = True
             else:
@@ -1671,7 +1831,12 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
             # A noop patch is an explicit certification/no-change vote, not a proposed
             # implementation delta. Heterogeneous noop ids alone should not create false
             # blockers, but noop-vs-real-change is still a real disagreement below.
-            if op == "noop" or _is_conditional_advisory_patch(patch) or _is_no_action_advisory_patch(patch, plan):
+            if (
+                op == "noop"
+                or _is_conditional_advisory_patch(patch)
+                or _is_no_action_advisory_patch(patch, plan)
+                or _is_self_relaxing_governance_patch(patch)
+            ):
                 noop_seen = True
                 continue
             non_noop_seen = True
@@ -2156,14 +2321,16 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
             bad_tick = os.path.join(td, "tick-selfcheck-participant-alias")
             bad_plans_dir = os.path.join(bad_tick, "plans")
             os.makedirs(bad_plans_dir, exist_ok=True)
-            alias_models = ["claude", "codex", "deepseek", "mimo"]
-            canonical_models = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+            alias_models = ["claude", "codex", "deepseek", "mimo", "gemini"]
+            # Self-check fixture only: expected participants for the alias-vs-canonical guard.
+            # This is not the production canonical model registry.
+            selfcheck_expected_participants = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "gemini-3.1-pro-preview"]
             for model in alias_models:
                 _write_json_atomic(os.path.join(bad_plans_dir, f"{model}.json"), {"meta": {"planner_model": model}, "patches": [{"op": "noop", "rationale": "selfcheck noop"}]})
-            bad_fanout = fanout_certification_status(4, 4, 4, 0)
+            bad_fanout = fanout_certification_status(5, 5, 5, 0)
             bad_merged = {"patches": [], "planner_patch_summary": _planner_patch_summary(_load_tick_plans(bad_tick)), "fanout_certification": bad_fanout, "truth_assessment": truth}
             bad_votes = [{"model": model, "vote": "approve", "best_within_constraints": True} for model in alias_models]
-            bad_discussion = {"status": "certified", "models_consulted": alias_models, "expected_participants": canonical_models, "fanout_certification": bad_fanout, "truth_assessment": truth, "issue_ledger": [], "ratification_votes": bad_votes, "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95}}
+            bad_discussion = {"status": "certified", "models_consulted": alias_models, "expected_participants": selfcheck_expected_participants, "fanout_certification": bad_fanout, "truth_assessment": truth, "issue_ledger": [], "ratification_votes": bad_votes, "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95}}
             _write_json_atomic(os.path.join(bad_tick, "merged_plan.json"), bad_merged)
             _write_json_atomic(os.path.join(bad_tick, "discussion_result.json"), bad_discussion)
             bad_manifest = audit_certification(bad_tick, write=False)
@@ -3313,7 +3480,7 @@ def _claude_code_failure_message(stdout: str, stderr: str, returncode: Optional[
 
 def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = DEFAULT_TIMEOUT) -> str:
     """Call a model for discussion/challenge/ratification text output."""
-    provider = model_provider(config, model)
+    provider = effective_model_provider(config, model)
     if provider == "deepseek":
         return call_deepseek_api(prompt, model, timeout=timeout)
     if "claude" in model.lower() and shutil.which("claude"):
@@ -3426,7 +3593,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
                        chain_id: str, config: dict, timeout: int) -> Tuple[dict, dict]:
     """Actually invoke the requested planner model via its best available adapter."""
     hermes_bin = shutil.which("hermes") or "hermes"
-    provider = model_provider(config, model)
+    provider = effective_model_provider(config, model)
     if os.environ.get("HERMES_MULTI_BRAIN_OFFLINE") == "1":
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["diagnosis"]["summary"] = f"Offline adapter dry-run for {model}"
