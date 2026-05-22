@@ -182,8 +182,9 @@ const {{ authStore }} = require({json.dumps(str(store))});
 
 def credentials_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_APP_ID) -> tuple[str, str]:
     # Prefer explicit env, then token.extra from a previous successful login, then client store.
-    env_id = os.environ.get("LARK_APP_ID") or os.environ.get("APP_ID")
-    env_secret = os.environ.get("LARK_APP_SECRET") or os.environ.get("APP_SECRET")
+    # Support both Lark and Feishu aliases because Hermes profiles/docs use both names.
+    env_id = os.environ.get("LARK_APP_ID") or os.environ.get("FEISHU_APP_ID") or os.environ.get("APP_ID")
+    env_secret = os.environ.get("LARK_APP_SECRET") or os.environ.get("FEISHU_APP_SECRET") or os.environ.get("APP_SECRET")
     if env_id and env_secret:
         return env_id, env_secret
     for token in (snapshot.get("tokens") or {}).values():

@@ -71,6 +71,14 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertTrue(status.valid)
         self.assertEqual(status.reason, "valid_any_token")
 
+    def test_credentials_from_snapshot_accepts_feishu_env_aliases(self):
+        with mock.patch.dict(
+            "os.environ",
+            {"FEISHU_APP_ID": "cli_test", "FEISHU_APP_SECRET": "secret_test"},
+            clear=True,
+        ):
+            self.assertEqual(self.mod.credentials_from_snapshot({}), ("cli_test", "secret_test"))
+
     def test_plan_skips_spawn_when_token_valid(self):
         plan = self.mod.plan_login(token_valid=True, lock_active=True, port_busy=True, cleanup_stale=True)
         self.assertEqual(plan.action, "token_valid")
