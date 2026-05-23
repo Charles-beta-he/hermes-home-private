@@ -11,13 +11,57 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 
 FINAL_PHASES = {"online-ui-retest", "online_ui_retest", "online"}
 IMPLEMENTATION_PHASES = {"implementation", "impl", "local-regression", "local_regression", "sendback"}
 GOOD_REMOTE_STATUSES = {"success", "succeeded", "pass", "passed", "deployed", "ready", "green"}
 GOOD_UI_STATUSES = {"pass", "passed", "success", "succeeded", "green"}
+PROTECTED_BASE_BRANCHES = {"main", "master"}
+
+
+def _git_current_branch(repo_path: str | None) -> str:
+    if not repo_path:
+        return ""
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(Path(repo_path).expanduser()), "branch", "--show-current"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+    except Exception:
+        return ""
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout.strip()
+
+
+def evaluate_implementation_branch_gate(evidence: dict[str, Any]) -> dict[str, Any]:
+    """Fail closed unless local implementation work is on a non-main task branch."""
+    current_branch = str(evidence.get("current_branch") or "").strip()
+    if not current_branch:
+        current_branch = _git_current_branch(str(evidence.get("repo_path") or "").strip() or None)
+    base_branch = str(evidence.get("base_branch") or "main").strip() or "main"
+    protected = sorted(set(PROTECTED_BASE_BRANCHES) | {base_branch})
+    blockers: list[str] = []
+    if not current_branch:
+        blockers.append("missing_current_branch")
+    elif current_branch in protected:
+        blockers.append("local_implementation_on_protected_base_branch")
+    return {
+        "allowed": not blockers,
+        "current_branch": current_branch,
+        "base_branch": base_branch,
+        "protected_base_branches": protected,
+        "blockers": blockers,
+        "required_action": "ok" if not blockers else "fetch_and_checkout_task_branch_before_local_fix",
+        "policy": "Local implementation fixes must run on a non-main task branch. If currently on main after a PR merge/deleted branch, fetch the latest base and checkout/create the shared task-loop branch before editing.",
+    }
 
 
 def _present(value: Any) -> bool:
@@ -67,7 +111,7 @@ def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
         blockers.append("online_ui_retest_required")
         if phase not in IMPLEMENTATION_PHASES and phase not in FINAL_PHASES:
             blockers.append("unknown_or_missing_closeout_phase")
-        return {
+        result = {
             "allowed": False,
             "classification": classification,
             "phase": phase or "",
@@ -76,6 +120,9 @@ def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
             "lark_completed_at_allowed": False,
             "policy": "Local implementation/regression evidence may update implementation notes/TG, but must not PATCH Lark completed_at.",
         }
+        if phase in IMPLEMENTATION_PHASES:
+            result["implementation_branch_gate"] = evaluate_implementation_branch_gate(evidence)
+        return result
 
     classification = "final_lark_closeout_candidate"
     if not _present(evidence.get("user_dispatch_evidence")):
@@ -127,6 +174,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lark-final-evidence", default="")
     parser.add_argument("--local-verification", action="append", default=[])
     parser.add_argument("--commit", default="")
+    parser.add_argument("--repo-path", default="", help="Git repo to inspect for implementation branch safety")
+    parser.add_argument("--current-branch", default="", help="Override detected git branch for implementation branch safety")
+    parser.add_argument("--base-branch", default="main", help="Protected deployment/base branch; implementation must not run here")
     parser.add_argument("--json", action="store_true")
     return parser
 
@@ -143,6 +193,9 @@ def main(argv: list[str] | None = None) -> int:
         "lark_final_evidence": args.lark_final_evidence,
         "local_verification": args.local_verification,
         "commit": args.commit,
+        "repo_path": args.repo_path,
+        "current_branch": args.current_branch,
+        "base_branch": args.base_branch,
     }
     result = evaluate_closeout_gate(evidence)
     if args.json:

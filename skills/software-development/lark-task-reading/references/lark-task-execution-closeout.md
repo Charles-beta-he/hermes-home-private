@@ -12,6 +12,37 @@ For Lark-assigned work, the user-visible delivery unit is:
 
 Docs and ledgers support the delivery; they do not replace commit/report.
 
+## Branch preflight before local implementation
+
+Local acceptance and online UI acceptance are separate phases, so local fixes must not be made directly on the deployment/base branch.
+
+Before editing a UVISA/Lark task repo:
+
+```bash
+git fetch origin --prune
+git branch --show-current
+```
+
+- If the current branch is `main`/`master`/the configured deployment base, stop before editing.
+- After an online PR is merged, GitHub may delete the remote task branch and the local checkout often returns to `main`; treat that as expected and create/check out the next shared task-loop branch from the freshly fetched base.
+- Preferred pattern:
+  ```bash
+  git checkout main
+  git pull --ff-only origin main
+  git checkout -B lark-task-loop/<scope-or-date>
+  ```
+  Use the project’s configured deployment branch if it is not `main`.
+- If an existing task-loop branch is still active, fetch/rebase it onto the latest `origin/main` before the next local fix instead of stacking on a stale pre-merge commit.
+- Machine-check the branch gate when preparing implementation evidence:
+  ```bash
+  python3 ~/.hermes/scripts/lark_task_closeout_guard.py \
+    --phase implementation \
+    --repo-path <project-root> \
+    --base-branch main \
+    --json
+  ```
+  `implementation_branch_gate.allowed` must be true before local code edits. This does not allow Lark `completed_at`; it only proves the local-fix branch is safe.
+
 ## Closeout sequence
 
 After implementation and tests pass:
@@ -43,23 +74,22 @@ After implementation and tests pass:
    ```
    Never rely on `git add .` in a dirty worktree.
 
-5. Remote package/deploy monitor for deployed projects.
-   - For Railway-backed UVISA-style work, inspect the relevant service deployment/package/build after commit or deployment trigger.
-   - Record terminal `success`/`healthy` status before calling the task fully closed.
-   - If the remote build fails, is cancelled, times out, remains pending, or dashboard access is blocked, report `closed_with_remote_blocker` or `not_closed` with the latest safe evidence.
-   - Use `references/remote-package-monitor-closeout.md` for the status vocabulary and redaction rules.
+5. Local-close first; remote acceptance only when requested.
+   - Default UVISA/Lark flow: complete local acceptance and scoped commit first.
+   - Do not run remote deployment/package monitoring or remote acceptance proactively unless the user explicitly initiates it.
+   - When remote acceptance is deferred by user preference, report `local_closed_remote_deferred_by_user`, not `fully_remote_closed`.
+   - Do not post the final evidence comment to the Lark task while remote acceptance is still deferred.
+   - If the user later asks for remote acceptance, inspect the relevant service deployment/package/build then, record terminal `success`/`healthy` status, and use `references/remote-package-monitor-closeout.md` for status vocabulary and redaction rules.
 
-6. User/TG report.
-   Report:
-   - Lark task id/title.
-   - Commit hash.
-   - What changed.
-   - Verification commands and results.
-   - Remote package/deploy monitor result when applicable.
-   - Any remaining risk or separately queued follow-up.
+6. Evidence comment / user report.
+   - Post complete evidence to the Lark task comment area only after remote acceptance has completed, when comment write permission is available.
+   - Include task id/title, commit hash, changed files, local verification commands/results, remote acceptance result, screenshot/evidence path, and residual risk.
+   - If remote acceptance is not yet requested/completed, report locally to the user only and keep the Lark comment pending.
+   - If Lark comment writeback fails after remote acceptance, report the exact blocker and provide the comment text for manual paste.
+   - Do not include OTP values, tokens, passwords, screenshots with secrets, or disposable credentials.
 
 7. Continue loop.
-   Move to the next visible/assigned Lark task only after the current task has commit/report closure, unless the user explicitly asked for a no-commit dry run.
+   Move to the next visible/assigned Lark task after local acceptance and scoped commit. If remote acceptance is deferred by user preference, Lark evidence-comment closure remains pending until the user initiates remote acceptance.
 
 ## Budget rule
 

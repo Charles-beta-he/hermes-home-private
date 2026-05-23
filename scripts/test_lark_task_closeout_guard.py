@@ -29,6 +29,51 @@ def test_local_implementation_regression_must_not_complete_lark_task():
     assert result["lark_completed_at_allowed"] is False
 
 
+def test_implementation_phase_requires_non_main_task_branch():
+    mod = load_module()
+    main_result = mod.evaluate_closeout_gate({
+        "phase": "implementation",
+        "current_branch": "main",
+        "base_branch": "main",
+    })
+    assert main_result["lark_completed_at_allowed"] is False
+    assert main_result["implementation_branch_gate"]["allowed"] is False
+    assert "local_implementation_on_protected_base_branch" in main_result["implementation_branch_gate"]["blockers"]
+    assert "fetch_and_checkout_task_branch" in main_result["implementation_branch_gate"]["required_action"]
+
+    feature_result = mod.evaluate_closeout_gate({
+        "phase": "implementation",
+        "current_branch": "lark-task-loop",
+        "base_branch": "main",
+    })
+    assert feature_result["lark_completed_at_allowed"] is False
+    assert feature_result["implementation_branch_gate"]["allowed"] is True
+    assert feature_result["implementation_branch_gate"]["blockers"] == []
+
+
+def test_cli_reports_current_branch_gate_for_implementation_phase():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(MODULE_PATH),
+            "--phase",
+            "implementation",
+            "--current-branch",
+            "main",
+            "--base-branch",
+            "main",
+            "--json",
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    assert proc.returncode == 2
+    payload = json.loads(proc.stdout)
+    assert payload["implementation_branch_gate"]["allowed"] is False
+    assert "local_implementation_on_protected_base_branch" in payload["implementation_branch_gate"]["blockers"]
+
+
 def test_online_ui_retest_requires_user_dispatch_and_online_evidence():
     mod = load_module()
     result = mod.evaluate_closeout_gate({
