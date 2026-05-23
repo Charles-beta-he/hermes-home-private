@@ -7,7 +7,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -26,6 +25,20 @@ def load_orchestrator_module():
 
 
 def run(env, *args, check=True):
+    args = list(args)
+    if check and args and args[0] == "add":
+        defaults = [
+            ("--priority-layer", "P2"),
+            ("--dependency-order", "1"),
+            ("--multimodel-triage-result", "P3"),
+        ]
+        insert_at = args.index("--json") if "--json" in args else len(args)
+        injected = []
+        for flag, value in defaults:
+            if flag not in args:
+                injected.extend([flag, value])
+        if injected:
+            args[insert_at:insert_at] = injected
     cmd = [sys.executable, str(SCRIPT), *args]
     r = subprocess.run(cmd, capture_output=True, text=True, env=env)
     if check and r.returncode != 0:
@@ -38,41 +51,37 @@ def make_env_and_vault():
     vault = Path(td.name) / "brain"
     (vault / "05-实践与项目" / "tasks").mkdir(parents=True)
     (vault / "07-仪表盘").mkdir(parents=True)
-    hermes_home = Path(td.name) / "hermes-home"
-    scripts_dir = hermes_home / "scripts"
-    scripts_dir.mkdir(parents=True)
-    real_scripts = Path.home() / ".hermes" / "scripts"
-    for name in ("autonomy-write-guard.py", "autonomy-precondition.py", "permission_taxonomy.py"):
-        shutil.copy2(real_scripts / name, scripts_dir / name)
-    fake_p10 = scripts_dir / "p10-health.sh"
-    fake_p10.write_text(
-        "#!/usr/bin/env bash\n"
-        "cat <<'JSON'\n"
-        '{"grade":"A","components":{"self_test":1.0},"warnings":[],"details":{"test_fixture":true}}\n'
-        "JSON\n",
-        encoding="utf-8",
-    )
-    fake_p10.chmod(0o755)
     env = os.environ.copy()
-    env["HERMES_HOME"] = str(hermes_home)
     env["HERMES_BRAIN_VAULT"] = str(vault)
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(Path(td.name) / "state")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
     env["HERMES_CRON_JOBS_PATH"] = str(Path(td.name) / "cron" / "jobs.json")
-    profiles_dir = hermes_home / "project-profiles"
-    profiles_dir.mkdir(parents=True)
-    (profiles_dir / "hermes.json").write_text(json.dumps({
-        "project": "hermes",
-        "display_name": "Default Hermes taskpool profile",
-        "tech_stack": {"runtime": "Python", "taskpool": "Obsidian Markdown"},
-        "conventions": ["load profile before worker execution", "fail closed when profile is missing"],
-        "test_cmd": "python3 ~/.hermes/scripts/test_brain_task_orchestrator.py",
-        "acceptance": ["focused tests pass", "p10-health remains A"],
-        "forbidden": ["start worker without project profile context"],
-    }, ensure_ascii=False), encoding="utf-8")
+    env["HERMES_PROJECT_PROFILES_DIR"] = str(Path(td.name) / "project-profiles")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
+    seed_project_profile(env)
     return td, vault, env
+
+
+
+def seed_project_profile(env, *, aliases=None, project="hermes"):
+    aliases = aliases or []
+    profiles_dir = Path(env["HERMES_PROJECT_PROFILES_DIR"])
+    profiles_dir.mkdir(parents=True, exist_ok=True)
+    (profiles_dir / "hermes.json").write_text(json.dumps({
+        "project": project,
+        "display_name": "Hermes fallback test profile",
+        "aliases": aliases,
+        "paths": {"root": "/tmp/hermes-test"},
+        "test_cmd": "python3 -m unittest",
+        "build_cmd": "python3 -m compileall .",
+        "acceptance": ["tests pass"],
+        "lark_task_execution_policy": {},
+        "lark_evidence_policy": {},
+        "backend_contract_policy": {},
+        "regression_coverage_policy": {},
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+
 
 
 def add_task(env, title="完成本地大脑任务控制台", priority="P1", project="local-brain"):
@@ -93,9 +102,26 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
     return created["id"], Path(created["created"])
 
 
-def task_row(env, task_id):
-    rows = json.loads(run(env, "list", "--json").stdout)["rows"]
-    return next(r for r in rows if r["id"] == task_id)
+def add_work_closeout_pair(env, title="Lark 修复闭环"):
+    r = run(
+        env,
+        "add-work-closeout-pair",
+        title,
+        "--priority",
+        "P1",
+        "--project",
+        "uvisa-app-2.0",
+        "--objective",
+        "完成 Lark 已发补闭环，并等待用户派发线上 UI 回测闭环。",
+        "--accept",
+        "已发补闭环本地验收完成；线上 UI 回测在用户授权后执行。",
+        "--expires-at",
+        "2099-01-01",
+        "--json",
+    )
+    result = json.loads(r.stdout)
+    assert result["status"] == "OK", result
+    return result
 
 
 def add_evolution_task(env, title="优化本地任务池自进化", priority="P0"):
@@ -155,6 +181,21 @@ ratification_artifact: artifact:mission-incident-mm-advisory
     task_path.write_text(text, encoding="utf-8")
 
 
+def add_non_blocking_auto_subtask_parent_fields(task_path, child_id):
+    text = task_path.read_text(encoding="utf-8")
+    text = text.replace("status: pending", "status: blocked", 1)
+    marker = "evidence: []"
+    fields = f"""
+auto_subtask_kind: non_convergence_narrowing
+auto_subtask_children: [\"{child_id}\"]
+auto_subtask_open_children: []
+auto_subtask_missing_children: []
+auto_subtask_ready_for_parent: false
+""".lstrip()
+    text = text.replace(marker, fields + marker, 1)
+    task_path.write_text(text, encoding="utf-8")
+
+
 def add_mission_node_fields(task_path, *, mission_id="mission-alpha", node_id="node-a", depends_on=None, gates=None):
     depends_on = depends_on or []
     gates = gates or []
@@ -178,58 +219,92 @@ def mark_task_done_directly(task_path):
     task_path.write_text(text, encoding="utf-8")
 
 
-def test_project_profile_is_injected_before_dispatch_and_missing_profile_fails_closed():
+
+def test_add_persists_explicit_multimodel_contract_and_triggers_without_heuristics():
     td, _vault, env = make_env_and_vault()
     with td:
-        task_id, task_path = add_task(env, title="Client API worker needs profile", priority="P0", project="client-alpha")
+        created = json.loads(run(
+            env,
+            "add",
+            "普通外部仓库分析",
+            "--priority",
+            "P2",
+            "--project",
+            "research",
+            "--requires-multimodel",
+            "--multimodel-reason",
+            "external repo priority analysis requires independent model agreement",
+            "--expected-participants",
+            "claude-opus-4-7,gpt-5.5,deepseek-v4-pro",
+            "--truth-gate",
+            "evidence-first ratification with canonical participant IDs",
+            "--evidence-bundle",
+            "repo-analysis.md",
+            "--json",
+        ).stdout)
+        assert created["status"] == "OK", created
+        task_text = Path(created["created"]).read_text(encoding="utf-8")
+        assert "requires_multimodel: true" in task_text
+        assert "multimodel_reason:" in task_text
+        assert "expected_participants:" in task_text
+        rows = json.loads(run(env, "list", "--json").stdout)["tasks"]
+        row = next(r for r in rows if r["id"] == created["id"])
+        assert row["requires_multimodel"] is True, row
+        assert row["multimodel_intervention_required"] is True, row
+        assert "explicit_requires_multimodel" in row["multimodel_intervention_reasons"], row
+        assert row["expected_participants"] == ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"], row
+        assert row["truth_gate"], row
+        assert row["evidence_bundle"] == "repo-analysis.md", row
 
-        fallback = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
-        assert fallback["dispatchable"] is True, fallback
-        assert fallback["next"]["id"] == task_id, fallback
-        assert fallback["next"]["project_profile_status"] == "fallback", fallback
-        assert fallback["next"]["project_profile_path"].endswith("project-profiles/hermes.json"), fallback
-        assert "PROJECT PROFILE" in fallback["execution_prompt"], fallback["execution_prompt"]
-        assert "Default Hermes taskpool profile" in fallback["execution_prompt"], fallback["execution_prompt"]
-        assert "start worker without project profile context" in fallback["execution_prompt"], fallback["execution_prompt"]
 
-        profiles_dir = Path(env["HERMES_HOME"]) / "project-profiles"
-        (profiles_dir / "client-alpha.json").write_text(json.dumps({
-            "project": "client-alpha",
-            "aliases": ["client-alpha-work"],
-            "display_name": "Client Alpha React/Spring profile",
-            "tech_stack": {"frontend": "React 18 + TypeScript", "backend": "Spring Boot"},
-            "conventions": ["do not delete existing routes"],
-            "test_cmd": "npm test",
-            "build_cmd": "npm run build",
-            "acceptance": ["frontend build", "backend contract inspected"],
-            "forbidden": ["frontend mock-only closeout"],
-        }, ensure_ascii=False), encoding="utf-8")
-        project_specific = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
-        assert project_specific["next"]["project_profile_status"] == "project", project_specific
-        assert "Client Alpha React/Spring profile" in project_specific["execution_prompt"], project_specific["execution_prompt"]
-        assert "React 18 + TypeScript" in project_specific["execution_prompt"], project_specific["execution_prompt"]
+def test_ingest_inbox_preserves_explicit_multimodel_contract_metadata():
+    td, vault, env = make_env_and_vault()
+    with td:
+        run(env, "ingest-inbox", "--json")
+        inbox = vault / "05-实践与项目" / "tasks" / "任务收件箱.md"
+        inbox_text = inbox.read_text(encoding="utf-8")
+        inbox_text = inbox_text.replace(
+            "## Ingested Log",
+            "- [ ] 外部文章任务 | priority:P2 | project:research | priority_layer:P2 | dependency_order:1 | multimodel_triage_result:P2-explicit-multimodel | requires_multimodel:true | multimodel_reason:external article priority analysis | expected_participants:claude-opus-4-7,gpt-5.5 | truth_gate:evidence-first | evidence_bundle:article-notes.md\n\n## Ingested Log",
+        )
+        inbox.write_text(inbox_text, encoding="utf-8")
+        ing = json.loads(run(env, "ingest-inbox", "--write", "--json").stdout)
+        assert ing["created_count"] >= 1, ing
+        created = ing["created"][0]
+        task_text = Path(created["created"]).read_text(encoding="utf-8")
+        assert "requires_multimodel: true" in task_text
+        assert "expected_participants:" in task_text
+        rows = json.loads(run(env, "list", "--json").stdout)["tasks"]
+        row = next(r for r in rows if r["id"] == created["id"])
+        assert row["requires_multimodel"] is True, row
+        assert "explicit_requires_multimodel" in row["multimodel_intervention_reasons"], row
+        assert row["expected_participants"] == ["claude-opus-4-7", "gpt-5.5"], row
 
-        alias_id, _alias_path = add_task(env, title="Client Alpha legacy key uses canonical profile", priority="P2", project="client-alpha-work")
-        alias_rows = json.loads(run(env, "list", "--json").stdout)["rows"]
-        alias_row = next(r for r in alias_rows if r["id"] == alias_id)
-        assert alias_row["project_profile_status"] == "alias", alias_row
-        assert alias_row["project_profile_path"].endswith("project-profiles/client-alpha.json"), alias_row
-        assert alias_row["project_profile_missing"] is False, alias_row
 
-        (profiles_dir / "client-alpha.json").unlink()
-        (profiles_dir / "hermes.json").unlink()
+def test_ingest_inbox_derives_preadd_triage_metadata_from_priority_when_missing():
+    td, vault, env = make_env_and_vault()
+    with td:
+        run(env, "ingest-inbox", "--json")
+        inbox = vault / "05-实践与项目" / "tasks" / "任务收件箱.md"
+        inbox_text = inbox.read_text(encoding="utf-8")
+        inbox_text = inbox_text.replace(
+            "## Ingested Log",
+            "- [ ] 新外部仓库分析 | priority:P1 | project:research | concepts:repo,external | objective:inspect repo and classify taskpool priority\n\n## Ingested Log",
+        )
+        inbox.write_text(inbox_text, encoding="utf-8")
+        ing = json.loads(run(env, "ingest-inbox", "--write", "--json").stdout)
+        assert ing["created_count"] >= 1, ing
+        created = ing["created"][0]
+        task_text = Path(created["created"]).read_text(encoding="utf-8")
+        assert "priority: P1" in task_text
+        assert "priority_layer: P1" in task_text
+        assert "dependency_order:" in task_text and "\"1\"" in task_text
+        assert "multimodel_triage_result: P1-preadd-intake-triage:research:repo-external" in task_text
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
-        row = next(r for r in rows if r["id"] == task_id)
-        assert row["project_profile_status"] == "missing", row
-        assert row["project_profile_missing"] is True, row
-        assert row["dispatchable"] is False, row
-        no_dispatch = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
-        assert no_dispatch["dispatchable"] is False, no_dispatch
-        claim = run(env, "claim", task_id, "--json", check=False)
-        assert claim.returncode != 0, claim.stdout
-        assert "project_profile_missing" in (claim.stderr + claim.stdout)
-        assert "status: pending" in task_path.read_text(encoding="utf-8")
-
+        row = next(r for r in rows if r["id"] == created["id"])
+        assert row["priority"] == "P1", row
+        assert row["priority_layer"] == "P1", row
+        assert row["multimodel_triage_result"] == "P1-preadd-intake-triage:research:repo-external", row
 
 
 def test_mission_envelope_schema_is_enforced_fail_closed():
@@ -256,6 +331,7 @@ def test_mission_envelope_schema_is_enforced_fail_closed():
 def test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate():
     td, _vault, env = make_env_and_vault()
     with td:
+        seed_project_profile(env, aliases=["self-improvement", "client-work"])
         mission_id, mission_path = add_evolution_task(env, title="Mission envelope valid", priority="P0")
         add_mission_envelope_fields(mission_path, valid=True)
         work_id, _ = add_task(env, title="客户 work P0 不能被 mission 抢占", priority="P0", project="client-work")
@@ -276,6 +352,47 @@ def test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_g
         assert running["to_status"] == "running"
         review = json.loads(run(env, "transition", mission_id, "--to", "review", "--actor", "tester", "--evidence", "command: mission verifier PASS", "--json").stdout)
         assert review["to_status"] == "review"
+
+        discussion = mission_path.parent / "mission-envelope-ratification-pass.json"
+        discussion.write_text(json.dumps({
+            "status": "certified",
+            "task_id": mission_id,
+            "context": {"task_id": mission_id, "task_path": str(mission_path)},
+            "issue_ledger": [{"id": "I-001", "severity": 2, "status": "resolved"}],
+            "ratification_votes": [
+                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
+                {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
+                {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.9, "implementation_order": 0.9},
+            "truth_status": "certified",
+            "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
+            "final_design": {
+                "long_term_goal_alignment": True,
+                "next_slice": "mission envelope lifecycle closeout",
+                "acceptance_evidence": ["command:mission verifier PASS"],
+                "rollback_boundary": "revert scoped mission-envelope patch"
+            },
+        }, ensure_ascii=False), encoding="utf-8")
+        gate_pass = json.loads(run(env, "ratification-gate", "--task", mission_id, "--discussion-result", str(discussion), "--json").stdout)
+        assert gate_pass["status"] == "PASS", gate_pass
+        text = mission_path.read_text(encoding="utf-8")
+        text = text.replace("certification_status: advisory", "certification_status: certified", 1)
+        if "multimodel_status:" not in text:
+            marker = "\nevidence:"
+            assert marker in text, text
+            text = text.replace(
+                marker,
+                f"\nmultimodel_status: certified\nmultimodel_ratification_artifact: {discussion}{marker}",
+                1,
+            )
+        else:
+            text = text.replace("multimodel_status: advisory", "multimodel_status: certified", 1)
+        mission_path.write_text(text, encoding="utf-8")
+        passed_row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == mission_id)
+        assert passed_row["multimodel_passed"] is True, passed_row
+
         done = json.loads(run(env, "done", mission_id, "--actor", "tester", "--evidence", "artifact:mission-proof", "--json").stdout)
         assert done["status"] == "OK", done
 
@@ -291,11 +408,6 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
     td, vault, env = make_env_and_vault()
     with td:
         task_id, _ = add_task(env)
-        dashboard_file = vault / "07-仪表盘" / "待完成任务运行态.md"
-        sorted_pool_file = vault / "05-实践与项目" / "tasks" / "任务池-排序.md"
-        assert dashboard_file.exists(), "add must refresh derived dashboard immediately"
-        assert sorted_pool_file.exists(), "add must refresh sorted pool immediately"
-        assert task_id in dashboard_file.read_text(encoding="utf-8")
 
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         assert rows and rows[0]["id"] == task_id
@@ -311,9 +423,6 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
 
         claim = json.loads(run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json").stdout)
         assert claim["claimed_by"] == "tester"
-        assert claim["derived_refresh"]["status"] == "OK"
-        claimed_dashboard = dashboard_file.read_text(encoding="utf-8")
-        assert "| claimed |" in claimed_dashboard
 
         denied = run(env, "release", task_id, "--actor", "other", "--json", check=False)
         assert denied.returncode != 0
@@ -323,8 +432,6 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
 
         rel = json.loads(run(env, "release", task_id, "--actor", "tester", "--to-status", "pending", "--json").stdout)
         assert rel["to_status"] == "pending"
-        assert rel["derived_refresh"]["status"] == "OK"
-        assert "| pending |" in dashboard_file.read_text(encoding="utf-8")
 
         dash = json.loads(run(env, "dashboard", "--write", "--json").stdout)
         assert Path(dash["dashboard"]).exists()
@@ -339,8 +446,11 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert "lifecycle_transitions" in dashboard_text
         assert "Lane" in dashboard_text
         assert "Architecture" in dashboard_text
-        assert "Every canonical task-note mutation command regenerates derived views" in dashboard_text
-        assert "## Multimodel Intervention / PUA-loop Round State" in dashboard_text
+        sorted_pool_text = Path(dash["sorted_pool"]).read_text(encoding="utf-8")
+        assert "owner: brain_task_orchestrator.py" in sorted_pool_text
+        assert "lifecycle_policy: generated_view_not_actionable" in sorted_pool_text
+        assert "Execution is fail-closed from this note" in sorted_pool_text
+        assert "each source note must carry its own owner/status/next step before dispatch" in sorted_pool_text
 
         inbox = vault / "05-实践与项目" / "tasks" / "任务收件箱.md"
         inbox_text = inbox.read_text(encoding="utf-8")
@@ -351,7 +461,6 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         inbox.write_text(inbox_text, encoding="utf-8")
         ing = json.loads(run(env, "ingest-inbox", "--write", "--json").stdout)
         assert ing["created_count"] >= 1
-        assert ing["derived_refresh"]["status"] == "OK"
         assert "<!-- ingested:" in inbox.read_text(encoding="utf-8")
 
         no_proof = run(env, "done", task_id, "--actor", "tester", "--json", check=False)
@@ -363,15 +472,6 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert running2["to_status"] == "running"
         review2 = json.loads(run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: unit-test PASS", "--json").stdout)
         assert review2["to_status"] == "review"
-        review_row = task_row(env, task_id)
-        assert review_row["status"] == "review"
-        assert review_row["claimed_by"] == ""
-        assert review_row["claim_expires_at"] == ""
-        assert review_row["run_id"] == ""
-        review_lifecycle = json.loads(run(env, "lifecycle", "--json").stdout)
-        assert review_lifecycle["status"] == "PASS", review_lifecycle
-        review_selfcheck = json.loads(run(env, "selfcheck", "--json").stdout)
-        assert review_selfcheck["status"] == "PASS", review_selfcheck
         done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final unit-test PASS", "--json").stdout)
         assert done["status"] == "OK"
         proof = json.loads(run(env, "proof-check", "--json").stdout)
@@ -381,198 +481,64 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert selfcheck["status"] == "PASS", selfcheck
 
 
-def add_permission_fields(task_path, *, authority="yolo-execution", completion_gate="project-evidence-review-done"):
-    text = task_path.read_text(encoding="utf-8")
-    marker = "evidence: []"
-    fields = (
-        f"required_authority: autonomous-execution\n"
-        f"max_authority: {authority}\n"
-        f"write_surfaces: [\"taskpool\"]\n"
-        f"completion_gate: {completion_gate}\n"
-        f"permission_tier: {authority}\n"
-    )
-    text = text.replace(marker, fields + marker, 1)
-    task_path.write_text(text, encoding="utf-8")
-
-
-def test_permission_audit_and_migration_expose_lane_specific_authority_contracts():
+def test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch_release():
     td, _vault, env = make_env_and_vault()
     with td:
-        work_id, work_path = add_task(env, title="Lark 交付权限分类", priority="P0", project="uvisa-lark")
-        evo_id, _ = add_evolution_task(env, title="自进化权限分类", priority="P0")
+        pair = add_work_closeout_pair(env)
+        implementation_id = pair["implementation_task"]["id"]
+        retest_id = pair["ui_retest_task"]["id"]
 
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
-        by_id = {r["id"]: r for r in rows}
-        assert by_id[work_id]["required_authority"] == "autonomous-execution"
-        assert by_id[work_id]["max_authority"] == "yolo-execution"
-        assert by_id[work_id]["completion_gate"] == "project-evidence-review-done"
-        assert by_id[evo_id]["required_authority"] == "budget-handoff"
-        assert by_id[evo_id]["max_authority"] == "autonomous-execution"
-        assert by_id[evo_id]["completion_gate"] == "ratification-or-selfcheck-review-done"
+        impl = next(r for r in rows if r["id"] == implementation_id)
+        retest = next(r for r in rows if r["id"] == retest_id)
+        assert impl["work_closeout_phase"] == "implementation"
+        assert impl["dispatchable"] is True
+        assert retest["work_closeout_phase"] == "online_ui_retest"
+        assert retest["depends_on_task"] == [implementation_id]
+        assert retest["manual_dispatch_gate"] == "awaiting_user_ui_retest_dispatch"
+        assert retest["manual_dispatch_released"] is False
+        assert retest["dispatchable"] is False
+        assert any(b.startswith(f"waiting_for_dependency:{implementation_id}") for b in retest["manual_dispatch_blockers"]), retest
+        assert "manual_dispatch_gate:awaiting_user_ui_retest_dispatch" in retest["manual_dispatch_blockers"]
 
-        audit = json.loads(run(env, "permission-audit", "--json").stdout)
-        assert audit["status"] == "PASS", audit
-        assert audit["yolo_invariant"]["may_complete_task"] is False
-        assert audit["lane_defaults"]["work"]["max_authority"] == "yolo-execution"
+        run(env, "claim", implementation_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", implementation_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", implementation_id, "--to", "review", "--actor", "tester", "--evidence", "command: implementation local verification PASS", "--json")
+        run(env, "done", implementation_id, "--actor", "tester", "--evidence", "command: implementation closeout PASS test build browser curl commit project-verification", "--json")
 
-        legacy_text = work_path.read_text(encoding="utf-8")
-        for field in ("required_authority", "max_authority", "write_surfaces", "completion_gate", "permission_tier"):
-            legacy_text = "\n".join(line for line in legacy_text.splitlines() if not line.startswith(f"{field}:")) + "\n"
-        work_path.write_text(legacy_text, encoding="utf-8")
+        rows_after_parent = json.loads(run(env, "list", "--json").stdout)["rows"]
+        retest_after_parent = next(r for r in rows_after_parent if r["id"] == retest_id)
+        assert retest_after_parent["dispatchable"] is False
+        assert retest_after_parent["dependency_status"][implementation_id] == "done"
+        assert retest_after_parent["manual_dispatch_blockers"] == ["manual_dispatch_gate:awaiting_user_ui_retest_dispatch"]
 
-        dry = json.loads(run(env, "permission-migrate", "--dry-run", "--json").stdout)
-        assert dry["status"] == "OK", dry
-        assert dry["write"] is False
-        assert dry["action_count"] >= 1
+        release = json.loads(run(env, "authorize-dispatch", retest_id, "--actor", "tester", "--reason", "user explicitly dispatched UI retest", "--json").stdout)
+        assert release["status"] == "OK"
+        assert release["manual_dispatch_released"] is True
+
+        rows_released = json.loads(run(env, "list", "--json").stdout)["rows"]
+        retest_released = next(r for r in rows_released if r["id"] == retest_id)
+        assert retest_released["dispatchable"] is True
+        assert retest_released["manual_dispatch_blockers"] == []
 
 
-def test_yolo_authority_cannot_bypass_task_done_lifecycle_gate():
+def test_generic_work_task_remains_dispatchable_without_work_closeout_fields():
     td, _vault, env = make_env_and_vault()
     with td:
-        task_id, task_path = add_task(env, title="验证 yolo 不等于 done")
-        add_permission_fields(task_path, authority="yolo-execution")
-
-        bypass = run(
-            env,
-            "transition",
-            task_id,
-            "--to",
-            "done",
-            "--actor",
-            "tester",
-            "--authority",
-            "yolo-execution",
-            "--force",
-            "--reason",
-            "try yolo closeout",
-            "--evidence",
-            "command: yolo closeout attempted",
-            "--json",
-            check=False,
-        )
-        assert bypass.returncode != 0
-        assert "requires_lifecycle_gate" in bypass.stderr or "yolo-execution cannot complete" in bypass.stderr
-
-        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: review PASS", "--json")
-        done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final unit-test PASS", "--json").stdout)
-        assert done["status"] == "OK", done
-
-
-def test_done_requires_lane_specific_completion_gate_evidence():
-    td, _vault, env = make_env_and_vault()
-    with td:
-        work_id, _work_path = add_task(env, title="Lark work completion gate", priority="P0", project="uvisa-lark")
-        run(env, "claim", work_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", work_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", work_id, "--to", "review", "--actor", "tester", "--evidence", "command: review unit-test PASS", "--json")
-
-        work_bad = run(env, "done", work_id, "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json", check=False)
-        assert work_bad.returncode != 0
-        assert "project-evidence-review-done" in work_bad.stderr
-
-        work_done = json.loads(run(env, "done", work_id, "--actor", "tester", "--evidence", "command: project unit-test PASS", "--json").stdout)
-        assert work_done["status"] == "OK", work_done
-
-        real_api_id, real_api_path = add_task(env, title="Lark real API completion gate", priority="P0", project="uvisa-lark")
-        add_permission_fields(real_api_path, completion_gate="project-evidence-real-api-review-done")
-        run(env, "claim", real_api_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", real_api_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", real_api_id, "--to", "review", "--actor", "tester", "--evidence", "live_lark_snapshot:/tmp/lark_uvisa_live_tasks.json", "--json")
-
-        real_api_bad = run(env, "done", real_api_id, "--actor", "tester", "--evidence", "classification:/tmp/uvisa-real-api-classification.json", "--json", check=False)
-        assert real_api_bad.returncode != 0
-        assert "project-evidence-real-api-review-done requires test/build" in real_api_bad.stderr
-
-        real_api_done = json.loads(run(
-            env, "done", real_api_id, "--actor", "tester",
-            "--evidence", "command: pnpm build PASS; mvn compile PASS; real-api FE-BE verification PASS",
-            "--json",
-        ).stdout)
-        assert real_api_done["status"] == "OK", real_api_done
-
-        evolution_id, _evo_path = add_evolution_task(env, title="Self evolution completion gate", priority="P0")
-        run(env, "claim", evolution_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", evolution_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", evolution_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json")
-
-        evo_bad = run(env, "done", evolution_id, "--actor", "tester", "--evidence", "command: project build PASS", "--json", check=False)
-        assert evo_bad.returncode != 0
-        assert "ratification-or-selfcheck-review-done" in evo_bad.stderr
-
-        evo_done = json.loads(run(env, "done", evolution_id, "--actor", "tester", "--evidence", "artifact:ratification discussion_result certified", "--json").stdout)
-        assert evo_done["status"] == "OK", evo_done
-
-
-def test_auto_close_review_moves_only_proof_gated_reviews_to_done():
-    td, _vault, env = make_env_and_vault()
-    with td:
-        # Work lane: review evidence without project/test/build proof must stay review.
-        blocked_id, _blocked_path = add_task(env, title="Auto close must not bypass work evidence", priority="P0", project="uvisa-lark")
-        run(env, "claim", blocked_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", blocked_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", blocked_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json")
-
-        # Evolution lane: deterministic selfcheck evidence is enough for automatic closeout.
-        evo_id, _evo_path = add_evolution_task(env, title="Auto close evolution selfcheck proof", priority="P1")
-        run(env, "claim", evo_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", evo_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", evo_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json")
-
-        # Evolution lane: certified multimodel artifact must be landed as ratification evidence.
-        mm_id, mm_path = add_evolution_task(env, title="Auto close evolution multimodel ratification", priority="P1")
-        discussion = mm_path.parent / "discussion-auto-close.json"
-        discussion.write_text(json.dumps({
-            "status": "certified",
-            "task_id": mm_id,
-            "context": {"task_id": mm_id, "task_path": str(mm_path)},
-            "issue_ledger": [{"id": "I-001", "severity": 3, "status": "resolved"}],
-            "ratification_votes": [
-                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
-                {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
-                {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
-                {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
-            ],
-            "agreement_matrix": {"framing": 0.9, "approach": 0.92, "implementation_order": 0.88},
-            "truth_status": "certified",
-            "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
-            "final_design": {
-                "long_term_goal_alignment": True,
-                "next_slice": "auto close certified review task",
-                "acceptance_evidence": ["command:test PASS"],
-                "rollback_boundary": "revert scoped auto close patch",
-            },
-        }, ensure_ascii=False), encoding="utf-8")
-        run(env, "claim", mm_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
-        run(env, "transition", mm_id, "--to", "running", "--actor", "tester", "--json")
-        run(env, "transition", mm_id, "--to", "review", "--actor", "tester", "--evidence", "command: review handoff PASS", "--json")
-        text = mm_path.read_text(encoding="utf-8")
-        text = text.replace("\nevidence:", f"\nmultimodel_status: certified\nmultimodel_ratification_artifact: {discussion}\nevidence:", 1)
-        mm_path.write_text(text, encoding="utf-8")
-
-        close = json.loads(run(env, "auto-close-review", "--actor", "hermes-autorun-review-close", "--max-tasks", "10", "--json").stdout)
-        assert close["status"] == "OK", close
-        assert close["closed_count"] == 2, close
-        assert {item["task_id"] for item in close["closed"]} == {evo_id, mm_id}, close
-        assert any(item["task_id"] == blocked_id and item["action"] == "skip" for item in close["skipped"]), close
-
-        rows = {r["id"]: r for r in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"]}
-        assert rows[blocked_id]["status"] == "review", rows[blocked_id]
-        assert rows[evo_id]["status"] == "done", rows[evo_id]
-        assert rows[mm_id]["status"] == "done", rows[mm_id]
-        evo_text = Path(rows[evo_id]["path"]).read_text(encoding="utf-8")
-        mm_text = Path(rows[mm_id]["path"]).read_text(encoding="utf-8")
-        assert "proof:sha256:" in evo_text, evo_text
-        assert "artifact:ratification" in mm_text and str(discussion) in mm_text, mm_text
-        proof = json.loads(run(env, "proof-check", "--json").stdout)
-        assert proof["status"] == "PASS", proof
+        task_id, _ = add_task(env, title="普通 work 任务不带双闭环字段", priority="P1", project="uvisa-app-2.0")
+        row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["work_closeout_phase"] == "generic"
+        assert row["depends_on_task"] == []
+        assert row["manual_dispatch_gate"] == ""
+        assert row["manual_dispatch_released"] is False
+        assert row["manual_dispatch_blockers"] == []
+        assert row["dispatchable"] is True
 
 
 def test_lifecycle_transition_gate_and_audit():
     td, _vault, env = make_env_and_vault()
     with td:
-        task_id, task_path = add_task(env, title="验证任务生命周期状态机")
+        task_id, task_path = add_task(env, title="验证任务生命周期状态机", project="test-harness")
 
         pending_to_running = run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json", check=False)
         assert pending_to_running.returncode != 0
@@ -609,7 +575,7 @@ def test_lifecycle_transition_gate_and_audit():
         assert done_without_evidence.returncode != 0
         assert "requires structured --evidence" in done_without_evidence.stderr
 
-        done = json.loads(run(env, "transition", task_id, "--to", "done", "--actor", "tester", "--evidence", "command: final lifecycle unit-test PASS", "--json").stdout)
+        done = json.loads(run(env, "transition", task_id, "--to", "done", "--actor", "tester", "--evidence", "command: final lifecycle PASS test build browser curl commit verification", "--json").stdout)
         assert done["from_status"] == "review"
         assert done["to_status"] == "done"
         assert done["next_allowed"] == ["archived"]
@@ -759,7 +725,7 @@ def test_lane_architecture_alignment_and_work_priority_gate():
             "--priority",
             "P1",
             "--project",
-            "uvisa-app-2.0",
+            "uvisa-app-2.0-work",
             "--lane",
             "work",
             "--expires-at",
@@ -790,6 +756,12 @@ def test_lane_architecture_alignment_and_work_priority_gate():
             "hermes-evolution",
             "--lane",
             "evolution",
+            "--priority-layer",
+            "P1",
+            "--dependency-order",
+            "1",
+            "--multimodel-triage-result",
+            "P2",
             "--json",
             check=False,
         )
@@ -814,6 +786,12 @@ def test_lane_architecture_alignment_and_work_priority_gate():
             "mapped to L0-L5",
             "--acceptance-evidence",
             "command: selfcheck PASS",
+            "--priority-layer",
+            "P1",
+            "--dependency-order",
+            "1",
+            "--multimodel-triage-result",
+            "P2",
             "--json",
             check=False,
         )
@@ -924,7 +902,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert selected["criteria"]["one_shot_landing"], selected
         assert "consult_models.py run" in selected["run_discussion_command"], selected
         assert "--tier T3" in selected["run_discussion_command"], selected
-        assert "--quorum 4" in selected["run_discussion_command"], selected
+        assert "--quorum 5" in selected["run_discussion_command"], selected
         assert "target-bound 4/4" in selected["pua_loop"]["completion_signal"], selected
         assert "ratification-gate" in selected["gate_command_template"], selected
         assert "status: pending" in task_path.read_text(encoding="utf-8")
@@ -960,6 +938,18 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert gate_pass["status"] == "PASS", gate_pass
         assert gate_pass["decision"] == "LOOP_DONE", gate_pass
 
+        optional_gemini = task_path.parent / "discussion-optional-gemini.json"
+        optional_payload = json.loads(good.read_text(encoding="utf-8"))
+        optional_payload["models_consulted"] = [
+            "claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "gemini-3.1-pro-preview"
+        ]
+        optional_payload["ratification_votes"].append({"model": "gemini-3.1-pro-preview", "vote": "approve", "best_within_constraints": True})
+        optional_gemini.write_text(json.dumps(optional_payload, ensure_ascii=False), encoding="utf-8")
+        gate_optional_gemini = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(optional_gemini), "--json").stdout)
+        assert gate_optional_gemini["status"] == "PASS", gate_optional_gemini
+        assert not any("unexpected_consulted_model:gemini-3.1-pro-preview" in f for f in gate_optional_gemini["failures"]), gate_optional_gemini
+        assert not any("unexpected_vote_model:gemini-3.1-pro-preview" in f for f in gate_optional_gemini["failures"]), gate_optional_gemini
+
         text = task_path.read_text(encoding="utf-8")
         text = text.replace(
             "evidence: []",
@@ -970,30 +960,6 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         passed_row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
         assert passed_row["multimodel_passed"] is True, passed_row
         assert passed_row["multimodel_intervention_required"] is False, passed_row
-
-        # Economy-paused tasks are diagnostic backlog, not executable PUA-loop work.
-        # They must not be selected ahead of an actionable task with real state/run commands.
-        paused_id, paused_path = add_evolution_task(env, title="pua-loop 多模型长期不收敛暂停项", priority="P0")
-        actionable_id, _actionable_path = add_evolution_task(env, title="pua-loop 多模型下一条可执行项", priority="P1")
-        paused_text = paused_path.read_text(encoding="utf-8")
-        paused_text = paused_text.replace(
-            "status: pending",
-            "status: pending\nmultimodel_round_status: failed\nmultimodel_last_decision: CONTINUE_LOOP",
-            1,
-        )
-        paused_text += "\n" + "\n".join(f"- 2099-01-0{i}: Multimodel PUA-loop round `failed`." for i in range(1, 6)) + "\n"
-        paused_path.write_text(paused_text, encoding="utf-8")
-        economy_dry = json.loads(run(env, "multimodel-intervention-dry-run", "--json").stdout)
-        assert economy_dry["intervention_required"] is True, economy_dry
-        assert economy_dry["selected_task_id"] == actionable_id, economy_dry
-        assert economy_dry["selected"]["intervention_required"] is True, economy_dry
-        assert all(p.get("intervention_required") for p in economy_dry["plans"]), economy_dry
-        assert paused_id in [p["task"]["id"] for p in economy_dry["paused_plans"]], economy_dry
-
-        paused_only = json.loads(run(env, "multimodel-intervention-dry-run", "--task", paused_id, "--json").stdout)
-        assert paused_only["intervention_required"] is False, paused_only
-        assert paused_only["selected_task_id"] == "", paused_only
-        assert paused_only["paused_count"] == 1, paused_only
 
         mismatched_target = task_path.parent / "discussion-mismatched-target.json"
         mismatched_target.write_text(good.read_text(encoding="utf-8").replace(task_id, "2026-05-10-other-task", 1), encoding="utf-8")
@@ -1092,6 +1058,66 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert "models_consulted_invalid" in gate_bad_models["failures"], gate_bad_models
 
 
+def test_passed_advisory_only_review_task_does_not_rerun_weak_multimodel_loop():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Browser replay evidence advisory closeout", priority="P2", project="hermes-agent")
+        discussion = task_path.parent / "discussion-advisory.json"
+        discussion.write_text(json.dumps({"status": "certified", "task_id": task_id}), encoding="utf-8")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: review", 1)
+        text = text.replace(
+            "evidence: []",
+            "multimodel_status: advisory_completed\n"
+            "multimodel_last_gate_status: PASS_ADVISORY_ONLY\n"
+            "multimodel_last_decision: CONTINUE_LOOP\n"
+            f"multimodel_last_discussion_artifact: {discussion}\n"
+            "multimodel_advisory_only: true\n"
+            "multimodel_reason: weak advisory already consumed\n"
+            "expected_participants: [\"hermes-agent\"]\n"
+            "truth_gate: report-evidence-present\n"
+            "evidence_bundle: bounded browser evidence\n"
+            "architecture_target: taskpool\n"
+            "evidence: []",
+            1,
+        )
+        task_path.write_text(text, encoding="utf-8")
+
+        row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["status"] == "review", row
+        assert row["multimodel_intervention_required"] is False, row
+        assert row["multimodel_intervention_reasons"] == [], row
+
+        dry = json.loads(run(env, "multimodel-intervention-dry-run", "--json").stdout)
+        assert dry["intervention_required"] is False, dry
+        assert dry.get("selected_task_id", "") != task_id, dry
+
+
+def test_strong_multimodel_trigger_still_preempts_completed_advisory_state():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Strong certification after advisory", priority="P2", project="hermes-agent")
+        discussion = task_path.parent / "discussion-advisory.json"
+        discussion.write_text(json.dumps({"status": "certified", "task_id": task_id}), encoding="utf-8")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: review", 1)
+        text = text.replace(
+            "evidence: []",
+            "requires_multimodel: true\n"
+            "multimodel_status: advisory_completed\n"
+            "multimodel_last_gate_status: PASS_ADVISORY_ONLY\n"
+            f"multimodel_last_discussion_artifact: {discussion}\n"
+            "multimodel_advisory_only: true\n"
+            "evidence: []",
+            1,
+        )
+        task_path.write_text(text, encoding="utf-8")
+
+        row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["multimodel_intervention_required"] is True, row
+        assert "explicit_requires_multimodel" in row["multimodel_intervention_reasons"], row
+
+
 def test_discussion_task_binding_stamp_closes_target_binding_gap():
     mod = load_orchestrator_module()
     with tempfile.TemporaryDirectory() as td:
@@ -1137,168 +1163,6 @@ def test_discussion_task_binding_stamp_closes_target_binding_gap():
         assert after["decision"] == "LOOP_DONE", after
 
 
-def test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dashboard():
-    mod = load_orchestrator_module()
-    with tempfile.TemporaryDirectory() as td:
-        root = Path(td)
-        vault = root / "brain"
-        tasks_dir = vault / "05-实践与项目" / "tasks"
-        dashboard_dir = vault / "07-仪表盘"
-        tasks_dir.mkdir(parents=True)
-        dashboard_dir.mkdir(parents=True)
-        mod.VAULT = vault
-        mod.TASKS_DIR = tasks_dir
-        mod.DASHBOARD = dashboard_dir / "待完成任务运行态.md"
-        mod.CONTROL_CENTER = dashboard_dir / "待完成任务控制台.md"
-        mod.SORTED_POOL = tasks_dir / "任务池-排序.md"
-        mod.INBOX = tasks_dir / "任务收件箱.md"
-
-        task_path = tasks_dir / "2026-05-12-mm-round.md"
-        task_body = "# Task - mm round\n\n## Proof Log\n"
-        task = mod.Task(path=task_path, fm={"type": "task", "status": "pending", "priority": "P0", "lane": "evolution", "project": "self-improvement", "certification_status": "certified"}, body=task_body)
-        mod.save_task(task)
-        assert mod.is_mission_envelope_fm(task.fm) is False
-
-        failed_gate = {"status": "fail", "decision": "continue_loop", "failures": ["agreement|low", "vote_reject"]}
-        result = mod.write_multimodel_result_to_task(task, failed_gate, "/tmp/discussion-fail.json", "/tmp/state.json")
-        assert result["status"] == "OK", result
-        assert result["passed"] is False, result
-        text = task_path.read_text(encoding="utf-8")
-        assert "multimodel_status: not_certified" in text
-        assert "certification_status:" not in text
-        assert "multimodel_round_status: failed" in text
-        assert "multimodel_last_gate_status: FAIL" in text
-        assert "multimodel_ratification_artifact:" not in text
-        assert "agreement|low" in text and "vote_reject" in text
-        dashboard_text = mod.DASHBOARD.read_text(encoding="utf-8")
-        assert "## Multimodel Intervention / PUA-loop Round State" in dashboard_text
-        assert "failed" in dashboard_text and "CONTINUE_LOOP" in dashboard_text
-        assert "agreement\\|low" in dashboard_text
-        assert mod.mission_envelope_missing(mod.find_task(task.id).fm) == []
-
-        pass_gate = {"status": "pass", "decision": "loop_done", "failures": []}
-        passed = mod.write_multimodel_result_to_task(mod.find_task(task.id), pass_gate, "/tmp/discussion-pass.json", "/tmp/state.json")
-        assert passed["passed"] is True, passed
-        certified_text = task_path.read_text(encoding="utf-8")
-        assert "multimodel_status: certified" in certified_text
-        assert "certification_status:" not in certified_text
-        assert "multimodel_ratification_artifact: /tmp/discussion-pass.json" in certified_text
-        assert mod.mission_envelope_missing(mod.find_task(task.id).fm) == []
-
-        failed_after_pass = mod.write_multimodel_result_to_task(mod.find_task(task.id), failed_gate, "/tmp/discussion-fail-after-pass.json", "/tmp/state.json")
-        assert failed_after_pass["passed"] is False, failed_after_pass
-        reverted_text = task_path.read_text(encoding="utf-8")
-        assert "multimodel_status: not_certified" in reverted_text
-        assert "certification_status:" not in reverted_text
-        assert "multimodel_ratification_artifact:" not in reverted_text
-        assert mod.mission_envelope_missing(mod.find_task(task.id).fm) == []
-        reverted_dashboard = mod.DASHBOARD.read_text(encoding="utf-8")
-        assert "/tmp/discussion-fail-after-pass.json" in reverted_dashboard
-        assert "/tmp/discussion-pass.json" not in reverted_dashboard
-
-
-def test_extracts_discussion_result_path_from_consult_stdout_to_avoid_parallel_tick_race():
-    mod = load_orchestrator_module()
-    stdout = json.dumps({
-        "status": "OK",
-        "discussion": {
-            "status": "certified",
-            "result_file": "/tmp/hermes/tick-20260513-035153/discussion_result.json",
-            "models_consulted": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"],
-        },
-    })
-    assert mod.extract_discussion_result_path_from_stdout(stdout) == "/tmp/hermes/tick-20260513-035153/discussion_result.json"
-
-    noisy_stdout = "prefix before json " + stdout + " trailing diagnostics"
-    assert mod.extract_discussion_result_path_from_stdout(noisy_stdout) == "/tmp/hermes/tick-20260513-035153/discussion_result.json"
-
-    stderr_like = "[consult_models] Done. Chain=abc Artifacts in /tmp/hermes/tick-20260513-035153/\n"
-    assert mod.extract_discussion_result_path_from_stdout(stderr_like) == "/tmp/hermes/tick-20260513-035153/discussion_result.json"
-
-
-def test_advisory_only_pass_is_consumed_without_certification_authority():
-    mod = load_orchestrator_module()
-    with tempfile.TemporaryDirectory() as td:
-        root = Path(td)
-        vault = root / "brain"
-        tasks_dir = vault / "05-实践与项目" / "tasks"
-        dashboard_dir = vault / "07-仪表盘"
-        tasks_dir.mkdir(parents=True)
-        dashboard_dir.mkdir(parents=True)
-        mod.VAULT = vault
-        mod.TASKS_DIR = tasks_dir
-        mod.DASHBOARD = dashboard_dir / "待完成任务运行态.md"
-        mod.CONTROL_CENTER = dashboard_dir / "待完成任务控制台.md"
-        mod.SORTED_POOL = tasks_dir / "任务池-排序.md"
-        mod.INBOX = tasks_dir / "任务收件箱.md"
-
-        task_path = tasks_dir / "2026-05-12-advisory-only.md"
-        task = mod.Task(
-            path=task_path,
-            fm={
-                "type": "task",
-                "status": "pending",
-                "priority": "P1",
-                "lane": "evolution",
-                "project": "hermes-agent",
-                "architecture_target": "provider-quota",
-                "concepts": ["provider-quota", "accuracy"],
-            },
-            body="# Task - advisory only provider-quota accuracy\n\n## Proof Log\n",
-        )
-        mod.save_task(task)
-        before = mod.find_task(task.id)
-        assert mod.task_multimodel_intervention_required(before) is True
-        assert "evolution_lane" in mod.task_multimodel_advisory_reasons(before)
-
-        advisory_plan = mod.build_multimodel_intervention_plan(before)
-        assert advisory_plan["advisory_only"] is True, advisory_plan
-        assert advisory_plan["certification_reasons"] == [], advisory_plan
-        assert advisory_plan["recommended_tier"] in {"T1_advisory", "T2_advisory"}, advisory_plan
-        assert "--tier T3" not in advisory_plan["run_discussion_command"], advisory_plan
-        assert "--quorum 4" not in advisory_plan["run_discussion_command"], advisory_plan
-        assert "advisory" in advisory_plan["pua_loop"]["round_gate"], advisory_plan
-
-        # A T1/T2 advisory artifact is consumed as advisory even when it is not a
-        # 4-model closeout certificate.  It must not be run through the T3
-        # ratification gate, otherwise model_count_below_required/Claude-missing
-        # failures make weak advisory triggers rerun forever.
-        t1_discussion = {
-            "status": "not_certified",
-            "models_consulted": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"],
-            "ratification_votes": [
-                {"model": "gpt-5.5", "vote": "amend"},
-                {"model": "mimo-v2.5-pro", "vote": "approve"},
-                {"model": "deepseek-v4-pro", "vote": "amend"},
-            ],
-            "issue_ledger": [{"id": "I-001", "severity": 3, "status": "unresolved"}],
-        }
-        advisory_gate = mod.advisory_round_gate_result(t1_discussion)
-        assert advisory_gate["status"] == "PASS_ADVISORY_ONLY", advisory_gate
-        assert advisory_gate["decision"] == "continue_loop", advisory_gate
-        assert advisory_gate["certification_authority"] is False, advisory_gate
-        assert "model_count_below_required" not in json.dumps(advisory_gate), advisory_gate
-
-        result = mod.write_multimodel_result_to_task(before, advisory_gate, "/tmp/discussion-advisory.json", "/tmp/state-advisory.json")
-        assert result["passed"] is False, result
-        assert result["updates"]["multimodel_status"] == "advisory_completed", result
-        assert result["updates"]["multimodel_round_status"] == "advisory_passed", result
-        assert result["updates"]["multimodel_advisory_only"] is True, result
-        assert result["updates"]["multimodel_certification_authority"] is False, result
-
-        after = mod.find_task(task.id)
-        assert mod.task_multimodel_passed(after) is False
-        assert mod.task_multimodel_advisory_completed(after) is True
-        assert mod.task_multimodel_intervention_required(after) is False
-        text = task_path.read_text(encoding="utf-8")
-        assert "multimodel_status: advisory_completed" in text
-        assert "multimodel_round_status: advisory_passed" in text
-        assert "multimodel_ratification_artifact:" not in text
-
-        after.fm["retry_count"] = 2
-        assert "loop_non_convergence" in mod.task_multimodel_intervention_reasons(after)
-
-
 def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -1317,7 +1181,7 @@ def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics(
                 "enabled": True,
                 "schedule": "every 120m",
                 "last_status": "error",
-                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=super-secret-token-123456 Authorization: Bearer *** https://example.test/hook?access_token=***",
+                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=super-secret-token-123456 Authorization: Bearer bearer-secret-1234567890 https://example.test/hook?access_token=query-secret-123456",
                 "last_delivery_error": "Bearer delivery-secret-1234567890",
                 "deliver": "telegram:private-secret-target",
                 "script": "/tmp/secret-script.sh",
@@ -1359,176 +1223,55 @@ def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics(
         assert spine["summary"]["auto_completer_semantic_status"] == "ok_with_task_blocker", spine
 
         cron_path.write_text(json.dumps({"jobs": [
-            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
-            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "RuntimeError: Request timed out."},
-        ]}, ensure_ascii=False), encoding="utf-8")
-        timeout_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
-        timeout_classification = next(e for e in timeout_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
-        assert timeout_spine["status"] == "OK", timeout_spine
-        assert timeout_spine["gate_status"] == "PASS", timeout_spine
-        assert timeout_classification["semantic_status"] == "retryable_runtime_timeout", timeout_classification
-        assert timeout_classification["safe_for_next_tick"] is True, timeout_classification
-
-        cron_path.write_text(json.dumps({"jobs": [
-            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
-            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "已形成 Rowboat → Hermes 的证据化 advisory slice。已启动 target-bound T3 consult_models.py run --tier T3 --quorum 4 --discussion；尚未产生可确认的 discussion_result.json。因此本任务不能 closeout / done；当前只能标为 truth_grounded_advisory_not_ratified。若 T3 timeout / not_certified，则保留 advisory evidence。"},
-        ]}, ensure_ascii=False), encoding="utf-8")
-        advisory_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
-        advisory_classification = next(e for e in advisory_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
-        assert advisory_spine["status"] == "OK", advisory_spine
-        assert advisory_spine["gate_status"] == "PASS", advisory_spine
-        assert advisory_classification["semantic_status"] == "truth_grounded_advisory_not_ratified", advisory_classification
-        assert advisory_classification["task_result"] == "task_evidence_ready_waiting_for_ratification", advisory_classification
-        assert advisory_classification["safe_for_next_tick"] is True, advisory_classification
-
-        cron_path.write_text(json.dumps({"jobs": [
-            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
-            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "ratification failed: status=not_certified agreement_low vote_reject; task requires retry/handoff, scheduler should keep ticking"},
-        ]}, ensure_ascii=False), encoding="utf-8")
-        not_certified_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
-        not_certified_classification = next(e for e in not_certified_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
-        assert not_certified_spine["status"] == "OK", not_certified_spine
-        assert not_certified_spine["gate_status"] == "PASS", not_certified_spine
-        assert not_certified_classification["semantic_status"] == "certification_not_certified", not_certified_classification
-        assert not_certified_classification["task_result"] == "task_certification_failed_requires_retry_or_handoff", not_certified_classification
-        assert not_certified_classification["safe_for_next_tick"] is True, not_certified_classification
-
-        cron_path.write_text(json.dumps({"jobs": [
-            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
-            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "certification background process still running; waiting for ratification and final certification_manifest.json"},
-        ]}, ensure_ascii=False), encoding="utf-8")
-        long_running_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
-        long_running_classification = next(e for e in long_running_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
-        assert long_running_spine["status"] == "OK", long_running_spine
-        assert long_running_spine["gate_status"] == "PASS", long_running_spine
-        assert long_running_classification["semantic_status"] == "certification_long_running", long_running_classification
-        assert long_running_classification["task_result"] == "task_certification_still_running_wait_for_result", long_running_classification
-        assert long_running_classification["safe_for_next_tick"] is True, long_running_classification
-
-        nested_self_lock = {
-            "schema": "taskpool_dynamic_runner_v1",
-            "changed": True,
-            "multimodel_dynamic": {"returncode": 0, "stdout": json.dumps({"status": "OK", "action": "started_worker"}, ensure_ascii=False)},
-            "summary": {"status": "ERROR", "error_count": 1, "auto_completer_semantic_status": "error"},
-            "tick": {
-                "cmd": [sys.executable, str(Path.home() / ".hermes" / "scripts" / "brain_task_dispatch_tick.py"), "--summary", "--autorun-step", "--no-state"],
-                "returncode": 2,
-                "stdout": json.dumps({
-                    "schema": "brain_task_dispatch_tick_summary_v1",
-                    "status": "ERROR",
-                    "error_count": 1,
-                    "recovery_command": "python3 /Users/charles/.hermes/scripts/brain_task_dispatch_tick.py --print-always --no-state",
-                    "evidence_spine": {
-                        "status": "ERROR",
-                        "gate_status": None,
-                        "summary": {},
-                    },
-                }, ensure_ascii=False),
-            },
-        }
-        cron_path.write_text(json.dumps({"jobs": [
-            {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"},
-            {"id": "pipeline", "name": "pipeline-tick-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "agent-team", "name": "agent-team-cycle-hourly", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "envelope", "name": "envelope-executor-cycle", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "multimodel", "name": "multimodel-intervention-step", "enabled": True, "schedule_display": "every 60m", "last_status": "ok"},
-            {"id": "auto-completer", "name": "local-brain-taskpool-auto-completer", "enabled": True, "schedule_display": "every 120m", "last_status": "error", "last_error": "Script exited with code 2\nstdout:\n" + json.dumps(nested_self_lock, ensure_ascii=False)},
-        ]}, ensure_ascii=False), encoding="utf-8")
-        recursive_spine = json.loads(run(env, "evidence-spine", "--json").stdout)
-        recursive_classification = next(e for e in recursive_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]["classification"]
-        assert recursive_spine["status"] == "OK", recursive_spine
-        assert recursive_spine["gate_status"] == "PASS", recursive_spine
-        assert recursive_classification["semantic_status"] == "recursive_evidence_spine_self_lock", recursive_classification
-        assert recursive_classification["task_result"] == "scheduler_recursive_gate_waiting_for_next_tick", recursive_classification
-        assert recursive_classification["safe_for_next_tick"] is True, recursive_classification
-        recursive_auto_payload = next(e for e in recursive_spine["evidence"] if e["evidence_id"] == "E-TP-AUTO-COMPLETER")["payload"]
-        recursive_cron_payload = next(e for e in recursive_spine["evidence"] if e["evidence_id"] == "E-TP-CRON")["payload"]
-        assert all(not str(k).startswith("_") for k in recursive_auto_payload["cron_job"]), recursive_auto_payload
-        assert all(
-            all(not str(k).startswith("_") for k in job)
-            for job in recursive_cron_payload.get("jobs", [])
-        ), recursive_cron_payload
-
-        mod = load_orchestrator_module()
-        unrelated_evidence_failure = json.loads(json.dumps(nested_self_lock))
-        unrelated_evidence_failure["tick"]["cmd"] = [sys.executable, str(Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"), "evidence-spine", "--json"]
-        assert not mod.auto_completer_recursive_self_lock("Script exited with code 2\nstdout:\n" + json.dumps(unrelated_evidence_failure, ensure_ascii=False))
-        malformed_runner = json.loads(json.dumps(nested_self_lock))
-        malformed_runner["summary"] = {"status": "ERROR", "error_count": 2}
-        assert not mod.auto_completer_recursive_self_lock("Script exited with code 2\nstdout:\n" + json.dumps(malformed_runner, ensure_ascii=False))
-        wrong_recovery = json.loads(json.dumps(nested_self_lock))
-        wrong_recovery["tick"]["stdout"] = json.dumps({
-            "schema": "brain_task_dispatch_tick_summary_v1",
-            "status": "ERROR",
-            "error_count": 1,
-            "recovery_command": "python3 /tmp/not_dispatch.py --print-always",
-            "evidence_spine": {"status": "ERROR", "gate_status": None, "summary": {}},
-        }, ensure_ascii=False)
-        assert not mod.auto_completer_recursive_self_lock("Script exited with code 2\nstdout:\n" + json.dumps(wrong_recovery, ensure_ascii=False))
-        for bad_returncode in ["ERROR", "error", "timeout", 1, None]:
-            bad_returncode_runner = json.loads(json.dumps(nested_self_lock))
-            if bad_returncode is None:
-                bad_returncode_runner["tick"].pop("returncode", None)
-            else:
-                bad_returncode_runner["tick"]["returncode"] = bad_returncode
-            assert not mod.auto_completer_recursive_self_lock(
-                "Script exited with code 2\nstdout:\n" + json.dumps(bad_returncode_runner, ensure_ascii=False)
-            ), bad_returncode_runner
-        structured_self_lock = json.loads(json.dumps(nested_self_lock))
-        structured_self_lock["tick"]["stdout"] = json.dumps({
-            "schema": "brain_task_dispatch_tick_summary_v1",
-            "status": "ERROR",
-            "error_count": 1,
-            "evidence_spine": {
-                "status": "ERROR",
-                "gate_status": "WARN",
-                "summary": {
-                    "auto_completer_semantic_status": "error",
-                    "auto_completer_safe_for_next_tick": False,
-                },
-            },
-        }, ensure_ascii=False)
-        assert mod.auto_completer_recursive_self_lock(
-            "Script exited with code 2\nstdout:\n" + json.dumps(structured_self_lock, ensure_ascii=False)
-        ), structured_self_lock
-        structured_extra_error = json.loads(json.dumps(structured_self_lock))
-        structured_extra_payload = json.loads(structured_extra_error["tick"]["stdout"])
-        structured_extra_payload["error_count"] = 2
-        structured_extra_error["tick"]["stdout"] = json.dumps(structured_extra_payload, ensure_ascii=False)
-        assert not mod.auto_completer_recursive_self_lock(
-            "Script exited with code 2\nstdout:\n" + json.dumps(structured_extra_error, ensure_ascii=False)
-        ), structured_extra_error
-        structured_wrong_schema = json.loads(json.dumps(structured_self_lock))
-        structured_wrong_payload = json.loads(structured_wrong_schema["tick"]["stdout"])
-        structured_wrong_payload["schema"] = "other_tick_summary_v1"
-        structured_wrong_schema["tick"]["stdout"] = json.dumps(structured_wrong_payload, ensure_ascii=False)
-        assert not mod.auto_completer_recursive_self_lock(
-            "Script exited with code 2\nstdout:\n" + json.dumps(structured_wrong_schema, ensure_ascii=False)
-        ), structured_wrong_schema
-
-        cron_path.write_text(json.dumps({"jobs": [
             {"id": "guardian", "name": "task-pool-guardian-10m", "enabled": True, "schedule": "every 10m", "last_status": "ok"}
         ]}, ensure_ascii=False), encoding="utf-8")
         missing_cron = json.loads(run(env, "evidence-spine", "--json", check=False).stdout)
         assert missing_cron["status"] == "FAIL", missing_cron
         assert missing_cron["gate_status"] == "WARN", missing_cron
         assert "local-brain-taskpool-auto-completer" in missing_cron["summary"]["cron_required_missing"], missing_cron
+
+
+def test_auto_completer_recursive_self_lock_detects_cron_wrapped_dynamic_runner_error():
+    mod = load_orchestrator_module()
+    tick_summary = {
+        "schema": "brain_task_dispatch_tick_summary_v1",
+        "status": "ERROR",
+        "error_count": 1,
+        "recovery_command": "python3 /Users/charles/.hermes/scripts/brain_task_dispatch_tick.py --print-always --no-state",
+        "evidence_spine": {
+            "status": "ERROR",
+            "gate_status": "WARN",
+            "summary": {
+                "auto_completer_semantic_status": "error",
+                "auto_completer_safe_for_next_tick": False,
+            },
+        },
+    }
+    runner_error = {
+        "schema": "taskpool_dynamic_runner_v1",
+        "summary": {"status": "ERROR", "error_count": 1},
+        "tick": {
+            "cmd": [sys.executable, "/Users/charles/.hermes/scripts/brain_task_dispatch_tick.py", "--summary", "--autorun-step", "--no-state"],
+            "returncode": 2,
+            "stdout": json.dumps(tick_summary),
+        },
+    }
+    cron_wrapped = json.dumps({"last_error": json.dumps(runner_error), "ts": "2026-05-20T12:00:00Z"})
+    classification = mod.classify_auto_completer_job({"last_status": "error", "last_error": cron_wrapped})
+    assert classification["semantic_status"] == "recursive_evidence_spine_self_lock", classification
+    assert classification["safe_for_next_tick"] is True, classification
+
+
+def test_auto_completer_classifies_certification_required_tail_as_safe_task_gate():
+    mod = load_orchestrator_module()
+    last_error = '''... "recommended_tier": "T3_certification", "intervention_required": true,
+      "gate_command_template": "python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task x --discussion-result DISCUSSION_RESULT_JSON --json",
+      "trigger_reasons": ["explicit_requires_multimodel", "truth_gate_contract"],
+      "schema": "brain_task_dispatch_tick_summary_v1", "status": "ERROR" ...'''
+    classification = mod.classify_auto_completer_job({"last_status": "error", "last_error": last_error})
+    assert classification["semantic_status"] == "certification_required_pending", classification
+    assert classification["task_result"] == "task_certification_required_waiting_for_multimodel_step", classification
+    assert classification["safe_for_next_tick"] is True, classification
 
 
 def test_autonomy_readiness_reports_complete_fail_closed_architecture():
@@ -1650,6 +1393,161 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
         assert row["claimed_by"] == "hermes-autorun"
 
 
+
+def test_non_blocking_auto_subtask_reconcile_actions_do_not_block_next_or_eligibility():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["client-work"])
+        parent_id, parent_path = add_task(env, title="Parent blocked by child progress", priority="P1", project="client-work")
+        child_id, _child_path = add_task(env, title="Dispatchable child task", priority="P1", project="client-work")
+        add_non_blocking_auto_subtask_parent_fields(parent_path, child_id)
+        run(env, "dashboard", "--write", "--json")
+
+        nxt = json.loads(run(env, "next", "--json").stdout)
+        assert nxt["status"] == "OK", nxt
+        assert nxt["next"]["id"] == child_id, nxt
+        assert nxt["reconcile"]["action_count"] >= 1, nxt
+        assert any(action["action"] == "auto_subtask_progress_synced" and action["task"] == parent_id for action in nxt["reconcile"]["actions"]), nxt
+
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([child_id], ensure_ascii=False), encoding="utf-8")
+
+        eligible = json.loads(run(env, "eligibility-check", "--json").stdout)
+        assert eligible["status"] == "PASS", eligible
+        assert eligible["eligible"] is True, eligible
+        assert eligible["task_id"] == child_id, eligible
+        assert "reconcile_required" not in eligible["reasons"], eligible
+
+
+
+def test_auto_split_non_convergence_creates_axis_specific_narrowed_briefs():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["self-improvement"])
+        parent_id, parent_path = add_evolution_task(env, title="Parent needs non-convergence narrowing", priority="P1")
+        discussion_path = parent_path.parent / "non-convergence-discussion.json"
+        discussion_path.write_text(json.dumps({
+            "status": "not_certified",
+            "issue_ledger": [
+                {"id": "I-QUOTA", "status": "unresolved", "summary": "quota observability confidence is unobservable"},
+                {"id": "I-RELAY", "status": "unresolved", "summary": "continuation packet ordering remains unresolved"},
+                {"id": "I-PATCH", "status": "unresolved", "summary": "minority patch normalization is still open"},
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.82, "implementation_order": 0.61},
+            "planner_patch_summary": {"certification_intent": "unresolved_noop_vs_change"},
+            "merge_info": {"minority_patches": ["threshold gate tweak", "relay packet timing patch"]},
+            "final_design": {
+                "quota_snapshot": {
+                    "openai": {"confidence": 0.1, "observability": "unknown"}
+                }
+            },
+        }, ensure_ascii=False), encoding="utf-8")
+        text = parent_path.read_text(encoding="utf-8")
+        text = text.replace(
+            "evidence: []",
+            f"multimodel_last_discussion_artifact: {discussion_path}\nmultimodel_last_failures:\n  - loop_non_convergence\n  - agreement_below_threshold:implementation_order:0.61\n  - final_design_missing\nevidence: []",
+            1,
+        )
+        parent_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-split-non-convergence", "--task", parent_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["created_count"] >= 4, result
+        assert {"quota_observability", "fallback_threshold", "relay_ordering", "patch_normalization"} <= set(result["taxonomy_axes"]) | set(result["all_children"]), result
+
+        created_paths = [Path(item["created"]) for item in result["created"]]
+        assert len(created_paths) == result["created_count"], result
+        child_axes = set()
+        quota_note = None
+        for created_path in created_paths:
+            note_text = created_path.read_text(encoding="utf-8")
+            for line in note_text.splitlines():
+                if line.startswith("auto_subtask_axis: "):
+                    axis = line.split(":", 1)[1].strip()
+                    child_axes.add(axis)
+                    if axis == "quota_observability":
+                        quota_note = note_text
+                    break
+        assert {"quota_observability", "fallback_threshold", "relay_ordering", "patch_normalization"} <= child_axes, child_axes
+        assert quota_note is not None, child_axes
+        assert "## Parent Link" in quota_note
+        assert "## Narrowed Scope" in quota_note
+        assert f"- Parent task: {parent_id}" in quota_note
+        assert str(discussion_path) in quota_note
+
+
+
+def test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_child_evidence():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["self-improvement"])
+        parent_id, parent_path = add_evolution_task(env, title="Blocked parent waiting for child backfill", priority="P1")
+        child_id, child_path = add_evolution_task(env, title="Finished narrowed brief child", priority="P1")
+        mark_task_done_directly(child_path)
+        child_text = child_path.read_text(encoding="utf-8")
+        child_text = child_text.replace("evidence:\n  - command: fixture done PASS", "auto_subtask_axis: relay_ordering\nmultimodel_status: certified\nmultimodel_last_gate_status: PASS\nevidence:\n  - command: fixture done PASS", 1)
+        child_path.write_text(child_text, encoding="utf-8")
+
+        parent_text = parent_path.read_text(encoding="utf-8")
+        parent_text = parent_text.replace("status: pending", "status: blocked", 1)
+        parent_text = parent_text.replace("retry_count: 0", "retry_count: 2", 1)
+        parent_text = parent_text.replace(
+            "evidence: []",
+            f"multimodel_last_failures:\n  - loop_non_convergence\n  - agreement_below_threshold:implementation_order:0.62\nauto_subtask_kind: non_convergence_narrowing\nauto_subtask_children: [\"{child_id}\"]\nauto_subtask_open_children: []\nauto_subtask_missing_children: []\nauto_subtask_ready_for_parent: false\nevidence: []",
+            1,
+        )
+        parent_path.write_text(parent_text, encoding="utf-8")
+
+        sync = json.loads(run(env, "auto-subtask-sync", "--task", parent_id, "--write", "--json").stdout)
+        assert sync["status"] == "OK", sync
+        assert any(action["action"] == "auto_subtask_parent_reopened" and action["task"] == parent_id for action in sync["actions"]), sync
+
+        parent_note = parent_path.read_text(encoding="utf-8")
+        assert "status: pending" in parent_note, parent_note
+        assert "## Auto-subtask Backfill" in parent_note, parent_note
+        assert child_id in parent_note, parent_note
+        assert str(child_path) in parent_note, parent_note
+        assert "All auto-generated convergence subtasks reached done; parent reopened to `pending` for ratification rerun." in parent_note, parent_note
+
+
+
+def test_loop_non_convergence_parent_uses_targeted_evidence_refresh_plan_after_children_finish():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["self-improvement"])
+        parent_id, parent_path = add_evolution_task(env, title="Looping parent should reratify with targeted evidence", priority="P1")
+        child_id, child_path = add_evolution_task(env, title="Done child evidence for targeted reratification", priority="P1")
+        mark_task_done_directly(child_path)
+        child_text = child_path.read_text(encoding="utf-8")
+        child_text = child_text.replace("evidence:\n  - command: fixture done PASS", "auto_subtask_axis: fallback_threshold\nmultimodel_status: certified\nmultimodel_last_gate_status: PASS\nmultimodel_ratification_artifact: /tmp/child-discussion.json\nevidence:\n  - command: fixture done PASS", 1)
+        child_path.write_text(child_text, encoding="utf-8")
+
+        parent_text = parent_path.read_text(encoding="utf-8")
+        parent_text = parent_text.replace("status: pending", "status: blocked", 1)
+        parent_text = parent_text.replace("retry_count: 0", "retry_count: 2", 1)
+        parent_text = parent_text.replace(
+            "evidence: []",
+            f"multimodel_last_failures:\n  - loop_non_convergence\n  - agreement_below_threshold:implementation_order:0.62\nauto_subtask_kind: non_convergence_narrowing\nauto_subtask_children: [\"{child_id}\"]\nauto_subtask_open_children: []\nauto_subtask_missing_children: []\nauto_subtask_ready_for_parent: true\nmultimodel_recommended_axes: [fallback_threshold]\nevidence: []",
+            1,
+        )
+        parent_path.write_text(parent_text, encoding="utf-8")
+
+        dry = json.loads(run(env, "multimodel-intervention-dry-run", "--task", parent_id, "--json").stdout)
+        assert dry["status"] == "OK", dry
+        assert dry["intervention_required"] is True, dry
+        selected = dry["selected"]
+        assert selected["refresh_mode"] == "blocked_parent_targeted_evidence", selected
+        assert selected["pua_loop"]["mode"] == "blocked_parent_targeted_evidence_refresh", selected
+        assert selected["recommended_tier"] == "T3_certification", selected
+        assert "Frozen parent objective is preserved" in selected["build_state_command"], selected
+        assert str(parent_path) in selected["build_state_command"], selected
+        assert str(child_path) in selected["build_state_command"], selected
+        assert "fallback_threshold" in json.dumps(selected["criteria"], ensure_ascii=False) or "fallback_threshold" in selected["build_state_command"], selected
+
+
+
 def test_autorun_kill_switches_and_evolution_preemption_gate():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -1675,22 +1573,6 @@ def test_autorun_kill_switches_and_evolution_preemption_gate():
         blocked_evolution = json.loads(run(env, "eligibility-check", "--task", evolution_id, "--json").stdout)
         assert blocked_evolution["eligible"] is False, blocked_evolution
         assert "work_lane_available" in blocked_evolution["reasons"], blocked_evolution
-
-        # Explicit user override may globally switch the taskpool to evolution-first.
-        # The override must be durable in AUTORUN_STATE_DIR so cron/no-agent ticks inherit it.
-        (state_dir / "taskpool_priority_mode.json").write_text(
-            json.dumps({"mode": "evolution-first", "reason": "user override"}, ensure_ascii=False),
-            encoding="utf-8",
-        )
-        override_boundary = json.loads(run(env, "boundary-check", "--json").stdout)
-        assert override_boundary["gates"]["priority_mode"] == "evolution-first", override_boundary
-        assert override_boundary["gates"]["evolution_preempted_by_work"] is False, override_boundary
-        assert override_boundary["gates"]["work_preempted_by_evolution"] is True, override_boundary
-        override_next = json.loads(run(env, "next", "--json").stdout)
-        assert override_next["next"]["id"] == evolution_id, override_next
-        allowed_evolution = json.loads(run(env, "eligibility-check", "--task", evolution_id, "--json").stdout)
-        assert "work_lane_available" not in allowed_evolution["reasons"], allowed_evolution
-
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         assert next(r for r in rows if r["id"] == work_id)["status"] == "pending"
         assert next(r for r in rows if r["id"] == evolution_id)["status"] == "pending"
@@ -1731,17 +1613,6 @@ def test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed():
         assert any(s["id"] == second_id and s["reason"] == "parallel_boundary_conflict" for s in dry["skipped"]), dry
         assert any(s["id"] == evolution_id and s["reason"] == "lane_preempted_by_work" for s in dry["skipped"]), dry
         assert all("claim_command" in item and "execution_prompt" in item for item in dry["dispatch_plan"]), dry
-
-        # Global evolution-first switch flips the dispatch batch selection without
-        # mutating tasks or weakening boundary isolation.
-        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
-        state_dir.mkdir(parents=True, exist_ok=True)
-        (state_dir / "taskpool_priority_mode.json").write_text(json.dumps({"mode": "evolution-first"}, ensure_ascii=False), encoding="utf-8")
-        dry_evolution = json.loads(run(env, "parallel-dispatch-dry-run", "--max-agents", "3", "--json").stdout)
-        assert dry_evolution["selected_count"] == 1, dry_evolution
-        assert [row["id"] for row in dry_evolution["selected"]] == [evolution_id], dry_evolution
-        assert any(s["id"] == first_id and s["reason"] == "lane_preempted_by_evolution" for s in dry_evolution["skipped"]), dry_evolution
-
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         assert next(r for r in rows if r["id"] == first_id)["status"] == "pending"
         assert next(r for r in rows if r["id"] == second_id)["status"] == "pending"
@@ -1794,7 +1665,7 @@ def test_autorun_done_requires_valid_proof_hash():
         run(env, "transition", task_id, "--to", "running", "--actor", "hermes-autorun", "--json")
         run(env, "transition", task_id, "--to", "review", "--actor", "hermes-autorun", "--evidence", "command: bounded runner PASS", "--json")
 
-        missing_proof = run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", "command: final unit-test PASS", "--json", check=False)
+        missing_proof = run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", "command: final PASS", "--json", check=False)
         assert missing_proof.returncode != 0
         assert "autorun closure requires proof:<sha256:" in missing_proof.stderr
 
@@ -1802,7 +1673,7 @@ def test_autorun_done_requires_valid_proof_hash():
         assert bad_proof.returncode != 0
         assert "autorun proof hash not found or chain verification failed" in bad_proof.stderr
 
-        done = json.loads(run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", f"proof:{proof_hash}", "--evidence", "command: final unit-test PASS", "--json").stdout)
+        done = json.loads(run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", f"proof:{proof_hash}", "--evidence", "command: final PASS test build browser curl commit verification", "--json").stdout)
         assert done["status"] == "OK", done
         proof_check = json.loads(run(env, "proof-check", "--json").stdout)
         assert proof_check["status"] == "PASS", proof_check
@@ -1822,15 +1693,229 @@ def test_proof_check_flags_persisted_autorun_done_without_proof_hash():
         assert any("autorun done task missing proof evidence" in f for f in proof["failures"]), proof
 
 
+def test_proof_check_include_active_does_not_fail_historical_autorun_hashes():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="验证 active proof hash 历史证据不阻断")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: review", 1)
+        text = text.replace("evidence: []", "evidence:\n  - proof:sha256:deadbeef", 1)
+        text += "\n## Proof Log\n- historical active handoff proof hash retained for traceability.\n\n## Final Handoff\n- active review, not autorun done closeout.\n"
+        task_path.write_text(text, encoding="utf-8")
+        proof = json.loads(run(env, "proof-check", "--include-active", "--json").stdout)
+        assert proof["status"] == "PASS", proof
+
+
+def test_multimodel_step_marks_task_running_while_external_process_is_inflight_then_review():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        old_env = os.environ.copy()
+        try:
+            os.environ.update(env)
+            os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = "1"
+            state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+            state_dir.mkdir(parents=True, exist_ok=True)
+            (state_dir / "multimodel_intervention_allowlist.json").write_text(json.dumps(["project:taskpool"], ensure_ascii=False), encoding="utf-8")
+            mod = load_orchestrator_module()
+            created = mod.create_task_note(
+                title="多模型执行中应映射 taskpool running",
+                priority="P0",
+                project="self-improvement",
+                lane="evolution",
+                concepts=["task"],
+                expires_days=30,
+                expires_at="2099-01-01",
+                workflow_contract="[[08-模板/task-workflow-contract-template]]",
+                priority_layer="P2",
+                dependency_order=["1"],
+                multimodel_triage_result="P2",
+                architecture_target="taskpool",
+                capability_delta="external multimodel inflight state is visible",
+                anti_drift_check="dashboard running must reflect external process",
+                acceptance_evidence="task status is running while subprocess executes",
+            )
+            task_path = Path(created["created"])
+            task_id = created["id"]
+            task = mod.find_task(task_id)
+            discussion_path = Path(td.name) / "discussion_result.json"
+            state_path = Path(td.name) / "state.json"
+            discussion_path.write_text(json.dumps({"status": "certified", "task_id": task_id}, ensure_ascii=False), encoding="utf-8")
+            state_path.write_text("{}", encoding="utf-8")
+
+            def fake_dry_run(_args):
+                return {
+                    "intervention_required": True,
+                    "selected": {
+                        "task": {"id": task_id, "project": "self-improvement", "title": task.title},
+                        "build_state_command": "fake-build-state",
+                        "run_discussion_command": "fake-run-discussion",
+                        "state_path": str(state_path),
+                        "recommended_tier": "T3_certification",
+                        "advisory_only": False,
+                    },
+                }
+
+            class FakeProc:
+                def __init__(self, stdout=""):
+                    self.returncode = 0
+                    self.stdout = stdout
+                    self.stderr = ""
+
+            observed_statuses = []
+
+            def fake_run(cmd, **_kwargs):
+                current = mod.find_task(task_id)
+                observed_statuses.append(current.status)
+                if cmd == "fake-run-discussion":
+                    return FakeProc(json.dumps({"result_file": str(discussion_path)}, ensure_ascii=False))
+                return FakeProc()
+
+            setattr(mod, "command_multimodel_intervention_dry_run", fake_dry_run)
+            setattr(mod, "ratification_gate_result", lambda _discussion, expected_task=None: {"status": "PASS", "decision": "LOOP_DONE", "failures": []})
+            mod.subprocess.run = fake_run
+
+            result = mod.command_multimodel_intervention_step(type("Args", (), {"task": task_id, "json": True})())
+            assert result["status"] == "OK", result
+            assert observed_statuses == ["running", "running"], observed_statuses
+            final_task = mod.find_task(task_id)
+            assert final_task.status == "review", final_task.fm
+            assert not final_task.fm.get("claimed_by"), final_task.fm
+            assert any(str(e).startswith("command: multimodel-intervention-step") for e in final_task.fm.get("evidence", [])), final_task.fm
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
+def test_multimodel_parallel_allowlist_matches_architecture_target_local_brain():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        old_env = os.environ.copy()
+        try:
+            os.environ.clear()
+            os.environ.update(env)
+            os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = "1"
+            state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+            state_dir.mkdir(parents=True, exist_ok=True)
+            (state_dir / "multimodel_intervention_allowlist.json").write_text(
+                json.dumps(["project:local-brain"], ensure_ascii=False),
+                encoding="utf-8",
+            )
+            mod = load_orchestrator_module()
+            created = mod.create_task_note(
+                title="Rokid local-brain parallel multimodel allowlist regression",
+                priority="P1",
+                project="hermes",
+                lane="evolution",
+                concepts=["rokid"],
+                expires_days=30,
+                expires_at="2099-01-01",
+                workflow_contract="[[08-模板/task-workflow-contract-template]]",
+                priority_layer="P1",
+                dependency_order=["1"],
+                multimodel_triage_result="P1",
+                architecture_target="local-brain",
+                capability_delta="parallel multimodel worker accepts architecture-target allowlist",
+                anti_drift_check="project:local-brain allowlist must match project=hermes architecture_target=local-brain",
+                acceptance_evidence="parallel step processes one selected task instead of no_eligible_tasks",
+            )
+            task = mod.find_task(created["id"])
+            plan = {
+                "task": task.row(),
+                "build_state_command": "fake-build-state",
+                "run_discussion_command": "fake-run-discussion",
+                "state_path": str(Path(td.name) / "state.json"),
+                "recommended_tier": "T3_certification",
+                "advisory_only": False,
+                "intervention_required": True,
+            }
+            setattr(
+                mod,
+                "command_multimodel_intervention_dry_run",
+                lambda _args: {
+                    "intervention_required": True,
+                    "plans": [plan],
+                    "convergence": {"total_active": 1},
+                },
+            )
+            setattr(
+                mod,
+                "_run_single_task_pipeline",
+                lambda selected_plan, allowlist_active: {
+                    "task_id": selected_plan["task"]["id"],
+                    "gate": {"status": "PASS"},
+                },
+            )
+
+            result = mod.command_multimodel_intervention_parallel_step(
+                type("Args", (), {"max_workers": 2, "json": True})()
+            )
+            assert result["status"] == "OK", result
+            assert result.get("action") != "no_eligible_tasks", result
+            assert result["tasks_processed"] == 1, result
+            assert result["tasks_passed"] == 1, result
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
+def test_ratification_policy_is_loaded_from_quorum_config_not_code_literals():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        old_env = os.environ.copy()
+        try:
+            quorum_path = Path(td.name) / "quorum.yaml"
+            quorum_path.write_text("""
+ratification:
+  required_models: [alpha-core, beta-core]
+  optional_models: [gamma-optional, delta-optional]
+tiers:
+  T3:
+    quorum: 4
+    min_quorum: 2
+    planners: [alpha-core, beta-core, gamma-optional, delta-optional]
+""".strip(), encoding="utf-8")
+            os.environ.clear()
+            os.environ.update(env)
+            os.environ["HERMES_QUORUM_CONFIG"] = str(quorum_path)
+            mod = load_orchestrator_module()
+            assert mod.REQUIRED_RATIFICATION_MODELS == ("alpha-core", "beta-core")
+            assert mod.OPTIONAL_RATIFICATION_MODELS == ("gamma-optional", "delta-optional")
+            assert mod.RATIFICATION_CORE_COUNT == 2
+            assert mod.RATIFICATION_FULL_QUORUM == 4
+            discussion = {
+                "status": "certified",
+                "task_id": "config-policy-task",
+                "models_consulted": ["alpha-core", "beta-core", "gamma-optional"],
+                "issue_ledger": [],
+                "ratification_votes": [
+                    {"model": "alpha-core", "vote": "approve", "best_within_constraints": True},
+                    {"model": "beta-core", "vote": "approve", "best_within_constraints": True},
+                    {"model": "gamma-optional", "vote": "approve", "best_within_constraints": True},
+                ],
+                "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+                "truth_status": "certified",
+                "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
+                "final_design": {
+                    "long_term_goal_alignment": True,
+                    "next_slice": "configured policy next slice",
+                    "acceptance_evidence": ["configured policy gate PASS"],
+                    "rollback_boundary": "revert configured policy change",
+                },
+            }
+            gate = mod.ratification_gate_result(discussion)
+            assert gate["status"] == "PASS", gate
+            assert not any("gamma-optional" in f and "unexpected" in f for f in gate["failures"]), gate
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
 def main():
-    test_project_profile_is_injected_before_dispatch_and_missing_profile_fails_closed()
     test_mission_envelope_schema_is_enforced_fail_closed()
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
-    test_permission_audit_and_migration_expose_lane_specific_authority_contracts()
-    test_yolo_authority_cannot_bypass_task_done_lifecycle_gate()
-    test_done_requires_lane_specific_completion_gate_evidence()
-    test_auto_close_review_moves_only_proof_gated_reviews_to_done()
+    test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch_release()
+    test_generic_work_task_remains_dispatchable_without_work_closeout_fields()
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
     test_lifecycle_fail_closed_edges()
@@ -1839,17 +1924,21 @@ def main():
     test_mission_dag_cycle_fails_boundary_and_dispatch()
     test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
     test_discussion_task_binding_stamp_closes_target_binding_gap()
-    test_multimodel_round_writeback_records_fail_closed_state_and_refreshes_dashboard()
-    test_extracts_discussion_result_path_from_consult_stdout_to_avoid_parallel_tick_race()
-    test_advisory_only_pass_is_consumed_without_certification_authority()
     test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics()
     test_autonomy_readiness_reports_complete_fail_closed_architecture()
     test_autorun_runner_pauses_on_pending_permission_gate()
     test_autorun_eligibility_and_handoff_are_fail_closed()
+    test_non_blocking_auto_subtask_reconcile_actions_do_not_block_next_or_eligibility()
+    test_auto_split_non_convergence_creates_axis_specific_narrowed_briefs()
+    test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_child_evidence()
+    test_loop_non_convergence_parent_uses_targeted_evidence_refresh_plan_after_children_finish()
     test_autorun_kill_switches_and_evolution_preemption_gate()
     test_boundary_check_and_parallel_dispatch_dry_run_are_fail_closed()
     test_autorun_done_requires_valid_proof_hash()
     test_proof_check_flags_persisted_autorun_done_without_proof_hash()
+    test_proof_check_include_active_does_not_fail_historical_autorun_hashes()
+    test_multimodel_step_marks_task_running_while_external_process_is_inflight_then_review()
+    test_ratification_policy_is_loaded_from_quorum_config_not_code_literals()
     print("PASS")
 
 

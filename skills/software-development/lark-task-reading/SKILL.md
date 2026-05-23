@@ -259,6 +259,19 @@ Important workflow split for 贺程's UVISA/Lark tasks:
 - "线上 UI 回测闭环" is task B: user-gated follow-up after the user tells Hermes that the item should be dispatched for online UI retest. It must preserve dependency on task A and should not auto-dispatch merely because task A is done.
 - Lark external writeback/comment closeout should only happen after the required remote/online UI retest evidence exists, unless the user explicitly asks for an interim comment/status update.
 - If a collector or taskpool import sees both phases in Lark/status wording, create or maintain two linked tasks rather than reusing the same work task lifecycle for both phases.
+- Before any final Lark completion write (`PATCH /task/v2/tasks/{guid}` with `completed_at`) for UVISA/admin tasks, run the fail-closed guard instead of ad-hoc `execute_code` PATCHes:
+  ```bash
+  python3 ~/.hermes/scripts/lark_task_closeout_guard.py \
+    --phase online-ui-retest \
+    --user-dispatch-evidence '<who/when explicitly dispatched UI retest>' \
+    --remote-build-status deployed \
+    --online-url '<production/admin URL checked>' \
+    --online-ui-evidence '<14-inch screenshot or browser report path>' \
+    --ui-regression-status pass \
+    --lark-final-evidence '<final Lark evidence text prepared>' \
+    --json
+  ```
+  If the guard returns non-zero, do not patch Lark `completed_at`. Local tests/build/browser-harness evidence belongs to implementation-sendback only; it may justify a commit/TG status, but not final Lark completion.
 
 Close task A in this order:
 
