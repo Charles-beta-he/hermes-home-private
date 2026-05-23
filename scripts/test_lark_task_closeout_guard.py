@@ -94,14 +94,62 @@ def test_complete_online_ui_retest_allows_lark_completed_at():
         "phase": "online-ui-retest",
         "user_dispatch_evidence": "user said dispatch online UI retest",
         "remote_build_status": "deployed",
-        "online_url": "https://uvisa-admin-production.example/users",
-        "online_ui_evidence": ["/tmp/uvisa-admin-online-users-1512x982.png"],
+        "online_url": "https://uvisa-admin-production.example/users/UA888001/wallet",
+        "online_ui_evidence": ["/tmp/uvisa-admin-online-user-detail-wallet-1512x982.png"],
         "ui_regression_status": "pass",
         "lark_final_evidence": "description contains online UI evidence",
+        "task_target_surface": "用户列表>用户详情>钱包流水",
+        "code_target_surface": "用户详情钱包流水",
+        "evidence_target_surface": "用户详情钱包流水",
+        "required_evidence_keyword": ["TXN_ID", "查看详情"],
+        "observed_evidence_keyword": ["TXN_ID", "查看详情", "状态"],
     })
     assert result["allowed"] is True
     assert result["classification"] == "final_lark_closeout_allowed"
     assert result["lark_completed_at_allowed"] is True
+
+
+def test_online_ui_retest_blocks_mismatched_page_evidence():
+    mod = load_module()
+    result = mod.evaluate_closeout_gate({
+        "phase": "online-ui-retest",
+        "user_dispatch_evidence": "user said dispatch online UI retest",
+        "remote_build_status": "deployed",
+        "online_url": "https://uvisa-admin-production.example/users",
+        "online_ui_evidence": ["/tmp/uvisa-admin-online-users-list-1512x982.png"],
+        "ui_regression_status": "pass",
+        "lark_final_evidence": "description contains online UI evidence",
+        "task_target_surface": "用户列表>用户详情>钱包流水",
+        "code_target_surface": "用户详情钱包流水",
+        "evidence_target_surface": "用户列表",
+        "required_evidence_keyword": ["TXN_ID", "查看详情"],
+        "observed_evidence_keyword": ["用户列表", "UID"],
+    })
+    assert result["allowed"] is False
+    assert result["lark_completed_at_allowed"] is False
+    assert "evidence_target_surface_mismatch" in result["blockers"]
+    assert "missing_required_evidence_keywords" in result["blockers"]
+
+
+def test_online_ui_retest_blocks_permission_denied_page():
+    mod = load_module()
+    result = mod.evaluate_closeout_gate({
+        "phase": "online-ui-retest",
+        "user_dispatch_evidence": "user said dispatch online UI retest",
+        "remote_build_status": "deployed",
+        "online_url": "https://uvisa-admin-production.example/channel-payouts",
+        "online_ui_evidence": ["/tmp/uvisa-admin-channel-payout-permission-denied.png"],
+        "ui_regression_status": "pass",
+        "lark_final_evidence": "description contains online UI evidence",
+        "task_target_surface": "通道代付记录",
+        "code_target_surface": "通道代付记录",
+        "evidence_target_surface": "通道代付记录",
+        "evidence_access_status": "denied",
+        "required_evidence_keyword": ["GSalary", "通道状态"],
+        "observed_evidence_keyword": ["无权限"],
+    })
+    assert result["allowed"] is False
+    assert "target_page_access_not_verified" in result["blockers"]
 
 
 def test_cli_blocks_local_phase_before_any_writeback():

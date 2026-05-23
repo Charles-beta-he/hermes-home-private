@@ -90,6 +90,83 @@ def _norm(value: Any) -> str:
     return str(value or "").strip().lower().replace("_", "-")
 
 
+def _surface_token(value: Any) -> str:
+    """Normalize page/module labels for conservative target binding checks."""
+    text = _norm(value)
+    for ch in ['“', '”', '"', "'", " ", "　", "/", "_", "·", "-", "—", "–", ">", "＞", "：", ":", "，", ",", "。", ".", "（", "）", "(", ")"]:
+        text = text.replace(ch, "")
+    return text
+
+
+def _surface_parts(value: str) -> list[str]:
+    raw = str(value or "")
+    for sep in ["＞", "/", "\\", "|", "→", "-", "—", "–"]:
+        raw = raw.replace(sep, ">")
+    return [part.strip() for part in raw.split(">") if part.strip()]
+
+
+def _has_surface_match(expected: str, actual: str) -> bool:
+    exp = _surface_token(expected)
+    act = _surface_token(actual)
+    if not exp or not act:
+        return False
+    parts = _surface_parts(expected)
+    # For hierarchical task targets, require the evidence/code to reach the leaf
+    # surface (detail tab/modal), not merely the parent list page.
+    if len(parts) > 1:
+        leaf = _surface_token(parts[-1])
+        parent_leaf = _surface_token("".join(parts[-2:]))
+        return bool(leaf and leaf in act) or bool(parent_leaf and parent_leaf in act)
+    return exp in act or act in exp
+
+
+def evaluate_target_binding_gate(evidence: dict[str, Any]) -> dict[str, Any]:
+    """Fail closed unless task, code, and UI evidence are bound to the same target surface.
+
+    This catches the class of mistakes where a Lark task targets e.g. 用户详情/钱包流水,
+    but the closeout screenshot is only 用户列表, or where the target page is inaccessible
+    and a generic screenshot is attached anyway.
+    """
+    blockers: list[str] = []
+    warnings: list[str] = []
+    task_surface = str(evidence.get("task_target_surface") or "").strip()
+    evidence_surface = str(evidence.get("evidence_target_surface") or "").strip()
+    code_surface = str(evidence.get("code_target_surface") or "").strip()
+    access_status = _norm(evidence.get("evidence_access_status") or "pass")
+    required_keywords = [str(x).strip() for x in _as_list(evidence.get("required_evidence_keyword")) if str(x).strip()]
+    observed_keywords = [str(x).strip() for x in _as_list(evidence.get("observed_evidence_keyword")) if str(x).strip()]
+
+    if not task_surface:
+        blockers.append("missing_task_target_surface")
+    if not evidence_surface:
+        blockers.append("missing_evidence_target_surface")
+    if task_surface and evidence_surface and not _has_surface_match(task_surface, evidence_surface):
+        blockers.append("evidence_target_surface_mismatch")
+    if code_surface and task_surface and not _has_surface_match(task_surface, code_surface):
+        blockers.append("code_target_surface_mismatch")
+    if access_status in {"denied", "forbidden", "unauthorized", "no-permission", "permission-denied", "blocked"}:
+        blockers.append("target_page_access_not_verified")
+    if required_keywords:
+        observed_blob = _surface_token(" ".join(observed_keywords))
+        missing = [kw for kw in required_keywords if _surface_token(kw) not in observed_blob]
+        if missing:
+            blockers.append("missing_required_evidence_keywords")
+            warnings.append("missing_keywords:" + ",".join(missing[:10]))
+
+    return {
+        "allowed": not blockers,
+        "task_target_surface": task_surface,
+        "evidence_target_surface": evidence_surface,
+        "code_target_surface": code_surface,
+        "evidence_access_status": access_status,
+        "required_evidence_keywords": required_keywords,
+        "observed_evidence_keywords": observed_keywords,
+        "blockers": blockers,
+        "warnings": warnings,
+        "policy": "Final UVISA/admin UI closeout requires target-bound evidence: task page/module, code surface, and screenshot/DOM surface must match; inaccessible pages cannot be closed with generic screenshots.",
+    }
+
+
 def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
     """Return a fail-closed decision for external Lark completion.
 
@@ -146,6 +223,10 @@ def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
     if not _present(evidence.get("lark_final_evidence")):
         blockers.append("missing_lark_final_evidence_text")
 
+    target_binding = evaluate_target_binding_gate(evidence)
+    blockers.extend(target_binding["blockers"])
+    warnings.extend(target_binding["warnings"])
+
     allowed = not blockers
     if allowed:
         classification = "final_lark_closeout_allowed"
@@ -156,8 +237,9 @@ def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
         "phase": phase,
         "blockers": blockers,
         "warnings": warnings,
+        "target_binding_gate": target_binding,
         "lark_completed_at_allowed": allowed,
-        "policy": "Only a user-dispatched online UI retest with online evidence may drive final Lark description + completed_at writeback.",
+        "policy": "Only a user-dispatched online UI retest with target-bound online evidence may drive final Lark description + completed_at writeback.",
     }
 
 
@@ -172,6 +254,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--report", action="append", default=[])
     parser.add_argument("--ui-regression-status", default="")
     parser.add_argument("--lark-final-evidence", default="")
+    parser.add_argument("--task-target-surface", default="", help="Exact page/module named by the Lark task, e.g. 用户列表>用户详情>钱包流水")
+    parser.add_argument("--code-target-surface", default="", help="Page/module represented by the changed code surface")
+    parser.add_argument("--evidence-target-surface", default="", help="Page/module actually shown by screenshot/DOM evidence")
+    parser.add_argument("--evidence-access-status", default="pass", help="pass/denied/forbidden/unauthorized/etc for the target page")
+    parser.add_argument("--required-evidence-keyword", action="append", default=[], help="Keyword/field that must be visible in the evidence for this task")
+    parser.add_argument("--observed-evidence-keyword", action="append", default=[], help="Keyword/field actually visible in screenshot/DOM evidence")
     parser.add_argument("--local-verification", action="append", default=[])
     parser.add_argument("--commit", default="")
     parser.add_argument("--repo-path", default="", help="Git repo to inspect for implementation branch safety")
@@ -191,6 +279,12 @@ def main(argv: list[str] | None = None) -> int:
         "online_ui_evidence": [*args.online_ui_evidence, *args.screenshot, *args.report],
         "ui_regression_status": args.ui_regression_status,
         "lark_final_evidence": args.lark_final_evidence,
+        "task_target_surface": args.task_target_surface,
+        "code_target_surface": args.code_target_surface,
+        "evidence_target_surface": args.evidence_target_surface,
+        "evidence_access_status": args.evidence_access_status,
+        "required_evidence_keyword": args.required_evidence_keyword,
+        "observed_evidence_keyword": args.observed_evidence_keyword,
         "local_verification": args.local_verification,
         "commit": args.commit,
         "repo_path": args.repo_path,

@@ -41,13 +41,41 @@ Shared evidence is allowed, shared conclusions are not.
 
 Allowed:
 - one build for multiple GUIDs;
-- one screenshot/browser report for multiple GUIDs;
+- one screenshot/browser report for multiple GUIDs **only when the screenshot visibly covers each GUID's named page/module**;
 - one scoped commit for a page batch.
 
 Required:
 - every GUID maps to checked acceptance atoms;
 - screenshot/report lists which atoms it covers;
 - final Lark close remains gated by online UI retest when project preference requires it.
+- `task_target_surface`, `code_target_surface`, and `evidence_target_surface` must be recorded and must match. A task targeting `用户列表 > 用户详情 > 钱包流水` cannot be closed with a `用户列表` screenshot. A `通道代付记录` task cannot be closed if the account sees a no-permission page.
+
+Fail closed when:
+- the target page/module cannot be opened with the production admin account;
+- the screenshot only shows a parent/list page while the task targets a detail/drawer/tab/modal;
+- required fields/copy from the acceptance atoms are not visible in screenshot/DOM evidence;
+- code changes are on a different page/module than the Lark task target.
+
+Before final closeout, call the guard with target-binding metadata, for example:
+
+```bash
+python3 ~/.hermes/scripts/lark_task_closeout_guard.py \
+  --phase online-ui-retest \
+  --user-dispatch-evidence '<user-dispatched online retest>' \
+  --remote-build-status deployed \
+  --online-url '<production URL checked>' \
+  --online-ui-evidence '<native .png/.jpg evidence path>' \
+  --ui-regression-status pass \
+  --lark-final-evidence '<public-safe Lark evidence text>' \
+  --task-target-surface '用户列表>用户详情>钱包流水' \
+  --code-target-surface '用户详情钱包流水' \
+  --evidence-target-surface '用户详情钱包流水' \
+  --required-evidence-keyword TXN_ID \
+  --required-evidence-keyword 查看详情 \
+  --observed-evidence-keyword TXN_ID \
+  --observed-evidence-keyword 查看详情 \
+  --json
+```
 
 ## Upgrade triggers
 
