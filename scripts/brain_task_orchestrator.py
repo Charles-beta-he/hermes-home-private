@@ -3652,7 +3652,15 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
         accept=args.accept or "本地真实验收通过；实现闭环证据、commit/必要 push/build 结果已记录；未自动评论最终 Lark 证据。",
         **base_kwargs,
     )
-    impl_result = command_add(impl_args)
+    previous_hook_disabled = os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED")
+    os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+    try:
+        impl_result = command_add(impl_args)
+    finally:
+        if previous_hook_disabled is None:
+            os.environ.pop("HERMES_TASKPOOL_EVENT_HOOK_DISABLED", None)
+        else:
+            os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = previous_hook_disabled
     impl_task = find_task(impl_result["id"])
     impl_task.fm["work_closeout_phase"] = "implementation"
     impl_task.fm["depends_on_task"] = []
@@ -3668,7 +3676,15 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
         accept="仅在用户明确派发 UI 回测后执行；线上环境回测证据完整；最终 Lark 证据评论已完成。",
         **base_kwargs,
     )
-    retest_result = command_add(retest_args)
+    previous_hook_disabled = os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED")
+    os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+    try:
+        retest_result = command_add(retest_args)
+    finally:
+        if previous_hook_disabled is None:
+            os.environ.pop("HERMES_TASKPOOL_EVENT_HOOK_DISABLED", None)
+        else:
+            os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = previous_hook_disabled
     retest_task = find_task(retest_result["id"])
     retest_task.fm["work_closeout_phase"] = "online_ui_retest"
     retest_task.fm["depends_on_task"] = [impl_task.id]
@@ -3679,7 +3695,7 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
     created_tasks.append(retest_task.row())
 
     derived_refresh = refresh_derived_task_views("add-work-closeout-pair")
-    event_hook = maybe_fire_taskpool_event_hook("task_added", task_id=retest_task.id, reason="command_add_work_closeout_pair")
+    event_hook = maybe_fire_taskpool_event_hook("task_added", task_id=impl_task.id, reason="command_add_work_closeout_pair_implementation_ready")
     return {
         "status": "OK",
         "schema": "work_closeout_pair_v1",

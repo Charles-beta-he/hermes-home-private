@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from types import SimpleNamespace
 
 SCRIPT = Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"
 
@@ -520,6 +521,77 @@ def test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch
         retest_released = next(r for r in rows_released if r["id"] == retest_id)
         assert retest_released["dispatchable"] is True
         assert retest_released["manual_dispatch_blockers"] == []
+
+
+def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
+    td, _vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            calls = []
+
+            def fake_event_hook(event, *, task_id="", reason=""):
+                task = mod.find_task(task_id)
+                calls.append({
+                    "event": event,
+                    "task_id": task_id,
+                    "disabled": os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED"),
+                    "phase": mod.work_closeout_phase(task),
+                    "dispatchable": task.is_dispatchable(),
+                    "blockers": mod.work_dispatch_blockers(task),
+                })
+                return {"status": "FAKE", "task_id": task_id}
+
+            setattr(mod, "maybe_fire_taskpool_event_hook", fake_event_hook)
+            result = mod.command_add_work_closeout_pair(SimpleNamespace(
+                title="Lark hook race guard",
+                priority="P1",
+                project="uvisa-app-2.0",
+                expires_at="2099-01-01",
+                expires_days=30,
+                objective="完成实现闭环，等待用户派发线上 UI 回测。",
+                accept="本地验收完成；线上 UI 回测用户授权后执行。",
+            ))
+            impl_id = result["implementation_task"]["id"]
+            retest_id = result["ui_retest_task"]["id"]
+
+            assert calls == [
+                {
+                    "event": "task_added",
+                    "task_id": impl_id,
+                    "disabled": "1",
+                    "phase": "generic",
+                    "dispatchable": True,
+                    "blockers": [],
+                },
+                {
+                    "event": "task_added",
+                    "task_id": retest_id,
+                    "disabled": "1",
+                    "phase": "generic",
+                    "dispatchable": True,
+                    "blockers": [],
+                },
+                {
+                    "event": "task_added",
+                    "task_id": impl_id,
+                    "disabled": None,
+                    "phase": "implementation",
+                    "dispatchable": True,
+                    "blockers": [],
+                },
+            ]
+            retest = mod.find_task(retest_id)
+            assert mod.work_closeout_phase(retest) == "online_ui_retest"
+            assert mod.work_dispatch_blockers(retest) == [
+                f"waiting_for_dependency:{impl_id}:pending",
+                "manual_dispatch_gate:awaiting_user_ui_retest_dispatch",
+            ]
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
 
 
 def test_generic_work_task_remains_dispatchable_without_work_closeout_fields():
@@ -1915,6 +1987,7 @@ def main():
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
     test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch_release()
+    test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted()
     test_generic_work_task_remains_dispatchable_without_work_closeout_fields()
     test_lifecycle_transition_gate_and_audit()
     test_lifecycle_transition_retry_sets_delay_and_count()
