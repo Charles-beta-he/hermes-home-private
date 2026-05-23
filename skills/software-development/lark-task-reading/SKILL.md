@@ -272,9 +272,16 @@ Important workflow split for 贺程's UVISA/Lark tasks:
     --online-ui-evidence '<14-inch screenshot or browser report path>' \
     --ui-regression-status pass \
     --lark-final-evidence '<final Lark evidence text prepared>' \
+    --task-target-surface '<task page/module, e.g. 用户详情>钱包流水>' \
+    --code-target-surface '<changed implementation surface>' \
+    --evidence-target-surface '<page/module actually shown by runtime proof>' \
+    --acceptance-atoms-json @/tmp/<task>-atoms.json \
+    --runtime-proofs-json @/tmp/<task>-runtime-proofs.json \
     --json
   ```
   If the guard returns non-zero, do not patch Lark `completed_at`. Local tests/build/browser-harness evidence belongs to implementation-sendback only; it may justify a commit/TG status, but not final Lark completion.
+
+  **UI-skills atom sync gate:** task intake constraints and acceptance atoms are one redline set. For every UI task, convert task text into machine-readable atoms before closeout. Each atom needs `id`, `type` (`nav/link/overlay/form/a11y/...`), target surface/route, and runtime proof mapping. Runtime proofs must come from real browser events (`interaction`, `navigation`, `network`, `overlay`, `form`, `a11y`, `dom`, `trace`). Screenshots, code diffs, `Link`/button existence, `data-prd`, and static DOM snapshots are supplemental only and cannot satisfy an interactive atom. Navigation/link atoms require a visible hit-tested activation plus route delta and target content refresh; `href == current_url` blocks closeout. Popup/overlay atoms require visible attached content and close/cleanup. Form atoms require fill + submit + green network response + post-submit UI change. A11y atoms require keyboard reachability, visible focus, and role/name semantics. Missing atoms, unmapped atoms, non-runtime proof, invalid JSON, or guard parser error all fail closed.
 
 Close task A in this order:
 

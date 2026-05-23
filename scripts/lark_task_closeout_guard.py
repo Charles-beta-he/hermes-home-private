@@ -21,6 +21,12 @@ IMPLEMENTATION_PHASES = {"implementation", "impl", "local-regression", "local_re
 GOOD_REMOTE_STATUSES = {"success", "succeeded", "pass", "passed", "deployed", "ready", "green"}
 GOOD_UI_STATUSES = {"pass", "passed", "success", "succeeded", "green"}
 PROTECTED_BASE_BRANCHES = {"main", "master"}
+RUNTIME_PROOF_KINDS = {"interaction", "navigation", "network", "overlay", "form", "a11y", "dom", "trace"}
+NON_RUNTIME_PROOF_KINDS = {"screenshot", "image", "code", "diff", "static", "marker", "dom-snapshot-only", "text", "comment"}
+NAV_ATOM_TYPES = {"nav", "navigation", "link", "route", "router"}
+OVERLAY_ATOM_TYPES = {"popup", "overlay", "dialog", "drawer", "modal", "popover"}
+FORM_ATOM_TYPES = {"form", "submit", "submission", "filter"}
+A11Y_ATOM_TYPES = {"a11y", "accessibility", "keyboard", "focus"}
 
 
 def _git_current_branch(repo_path: str | None) -> str:
@@ -105,6 +111,45 @@ def _surface_parts(value: str) -> list[str]:
     return [part.strip() for part in raw.split(">") if part.strip()]
 
 
+def _json_value(value: Any) -> Any:
+    """Parse JSON from a raw string or @file reference; return [] on empty input."""
+    if value is None or value == "":
+        return []
+    if not isinstance(value, str):
+        return value
+    text = value.strip()
+    if not text:
+        return []
+    if text.startswith("@"):
+        text = Path(text[1:]).expanduser().read_text()
+    return json.loads(text)
+
+
+def _boolish(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    if isinstance(value, (int, float)):
+        return value != 0
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "pass", "passed", "ok", "success", "succeeded"}
+
+
+def _status_good(value: Any) -> bool:
+    if isinstance(value, int):
+        return 200 <= value < 400
+    text = str(value or "").strip().lower()
+    if not text:
+        return False
+    if text.isdigit():
+        return 200 <= int(text) < 400
+    return text in GOOD_UI_STATUSES or text in GOOD_REMOTE_STATUSES
+
+
+def _proof_atom_id(proof: dict[str, Any]) -> str:
+    return str(proof.get("atom_id") or proof.get("criterion_id") or proof.get("acceptance_atom_id") or "").strip()
+
+
 def _has_surface_match(expected: str, actual: str) -> bool:
     exp = _surface_token(expected)
     act = _surface_token(actual)
@@ -164,6 +209,137 @@ def evaluate_target_binding_gate(evidence: dict[str, Any]) -> dict[str, Any]:
         "blockers": blockers,
         "warnings": warnings,
         "policy": "Final UVISA/admin UI closeout requires target-bound evidence: task page/module, code surface, and screenshot/DOM surface must match; inaccessible pages cannot be closed with generic screenshots.",
+    }
+
+
+def evaluate_acceptance_atom_gate(evidence: dict[str, Any]) -> dict[str, Any]:
+    """Fail closed unless intake constraints are proven by runtime acceptance atoms.
+
+    Acceptance atoms are the machine-readable projection of the Lark task intake
+    constraints. Screenshots, code markers, and static diffs are allowed only as
+    supplemental evidence; they cannot satisfy an interactive UI atom.
+    """
+    blockers: list[str] = []
+    warnings: list[str] = []
+    try:
+        atoms = _json_value(evidence.get("acceptance_atoms"))
+        proofs = _json_value(evidence.get("runtime_proofs"))
+    except Exception as exc:
+        return {
+            "allowed": False,
+            "blockers": ["invalid_acceptance_atom_or_runtime_proof_json"],
+            "warnings": [str(exc)],
+            "atom_count": 0,
+            "proof_count": 0,
+            "policy": "Acceptance atoms and runtime proofs must be valid JSON; parser errors fail closed.",
+        }
+
+    atoms = atoms or []
+    proofs = proofs or []
+    if not isinstance(atoms, list) or not all(isinstance(a, dict) for a in atoms):
+        blockers.append("acceptance_atoms_must_be_list_of_objects")
+        atoms = []
+    if not isinstance(proofs, list) or not all(isinstance(p, dict) for p in proofs):
+        blockers.append("runtime_proofs_must_be_list_of_objects")
+        proofs = []
+
+    if not atoms:
+        blockers.append("missing_acceptance_atoms")
+    if atoms and not proofs:
+        blockers.append("missing_runtime_proofs")
+
+    atom_ids: set[str] = set()
+    proofs_by_atom: dict[str, list[dict[str, Any]]] = {}
+    for atom in atoms:
+        atom_id = str(atom.get("id") or "").strip()
+        if not atom_id:
+            blockers.append("acceptance_atom_missing_id")
+            continue
+        if atom_id in atom_ids:
+            blockers.append(f"duplicate_acceptance_atom_id:{atom_id}")
+        atom_ids.add(atom_id)
+        proofs_by_atom[atom_id] = []
+        if not str(atom.get("type") or "").strip():
+            blockers.append(f"acceptance_atom_missing_type:{atom_id}")
+        if not str(atom.get("target_surface") or atom.get("target_route") or atom.get("text") or "").strip():
+            blockers.append(f"acceptance_atom_missing_target:{atom_id}")
+
+    for proof in proofs:
+        atom_id = _proof_atom_id(proof)
+        kind = _norm(proof.get("kind") or proof.get("type"))
+        if not atom_id:
+            blockers.append("runtime_proof_missing_atom_id")
+            continue
+        if atom_id not in atom_ids:
+            blockers.append(f"runtime_proof_unknown_atom_id:{atom_id}")
+            continue
+        if kind in NON_RUNTIME_PROOF_KINDS:
+            blockers.append(f"non_runtime_proof_used:{atom_id}:{kind}")
+        elif kind not in RUNTIME_PROOF_KINDS:
+            blockers.append(f"runtime_proof_unknown_kind:{atom_id}:{kind or 'missing'}")
+        proofs_by_atom[atom_id].append(proof)
+
+    for atom in atoms:
+        atom_id = str(atom.get("id") or "").strip()
+        if not atom_id:
+            continue
+        atom_type = _norm(atom.get("type"))
+        atom_proofs = proofs_by_atom.get(atom_id, [])
+        runtime_proofs = [p for p in atom_proofs if _norm(p.get("kind") or p.get("type")) in RUNTIME_PROOF_KINDS]
+        if not runtime_proofs:
+            blockers.append(f"acceptance_atom_missing_runtime_proof:{atom_id}")
+            continue
+
+        if atom_type in NAV_ATOM_TYPES:
+            nav_proofs = [p for p in runtime_proofs if _norm(p.get("kind") or p.get("type")) in {"interaction", "navigation", "dom", "trace"}]
+            clicked = any(_norm(p.get("action") or p.get("event")) in {"click", "tap", "enter", "space", "keyboard-activate"} for p in nav_proofs)
+            if not clicked:
+                blockers.append(f"nav_atom_missing_real_activation:{atom_id}")
+            if not any(_boolish(p.get("visible")) and _boolish(p.get("hit_tested")) for p in nav_proofs if _norm(p.get("kind") or p.get("type")) == "interaction"):
+                blockers.append(f"nav_atom_missing_visible_hit_tested_click:{atom_id}")
+            href = next((str(p.get("href") or p.get("target_url") or "") for p in nav_proofs if str(p.get("href") or p.get("target_url") or "").strip()), "")
+            current_url = next((str(p.get("url_before") or p.get("current_url") or "") for p in nav_proofs if str(p.get("url_before") or p.get("current_url") or "").strip()), "")
+            if href and current_url and href == current_url:
+                blockers.append(f"nav_atom_href_equals_current_url:{atom_id}")
+            route_changed = any(str(p.get("url_before") or "") and str(p.get("url_after") or "") and str(p.get("url_before")) != str(p.get("url_after")) for p in nav_proofs)
+            same_route_allowed = _boolish(atom.get("same_route_refresh_allowed"))
+            content_refreshed = any(_boolish(p.get("content_refreshed")) or _boolish(p.get("target_content_refreshed")) or _boolish(p.get("dom_changed")) for p in nav_proofs)
+            if not route_changed and not (same_route_allowed and content_refreshed):
+                blockers.append(f"nav_atom_missing_route_delta:{atom_id}")
+            if not content_refreshed:
+                blockers.append(f"nav_atom_missing_target_content_refresh:{atom_id}")
+
+        if atom_type in OVERLAY_ATOM_TYPES:
+            if not any(_boolish(p.get("node_attached")) and _boolish(p.get("visible")) for p in runtime_proofs):
+                blockers.append(f"overlay_atom_missing_visible_attached_node:{atom_id}")
+            if not any(_boolish(p.get("dismissed")) or _boolish(p.get("closed")) or _boolish(p.get("removed")) for p in runtime_proofs):
+                blockers.append(f"overlay_atom_missing_close_or_cleanup:{atom_id}")
+
+        if atom_type in FORM_ATOM_TYPES:
+            if not any(_boolish(p.get("fields_filled")) or _present(p.get("filled_fields")) for p in runtime_proofs):
+                blockers.append(f"form_atom_missing_fill_event:{atom_id}")
+            if not any(_boolish(p.get("submitted")) or _present(p.get("submit_request_id")) for p in runtime_proofs):
+                blockers.append(f"form_atom_missing_submit_event:{atom_id}")
+            if not any(_status_good(p.get("network_status") or p.get("status")) for p in runtime_proofs if _present(p.get("network_status") or p.get("status"))):
+                blockers.append(f"form_atom_missing_green_network_response:{atom_id}")
+            if not any(_boolish(p.get("post_submit_state_changed")) or _boolish(p.get("ui_changed")) for p in runtime_proofs):
+                blockers.append(f"form_atom_missing_post_submit_ui_change:{atom_id}")
+
+        if atom_type in A11Y_ATOM_TYPES or _boolish(atom.get("requires_a11y")):
+            if not any(_boolish(p.get("keyboard_reachable")) for p in runtime_proofs):
+                blockers.append(f"a11y_atom_missing_keyboard_reachable:{atom_id}")
+            if not any(_boolish(p.get("focus_visible")) for p in runtime_proofs):
+                blockers.append(f"a11y_atom_missing_focus_visible:{atom_id}")
+            if not any(_boolish(p.get("semantic_ok")) or _boolish(p.get("role_and_name_ok")) for p in runtime_proofs):
+                blockers.append(f"a11y_atom_missing_semantic_role_name:{atom_id}")
+
+    return {
+        "allowed": not blockers,
+        "atom_count": len(atoms),
+        "proof_count": len(proofs),
+        "blockers": blockers,
+        "warnings": warnings,
+        "policy": "Every Lark intake constraint must map to runtime acceptance atoms. Interactive atoms require real browser events, route/DOM/content deltas, and a11y proof; screenshots/code/markers are supplemental only and never primary proof.",
     }
 
 
@@ -227,6 +403,10 @@ def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
     blockers.extend(target_binding["blockers"])
     warnings.extend(target_binding["warnings"])
 
+    acceptance_atom_gate = evaluate_acceptance_atom_gate(evidence)
+    blockers.extend(acceptance_atom_gate["blockers"])
+    warnings.extend(acceptance_atom_gate["warnings"])
+
     allowed = not blockers
     if allowed:
         classification = "final_lark_closeout_allowed"
@@ -238,6 +418,7 @@ def evaluate_closeout_gate(evidence: dict[str, Any]) -> dict[str, Any]:
         "blockers": blockers,
         "warnings": warnings,
         "target_binding_gate": target_binding,
+        "acceptance_atom_gate": acceptance_atom_gate,
         "lark_completed_at_allowed": allowed,
         "policy": "Only a user-dispatched online UI retest with target-bound online evidence may drive final Lark description + completed_at writeback.",
     }
@@ -260,6 +441,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--evidence-access-status", default="pass", help="pass/denied/forbidden/unauthorized/etc for the target page")
     parser.add_argument("--required-evidence-keyword", action="append", default=[], help="Keyword/field that must be visible in the evidence for this task")
     parser.add_argument("--observed-evidence-keyword", action="append", default=[], help="Keyword/field actually visible in screenshot/DOM evidence")
+    parser.add_argument("--acceptance-atoms-json", default="", help="JSON array or @file path: intake-derived atoms with id/type/target_surface")
+    parser.add_argument("--runtime-proofs-json", default="", help="JSON array or @file path: browser runtime proofs mapped by atom_id")
     parser.add_argument("--local-verification", action="append", default=[])
     parser.add_argument("--commit", default="")
     parser.add_argument("--repo-path", default="", help="Git repo to inspect for implementation branch safety")
@@ -285,6 +468,8 @@ def main(argv: list[str] | None = None) -> int:
         "evidence_access_status": args.evidence_access_status,
         "required_evidence_keyword": args.required_evidence_keyword,
         "observed_evidence_keyword": args.observed_evidence_keyword,
+        "acceptance_atoms": args.acceptance_atoms_json,
+        "runtime_proofs": args.runtime_proofs_json,
         "local_verification": args.local_verification,
         "commit": args.commit,
         "repo_path": args.repo_path,

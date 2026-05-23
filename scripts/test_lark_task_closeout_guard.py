@@ -103,6 +103,14 @@ def test_complete_online_ui_retest_allows_lark_completed_at():
         "evidence_target_surface": "用户详情钱包流水",
         "required_evidence_keyword": ["TXN_ID", "查看详情"],
         "observed_evidence_keyword": ["TXN_ID", "查看详情", "状态"],
+        "acceptance_atoms": [
+            {"id": "nav-wallet-owner", "type": "nav", "target_surface": "用户详情钱包流水用户姓名跳转", "requires_a11y": True},
+        ],
+        "runtime_proofs": [
+            {"atom_id": "nav-wallet-owner", "kind": "interaction", "action": "click", "visible": True, "hit_tested": True, "href": "https://uvisa-admin-production.example/users/UB888002", "url_before": "https://uvisa-admin-production.example/users/UA888001/wallet"},
+            {"atom_id": "nav-wallet-owner", "kind": "navigation", "url_before": "https://uvisa-admin-production.example/users/UA888001/wallet", "url_after": "https://uvisa-admin-production.example/users/UB888002", "target_content_refreshed": True},
+            {"atom_id": "nav-wallet-owner", "kind": "a11y", "keyboard_reachable": True, "focus_visible": True, "semantic_ok": True},
+        ],
     })
     assert result["allowed"] is True
     assert result["classification"] == "final_lark_closeout_allowed"
@@ -152,6 +160,40 @@ def test_online_ui_retest_blocks_permission_denied_page():
     assert "target_page_access_not_verified" in result["blockers"]
 
 
+def test_acceptance_atom_blocks_screenshot_or_code_only_nav_proof():
+    mod = load_module()
+    result = mod.evaluate_acceptance_atom_gate({
+        "acceptance_atoms": [
+            {"id": "nav-owner", "type": "nav", "target_surface": "用户详情钱包流水用户姓名跳转"},
+        ],
+        "runtime_proofs": [
+            {"atom_id": "nav-owner", "kind": "screenshot", "path": "/tmp/red-box.png"},
+            {"atom_id": "nav-owner", "kind": "code", "file": "src/components/TxnDetailDrawer.tsx"},
+        ],
+    })
+    assert result["allowed"] is False
+    assert "non_runtime_proof_used:nav-owner:screenshot" in result["blockers"]
+    assert "non_runtime_proof_used:nav-owner:code" in result["blockers"]
+    assert "acceptance_atom_missing_runtime_proof:nav-owner" in result["blockers"]
+
+
+def test_acceptance_atom_blocks_nav_href_equal_current_url_even_if_clicked():
+    mod = load_module()
+    result = mod.evaluate_acceptance_atom_gate({
+        "acceptance_atoms": [
+            {"id": "nav-owner", "type": "link", "target_surface": "用户详情钱包流水用户姓名跳转"},
+        ],
+        "runtime_proofs": [
+            {"atom_id": "nav-owner", "kind": "interaction", "action": "click", "visible": True, "hit_tested": True, "href": "https://admin/users/UA1", "current_url": "https://admin/users/UA1"},
+            {"atom_id": "nav-owner", "kind": "navigation", "url_before": "https://admin/users/UA1", "url_after": "https://admin/users/UA1", "target_content_refreshed": False},
+        ],
+    })
+    assert result["allowed"] is False
+    assert "nav_atom_href_equals_current_url:nav-owner" in result["blockers"]
+    assert "nav_atom_missing_route_delta:nav-owner" in result["blockers"]
+    assert "nav_atom_missing_target_content_refresh:nav-owner" in result["blockers"]
+
+
 def test_cli_blocks_local_phase_before_any_writeback():
     proc = subprocess.run(
         [
@@ -173,3 +215,40 @@ def test_cli_blocks_local_phase_before_any_writeback():
     payload = json.loads(proc.stdout)
     assert payload["lark_completed_at_allowed"] is False
     assert "online_ui_retest_required" in payload["blockers"]
+
+
+def test_cli_blocks_missing_acceptance_atoms_for_final_closeout():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(MODULE_PATH),
+            "--phase",
+            "online-ui-retest",
+            "--user-dispatch-evidence",
+            "user dispatched online retest",
+            "--remote-build-status",
+            "deployed",
+            "--online-url",
+            "https://admin/users/UA1/wallet",
+            "--online-ui-evidence",
+            "/tmp/uvisa-admin-user-wallet-1512x982.png",
+            "--ui-regression-status",
+            "pass",
+            "--lark-final-evidence",
+            "prepared",
+            "--task-target-surface",
+            "用户详情>钱包流水",
+            "--code-target-surface",
+            "用户详情钱包流水",
+            "--evidence-target-surface",
+            "用户详情钱包流水",
+            "--json",
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    assert proc.returncode == 2
+    payload = json.loads(proc.stdout)
+    assert payload["lark_completed_at_allowed"] is False
+    assert "missing_acceptance_atoms" in payload["blockers"]
