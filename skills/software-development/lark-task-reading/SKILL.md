@@ -251,7 +251,16 @@ When the user asks to "loop" Lark reading or to fuse patterns into the skill tre
 
 ## Executing a Lark task: closeout before exploration
 
-When a user asks to read assigned Lark tasks and complete them, treat each task as a finite delivery unit, not as an open-ended audit. Before implementation starts, long or compound requirements must be split into checklist-style acceptance atoms; after implementation and deterministic verification pass, close the task in this order before spending more tool/context budget on optional ledgers or exploratory follow-ups:
+When a user asks to read assigned Lark tasks and complete them, treat each task as a finite delivery unit, not as an open-ended audit. Before implementation starts, long or compound requirements must be split into checklist-style acceptance atoms; after implementation and deterministic verification pass, close the task in this order before spending more tool/context budget on optional ledgers or exploratory follow-ups.
+
+Important workflow split for 贺程's UVISA/Lark tasks:
+- Do not collapse implementation closeout and online UI retest into one local taskpool item.
+- "已发补闭环" / implementation-sendback closeout is task A: local requirement trace, implementation, deterministic local verification, scoped commit, push/remote build monitoring when explicitly part of closeout, and user notification/status report.
+- "线上 UI 回测闭环" is task B: user-gated follow-up after the user tells Hermes that the item should be dispatched for online UI retest. It must preserve dependency on task A and should not auto-dispatch merely because task A is done.
+- Lark external writeback/comment closeout should only happen after the required remote/online UI retest evidence exists, unless the user explicitly asks for an interim comment/status update.
+- If a collector or taskpool import sees both phases in Lark/status wording, create or maintain two linked tasks rather than reusing the same work task lifecycle for both phases.
+
+Close task A in this order:
 
 0. **Acceptance-atom gate before coding.** For every long/compound Lark task, create an explicit acceptance checklist before editing code. Each atom must include: target surface/page, exact requirement, affected field/control/copy/rule, verification method, and expected evidence artifact. Do not begin broad implementation from the prose blob alone. During closeout, every atom must be marked `checked` with evidence or `blocked` with a reason. Do not close the Lark task while any atom is unchecked. This prevents requirements like “全部币种下拉框和筛选框要对齐” from being buried inside a longer task and later reappearing as a补充任务.
 
