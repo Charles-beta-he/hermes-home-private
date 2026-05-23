@@ -24,6 +24,8 @@ metadata:
 
 # Lark Task Reading
 
+Reference addendum: `references/uvisa-admin-lark-fasttrack-closeout.md` captures the UVISA admin Lark fast-track closeout workflow: S0/S1/M/L/R/B tiers, shared-evidence-with-per-GUID-atom mapping, upgrade triggers, and the strict split between implementation sendback, online UI retest, and final Lark close.
+
 ## Taskpool quarantine behavior
 
 When the user asks to temporarily remove Lark/Feishu tasks from the Hermes taskpool, include every lifecycle state (`pending`, `blocked`, `review`, `done`, etc.). Move matching task files to a timestamped quarantine directory with a manifest instead of deleting them. Match explicit Lark markers (`lark`, `lark-reopened`, `feishu`, `飞书`, `larksuite`, Lark URLs/IDs/source fields), refresh the taskpool dashboard, and verify `dispatch-dry-run --json` after removal.
