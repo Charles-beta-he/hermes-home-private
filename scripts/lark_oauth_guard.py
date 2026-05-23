@@ -8,7 +8,7 @@ EADDRINUSE on the configured localhost callback port, and stale watch-pattern
 messages after one login already succeeded.
 
 Default behavior is conservative:
-- if a valid token already exists, do not spawn anything;
+- if a valid token already exists, do not spawn anything unless --force-refresh is set;
 - if another guarded login is running, do not spawn a second one;
 - if the configured OAuth callback port is busy, fail closed unless --cleanup-stale is set;
 - when spawning, open the authorization URL at most once.
@@ -148,8 +148,8 @@ def token_status_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_A
     return TokenStatus(False, "no_tokens", token_count=0)
 
 
-def plan_login(token_valid: bool, lock_active: bool, port_busy: bool, cleanup_stale: bool) -> LoginPlan:
-    if token_valid:
+def plan_login(token_valid: bool, lock_active: bool, port_busy: bool, cleanup_stale: bool, force_refresh: bool = False) -> LoginPlan:
+    if token_valid and not force_refresh:
         return LoginPlan("token_valid")
     if lock_active:
         return LoginPlan("login_already_in_progress")
@@ -157,7 +157,7 @@ def plan_login(token_valid: bool, lock_active: bool, port_busy: bool, cleanup_st
         return LoginPlan("cleanup_stale_then_login", should_spawn=True, should_kill_stale=True)
     if port_busy:
         return LoginPlan("port_busy")
-    return LoginPlan("start_login", should_spawn=True)
+    return LoginPlan("force_refresh_login" if token_valid else "start_login", should_spawn=True)
 
 
 def _run_json_node(script: str, timeout: int = 20) -> dict[str, Any]:
@@ -467,7 +467,7 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
     lock = SingleFlightLock(Path(args.lock), stale_seconds=args.lock_stale_seconds)
     active = lock.is_active()
     busy = port_busy(args.port)
-    plan = plan_login(token_status.valid, active, busy, args.cleanup_stale)
+    plan = plan_login(token_status.valid, active, busy, args.cleanup_stale, args.force_refresh)
     result: dict[str, Any] = {
         "ok": plan.action == "token_valid",
         "action": plan.action,
@@ -486,7 +486,7 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
             result["killed_pids"] = kill_stale_lark_logins(args.port)
         latest = auth_snapshot(Path(args.root))
         latest_status = token_status_from_snapshot(latest, app_id=args.app_id)
-        if latest_status.valid:
+        if latest_status.valid and not args.force_refresh:
             result.update({"ok": True, "action": "token_became_valid", "token_status": asdict(latest_status)})
             return result
         login_result = run_login(
@@ -523,6 +523,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lock", default=str(DEFAULT_LOCK))
     parser.add_argument("--lock-stale-seconds", type=int, default=180)
     parser.add_argument("--cleanup-stale", action="store_true", help="terminate stale lark-mcp login on the chosen port before spawning")
+    parser.add_argument("--force-refresh", action="store_true", help="run OAuth login even when the current token is still valid; useful for explicit token refresh tests")
     parser.add_argument("--no-open", action="store_true", help="do not open browser when auth URL appears")
     parser.add_argument("--auto-authorize", action="store_true", default=os.environ.get("LARK_AUTO_AUTHORIZE", "").lower() in {"1", "true", "yes", "on"}, help="after opening the Lark OAuth URL, click the visible 授权 button on macOS")
     parser.add_argument("--auto-authorize-timeout", type=int, default=int(os.environ.get("LARK_AUTO_AUTHORIZE_TIMEOUT", "25")))

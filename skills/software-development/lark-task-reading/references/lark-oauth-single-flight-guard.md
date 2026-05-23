@@ -34,6 +34,12 @@ python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale --auto-auth
 python3 ~/.hermes/scripts/lark_task_reader.py --scope-mode only --summary
 ```
 
+For an explicit real refresh test even when the current token is still valid, add `--force-refresh`:
+
+```bash
+python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale --auto-authorize --force-refresh
+```
+
 `lark_task_reader.py` now performs this guarded auth recovery by default when its token preflight sees `NO_TOKEN` / `TOKEN_EXPIRED`; pass `--no-auto-auth` to keep the old fail-fast behavior, or `--no-auto-authorize` to open the browser without clicking the visible `授权` button.
 
 The guard should:

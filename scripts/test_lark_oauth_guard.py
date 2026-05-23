@@ -169,6 +169,12 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertFalse(plan.should_spawn)
         self.assertFalse(plan.should_kill_stale)
 
+    def test_plan_force_refresh_spawns_even_when_token_valid(self):
+        plan = self.mod.plan_login(token_valid=True, lock_active=False, port_busy=False, cleanup_stale=True, force_refresh=True)
+        self.assertEqual(plan.action, "force_refresh_login")
+        self.assertTrue(plan.should_spawn)
+        self.assertFalse(plan.should_kill_stale)
+
     def test_plan_waits_instead_of_spawning_second_login_when_lock_active(self):
         plan = self.mod.plan_login(token_valid=False, lock_active=True, port_busy=False, cleanup_stale=True)
         self.assertEqual(plan.action, "login_already_in_progress")
@@ -239,6 +245,22 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertTrue(result["ok"])
         self.assertEqual(result["action"], "token_valid")
         run_login.assert_not_called()
+
+    def test_ensure_login_force_refresh_does_not_skip_valid_token(self):
+        args = self.mod.build_parser().parse_args(["--json", "--no-open", "--force-refresh"])
+        snapshot = {
+            "tokens": {"tok-valid": {"expiresAt": time.time() + 3600}},
+            "localTokens": {"cli_a96f6a6211f91ed2": "tok-valid"},
+            "clients": {"client": {"appId": "cli_a96f6a6211f91ed2", "appSecret": "secret_test"}},
+        }
+        login_result = {"ok": True, "action": "login_completed", "returncode": 0}
+        with mock.patch.object(self.mod, "auth_snapshot", return_value=snapshot), \
+             mock.patch.object(self.mod, "port_busy", return_value=False), \
+             mock.patch.object(self.mod, "run_login", return_value=login_result) as run_login:
+            result = self.mod.ensure_login(args)
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["action"], "login_success")
+        run_login.assert_called_once()
 
     def test_json_main_output_redacts_token_key(self):
         token = "eyJhbGciOiJmainentrypointtokenpayload1234567890"
