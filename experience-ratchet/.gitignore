@@ -1,0 +1,5 @@
+# Runtime data stays local; commit only stable docs/schema.
+/atoms/
+/proposals/
+/logs/
+/maze/

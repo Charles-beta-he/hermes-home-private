@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "classification": {
+      "properties": {
+        "target_landing_zone": {
+          "enum": [
+            "skill",
+            "memory",
+            "profile",
+            "taskpool",
+            "project_doc",
+            "public_consensus",
+            "noop"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "relations": {
+      "items": {
+        "properties": {
+          "target_atom_id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "similar_to",
+              "depends_on",
+              "contradicts",
+              "supersedes",
+              "derived_from",
+              "applies_to",
+              "verified_by",
+              "falsified_by"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "experience_atom.v1"
+    },
+    "status": {
+      "enum": [
+        "captured",
+        "normalized",
+        "challenged",
+        "validated",
+        "promoted_candidate",
+        "promoted",
+        "deprecated",
+        "rolled_back",
+        "revoked"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "atom_id",
+    "title",
+    "claim_text",
+    "source",
+    "classification",
+    "guards",
+    "evidence_refs",
+    "dissent_refs",
+    "relations",
+    "status",
+    "promotion",
+    "rollback",
+    "history"
+  ],
+  "schema_version": "experience_atom.v1",
+  "title": "ExperienceAtom",
+  "type": "object"
+}

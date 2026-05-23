@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "allowed_side_effects": [
+    "no_op",
+    "suggest_skill_patch",
+    "suggest_memory_write",
+    "suggest_profile_patch",
+    "suggest_taskpool_item",
+    "suggest_project_doc_update",
+    "suggest_public_consensus_update"
+  ],
+  "forbidden_side_effects": [
+    "direct_memory_write",
+    "direct_skill_edit",
+    "direct_profile_edit",
+    "direct_taskpool_add",
+    "direct_core_patch"
+  ],
+  "input_status_allowed": [
+    "promoted_candidate",
+    "promoted"
+  ],
+  "policy": "default_off_proposal_only_no_direct_mutation",
+  "title": "ExperienceRatchetCoreHookContract"
+}
