@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 import unittest
+from unittest import mock
 
 MODULE_PATH = Path.home() / ".hermes" / "scripts" / "lark_task_reader.py"
 
@@ -75,11 +76,32 @@ class LarkTaskReaderTest(unittest.TestCase):
         class TasklistClient:
             def get(self, path, token, query=None):
                 self.last = (path, query)
-                return {"code": 0, "data": {"items": [{"guid": "tl-1", "name": "UVISA-2.0新版开发", "url": "https://tasklist"}], "has_more": False}}
+                if path == "/task/v2/tasklists":
+                    return {"code": 0, "data": {"items": [{"guid": "tl-1", "name": "UVISA-2.0新版开发", "url": "https://tasklist"}], "has_more": False}}
+                if path == "/task/v2/sections":
+                    return {"code": 0, "data": {"items": [], "has_more": False}}
+                raise AssertionError(f"unexpected GET {path} {query}")
         enriched = self.mod.enrich_tasks_with_tasklists(tasks, "tok", client=TasklistClient())
         selected = self.mod.prioritize_tasks(enriched, scope_mode="only")
         self.assertEqual([t["guid"] for t in selected], ["uv-1"])
         self.assertEqual(selected[0]["tasklist_names"], ["UVISA-2.0新版开发"])
+
+    def test_section_enrichment_exposes_admin_group_name(self):
+        tasks = [{"guid": "admin-1", "summary": "银行路由", "tasklists": [{"tasklist_guid": "tl-1", "section_guid": "sec-admin"}]}]
+        class SectionClient:
+            def get(self, path, token, query=None):
+                if path == "/task/v2/tasklists":
+                    return {"code": 0, "data": {"items": [{"guid": "tl-1", "name": "UVISA-2.0新版开发"}], "has_more": False}}
+                if path == "/task/v2/sections":
+                    self.section_query = dict(query or {})
+                    return {"code": 0, "data": {"items": [{"guid": "sec-admin", "name": "admin端相关问题"}], "has_more": False}}
+                raise AssertionError(f"unexpected GET {path} {query}")
+        client = SectionClient()
+        enriched = self.mod.enrich_tasks_with_tasklists(tasks, "tok", client=client)
+        self.assertEqual(enriched[0]["section_names"], ["admin端相关问题"])
+        self.assertEqual(enriched[0]["tasklists"][0]["section_name"], "admin端相关问题")
+        self.assertEqual(client.section_query["resource_type"], "tasklist")
+        self.assertEqual(client.section_query["resource_id"], "tl-1")
 
     def test_tasklist_enrichment_failure_is_visible(self):
         tasks = [{"guid": "uv-1", "summary": "登录页", "tasklists": [{"tasklist_guid": "tl-1"}]}]
@@ -114,6 +136,34 @@ class LarkTaskReaderTest(unittest.TestCase):
         fake = EmptyThenFallbackClient()
         payloads = self.mod.collect_tasks(token="tok", client=fake, scope_mode="prefer", include_comments=True, include_docs=False)
         self.assertIn("补充描述", payloads[0]["comments"])
+
+    def test_get_token_invokes_guard_on_missing_token_by_default(self):
+        calls = {"count": 0}
+
+        def fake_read(root):
+            calls["count"] += 1
+            if calls["count"] == 1:
+                raise RuntimeError("Lark token unavailable: NO_TOKEN")
+            return "tok-after-auth"
+
+        with mock.patch.object(self.mod, "_read_lark_mcp_token", side_effect=fake_read), \
+             mock.patch.object(self.mod, "_ensure_lark_auth", return_value={"ok": True}) as guard:
+            token = self.mod.get_token(auto_auth=None, auto_authorize=True)
+        self.assertEqual(token, "tok-after-auth")
+        guard.assert_called_once_with(auto_authorize=True)
+
+    def test_get_token_can_disable_auto_auth(self):
+        with mock.patch.object(self.mod, "_read_lark_mcp_token", side_effect=RuntimeError("NO_TOKEN")), \
+             mock.patch.object(self.mod, "_ensure_lark_auth") as guard:
+            with self.assertRaises(RuntimeError):
+                self.mod.get_token(auto_auth=False)
+        guard.assert_not_called()
+
+    def test_collect_tasks_passes_auto_auth_flags_to_token_reader(self):
+        fake = FakeClient()
+        with mock.patch.object(self.mod, "get_token", return_value="tok") as get_token:
+            self.mod.collect_tasks(client=fake, scope_mode="prefer", include_comments=False, include_docs=False, auto_auth=True, auto_authorize=False)
+        get_token.assert_called_once_with(auto_auth=True, auto_authorize=False)
 
     def test_only_mode_hard_filters_by_tasklist_and_off_mode_returns_all(self):
         tasks = [

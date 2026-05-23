@@ -17,10 +17,12 @@ Default behavior is conservative:
 import argparse
 import json
 import os
+import platform
 import re
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -268,7 +270,133 @@ def kill_stale_lark_logins(port: int = DEFAULT_PORT) -> list[int]:
     return killed
 
 
-def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, scopes: str, open_browser: bool, timeout: int) -> dict[str, Any]:
+def _blue_authorize_button_bbox(image_path: Path) -> tuple[int, int, int, int] | None:
+    """Find the Lark authorization blue button in a macOS screenshot.
+
+    The OAuth page is localized and the web-view accessibility tree is not
+    consistently scriptable from Terminal. The stable visual invariant is the
+    large Lark-blue primary button near the lower-right of the authorization
+    card. Return its screenshot-pixel bounding box, ignoring small blue links.
+    """
+    try:
+        from PIL import Image
+    except Exception:
+        return None
+    img = Image.open(image_path).convert("RGB")
+    width, height = img.size
+    pixels = img.load()
+    visited: set[tuple[int, int]] = set()
+    candidates: list[tuple[int, int, int, int, int]] = []
+
+    def is_lark_blue(x: int, y: int) -> bool:
+        r, g, b = pixels[x, y]
+        # Primary button is close to #3370ff. Keep the band permissive enough
+        # for antialiasing but narrow enough to reject grey/black text.
+        return b >= 185 and 25 <= r <= 95 and 80 <= g <= 155 and (b - g) >= 70 and (g - r) >= 20
+
+    # Search where the consent button actually lives. This also avoids the
+    # account-switch link near the top of the card.
+    x0 = int(width * 0.45)
+    y0 = int(height * 0.45)
+    for y in range(y0, height, 2):
+        for x in range(x0, width, 2):
+            if (x, y) in visited or not is_lark_blue(x, y):
+                continue
+            stack = [(x, y)]
+            visited.add((x, y))
+            min_x = max_x = x
+            min_y = max_y = y
+            count = 0
+            while stack:
+                cx, cy = stack.pop()
+                count += 1
+                min_x = min(min_x, cx)
+                max_x = max(max_x, cx)
+                min_y = min(min_y, cy)
+                max_y = max(max_y, cy)
+                for nx, ny in ((cx + 2, cy), (cx - 2, cy), (cx, cy + 2), (cx, cy - 2)):
+                    if nx < x0 or ny < y0 or nx >= width or ny >= height or (nx, ny) in visited:
+                        continue
+                    if is_lark_blue(nx, ny):
+                        visited.add((nx, ny))
+                        stack.append((nx, ny))
+            box_w = max_x - min_x + 1
+            box_h = max_y - min_y + 1
+            # The primary 授权 button is large; links are thin/small.
+            if box_w >= 80 and box_h >= 30 and count >= 600:
+                candidates.append((count, min_x, min_y, max_x, max_y))
+    if not candidates:
+        return None
+    _, min_x, min_y, max_x, max_y = max(candidates, key=lambda item: (item[0], item[2], item[1]))
+    return min_x, min_y, max_x, max_y
+
+
+def _click_screenshot_pixel(x: int, y: int, screenshot_width: int, screenshot_height: int) -> None:
+    if platform.system() != "Darwin":
+        raise RuntimeError("auto_authorize_click_requires_macos")
+    try:
+        import Quartz
+    except Exception as exc:
+        raise RuntimeError(f"quartz_unavailable:{exc}") from exc
+    display = Quartz.CGMainDisplayID()
+    bounds = Quartz.CGDisplayBounds(display)
+    scale_x = float(bounds.size.width) / float(screenshot_width)
+    scale_y = float(bounds.size.height) / float(screenshot_height)
+    point = Quartz.CGPoint(x * scale_x, y * scale_y)
+    Quartz.CGWarpMouseCursorPosition(point)
+    time.sleep(0.05)
+    for event_type in (Quartz.kCGEventLeftMouseDown, Quartz.kCGEventLeftMouseUp):
+        event = Quartz.CGEventCreateMouseEvent(None, event_type, point, Quartz.kCGMouseButtonLeft)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, event)
+        time.sleep(0.05)
+
+
+def auto_click_authorize(timeout: int = 25) -> dict[str, Any]:
+    """Best-effort click of the visible Lark 授权 button in the user's browser.
+
+    This intentionally clicks only the large Lark-blue primary button on the
+    current screen. It does not type credentials and it fails closed when the
+    button cannot be found.
+    """
+    if platform.system() != "Darwin":
+        return {"ok": False, "reason": "unsupported_platform"}
+    deadline = time.time() + max(1, timeout)
+    last_reason = "not_started"
+    attempts = 0
+    while time.time() < deadline:
+        attempts += 1
+        path = Path(tempfile.gettempdir()) / f"hermes_lark_oauth_screen_{os.getpid()}.png"
+        shot = subprocess.run(["screencapture", "-x", str(path)], capture_output=True, text=True, timeout=10)
+        if shot.returncode != 0:
+            last_reason = (shot.stderr or shot.stdout or "screencapture_failed").strip()
+            time.sleep(0.5)
+            continue
+        try:
+            from PIL import Image
+            with Image.open(path) as img:
+                screenshot_width, screenshot_height = img.size
+            bbox = _blue_authorize_button_bbox(path)
+            if not bbox:
+                last_reason = "authorize_button_not_found"
+                time.sleep(0.7)
+                continue
+            min_x, min_y, max_x, max_y = bbox
+            click_x = (min_x + max_x) // 2
+            click_y = (min_y + max_y) // 2
+            _click_screenshot_pixel(click_x, click_y, screenshot_width, screenshot_height)
+            return {"ok": True, "reason": "clicked", "bbox": [min_x, min_y, max_x, max_y], "attempts": attempts}
+        except Exception as exc:
+            last_reason = str(exc)
+            time.sleep(0.7)
+        finally:
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+    return {"ok": False, "reason": last_reason, "attempts": attempts}
+
+
+def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, scopes: str, open_browser: bool, timeout: int, auto_authorize: bool = False, auto_authorize_timeout: int = 25) -> dict[str, Any]:
     real_app_id, app_secret = credentials_from_snapshot(snapshot, app_id=app_id)
     if not real_app_id or not app_secret:
         return {"ok": False, "action": "credentials_missing"}
@@ -282,6 +410,7 @@ def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, sco
     ]
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
     opened = False
+    auto_authorize_result: dict[str, Any] | None = None
     auth_url = ""
     output: list[str] = []
     deadline = time.time() + timeout
@@ -297,6 +426,8 @@ def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, sco
             if auth_url and open_browser and not opened:
                 subprocess.run(["open", auth_url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 opened = True
+                if auto_authorize:
+                    auto_authorize_result = auto_click_authorize(timeout=auto_authorize_timeout)
         if proc.poll() is not None:
             break
         if time.time() > deadline:
@@ -305,10 +436,10 @@ def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, sco
                 proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 proc.kill()
-            return {"ok": False, "action": "login_timeout", "auth_url": auth_url, "opened": opened, "output_tail": output[-10:]}
+            return {"ok": False, "action": "login_timeout", "auth_url": auth_url, "opened": opened, "auto_authorize": auto_authorize_result, "output_tail": output[-10:]}
         if not line:
             time.sleep(0.1)
-    return {"ok": proc.returncode == 0, "action": "login_completed", "returncode": proc.returncode, "auth_url": auth_url, "opened": opened, "output_tail": output[-10:]}
+    return {"ok": proc.returncode == 0, "action": "login_completed", "returncode": proc.returncode, "auth_url": auth_url, "opened": opened, "auto_authorize": auto_authorize_result, "output_tail": output[-10:]}
 
 
 def redact_secret(value: Any, keep_start: int = 8, keep_end: int = 4) -> Any:
@@ -358,7 +489,17 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
         if latest_status.valid:
             result.update({"ok": True, "action": "token_became_valid", "token_status": asdict(latest_status)})
             return result
-        login_result = run_login(latest, args.app_id, args.domain, args.port, args.scope, not args.no_open, args.timeout)
+        login_result = run_login(
+            latest,
+            args.app_id,
+            args.domain,
+            args.port,
+            args.scope,
+            not args.no_open,
+            args.timeout,
+            args.auto_authorize,
+            args.auto_authorize_timeout,
+        )
         final_snapshot = auth_snapshot(Path(args.root))
         final_status = token_status_from_snapshot(final_snapshot, app_id=args.app_id)
         result.update(login_result)
@@ -383,6 +524,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lock-stale-seconds", type=int, default=180)
     parser.add_argument("--cleanup-stale", action="store_true", help="terminate stale lark-mcp login on the chosen port before spawning")
     parser.add_argument("--no-open", action="store_true", help="do not open browser when auth URL appears")
+    parser.add_argument("--auto-authorize", action="store_true", default=os.environ.get("LARK_AUTO_AUTHORIZE", "").lower() in {"1", "true", "yes", "on"}, help="after opening the Lark OAuth URL, click the visible 授权 button on macOS")
+    parser.add_argument("--auto-authorize-timeout", type=int, default=int(os.environ.get("LARK_AUTO_AUTHORIZE_TIMEOUT", "25")))
     parser.add_argument("--timeout", type=int, default=90)
     return parser
 

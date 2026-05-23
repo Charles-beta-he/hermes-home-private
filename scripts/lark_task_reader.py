@@ -82,6 +82,24 @@ def tasklist_names(task: dict[str, Any]) -> list[str]:
     return list(dict.fromkeys(names))
 
 
+def section_names(task: dict[str, Any]) -> list[str]:
+    names: list[str] = []
+    for key in ("section_name", "section_names"):
+        value = task.get(key)
+        if isinstance(value, str) and value:
+            names.append(value)
+        elif isinstance(value, list):
+            names.extend(str(v) for v in value if v)
+    for tl in task.get("tasklists", []) or []:
+        if isinstance(tl, dict):
+            name = tl.get("section_name")
+            if not name and isinstance(tl.get("section"), dict):
+                name = tl["section"].get("name")
+            if name:
+                names.append(str(name))
+    return list(dict.fromkeys(names))
+
+
 def _hard_scope_match(task: dict[str, Any], preferred_scopes: list[str] | None = None) -> bool:
     scopes = configured_preferred_scopes(preferred_scopes)
     names = [n.lower() for n in tasklist_names(task)]
@@ -165,11 +183,7 @@ class LarkClient:
             return json.loads(resp.read().decode("utf-8"))
 
 
-def get_token() -> str:
-    env = os.environ.get("LARK_USER_ACCESS_TOKEN") or os.environ.get("FEISHU_USER_ACCESS_TOKEN")
-    if env:
-        return env.strip()
-    root = Path(os.environ.get("LARK_MCP_ROOT", "/Users/charles/.nvm/versions/node/v24.14.0/lib/node_modules/@larksuiteoapi/lark-mcp"))
+def _read_lark_mcp_token(root: Path) -> str:
     script = f"""
 const {{ authStore }} = require({json.dumps(str(root / 'dist/auth/store.js'))});
 authStore.initialize().then(() => {{
@@ -186,6 +200,39 @@ authStore.initialize().then(() => {{
     if result.returncode != 0:
         raise RuntimeError(f"Lark token unavailable: {result.stderr.strip() or result.stdout.strip()}")
     return result.stdout.strip()
+
+
+def _ensure_lark_auth(auto_authorize: bool = True) -> dict[str, Any]:
+    guard = Path.home() / ".hermes" / "scripts" / "lark_oauth_guard.py"
+    cmd = [sys.executable, str(guard), "--json", "--cleanup-stale"]
+    if auto_authorize:
+        cmd.append("--auto-authorize")
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=140)
+    try:
+        payload = json.loads(result.stdout or "{}")
+    except json.JSONDecodeError:
+        payload = {"ok": False, "action": "invalid_guard_json", "stdout_tail": result.stdout[-500:], "stderr_tail": result.stderr[-500:]}
+    if result.returncode != 0 or not payload.get("ok"):
+        action = payload.get("action") or "guard_failed"
+        reason = payload.get("error") or payload.get("token_status", {}).get("reason") or payload.get("auto_authorize", {}).get("reason") or result.stderr.strip()
+        raise RuntimeError(f"Lark auto authorization failed: {action}: {reason}")
+    return payload
+
+
+def get_token(auto_auth: bool | None = None, auto_authorize: bool = True) -> str:
+    env = os.environ.get("LARK_USER_ACCESS_TOKEN") or os.environ.get("FEISHU_USER_ACCESS_TOKEN")
+    if env:
+        return env.strip()
+    root = Path(os.environ.get("LARK_MCP_ROOT", "/Users/charles/.nvm/versions/node/v24.14.0/lib/node_modules/@larksuiteoapi/lark-mcp"))
+    try:
+        return _read_lark_mcp_token(root)
+    except RuntimeError:
+        if auto_auth is None:
+            auto_auth = os.environ.get("LARK_TASK_AUTO_AUTH", "1").lower() not in {"0", "false", "no", "off"}
+        if not auto_auth:
+            raise
+        _ensure_lark_auth(auto_authorize=auto_authorize)
+        return _read_lark_mcp_token(root)
 
 
 def fetch_tasks(token: str, page_size: int = 100, client: LarkClient | Any | None = None) -> list[dict[str, Any]]:
@@ -234,20 +281,78 @@ def fetch_tasklists(token: str, page_size: int = 100, client: LarkClient | Any |
     return mapping
 
 
-def enrich_tasks_with_tasklists(tasks: list[dict[str, Any]], token: str, client: LarkClient | Any | None = None) -> list[dict[str, Any]]:
-    """Attach tasklist names/urls to task.tasklists so scope can match real list names.
+def fetch_sections_for_tasklist(token: str, tasklist_guid: str, page_size: int = 100, client: LarkClient | Any | None = None) -> dict[str, dict[str, Any]]:
+    """Return section_guid -> section metadata for one tasklist.
 
-    If the tasklist endpoint is unavailable, keep the raw task payload but annotate
-    each task with a warning. This is intentionally visible: hard-scope reads must
-    not be certified from title/body keywords when tasklist names were unavailable.
+    Lark calls these UI groups "custom sections". The task payload only carries
+    section_guid, so section names (for example "admin端相关问题") must be read
+    through /task/v2/sections with resource_type=tasklist + resource_id.
     """
-    enrichment_warning = ""
+    active_client = client or LarkClient()
+    mapping: dict[str, dict[str, Any]] = {}
+    page_token: str | None = None
+    while True:
+        query: dict[str, Any] = {
+            "page_size": page_size,
+            "resource_type": "tasklist",
+            "resource_id": tasklist_guid,
+        }
+        if page_token:
+            query["page_token"] = page_token
+        data = active_client.get("/task/v2/sections", token, query=query)
+        if data.get("code") != 0:
+            raise RuntimeError(f"Lark section API error {data.get('code')}: {data.get('msg')}")
+        body = data.get("data") or {}
+        for item in body.get("items") or []:
+            guid = item.get("guid") or item.get("section_guid")
+            if guid:
+                mapping[guid] = item
+        if not body.get("has_more"):
+            break
+        page_token = body.get("page_token")
+        if not page_token:
+            raise RuntimeError("Lark section pagination reported has_more=true without page_token")
+    return mapping
+
+
+def fetch_sections_for_tasklists(token: str, tasklist_guids: list[str], client: LarkClient | Any | None = None) -> dict[str, dict[str, Any]]:
+    """Return section_guid -> section metadata for all referenced tasklists."""
+    client = client or LarkClient()
+    sections: dict[str, dict[str, Any]] = {}
+    for tasklist_guid in list(dict.fromkeys(g for g in tasklist_guids if g)):
+        sections.update(fetch_sections_for_tasklist(token, tasklist_guid, client=client))
+    return sections
+
+
+def enrich_tasks_with_tasklists(tasks: list[dict[str, Any]], token: str, client: LarkClient | Any | None = None) -> list[dict[str, Any]]:
+    """Attach tasklist and section names/urls to task.tasklists.
+
+    If the enrichment endpoints are unavailable, keep the raw task payload but
+    annotate each task with a warning. This is intentionally visible: hard-scope
+    reads must not be certified from title/body keywords when names were unavailable.
+    """
+    warnings: list[str] = []
     try:
         by_guid = fetch_tasklists(token, client=client)
     except Exception as exc:
         by_guid = {}
-        enrichment_warning = f"tasklist_enrichment_failed: {type(exc).__name__}: {exc}"
+        warnings.append(f"tasklist_enrichment_failed: {type(exc).__name__}: {exc}")
+
+    tasklist_guids: list[str] = []
+    for task in tasks:
+        for tl in task.get("tasklists", []) or []:
+            if isinstance(tl, dict):
+                guid = tl.get("tasklist_guid") or tl.get("guid")
+                if guid:
+                    tasklist_guids.append(str(guid))
+    try:
+        section_by_guid = fetch_sections_for_tasklists(token, tasklist_guids, client=client)
+    except Exception as exc:
+        section_by_guid = {}
+        warnings.append(f"section_enrichment_failed: {type(exc).__name__}: {exc}")
+
     enriched: list[dict[str, Any]] = []
+    warning_text = "; ".join(warnings)
     for task in tasks:
         copied = dict(task)
         new_tasklists = []
@@ -260,11 +365,19 @@ def enrich_tasks_with_tasklists(tasks: list[dict[str, Any]], token: str, client:
                 merged.setdefault("name", meta.get("name"))
                 merged.setdefault("url", meta.get("url"))
                 merged.setdefault("guid", meta.get("guid"))
+            section_guid = merged.get("section_guid")
+            if not section_guid and isinstance(merged.get("section"), dict):
+                section_guid = merged["section"].get("guid") or merged["section"].get("section_guid")
+            section_meta = section_by_guid.get(str(section_guid)) if section_guid else None
+            if section_meta:
+                merged.setdefault("section_name", section_meta.get("name"))
+                merged.setdefault("section", section_meta)
             new_tasklists.append(merged)
         copied["tasklists"] = new_tasklists
         copied["tasklist_names"] = tasklist_names(copied)
-        if enrichment_warning:
-            copied["tasklist_scope_enrichment_warning"] = enrichment_warning
+        copied["section_names"] = section_names(copied)
+        if warning_text:
+            copied["tasklist_scope_enrichment_warning"] = warning_text
         enriched.append(copied)
     return enriched
 
@@ -458,6 +571,7 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
         "members": task.get("members", []),
         "tasklists": task.get("tasklists", []),
         "tasklist_names": task.get("tasklist_names", []),
+        "section_names": task.get("section_names", []),
         "tasklist_scope_enrichment_warning": task.get("tasklist_scope_enrichment_warning", ""),
         "lark_url": task.get("url", ""),
         "lark_task_scope": task.get("_lark_task_scope", ""),
@@ -467,8 +581,8 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
     }
 
 
-def collect_tasks(token: str | None = None, client: LarkClient | Any | None = None, preferred_scopes: list[str] | None = None, scope_mode: str | None = None, include_comments: bool = True, include_docs: bool = True) -> list[dict[str, Any]]:
-    token = token or get_token()
+def collect_tasks(token: str | None = None, client: LarkClient | Any | None = None, preferred_scopes: list[str] | None = None, scope_mode: str | None = None, include_comments: bool = True, include_docs: bool = True, auto_auth: bool | None = None, auto_authorize: bool = True) -> list[dict[str, Any]]:
+    token = token or get_token(auto_auth=auto_auth, auto_authorize=auto_authorize)
     client = client or LarkClient()
     raw = enrich_tasks_with_tasklists(fetch_tasks(token, client=client), token, client=client)
     selected = prioritize_tasks(raw, preferred_scopes=preferred_scopes, scope_mode=scope_mode)
@@ -490,9 +604,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scope-mode", choices=sorted(VALID_SCOPE_MODES), default=None, help="prefer=default scoped tasks first; only=hard filter; off=disable scope preference")
     parser.add_argument("--no-comments", action="store_true")
     parser.add_argument("--no-docs", action="store_true")
+    parser.add_argument("--no-auto-auth", action="store_true", help="do not invoke the Lark OAuth guard when the user token is missing/expired")
+    parser.add_argument("--no-auto-authorize", action="store_true", help="open auth URL but do not auto-click the visible 授权 button")
     parser.add_argument("--summary", action="store_true", help="Print compact human-readable summary instead of JSON")
     args = parser.parse_args(argv)
-    payloads = collect_tasks(preferred_scopes=args.preferred_scopes, scope_mode=args.scope_mode, include_comments=not args.no_comments, include_docs=not args.no_docs)
+    payloads = collect_tasks(
+        preferred_scopes=args.preferred_scopes,
+        scope_mode=args.scope_mode,
+        include_comments=not args.no_comments,
+        include_docs=not args.no_docs,
+        auto_auth=not args.no_auto_auth,
+        auto_authorize=not args.no_auto_authorize,
+    )
     if args.summary:
         print(f"tasks={len(payloads)}")
         for i, p in enumerate(payloads, 1):

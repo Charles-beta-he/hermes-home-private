@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import sys
+import tempfile
 import time
 import unittest
 from contextlib import redirect_stdout
@@ -101,7 +102,6 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
 
             def poll(self):
                 return 0
-
         snapshot = {"clients": {"client": {"appId": "cli_test", "appSecret": "secret_test"}}}
         with mock.patch.dict("os.environ", {}, clear=True), \
              mock.patch.object(self.mod.subprocess, "Popen", return_value=FakeProc()) as popen:
@@ -111,6 +111,57 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertTrue(all(isinstance(item, str) for item in launched_args))
         self.assertEqual(launched_args[launched_args.index("--domain") + 1], "https://open.larksuite.com")
         self.assertEqual(launched_args[launched_args.index("--scope") + 1], "auth:user.id:read")
+
+    def test_blue_authorize_button_bbox_prefers_large_bottom_button(self):
+        try:
+            from PIL import Image, ImageDraw
+        except Exception as exc:
+            self.skipTest(f"PIL unavailable: {exc}")
+        with tempfile.NamedTemporaryFile(suffix=".png") as tmp:
+            img = Image.new("RGB", (800, 600), "white")
+            draw = ImageDraw.Draw(img)
+            draw.rectangle((620, 120, 760, 140), fill=(51, 112, 255))  # top link; ignored by search band/height
+            draw.rounded_rectangle((560, 500, 760, 555), radius=12, fill=(51, 112, 255))
+            img.save(tmp.name)
+            bbox = self.mod._blue_authorize_button_bbox(Path(tmp.name))
+        self.assertIsNotNone(bbox)
+        self.assertGreaterEqual(bbox[0], 550)
+        self.assertGreaterEqual(bbox[1], 490)
+        self.assertGreaterEqual(bbox[2], 740)
+        self.assertGreaterEqual(bbox[3], 540)
+
+    def test_run_login_invokes_auto_authorize_after_opening_url(self):
+        class FakeStdout:
+            def __init__(self):
+                self.lines = ["http://localhost:8765/authorize?client_id=x&state=y\n", ""]
+
+            def readline(self):
+                return self.lines.pop(0) if self.lines else ""
+
+        class FakeProc:
+            def __init__(self):
+                self.stdout = FakeStdout()
+                self.returncode = 0
+                self.polled = 0
+
+            def poll(self):
+                self.polled += 1
+                return None if self.polled == 1 else 0
+
+        snapshot = {"clients": {"client": {"appId": "cli_test", "appSecret": "secret_test"}}}
+        with mock.patch.dict("os.environ", {}, clear=True), \
+             mock.patch.object(self.mod.subprocess, "Popen", return_value=FakeProc()), \
+             mock.patch.object(self.mod.subprocess, "run"), \
+             mock.patch.object(self.mod, "auto_click_authorize", return_value={"ok": True, "reason": "clicked"}) as clicker:
+            result = self.mod.run_login(snapshot, "cli_test", "https://open.larksuite.com", 8765, "auth:user.id:read", True, 5, True, 1)
+        self.assertTrue(result["opened"])
+        self.assertEqual(result["auto_authorize"], {"ok": True, "reason": "clicked"})
+        clicker.assert_called_once()
+
+    def test_auto_authorize_parser_env_default(self):
+        with mock.patch.dict("os.environ", {"LARK_AUTO_AUTHORIZE": "1"}, clear=True):
+            args = self.mod.build_parser().parse_args(["--json"])
+        self.assertTrue(args.auto_authorize)
 
     def test_plan_skips_spawn_when_token_valid(self):
         plan = self.mod.plan_login(token_valid=True, lock_active=True, port_busy=True, cleanup_stale=True)

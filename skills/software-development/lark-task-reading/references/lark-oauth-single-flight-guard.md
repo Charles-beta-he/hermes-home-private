@@ -27,6 +27,15 @@ For recovery when a stale listener may exist:
 python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale
 ```
 
+For full on-demand automation after the user has authorized Hermes to automate the consent click:
+
+```bash
+python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale --auto-authorize
+python3 ~/.hermes/scripts/lark_task_reader.py --scope-mode only --summary
+```
+
+`lark_task_reader.py` now performs this guarded auth recovery by default when its token preflight sees `NO_TOKEN` / `TOKEN_EXPIRED`; pass `--no-auto-auth` to keep the old fail-fast behavior, or `--no-auto-authorize` to open the browser without clicking the visible `授权` button.
+
 The guard should:
 
 1. read the lark-mcp auth store;
@@ -34,8 +43,9 @@ The guard should:
 3. use a single-flight lock such as `~/.hermes/state/lark_oauth_guard.lock`;
 4. fail closed when the configured callback port is busy unless `--cleanup-stale` is explicit;
 5. open at most one auth URL per guarded run;
-6. re-read the token store after login;
-7. redact token keys and top-level secrets from JSON output.
+6. optionally, with `--auto-authorize`, click only the large Lark-blue primary consent button visible on the macOS screen; fail closed if it cannot be found;
+7. re-read the token store after login;
+8. redact token keys and top-level secrets from JSON output.
 
 ## Token expiry semantics
 
@@ -69,6 +79,7 @@ Add or maintain tests for:
 python3 ~/.hermes/scripts/test_lark_oauth_guard.py
 python3 ~/.hermes/scripts/test_lark_task_reader.py
 python3 ~/.hermes/scripts/lark_oauth_guard.py --json --no-open
+python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale --auto-authorize
 python3 ~/.hermes/scripts/lark_task_reader.py --scope-mode only --summary
 ```
 
