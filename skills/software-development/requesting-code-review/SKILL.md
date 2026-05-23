@@ -123,6 +123,20 @@ Quick scan before dispatching the reviewer:
 - [ ] No debug print/console.log left behind
 - [ ] No commented-out code
 - [ ] New code has tests (if test suite exists)
+- [ ] For UI alignment work, changed files include the actual rendered component/style path and every required state; data/PRD/docs-only diffs are justified with renderer evidence
+
+### Surgical diff gate
+
+Before dispatching review or committing, every changed hunk or changed-line group MUST map to one of:
+
+- the explicit user goal
+- an acceptance criterion / requested verification gate
+- a necessary dependency to make the requested change work
+- a test or deterministic check for the requested change
+
+If a hunk does not map cleanly, revert it or ask for explicit scope expansion. Do not keep opportunistic refactors, formatting churn, unrelated cleanup, or drive-by edits just because tests pass.
+
+For UI "对齐/保持一致" work, reject a diff that only touches PRD/data/mock/copy while leaving the actual component, popup/listbox/portal, or styling layer unchanged, unless read-back proves that data path is the renderer.
 
 ## Step 5 — Independent reviewer subagent
 
@@ -312,3 +326,4 @@ tests exist, tests pass, no regressions.
 - **Real OTP/account browser tests need artifact and log-correlation review** — when reviewing Playwright/browser tests that use real accounts, OTPs, payment PINs, or production/staging logs, do not stop at “secrets are env vars.” Check whether traces, screenshots, videos, HTML reports, or success screenshots can persist the entered account/OTP/PIN in `test-results` or CI artifacts; require `trace: 'off'`, `screenshot: 'off'`, `video: 'off'`, no manual screenshots, or a proven redaction/cleanup path. For OTP retrieval from logs, reject broad “latest 6 digits” parsing: require correlation to the configured account/log identifier, LOGIN/purpose marker, OTP/code marker, exact 6-digit validation, and fail-closed redacted errors. Also reject running real-backend specs with mock/demo identifiers such as `.local` emails unless explicitly intended.
 - **Dual-repo full-stack work needs scoped review and commits** — when a frontend task also changes a backend repo, review and commit each repo separately. Use explicit `git add <paths>` in each repo, verify `git diff --cached --name-only`, and keep evidence/docs commits separate from backend code commits. If sensitive test-account details are needed, they belong in the private project Workpad only; repo docs may mention the workflow and redacted evidence, not full phone/PIN/OTP values. If the Workpad lives outside git, state that no Workpad commit was possible rather than silently treating it as committed. Before committing/pushing, remove or ignore ad-hoc probe scripts that embed real login identifiers or production endpoints unless they are intentional committed tooling.
 - **Maven multi-module targeted tests need reactor-safe flags** — in multi-module Spring/Maven repos, `mvn -pl app/module -Dtest=SomeTest test` can fail before reaching the target module because upstream modules have no matching tests or dependencies are not installed. Use `-am` plus `-Dsurefire.failIfNoSpecifiedTests=false` for targeted test verification, e.g. `mvn -pl app/uvisa-app -am -Dtest=FrontendCompatibilityApiContractTest -Dsurefire.failIfNoSpecifiedTests=false test`. If full reactor tests fail on known baseline architecture gates unrelated to the diff, still run a compile/package gate such as `mvn -pl app/uvisa-app -am -DskipTests package`, the targeted test, `git diff --check`, static scan, and independent review; report the full-test baseline failure explicitly rather than treating it as green.
+- **Tests can pass while the diff misses the real UI surface** — for style parity tasks, map changed hunks to the rendered control and all required interaction states. A diff that changes only PRD/data/mock/copy, or only a closed trigger while the open popup/listbox/portal remains native or differently styled, is not a valid UI fix without explicit renderer evidence.
