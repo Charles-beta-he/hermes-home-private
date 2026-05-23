@@ -1,13 +1,35 @@
 ---
 name: lark-task-reading
-description: "Read Lark Task Center tasks for dispatch pipelines, fusing arc-dispatch and github-dispatch patterns: scoped task prioritization, comment/doc/image enrichment, routing, dry-run safety, and loop verification. Use when adding, debugging, or operating Lark task collection."
+description: Use when adding, debugging, or operating Lark task collection, including diagnosing taskpool runtime state, blocked tasks, hook/autorun routing, multimodel advisory statuses, and clearing Lark-derived tasks from the local-brain taskpool regardless of status. For taskpool runtime diagnosis, see references/taskpool-runtime-debugging.md, references/taskpool-lark-removal-and-flow-tolerance.md, and references/taskpool-hook-autorun-routing.md.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [lark, feishu, task-center, dispatch, automation, workflow]
-related_skills: [hermes-workflow-orchestrator, arc-dispatch-executor, multi-model-thinking, loop]
 skill_tier: molecule
+related_skills: hermes-workflow-orchestrator, taskpool-control-plane, multi-model-thinking
+dependencies:
+- hermes-workflow-orchestrator
+- taskpool-control-plane
+- multi-model-thinking
+metadata:
+  hermes:
+    tags:
+    - lark
+    - feishu
+    - task-center
+    - dispatch
+    - automation
+    - workflow
+    related_skills: hermes-workflow-orchestrator, taskpool-control-plane, multi-model-thinking
 ---
 
 # Lark Task Reading
+
+## Taskpool quarantine behavior
+
+When the user asks to temporarily remove Lark/Feishu tasks from the Hermes taskpool, include every lifecycle state (`pending`, `blocked`, `review`, `done`, etc.). Move matching task files to a timestamped quarantine directory with a manifest instead of deleting them. Match explicit Lark markers (`lark`, `lark-reopened`, `feishu`, `飞书`, `larksuite`, Lark URLs/IDs/source fields), refresh the taskpool dashboard, and verify `dispatch-dry-run --json` after removal.
+
+## Overview
+
 
 Use this skill when working on Lark/Feishu Task Center collection for `arc-dispatch`, `github-dispatch`, or any Hermes pipeline that does:
 
@@ -16,6 +38,10 @@ Lark Task Center -> collector -> envelope -> router -> confirmer/executor -> rep
 ```
 
 The goal is not to copy one project's code into another. The goal is to preserve the best reusable patterns from both projects in the Hermes skill tree so future Lark-task work starts from the same proven playbook.
+
+## When to Use
+
+- Adding, debugging, or operating Lark task collection
 
 ## Default behavior
 
@@ -30,12 +56,15 @@ The goal is not to copy one project's code into another. The goal is to preserve
 
 A Hermes skill is a playbook, not an executable adapter. Loading this skill must not by itself imply that `arc-dispatch` or `github-dispatch` source files should be opened, imported, symlinked, or executed.
 
-For user-facing requests such as "读取 Lark 任务", "看一下 UVISA-2.0 新版开发分类下关于我的任务", or "列出我的任务":
+For user-facing requests such as "读取 Lark 任务", "看一下 UVISA-2.0 新版开发分类下关于我的任务", "列出我的任务", or "查询 Lark 任务并添加至任务池，仅添加负责人为我的任务":
 
 1. Treat the source of truth as the Lark/Feishu Task API or an explicitly configured Hermes-native helper.
-2. Do **not** scan old Desktop/archive duplicates looking for `run.sh`, `collector.py`, `orchestrator.py`, `router.py`, or `lark_task_reader.py`.
+2. Do **not** scan old Desktop/archive duplicates looking for `run.sh`, `collector.py`, `orchestrator.py`, or `lark_task_reader.py`.
 3. Do **not** execute a project pipeline from a copied or archived path, especially paths under desktop cleanup folders.
 4. Only inspect or run `arc-dispatch` / `github-dispatch` code when the user explicitly asks to debug, migrate, compare, or operate that dispatch project.
+5. For "负责人为我" filters, first identify the current user's `open_id` from `/authen/v1/user_info`, then include only tasks whose `members` contain `role == "assignee"` and that exact `id`. Do not treat follower/member presence as ownership.
+6. When adding live Lark tasks into the local taskpool, deduplicate by both Lark GUID/URL and normalized title. Older taskpool notes may lack `lark_task_guid`; if a title match exists, enrich that existing note with Lark metadata instead of creating a duplicate.
+7. If a second broad/all-scope read fails because the token expires after a successful scoped read, do not discard the fresh successful payload. Use it as the live snapshot already obtained, explicitly label any failed follow-up as an auth freshness blocker, and avoid retry loops that burn closeout budget.
 
 The project files are reference implementations for pattern extraction. Normal task reading should be read-only and should not depend on whichever historical project copy happens to be discoverable first.
 
@@ -102,9 +131,11 @@ Keep these strengths together when changing either project.
    - Do not infer completion from title text.
    - Keep `_should_dispatch` small and deterministic.
 
-5. **Dedup**
-   - Dedup by `lark_task_guid` across all local envelope statuses, not just pending/running.
+5. **Dedup / taskpool insertion**
+   - Dedup by `lark_task_guid` across all local envelope/taskpool statuses, not just pending/running.
    - For fan-out, dedup sibling envelopes by `(lark_task_guid, project_id)`.
+   - For local-brain taskpool insertion, also dedup by normalized title because older notes may predate `lark_task_guid` frontmatter. On a title match, enrich the existing note with `lark_task_guid`, `lark_suite_entity_num`, `lark_task_url`, scope, assignee open_id/name, and a fresh comments snapshot instead of creating a new task.
+   - After insertion/enrichment, run the taskpool selfcheck/evidence-spine and verify every live GUID from the accepted payload is present in the taskpool before reporting success. Refresh derived dashboards (`brain_task_orchestrator.py dashboard --write`) so subsequent task-pool progress checks reflect the new workload.
 
 6. **Context enrichment**
    - Fetch comments for new tasks only.
@@ -189,8 +220,11 @@ When the user asks to "loop" Lark reading or to fuse patterns into the skill tre
    - **Point fix**: isolated to one location, no similar patterns elsewhere
    - **Cross-cutting concern**: validation, security, error handling, data transforms, i18n → must be implemented as shared infrastructure (extend `validators.ts` / `utils.ts`), not point fixes
    - **Infrastructure task**: changes to shared utilities, project config, or build tooling
+   - **Supplement / acceptance-gap task**: a later Lark task repeats or narrows a requirement that already appeared inside an earlier task. Match by page/module, key entities, and requirement phrase overlap. Treat this as `supplement_of:<original-task>` and default to targeted delta repair + regression/visual proof, not a new workflow-improvement task.
 
    Scan for existing shared infrastructure and duplicated patterns before implementing. The user explicitly requires this: "有些对于项目属于基础设施或者常规限制，不能因为任务只说了一个地方就只改这一个地方" (some things are infrastructure-level constraints that can't be fixed at just one location because the task only mentions one place).
+
+   For supplement / acceptance-gap tasks, avoid the previous miss next time by atomizing the original task into checklist-style acceptance atoms before implementation. For each atom record: target surface, exact requirement, verification method, and evidence artifact. Do not close the original task until every atom is checked or explicitly marked blocked. Only create a workflow-improvement/evolution item if the supplement proves a repeated or structural gate failure such as long-task parsing truncation, missing UI evidence coverage, or recurring unchecked acceptance atoms.
 
 1. **Inspect** both reference projects:
    - `lark_task_reader.py`
@@ -217,9 +251,11 @@ When the user asks to "loop" Lark reading or to fuse patterns into the skill tre
 
 ## Executing a Lark task: closeout before exploration
 
-When a user asks to read assigned Lark tasks and complete them, treat each task as a finite delivery unit, not as an open-ended audit. After implementation and deterministic verification pass, close the task in this order before spending more tool/context budget on optional ledgers or exploratory follow-ups:
+When a user asks to read assigned Lark tasks and complete them, treat each task as a finite delivery unit, not as an open-ended audit. Before implementation starts, long or compound requirements must be split into checklist-style acceptance atoms; after implementation and deterministic verification pass, close the task in this order before spending more tool/context budget on optional ledgers or exploratory follow-ups:
 
-1. Write a concise evidence note under `/tmp` or the project evidence location: task id/title, chosen approach, files changed, verification commands/results, residual risks.
+0. **Acceptance-atom gate before coding.** For every long/compound Lark task, create an explicit acceptance checklist before editing code. Each atom must include: target surface/page, exact requirement, affected field/control/copy/rule, verification method, and expected evidence artifact. Do not begin broad implementation from the prose blob alone. During closeout, every atom must be marked `checked` with evidence or `blocked` with a reason. Do not close the Lark task while any atom is unchecked. This prevents requirements like “全部币种下拉框和筛选框要对齐” from being buried inside a longer task and later reappearing as a补充任务.
+
+1. Write a concise evidence note under `/tmp` or the project evidence location: task id/title, chosen approach, files changed, acceptance atoms with checked/blocked status, verification commands/results, residual risks.
 2. Update only the minimum project ledger rows needed for traceability; do not let doc deposition expand into a new workstream.
 3. Run `git status --short` and `git diff --check`.
 4. For UVISA/Railway-backed tasks, monitor the relevant remote package/deploy status before claiming closeout: resolve the exact Railway project and service names from project-local docs/Workpad/AGENTS or user-provided dashboard screenshots, use the existing local browser/Railway login session when available, check the relevant service deployment or package/build status, wait for a terminal status, and record only safe evidence (project name, service name, deployment/build id or redacted dashboard URL, status, timestamp, smoke URL/health check). Current UVISA user override for frontend-task loops: after any frontend code change, run local checks, push the shared task-loop branch, and monitor the remote frontend package/build status; do not monitor backend deployment status unless the user explicitly asks. Do not paste Railway tokens, cookies, private session data, OTP values, or raw credential-bearing logs. If the remote package/deploy fails, is cancelled, times out, or cannot be accessed, report `closed_with_remote_blocker` or `not_closed`; do not mark the Lark task fully closed.
@@ -252,8 +288,13 @@ Budget guard for per-task execution:
 - If browser UI verification is blocked by auth/session/OTP setup after unit/build gates pass, record it as an explicit unfinished UI gate and either establish test login state immediately or stop before burning the closeout budget. Do not keep exploratory browser clicks running until the session hits the tool-call ceiling.
 - For user requests like “每完成一个任务 TG 通知我”, the task is not complete until the TG notification has been sent (or a specific notification blocker is reported). Tests/build alone are implementation evidence, not task closeout.
 
+UI closeout evidence rule:
+- For any Lark task with UI acceptance, the screenshot/report must prove the exact target surface named by the task: active tab, route/breadcrumb, filter state, modal title, and relevant table headers/columns. If the task says “业绩统计 tab 下” but the evidence screenshot is on the default “理财师管理” tab, mark the UI evidence invalid and rerun the browser verification before closing/commenting the Lark task.
+- For admin/Lark UI evidence, use a 14-inch desktop browser interface by default (1512×982 CSS viewport unless a project-specific 14-inch profile overrides it). Use mobile/narrow screenshots only when the task explicitly targets mobile H5. Include viewport size in the report and screenshot filename.
+
 Detailed patterns:
 - `references/lark-task-execution-closeout.md` for finite-task closeout sequencing.
+- `references/taskpool-progress-and-closeout.md` for local brain/Hermes taskpool progress checks: close completed claimed/running/review tasks, drain actionable multi-model advisory queues with target-binding checks, refresh proof/selfcheck/dashboard gates, and report the next dispatchable item with routing, pause reasons, and multi-model constraints.
 - `references/remote-package-monitor-closeout.md` for Railway/package/deploy monitoring, including the preferred authenticated `railway service status --all --json` / `railway deployment list --service ... --json` CLI path, safe evidence fields, and `closed` / `closed_with_remote_blocker` / `not_closed` status semantics.
 - `references/uvisa-auth-support-closeout-notes.md` for the pattern where implementation already exists, the task is completed by adding regression proof/ledger evidence, Railway CLI monitor evidence, TG fallback notification, and PGID-based dev-server cleanup.
 - `references/uvisa-regression-proof-closeout-patterns.md` for stale UVISA Lark tasks where current code already satisfies the requirement or the safe fix is a small UI regression guard; includes `ToastProvider` test-wrapper pitfall for `TxDetailScreen` and precise closeout wording.
@@ -266,6 +307,7 @@ Detailed patterns:
 - `references/uvisa-secure-receiving-info-closeout.md` for UVISA top-up receiving-info leakage tasks: fail-closed fixed-row rendering, remove legacy raw detail endpoints, validate every displayed bank/SWIFT/account/reference field, prove extra backend payload keys never render, and close with frontend push + remote frontend build monitor + TG.
 - `references/uvisa-phone-rebind-5step-closeout.md` for UVISA phone-rebind prototype tasks: model the 5-step flow as current-phone confirmation → payment PIN → default email second factor with SMS switch → new phone input → new-phone SMS verification; add regression proof that the old-phone verification path is not used by default, and stage untracked tests before review.
 - `references/uvisa-trusted-device-security-closeout.md` for UVISA trusted-device/device-management tasks: keep client localStorage fallback out of login/PIN security routing, fail closed when `currentDeviceTrusted` is missing/false, validate PATCH trust affected rows, and rerun multi-model certification after reviewer-driven fixes.
+- `references/lark-task-reader-troubleshooting.md` — bugs found 2026-05-12: TOKEN_EXPIRED race, tasklist guid vs tasklist_guid key mismatch, completed_at string '0' filter failure, tasklist scope workaround
 - `references/uvisa-frontend-i18n-copy-closeout.md` for small UVISA frontend i18n/copy-only Lark tasks: add a focused RED i18n guard, preserve adjacent semantic distinctions (for example CNY vs CNH), package claim-linked evidence for multi-model certification, and word Railway frontend status precisely when the deployed branch differs from the pushed task-loop branch.
 - `references/uvisa-validation-infrastructure-extraction.md` for UVISA validation cross-cutting concerns: when a Lark task describes a validation fix at one location, check for the same pattern elsewhere and extract to shared `validators.ts` infrastructure instead of point-fixing.
 - `references/uvisa-fe-be-sync-multi-model-review.md` for multi-model parallel review of frontend+backend sync tasks: 3-lens review (Architecture + Red-Team + Practical), consensus synthesis, risk-ordered implementation, and project profile writeback.
@@ -288,7 +330,7 @@ Use multi-model thinking by risk level, not by habit:
 
 If the multi-model artifact says `not_certified`, treat it as advisory provenance. Do not claim ratification; resolve the issue ledger with deterministic evidence and rerun only if certification is required for the decision.
 
-## Verification
+## Verification Checklist
 
 For `github-dispatch`:
 
@@ -321,14 +363,16 @@ assert m
 fm = yaml.safe_load(s[3:m.start()+3])
 assert fm['name'] == 'lark-task-reading'
 assert len(fm['description']) <= 1024
-assert len(s) <= 100000
+assert len(s) <= 120000
 print('skill frontmatter ok')
 PY
 python3 ~/.hermes/scripts/skill-steward.py --graph-check --json
 ```
 
 After Python compile checks, delete generated `__pycache__/*.pyc` if the repo tracks/deletes pyc files, so commits do not include bytecode churn.
-
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side-effects were verified by read-back or direct inspection.
+- [ ] The final result still matches the trigger and acceptance shape of this skill.
 ## Project-pipeline commands
 
 Use these only after intentionally choosing a live dispatch project as the runtime target, and run them from that project's canonical git root. They are **not** the default way to answer a normal "read my Lark tasks" request.
@@ -356,11 +400,13 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 - Lark MCP user-auth recovery notes: `references/lark-mcp-user-auth-recovery.md`.
 - Lark OAuth duplicate-login / fixed-port single-flight guard notes: `references/lark-oauth-single-flight-guard.md`.
 - UVISA live auth + stale snapshot triage notes: `references/uvisa-live-auth-and-stale-snapshot-triage.md`.
+- Taskpool Lark cleanup + flow-tolerance notes: `references/taskpool-lark-removal-and-flow-tolerance.md`.
 
-## Pitfalls
+## Common Pitfalls
 
 - `lark-mcp login` defaults to `https://open.feishu.cn`. International Lark apps (larksuite.com) MUST pass `--domain https://open.larksuite.com` or get error 20029 (redirect URL mismatch). Always check `LARK_API` in `lark_task_reader.py` — if it's `open.larksuite.com`, the tenant is international.
-- **Port MUST be fixed to 3010.** The redirect URI `http://localhost:3010/callback` is registered in the Lark developer console. Using a different port (3001, 3005, 3011, etc.) creates a different redirect URI that doesn't match, causing error 20029. Always use `--port 3010`. Changing ports requires the user to register a new redirect URI in the developer console — each attempt wastes a user interaction.
+- **Do not confuse Security Redirect URL with bot/event callback.** The Lark console page `安全设置 → 重定向 URL` is for OAuth/免登授权码 redirects. A screenshot showing `http://localhost:8765/callback` there proves only that this OAuth redirect is registered; it does **not** prove the bot/event callback URL. Bot/event callbacks must be verified separately under `事件与回调` / request URL-style settings.
+- **Lark MCP Task OAuth redirect must be registered exactly.** If `lark-mcp login` for task/user auth uses `redirect_uri=http://localhost:3010/callback` with the same Lark app, then `http://localhost:3010/callback` must also appear in `安全设置 → 重定向 URL`; otherwise error 20029 or auth-code redirect failure is expected. Do not assume 3010 is valid from a page that only lists 8765. Do not apply this rule to separate docx-specific OAuth helpers that have their own registered redirect.
 - Error 20029 means the redirect URI is not registered in the developer console. The user must add `http://localhost:{port}/callback` at `https://open.larksuite.com/app/{appId}/safe` → 安全设置. This requires their Lark account login; the controlled browser and user Chrome don't share sessions.
 - A failed `lark-mcp login` wipes old tokens from `authStore.storageDataCache.tokens` but preserves `clients`. Extract appId/appSecret from `clients[client_id_for_local_auth].extra` to retry. Recovery pattern: run `node -e "const {authStore}=require('...lark-mcp/dist/auth/store.js'); authStore.initialize().then(()=>{const d=authStore.getAll(); const c=d.clients['client_id_for_local_auth']||{}; const e=c.extra||{}; console.log(JSON.stringify({appId:e.appId,secret:e.appSecret}))})"` to get credentials, then `lark-mcp login --appId ... --appSecret ... --domain https://open.larksuite.com --scope "auth:user.id:read,task:task:read,task:tasklist:read" --port 3010`. If the browser auth page shows error 20029, the redirect URI `http://localhost:3010/callback` must be registered at the Lark developer console first.
 - Missing/expired user auth is not the same as a broken reader. If live collection returns `NO_TOKEN` or `lark-mcp` reports unbound Hermes context, report the auth blocker and any available previous snapshot separately.
@@ -370,7 +416,7 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 - `lark-mcp login` is a separate path from `lark-cli config bind`: it requires CLI `--app-id/--app-secret` or environment `APP_ID` / `APP_SECRET`, not `FEISHU_APP_ID` directly. If it fails with `Missing App Credentials` and `lark-mcp whoami` says no active sessions while auth-store has only `client_id_for_local_auth`, classify `CURRENT_BLOCKED_NO_TOKEN` + app-credential blocker; use snapshots only as stale triage. If a safe credential source is available, prefer the single-flight OAuth guard (`python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale`) over raw background login; if the guard is unavailable, run a redacted `/tmp` helper that passes credentials without printing them, complete the browser authorization if prompted, then prove success with the live task reader (`--scope-mode only --summary`) rather than `whoami` alone. If plain background capture shows no authorization URL, rerun with a PTY so the `Authorization URL:` line flushes. If `EADDRINUSE ::1:3010` appears, kill the stale login listener on fixed port 3010 before retrying. If `lark-mcp login` exits 0 but `authStore.storageDataCache.tokens` remains empty and no success line appears, do not treat it as authorized. If the auth page errors with `20043` for `task:taskwrite`, retry with minimum valid read scopes `auth:user.id:read task:task:read task:tasklist:read`. If it errors with `20028 app_id 请求不合法`, or if authStore `client_id`/`client_secret` literally equal `client_id_for_local_auth`, the authStore entry is a placeholder/local MCP client, not a real app credential pair; validate a real app credential pair via the app access token endpoint without printing values, then rerun guarded login with those credentials. See `references/lark-oauth-single-flight-guard.md`, `references/lark-mcp-user-auth-recovery.md`, and `references/larksuite-cli-auth-and-dryrun.md`.
 - Do not run `lark-cli config bind` on behalf of the user without explicit confirmation; the CLI help requires the agent to confirm intent and identity preset first. Assigned/personal task reads need `user-default`; `bot-only` is safer but cannot read user resources.
 - Lark Task API metadata shapes vary; match across summary, description, custom fields, tasklists, containers, breadcrumbs, and the full JSON payload.
-- If `/task/v2/tasks` includes only `tasklists[].tasklist_guid`, scope matching by list name will fail until you enrich from `/task/v2/tasklists`; do this before `only` mode and before claiming the desired project list was read.
+- If `/task/v2/tasks` includes only `tasklists[].guid` (NOT `tasklist_guid`), scope matching by list name will fail until you enrich from `/task/v2/tasklists` and map `guid -> name`. Use `/task/v2/tasklists/{guid}/tasks` for direct tasklist-scoped reads when `prioritize_tasks()` returns all `scope=none`.
 - Do not certify `UVISA-2.0新版开发` hard-scope correctness from title/body keywords. Require enriched `tasklist_names` evidence.
 - Lark task `description` can be empty while comments hold the actionable details; `issue_body` should merge description + comments + docs, not description alone.
 - Do not infer task completion from title; keep `_should_dispatch` checks for `completed_at` and `状态` field.
@@ -379,10 +425,15 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 - Do not collapse image/file placeholders into plain text only. Preserve machine-actionable keys for later binary fetch/vision work.
 - Do not let one failing comment/doc fetch abort the whole collector tick; isolate per-task enrichment failures and record enough trace to debug.
 - Do not turn safe collection into automatic task execution. Collection, routing, execution, validation, and reporting are separate gates.
-
+1. Skipping prerequisite checks and assuming the environment already matches the workflow.
+2. Applying the workflow mechanically without confirming that the request still matches this skill's trigger class.
+3. Reporting success before reading back the actual outputs, files, or external side-effects.
 ## Verification checklist
 
 - [ ] Auth preflight distinguishes current live readiness from stale snapshots (`CURRENT_READY`, `CURRENT_BLOCKED_NO_TOKEN`, `CLI_UNBOUND`, `HERMES_APP_CREDENTIALS_MISSING`, `PREVIOUS_SNAPSHOT_AVAILABLE`).
+- [ ] For assigned-only requests, current user `open_id` is proven from `/authen/v1/user_info`, and ownership is `members[].role == "assignee"` with matching `id` (not follower-only membership).
+- [ ] Taskpool insertion dedups by GUID/URL and normalized title; existing title matches are enriched rather than duplicated.
+- [ ] After taskpool insertion/enrichment, selfcheck/evidence-spine pass, dashboards are refreshed, and every accepted live GUID appears in a task note.
 - [ ] OAuth recovery uses a single-flight guard before raw login when duplicate auth URLs, stale background output, or port 3010 conflicts are present.
 - [ ] Scoped tasks are preferred by default and fallback remains intact.
 - [ ] `only` and `off` modes work.

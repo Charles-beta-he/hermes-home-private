@@ -79,6 +79,39 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         ):
             self.assertEqual(self.mod.credentials_from_snapshot({}), ("cli_test", "secret_test"))
 
+    def test_credentials_from_snapshot_normalizes_tuple_values(self):
+        snapshot = {
+            "clients": {
+                "client": {
+                    "appId": ("cli_tuple",),
+                    "appSecret": ("secret_tuple",),
+                }
+            }
+        }
+        with mock.patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(self.mod.credentials_from_snapshot(snapshot, app_id="cli_tuple"), ("cli_tuple", "secret_tuple"))
+
+    def test_scalar_string_takes_first_non_empty_nested_value(self):
+        self.assertEqual(self.mod._scalar_string((None, "", ["cli_nested"])), "cli_nested")
+
+    def test_run_login_normalizes_subprocess_arguments(self):
+        class FakeProc:
+            stdout = None
+            returncode = 0
+
+            def poll(self):
+                return 0
+
+        snapshot = {"clients": {"client": {"appId": "cli_test", "appSecret": "secret_test"}}}
+        with mock.patch.dict("os.environ", {}, clear=True), \
+             mock.patch.object(self.mod.subprocess, "Popen", return_value=FakeProc()) as popen:
+            result = self.mod.run_login(snapshot, "cli_test", ("https://open.larksuite.com",), 8765, ("auth:user.id:read",), False, 1)
+        self.assertTrue(result["ok"])
+        launched_args = popen.call_args.args[0]
+        self.assertTrue(all(isinstance(item, str) for item in launched_args))
+        self.assertEqual(launched_args[launched_args.index("--domain") + 1], "https://open.larksuite.com")
+        self.assertEqual(launched_args[launched_args.index("--scope") + 1], "auth:user.id:read")
+
     def test_plan_skips_spawn_when_token_valid(self):
         plan = self.mod.plan_login(token_valid=True, lock_active=True, port_busy=True, cleanup_stale=True)
         self.assertEqual(plan.action, "token_valid")

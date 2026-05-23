@@ -4,13 +4,13 @@ from __future__ import annotations
 
 Avoids the failure mode observed when multiple raw `lark-mcp login` commands
 are launched in the background: duplicate Authorization URL notifications,
-EADDRINUSE on localhost:3010, and stale watch-pattern messages after one login
-already succeeded.
+EADDRINUSE on the configured localhost callback port, and stale watch-pattern
+messages after one login already succeeded.
 
 Default behavior is conservative:
 - if a valid token already exists, do not spawn anything;
 - if another guarded login is running, do not spawn a second one;
-- if port 3010 is busy, fail closed unless --cleanup-stale is set;
+- if the configured OAuth callback port is busy, fail closed unless --cleanup-stale is set;
 - when spawning, open the authorization URL at most once.
 """
 
@@ -32,7 +32,10 @@ DEFAULT_LOCK = STATE_DIR / "lark_oauth_guard.lock"
 DEFAULT_ROOT = Path.home() / ".nvm/versions/node/v24.14.0/lib/node_modules/@larksuiteoapi/lark-mcp"
 DEFAULT_DOMAIN = "https://open.larksuite.com"
 DEFAULT_APP_ID = "cli_a96f6a6211f91ed2"
-DEFAULT_PORT = 3010
+# Current Lark developer-console profile has http://localhost:8765/callback
+# registered. Using the old lark-mcp default 3010 triggers Lark error 20029
+# (redirect URL mismatch) unless that URL is separately added in the console.
+DEFAULT_PORT = 8765
 DEFAULT_SCOPES = "auth:user.id:read task:task:read task:tasklist:read"
 AUTH_URL_RE = re.compile(r"https?://localhost:\d+/authorize\?[^\s\r\n]+")
 
@@ -180,28 +183,49 @@ const {{ authStore }} = require({json.dumps(str(store))});
     return _run_json_node(script)
 
 
+def _scalar_string(value: Any) -> str:
+    """Return a safe scalar string from loose auth-store/env values.
+
+    Some auth-store snapshots have historically carried tuple/list-shaped
+    values after wrapper code merged credential candidates. Passing those
+    directly to subprocess.Popen makes Python fail before lark-mcp starts
+    (for example: "sequence item 0: expected str instance, tuple found").
+    """
+    if value is None:
+        return ""
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            scalar = _scalar_string(item)
+            if scalar:
+                return scalar
+        return ""
+    if isinstance(value, (str, bytes, os.PathLike)):
+        return os.fsdecode(value)
+    return str(value)
+
+
 def credentials_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_APP_ID) -> tuple[str, str]:
     # Prefer explicit env, then token.extra from a previous successful login, then client store.
     # Support both Lark and Feishu aliases because Hermes profiles/docs use both names.
-    env_id = os.environ.get("LARK_APP_ID") or os.environ.get("FEISHU_APP_ID") or os.environ.get("APP_ID")
-    env_secret = os.environ.get("LARK_APP_SECRET") or os.environ.get("FEISHU_APP_SECRET") or os.environ.get("APP_SECRET")
+    env_id = _scalar_string(os.environ.get("LARK_APP_ID") or os.environ.get("FEISHU_APP_ID") or os.environ.get("APP_ID"))
+    env_secret = _scalar_string(os.environ.get("LARK_APP_SECRET") or os.environ.get("FEISHU_APP_SECRET") or os.environ.get("APP_SECRET"))
     if env_id and env_secret:
         return env_id, env_secret
     for token in (snapshot.get("tokens") or {}).values():
         if not isinstance(token, dict):
             continue
         extra = token.get("extra") or {}
-        cid = extra.get("appId") or extra.get("app_id") or extra.get("client_id")
-        sec = extra.get("appSecret") or extra.get("app_secret") or extra.get("client_secret")
+        cid = _scalar_string(extra.get("appId") or extra.get("app_id") or extra.get("client_id"))
+        sec = _scalar_string(extra.get("appSecret") or extra.get("app_secret") or extra.get("client_secret"))
         if cid and sec and (not app_id or cid == app_id):
-            return str(cid), str(sec)
+            return cid, sec
     for client in (snapshot.get("clients") or {}).values():
         if not isinstance(client, dict):
             continue
-        cid = client.get("appId") or client.get("app_id") or client.get("client_id")
-        sec = client.get("appSecret") or client.get("app_secret") or client.get("client_secret")
-        if cid and sec and not str(cid).startswith("client_id_for_local_auth"):
-            return str(cid), str(sec)
+        cid = _scalar_string(client.get("appId") or client.get("app_id") or client.get("client_id"))
+        sec = _scalar_string(client.get("appSecret") or client.get("app_secret") or client.get("client_secret"))
+        if cid and sec and not cid.startswith("client_id_for_local_auth"):
+            return cid, sec
     return "", ""
 
 
@@ -250,11 +274,11 @@ def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, sco
         return {"ok": False, "action": "credentials_missing"}
     args = [
         "lark-mcp", "login",
-        "--app-id", real_app_id,
-        "--app-secret", app_secret,
-        "--domain", domain,
+        "--app-id", _scalar_string(real_app_id),
+        "--app-secret", _scalar_string(app_secret),
+        "--domain", _scalar_string(domain),
         "--port", str(port),
-        "--scope", scopes,
+        "--scope", _scalar_string(scopes),
     ]
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
     opened = False

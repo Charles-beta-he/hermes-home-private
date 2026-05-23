@@ -1,12 +1,12 @@
 # Lark OAuth single-flight guard pattern
 
-Use this when Lark/Feishu Task reads are blocked by repeated OAuth prompts, duplicate `Authorization URL` notifications, `EADDRINUSE ::1:3010`, or stale background login output after a token has already become valid.
+Use this when Lark/Feishu Task reads are blocked by repeated OAuth prompts, duplicate `Authorization URL` notifications, `EADDRINUSE` on the configured callback port, or stale background login output after a token has already become valid.
 
 ## Failure mode
 
 Raw `lark-mcp login` is not idempotent in an agent loop:
 
-- the callback port is fixed (`localhost:3010` for this environment);
+- the callback port is fixed by the current profile/config (`localhost:8765` here; older notes may mention `3010`);
 - a previous login helper can keep listening on the port;
 - multiple background helpers can emit old `Authorization URL:` / `AUTO_OPENING_AUTH_URL` watch-pattern output;
 - process exit or watch output is not proof that a user token was stored.
@@ -32,7 +32,7 @@ The guard should:
 1. read the lark-mcp auth store;
 2. return immediately when a valid token exists;
 3. use a single-flight lock such as `~/.hermes/state/lark_oauth_guard.lock`;
-4. fail closed when port 3010 is busy unless `--cleanup-stale` is explicit;
+4. fail closed when the configured callback port is busy unless `--cleanup-stale` is explicit;
 5. open at most one auth URL per guarded run;
 6. re-read the token store after login;
 7. redact token keys and top-level secrets from JSON output.
@@ -60,7 +60,8 @@ Add or maintain tests for:
 - token-key redaction is non-vacuous: use a long token (longer than `keep_start + keep_end + 3`), assert `...`, shorter length, prefix/suffix retention, no secret middle substring, and `redacted != original`;
 - top-level secret redaction for `app_secret`, `client_secret`, `access_token`, `refresh_token`, `token`;
 - the `--json` / main entrypoint applies redaction with a long token fixture, not only a helper function;
-- `_is_unexpired` boundaries: `None`, `""`, future, `now`, `0`, `"0"`, unparsable.
+- `_is_unexpired` boundaries: `None`, `""`, future, `now`, `0`, `"0"`, unparsable;
+- credential/domain/scope values from auth-store/env are normalized to scalar strings before building `subprocess.Popen` args, so tuple/list-shaped values cannot trigger `sequence item 0: expected str instance, tuple found` before `lark-mcp` starts.
 
 ## Verification sequence
 
