@@ -256,6 +256,8 @@ When the user asks to "loop" Lark reading or to fuse patterns into the skill tre
 When a user asks to read assigned Lark tasks and complete them, treat each task as a finite delivery unit, not as an open-ended audit. Before implementation starts, long or compound requirements must be split into checklist-style acceptance atoms; after implementation and deterministic verification pass, close the task in this order before spending more tool/context budget on optional ledgers or exploratory follow-ups.
 
 Important workflow split for 贺程's UVISA/Lark tasks:
+- A blocked/review task must not freeze unrelated work tasks: classify the blocker on that task, keep the rest of the pool dispatchable, and verify `next`/dispatch tick still selects another candidate.
+- Current UVISA work-task scope is cross-repo: tasks may modify `/Users/charles/Desktop/folder/work/uvisa-admin`, `/Users/charles/Desktop/folder/work/uvisa-app-2.0`, and `/Users/charles/Desktop/folder/work/uvisa-backend` as needed by the real acceptance surface. Do not impose an admin-only boundary unless the user explicitly narrows the scope for that specific task.
 - Do not collapse implementation closeout and online UI retest into one local taskpool item.
 - "已发补闭环" / implementation-sendback closeout is task A: local requirement trace, implementation, deterministic local verification, scoped commit, push/remote build monitoring when explicitly part of closeout, and user notification/status report.
 - "线上 UI 回测闭环" is task B: user-gated follow-up after the user tells Hermes that the item should be dispatched for online UI retest. It must preserve dependency on task A and should not auto-dispatch merely because task A is done.
