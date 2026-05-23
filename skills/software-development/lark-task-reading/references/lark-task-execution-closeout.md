@@ -43,6 +43,36 @@ git branch --show-current
   ```
   `implementation_branch_gate.allowed` must be true before local code edits. This does not allow Lark `completed_at`; it only proves the local-fix branch is safe.
 
+## Lark comment hygiene
+
+Lark comments are external-facing task evidence, not internal debug logs.
+
+- Do not paste local addresses or local-only paths: `localhost`, `127.0.0.1`, `/Users/...`, `/tmp/...`, local screenshot/report paths, local evidence-note files, or browser-harness file URLs.
+- Do not paste raw terminal logs, tokens, cookies, private dashboard URLs, or internal runtime state.
+- Keep comments concise: state what changed, PR/commit if useful, deployed/build status, online URL or environment checked, and final pass/blocker conclusion.
+- For implementation-sendback comments, say local verification/PR is ready but do not imply final Lark completion.
+- For online UI retest closeout comments, include only online evidence summary and externally meaningful handles; keep detailed local artifacts inside the taskpool/evidence note.
+
+Suggested compact comment shapes:
+
+Implementation sendback:
+```text
+已提交实现修复，等待合并/部署后线上 UI 回测。
+PR: <url>
+Commit: <sha>
+本地验证: <build/test/browser check> 通过
+备注: <blocker or risk, if any>
+```
+
+Online UI retest closeout:
+```text
+线上 UI 回测通过。
+环境: <staging/prod/admin URL name>
+验证范围: <page/module + key requirement>
+PR/Commit: <url or sha>
+结论: 可关闭
+```
+
 ## Closeout sequence
 
 After implementation and tests pass:

@@ -260,6 +260,7 @@ Important workflow split for 贺程's UVISA/Lark tasks:
 - "已发补闭环" / implementation-sendback closeout is task A: local requirement trace, implementation, deterministic local verification, scoped commit, push/remote build monitoring when explicitly part of closeout, and user notification/status report.
 - "线上 UI 回测闭环" is task B: user-gated follow-up after the user tells Hermes that the item should be dispatched for online UI retest. It must preserve dependency on task A and should not auto-dispatch merely because task A is done.
 - Lark external writeback/comment closeout should only happen after the required remote/online UI retest evidence exists, unless the user explicitly asks for an interim comment/status update.
+- Lark comments must be concise and public-safe: do not paste local addresses, localhost URLs, local file paths (`/Users/...`, `/tmp/...`, screenshot/report paths), raw terminal logs, or internal-only evidence note locations. Summarize the result and include only externally useful handles such as PR URL, commit hash, deployed environment/build status, online URL checked, and a short pass/blocker conclusion.
 - If a collector or taskpool import sees both phases in Lark/status wording, create or maintain two linked tasks rather than reusing the same work task lifecycle for both phases.
 - Before any final Lark completion write (`PATCH /task/v2/tasks/{guid}` with `completed_at`) for UVISA/admin tasks, run the fail-closed guard instead of ad-hoc `execute_code` PATCHes:
   ```bash
