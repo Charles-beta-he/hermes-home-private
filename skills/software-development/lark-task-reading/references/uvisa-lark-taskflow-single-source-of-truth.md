@@ -59,10 +59,11 @@ Known example:
 
 For this UVISA admin/work mode:
 1. Lark live API: external task truth.
-2. Merged PR / current code inspection: implementation truth.
-3. `npm run build` and task-specific deterministic checks: verification truth.
-4. `~/.hermes/evidence/envelopes/<id>/closeout-summary.json` + proof SHA: local closeout truth.
-5. Brain task/envelope status: derived execution lifecycle; must be synchronized, but must not override missing implementation evidence.
+2. Latest local prototype source: before using `/Users/charles/Desktop/folder/work/uvdemo2.0/uvisa-app` or `/Users/charles/Desktop/folder/work/uvdemo2.0/uvisa-admin` as a fallback for stripped Lark `[Image]` evidence, run `git -C /Users/charles/Desktop/folder/work/uvdemo2.0 fetch origin --prune` and, if the tree is clean, `git -C /Users/charles/Desktop/folder/work/uvdemo2.0 pull --ff-only origin main`; record the resulting commit SHA in task evidence. If the prototype tree is dirty or cannot fast-forward, treat prototype freshness as blocked and do not claim prototype parity from stale local files.
+3. Merged PR / current code inspection: implementation truth.
+4. `npm run build` and task-specific deterministic checks: verification truth.
+5. `~/.hermes/evidence/envelopes/<id>/closeout-summary.json` + proof SHA: local closeout truth.
+6. Brain task/envelope status: derived execution lifecycle; must be synchronized, but must not override missing implementation evidence.
 
 ## Scope of this override
 
