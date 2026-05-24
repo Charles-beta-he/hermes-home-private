@@ -54,12 +54,14 @@ for _sig in (signal.SIGTERM, signal.SIGINT):
         pass
 
 
-def run_worker_command(cmd, timeout=600):
+def run_worker_command(cmd, timeout=600, cwd=None):
     """Run worker in its own process group and clean up the whole tree.
 
     `hermes chat` can spawn nested processes.  Killing only the direct child can
     leave orphan workers that keep editing after the envelope has been retried or
-    failed, so timeout/shutdown must terminate the process group.
+    failed, so timeout/shutdown must terminate the process group.  When the
+    envelope is tied to a source repository, run the worker with that repository
+    as cwd so Hermes exposes the correct working tree and project instructions.
     """
     global _ACTIVE_WORKER_PGID
     proc = subprocess.Popen(
@@ -68,6 +70,7 @@ def run_worker_command(cmd, timeout=600):
         stderr=subprocess.PIPE,
         text=True,
         start_new_session=True,
+        cwd=str(cwd) if cwd else None,
     )
     _ACTIVE_WORKER_PGID = proc.pid
     try:
@@ -124,21 +127,48 @@ def delegate_to_worker(envelope):
     title = envelope.get('title', 'untitled')
     brain_id = payload.get('brain_id', '')
     
+    project = envelope.get('project') or payload.get('project') or ''
+    boundary = payload.get('boundary') or payload.get('parallel_boundary') or ''
+    workspace_map = {
+        'uvisa-admin': '/Users/charles/Desktop/folder/work/uvisa-admin',
+        'uvisa-admin-work': '/Users/charles/Desktop/folder/work/uvisa-admin',
+        'uvisa-app-2.0': '/Users/charles/Desktop/folder/work/uvisa-app-2.0',
+        'uvisa-app-2.0-work': '/Users/charles/Desktop/folder/work/uvisa-app-2.0',
+        'uvisa-backend': '/Users/charles/Desktop/folder/work/uvisa-backend',
+        'uvisa-backend-work': '/Users/charles/Desktop/folder/work/uvisa-backend',
+    }
+    cwd = workspace_map.get(project)
+    if not cwd and boundary.startswith('workspace:'):
+        cwd = boundary.split(':', 1)[1].strip() or None
+    evidence_dir = f"/Users/charles/.hermes/evidence/envelopes/{eid}"
+    contract_dir = '/Users/charles/.hermes/state/uvisa_lark_contracts/current'
+    contract_path = str(Path(contract_dir) / f"{brain_id}.json") if brain_id else ''
+
     # Build prompt
-    prompt = f"""Execute this task and output a PROOF_JSON on the last line.
+    prompt = f"""Execute this task to the highest safe boundary and output a PROOF_JSON on the last line.
 
 TASK: {title}
 ID: {brain_id}
-BOUNDARY: {payload.get('boundary', '')}
+PROJECT: {project}
+WORKSPACE: {cwd or '[unset]'}
+BOUNDARY: {boundary}
+ACCEPTANCE_CONTRACT: {contract_path}
+EVIDENCE_DIR: {evidence_dir}
 
-RULES:
-1. Do NOT mark this task done — only output your work
-2. Output PROOF_JSON on the LAST line
-3. Stay within your project boundary
+UVISA ADMIN WORKFLOW RULES:
+1. Before editing, run git fetch and verify the current branch/status in WORKSPACE.
+2. Stay within PROJECT/BOUNDARY. Do not touch unrelated repos or unrelated product surfaces.
+3. If ACCEPTANCE_CONTRACT exists, satisfy its acceptance_atoms and write evidence files under EVIDENCE_DIR.
+4. Run the relevant tests/build (at minimum npm run build for uvisa-admin frontend changes unless blocked by existing environment issues) and save logs under EVIDENCE_DIR.
+5. Create/keep a scoped git commit. If the repo remote/auth allows it, push a task branch, open a PR, and merge it automatically after verification. Record PR URL/number in evidence.
+6. Do not paste or persist secrets. Redact credentials as [REDACTED].
+7. Do NOT mark brain/Lark task done yourself unless you have also produced verifiable evidence; the executor will collect PROOF_JSON.
+8. Output PROOF_JSON on the LAST line exactly.
 
-PROOF_JSON: {{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0}}
+PROOF_JSON schema:
+{{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0,"evidence_dir":"{evidence_dir}","pr_url":"","merged":false,"lark_guid":"{brain_id}"}}
 
-If blocked, output: BLOCKED: <reason>
+If blocked, still output PROOF_JSON with status=blocked and a concise summary of the concrete blocker.
 """
     
     # Check for continuation context
@@ -155,7 +185,7 @@ If blocked, output: BLOCKED: <reason>
             '--quiet', '--max-turns', '30', '--source', f'envelope-exec-{eid[:8]}',
             '--ignore-rules',
         ]
-        r = run_worker_command(cmd, timeout=600)
+        r = run_worker_command(cmd, timeout=600, cwd=cwd)
         output = r.stdout
         if r.returncode != 0:
             update_status(eid, 'FAILED', error=(r.stderr or output or f'worker exited {r.returncode}')[:200])
