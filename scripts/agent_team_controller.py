@@ -200,6 +200,41 @@ CLOSEOUT_RULES:
 - Data correctness tasks require source_to_sink_equality assertion JSON.
 '''
 
+def build_execution_rules_digest(hermes_home=None, max_source_chars=1800):
+    """Build compact invariant rules for execution workers using --ignore-rules.
+
+    `--ignore-rules` intentionally skips chat context files and memory, but
+    task-execution workers still need non-negotiable safety/evidence rules.
+    Keep this digest compact and deterministic; do not dump full memory.
+    """
+    home = Path(hermes_home) if hermes_home is not None else (Path.home() / '.hermes')
+    source_paths = [home / 'AGENTS.md']
+    source_chunks = []
+    for path in source_paths:
+        try:
+            if path.exists() and path.is_file():
+                text = path.read_text(encoding='utf-8', errors='replace').strip()
+                if text:
+                    source_chunks.append(f'SOURCE {path}:\n{text[:max_source_chars]}')
+        except Exception as exc:
+            source_chunks.append(f'SOURCE {path}: unreadable ({exc})')
+
+    invariants = [
+        '--ignore-rules only skips chat context/memory/persona; it never bypasses tool, permission, proof, lifecycle, or task boundary gates.',
+        'Preserve user/project red lines. Do not remove functionality, weaken validation, fake evidence, or mark tasks done from a worker.',
+        'Use real project state and deterministic verification. If verification or required context is missing, return BLOCKED with the specific missing evidence.',
+        'Stay inside declared workspace, allowed_globs, forbidden_globs, loc_budget, and merge gates. Boundary violations block closeout.',
+        'Produce structured PROOF_JSON only for work actually completed and verified; advisory/model opinions are not delivery proof.',
+    ]
+    body = '\n'.join(f'- {item}' for item in invariants)
+    sources = '\n\n'.join(source_chunks) if source_chunks else 'SOURCE: no local AGENTS.md found; invariants above still apply.'
+    return f"""CANONICAL EXECUTION RULES DIGEST
+{body}
+
+{sources}
+""".strip()
+
+
 def build_worker_context(task, conflict_group, sibling_tasks=None):
     """Build context for delegate_task child.
 
@@ -267,8 +302,11 @@ PAGE-BATCH RULES:
 
     uvisa_contract = ensure_uvisa_lark_contract(task)
     uvisa_contract_section = format_uvisa_contract_context(uvisa_contract, task.get('uvisa_contract_path', ''))
+    execution_rules_digest = build_execution_rules_digest()
 
     return f"""You are a Kanban worker executing a brain task.
+
+{execution_rules_digest}
 
 TASK: {task.get('title', 'untitled')}
 ID: {task.get('id', '')}
