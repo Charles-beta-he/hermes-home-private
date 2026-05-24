@@ -1,2 +1,0 @@
-before terminal: # 修复 J1 测试失败 — 检查实际文件位置
-ls ~/.hermes/scripts/distributed-aud

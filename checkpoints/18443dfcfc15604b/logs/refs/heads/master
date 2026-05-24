@@ -1,7 +1,0 @@
-0000000000000000000000000000000000000000 fdb49bd9086278797855afaa418dfd51a8da0e97 Hermes Checkpoint <hermes@local> 1776395305 +0800	commit (initial): before write_file
-fdb49bd9086278797855afaa418dfd51a8da0e97 5eab428d1245644cce30e28917a0157585e297b1 Hermes Checkpoint <hermes@local> 1776395376 +0800	commit: before patch
-5eab428d1245644cce30e28917a0157585e297b1 0221aa54325cc686ca5ac86b1832ae8a11130dce Hermes Checkpoint <hermes@local> 1776395424 +0800	commit: before patch
-0221aa54325cc686ca5ac86b1832ae8a11130dce 01367c679e0709156c7bcb758f2cf9aea48de87d Hermes Checkpoint <hermes@local> 1776395461 +0800	commit: before write_file
-01367c679e0709156c7bcb758f2cf9aea48de87d f37e8464a65333c66de7e9873e823bb8cc0cfadd Hermes Checkpoint <hermes@local> 1776395596 +0800	commit: before patch
-f37e8464a65333c66de7e9873e823bb8cc0cfadd dca9c3b018a874657d3fd82906c5dad9a4a68c44 Hermes Checkpoint <hermes@local> 1776395659 +0800	commit: before patch
-dca9c3b018a874657d3fd82906c5dad9a4a68c44 8fc17f4f4e20d973322d41e40b2dd551e044b018 Hermes Checkpoint <hermes@local> 1776408161 +0800	commit: before write_file
