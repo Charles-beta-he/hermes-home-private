@@ -1,0 +1,58 @@
+# Hermes local runtime / secret boundary
+# This repository may track skills, scripts, profiles, and governance docs.
+# It must not track runtime credentials, sessions, cache, or transient tick artifacts.
+
+# Secrets and auth material
+.env
+.env.*
+!.env.example
+auth.json
+shared/
+credentials/
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Conversation/session/runtime state
+sessions/
+state/
+task_ledger.db
+*.db-wal
+*.db-shm
+
+# Browser/cache/media artifacts
+cache/
+tmp/
+*.log
+*.pid
+
+# Checkpoints, ticks, snapshots, generated proof/runtime dirs
+checkpoints/
+snapshots/
+tick-*/
+stash-archive/
+
+# Local usage/accounting and volatile generated files
+.hermes_history
+.skills_prompt_snapshot.json
+.update_check
+channel_directory.json
+skills/.usage.json
+skills/.usage.json.lock
+skills/.curator_state
+skills/.curator_backups/
+
+# Evidence policy:
+# Keep durable evidence only through explicit manifest-backed docs/private or evidence manifests.
+# Raw screenshots should stay untracked unless a review explicitly promotes them.
+evidence/**/*.png
+evidence/**/*.jpg
+evidence/**/*.jpeg
+evidence/**/*.webp
+evidence/**/*.mp4
+evidence/**/*.mov
+
+# Do NOT ignore canonical source directories:
+# scripts/, skills/, project-profiles/, docs/private/
