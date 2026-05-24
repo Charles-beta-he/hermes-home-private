@@ -145,6 +145,14 @@ Keep these strengths together when changing either project.
    - Fetch linked docs with a strict `max_docs` cap and `max_chars` cap.
    - Preserve both normalized text (`comments`, `docs_content`/`linked_docs`) and machine-actionable handles (`comment_image_keys`, `lark_url`).
    - When screenshot-only acceptance is likely, run the reader with `--download-images` so `comment_images[]` contains local cache paths for downstream vision analysis. Downloads are read-only, bounded, local-only evidence; failed image downloads must be recorded per image and must not abort task collection.
+   - If the Task comments API returns only literal `[Image]` placeholders, run the dedicated rich-comment evidence probe before falling back to manual UI screenshots:
+     ```bash
+     python3 ~/.hermes/scripts/lark_rich_comment_image_downloader.py \
+       --task-guid <lark_task_guid> \
+       --out-dir ~/.hermes/evidence/lark-rich-comment-images/<task_guid> \
+       --debug --json
+     ```
+     This script tries comment list/detail rich payloads, full-payload `image_key` / `file_token` extraction, image/media download endpoints, and task-native attachments. If it still reports `unavailable_placeholders`, classify the missing screenshot as a Lark API evidence gap and use UI screenshot automation; do not treat the image requirement as absent.
 
 7. **Routing**
    - If the title/scope makes a project unambiguous, route immediately like `arc-dispatch`.
@@ -198,6 +206,7 @@ Lark/Feishu API shapes vary by tenant, version, and permission set. Code should 
 - Comment `content` can be JSON rich text, plain string, list, dict, or malformed. Parse defensively.
 - Inline images pasted into Task comments may be downgraded by the official Task API to literal `"[Image]"` with no `image_key` / `file_token`. Verified on larksuite.com with user token and scopes including `task:comment:read`, `task:attachment:read`, `task:task:read`: `/task/v2/comments`, `/task/v2/comments/{comment_id}`, `user_id_type` variants, and `include_attachments=true` still returned only `[Image]`; `/task/v2/attachments?resource_id=<task_guid>&resource_type=task` returned native task attachments, not inline comment images. Treat this as an official API limitation/evidence gap, not a parser miss.
 - Task-native attachments are different from inline comment images. `/task/v2/attachments` can return `file_token`, `name`, `size`, and `url` for files explicitly attached to the task, including screenshot files added as native attachments or evidence backfills. Use these when present, but do not assume they cover screenshots pasted inside comments.
+- To upload a native screenshot/file attachment to a Lark task on `open.larksuite.com`, use `POST /task/v2/attachments/upload` with multipart fields `resource_type=task`, `resource_id=<task_guid>`, and file field `file`; then verify with `GET /task/v2/attachments?resource_type=task&resource_id=<task_guid>`. The old/guessed `/task/v2/attachments/upload_all` path returns 404 and must not be treated as a successful native attachment upload.
 - Tenant/bot token is not a replacement for user token on personal/assigned tasks: in the same probe, tenant token returned 403 for task/comment/attachment reads even though tenant scopes listed task read permissions. Keep user OAuth as the primary live-task read path.
 - Linked-doc URLs may be `docx` or `wiki`; wiki nodes may need a `wiki -> docx` conversion before fetching doc content.
 - Support both `larksuite.com` and `feishu.cn` domains when extracting links.
@@ -327,6 +336,7 @@ Budget guard for per-task execution:
 - If context compression preserves an active task list, treat it as session state to resume, not as a request to restart discovery. Re-run only the minimal live guards (`git status`, latest task snapshot freshness/path, and any user-requested live Lark authorization retry), then continue the in-progress task. Do not spend the closeout budget re-reading every task or redoing classification unless the snapshot is missing/stale for the decision at hand.
 - If the process wrapper cannot kill a stale background consult because of local dependency failures (for example `No module named 'psutil'`), terminate the process group with terminal/PGID (`pgid=$(ps -o pgid= -p PID | tr -d ' '); kill -TERM -$pgid`) and verify the PID is gone before continuing.
 - If browser UI verification is blocked by auth/session/OTP setup after unit/build gates pass, record it as an explicit unfinished UI gate and either establish test login state immediately or stop before burning the closeout budget. Do not keep exploratory browser clicks running until the session hits the tool-call ceiling.
+- UVISA admin real-session capability belongs in the Lark/admin task workflow, not as an ad-hoc per-task blocker. Before marking an admin UI task blocked for missing auth, check for an existing authenticated browser session / browser-harness storage state and macOS Keychain-backed credentials used by the UVISA admin workflow. Use that real session for browser evidence; only use mocked storage when the task explicitly allows mocked auth or the skill class says it is frontend-only harness setup. If real session recovery fails, block with the exact missing capability (`admin_session_unavailable`, `otp_required`, `keychain_missing`, etc.) and keep unrelated tasks dispatchable.
 - For user requests like “每完成一个任务 TG 通知我”, the task is not complete until the TG notification has been sent (or a specific notification blocker is reported). Tests/build alone are implementation evidence, not task closeout.
 
 UI closeout evidence rule:

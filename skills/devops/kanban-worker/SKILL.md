@@ -151,6 +151,7 @@ Bad heartbeats: `"still working"`, empty notes, sub-second intervals. Every few 
 
 If you open the task and `kanban_show` returns `runs: [...]` with one or more closed runs, you're a retry. The prior runs' `outcome` / `summary` / `error` tell you what didn't work. Don't repeat that path. Typical retry diagnostics:
 
+- `max_iterations_reached(60/60)` should not immediately become a dead-end block when the worker profile has Hermes auto-relay capacity. The CLI chat path can relay an exhausted turn into a successor turn; kanban workers should defer `kanban_block` until auto-relay is unavailable/exhausted. If you see a task blocked at 60/60 even though `agent.delegation.auto_relay` is enabled and `max_relay_count` has capacity, treat it as a control-plane bug/regression rather than a product-task failure.
 - `outcome: "timed_out"` — the previous attempt hit `max_runtime_seconds`. You may need to chunk the work or shorten it.
 - `outcome: "crashed"` — OOM or segfault. Reduce memory footprint.
 - `outcome: "spawn_failed"` + `error: "..."` — usually a profile config issue (missing credential, bad PATH). Ask the human via `kanban_block` instead of retrying blindly.
