@@ -518,6 +518,41 @@ def extract_comment_image_keys(comments: list[dict[str, Any]], limit: int = 20) 
     return keys
 
 
+def _count_image_placeholders(content: Any) -> int:
+    """Count image placeholders when Lark strips rich image metadata to text.
+
+    Some Task comment endpoints return only the literal string ``[Image]`` without
+    image_key/file_token. Keep this as structured evidence so downstream intake
+    knows a screenshot exists even when the binary cannot be fetched.
+    """
+    if isinstance(content, str):
+        return content.count("[Image]") + content.count("[图片]")
+    if isinstance(content, list):
+        return sum(_count_image_placeholders(item) for item in content)
+    if isinstance(content, dict):
+        return sum(_count_image_placeholders(value) for value in content.values())
+    return 0
+
+
+def count_comment_image_placeholders(comments: list[dict[str, Any]], limit: int = 20) -> int:
+    return sum(_count_image_placeholders(c.get("content", "")) for c in comments[:limit])
+
+
+def _unavailable_image_placeholder_records(count: int) -> list[dict[str, Any]]:
+    if count <= 0:
+        return []
+    return [{
+        "image_key": "",
+        "source": "lark_task_comment_or_description",
+        "status": "unavailable",
+        "local_path": "",
+        "content_type": "",
+        "size_bytes": 0,
+        "endpoint": "",
+        "error": "Lark Task API returned [Image] placeholder without image_key/file_token; current read APIs cannot download this comment image.",
+    } for _ in range(count)]
+
+
 def _image_extension(content_type: str, image_key: str) -> str:
     ctype = (content_type or "").split(";", 1)[0].strip().lower()
     if ctype == "image/png":
@@ -658,8 +693,10 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
     comments_raw = fetch_comments(token, task["guid"], client=client) if include_comments else []
     comments_text = extract_comment_text(comments_raw)
     comment_image_keys = extract_comment_image_keys(comments_raw)
+    comment_image_placeholders = count_comment_image_placeholders(comments_raw)
     raw_description = task.get("description", "") or ""
     description, description_image_keys, _description_links = _extract_text_and_images_from_content(raw_description)
+    description_image_placeholders = _count_image_placeholders(raw_description)
     combined = f"{description}\n\n{comments_text}"
     docs_content = fetch_linked_docs(token, combined, client=client) if include_docs else ""
     body_parts = []
@@ -668,10 +705,15 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
     if comments_text:
         body_parts.append("## 评论补充\n" + comments_text)
     image_keys = list(dict.fromkeys(description_image_keys + comment_image_keys))
+    placeholder_count = description_image_placeholders + comment_image_placeholders
     comment_images = download_comment_images(token, image_keys, cache_dir=image_cache_dir, client=client) if download_images and image_keys else []
+    if download_images and placeholder_count and not image_keys:
+        comment_images.extend(_unavailable_image_placeholder_records(placeholder_count))
     downloaded_paths = [img.get("local_path", "") for img in comment_images if img.get("status") in {"downloaded", "cached"} and img.get("local_path")]
     if downloaded_paths:
         body_parts.append("## 评论图片本地证据\n" + "\n".join(downloaded_paths))
+    if placeholder_count and not image_keys:
+        body_parts.append("## 评论图片待解析\nLark Task API returned " + str(placeholder_count) + " [Image] placeholder(s) without image_key/file_token; screenshot evidence exists but cannot be downloaded from the current read payload.")
     if docs_content:
         body_parts.append("## 关联文档内容\n" + docs_content)
     issue_body = "\n\n".join(body_parts)
@@ -684,6 +726,7 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
         "description": description,
         "comments": comments_text,
         "comment_image_keys": image_keys,
+        "comment_image_placeholders": placeholder_count,
         "comment_images": comment_images,
         "linked_docs": docs_content,
         "docs_content": docs_content,

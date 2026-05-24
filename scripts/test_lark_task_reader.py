@@ -204,6 +204,22 @@ class LarkTaskReaderTest(unittest.TestCase):
         self.assertEqual(records[0]["status"], "cached")
         self.assertEqual(fake.binary_calls, [])
 
+    def test_image_placeholder_without_key_is_preserved_as_unavailable(self):
+        class PlaceholderClient(FakeClient):
+            def get(self, path, token, query=None):
+                if path == "/task/v2/comments":
+                    return {"code": 0, "data": {"items": [{"content": "[Image]", "creator": {"name": "alice"}}], "has_more": False}}
+                return super().get(path, token, query)
+        fake = PlaceholderClient()
+        payloads = self.mod.collect_tasks(token="tok", client=fake, scope_mode="prefer", include_comments=True, include_docs=False, download_images=True)
+        p = payloads[0]
+        self.assertEqual(p["comment_image_keys"], [])
+        self.assertEqual(p["comment_image_placeholders"], 1)
+        self.assertIn("[Image]", p["comments"])
+        self.assertIn("评论图片待解析", p["issue_body"])
+        self.assertEqual(p["comment_images"][0]["status"], "unavailable")
+        self.assertIn("without image_key/file_token", p["comment_images"][0]["error"])
+
     def test_get_token_invokes_guard_on_missing_token_by_default(self):
         calls = {"count": 0}
 

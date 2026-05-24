@@ -169,7 +169,8 @@ Keep these strengths together when changing either project.
      - `tasklist_names`
      - `tasklist_scope_enrichment_warning` when `/task/v2/tasklists` is unavailable
      - `comment_image_keys`
-     - `comment_images` (optional, only when `--download-images` is enabled): list of `{image_key, source, status, local_path, content_type, size_bytes, endpoint, error}`. `local_path` is local evidence for vision analysis and must not be pasted into public Lark closeout comments.
+     - `comment_image_placeholders`: count of literal `[Image]` / `[图片]` placeholders when Lark Task APIs strip image metadata and expose no `image_key` / `file_token`.
+     - `comment_images` (optional, only when `--download-images` is enabled): list of `{image_key, source, status, local_path, content_type, size_bytes, endpoint, error}`. `status=downloaded|cached` means `local_path` is local evidence for vision analysis and must not be pasted into public Lark closeout comments. `status=unavailable` means the task/comment definitely contains image evidence, but the current Lark read payload only returned `[Image]` without a downloadable key; preserve it as a blocker/evidence gap instead of treating the task as text-only.
      - `project_id`
      - `project_path`
      - `reference_path`
