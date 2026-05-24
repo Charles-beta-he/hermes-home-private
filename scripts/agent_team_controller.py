@@ -269,7 +269,10 @@ def build_task_spec_section(task, max_body_chars=1800, max_field_chars=900):
     """
     body = _compact_task_text(task.get('body') or task.get('description'), max_body_chars)
     field_map = [
+        ('OBJECTIVE', 'objective'),
+        ('MISSION_OBJECTIVE', 'mission_objective'),
         ('ACCEPTANCE_CRITERIA', 'acceptance_criteria'),
+        ('ACCEPTANCE_EVIDENCE', 'acceptance_evidence'),
         ('RED_LINES', 'red_lines'),
         ('NON_GOALS', 'non_goals'),
         ('EVIDENCE_REFS', 'evidence_refs'),
@@ -541,7 +544,11 @@ RULES:
    only modify files matching ALLOWED_GLOBS (if set), stay under LOC_BUDGET.
 
 PROOF FORMAT (output as last line):
-PROOF_JSON: {{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0,"proof_sha":"sha256_of_output"}}
+PROOF_JSON: {{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0,"proof_sha":"sha256_of_output","acceptance_criteria_covered":[{{"criterion":"...","status":"covered|blocked","evidence":["command:...|file:...|artifact:..."],"blocker":""}}],"red_lines_status":{{"red line":"safe|violated|blocked"}},"no_red_line_violations":true,"blockers":[],"evidence":[]}}
+PROOF CLOSEOUT RULES:
+- For done proof, every task acceptance criterion or acceptance_evidence fallback must appear in acceptance_criteria_covered with deterministic evidence.
+- For done proof, red_lines_status must be safe and no_red_line_violations must be true; otherwise output BLOCKED instead of done.
+- If evidence is missing, status must be blocked with blockers explaining the missing proof.
 
 WORKSPACE: Use /tmp/agent-team-{task.get('id','unknown')[:12]} as your workspace.
 """
@@ -560,6 +567,165 @@ def collect_proof(task_id, worker_output):
             except json.JSONDecodeError:
                 pass
     return None
+
+
+def _task_spec_items(value):
+    """Return a compact list of task-level spec atoms from list/string/dict values."""
+    if value is None or value == '':
+        return []
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return []
+        if text.startswith('['):
+            try:
+                return _task_spec_items(json.loads(text))
+            except Exception:
+                pass
+        return [line.strip(' -\t') for line in text.splitlines() if line.strip(' -\t')]
+    if isinstance(value, dict):
+        return [f'{k}: {v}' for k, v in value.items() if str(k).strip() or str(v).strip()]
+    if isinstance(value, (list, tuple, set)):
+        out = []
+        for item in value:
+            out.extend(_task_spec_items(item))
+        return [item for item in out if item]
+    return [str(value).strip()] if str(value).strip() else []
+
+
+def _required_acceptance_items(task):
+    items = _task_spec_items(task.get('acceptance_criteria'))
+    if items:
+        return items
+    # Legacy task records often carry the acceptance atom in the older
+    # acceptance_evidence field or only in the body. Use the explicit legacy
+    # field as a machine-readable fallback; the full body remains prompt context
+    # but is too noisy to gate mechanically.
+    return _task_spec_items(task.get('acceptance_evidence'))
+
+
+def _proof_acceptance_entries(value):
+    if isinstance(value, dict):
+        entries = []
+        for criterion, detail in value.items():
+            if isinstance(detail, dict):
+                entry = {'criterion': str(criterion), **detail}
+            else:
+                entry = {'criterion': str(criterion), 'status': detail}
+            entries.append(entry)
+        return entries
+    if isinstance(value, list):
+        entries = []
+        for item in value:
+            if isinstance(item, dict):
+                entries.append(item)
+            else:
+                entries.append({'criterion': str(item), 'status': 'covered'})
+        return entries
+    if value:
+        return [{'criterion': str(value), 'status': 'covered'}]
+    return []
+
+
+def _entry_has_evidence(entry):
+    evidence = entry.get('evidence') or entry.get('proof') or entry.get('proof_refs')
+    return bool(_task_spec_items(evidence))
+
+
+def _entry_is_covered(entry):
+    status = str(entry.get('status') or entry.get('state') or '').strip().lower()
+    return status in {'covered', 'pass', 'passed', 'done', 'verified', 'ok', 'safe'} and _entry_has_evidence(entry)
+
+
+def _norm_spec_text(value):
+    return ' '.join(str(value or '').lower().split())
+
+
+def _entry_matches_required(entry, required_item):
+    criterion = _norm_spec_text(entry.get('criterion') or entry.get('acceptance') or entry.get('requirement'))
+    required = _norm_spec_text(required_item)
+    if not required:
+        return True
+    if not criterion:
+        return False
+    return criterion == required or criterion in required or required in criterion
+
+
+def _covered_acceptance_required_items(required_items, entries):
+    remaining = list(entries)
+    missing = []
+    for required in required_items:
+        match_index = None
+        for idx, entry in enumerate(remaining):
+            if _entry_matches_required(entry, required) and _entry_is_covered(entry):
+                match_index = idx
+                break
+        if match_index is None:
+            missing.append(required)
+        else:
+            remaining.pop(match_index)
+    return missing
+
+
+def _red_line_status_is_safe(red_lines_status):
+    safe_values = {'safe', 'ok', 'pass', 'passed', 'no_violation', 'no_violations', 'none'}
+    if isinstance(red_lines_status, dict):
+        if not red_lines_status:
+            return False
+        return all(str(v).strip().lower() in safe_values for v in red_lines_status.values())
+    if isinstance(red_lines_status, list):
+        if not red_lines_status:
+            return False
+        for item in red_lines_status:
+            if isinstance(item, dict):
+                value = item.get('status') or item.get('state') or item.get('result')
+            else:
+                value = item
+            if str(value).strip().lower() not in safe_values:
+                return False
+        return True
+    return str(red_lines_status or '').strip().lower() in safe_values
+
+
+def validate_worker_proof_against_task(task, proof):
+    """Fail closed when DONE proof does not map task SSOT requirements.
+
+    Workers may report BLOCKED with missing evidence. Only DONE proof is held to
+    acceptance/red-line coverage, because accepting it lets the controller move
+    toward lifecycle closeout.
+    """
+    proof_status = str(proof.get('status') or '').strip().lower()
+    if proof_status in {'blocked', 'block'}:
+        return {'status': 'PASS', 'proof_status': 'blocked', 'violations': []}
+
+    violations = []
+    acceptance_items = _required_acceptance_items(task)
+    if acceptance_items:
+        entries = _proof_acceptance_entries(proof.get('acceptance_criteria_covered'))
+        if not entries:
+            violations.append('acceptance_criteria_covered_missing')
+        elif len(entries) < len(acceptance_items):
+            violations.append(f'acceptance_criteria_covered_incomplete:{len(entries)}<{len(acceptance_items)}')
+        if entries:
+            missing_acceptance = _covered_acceptance_required_items(acceptance_items, entries)
+            for missing in missing_acceptance:
+                violations.append(f'acceptance_criterion_not_evidence_covered:{missing[:80]}')
+
+    red_lines = _task_spec_items(task.get('red_lines'))
+    if red_lines:
+        if proof.get('no_red_line_violations') is not True:
+            violations.append('red_line_no_violation_boolean_missing_or_false')
+        if not _red_line_status_is_safe(proof.get('red_lines_status')):
+            violations.append('red_lines_status_not_safe')
+
+    return {
+        'status': 'PASS' if not violations else 'FAIL',
+        'proof_status': proof_status or 'unknown',
+        'violations': violations,
+        'acceptance_required_count': len(acceptance_items),
+        'red_lines_required_count': len(red_lines),
+    }
+
 
 def build_handoff_artifact(task, conflict_group, envelope_id):
     """Build a structured handoff artifact for parallel dispatch.
@@ -960,7 +1126,12 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             proof = collect_proof(task_id, output)
             if not proof:
                 return {'status': 'failed', 'reason': 'invalid_proof', 'output': output[-300:]}
-            return {'status': 'done', 'proof': proof, 'output': output}
+            proof_check = validate_worker_proof_against_task(task, proof)
+            if proof_check.get('proof_status') == 'blocked':
+                return {'status': 'blocked', 'proof': proof, 'proof_check': proof_check, 'output': output[:500]}
+            if proof_check.get('status') != 'PASS':
+                return {'status': 'blocked', 'reason': 'proof_consistency_failed', 'proof': proof, 'proof_check': proof_check, 'output': output[-500:]}
+            return {'status': 'done', 'proof': proof, 'proof_check': proof_check, 'output': output}
         elif 'BLOCKED' in output:
             return {'status': 'blocked', 'output': output[:200]}
         else:
