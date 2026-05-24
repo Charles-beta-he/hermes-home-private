@@ -28,6 +28,7 @@ TZ = timezone(timedelta(hours=8))
 HOME = Path.home()
 SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_orchestrator.py"
 AUTORUN_STEP_SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_autorun_step.py"
+AGENT_TEAM_SCRIPT = HOME / ".hermes" / "scripts" / "agent_team_controller.py"
 STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME / ".hermes" / "state"))).expanduser()
 LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
@@ -370,6 +371,21 @@ def main() -> int:
             errors.append({"step": "parallel_autorun", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout"), "reason": event["autorun"].get("reason")})
             event["status"] = "ERROR"
             event["errors"] = errors
+        elif event["autorun"].get("claimed"):
+            claimed_payload = json.dumps(event["autorun"].get("claimed_tasks") or [], ensure_ascii=False)
+            event["event_worker_trigger"] = run_cmd_json([
+                sys.executable,
+                str(AGENT_TEAM_SCRIPT),
+                "consume-claimed",
+                "--claimed-json",
+                claimed_payload,
+                "--max-agents",
+                str(max_parallel_agents),
+            ])
+            if event["event_worker_trigger"].get("status") not in {"ok", "OK", "PASS", "SKIP"}:
+                errors.append({"step": "event_worker_trigger", "status": event["event_worker_trigger"].get("status"), "stderr": event["event_worker_trigger"].get("stderr"), "stdout": event["event_worker_trigger"].get("stdout"), "reason": event["event_worker_trigger"].get("reason")})
+                event["status"] = "ERROR"
+                event["errors"] = errors
         event["post_autorun_dispatch"] = run_json(["parallel-dispatch-dry-run", "--max-agents", str(max_parallel_agents), "--json"])
     elif args.autorun_step and not errors:
         event["autorun"] = run_cmd_json([sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"])
@@ -450,7 +466,7 @@ def main() -> int:
     }
     autorun_summary = {
         "requested": bool(args.autorun or args.autorun_step or args.parallel_autorun),
-        "step_mode": "parallel_claim_and_handoff" if args.parallel_autorun else ("bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none")),
+        "step_mode": "parallel_claim_and_execute" if args.parallel_autorun else ("bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none")),
         "present": "autorun" in event,
         "status": autorun_raw.get("status"),
         "eligible": bool(autorun_raw.get("eligible")),
@@ -462,6 +478,9 @@ def main() -> int:
         "proof_hash": autorun_raw.get("proof_hash", ""),
         "handoff": autorun_raw.get("handoff", ""),
         "claim_expires_at": autorun_raw.get("claim_expires_at", ""),
+        "claimed_count": int(autorun_raw.get("claimed_count") or 0),
+        "batch_id": autorun_raw.get("batch_id", ""),
+        "worker_trigger": event.get("event_worker_trigger", {}) if isinstance(event.get("event_worker_trigger"), dict) else {},
         "safety": autorun_raw.get("safety", ""),
     }
     summary_payload = {

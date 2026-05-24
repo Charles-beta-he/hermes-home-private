@@ -97,6 +97,12 @@ def add_task(env):
         "P1",
         "--project",
         "local-brain-task-orchestration",
+        "--priority-layer",
+        "P1",
+        "--dependency-order",
+        "1",
+        "--multimodel-triage-result",
+        "P3-local-only",
         "--expires-at",
         "2099-01-01",
         "--json",
@@ -117,6 +123,12 @@ def add_multimodel_task(env):
         "self-improvement",
         "--lane",
         "evolution",
+        "--priority-layer",
+        "P0",
+        "--dependency-order",
+        "1",
+        "--multimodel-triage-result",
+        "P2-evolution-multimodel-required",
         "--architecture-target",
         "taskpool",
         "--capability-delta",
@@ -162,6 +174,12 @@ def add_review_evolution_task(env):
         "self-improvement",
         "--lane",
         "evolution",
+        "--priority-layer",
+        "P1",
+        "--dependency-order",
+        "1",
+        "--multimodel-triage-result",
+        "P2-evolution-review",
         "--architecture-target",
         "taskpool",
         "--capability-delta",
@@ -304,6 +322,80 @@ def test_tick_multimodel_step_requires_explicit_flag_and_env():
         assert payload["multimodel_step"]["reason"] == "autorun_multimodel_disabled", payload
 
 
+def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(("run_json", list(args)))
+        step = args[0]
+        if step == "parallel-claim-and-handoff":
+            return {
+                "status": "OK",
+                "claimed": True,
+                "claimed_count": 1,
+                "batch_id": "parallel-test-batch",
+                "claimed_tasks": [{"task_id": "task-1", "handoff": "/tmp/task-1.md", "run_id": "r1"}],
+                "safety": "parallel-claimed-and-handoff-only; does not execute task bodies or mark done",
+            }
+        if step == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 1, "selected": [{"id": "task-1"}]}
+        if step == "dispatch-dry-run":
+            return {"status": "OK", "dispatchable": True, "next": {"id": "task-1", "title": "Task 1"}}
+        if step == "evidence-spine":
+            return {"status": "OK", "gate_status": "PASS", "summary": {}}
+        return {"status": "OK"}
+
+    def fake_run_cmd_json(cmd):
+        calls.append(("run_cmd_json", list(cmd)))
+        assert "agent_team_controller.py" in " ".join(map(str, cmd)), cmd
+        assert "consume-claimed" in cmd, cmd
+        return {
+            "status": "ok",
+            "event_driven": True,
+            "consumed_count": 1,
+            "running_count": 1,
+            "reviewed_count": 1,
+            "done_count": 0,
+            "safety": "controller-consumed claimed handoffs; worker cannot mark done",
+        }
+
+    old_argv = sys.argv[:]
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_append_log = module.append_log
+    old_save_state = module.save_state
+    old_load_state = module.load_state
+    try:
+        module.run_json = fake_run_json
+        module.run_cmd_json = fake_run_cmd_json
+        module.append_log = lambda event: None
+        module.save_state = lambda state: None
+        module.load_state = lambda: {}
+        sys.argv = [str(TICK), "--summary", "--no-state", "--parallel-autorun", "--max-agents", "2"]
+        import io
+        import contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = module.main()
+        assert rc == 0
+        payload = json.loads(buf.getvalue())
+    finally:
+        sys.argv = old_argv
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.append_log = old_append_log
+        module.save_state = old_save_state
+        module.load_state = old_load_state
+
+    assert any(kind == "run_cmd_json" and "consume-claimed" in cmd for kind, cmd in calls), calls
+    assert payload["autorun"]["step_mode"] == "parallel_claim_and_execute"
+    assert payload["autorun"]["claimed"] is True
+    assert payload["autorun"]["worker_trigger"]["event_driven"] is True
+    assert payload["autorun"]["worker_trigger"]["consumed_count"] == 1
+    assert payload["autorun"]["worker_trigger"]["done_count"] == 0
+
+
 def test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics():
     module = load_tick_module()
     result = module.run_cmd_json([
@@ -379,6 +471,7 @@ if __name__ == "__main__":
     test_tick_summary_surfaces_multimodel_intervention_hint()
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()
+    test_parallel_autorun_triggers_event_driven_worker_consumer_summary()
     test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()
     test_run_cmd_json_forces_nonzero_ok_stdout_to_error()
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()

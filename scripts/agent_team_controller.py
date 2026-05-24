@@ -14,6 +14,7 @@ Safety:
 - Human escape: kill switch file/env
 - Conflict group isolation
 """
+import argparse
 import json, subprocess, sys, time, os, hashlib
 import urllib.request
 from pathlib import Path
@@ -60,6 +61,46 @@ def claim_task(task_id, actor='agent-team-controller', ttl=60):
     if data.get('status') == 'OK':
         return {'ok': True, 'data': data}
     return {'ok': False, 'error': data.get('reasons', str(data.get('status', 'unknown')))}
+
+
+def transition_task(task_id, to_status, actor, reason, evidence=None, ttl=60, force=False):
+    """Transition a brain task through the lifecycle gate."""
+    cmd = [
+        'python3', str(ORCHESTRATOR), 'transition', task_id,
+        '--to', to_status,
+        '--actor', actor,
+        '--ttl-minutes', str(ttl),
+        '--reason', reason,
+        '--json',
+    ]
+    for item in evidence or []:
+        cmd.extend(['--evidence', str(item)])
+    if force:
+        cmd.append('--force')
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if r.returncode != 0:
+        return {'ok': False, 'error': (r.stderr or r.stdout)[:500], 'returncode': r.returncode}
+    try:
+        data = json.loads(r.stdout)
+    except Exception:
+        data = {'raw': r.stdout[:500]}
+    return {'ok': data.get('status') == 'OK', 'data': data}
+
+
+def list_task_rows(include_done=False):
+    cmd = ['python3', str(ORCHESTRATOR), 'list']
+    if include_done:
+        cmd.append('--include-done')
+    cmd.append('--json')
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if r.returncode != 0:
+        raise RuntimeError(f'list failed: {(r.stderr or r.stdout)[:300]}')
+    return json.loads(r.stdout).get('rows', [])
+
+
+def rows_by_id(ids):
+    wanted = set(ids)
+    return {row.get('id'): row for row in list_task_rows(include_done=True) if row.get('id') in wanted}
 
 def _looks_like_uvisa_lark_task(task):
     text = ' '.join(str(task.get(k, '') or '') for k in ('id', 'title', 'project', 'source', 'body', 'description')).lower()
@@ -615,6 +656,116 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
         return {'status': 'timeout'}
     except Exception as e:
         return {'status': 'error', 'error': str(e)[:200]}
+
+
+def consume_claimed_batch(claimed_items, max_agents=3):
+    """Immediately consume tasks just claimed by parallel-claim-and-handoff.
+
+    This is the event-driven bridge between claim/handoff and real worker
+    execution.  It only advances claimed tasks to running/review; it never marks
+    brain tasks done.  Proof-gated review->done remains owned by the normal
+    lifecycle closer.
+    """
+    if not claimed_items:
+        return {'status': 'SKIP', 'event_driven': True, 'reason': 'no claimed tasks', 'consumed_count': 0}
+    if is_disabled():
+        return {'status': 'SKIP', 'event_driven': True, 'reason': 'kill switch active', 'consumed_count': 0}
+    escape, escape_info = human_escape_check()
+    if escape:
+        return {'status': 'SKIP', 'event_driven': True, 'reason': f'Human escape: {escape_info}', 'consumed_count': 0}
+    try:
+        max_agents = max(1, int(max_agents or 3))
+    except Exception:
+        max_agents = 3
+    claimed_items = list(claimed_items)[:max_agents]
+    ids = [str(item.get('task_id') or item.get('id') or '') for item in claimed_items if isinstance(item, dict)]
+    ids = [x for x in ids if x]
+    row_map = rows_by_id(ids)
+    consumed = []
+    skipped = []
+    for item in claimed_items:
+        task_id = str(item.get('task_id') or item.get('id') or '') if isinstance(item, dict) else ''
+        if not task_id:
+            skipped.append({'task_id': '', 'reason': 'missing_task_id'})
+            continue
+        row = row_map.get(task_id)
+        if not row:
+            skipped.append({'task_id': task_id, 'reason': 'task_not_found'})
+            continue
+        if row.get('status') != 'claimed':
+            skipped.append({'task_id': task_id, 'reason': f"not_claimed:{row.get('status')}"})
+            continue
+        actor = str(row.get('claimed_by') or 'hermes-parallel')
+        group = row.get('parallel_group') or row.get('conflict_group') or row.get('parallel_boundary') or row.get('project') or 'default'
+        eid = create(
+            type='TASK',
+            title=row.get('title', 'untitled'),
+            project=row.get('project', ''),
+            assignee=f'agent-team-{group}',
+            payload={
+                'brain_id': task_id,
+                'boundary': row.get('parallel_boundary', ''),
+                'conflict_group': group,
+                'event_driven_claim': True,
+                'handoff': item.get('handoff', '') if isinstance(item, dict) else '',
+            },
+            appetite_seconds=1800,
+        )
+        update_status(eid, 'RUNNING')
+        append_trace(eid, {'event': 'event_driven_claim_consumed', 'task_id': task_id, 'actor': actor})
+        running = transition_task(task_id, 'running', actor, 'event-driven worker trigger after parallel claim/handoff')
+        if not running.get('ok'):
+            update_status(eid, 'FAILED', error=str(running)[:200])
+            skipped.append({'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
+            continue
+        worker_result = delegate_to_worker(row, str(group), eid, sibling_tasks=[])
+        append_trace(eid, {'event': 'event_worker_finished', 'result': worker_result.get('status', '?')})
+        record = {'task_id': task_id, 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
+        if worker_result.get('status') == 'done':
+            proof = worker_result.get('proof') or {}
+            PROOF_DIR.mkdir(parents=True, exist_ok=True)
+            proof_path = PROOF_DIR / f'{task_id}.json'
+            if not proof_path.exists():
+                proof_path.write_text(json.dumps(proof, ensure_ascii=False, indent=2))
+            review = transition_task(
+                task_id,
+                'review',
+                actor,
+                'event-driven worker produced proof; controller stops at review for proof-gated closeout',
+                evidence=[f'artifact:{proof_path}'],
+            )
+            record['review_transition'] = review
+            if review.get('ok'):
+                update_status(eid, 'DONE')
+                record['to_status'] = 'review'
+            else:
+                update_status(eid, 'FAILED', error=str(review)[:200])
+                record['to_status'] = 'running'
+        elif worker_result.get('status') == 'blocked':
+            update_status(eid, 'BLOCKED')
+            record['to_status'] = 'running'
+        elif worker_result.get('status') == 'continuation_pending':
+            record['to_status'] = 'running'
+        else:
+            update_status(eid, 'FAILED', error=str(worker_result)[:200])
+            record['to_status'] = 'running'
+        consumed.append(record)
+    reviewed_count = sum(1 for item in consumed if item.get('to_status') == 'review')
+    return {
+        'status': 'ok',
+        'event_driven': True,
+        'requested_count': len(claimed_items),
+        'consumed_count': len(consumed),
+        'running_count': len(consumed),
+        'reviewed_count': reviewed_count,
+        'done_count': 0,
+        'claimed': consumed,
+        'skipped': skipped,
+        'safety': 'controller-consumed claimed handoffs; worker cannot mark done; review->done remains proof-gated',
+        'next_tick_requested': bool(reviewed_count),
+    }
+
+
 def run_dynamic_cycle():
     """One cycle with dynamic N + conflict group scheduling."""
     if is_disabled():
@@ -911,6 +1062,17 @@ if __name__ == '__main__':
         cmd = sys.argv[1]
         if cmd == 'cycle':
             print(json.dumps(run_dynamic_cycle(), indent=2, ensure_ascii=False))
+        elif cmd == 'consume-claimed':
+            parser = argparse.ArgumentParser(prog='agent_team_controller.py consume-claimed')
+            parser.add_argument('--claimed-json', default='[]')
+            parser.add_argument('--max-agents', type=int, default=3)
+            ns = parser.parse_args(sys.argv[2:])
+            try:
+                claimed_items = json.loads(ns.claimed_json or '[]')
+            except json.JSONDecodeError as exc:
+                print(json.dumps({'status': 'ERROR', 'event_driven': True, 'reason': 'invalid_claimed_json', 'error': str(exc)}, ensure_ascii=False))
+                raise SystemExit(2)
+            print(json.dumps(consume_claimed_batch(claimed_items, max_agents=ns.max_agents), indent=2, ensure_ascii=False))
         elif cmd == 'status':
             print(json.dumps(show_status(), indent=2, ensure_ascii=False))
         elif cmd == 'enable':
@@ -921,8 +1083,8 @@ if __name__ == '__main__':
             KILL_SWITCH.touch()
             print('Agent team disabled')
         else:
-            print('Usage: agent_team_controller.py [cycle|status|enable|disable]')
+            print('Usage: agent_team_controller.py [cycle|consume-claimed|status|enable|disable]')
     else:
-        print('Usage: agent_team_controller.py [cycle|status|enable|disable]')
+        print('Usage: agent_team_controller.py [cycle|consume-claimed|status|enable|disable]')
 
 
