@@ -112,15 +112,21 @@ def release_lock() -> None:
 
 
 
-def load_taskpool_dispatch_mode() -> str:
+def load_taskpool_config() -> dict[str, Any]:
     cfg = HERMES_HOME / "config.yaml"
     try:
         import yaml  # type: ignore
         raw = yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
         taskpool = raw.get("taskpool", {}) if isinstance(raw, dict) else {}
-        return str((taskpool or {}).get("dispatch_mode") or "single").strip().lower()
+        return taskpool if isinstance(taskpool, dict) else {}
     except Exception:
-        return "single"
+        return {}
+
+
+def load_taskpool_dispatch_mode() -> str:
+    taskpool = load_taskpool_config()
+    return str((taskpool or {}).get("dispatch_mode") or "single").strip().lower()
+
 
 def parse_json_tail(text: str) -> dict[str, Any]:
     text = (text or "").strip()
@@ -145,6 +151,62 @@ def signature(summary: dict[str, Any]) -> str:
     return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
 
+def positive_int(value: Any, default: int, *, minimum: int = 1) -> int:
+    try:
+        parsed = int(value)
+    except Exception:
+        parsed = default
+    return max(minimum, parsed)
+
+
+def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
+    """Choose a safe parallel cap from the live boundary classifier.
+
+    The config value is only the floor.  For Lark/work bursts, many tasks have
+    explicit non-overlapping `parallel_boundary` values.  A read-only dry-run at
+    a higher cap lets the orchestrator's own boundary logic decide how many can
+    be safely co-dispatched without broadening allowlists or bypassing proof
+    gates.
+    """
+    cfg = load_taskpool_config()
+    configured = positive_int(cfg.get("max_parallel_agents"), 3)
+    ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), 24)
+    ceiling = max(configured, ceiling)
+    probe = run(
+        [sys.executable, str(HERMES_HOME / "scripts" / "brain_task_orchestrator.py"), "parallel-dispatch-dry-run", "--max-agents", str(ceiling), "--json"],
+        timeout=90,
+        env=env,
+    )
+    result: dict[str, Any] = {
+        "configured": configured,
+        "ceiling": ceiling,
+        "selected_count": 0,
+        "recommended": configured,
+        "reason": "probe_unavailable",
+        "probe": compact_result(probe),
+    }
+    if probe.get("returncode") not in (0, "0"):
+        return result
+    try:
+        data = json.loads(probe.get("stdout") or "{}")
+    except Exception as exc:
+        result["reason"] = "probe_parse_failed"
+        result["parse_error"] = str(exc)
+        return result
+    selected_count = positive_int(data.get("selected_count"), 0, minimum=0)
+    result["selected_count"] = selected_count
+    result["status"] = data.get("status")
+    result["dispatchable"] = bool(data.get("dispatchable"))
+    # The dry-run `selected_count` is the *additional* safe batch at the probed
+    # ceiling after accounting for active claimed/running tasks.  Reuse the same
+    # ceiling for the write tick so those available slots remain available; using
+    # only selected_count would accidentally collapse capacity when active tasks
+    # already occupy part of the ceiling.
+    result["recommended"] = ceiling if selected_count > 0 else configured
+    result["reason"] = "boundary_classified_batch" if selected_count > 0 and ceiling > configured else "configured_cap_sufficient"
+    return result
+
+
 def main() -> int:
     if not acquire_lock():
         return 0
@@ -156,7 +218,42 @@ def main() -> int:
         autorun_flag = "--parallel-autorun" if dispatch_mode == "parallel" else "--autorun-step"
         event["dispatch_mode"] = dispatch_mode
         event["autorun_flag"] = autorun_flag
-        tick = run([sys.executable, str(TICK), "--summary", autorun_flag, "--no-state"], timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "240")), env=env)
+        tick_cmd = [sys.executable, str(TICK), "--summary", "--no-state"]
+        if autorun_flag == "--parallel-autorun":
+            parallel_cap = compute_parallel_max_agents(env)
+            event["parallel_cap"] = {k: v for k, v in parallel_cap.items() if k != "probe"}
+            event["parallel_cap_probe"] = parallel_cap.get("probe", {})
+            if int(parallel_cap.get("selected_count") or 0) > 0:
+                tick_cmd.insert(3, autorun_flag)
+                tick_cmd.extend(["--max-agents", str(parallel_cap.get("recommended") or 3)])
+            else:
+                event["autorun_skipped_reason"] = "no_additional_boundary_safe_slots"
+                event["summary"] = {
+                    "status": "OK",
+                    "dispatchable": bool(parallel_cap.get("dispatchable")),
+                    "error_count": 0,
+                    "next_task_id": "",
+                    "reconcile_action_count": 0,
+                    "ingested_count": 0,
+                }
+                event["autorun"] = {
+                    "present": False,
+                    "requested": True,
+                    "claimed": False,
+                    "safety": "skipped; active boundary-safe parallel slots are full or no non-conflicting task remains",
+                }
+                sig = signature(event["summary"])
+                prev = load_state()
+                event["changed"] = sig != prev.get("signature")
+                event["signature"] = sig
+                save_state({"updated_at": event["ts"], "signature": sig, "last_mm_probe_epoch": prev.get("last_mm_probe_epoch", 0), "last_summary": event["summary"], "last_auto_close_review": {}})
+                append(event)
+                if event["changed"]:
+                    print(json.dumps(event, ensure_ascii=False, indent=2, sort_keys=True))
+                return 0
+        else:
+            tick_cmd.insert(3, autorun_flag)
+        tick = run(tick_cmd, timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "240")), env=env)
         event["tick"] = compact_result(tick)
         summary = parse_json_tail(tick.get("stdout", ""))
         if tick.get("returncode") in (0, "0") and tick.get("stdout") and not summary:
