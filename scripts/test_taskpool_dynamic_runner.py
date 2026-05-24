@@ -57,6 +57,58 @@ def test_run_preserves_full_stdout_for_large_summary_json():
     assert result["stdout_tail"].endswith("}\n")
 
 
+def test_compute_parallel_max_agents_uses_boundary_probe_ceiling_not_configured_floor(monkeypatch=None):
+    m = load_module()
+    calls = []
+
+    def fake_load_taskpool_config():
+        return {"max_parallel_agents": 3}
+
+    def fake_run(cmd, timeout=None, env=None):
+        calls.append(cmd)
+        return {"returncode": 0, "stdout": json.dumps({"selected_count": 7, "dispatchable": True, "status": "OK"})}
+
+    old_cfg, old_run = getattr(m, "load_taskpool_config"), getattr(m, "run")
+    setattr(m, "load_taskpool_config", fake_load_taskpool_config)
+    setattr(m, "run", fake_run)
+    try:
+        result = m.compute_parallel_max_agents({})
+    finally:
+        setattr(m, "load_taskpool_config", old_cfg)
+        setattr(m, "run", old_run)
+
+    assert result["configured"] == 3
+    assert result["ceiling"] == 24
+    assert result["selected_count"] == 7
+    assert result["recommended"] == 24
+    assert "24" in calls[0]
+
+
+def test_compute_parallel_max_agents_keeps_configured_floor_when_no_boundary_safe_slots():
+    m = load_module()
+
+    def fake_load_taskpool_config():
+        return {"max_parallel_agents": 3}
+
+    def fake_run(cmd, timeout=None, env=None):
+        return {"returncode": 0, "stdout": json.dumps({"selected_count": 0, "dispatchable": True, "status": "OK"})}
+
+    old_cfg, old_run = getattr(m, "load_taskpool_config"), getattr(m, "run")
+    setattr(m, "load_taskpool_config", fake_load_taskpool_config)
+    setattr(m, "run", fake_run)
+    try:
+        result = m.compute_parallel_max_agents({})
+    finally:
+        setattr(m, "load_taskpool_config", old_cfg)
+        setattr(m, "run", old_run)
+
+    assert result["configured"] == 3
+    assert result["ceiling"] == 24
+    assert result["selected_count"] == 0
+    assert result["recommended"] == 3
+    assert result["reason"] == "configured_cap_sufficient"
+
+
 def test_main_parses_large_summary_and_invokes_multimodel_probe_without_silent_nulls():
     m = load_module()
     with tempfile.TemporaryDirectory() as td:
