@@ -663,8 +663,20 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
     if cont_count > 0:
         context = build_continuation_context(task_id, context)
     
-    # Route by task type: code tasks → GPT-5.5, analysis → MiMo
-    needs_code = any(kw in title.lower() for kw in ['修复', 'fix', '实现', 'implement', '代码', 'uvisa', '前端', '后端', '恢复', '集成'])
+    # Route by task type: code/product tasks → GPT-5.5, analysis → MiMo.
+    # Lark/work UI tasks often have titles like “管理后台/页面/下拉框” and carry
+    # the concrete repo only in project metadata, so classify using both title and
+    # project. Misrouting these to the low-cost analysis model creates 300s
+    # timeouts and trips the envelope human-escape guard without useful proof.
+    project_l = str(task.get('project') or '').lower()
+    title_l = title.lower()
+    code_markers = [
+        '修复', 'fix', '实现', 'implement', '代码', 'uvisa', '前端', '后端', '恢复', '集成',
+        'lark', 'admin', '管理后台', '用户端', '页面', 'ui', '下拉', '弹窗', '抽屉', '复刻',
+        '回测', '接口', 'api', 'backend', 'frontend', 'taskpool', 'hermes', 'telemetry',
+        'control-plane', '控制面', 'gate', 'worker', 'cron',
+    ]
+    needs_code = ('uvisa' in project_l) or ('hermes-agent' in project_l) or any(kw in title_l for kw in code_markers)
     model = 'gpt-5.5' if needs_code else 'mimo-v2.5-pro'
     provider = 'openai-codex' if needs_code else 'xiaomi'
     max_turns = 30 if needs_code else 15
@@ -884,7 +896,12 @@ def _process_worker_result(row, actor, eid, worker_result):
             evidence=['command:agent_team_controller execute-cycle worker timeout'],
         )
         record['retry_transition'] = retry
-        update_status(eid, 'FAILED', error='worker_timeout')
+        if retry.get('ok'):
+            update_status(eid, 'SKIPPED', error='worker_timeout_requeued')
+            record['envelope_status'] = 'SKIPPED'
+        else:
+            update_status(eid, 'FAILED', error='worker_timeout_retry_failed')
+            record['envelope_status'] = 'FAILED'
         record['to_status'] = 'retry' if retry.get('ok') else 'running'
         return record
     update_status(eid, 'FAILED', error=str(worker_result)[:200])
@@ -1072,7 +1089,12 @@ def consume_claimed_batch(claimed_items, max_agents=3):
                 evidence=['command:agent_team_controller consume-claimed worker timeout'],
             )
             out['retry_transition'] = retry
-            update_status(eid, 'FAILED', error='worker_timeout')
+            if retry.get('ok'):
+                update_status(eid, 'SKIPPED', error='worker_timeout_requeued')
+                out['envelope_status'] = 'SKIPPED'
+            else:
+                update_status(eid, 'FAILED', error='worker_timeout_retry_failed')
+                out['envelope_status'] = 'FAILED'
             out['to_status'] = 'retry' if retry.get('ok') else 'running'
         else:
             update_status(eid, 'FAILED', error=str(worker_result)[:200])
@@ -1104,7 +1126,7 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         'requested_count': len(claimed_items),
         'launched_count': len(launch_records),
         'consumed_count': len(consumed),
-        'running_count': len(launch_records),
+        'running_count': sum(1 for item in consumed if item.get('to_status') == 'running'),
         'reviewed_count': reviewed_count,
         'done_count': 0,
         'claimed': consumed,
