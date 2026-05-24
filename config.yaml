@@ -636,3 +636,9 @@ eval:
   min_traces: 30
 route:
   blank_input_reject: true
+taskpool:
+  dispatch_mode: parallel
+  max_parallel_agents: 3
+  handoff_archive_threshold: 100
+  handoff_archive_keep: 50
+  continuation_backlog_threshold: 100
