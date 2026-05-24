@@ -322,6 +322,58 @@ def test_tick_multimodel_step_requires_explicit_flag_and_env():
         assert payload["multimodel_step"]["reason"] == "autorun_multimodel_disabled", payload
 
 
+def test_tick_multimodel_task_argument_routes_to_targeted_step():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(list(args))
+        step = args[0]
+        if step == "multimodel-intervention-step":
+            return {"status": "OK", "task_id": "task-1"}
+        if step == "evidence-spine":
+            return {"status": "OK", "gate_status": "PASS"}
+        if step == "dispatch-dry-run":
+            return {"status": "OK", "dispatchable": False, "next": None}
+        if step == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 0, "selected": []}
+        return {"status": "OK"}
+
+    old_argv = sys.argv[:]
+    old_run_json = module.run_json
+    old_append_log = module.append_log
+    old_save_state = module.save_state
+    old_load_state = module.load_state
+    old_env = os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL")
+    try:
+        module.run_json = fake_run_json
+        module.append_log = lambda event: None
+        module.save_state = lambda state: None
+        module.load_state = lambda: {}
+        os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = "1"
+        sys.argv = [str(TICK), "--summary", "--no-state", "--multimodel-step", "--multimodel-task", "task-1"]
+        import io
+        import contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = module.main()
+        assert rc == 0
+        payload = json.loads(buf.getvalue())
+    finally:
+        sys.argv = old_argv
+        module.run_json = old_run_json
+        module.append_log = old_append_log
+        module.save_state = old_save_state
+        module.load_state = old_load_state
+        if old_env is None:
+            os.environ.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
+        else:
+            os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = old_env
+
+    assert payload["multimodel_step"]["status"] == "OK", payload
+    assert ["multimodel-intervention-step", "--task", "task-1", "--json"] in calls, calls
+
+
 def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
     module = load_tick_module()
     calls = []
@@ -471,6 +523,7 @@ if __name__ == "__main__":
     test_tick_summary_surfaces_multimodel_intervention_hint()
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()
+    test_tick_multimodel_task_argument_routes_to_targeted_step()
     test_parallel_autorun_triggers_event_driven_worker_consumer_summary()
     test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()
     test_run_cmd_json_forces_nonzero_ok_stdout_to_error()

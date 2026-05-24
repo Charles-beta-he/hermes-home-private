@@ -284,6 +284,7 @@ def main() -> int:
     parser.add_argument("--review-close-max-tasks", type=int, default=0, help="Max review tasks scanned by auto-close-review during --autorun-step; default from taskpool.review_close_max_tasks")
     parser.add_argument("--archive-handoffs", action="store_true", help="Archive old autorun/parallel handoff files beyond configured keep count")
     parser.add_argument("--multimodel-step", action="store_true", help="Opt-in expensive multi-model step; still requires HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1")
+    parser.add_argument("--multimodel-task", default="", help="Optional task id to scope --multimodel-step; used by task_added event hooks")
     args = parser.parse_args()
     taskpool_cfg = load_taskpool_runtime_config()
     max_parallel_agents = int(args.max_agents or taskpool_cfg.get("max_parallel_agents") or 3)
@@ -328,7 +329,11 @@ def main() -> int:
     # Ambient HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 must not turn safe summary
     # cron ticks into long-running model calls.
     if args.multimodel_step and os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL") == "1" and not errors:
-        event["multimodel_step"] = run_json(["multimodel-intervention-step", "--json"])
+        multimodel_cmd = ["multimodel-intervention-step"]
+        if args.multimodel_task:
+            multimodel_cmd.extend(["--task", args.multimodel_task])
+        multimodel_cmd.append("--json")
+        event["multimodel_step"] = run_json(multimodel_cmd)
         if event["multimodel_step"].get("status") not in allowed_statuses:
             errors.append({"step": "multimodel_step", "status": event["multimodel_step"].get("status"), "stderr": event["multimodel_step"].get("stderr"), "stdout": event["multimodel_step"].get("stdout"), "reason": event["multimodel_step"].get("reason")})
     elif args.multimodel_step and not errors:
