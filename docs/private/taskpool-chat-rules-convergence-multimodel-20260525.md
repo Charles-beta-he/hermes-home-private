@@ -62,4 +62,31 @@ Implement the smallest safe step now:
 
 ## Boundary for this pass
 
-Stop before a broad CLI/runtime-kind migration. That needs a larger contract and could break existing `hermes chat --ignore-rules` workflows. The current pass should only close the unsafe execution-worker gap with targeted tests: global safety digest plus task-spec requirement inheritance.
+Stop before a broad CLI/runtime-kind migration. That needs a larger contract and could break existing `hermes chat --ignore-rules` workflows. The current pass closes the unsafe execution-worker gap with targeted tests: global safety digest, task-spec requirement inheritance, and scoped environment capability handoff for skills/MCP/local-brain context.
+
+## Claude Code 复审补充：task-level requirements snapshot（2026-05-25）
+
+Claude Code 独立复审指出：第一阶段 `Canonical Rules Digest` 只修复了全局宪法/安全红线漂移，但未完全解决用户痛点“同一个要求任务池修一次、chat 再说一次”。正确边界不是让 worker 继承完整 chat persona/memory/history，而是把已经沉淀到 task record 的任务级 SSOT 稳定传给 execution worker：`body` / `description` / `acceptance_criteria` / `red_lines` / `non_goals` / `evidence_refs` / `workflow_contract`。
+
+因此新增 `TASK-SPEC REQUIREMENTS SNAPSHOT`：执行型 worker 在保留 `--ignore-rules` 隔离的同时，必须读取 task record 内的具体需求、验收、红线、证据要求，并视作任务局部 source of truth；consult/review/smoke 等独立评审路径仍保持隔离。
+
+## Claude Code + 多模型复审补充：skills / MCP / 本地大脑环境能力桥（2026-05-25）
+
+用户进一步追问 chat 环境中的 skills、MCP、本地大脑是否同步支持。复审结论：需要支持，但必须是“scoped capability handoff”，不能把完整 chat 环境、memory、persona、无关历史复制给 worker。
+
+已落地 `ENVIRONMENT CAPABILITY PACK`：
+
+- `required_skills` / `skills`：从 task record 与 project profile 合并、去重，并在 delegate 命令中显式追加 `--skills <name>`，即使保留 `--ignore-rules` 也能加载任务所需 skill。静态验证 Hermes CLI 中 `--ignore-rules` 只控制 `skip_context_files/skip_memory`，显式 `parsed_skills` 会独立构建并合并到 `system_prompt`。
+- `required_mcp_tools` / `mcp_tools`：只注入任务需要的 MCP tool 名称与已配置 MCP server 名称（names only），不输出 command/env/token/url/header 等配置值；worker 仍必须真实调用工具，不得伪造 MCP 结果。
+- 本地大脑：只注入 task/profile 中已策展字段（如 `brain`、`brain_profile`、`brain_contract`、`brain_context`、`local_brain_refs`），并做长度截断；不导入原始 chat history 或全量 memory。
+- 隔离边界：execution worker 支持上述能力桥；consult/review/smoke/多模型评审仍保持纯净隔离。
+
+验证与边界评审：
+
+- TDD 覆盖 secret negative、MCP fallback parser 深度、disabled MCP 排除、skills 合并去重、brain context 截断、空上下文不注入、delegate argv 保留 `--ignore-rules` 且追加 `--skills`、Hermes CLI `--skills` 与 `--ignore-rules` 静态交互。
+- pytest：`8 passed`。
+- py_compile：PASS。
+- `brain_task_orchestrator.py selfcheck --json`：PASS。
+- Claude Code 初审提出 secret/fallback/runtime 验证缺口，补测后复审为 `approve_with_minor`，剩余仅静态测试耦合源码布局等非阻断项。
+- MiMo 复审：`approve`，无阻断，确认 names-only MCP、scoped skills、brain truncation、no fake MCP 规则边界正确。
+- GPT 复审：`approve`，无 finding。

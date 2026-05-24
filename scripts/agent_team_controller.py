@@ -294,7 +294,154 @@ TASK-SPEC RULES:
 '''.format(sections='\n\n'.join(sections)).strip()
 
 
-def build_worker_context(task, conflict_group, sibling_tasks=None):
+def _coerce_name_list(value):
+    """Normalize comma/JSON/list skill or tool declarations into stable names."""
+    if value is None or value == '':
+        return []
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return []
+        if text.startswith('['):
+            try:
+                value = json.loads(text)
+            except Exception:
+                value = text
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(',') if item.strip()]
+    if isinstance(value, dict):
+        return [str(k).strip() for k, enabled in value.items() if enabled and str(k).strip()]
+    if isinstance(value, (list, tuple, set)):
+        names = []
+        for item in value:
+            names.extend(_coerce_name_list(item))
+        deduped = []
+        seen = set()
+        for name in names:
+            if name not in seen:
+                seen.add(name)
+                deduped.append(name)
+        return deduped
+    return [str(value).strip()] if str(value).strip() else []
+
+
+def _merge_name_lists(*values):
+    names = []
+    seen = set()
+    for value in values:
+        for name in _coerce_name_list(value):
+            if name not in seen:
+                seen.add(name)
+                names.append(name)
+    return names
+
+
+def collect_worker_required_skills(task, profile=None):
+    """Collect explicitly required worker skills from task and profile metadata."""
+    profile = profile or {}
+    return _merge_name_lists(
+        task.get('required_skills'),
+        task.get('skills'),
+        profile.get('required_skills'),
+        profile.get('skills'),
+    )
+
+
+def _configured_mcp_servers(config_path=None):
+    """Best-effort list of configured MCP server names without exposing secrets."""
+    path = Path(config_path) if config_path is not None else (Path.home() / '.hermes' / 'config.yaml')
+    if not path.exists():
+        return []
+    try:
+        import yaml  # type: ignore
+        data = yaml.safe_load(path.read_text(encoding='utf-8', errors='replace')) or {}
+        servers = data.get('mcp_servers') if isinstance(data, dict) else None
+        if isinstance(servers, dict):
+            return sorted(str(name) for name in servers.keys())
+    except Exception:
+        pass
+    # Tiny fallback parser for tests / minimal environments.
+    servers = []
+    in_mcp = False
+    mcp_indent = None
+    child_indent = None
+    for raw in path.read_text(encoding='utf-8', errors='replace').splitlines():
+        if raw.strip().startswith('#') or not raw.strip():
+            continue
+        indent = len(raw) - len(raw.lstrip(' '))
+        stripped = raw.strip()
+        if stripped == 'mcp_servers:':
+            in_mcp = True
+            mcp_indent = indent
+            child_indent = None
+            continue
+        if in_mcp:
+            if mcp_indent is not None and indent <= mcp_indent:
+                break
+            if child_indent is None:
+                child_indent = indent
+            if indent != child_indent:
+                continue
+            if stripped.endswith(':') and ':' not in stripped[:-1]:
+                servers.append(stripped[:-1])
+    return sorted(name for name in servers if name)
+
+
+def build_environment_capability_pack(task, profile=None, config_path=None, max_field_chars=900):
+    """Build a compact skills/MCP/local-brain capability snapshot for workers.
+
+    This is intentionally a capability/discovery pack, not a full chat context
+    clone. MCP tools remain tool-layer capabilities; explicit skills are passed
+    via CLI flags; local-brain context is limited to task/profile metadata that
+    was already curated into the task handoff.
+    """
+    profile = profile or {}
+    skills = collect_worker_required_skills(task, profile)
+    mcp_tools = _merge_name_lists(
+        task.get('required_mcp_tools'), task.get('mcp_tools'), task.get('required_mcp'),
+        profile.get('required_mcp_tools'), profile.get('mcp_tools'), profile.get('required_mcp'),
+    )
+    mcp_servers = _configured_mcp_servers(config_path)
+    brain_fields = []
+    for label, source, key in [
+        ('TASK_BRAIN', task, 'brain'),
+        ('TASK_BRAIN_PROFILE', task, 'brain_profile'),
+        ('TASK_ARCHITECTURE_TARGET', task, 'architecture_target'),
+        ('TASK_BRAIN_CONTRACT', task, 'brain_contract'),
+        ('TASK_BRAIN_CONTEXT', task, 'brain_context'),
+        ('TASK_LOCAL_BRAIN_REFS', task, 'local_brain_refs'),
+        ('PROFILE_BRAIN', profile, 'brain'),
+        ('PROFILE_BRAIN_PROFILE', profile, 'brain_profile'),
+        ('PROFILE_BRAIN_CONTRACT', profile, 'brain_contract'),
+        ('PROFILE_BRAIN_CONTEXT', profile, 'brain_context'),
+        ('PROFILE_LOCAL_BRAIN_REFS', profile, 'local_brain_refs'),
+    ]:
+        rendered = _compact_task_text(source.get(key), max_field_chars) if isinstance(source, dict) else ''
+        if rendered:
+            brain_fields.append(f'{label}:\n{rendered}')
+
+    sections = []
+    if skills:
+        sections.append('REQUIRED_SKILLS (passed via --skills despite --ignore-rules):\n' + '\n'.join(f'- {s}' for s in skills))
+    if mcp_tools:
+        sections.append('REQUIRED_MCP_TOOLS (tool layer; do not fake calls):\n' + '\n'.join(f'- {t}' for t in mcp_tools))
+    if mcp_servers and mcp_tools:
+        sections.append('CONFIGURED_MCP_SERVERS (names only; credentials omitted):\n' + '\n'.join(f'- {s}' for s in mcp_servers[:20]))
+    if brain_fields:
+        sections.append('LOCAL_BRAIN_CONTEXT_PACK (curated snapshot only, not full memory):\n' + '\n\n'.join(brain_fields))
+    if not sections:
+        return ''
+    return '''
+ENVIRONMENT CAPABILITY PACK (skills/MCP/local-brain bridge; preserve isolation):
+{sections}
+CAPABILITY RULES:
+- Explicit skills are allowed because they are scoped handoff requirements, not global preloaded skills.
+- MCP availability is inherited from Hermes config/tool discovery; never fabricate MCP results without calling tools.
+- Local-brain context here is a bounded curated snapshot. Do not import raw chat history or full memory dumps.
+'''.format(sections='\n\n'.join(sections)).strip()
+
+
+def build_worker_context(task, conflict_group, sibling_tasks=None, profile=None):
     """Build context for delegate_task child.
 
     v2: Includes full boundary constraints so the worker understands its
@@ -363,12 +510,15 @@ PAGE-BATCH RULES:
     uvisa_contract_section = format_uvisa_contract_context(uvisa_contract, task.get('uvisa_contract_path', ''))
     execution_rules_digest = build_execution_rules_digest()
     task_spec_section = build_task_spec_section(task)
+    environment_capability_pack = build_environment_capability_pack(task, profile=profile)
 
     return f"""You are a Kanban worker executing a brain task.
 
 {execution_rules_digest}
 
 {task_spec_section}
+
+{environment_capability_pack}
 
 TASK: {task.get('title', 'untitled')}
 ID: {task.get('id', '')}
@@ -759,7 +909,8 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
 
     # Check continuation
     can_cont, cont_count = can_continue(task_id)
-    context = build_worker_context(task, conflict_group, sibling_tasks=sibling_tasks) + profile_context
+    required_skills = collect_worker_required_skills(task, profile)
+    context = build_worker_context(task, conflict_group, sibling_tasks=sibling_tasks, profile=profile) + profile_context
     if cont_count > 0:
         context = build_continuation_context(task_id, context)
     
@@ -788,8 +939,10 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             '--model', model, '--provider', provider,
             '--quiet', '--max-turns', str(max_turns),
             '--source', f'team-worker-{eid[:8]}',
-            '--ignore-rules',
         ]
+        for skill_name in required_skills:
+            cmd.extend(['--skills', skill_name])
+        cmd.append('--ignore-rules')
         r = _sp.run(cmd, capture_output=True, text=True, timeout=timeout_s)
         output = r.stdout
         

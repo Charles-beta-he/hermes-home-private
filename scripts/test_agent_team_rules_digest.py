@@ -62,11 +62,90 @@ def test_task_spec_section_preserves_task_level_requirements():
     assert "PROOF_JSON required" in section
 
 
-def test_delegate_worker_injects_digest_and_task_spec_while_preserving_ignore_rules(monkeypatch, tmp_path):
+def test_environment_capability_pack_carries_skills_mcp_and_brain_refs(tmp_path):
+    module = load_module()
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        "mcp_servers:\n"
+        "  time:\n"
+        "    command: uvx\n"
+        "    env:\n"
+        "      API_KEY: super-secret-value\n"
+        "  filesystem:\n"
+        "    command: npx\n"
+        "    auth:\n"
+        "      token: nested-token-value\n",
+        encoding="utf-8",
+    )
+
+    pack = module.build_environment_capability_pack(
+        {
+            "required_skills": "taskpool-control-plane,native-mcp",
+            "skills": '["taskpool-control-plane", "hermes-agent"]',
+            "required_mcp_tools": {"mcp_time_get_current_time": True, "mcp_secret_disabled": False},
+            "brain": "local-brain",
+            "brain_contract": {"red_lines": ["真实证据闭环"]},
+            "brain_context": "只注入检索快照，不同步全量 memory。",
+        },
+        profile={"required_skills": ["hermes-agent"], "required_mcp_tools": ["mcp_filesystem_read_text_file"]},
+        config_path=config,
+    )
+
+    assert "ENVIRONMENT CAPABILITY PACK" in pack
+    assert "taskpool-control-plane" in pack
+    assert "native-mcp" in pack
+    assert "hermes-agent" in pack
+    assert pack.count("taskpool-control-plane") == 1
+    assert "mcp_time_get_current_time" in pack
+    assert "mcp_secret_disabled" not in pack
+    assert "mcp_filesystem_read_text_file" in pack
+    assert "time" in pack
+    assert "filesystem" in pack
+    assert "super-secret-value" not in pack
+    assert "nested-token-value" not in pack
+    assert "API_KEY" not in pack
+    assert "auth" not in pack
+    assert "local-brain" in pack
+    assert "真实证据闭环" in pack
+    assert "全量 memory" in pack
+
+
+def test_environment_capability_pack_empty_without_explicit_context(tmp_path):
+    module = load_module()
+    config = tmp_path / "config.yaml"
+    config.write_text("mcp_servers:\n  time:\n    command: uvx\n", encoding="utf-8")
+
+    assert module.build_environment_capability_pack({}, profile={}, config_path=config) == ""
+    assert module.collect_worker_required_skills({}, {}) == []
+
+
+def test_environment_capability_pack_truncates_brain_context(tmp_path):
+    module = load_module()
+    config = tmp_path / "config.yaml"
+    config.write_text("{}\n", encoding="utf-8")
+    long_context = "脑" * 80
+
+    pack = module.build_environment_capability_pack(
+        {"brain_context": long_context},
+        profile={},
+        config_path=config,
+        max_field_chars=20,
+    )
+
+    assert "LOCAL_BRAIN_CONTEXT_PACK" in pack
+    assert "[truncated" in pack
+    assert long_context not in pack
+
+
+def test_delegate_worker_injects_digest_task_spec_and_environment_while_preserving_ignore_rules(monkeypatch, tmp_path):
     module = load_module()
     captured = {}
 
-    monkeypatch.setattr(module, "load_project_profile", lambda project: {})
+    monkeypatch.setattr(
+        module,
+        "load_project_profile",
+        lambda project: {"required_skills": ["hermes-agent"], "required_mcp_tools": ["mcp_time_get_current_time"]},
+    )
     monkeypatch.setattr(module, "can_continue", lambda task_id: (False, 0))
     monkeypatch.setattr(module, "build_execution_rules_digest", lambda: "CANONICAL EXECUTION RULES DIGEST\n- shared red line")
 
@@ -87,6 +166,8 @@ def test_delegate_worker_injects_digest_and_task_spec_while_preserving_ignore_ru
             "body": "用户要求：任务池继承 chat 中已表达的验收标准。",
             "acceptance_criteria": ["不需要重复在 chat 再说一次"],
             "red_lines": ["不得丢失任务级验收"],
+            "required_skills": ["taskpool-control-plane"],
+            "brain_context": "本地大脑提示：使用 brainctl 证据优先。",
         },
         conflict_group="hermes-control-plane",
         eid="abcdef123456",
@@ -101,3 +182,55 @@ def test_delegate_worker_injects_digest_and_task_spec_while_preserving_ignore_ru
     assert "TASK-SPEC REQUIREMENTS SNAPSHOT" in prompt
     assert "不需要重复在 chat 再说一次" in prompt
     assert "不得丢失任务级验收" in prompt
+    assert "ENVIRONMENT CAPABILITY PACK" in prompt
+    assert "taskpool-control-plane" in prompt
+    assert "hermes-agent" in prompt
+    assert "mcp_time_get_current_time" in prompt
+    assert "本地大脑提示" in prompt
+    assert cmd.count("--skills") == 2
+    assert "taskpool-control-plane" in cmd
+    assert "hermes-agent" in cmd
+
+
+def test_hermes_cli_loads_explicit_skills_outside_ignore_rules_gate():
+    cli_path = SCRIPTS_DIR.parent / "hermes-agent" / "cli.py"
+    source = cli_path.read_text(encoding="utf-8", errors="replace")
+
+    ignore_setup = source.index("self.ignore_rules = ignore_rules")
+    agent_skip_files = source.index("skip_context_files=self.ignore_rules")
+    explicit_skill_gate = source.index("if parsed_skills:")
+    preload_call = source.index("build_preloaded_skills_prompt", explicit_skill_gate)
+    system_prompt_merge = source.index("cli.system_prompt", preload_call)
+
+    assert ignore_setup < agent_skip_files
+    assert explicit_skill_gate < preload_call < system_prompt_merge
+    assert "skip_context_files=self.ignore_rules" in source
+    assert "skip_memory=self.ignore_rules" in source
+
+
+def test_configured_mcp_servers_fallback_excludes_nested_secret_keys(monkeypatch, tmp_path):
+    module = load_module()
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        "mcp_servers:\n"
+        "  alpha:\n"
+        "    command: uvx\n"
+        "    env:\n"
+        "      TOKEN: should-not-render\n"
+        "  beta:\n"
+        "    auth:\n"
+        "      api_key: also-secret\n"
+        "other_section:\n"
+        "  gamma:\n",
+        encoding="utf-8",
+    )
+    real_import = __import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "yaml":
+            raise ImportError("force fallback")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr("builtins.__import__", fake_import)
+
+    assert module._configured_mcp_servers(config) == ["alpha", "beta"]
