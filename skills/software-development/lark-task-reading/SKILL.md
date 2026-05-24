@@ -24,7 +24,7 @@ metadata:
 
 # Lark Task Reading
 
-Reference addendum: `references/uvisa-admin-lark-fasttrack-closeout.md` captures the UVISA admin Lark fast-track closeout workflow: S0/S1/M/L/R/B tiers, shared-evidence-with-per-GUID-atom mapping, upgrade triggers, and the strict split between implementation sendback, online UI retest, and final Lark close.
+Reference addendum: `references/uvisa-lark-taskflow-single-source-of-truth.md` is the current canonical UVISA Lark/work flow. It supersedes older notes that required separate online UI retest before final Lark completion when the user has explicitly canceled that gate for the batch: close Lark from correct GUID + merged PR/current-code proof + deterministic verification (admin default: `npm run build`) + evidence directory/proof SHA + taskpool/envelope sync. `references/uvisa-admin-lark-fasttrack-closeout.md` remains historical/background guidance for tiering, atom mapping, and upgrade triggers, but does not override the SSOT.
 
 ## Taskpool quarantine behavior
 
@@ -262,6 +262,7 @@ When the user asks to "loop" Lark reading or to fuse patterns into the skill tre
 When a user asks to read assigned Lark tasks and complete them, treat each task as a finite delivery unit, not as an open-ended audit. Before implementation starts, long or compound requirements must be split into checklist-style acceptance atoms; after implementation and deterministic verification pass, close the task in this order before spending more tool/context budget on optional ledgers or exploratory follow-ups.
 
 Important workflow split for 贺程's UVISA/Lark tasks:
+- Current SSOT: first check `references/uvisa-lark-taskflow-single-source-of-truth.md`. If the user has explicitly canceled separate online UI acceptance for the current batch, do not apply the older mandatory-online-UI-retetest closeout rule below; close from correct GUID + merged PR/current-code proof + deterministic verification + evidence directory/proof SHA + Lark/taskpool/envelope sync. Keep stricter online UI evidence only when the user explicitly requests it or the task class requires it.
 - A blocked/review task must not freeze unrelated work tasks: classify the blocker on that task, keep the rest of the pool dispatchable, and verify `next`/dispatch tick still selects another candidate.
 - Current UVISA work-task scope is cross-repo: tasks may modify `/Users/charles/Desktop/folder/work/uvisa-admin`, `/Users/charles/Desktop/folder/work/uvisa-app-2.0`, and `/Users/charles/Desktop/folder/work/uvisa-backend` as needed by the real acceptance surface. Do not impose an admin-only boundary unless the user explicitly narrows the scope for that specific task.
 - Do not collapse implementation closeout and online UI retest into one local taskpool item.
