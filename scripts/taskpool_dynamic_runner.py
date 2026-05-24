@@ -170,7 +170,10 @@ def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
     """
     cfg = load_taskpool_config()
     configured = positive_int(cfg.get("max_parallel_agents"), 3)
-    ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), 24)
+    # Default to the configured taskpool cap (normally 3).  A previous default
+    # of 24 let the cron runner turn a bounded smoke into a broad parallel
+    # autorun burst; only an explicit env override may raise the ceiling.
+    ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), configured)
     ceiling = max(configured, ceiling)
     probe = run(
         [sys.executable, str(HERMES_HOME / "scripts" / "brain_task_orchestrator.py"), "parallel-dispatch-dry-run", "--max-agents", str(ceiling), "--json"],
@@ -253,7 +256,7 @@ def main() -> int:
                 return 0
         else:
             tick_cmd.insert(3, autorun_flag)
-        tick = run(tick_cmd, timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "240")), env=env)
+        tick = run(tick_cmd, timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "1200")), env=env)
         event["tick"] = compact_result(tick)
         summary = parse_json_tail(tick.get("stdout", ""))
         if tick.get("returncode") in (0, "0") and tick.get("stdout") and not summary:

@@ -1581,6 +1581,35 @@ def test_auto_completer_recursive_self_lock_detects_cron_wrapped_dynamic_runner_
     assert classification["safe_for_next_tick"] is True, classification
 
 
+def test_auto_completer_classifies_interrupted_dynamic_runner_as_safe_scheduler_noise():
+    mod = load_orchestrator_module()
+    runner_error = json.dumps({
+        "schema": "taskpool_dynamic_runner_v1",
+        "tick": {
+            "cmd": [sys.executable, "/Users/charles/.hermes/scripts/brain_task_dispatch_tick.py", "--summary", "--parallel-autorun", "--max-agents", "24"],
+            "returncode": -15,
+            "stdout": "",
+        },
+    })
+    classification = mod.classify_auto_completer_job({"last_status": "error", "last_error": runner_error})
+    assert classification["semantic_status"] == "scheduler_interrupted", classification
+    assert classification["task_result"] == "scheduler_retry_or_deterministic_replacement_required", classification
+    assert classification["safe_for_next_tick"] is True, classification
+    assert "scheduler_interrupted" in classification["blockers"], classification
+
+
+def test_auto_completer_classifies_plain_script_timeout_as_retryable_safe_scheduler_noise():
+    mod = load_orchestrator_module()
+    classification = mod.classify_auto_completer_job({
+        "last_status": "error",
+        "last_error": "Script timed out after 120s: /Users/charles/.hermes/scripts/taskpool_dynamic_runner.py",
+    })
+    assert classification["semantic_status"] == "retryable_runtime_timeout", classification
+    assert classification["task_result"] == "scheduler_retry_or_deterministic_replacement_required", classification
+    assert classification["safe_for_next_tick"] is True, classification
+    assert "retryable_runtime_timeout" in classification["blockers"], classification
+
+
 def test_auto_completer_classifies_certification_required_tail_as_safe_task_gate():
     mod = load_orchestrator_module()
     last_error = '''... "recommended_tier": "T3_certification", "intervention_required": true,

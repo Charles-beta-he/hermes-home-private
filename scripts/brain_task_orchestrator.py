@@ -7687,11 +7687,24 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
         blockers.append("typescript_unused_symbol_baseline_blocker")
     if "full build" in lower or "build" in lower:
         blockers.append("full_build_baseline_check")
+    dynamic_runner_interrupted = (
+        "taskpool_dynamic_runner_v1" in last_error
+        and "brain_task_dispatch_tick.py" in last_error
+        and (
+            '"returncode": -15' in last_error
+            or "\\\"returncode\\\": -15" in last_error
+            or '"returncode": -9' in last_error
+            or "\\\"returncode\\\": -9" in last_error
+        )
+    )
+    if dynamic_runner_interrupted:
+        blockers.append("scheduler_interrupted")
     retryable_runtime_timeout = (
         "request timed out" in lower
         or "runtimeerror: request timed out" in lower
         or "subprocess_timeout" in lower
         or "timeout_recorded" in lower
+        or "script timed out after" in lower
     )
     if retryable_runtime_timeout:
         blockers.append("retryable_runtime_timeout")
@@ -7778,6 +7791,10 @@ def classify_auto_completer_job(job: dict[str, Any] | None) -> dict[str, Any]:
     elif last_status == "error" and certification_required_signal:
         semantic_status = "certification_required_pending"
         task_result = "task_certification_required_waiting_for_multimodel_step"
+        safe_for_next_tick = True
+    elif last_status == "error" and dynamic_runner_interrupted:
+        semantic_status = "scheduler_interrupted"
+        task_result = "scheduler_retry_or_deterministic_replacement_required"
         safe_for_next_tick = True
     elif last_status == "error" and retryable_runtime_timeout:
         semantic_status = "retryable_runtime_timeout"
