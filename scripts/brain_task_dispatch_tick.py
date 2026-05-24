@@ -272,6 +272,60 @@ def handoff_backlog_status(*, archive: bool = False, threshold: int = 100, keep:
     return status
 
 
+def event_next_tick_follow_through(*, worker_trigger: dict[str, Any], review_close_max_tasks: int, max_depth: int) -> dict[str, Any]:
+    """Run a bounded follow-through tick after event-driven workers stop at review.
+
+    The event-driven worker bridge is intentionally not allowed to mark brain
+    tasks done. When workers produce review-ready proof, this helper performs
+    only the normal proof-gated review closer and a read-only dispatch refresh.
+    It does not claim new tasks, consume more handoffs, or recursively invoke
+    another dispatch tick; depth is telemetry plus a hard cap so future stages
+    cannot grow into an unbounded execution storm.
+    """
+    requested = bool(worker_trigger.get("next_tick_requested"))
+    try:
+        depth_limit = max(0, min(3, int(max_depth)))
+    except Exception:
+        depth_limit = 1
+    payload: dict[str, Any] = {
+        "status": "SKIP",
+        "requested": requested,
+        "depth_limit": depth_limit,
+        "depth_used": 0,
+        "executed_steps": [],
+        "skip_reasons": [],
+        "closed_count": 0,
+        "next_dispatch_selected_count": 0,
+        "next_dispatch_status": "",
+        "reason": "not_requested" if not requested else "depth_limit_zero",
+        "safety": "bounded review-close/dispatch-refresh only; no recursive claim or direct done by workers",
+    }
+    if not requested or depth_limit <= 0:
+        payload["skip_reasons"].append(str(payload["reason"]))
+        return payload
+    payload["depth_used"] = 1
+    payload["executed_steps"].append("auto-close-review")
+    close = run_json(["auto-close-review", "--max-tasks", str(review_close_max_tasks), "--json"])
+    payload["auto_close_review"] = close
+    payload["closed_count"] = int(close.get("closed_count") or 0)
+    if close.get("status") not in {"OK", "PASS"}:
+        payload["status"] = "ERROR"
+        payload["reason"] = "auto_close_review_failed"
+        return payload
+    payload["executed_steps"].append("parallel-dispatch-dry-run")
+    refresh = run_json(["parallel-dispatch-dry-run", "--max-agents", "1", "--json"])
+    payload["dispatch_refresh"] = refresh
+    payload["next_dispatch_status"] = str(refresh.get("status") or "")
+    payload["next_dispatch_selected_count"] = int(refresh.get("selected_count") or 0)
+    if refresh.get("status") not in {"OK", "PASS", "SKIP"}:
+        payload["status"] = "ERROR"
+        payload["reason"] = "dispatch_refresh_failed"
+        return payload
+    payload["status"] = "OK"
+    payload["reason"] = "bounded_follow_through_complete"
+    return payload
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Safe local-brain task dispatch tick")
     parser.add_argument("--print-always", action="store_true", help="Always print the event JSON")
@@ -282,6 +336,7 @@ def main() -> int:
     parser.add_argument("--parallel-autorun", action="store_true", help="Opt-in parallel bridge: claim a non-conflicting batch and emit per-task handoffs")
     parser.add_argument("--max-agents", type=int, default=0, help="Max agents for --parallel-autorun / parallel dry-run; default from taskpool.max_parallel_agents")
     parser.add_argument("--review-close-max-tasks", type=int, default=0, help="Max review tasks scanned by auto-close-review during --autorun-step; default from taskpool.review_close_max_tasks")
+    parser.add_argument("--event-next-tick-depth", type=int, default=1, help="Depth cap for event-driven follow-through after workers stop at review; 0 disables, max 3")
     parser.add_argument("--archive-handoffs", action="store_true", help="Archive old autorun/parallel handoff files beyond configured keep count")
     parser.add_argument("--multimodel-step", action="store_true", help="Opt-in expensive multi-model step; still requires HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1")
     parser.add_argument("--multimodel-task", default="", help="Optional task id to scope --multimodel-step; used by task_added event hooks")
@@ -391,6 +446,16 @@ def main() -> int:
                 errors.append({"step": "event_worker_trigger", "status": event["event_worker_trigger"].get("status"), "stderr": event["event_worker_trigger"].get("stderr"), "stdout": event["event_worker_trigger"].get("stdout"), "reason": event["event_worker_trigger"].get("reason")})
                 event["status"] = "ERROR"
                 event["errors"] = errors
+            else:
+                event["event_next_tick"] = event_next_tick_follow_through(
+                    worker_trigger=event["event_worker_trigger"],
+                    review_close_max_tasks=review_close_max_tasks,
+                    max_depth=args.event_next_tick_depth,
+                )
+                if event["event_next_tick"].get("status") not in {"OK", "PASS", "SKIP"}:
+                    errors.append({"step": "event_next_tick", "status": event["event_next_tick"].get("status"), "reason": event["event_next_tick"].get("reason")})
+                    event["status"] = "ERROR"
+                    event["errors"] = errors
         event["post_autorun_dispatch"] = run_json(["parallel-dispatch-dry-run", "--max-agents", str(max_parallel_agents), "--json"])
     elif args.autorun_step and not errors:
         event["autorun"] = run_cmd_json([sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"])
@@ -444,6 +509,7 @@ def main() -> int:
     }
     autorun_raw = event.get("autorun") if isinstance(event.get("autorun"), dict) else {}
     auto_close_raw = event.get("auto_close_review") if isinstance(event.get("auto_close_review"), dict) else {}
+    event_next_tick_raw = event.get("event_next_tick") if isinstance(event.get("event_next_tick"), dict) else {}
     mm_raw = event.get("multimodel_intervention") if isinstance(event.get("multimodel_intervention"), dict) else {}
     evidence_spine_raw = event.get("evidence_spine") if isinstance(event.get("evidence_spine"), dict) else {}
     mm_selected = mm_raw.get("selected") if isinstance(mm_raw.get("selected"), dict) else {}
@@ -486,6 +552,7 @@ def main() -> int:
         "claimed_count": int(autorun_raw.get("claimed_count") or 0),
         "batch_id": autorun_raw.get("batch_id", ""),
         "worker_trigger": event.get("event_worker_trigger", {}) if isinstance(event.get("event_worker_trigger"), dict) else {},
+        "event_next_tick": event_next_tick_raw,
         "safety": autorun_raw.get("safety", ""),
     }
     summary_payload = {

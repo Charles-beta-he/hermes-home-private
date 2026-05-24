@@ -396,6 +396,8 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
             return {"status": "OK", "dispatchable": True, "next": {"id": "task-1", "title": "Task 1"}}
         if step == "evidence-spine":
             return {"status": "OK", "gate_status": "PASS", "summary": {}}
+        if step == "auto-close-review":
+            return {"status": "OK", "closed_count": 1, "safety": "proof-gated review closer"}
         return {"status": "OK"}
 
     def fake_run_cmd_json(cmd):
@@ -409,6 +411,7 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
             "running_count": 1,
             "reviewed_count": 1,
             "done_count": 0,
+            "next_tick_requested": True,
             "safety": "controller-consumed claimed handoffs; worker cannot mark done",
         }
 
@@ -446,6 +449,53 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
     assert payload["autorun"]["worker_trigger"]["event_driven"] is True
     assert payload["autorun"]["worker_trigger"]["consumed_count"] == 1
     assert payload["autorun"]["worker_trigger"]["done_count"] == 0
+    assert payload["autorun"]["event_next_tick"]["status"] == "OK"
+    assert payload["autorun"]["event_next_tick"]["depth_used"] == 1
+    assert payload["autorun"]["event_next_tick"]["executed_steps"] == ["auto-close-review", "parallel-dispatch-dry-run"]
+    assert payload["autorun"]["event_next_tick"]["closed_count"] == 1
+    assert payload["autorun"]["event_next_tick"]["next_dispatch_selected_count"] == 1
+    assert payload["autorun"]["event_next_tick"]["next_dispatch_status"] == "OK"
+    assert payload["autorun"]["event_next_tick"]["auto_close_review"]["closed_count"] == 1
+    assert any(kind == "run_json" and cmd[:1] == ["auto-close-review"] for kind, cmd in calls), calls
+
+
+def test_event_next_tick_depth_zero_skips_without_claiming_or_closing():
+    module = load_tick_module()
+    calls = []
+    old_run_json = module.run_json
+    try:
+        module.run_json = lambda args: calls.append(list(args)) or {"status": "OK"}
+        result = module.event_next_tick_follow_through(
+            worker_trigger={"next_tick_requested": True, "reviewed_count": 1},
+            review_close_max_tasks=50,
+            max_depth=0,
+        )
+    finally:
+        module.run_json = old_run_json
+    assert result["status"] == "SKIP"
+    assert result["reason"] == "depth_limit_zero"
+    assert result["skip_reasons"] == ["depth_limit_zero"]
+    assert result["depth_used"] == 0
+    assert calls == []
+
+
+def test_event_next_tick_not_requested_skips_without_side_effects():
+    module = load_tick_module()
+    calls = []
+    old_run_json = module.run_json
+    try:
+        module.run_json = lambda args: calls.append(list(args)) or {"status": "OK"}
+        result = module.event_next_tick_follow_through(
+            worker_trigger={"next_tick_requested": False, "reviewed_count": 0},
+            review_close_max_tasks=50,
+            max_depth=1,
+        )
+    finally:
+        module.run_json = old_run_json
+    assert result["status"] == "SKIP"
+    assert result["reason"] == "not_requested"
+    assert result["skip_reasons"] == ["not_requested"]
+    assert calls == []
 
 
 def test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics():
@@ -525,6 +575,8 @@ if __name__ == "__main__":
     test_tick_multimodel_step_requires_explicit_flag_and_env()
     test_tick_multimodel_task_argument_routes_to_targeted_step()
     test_parallel_autorun_triggers_event_driven_worker_consumer_summary()
+    test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
+    test_event_next_tick_not_requested_skips_without_side_effects()
     test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()
     test_run_cmd_json_forces_nonzero_ok_stdout_to_error()
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()
