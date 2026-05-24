@@ -296,6 +296,90 @@ def evaluate_closeout_bundle(contract: dict[str, Any], bundle: dict[str, Any]) -
     return {"allowed": not blockers, "blockers": blockers, "warnings": warnings, "atom_count": len(atoms), "proof_count": len(proofs), "state": "done" if not blockers else "blocked", "policy": "done requires PR, merge, online regression evidence, Lark close response, and Telegram evidence-directory notification."}
 
 
+def _row_text(row: dict[str, Any]) -> str:
+    parts = [row.get("title"), row.get("body"), row.get("description"), row.get("project"), row.get("source")]
+    return "\n".join(_norm(p) for p in parts if _norm(p))
+
+
+def _is_uvisa_lark_work_row(row: dict[str, Any]) -> bool:
+    text = _row_text(row).lower()
+    has_lark = bool(row.get("lark_task_guid") or row.get("lark_task_url") or "lark" in text or "飞书" in text)
+    has_uvisa = any(k in text for k in ("uvisa", "uvisa-admin", "uvisa-app", "管理端", "uv 2.0", "uvisa-2.0"))
+    return has_lark and has_uvisa
+
+
+def _contract_file_name(task_id: str, lark_task_guid: str) -> str:
+    raw = lark_task_guid or task_id or "uvisa-lark-task"
+    safe = re.sub(r"[^a-zA-Z0-9_.-]+", "-", raw).strip("-._") or "uvisa-lark-task"
+    return safe[:80] + ".contract.json"
+
+
+def extract_lark_guid(*values: Any) -> str:
+    text = " ".join(_norm(v) for v in values if _norm(v))
+    m = re.search(r"\[\s*lark\s+([0-9a-f]{6,12})\s*\]", text, flags=re.I)
+    if not m:
+        m = re.search(r"\blark[-_\s:]+([0-9a-f]{6,12})\b", text, flags=re.I)
+    return m.group(1) if m else ""
+
+
+def ingest_task_rows(rows: list[dict[str, Any]], out_dir: str | Path) -> dict[str, Any]:
+    """Generate contract files for UVISA/Lark rows and write a manifest.
+
+    This is the deterministic intake seam used before agentTeam can claim work:
+    every Lark-derived UVISA task gets machine-readable acceptance atoms, while
+    unrelated Hermes/evolution rows are skipped instead of polluting the work lane.
+    """
+    root = Path(out_dir).expanduser()
+    root.mkdir(parents=True, exist_ok=True)
+    created: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            skipped.append({"reason": "row_not_object", "row_repr": repr(row)[:200]})
+            continue
+        task_id = _norm(row.get("id") or row.get("task_id") or row.get("uid"))
+        title = _norm(row.get("title") or row.get("summary") or task_id)
+        body = _norm(row.get("body") or row.get("description") or row.get("content"))
+        lark_guid = _norm(row.get("lark_task_guid") or row.get("guid") or row.get("lark_guid")) or extract_lark_guid(row.get("id"), title, body)
+        if not _is_uvisa_lark_work_row(row):
+            skipped.append({"task_id": task_id, "title": title, "reason": "not_uvisa_lark_work"})
+            continue
+        contract = generate_acceptance_atoms(task_id=task_id, title=title, body=body, lark_task_guid=lark_guid)
+        data = asdict(contract)
+        data["source_row"] = {k: row.get(k) for k in ("id", "task_id", "project", "lark_task_guid", "lark_task_url", "title") if k in row}
+        path = root / _contract_file_name(task_id, lark_guid)
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        created.append({
+            "task_id": task_id,
+            "lark_task_guid": lark_guid,
+            "title": title,
+            "task_type": contract.task_type,
+            "repos": contract.repos,
+            "contract_path": str(path),
+        })
+    manifest = {
+        "schema": "uvisa_lark_work_contract_manifest_v1",
+        "created_count": len(created),
+        "skipped_count": len(skipped),
+        "created": created,
+        "skipped": skipped,
+        "policy": "Only UVISA/Lark work rows receive contracts; claim/closeout must fail closed without a contract path.",
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    return manifest
+
+
+def _extract_rows(payload: Any) -> list[dict[str, Any]]:
+    if isinstance(payload, list):
+        return [r for r in payload if isinstance(r, dict)]
+    if isinstance(payload, dict):
+        for key in ("rows", "tasks", "items", "data"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return [r for r in value if isinstance(r, dict)]
+    raise ValueError("tasks JSON must be a list or an object containing rows/tasks/items/data")
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="UVISA/Lark work-loop contract generator and validator")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -310,6 +394,9 @@ def build_parser() -> argparse.ArgumentParser:
     c = sub.add_parser("closeout-check")
     c.add_argument("--contract", required=True, help="JSON string or @file")
     c.add_argument("--bundle", required=True, help="JSON string or @file")
+    i = sub.add_parser("ingest-tasks")
+    i.add_argument("--tasks-json", required=True, help="JSON list/object or @file containing task rows")
+    i.add_argument("--out-dir", required=True, help="Directory for generated per-task contracts and manifest.json")
     return p
 
 
@@ -331,6 +418,10 @@ def main(argv: list[str] | None = None) -> int:
         result = evaluate_closeout_bundle(_json_arg(args.contract), _json_arg(args.bundle))
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 0 if result["allowed"] else 2
+    if args.cmd == "ingest-tasks":
+        result = ingest_task_rows(_extract_rows(_json_arg(args.tasks_json)), args.out_dir)
+        print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
+        return 0
     return 2
 
 
