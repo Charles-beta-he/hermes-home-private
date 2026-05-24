@@ -17,6 +17,7 @@ Safety:
 import argparse
 import json, subprocess, sys, time, os, hashlib
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path.home() / '.hermes' / 'scripts'))
@@ -658,6 +659,247 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
         return {'status': 'error', 'error': str(e)[:200]}
 
 
+def create_claim_envelope(task, conflict_group, actor='agent-team-controller', *, source='claim-cycle', handoff=''):
+    """Create a PENDING envelope for a claimed brain task.
+
+    Claiming and execution are intentionally decoupled: claim paths enqueue work,
+    execute paths consume envelopes later under an explicit worker budget.
+    """
+    eid = create(
+        type='TASK',
+        title=task.get('title', 'untitled'),
+        project=task.get('project', ''),
+        assignee=f'agent-team-{conflict_group}',
+        payload={
+            'brain_id': task.get('id', ''),
+            'boundary': task.get('parallel_boundary', ''),
+            'parallel_boundary': task.get('parallel_boundary', ''),
+            'conflict_group': conflict_group,
+            'project': task.get('project', ''),
+            'claimed_by': actor,
+            'claim_source': source,
+            'handoff': handoff,
+        },
+        appetite_seconds=1800,
+    )
+    append_trace(eid, {'event': 'enqueued', 'group': conflict_group, 'source': source, 'actor': actor})
+    return eid
+
+
+def prepare_claim_batch(max_claims=3):
+    """Select a safe batch to claim without executing workers."""
+    if is_disabled():
+        return {'status': 'disabled', 'reason': 'kill switch active'}
+
+    escape, escape_info = human_escape_check()
+    if escape:
+        return {'status': 'escaped', 'reason': f'Human escape: {escape_info}'}
+
+    try:
+        all_tasks = get_all_dispatchable()
+    except Exception as e:
+        return {'status': 'error', 'reason': str(e)[:200]}
+
+    if not all_tasks:
+        return {'status': 'idle', 'reason': 'no dispatchable tasks'}
+
+    groups = classify_batch(all_tasks)
+    conflict_group_count = len(groups)
+
+    health = boundary_health_check(all_tasks)
+    file_conflicts = health.get('file_conflicts', {})
+    if file_conflicts.get('conflict_count', 0) > 0:
+        for conflict in file_conflicts.get('conflicts', [])[:3]:
+            ga = conflict['group_a']
+            gb = conflict['group_b']
+            if ga in groups and gb in groups:
+                score_a = sum(int(t.get('score', 0)) for t in groups[ga])
+                score_b = sum(int(t.get('score', 0)) for t in groups[gb])
+                loser = gb if score_a >= score_b else ga
+                winner = ga if loser == gb else gb
+                groups[winner].extend(groups.pop(loser))
+                conflict_group_count = len(groups)
+
+    n_result = get_smoothed_n(len(all_tasks), conflict_group_count)
+    applied_n = n_result['applied_n']
+    try:
+        batch_cap = max(1, int(max_claims or applied_n or 1))
+    except Exception:
+        batch_cap = max(1, applied_n or 1)
+    selected_n = min(applied_n, batch_cap)
+
+    if selected_n == 0:
+        return {'status': 'idle', 'reason': 'N=0 (no tasks)', 'n_info': n_result}
+
+    schedule = get_parallel_schedule(all_tasks, selected_n)
+    return {
+        'status': 'ok',
+        'all_tasks': all_tasks,
+        'groups': groups,
+        'schedule': schedule,
+        'n_info': n_result,
+        'applied_n': applied_n,
+        'selected_n': selected_n,
+        'conflict_group_count': conflict_group_count,
+        'health': health,
+    }
+
+
+def claim_cycle(max_claims=3, wall_budget_seconds=20):
+    """Claim + enqueue only. Never calls hermes chat/delegate."""
+    prepared = prepare_claim_batch(max_claims=max_claims)
+    if prepared.get('status') != 'ok':
+        return prepared
+
+    started = time.monotonic()
+    claimed = []
+    claim_errors = []
+    all_tasks = list(prepared.get('all_tasks') or [])
+    schedule = prepared.get('schedule') or {}
+    schedule_items = schedule.get('schedule', []) if isinstance(schedule, dict) else []
+    selected_n = int(prepared.get('selected_n') or 0)
+
+    for group_info in schedule_items[:selected_n]:
+        if time.monotonic() - started >= max(1, int(wall_budget_seconds or 20)):
+            break
+        group = group_info['conflict_group']
+        group_tasks = [t for t in all_tasks if t.get('_conflict_group') == group]
+        if not group_tasks:
+            continue
+        task = group_tasks[0]
+        task_id = task.get('id', '')
+        result = claim_task(task_id)
+        if not result.get('ok'):
+            claim_errors.append({'task_id': task_id, 'group': group, 'error': result.get('error', 'claim_failed')})
+            continue
+        eid = create_claim_envelope(task, group, actor='agent-team-controller', source='claim-cycle')
+        claimed.append({
+            'task_id': task_id,
+            'title': task.get('title', '')[:50],
+            'envelope_id': eid,
+            'conflict_group': group,
+            'priority': task.get('priority', 'P2'),
+            'worker_result': 'enqueued',
+        })
+
+    return {
+        'status': 'ok',
+        'mode': 'claim-only',
+        'n_info': prepared['n_info'],
+        'conflict_groups': prepared['conflict_group_count'],
+        'total_dispatchable': len(all_tasks),
+        'tasks_claimed': len(claimed),
+        'claimed': claimed,
+        'claim_errors': claim_errors,
+        'deferred_groups': schedule.get('deferred_groups', []) if isinstance(schedule, dict) else [],
+        'safety': 'claim-cycle only claims and enqueues; execution is delegated to execute-cycle',
+    }
+
+
+def _process_worker_result(row, actor, eid, worker_result):
+    record = {'task_id': row.get('id', ''), 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
+    if worker_result.get('status') == 'done':
+        proof = worker_result.get('proof') or {}
+        PROOF_DIR.mkdir(parents=True, exist_ok=True)
+        proof_path = PROOF_DIR / f"{row.get('id','')}.json"
+        if not proof_path.exists():
+            proof_path.write_text(json.dumps(proof, ensure_ascii=False, indent=2))
+        review = transition_task(
+            row.get('id', ''),
+            'review',
+            actor,
+            'worker produced proof; controller stops at review for proof-gated closeout',
+            evidence=[f'artifact:{proof_path}'],
+        )
+        record['review_transition'] = review
+        if review.get('ok'):
+            update_status(eid, 'DONE')
+            record['to_status'] = 'review'
+        else:
+            update_status(eid, 'FAILED', error=str(review)[:200])
+            record['to_status'] = 'running'
+        return record
+    if worker_result.get('status') == 'blocked':
+        update_status(eid, 'BLOCKED')
+        record['to_status'] = 'running'
+        return record
+    if worker_result.get('status') == 'continuation_pending':
+        update_status(eid, 'PENDING')
+        record['to_status'] = 'pending'
+        return record
+    update_status(eid, 'FAILED', error=str(worker_result)[:200])
+    record['to_status'] = 'running'
+    return record
+
+
+def execute_cycle(max_workers=3, wall_budget_seconds=600):
+    """Consume PENDING claim envelopes under an explicit worker budget."""
+    if is_disabled():
+        return {'status': 'disabled', 'reason': 'kill switch active'}
+
+    escape, escape_info = human_escape_check()
+    if escape:
+        return {'status': 'escaped', 'reason': f'Human escape: {escape_info}'}
+
+    try:
+        max_workers = max(1, int(max_workers or 3))
+    except Exception:
+        max_workers = 3
+    budget_s = max(1, int(wall_budget_seconds or 600))
+    started = time.monotonic()
+
+    pending = [env for env in list_by_status('PENDING') if str(env.get('assignee', '')).startswith('agent-team-')]
+    if not pending:
+        return {'status': 'idle', 'mode': 'execute-only', 'pending': 0, 'processed': 0}
+
+    results = []
+    skipped = []
+    processed = 0
+    for envelope in pending:
+        if processed >= max_workers or time.monotonic() - started >= budget_s:
+            break
+        eid = envelope['id']
+        payload = json.loads(envelope.get('payload') or '{}') if isinstance(envelope.get('payload'), str) else (envelope.get('payload') or {})
+        task_id = str(payload.get('brain_id') or '')
+        if not task_id:
+            update_status(eid, 'FAILED', error='missing_brain_id')
+            skipped.append({'envelope_id': eid, 'reason': 'missing_brain_id'})
+            continue
+        row = rows_by_id([task_id]).get(task_id)
+        if not row:
+            update_status(eid, 'FAILED', error='task_not_found')
+            skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'task_not_found'})
+            continue
+        if row.get('status') != 'claimed':
+            skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': f"not_claimed:{row.get('status')}"})
+            continue
+        actor = str(payload.get('claimed_by') or row.get('claimed_by') or 'agent-team-controller')
+        running = transition_task(task_id, 'running', actor, 'execute-cycle worker trigger after queued claim')
+        if not running.get('ok'):
+            update_status(eid, 'FAILED', error=str(running)[:200])
+            skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
+            continue
+        update_status(eid, 'RUNNING')
+        group = payload.get('conflict_group') or row.get('parallel_group') or row.get('conflict_group') or row.get('parallel_boundary') or row.get('project') or 'default'
+        worker_result = delegate_to_worker(row, str(group), eid, sibling_tasks=[])
+        append_trace(eid, {'event': 'execute_cycle_worker_finished', 'result': worker_result.get('status', '?')})
+        results.append(_process_worker_result(row, actor, eid, worker_result))
+        processed += 1
+
+    reviewed_count = sum(1 for item in results if item.get('to_status') == 'review')
+    return {
+        'status': 'ok',
+        'mode': 'execute-only',
+        'processed': processed,
+        'reviewed_count': reviewed_count,
+        'done_count': 0,
+        'results': results,
+        'skipped': skipped,
+        'remaining_pending': max(0, len(pending) - processed),
+        'safety': 'execute-cycle reads queued envelopes and only advances brain tasks to review/retry/blocked',
+    }
+
+
 def consume_claimed_batch(claimed_items, max_agents=3):
     """Immediately consume tasks just claimed by parallel-claim-and-handoff.
 
@@ -665,6 +907,11 @@ def consume_claimed_batch(claimed_items, max_agents=3):
     execution.  It only advances claimed tasks to running/review; it never marks
     brain tasks done.  Proof-gated review->done remains owned by the normal
     lifecycle closer.
+
+    Important: claimed handoffs are already boundary/conflict classified by the
+    orchestrator.  Do not serialize the batch here; start all eligible items and
+    run workers concurrently up to max_agents so Lark/work bursts can use their
+    existing non-overlapping boundaries.
     """
     if not claimed_items:
         return {'status': 'SKIP', 'event_driven': True, 'reason': 'no claimed tasks', 'consumed_count': 0}
@@ -683,6 +930,8 @@ def consume_claimed_batch(claimed_items, max_agents=3):
     row_map = rows_by_id(ids)
     consumed = []
     skipped = []
+    launch_records = []
+
     for item in claimed_items:
         task_id = str(item.get('task_id') or item.get('id') or '') if isinstance(item, dict) else ''
         if not task_id:
@@ -718,9 +967,15 @@ def consume_claimed_batch(claimed_items, max_agents=3):
             update_status(eid, 'FAILED', error=str(running)[:200])
             skipped.append({'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
             continue
-        worker_result = delegate_to_worker(row, str(group), eid, sibling_tasks=[])
+        launch_records.append({'task_id': task_id, 'row': row, 'actor': actor, 'group': str(group), 'eid': eid})
+
+    def _run_one(record):
+        task_id = record['task_id']
+        eid = record['eid']
+        actor = record['actor']
+        worker_result = delegate_to_worker(record['row'], record['group'], eid, sibling_tasks=[])
         append_trace(eid, {'event': 'event_worker_finished', 'result': worker_result.get('status', '?')})
-        record = {'task_id': task_id, 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
+        out = {'task_id': task_id, 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
         if worker_result.get('status') == 'done':
             proof = worker_result.get('proof') or {}
             PROOF_DIR.mkdir(parents=True, exist_ok=True)
@@ -734,213 +989,85 @@ def consume_claimed_batch(claimed_items, max_agents=3):
                 'event-driven worker produced proof; controller stops at review for proof-gated closeout',
                 evidence=[f'artifact:{proof_path}'],
             )
-            record['review_transition'] = review
+            out['review_transition'] = review
             if review.get('ok'):
                 update_status(eid, 'DONE')
-                record['to_status'] = 'review'
+                out['to_status'] = 'review'
             else:
                 update_status(eid, 'FAILED', error=str(review)[:200])
-                record['to_status'] = 'running'
+                out['to_status'] = 'running'
         elif worker_result.get('status') == 'blocked':
             update_status(eid, 'BLOCKED')
-            record['to_status'] = 'running'
+            out['to_status'] = 'running'
         elif worker_result.get('status') == 'continuation_pending':
-            record['to_status'] = 'running'
+            out['to_status'] = 'running'
         else:
             update_status(eid, 'FAILED', error=str(worker_result)[:200])
-            record['to_status'] = 'running'
-        consumed.append(record)
+            out['to_status'] = 'running'
+        return out
+
+    if launch_records:
+        workers = min(max_agents, len(launch_records))
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = {executor.submit(_run_one, rec): rec for rec in launch_records}
+            for future in as_completed(futures):
+                rec = futures[future]
+                try:
+                    consumed.append(future.result())
+                except Exception as exc:
+                    update_status(rec['eid'], 'FAILED', error=str(exc)[:200])
+                    consumed.append({
+                        'task_id': rec['task_id'],
+                        'envelope_id': rec['eid'],
+                        'worker_result': 'error',
+                        'error': str(exc)[:200],
+                        'to_status': 'running',
+                    })
+
     reviewed_count = sum(1 for item in consumed if item.get('to_status') == 'review')
     return {
         'status': 'ok',
         'event_driven': True,
         'requested_count': len(claimed_items),
+        'launched_count': len(launch_records),
         'consumed_count': len(consumed),
-        'running_count': len(consumed),
+        'running_count': len(launch_records),
         'reviewed_count': reviewed_count,
         'done_count': 0,
         'claimed': consumed,
         'skipped': skipped,
-        'safety': 'controller-consumed claimed handoffs; worker cannot mark done; review->done remains proof-gated',
+        'safety': 'controller-consumed claimed handoffs in parallel; worker cannot mark done; review->done remains proof-gated',
         'next_tick_requested': bool(reviewed_count),
     }
 
-
-def run_dynamic_cycle():
-    """One cycle with dynamic N + conflict group scheduling."""
-    if is_disabled():
-        return {'status': 'disabled', 'reason': 'kill switch active'}
-    
-    # Check human escape
-    escape, escape_info = human_escape_check()
-    if escape:
-        return {'status': 'escaped', 'reason': f'Human escape: {escape_info}'}
-    
-    # Get all dispatchable tasks
-    try:
-        all_tasks = get_all_dispatchable()
-    except Exception as e:
-        return {'status': 'error', 'reason': str(e)[:200]}
-    
-    if not all_tasks:
-        return {'status': 'idle', 'reason': 'no dispatchable tasks'}
-    
-    # Classify into conflict groups
-    groups = classify_batch(all_tasks)
-    conflict_group_count = len(groups)
-
-    # Boundary health check: verify no file-level conflicts
-    health = boundary_health_check(all_tasks)
-    file_conflicts = health.get('file_conflicts', {})
-    if file_conflicts.get('conflict_count', 0) > 0:
-        # Log conflicts but don't block — reduce parallelism instead
-        for conflict in file_conflicts.get('conflicts', [])[:3]:
-            ga = conflict['group_a']
-            gb = conflict['group_b']
-            # Move conflicting groups to serial: remove the lower-scored group from parallel
-            if ga in groups and gb in groups:
-                score_a = sum(int(t.get('score', 0)) for t in groups[ga])
-                score_b = sum(int(t.get('score', 0)) for t in groups[gb])
-                loser = gb if score_a >= score_b else ga
-                # Cap loser at 0 effective parallelism by merging into winner
-                winner = ga if loser == gb else gb
-                groups[winner].extend(groups.pop(loser))
-                conflict_group_count = len(groups)
-    
-    # Calculate dynamic N
-    n_result = get_smoothed_n(len(all_tasks), conflict_group_count)
-    applied_n = n_result['applied_n']
-    
-    if applied_n == 0:
-        return {'status': 'idle', 'reason': 'N=0 (no tasks)', 'n_info': n_result}
-    
-    # Get parallel schedule
-    schedule = get_parallel_schedule(all_tasks, applied_n)
-    
-    # Claim tasks from selected groups (one per group, up to N)
-    claimed = []
-    for group_info in schedule['schedule'][:applied_n]:
-        group = group_info['conflict_group']
-        group_tasks = [t for t in all_tasks if t.get('_conflict_group') == group]
-        
-        # Take highest priority task from this group
-        if group_tasks:
-            task = group_tasks[0]
-            task_id = task.get('id', '')
-            title = task.get('title', 'untitled')
-            project = task.get('project', '')
-            
-            result = claim_task(task_id)
-            if result.get('ok'):
-                # Create envelope (state tracking only)
-                eid = create(
-                    type='TASK',
-                    title=task.get('title', 'untitled'),
-                    project=task.get('project', ''),
-                    assignee=f'agent-team-{group}',
-                    payload={
-                        'brain_id': task_id,
-                        'boundary': task.get('parallel_boundary', ''),
-                        'conflict_group': group,
-                    },
-                    appetite_seconds=1800,
-                )
-                update_status(eid, 'RUNNING')
-                append_trace(eid, {'event': 'claimed', 'group': group, 'n': applied_n})
-                
-                # DIRECT DELEGATE: spawn worker immediately
-                # Collect sibling tasks (other tasks in the same conflict group)
-                siblings = [t for t in all_tasks
-                           if t.get('_conflict_group') == group and t.get('id') != task_id]
-                worker_result = delegate_to_worker(task, group, eid, sibling_tasks=siblings)
-                append_trace(eid, {'event': 'delegated', 'result': worker_result.get('status', '?')})
-                
-                # Handle result
-                if worker_result.get('status') == 'done':
-                    # Multi-model verification before marking DONE. Proof is mandatory;
-                    # delegate_to_worker no longer returns done without parsed proof.
-                    verification = verify_with_models(
-                        task.get('title', 'untitled'), 
-                        worker_result.get('output', ''),
-                        load_project_profile(task.get('project', ''))
-                    )
-                    append_trace(eid, {'event': 'verified', 'passed': verification['passed'], 
-                                       'models': verification['models_checked'],
-                                       'model_errors': verification.get('model_errors', [])})
-                    
-                    if verification['passed']:
-                        update_status(eid, 'DONE')
-                        # Release claim
-                        subprocess.run(
-                            ['python3', str(ORCHESTRATOR), 'release', task_id, 
-                             '--reason', 'worker_verified_done', '--json'],
-                            capture_output=True, timeout=15
-                        )
-                    else:
-                        # SELF-OPTIMIZING: analyze rejection → enhanced criteria → retry
-                        save_rejection(task_id, title, project, verification['issues'], 
-                                      worker_result.get('output', ''))
-                        rejection = analyze_rejection(task_id)
-                        
-                        if rejection['count'] < 3:
-                            # Generate enhanced criteria and retry
-                            enhanced = generate_enhanced_criteria(
-                                profile.get('acceptance', []), rejection)
-                            update_project_profile(project, rejection)
-                            update_status(eid, 'PENDING')  # Re-queue for retry
-                            append_trace(eid, {
-                                'event': 'self_optimize_retry',
-                                'attempt': rejection['count'],
-                                'patterns': rejection['patterns'],
-                                'enhanced_criteria': len(enhanced),
-                            })
-                        else:
-                            # Tier 3: Deep 4/4 review before final failure
-                            deep = deep_review_4_of_4(title, worker_result.get('output', ''), profile, rejection)
-                            append_trace(eid, {'event': 'tier3_deep_review', 'approved': deep['approved'], 
-                                              'passed': deep['passed'], 'missing': deep['missing_evidence']})
-                            
-                            if deep['passed']:
-                                # 4/4 approved at Tier 3
-                                update_status(eid, 'DONE')
-                                subprocess.run(
-                                    ['python3', str(ORCHESTRATOR), 'release', task_id,
-                                     '--reason', 'tier3_deep_review_passed', '--json'],
-                                    capture_output=True, timeout=15
-                                )
-                            else:
-                                # Truly failed — needs human
-                                update_status(eid, 'FAILED', 
-                                             error=f'Tier 3 failed ({deep["approved"]}/4): {deep["missing_evidence"][:2]}')
-                                subprocess.run(
-                                    ['python3', str(ORCHESTRATOR), 'release', task_id,
-                                     '--reason', 'tier3_human_needed', '--json'],
-                                    capture_output=True, timeout=15
-                                )
-                elif worker_result.get('status') == 'blocked':
-                    update_status(eid, 'BLOCKED')
-                elif worker_result.get('status') == 'continuation_pending':
-                    pass  # Keep RUNNING, will retry next cycle
-                else:
-                    update_status(eid, 'FAILED', error=str(worker_result)[:200])
-                
-                claimed.append({
-                    'task_id': task_id,
-                    'title': task.get('title', '')[:50],
-                    'envelope_id': eid,
-                    'conflict_group': group,
-                    'priority': task.get('priority', 'P2'),
-                    'worker_result': worker_result.get('status', '?'),
-                })
-    
+def run_dynamic_cycle(max_claims=3, max_workers=3, claim_wall_budget_seconds=20, execute_wall_budget_seconds=600):
+    """Compatibility wrapper: claim/enqueue first, then execute under a worker budget."""
+    claim_result = claim_cycle(max_claims=max_claims, wall_budget_seconds=claim_wall_budget_seconds)
+    if claim_result.get('status') not in {'ok', 'idle'}:
+        return claim_result
+    execute_result = execute_cycle(max_workers=max_workers, wall_budget_seconds=execute_wall_budget_seconds)
+    if execute_result.get('status') not in {'ok', 'idle'}:
+        return {
+            'status': execute_result.get('status'),
+            'mode': 'claim-then-execute',
+            'claim': claim_result,
+            'execute': execute_result,
+        }
     return {
         'status': 'ok',
-        'n_info': n_result,
-        'conflict_groups': conflict_group_count,
-        'total_dispatchable': len(all_tasks),
-        'tasks_claimed': len(claimed),
-        'claimed': claimed,
-        'deferred_groups': schedule['deferred_groups'],
+        'mode': 'claim-then-execute',
+        'claim': claim_result,
+        'execute': execute_result,
+        'n_info': claim_result.get('n_info', {}),
+        'conflict_groups': claim_result.get('conflict_groups', 0),
+        'total_dispatchable': claim_result.get('total_dispatchable', 0),
+        'tasks_claimed': claim_result.get('tasks_claimed', 0),
+        'claimed': claim_result.get('claimed', []),
+        'deferred_groups': claim_result.get('deferred_groups', []),
+        'processed': execute_result.get('processed', 0),
+        'reviewed_count': execute_result.get('reviewed_count', 0),
+        'remaining_pending': execute_result.get('remaining_pending', 0),
+        'safety': 'cycle is now a wrapper over claim-cycle + execute-cycle',
     }
 
 def show_status():
@@ -1061,7 +1188,30 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         cmd = sys.argv[1]
         if cmd == 'cycle':
-            print(json.dumps(run_dynamic_cycle(), indent=2, ensure_ascii=False))
+            parser = argparse.ArgumentParser(prog='agent_team_controller.py cycle')
+            parser.add_argument('--max-claims', type=int, default=3)
+            parser.add_argument('--max-workers', type=int, default=3)
+            parser.add_argument('--claim-wall-budget-seconds', type=int, default=20)
+            parser.add_argument('--execute-wall-budget-seconds', type=int, default=600)
+            ns = parser.parse_args(sys.argv[2:])
+            print(json.dumps(run_dynamic_cycle(
+                max_claims=ns.max_claims,
+                max_workers=ns.max_workers,
+                claim_wall_budget_seconds=ns.claim_wall_budget_seconds,
+                execute_wall_budget_seconds=ns.execute_wall_budget_seconds,
+            ), indent=2, ensure_ascii=False))
+        elif cmd == 'claim-cycle':
+            parser = argparse.ArgumentParser(prog='agent_team_controller.py claim-cycle')
+            parser.add_argument('--max-claims', type=int, default=3)
+            parser.add_argument('--wall-budget-seconds', type=int, default=20)
+            ns = parser.parse_args(sys.argv[2:])
+            print(json.dumps(claim_cycle(max_claims=ns.max_claims, wall_budget_seconds=ns.wall_budget_seconds), indent=2, ensure_ascii=False))
+        elif cmd == 'execute-cycle':
+            parser = argparse.ArgumentParser(prog='agent_team_controller.py execute-cycle')
+            parser.add_argument('--max-workers', type=int, default=3)
+            parser.add_argument('--wall-budget-seconds', type=int, default=600)
+            ns = parser.parse_args(sys.argv[2:])
+            print(json.dumps(execute_cycle(max_workers=ns.max_workers, wall_budget_seconds=ns.wall_budget_seconds), indent=2, ensure_ascii=False))
         elif cmd == 'consume-claimed':
             parser = argparse.ArgumentParser(prog='agent_team_controller.py consume-claimed')
             parser.add_argument('--claimed-json', default='[]')
@@ -1083,8 +1233,8 @@ if __name__ == '__main__':
             KILL_SWITCH.touch()
             print('Agent team disabled')
         else:
-            print('Usage: agent_team_controller.py [cycle|consume-claimed|status|enable|disable]')
+            print('Usage: agent_team_controller.py [cycle|claim-cycle|execute-cycle|consume-claimed|status|enable|disable]')
     else:
-        print('Usage: agent_team_controller.py [cycle|consume-claimed|status|enable|disable]')
+        print('Usage: agent_team_controller.py [cycle|claim-cycle|execute-cycle|consume-claimed|status|enable|disable]')
 
 

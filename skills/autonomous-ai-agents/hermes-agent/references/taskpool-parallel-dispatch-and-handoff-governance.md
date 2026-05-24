@@ -88,9 +88,12 @@ Prefer archive over deletion. Move old files into an archive area so the audit c
    - blocked status
    - failed boundary gate
 4. If dispatchable tasks exist but selected count is zero, inspect boundary gates and priority mode.
-5. If selected count is positive but execution stalls, inspect handoff files and autorun/worker logs.
+5. If selected count is positive but execution stalls, inspect handoff files, autorun/worker logs, and `agent_team_controller.py consume-claimed` behavior.
+   - `consume-claimed` must not serialize the claimed batch; claimed handoffs are already boundary/conflict classified.
+   - It should transition eligible items to `running` first, then run workers concurrently up to the effective cap.
+   - Verify with `ps` that multiple `hermes chat --source team-worker-*` processes exist for different boundary keys.
 6. If handoff count exceeds threshold, run with `--archive-handoffs`.
-7. Only after eligibility and backlog are understood should you tune `max_parallel_agents`.
+7. Only after eligibility, handoff backlog, and consume parallelism are understood should you tune `max_parallel_agents`.
 
 ## Pitfalls
 

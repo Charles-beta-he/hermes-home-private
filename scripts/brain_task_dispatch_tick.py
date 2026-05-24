@@ -25,10 +25,11 @@ from pathlib import Path
 from typing import Any
 
 TZ = timezone(timedelta(hours=8))
+SCRIPT_DIR = Path(__file__).resolve().parent
 HOME = Path.home()
-SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_orchestrator.py"
-AUTORUN_STEP_SCRIPT = HOME / ".hermes" / "scripts" / "brain_task_autorun_step.py"
-AGENT_TEAM_SCRIPT = HOME / ".hermes" / "scripts" / "agent_team_controller.py"
+SCRIPT = SCRIPT_DIR / "brain_task_orchestrator.py"
+AUTORUN_STEP_SCRIPT = SCRIPT_DIR / "brain_task_autorun_step.py"
+AGENT_TEAM_SCRIPT = SCRIPT_DIR / "agent_team_controller.py"
 STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME / ".hermes" / "state"))).expanduser()
 LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
@@ -181,6 +182,92 @@ def append_log(event: dict[str, Any]) -> None:
         f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def build_claim_state_telemetry(event: dict[str, Any], *, requested_event_next_tick_depth: int = 0) -> dict[str, Any]:
+    task_list_raw = event.get("task_list")
+    task_list: dict[str, Any] = task_list_raw if isinstance(task_list_raw, dict) else {}
+    rows_raw = task_list.get("rows")
+    rows: list[dict[str, Any]] = [row for row in rows_raw if isinstance(row, dict)] if isinstance(rows_raw, list) else []
+    parallel_dispatch_raw = event.get("parallel_dispatch")
+    parallel_dispatch: dict[str, Any] = parallel_dispatch_raw if isinstance(parallel_dispatch_raw, dict) else {}
+    evidence_spine_raw = event.get("evidence_spine")
+    evidence_spine: dict[str, Any] = evidence_spine_raw if isinstance(evidence_spine_raw, dict) else {}
+    handoff_backlog_raw = event.get("handoff_backlog")
+    handoff_backlog: dict[str, Any] = handoff_backlog_raw if isinstance(handoff_backlog_raw, dict) else {}
+    backlog_dirs_raw = handoff_backlog.get("dirs")
+    backlog_dirs: dict[str, Any] = backlog_dirs_raw if isinstance(backlog_dirs_raw, dict) else {}
+
+    claim_bound_rows = [row for row in rows if str(row.get("status") or "") in {"claimed", "running"}]
+    claimed_total = sum(1 for row in rows if str(row.get("status") or "") == "claimed")
+    running_total = sum(1 for row in rows if str(row.get("status") or "") == "running")
+    review_total = sum(1 for row in rows if str(row.get("status") or "") == "review")
+    pending_total = sum(1 for row in rows if str(row.get("status") or "") == "pending")
+    stale_claim_count = sum(1 for row in claim_bound_rows if bool(row.get("stale_claim")))
+    unsafe_unknown_claim_count = sum(
+        1
+        for row in claim_bound_rows
+        if not str(row.get("claimed_by") or "").strip()
+        or not str(row.get("claim_expires_at") or "").strip()
+        or not str(row.get("run_id") or "").strip()
+    )
+    claimed_running_ratio = round(claimed_total / max(running_total, 1), 2) if claimed_total else 0.0
+    parallel_selected_count = int(parallel_dispatch.get("selected_count") or 0)
+    handoff_backlog_count = sum(
+        int(entry.get("count") or 0)
+        for entry in backlog_dirs.values()
+        if isinstance(entry, dict)
+    )
+    proof_gate_status = str(evidence_spine.get("gate_status") or "")
+    execution_starvation = bool(
+        claimed_total > 0
+        and claimed_running_ratio >= 2.0
+        and parallel_selected_count == 0
+        and proof_gate_status == "PASS"
+    )
+
+    telemetry_ready = bool(
+        task_list.get("status") == "OK"
+        and parallel_dispatch.get("status") in {"OK", "PASS"}
+        and handoff_backlog.get("schema") == "taskpool_handoff_backlog_v1"
+        and bool(proof_gate_status)
+    )
+    gate_reasons: list[str] = []
+    if not telemetry_ready:
+        gate_reasons.append("telemetry_incomplete")
+    if unsafe_unknown_claim_count > 0:
+        gate_reasons.append("unsafe_unknown_claims_present")
+    if proof_gate_status != "PASS":
+        gate_reasons.append("proof_gate_not_pass")
+    if requested_event_next_tick_depth > 3:
+        gate_reasons.append("event_next_tick_depth_gt_3")
+    if execution_starvation:
+        gate_reasons.append("execution_starvation")
+    raise_allowed = not gate_reasons
+    gate_status = "PASS" if raise_allowed else ("FAIL" if not telemetry_ready else "DENY")
+
+    return {
+        "claimed_total": claimed_total,
+        "running_total": running_total,
+        "review_total": review_total,
+        "pending_total": pending_total,
+        "stale_claim_count": stale_claim_count,
+        "unsafe_unknown_claim_count": unsafe_unknown_claim_count,
+        "claimed_running_ratio": claimed_running_ratio,
+        "execution_starvation": execution_starvation,
+        "parallel_selected_count": parallel_selected_count,
+        "handoff_backlog_count": handoff_backlog_count,
+        "proof_gate_status": proof_gate_status,
+        "concurrency_raise_gate": {
+            "status": gate_status,
+            "raise_allowed": raise_allowed,
+            "reasons": gate_reasons,
+            "telemetry_ready": telemetry_ready,
+            "requested_event_next_tick_depth": requested_event_next_tick_depth,
+            "read_only": True,
+            "safety": "fail-closed telemetry gate; advisory only in this patch and does not mutate dispatch behavior",
+        },
+    }
+
+
 def load_taskpool_runtime_config() -> dict[str, Any]:
     """Best-effort config reader for dispatch concurrency/health knobs."""
     cfg_path = Path(os.environ.get("HERMES_CONFIG", str(HOME / ".hermes" / "config.yaml"))).expanduser()
@@ -318,9 +405,12 @@ def continuation_backlog_status(*, backlog_warning_threshold: int = 100) -> dict
 
 
 def handoff_backlog_status(*, archive: bool = False, threshold: int = 100, keep: int = 50) -> dict[str, Any]:
+    autorun_state_dir = Path(
+        os.environ.get("HERMES_BRAIN_AUTORUN_STATE_DIR", str(HOME / ".hermes" / "state"))
+    ).expanduser()
     roots = {
-        "autorun": HOME / ".hermes" / "state" / "autorun" / "auto_run_handoffs",
-        "parallel": HOME / ".hermes" / "state" / "autorun" / "parallel_handoffs",
+        "autorun": autorun_state_dir / "auto_run_handoffs",
+        "parallel": autorun_state_dir / "parallel_handoffs",
     }
     status: dict[str, Any] = {
         "schema": "taskpool_handoff_backlog_v1",
@@ -330,11 +420,19 @@ def handoff_backlog_status(*, archive: bool = False, threshold: int = 100, keep:
         "archived_count": 0,
         "dirs": {},
     }
-    archive_root = HOME / ".hermes" / "state" / "autorun" / "archived_handoffs"
+    archive_root = autorun_state_dir / "archived_handoffs"
     for name, root in roots.items():
         files = sorted(root.glob("*.md"), key=lambda p: p.stat().st_mtime if p.exists() else 0) if root.exists() else []
-        entry = {"path": str(root), "count": len(files), "over_threshold": bool(threshold and len(files) > threshold), "archived": 0}
-        if archive and threshold and len(files) > threshold:
+        was_over_threshold = bool(threshold and len(files) > threshold)
+        entry = {
+            "path": str(root),
+            "count": len(files),
+            "count_before": len(files),
+            "over_threshold_before": was_over_threshold,
+            "over_threshold": was_over_threshold,
+            "archived": 0,
+        }
+        if archive and was_over_threshold:
             to_archive = files[: max(0, len(files) - keep)]
             target = archive_root / name / datetime.now(TZ).strftime("%Y%m%d%H%M%S")
             target.mkdir(parents=True, exist_ok=True)
@@ -347,6 +445,7 @@ def handoff_backlog_status(*, archive: bool = False, threshold: int = 100, keep:
                     pass
             entry["archive_dir"] = str(target)
             entry["count_after"] = len(list(root.glob("*.md"))) if root.exists() else 0
+            entry["over_threshold"] = bool(threshold and int(entry["count_after"]) > threshold)
         status["dirs"][name] = entry
     status["warning"] = "handoff_backlog_high" if any(v.get("over_threshold") for v in status["dirs"].values()) else ""
     return status
@@ -448,6 +547,7 @@ def main() -> int:
     event["ingest"] = run_json(["ingest-inbox", "--write", "--json"])
     event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
+    event["task_list"] = run_json(["list", "--json"])
     event["proof_check"] = run_json(["proof-check", "--json"])
     event["evidence_spine"] = run_json(["evidence-spine", "--json"])
     event["railway_published_retests"] = run_json(["release-railway-published-retests", "--max-tasks", "5", "--json"])
@@ -491,7 +591,7 @@ def main() -> int:
         "--json",
     ])
 
-    for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
+    for key in ["ingest", "reconcile", "dashboard", "task_list", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
         if key in errored_steps:
             continue
         item = event.get(key, {})
@@ -564,6 +664,10 @@ def main() -> int:
 
     next_task = (event.get("dispatch") or {}).get("next") or {}
     next_id = next_task.get("id") or ""
+    event["claim_state"] = build_claim_state_telemetry(
+        event,
+        requested_event_next_tick_depth=int(getattr(args, "event_next_tick_depth", 0) or 0),
+    )
     event["next_task_id"] = next_id
     event["dispatchable"] = bool((event.get("dispatch") or {}).get("dispatchable"))
     event["reconcile_action_count"] = int((event.get("reconcile") or {}).get("action_count") or 0)
@@ -659,6 +763,7 @@ def main() -> int:
         "taskpool_runtime": event.get("taskpool_runtime", {}),
         "handoff_backlog": event.get("handoff_backlog", {}),
         "continuation": event.get("continuation", {}),
+        "claim_state": event.get("claim_state", {}),
         "parallel_dispatch": event.get("parallel_dispatch", {}),
         "railway_published_retests": event.get("railway_published_retests", {}),
         "multimodel_intervention": multimodel_summary,
