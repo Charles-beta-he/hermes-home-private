@@ -89,6 +89,12 @@ VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review"
 WORK_CLOSEOUT_PHASES = {"generic", "implementation", "online_ui_retest"}
 MANUAL_UI_RETEST_GATE = "awaiting_user_ui_retest_dispatch"
 RAILWAY_DEPLOY_GATE = "awaiting_railway_deploy_green"
+COMMIT_SHA_RE = re.compile(r"\b[0-9a-f]{7,40}\b", re.IGNORECASE)
+CONTEXTUAL_COMMIT_RE = re.compile(
+    r"(?:git_commit|merge_commit|deployment_commit|expected_commit|published\s+commit|implementation\s+commit|commit)"
+    r"[^0-9a-fA-F]{0,24}([0-9a-f]{7,40})",
+    re.IGNORECASE,
+)
 PROJECT_RAILWAY_SERVICE_DEFAULTS = {
     "uvisa-admin": "uvisa-admin",
     "uvisa-backend": "uvisa-backend",
@@ -2257,6 +2263,57 @@ def railway_deploy_gate_blockers(task: Task) -> list[str]:
     return ["railway_deploy_gate:missing_service"]
 
 
+def task_commit_candidates(task: Task) -> list[str]:
+    """Extract likely git commits from structured task metadata/evidence."""
+    explicit_chunks: list[str] = []
+    contextual_chunks: list[str] = []
+    for key in ("railway_expected_commit", "railway_deployment_commit", "merge_commit", "git_commit", "commit"):
+        value = task.fm.get(key)
+        if value:
+            explicit_chunks.append(str(value))
+    evidence = task.fm.get("evidence")
+    if isinstance(evidence, list):
+        contextual_chunks.extend(str(item) for item in evidence)
+    for key in ("capability_delta", "acceptance_evidence", "anti_drift_check"):
+        value = task.fm.get(key)
+        if value:
+            contextual_chunks.append(str(value))
+    contextual_chunks.append(task.body or "")
+
+    out: list[str] = []
+    seen: set[str] = set()
+
+    def add(sha: str) -> None:
+        sha = sha.lower()
+        if sha and sha not in seen:
+            seen.add(sha)
+            out.append(sha)
+
+    for chunk in explicit_chunks:
+        for match in COMMIT_SHA_RE.findall(str(chunk or "")):
+            add(match)
+    for chunk in contextual_chunks:
+        for match in CONTEXTUAL_COMMIT_RE.findall(str(chunk or "")):
+            add(match)
+    return out
+
+
+def railway_expected_commit_for_retest(task: Task, tasks_by_id: dict[str, Task] | None = None) -> str:
+    direct = str(task.fm.get("railway_expected_commit") or "").strip()
+    if direct:
+        return direct
+    tasks_by_id = tasks_by_id or {t.id: t for t in iter_tasks()}
+    for dep_id in list_value(task.fm.get("depends_on_task")):
+        dep = tasks_by_id.get(dep_id)
+        if not dep:
+            continue
+        candidates = task_commit_candidates(dep)
+        if candidates:
+            return candidates[0]
+    candidates = task_commit_candidates(task)
+    return candidates[0] if candidates else ""
+
+
 def work_dispatch_blockers(task: Task) -> list[str]:
     blockers: list[str] = []
     for dep_id, status in task_dependency_status(task).items():
@@ -3844,6 +3901,110 @@ def command_authorize_railway_deploy(args: argparse.Namespace) -> dict[str, Any]
         "railway_gate": result,
         "derived_refresh": derived_refresh,
         "event_hook": event_hook,
+    }
+
+
+def command_release_railway_published_retests(args: argparse.Namespace) -> dict[str, Any]:
+    """Release Task B online UI retests once Railway proves Task A's commit is published.
+
+    This turns the former manual Task-B dispatch into a deterministic work-pool trigger:
+    implementation Task A -> PR merge/deploy -> Railway published commit gate -> Task B
+    becomes dispatchable and keeps using the normal work lane priority/concurrency rules.
+    """
+    actor = (args.actor or "hermes-railway-published-trigger").strip()
+    validate_clean_values(actor=actor, project=getattr(args, "project", "") or "", service=getattr(args, "service", "") or "", workdir=args.workdir or "")
+    try:
+        import railway_deploy_gate  # type: ignore
+    except Exception as exc:
+        return {"status": "SKIP", "reason": "railway_deploy_gate_import_failed", "error": str(exc)}
+
+    tasks = sorted_tasks(include_done=False)
+    tasks_by_id = {t.id: t for t in iter_tasks()}
+    max_tasks = max(1, int(args.max_tasks or 1))
+    released: list[dict[str, Any]] = []
+    blocked: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+
+    for task in tasks:
+        if len(released) >= max_tasks:
+            break
+        if task.lane != "work" or work_closeout_phase(task) != "online_ui_retest":
+            continue
+        if getattr(args, "project", "") and task.project != args.project:
+            continue
+        if task.status not in {"pending", "retry"}:
+            continue
+        if truthy_frontmatter_value(task.fm.get("railway_deploy_released")):
+            skipped.append({"task": task.id, "reason": "railway_already_released"})
+            continue
+        dependency_status = task_dependency_status(task)
+        incomplete = {k: v for k, v in dependency_status.items() if v not in DEPENDENCY_COMPLETE_STATUSES}
+        if incomplete:
+            skipped.append({"task": task.id, "reason": "dependency_incomplete", "dependency_status": incomplete})
+            continue
+        expected_commit = railway_expected_commit_for_retest(task, tasks_by_id).strip()
+        if not expected_commit:
+            skipped.append({"task": task.id, "reason": "missing_expected_commit"})
+            continue
+        service = (getattr(args, "service", "") or str(task.fm.get("railway_service") or railway_service_for_project(task.project))).strip()
+        if not service:
+            skipped.append({"task": task.id, "reason": "missing_railway_service"})
+            continue
+        result = railway_deploy_gate.evaluate_gate(project=task.project, service=service, expected_commit=expected_commit, workdir=args.workdir or "")
+        if not result.get("allowed"):
+            blocked.append({"task": task.id, "service": service, "expected_commit": expected_commit, "railway_gate": result})
+            continue
+        safe = result.get("safe_evidence") or {}
+        if args.dry_run:
+            released.append({"task": task.id, "service": service, "expected_commit": expected_commit, "dry_run": True, "railway_gate": result})
+            continue
+
+        stamp = now()
+        gate = str(task.fm.get("manual_dispatch_gate") or "").strip()
+        raw_evidence = task.fm.get("evidence")
+        evidence = list(raw_evidence) if isinstance(raw_evidence, list) else []
+        task.fm["manual_dispatch_released"] = "true"
+        task.fm["railway_deploy_gate"] = RAILWAY_DEPLOY_GATE
+        task.fm["railway_service"] = service
+        task.fm["railway_expected_commit"] = expected_commit
+        task.fm["railway_deploy_released"] = "true"
+        task.fm["railway_deployment_id"] = str(safe.get("deployment_id") or "")
+        task.fm["railway_deployment_commit"] = str(safe.get("commit_hash") or "")
+        task.fm["railway_deployment_status"] = str(safe.get("service_status") or "")
+        task.fm["railway_deployment_branch"] = str(safe.get("branch") or "")
+        task.fm["updated"] = iso(stamp)
+        if gate:
+            marker = f"manual_dispatch:{gate}:{actor}:railway_published_commit:{expected_commit}"
+            if marker not in evidence:
+                evidence.append(marker)
+        marker = f"railway_deploy:{service}:{safe.get('deployment_id','')}:{safe.get('commit_hash','')}"
+        if marker not in evidence:
+            evidence.append(marker)
+        task.fm["evidence"] = evidence
+        task.body += f"\n- {iso(stamp)}: Railway published-commit trigger released Task B by `{actor}` for service `{service}`. Deployment `{safe.get('deployment_id','')}` status `{safe.get('service_status','')}`, branch `{safe.get('branch','')}`, commit `{safe.get('commit_hash','')}` matched expected `{expected_commit}`.\n"
+        save_task(task)
+        fresh = find_task(task.id)
+        released.append({
+            "task": task.id,
+            "service": service,
+            "expected_commit": expected_commit,
+            "deployment_id": str(safe.get("deployment_id") or ""),
+            "deployment_commit": str(safe.get("commit_hash") or ""),
+            "dispatchable": fresh.is_dispatchable(),
+            "manual_dispatch_blockers": work_dispatch_blockers(fresh),
+        })
+
+    derived_refresh = refresh_derived_task_views("release-railway-published-retests") if released and not args.dry_run else None
+    return {
+        "status": "OK",
+        "released_count": len(released),
+        "blocked_count": len(blocked),
+        "skipped_count": len(skipped),
+        "released": released,
+        "blocked": blocked,
+        "skipped": skipped[:20],
+        "derived_refresh": derived_refresh,
+        "policy": "Railway published commit releases Task B only; normal work-pool priority, branch isolation, and UI proof gates still apply before Lark closeout.",
     }
 
 
@@ -8064,6 +8225,15 @@ def build_parser() -> argparse.ArgumentParser:
     rdp.add_argument("--workdir", default="")
     rdp.add_argument("--json", action="store_true")
 
+    rrp = sub.add_parser("release-railway-published-retests")
+    rrp.add_argument("--actor", default="hermes-railway-published-trigger")
+    rrp.add_argument("--project", default="")
+    rrp.add_argument("--service", default="")
+    rrp.add_argument("--workdir", default="")
+    rrp.add_argument("--max-tasks", type=int, default=5)
+    rrp.add_argument("--dry-run", action="store_true")
+    rrp.add_argument("--json", action="store_true")
+
     ip = sub.add_parser("ingest-inbox")
     ip.add_argument("--write", action="store_true")
     ip.add_argument("--expires-days", type=int, default=30)
@@ -8281,6 +8451,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_authorize_dispatch(args), args.json)
     if args.cmd == "authorize-railway-deploy":
         return print_result(command_authorize_railway_deploy(args), args.json)
+    if args.cmd == "release-railway-published-retests":
+        return print_result(command_release_railway_published_retests(args), args.json)
     if args.cmd == "ingest-inbox":
         return print_result(command_ingest_inbox(args), args.json)
     if args.cmd == "reconcile":

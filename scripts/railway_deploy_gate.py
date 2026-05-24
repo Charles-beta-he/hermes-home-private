@@ -29,6 +29,14 @@ PROJECT_SERVICE_DEFAULTS = {
     "uvisa-app": "uvisa-app-tRnN",
     "uvisa-h5": "uvisa-app-tRnN",
 }
+REPO_WORKDIR_DEFAULTS = {
+    "cryptolxd/uvisa-admin": Path("/Users/charles/Desktop/folder/work/uvisa-admin"),
+    "uvisa-admin": Path("/Users/charles/Desktop/folder/work/uvisa-admin"),
+    "cryptolxd/uvisa-backend": Path("/Users/charles/Desktop/folder/work/uvisa-backend"),
+    "uvisa-backend": Path("/Users/charles/Desktop/folder/work/uvisa-backend"),
+    "cryptolxd/uvisa-app": Path("/Users/charles/Desktop/folder/work/uvisa-app-2.0"),
+    "uvisa-app-tRnN": Path("/Users/charles/Desktop/folder/work/uvisa-app-2.0"),
+}
 
 
 def _run_railway(args: list[str], *, cwd: Path, timeout: int = 45) -> tuple[int, str, str]:
@@ -146,6 +154,94 @@ def latest_deployment(service: str, *, workdir: str = "", limit: int = 5) -> dic
     }
 
 
+def _git_is_repo(path: Path) -> bool:
+    try:
+        proc = subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            cwd=str(path),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+        )
+    except Exception:
+        return False
+    return proc.returncode == 0 and proc.stdout.strip() == "true"
+
+
+def resolve_repo_workdir(*, repo: str = "", service: str = "", fallback_workdir: str = "") -> str:
+    """Resolve the git checkout that corresponds to a Railway deployment.
+
+    The Railway CLI may be linked from any UVISA checkout, while deployment
+    metadata points at the repository that produced the service.  Ancestor checks
+    must run in that producer repo, not necessarily the linked Railway cwd.
+    """
+    candidates: list[Path] = []
+    for key in (repo, service):
+        mapped = REPO_WORKDIR_DEFAULTS.get(str(key or "").strip())
+        if mapped:
+            candidates.append(mapped)
+    if fallback_workdir:
+        candidates.append(Path(fallback_workdir).expanduser())
+    for p in DEFAULT_WORKDIRS:
+        if p not in candidates:
+            candidates.append(p)
+    for path in candidates:
+        if path.exists() and _git_is_repo(path):
+            return str(path)
+    return ""
+
+
+def _git_commit_exists(workdir: Path, commit: str) -> bool:
+    proc = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"{commit}^{{commit}}"],
+        cwd=str(workdir),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=10,
+    )
+    return proc.returncode == 0
+
+
+def deployment_contains_expected_commit(expected: str, actual: str, *, repo: str = "", service: str = "", workdir: str = "") -> dict[str, Any]:
+    """Return whether Railway's active deployment commit publishes expected.
+
+    Exact/prefix match remains a fast pass.  Otherwise, use git ancestry:
+    expected must be an ancestor of the latest deployed commit.  If the relevant
+    checkout or commits are unavailable, fail closed; do not infer publication.
+    """
+    expected = (expected or "").strip()
+    actual = (actual or "").strip()
+    if not expected:
+        return {"ok": False, "relation": "missing_expected_commit", "workdir": ""}
+    if not actual:
+        return {"ok": False, "relation": "missing_actual_commit", "workdir": ""}
+    if actual.startswith(expected) or expected.startswith(actual):
+        return {"ok": True, "relation": "exact_or_prefix", "workdir": ""}
+    repo_workdir = resolve_repo_workdir(repo=repo, service=service, fallback_workdir=workdir)
+    if not repo_workdir:
+        return {"ok": False, "relation": "git_workdir_unavailable", "workdir": ""}
+    cwd = Path(repo_workdir)
+    if not _git_commit_exists(cwd, expected):
+        return {"ok": False, "relation": "expected_commit_not_in_repo", "workdir": repo_workdir}
+    if not _git_commit_exists(cwd, actual):
+        return {"ok": False, "relation": "deployment_commit_not_in_repo", "workdir": repo_workdir}
+    proc = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", expected, actual],
+        cwd=str(cwd),
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=15,
+    )
+    if proc.returncode == 0:
+        return {"ok": True, "relation": "ancestor", "workdir": repo_workdir}
+    if proc.returncode == 1:
+        return {"ok": False, "relation": "not_ancestor", "workdir": repo_workdir}
+    return {"ok": False, "relation": "git_ancestor_check_failed", "workdir": repo_workdir, "error": proc.stderr.strip()[:240]}
+
+
 def evaluate_gate(project: str = "", service: str = "", expected_commit: str = "", workdir: str = "") -> dict[str, Any]:
     service_name = resolve_service(project, service)
     if not service_name:
@@ -155,11 +251,21 @@ def evaluate_gate(project: str = "", service: str = "", expected_commit: str = "
     blockers = list(status.get("blockers") or []) + list(deployment.get("blockers") or [])
     expected = (expected_commit or "").strip()
     actual = str(deployment.get("commit_hash") or "").strip()
+    commit_match = deployment_contains_expected_commit(
+        expected,
+        actual,
+        repo=str(deployment.get("repo") or ""),
+        service=service_name,
+        workdir=status.get("workdir") or deployment.get("workdir", "") or workdir,
+    )
     if expected:
         if not actual:
             blockers.append("railway_missing_deployment_commit")
-        elif not actual.startswith(expected) and not expected.startswith(actual):
+        elif not commit_match.get("ok"):
             blockers.append("railway_commit_mismatch")
+            relation = str(commit_match.get("relation") or "")
+            if relation and relation not in {"not_ancestor", "missing_actual_commit"}:
+                blockers.append(f"railway_commit_match_unverified:{relation}")
     else:
         blockers.append("missing_expected_commit")
     return {
@@ -170,6 +276,7 @@ def evaluate_gate(project: str = "", service: str = "", expected_commit: str = "
         "blockers": blockers,
         "status": status,
         "deployment": deployment,
+        "commit_match": commit_match,
         "safe_evidence": {
             "service": service_name,
             "service_status": status.get("status", ""),
@@ -178,10 +285,13 @@ def evaluate_gate(project: str = "", service: str = "", expected_commit: str = "
             "deployment_status": deployment.get("deployment_status", ""),
             "branch": deployment.get("branch", ""),
             "commit_hash": actual,
+            "expected_commit": expected,
+            "commit_match_relation": commit_match.get("relation", ""),
             "repo": deployment.get("repo", ""),
             "workdir": status.get("workdir") or deployment.get("workdir", ""),
+            "repo_workdir": commit_match.get("workdir", ""),
         },
-        "policy": "Railway gate passes only when service is green/running and the active deployment commit matches the expected task commit.",
+        "policy": "Railway gate passes when service is green/running and the active deployment commit exactly matches or contains the expected task commit by git ancestry.",
     }
 
 

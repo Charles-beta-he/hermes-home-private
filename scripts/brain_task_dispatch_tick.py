@@ -303,6 +303,7 @@ def main() -> int:
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
     event["proof_check"] = run_json(["proof-check", "--json"])
     event["evidence_spine"] = run_json(["evidence-spine", "--json"])
+    event["railway_published_retests"] = run_json(["release-railway-published-retests", "--max-tasks", "5", "--json"])
     event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
 
     errors = []
@@ -339,7 +340,7 @@ def main() -> int:
         "--json",
     ])
 
-    for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
+    for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
         if key in errored_steps:
             continue
         item = event.get(key, {})
@@ -391,6 +392,7 @@ def main() -> int:
     event["dispatchable"] = bool((event.get("dispatch") or {}).get("dispatchable"))
     event["reconcile_action_count"] = int((event.get("reconcile") or {}).get("action_count") or 0)
     event["ingested_count"] = int((event.get("ingest") or {}).get("created_count") or 0)
+    event["railway_retest_released_count"] = int((event.get("railway_published_retests") or {}).get("released_count") or 0)
     mm_selected_id = str((event.get("multimodel_intervention") or {}).get("selected_task_id") or "")
     event["multimodel_intervention_required"] = bool((event.get("multimodel_intervention") or {}).get("intervention_required"))
     event["multimodel_intervention_task_id"] = mm_selected_id
@@ -400,7 +402,7 @@ def main() -> int:
     previous = load_state() if not args.no_state else {}
     changed = next_id and next_id != previous.get("last_notified_task_id")
     mm_changed = mm_selected_id and mm_selected_id != previous.get("last_multimodel_intervention_task_id")
-    noteworthy = bool(errors or event["reconcile_action_count"] or event["ingested_count"] or changed or mm_changed)
+    noteworthy = bool(errors or event["reconcile_action_count"] or event["ingested_count"] or event["railway_retest_released_count"] or changed or mm_changed)
     stdout_policy = "summary" if args.summary else ("print_always" if args.print_always else "noteworthy_only")
     will_print = bool(args.summary or args.print_always or noteworthy)
     print_reason = "summary" if args.summary else ("print_always" if args.print_always else ("noteworthy" if noteworthy else "suppressed_no_change"))
@@ -465,6 +467,7 @@ def main() -> int:
         "next_task_id": event["next_task_id"],
         "reconcile_action_count": event["reconcile_action_count"],
         "ingested_count": event["ingested_count"],
+        "railway_retest_released_count": event["railway_retest_released_count"],
         "error_count": len(errors),
         "evidence_spine": {
             "status": evidence_spine_raw.get("status"),
@@ -476,6 +479,7 @@ def main() -> int:
         "handoff_backlog": event.get("handoff_backlog", {}),
         "continuation": event.get("continuation", {}),
         "parallel_dispatch": event.get("parallel_dispatch", {}),
+        "railway_published_retests": event.get("railway_published_retests", {}),
         "multimodel_intervention": multimodel_summary,
         "multimodel_step": (event.get("multimodel_step") or {}) if isinstance(event.get("multimodel_step"), dict) else {},
         "auto_close_review": {

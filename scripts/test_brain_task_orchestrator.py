@@ -14,6 +14,16 @@ from pathlib import Path
 from types import SimpleNamespace
 
 SCRIPT = Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"
+RAILWAY_GATE_SCRIPT = Path.home() / ".hermes" / "scripts" / "railway_deploy_gate.py"
+
+
+def load_railway_gate_module():
+    spec = importlib.util.spec_from_file_location("railway_deploy_gate_under_test", RAILWAY_GATE_SCRIPT)
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
 
 
 def load_orchestrator_module():
@@ -45,6 +55,100 @@ def run(env, *args, check=True):
     if check and r.returncode != 0:
         raise AssertionError(f"command failed {cmd}\nstdout={r.stdout}\nstderr={r.stderr}")
     return r
+
+
+def _git(repo: Path, *args: str) -> str:
+    r = subprocess.run(["git", *args], cwd=str(repo), capture_output=True, text=True, check=True)
+    return r.stdout.strip()
+
+
+def test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits():
+    mod = load_railway_gate_module()
+    with tempfile.TemporaryDirectory() as td:
+        repo = Path(td) / "repo"
+        repo.mkdir()
+        _git(repo, "init", "-q")
+        _git(repo, "config", "user.email", "hermes-test@example.local")
+        _git(repo, "config", "user.name", "Hermes Test")
+        (repo / "a.txt").write_text("a\n", encoding="utf-8")
+        _git(repo, "add", "a.txt")
+        _git(repo, "commit", "-q", "-m", "first")
+        first_branch = _git(repo, "rev-parse", "--abbrev-ref", "HEAD")
+        first = _git(repo, "rev-parse", "HEAD")
+        (repo / "a.txt").write_text("a\nb\n", encoding="utf-8")
+        _git(repo, "commit", "-q", "-am", "second")
+        second = _git(repo, "rev-parse", "HEAD")
+        _git(repo, "checkout", "-q", "--orphan", "other")
+        (repo / "a.txt").write_text("other\n", encoding="utf-8")
+        _git(repo, "add", "a.txt")
+        _git(repo, "commit", "-q", "-m", "other")
+        other = _git(repo, "rev-parse", "HEAD")
+        _git(repo, "checkout", "-q", "-f", first_branch)
+
+        exact = mod.deployment_contains_expected_commit(second, second, workdir=str(repo))
+        assert exact["ok"] is True and exact["relation"] == "exact_or_prefix", exact
+        prefix = mod.deployment_contains_expected_commit(second[:8], second, workdir=str(repo))
+        assert prefix["ok"] is True and prefix["relation"] == "exact_or_prefix", prefix
+        ancestor = mod.deployment_contains_expected_commit(first, second, workdir=str(repo))
+        assert ancestor["ok"] is True and ancestor["relation"] == "ancestor", ancestor
+        mismatch = mod.deployment_contains_expected_commit(other, second, workdir=str(repo))
+        assert mismatch["ok"] is False and mismatch["relation"] == "not_ancestor", mismatch
+        old_default_workdirs = mod.DEFAULT_WORKDIRS
+        try:
+            setattr(mod, "DEFAULT_WORKDIRS", [])
+            missing = mod.deployment_contains_expected_commit(first, second, workdir=str(repo / "missing"))
+            assert missing["ok"] is False and missing["relation"] == "git_workdir_unavailable", missing
+        finally:
+            setattr(mod, "DEFAULT_WORKDIRS", old_default_workdirs)
+
+
+def test_railway_deploy_gate_evaluate_uses_ancestor_relation():
+    mod = load_railway_gate_module()
+    with tempfile.TemporaryDirectory() as td:
+        repo = Path(td) / "repo"
+        repo.mkdir()
+        _git(repo, "init", "-q")
+        _git(repo, "config", "user.email", "hermes-test@example.local")
+        _git(repo, "config", "user.name", "Hermes Test")
+        (repo / "a.txt").write_text("a\n", encoding="utf-8")
+        _git(repo, "add", "a.txt")
+        _git(repo, "commit", "-q", "-m", "first")
+        first = _git(repo, "rev-parse", "HEAD")
+        (repo / "a.txt").write_text("a\nb\n", encoding="utf-8")
+        _git(repo, "commit", "-q", "-am", "second")
+        second = _git(repo, "rev-parse", "HEAD")
+
+        old_status = mod.current_service_status
+        old_latest = mod.latest_deployment
+        try:
+            setattr(mod, "current_service_status", lambda service, workdir="": {
+                "ok": True,
+                "allowed": True,
+                "service": service,
+                "deployment_id": "dep-current",
+                "status": "SUCCESS",
+                "stopped": False,
+                "blockers": [],
+                "workdir": str(repo),
+            })
+            setattr(mod, "latest_deployment", lambda service, workdir="", limit=5: {
+                "ok": True,
+                "service": service,
+                "deployment_id": "dep-1",
+                "deployment_status": "SUCCESS",
+                "branch": "main",
+                "commit_hash": second,
+                "repo": "unknown/repo",
+                "workdir": str(repo),
+            })
+            result = mod.evaluate_gate(project="test-project", service="test-service", expected_commit=first, workdir=str(repo))
+            assert result["allowed"] is True, result
+            assert result["commit_match"]["relation"] == "ancestor", result
+            assert result["safe_evidence"]["expected_commit"] == first, result
+            assert result["safe_evidence"]["commit_hash"] == second, result
+        finally:
+            setattr(mod, "current_service_status", old_status)
+            setattr(mod, "latest_deployment", old_latest)
 
 
 def make_env_and_vault():
@@ -584,6 +688,78 @@ def test_authorize_railway_deploy_releases_online_ui_retest_gate_with_matching_c
             assert fresh.fm["railway_service"] == "uvisa-admin"
             assert fresh.fm["railway_deployment_id"] == "dep-1"
             assert fresh.fm["railway_deployment_commit"] == "abc123def"
+        finally:
+            if old_module is None:
+                sys.modules.pop("railway_deploy_gate", None)
+            else:
+                sys.modules["railway_deploy_gate"] = old_module
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
+def test_release_railway_published_retests_derives_task_a_commit_and_makes_task_b_dispatchable():
+    td, _vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    old_module = sys.modules.get("railway_deploy_gate")
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            setattr(mod, "maybe_fire_taskpool_event_hook", lambda *a, **k: {"status": "FAKE"})
+            pair = mod.command_add_work_closeout_pair(SimpleNamespace(
+                title="Railway auto Task B trigger",
+                priority="P1",
+                project="uvisa-admin",
+                expires_at="2099-01-01",
+                expires_days=30,
+                objective="完成实现闭环；PR 合并发布后自动触发线上 UI 回测。",
+                accept="Task A commit 发布后 Task B 进入 work 池。",
+            ))
+            impl_id = pair["implementation_task"]["id"]
+            retest_id = pair["ui_retest_task"]["id"]
+            impl = mod.find_task(impl_id)
+            impl.fm["status"] = "done"
+            impl.fm["evidence"] = ["command:npm_run_build PASS", "artifact:git_commit:abc123def4567890"]
+            mod.save_task(impl)
+
+            fake_gate = type(sys)("railway_deploy_gate")
+            seen = {}
+            def fake_evaluate_gate(**kwargs):
+                seen.update(kwargs)
+                return {
+                    "allowed": True,
+                    "blockers": [],
+                    "safe_evidence": {
+                        "service": "uvisa-admin",
+                        "service_status": "SUCCESS",
+                        "deployment_id": "dep-auto",
+                        "branch": "main",
+                        "commit_hash": "abc123def4567890",
+                    },
+                }
+            fake_gate.evaluate_gate = fake_evaluate_gate
+            sys.modules["railway_deploy_gate"] = fake_gate
+
+            release = mod.command_release_railway_published_retests(SimpleNamespace(
+                actor="tester",
+                project="uvisa-admin",
+                service="",
+                workdir="/tmp/railway-linked",
+                max_tasks=5,
+                dry_run=False,
+                json=True,
+            ))
+            assert release["status"] == "OK", release
+            assert release["released_count"] == 1, release
+            assert release["released"][0]["task"] == retest_id
+            assert release["released"][0]["dispatchable"] is True
+            assert seen["expected_commit"] == "abc123def4567890"
+            fresh = mod.find_task(retest_id)
+            assert fresh.fm["manual_dispatch_released"] == "true"
+            assert fresh.fm["railway_deploy_released"] == "true"
+            assert fresh.fm["railway_expected_commit"] == "abc123def4567890"
+            assert fresh.fm["railway_deployment_id"] == "dep-auto"
+            assert mod.work_dispatch_blockers(fresh) == []
         finally:
             if old_module is None:
                 sys.modules.pop("railway_deploy_gate", None)
@@ -2054,6 +2230,8 @@ tiers:
 
 
 def main():
+    test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
+    test_railway_deploy_gate_evaluate_uses_ancestor_relation()
     test_mission_envelope_schema_is_enforced_fail_closed()
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
