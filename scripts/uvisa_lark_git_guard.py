@@ -78,7 +78,7 @@ def main() -> int:
                 secret_hits.append(f"{f}:{i}: secret-like value [REDACTED]")
                 break
             # Allow governance docs/scripts to mention variable names, but never values.
-            if f.startswith(("docs/", "scripts/", "skills/", "project-profiles/")):
+            if f.startswith(("docs/", "scripts/", "skills/", "profiles/", "project-profiles/")):
                 continue
             if SECRET_NAME_RE.search(line):
                 secret_hits.append(f"{f}:{i}: sensitive variable name [REDACTED]")

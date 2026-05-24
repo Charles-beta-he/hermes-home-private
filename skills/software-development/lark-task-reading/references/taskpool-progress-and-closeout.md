@@ -24,6 +24,8 @@ A progress check is not just a status summary. It should prove the taskpool's cu
    - next-dispatchable selection
 5. When pending tasks are not advancing, diagnose the scheduler/executor gap before calling them blocked:
    - inspect priority mode (`work-first` vs `evolution-first`) and whether work is intentionally preempted by evolution
+   - for paused T3/multi-model/economy-gated items, do not reflexively rerun expensive ratification; pick the highest-leverage item and apply a deterministic targeted evidence fix first, then run proof/selfcheck/dashboard and lifecycle closeout
+   - for Hermes provider/quota tasks, keep evidence clean-room: sanitize quota/usage state and logs before persistence, preserve numeric usage fields, and never store credentials or prompt/completion text; see `hermes-agent/references/provider-quota-evidence-hygiene.md`
    - check auto-run allowlists/project profiles; distinguish `allowlist_miss` from true ineligibility
    - run the bounded autorun step directly and inspect `claimed`, `advanced`, and `reasons`; `policy_missing` means safe fail-closed/no-op, not successful task progress
    - read dynamic runner/cron logs as execution evidence only if they show a claim/advance/closeout; `last_status=ok` can mean the no-op safety path succeeded
@@ -35,6 +37,22 @@ A progress check is not just a status summary. It should prove the taskpool's cu
    - gates run and PASS/BLOCKED status
    - current pool counts / dispatchable lanes
    - exact next task, including project/profile, architecture target, and whether multi-model intervention is required
+
+## Multi-model advisory drain pattern
+
+When taskpool progress shows queued multi-model advisory items, treat advisory consumption as a bounded queue-drain with proof of target binding, not as implementation closeout:
+
+1. Run/consume every currently actionable advisory item until the queue is empty or only paused/economy-gated items remain.
+2. For each produced `discussion_result.json`, open or verify the artifact and confirm it is target-bound to the exact task id/title/profile being updated. A shared tick path or generic PASS is not enough.
+3. Classify `PASS_ADVISORY_ONLY` as advisory provenance only. It may unblock planning or review notes, but it must not mark a task `done` unless deterministic completion evidence and the task's closeout gates also pass.
+4. After advisory drain, run proof/selfcheck/dashboard gates and then run auto-close in fail-closed mode. A good result may be `closed_count: 0` if the remaining review tasks lack test/build/browser/curl/commit or contract evidence.
+5. Report paused items separately from actionable queue depth. Include pause reason and failed-round count (for example T3 economy maxed out) so the next operator knows whether the next step is targeted evidence fix, human review, or gate tuning.
+6. In the final progress report, distinguish:
+   - advisory items consumed
+   - artifacts target-bound PASS/FAIL
+   - auto-close closed/skipped/error counts
+   - active pool counts by status/lane
+   - next dispatchable task and why it can/cannot advance
 
 ## Closeout semantics
 

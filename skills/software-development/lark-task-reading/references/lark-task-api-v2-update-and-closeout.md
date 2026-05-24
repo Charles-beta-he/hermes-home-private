@@ -18,11 +18,40 @@ req.add_header("Content-Type", "application/json")
 
 **Critical**: the `task` wrapper is required. Sending `{"description": "...", "update_fields": [...]}` without the wrapper returns `400: Invalid Param 'task', must not be empty`.
 
-## Comments API — NOT AVAILABLE via v2
+## Comments API — Larksuite international shape
 
-The comments endpoint `POST /task/v2/tasks/{task_id}/comments` returns **404 Not Found** on Larksuite (international). The endpoint may work on feishu.cn tenants but is unreliable for international apps.
+For Larksuite international, `POST /task/v2/tasks/{task_id}/comments` returns **404 Not Found**.
 
-**Workaround**: Use the `description` field for evidence. This is visible in the task detail page and persists across sessions.
+Use the flat comments endpoint instead with a user access token that includes `task:comment:write`:
+
+```python
+body = json.dumps({
+    "resource_id": guid,
+    "resource_type": "task",
+    "content": evidence_text,
+}).encode("utf-8")
+
+req = urllib.request.Request(
+    "https://open.larksuite.com/open-apis/task/v2/comments",
+    data=body,
+    method="POST",
+)
+req.add_header("Authorization", f"Bearer {user_token}")
+req.add_header("Content-Type", "application/json")
+```
+
+Readback uses `GET /task/v2/comments?resource_id={guid}&resource_type=task&page_size=50`.
+
+Rendering and evidence pitfalls found in Lark Task closeout:
+- Do not treat local paths such as `/tmp/...` as evidence for Lark reviewers; upload evidence into Lark or provide a shared Drive/Doc link.
+- If screenshots exist, prefer Task attachments: `POST /task/v2/attachments/upload?user_id_type=open_id` with `multipart/form-data`, fields `resource_type=task`, `resource_id=<task_guid>`, and one or more repeated `file` parts. One request supports up to 5 files, each <=50MB.
+- Attachment upload requires user OAuth scope `task:attachment:write` (or `task:attachment:upload` where available) plus edit permission on the task. If the current user token lacks it, force re-OAuth; merely having `task:comment:write` is insufficient.
+- Upload attachments by task relevance, not by dumping the whole regression directory onto every task. Map each task summary/page/feature to the minimal relevant screenshot set, delete irrelevant prior attachments if needed, then upload only that task's evidence.
+- Verify with `GET /task/v2/attachments?resource_id=<guid>&resource_type=task&page_size=100`; expected task-specific screenshot filenames must be present and unrelated screenshots should be absent.
+- Lark Task UI may render API-written `\n` as a dense paragraph. Keep the closeout comment concise and rely on uploaded task-specific attachments for visual evidence.
+- If bad dense/local-path comments were already written, delete or patch them before adding the corrected closeout comment and attachments; otherwise the UI looks duplicated and noisy.
+
+Fallback: if comment write is unavailable, use the `description` field for evidence. This is visible in the task detail page and persists across sessions, but it requires `task:task:write` and user identity permission on the task.
 
 ## Batch closeout pattern
 
