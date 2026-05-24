@@ -248,7 +248,7 @@ def build_worker_context(task, conflict_group, sibling_tasks=None):
     sibling_section = ''
     if sibling_tasks:
         sib_lines = []
-        for sib in sibling_tasks[:8]:  # Cap to avoid context bloat while allowing page batches
+        for sib in sibling_tasks[:5]:  # Cap at 5 to avoid context bloat
             sib_id = sib.get('id', '?')
             sib_title = sib.get('title', '?')[:80]
             sib_status = sib.get('status', '?')
@@ -256,7 +256,7 @@ def build_worker_context(task, conflict_group, sibling_tasks=None):
             sib_lines.append(f'- [{sib_status}] {sib_id}: {sib_title} (boundary: {sib_boundary})')
         if sib_lines:
             sibling_section = '''
-PAGE-BATCH SIBLING TASKS (same boundary / likely same page surface):
+SIBLING TASKS IN SAME CONFLICT GROUP:
 {lines}
 PAGE-BATCH RULES:
 - If these siblings target the same repo + route/page/module and can be verified in one browser pass, include their code changes in the same page-level slice.
@@ -939,15 +939,19 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
         payload = json.loads(envelope.get('payload') or '{}') if isinstance(envelope.get('payload'), str) else (envelope.get('payload') or {})
         task_id = str(payload.get('brain_id') or '')
         if not task_id:
-            update_status(eid, 'FAILED', error='missing_brain_id')
+            # Stale/malformed queued envelopes are audit noise, not worker failures.
+            # Mark them SKIPPED so a recovery cycle does not trip human_escape while
+            # draining old PENDING agent-team envelopes.
+            update_status(eid, 'SKIPPED', error='missing_brain_id_skipped')
             skipped.append({'envelope_id': eid, 'reason': 'missing_brain_id'})
             continue
         row = rows_by_id([task_id]).get(task_id)
         if not row:
-            update_status(eid, 'FAILED', error='task_not_found')
+            update_status(eid, 'SKIPPED', error='task_not_found_skipped')
             skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'task_not_found'})
             continue
         if row.get('status') != 'claimed':
+            update_status(eid, 'SKIPPED', error=f"not_claimed_skipped:{row.get('status')}")
             skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': f"not_claimed:{row.get('status')}"})
             continue
         actor = str(payload.get('claimed_by') or row.get('claimed_by') or 'agent-team-controller')
