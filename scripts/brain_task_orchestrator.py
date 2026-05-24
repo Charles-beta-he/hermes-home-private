@@ -6126,7 +6126,11 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
     discussion_path = str(result.get("discussion_path") or "")
     evidence = f"command: multimodel-intervention-step gate={gate_status} decision={decision or 'n/a'} artifact={discussion_path or 'missing'}"
 
-    if normalized_status == "PASS" and normalized_decision == "LOOP_DONE":
+    strong_certification = normalized_status == "PASS" and normalized_decision == "LOOP_DONE"
+    closeout_probe_evidence = _dedupe_evidence([*auto_close_review_evidence(task), evidence])
+    closeout_failures = completion_gate_failures(task, closeout_probe_evidence)
+
+    if strong_certification and not closeout_failures:
         apply_lifecycle_status(
             task,
             "review",
@@ -6137,19 +6141,23 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
         refresh_reason = "multimodel-review"
         to_status = "review"
     else:
+        gap_kind = "multimodel_certification_lacks_project_closeout_evidence" if strong_certification else "multimodel_advisory_or_failed_not_completion"
         gap_evidence = (
-            "artifact:taskpool-review-gap advisory_only_or_failed_multimodel_requires_"
-            "project_execution_evidence:test-build-browser-curl-commit-verification"
+            f"artifact:taskpool-review-gap {gap_kind} requires_"
+            "test-build-browser-curl-commit-verification"
         )
+        reason = f"{gap_kind}; requeue for matching closeout chain"
+        if closeout_failures:
+            reason += ": " + "; ".join(closeout_failures[:3])
         apply_lifecycle_status(
             task,
             "pending",
             actor,
             evidence=[evidence, gap_evidence],
-            reason="multimodel_advisory_not_completion_requeue_for_project_evidence",
+            reason=reason,
             force=True,
         )
-        refresh_reason = "multimodel-advisory-requeue"
+        refresh_reason = "multimodel-evidence-gap-requeue"
         to_status = "pending"
 
     save_task(task)
