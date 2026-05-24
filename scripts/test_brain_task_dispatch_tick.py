@@ -438,10 +438,11 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
             return {"status": "OK", "closed_count": 1, "safety": "proof-gated review closer"}
         return {"status": "OK"}
 
-    def fake_run_cmd_json(cmd):
-        calls.append(("run_cmd_json", list(cmd)))
+    def fake_run_cmd_json(cmd, timeout=None):
+        calls.append(("run_cmd_json", list(cmd), timeout))
         assert "agent_team_controller.py" in " ".join(map(str, cmd)), cmd
         assert "consume-claimed" in cmd, cmd
+        assert timeout is not None and timeout >= 900, timeout
         return {
             "status": "ok",
             "event_driven": True,
@@ -481,7 +482,7 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
         module.save_state = old_save_state
         module.load_state = old_load_state
 
-    assert any(kind == "run_cmd_json" and "consume-claimed" in cmd for kind, cmd in calls), calls
+    assert any(call[0] == "run_cmd_json" and "consume-claimed" in call[1] for call in calls), calls
     assert payload["autorun"]["step_mode"] == "parallel_claim_and_execute"
     assert payload["autorun"]["claimed"] is True
     assert payload["autorun"]["worker_trigger"]["event_driven"] is True
@@ -494,7 +495,7 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
     assert payload["autorun"]["event_next_tick"]["next_dispatch_selected_count"] == 1
     assert payload["autorun"]["event_next_tick"]["next_dispatch_status"] == "OK"
     assert payload["autorun"]["event_next_tick"]["auto_close_review"]["closed_count"] == 1
-    assert any(kind == "run_json" and cmd[:1] == ["auto-close-review"] for kind, cmd in calls), calls
+    assert any(call[0] == "run_json" and call[1][:1] == ["auto-close-review"] for call in calls), calls
 
 
 def test_event_next_tick_depth_zero_skips_without_claiming_or_closing():

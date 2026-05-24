@@ -115,8 +115,8 @@ def run_json(args: list[str]) -> dict[str, Any]:
     return run_cmd_json(cmd)
 
 
-def run_cmd_json(cmd: list[str]) -> dict[str, Any]:
-    timeout = command_timeout_seconds()
+def run_cmd_json(cmd: list[str], timeout: float | None = None) -> dict[str, Any]:
+    timeout = float(timeout if timeout is not None else command_timeout_seconds())
     proc = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -643,7 +643,12 @@ def main() -> int:
                 claimed_payload,
                 "--max-agents",
                 str(max_parallel_agents),
-            ])
+            ],
+                timeout=max(
+                    command_timeout_seconds(),
+                    float(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_WORKER_TIMEOUT_SECONDS", "900")),
+                ),
+            )
             if event["event_worker_trigger"].get("status") not in {"ok", "OK", "PASS", "SKIP"}:
                 errors.append({"step": "event_worker_trigger", "status": event["event_worker_trigger"].get("status"), "stderr": event["event_worker_trigger"].get("stderr"), "stdout": event["event_worker_trigger"].get("stdout"), "reason": event["event_worker_trigger"].get("reason")})
                 event["status"] = "ERROR"
