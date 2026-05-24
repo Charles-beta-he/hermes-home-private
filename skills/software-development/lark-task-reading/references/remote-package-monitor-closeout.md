@@ -27,6 +27,23 @@ railway deployment list --service <frontend-service-name> --limit 3 --json
 railway deployment list --service <backend-service-name> --limit 3 --json
 ```
 
+For Hermes work-closeout pair B tasks (`work_closeout_phase=online_ui_retest`), the taskpool now has a separate Railway deploy gate in addition to the user-dispatch gate. Release it only with a matching task commit:
+
+```bash
+python3 ~/.hermes/scripts/railway_deploy_gate.py \
+  --project uvisa-admin \
+  --service uvisa-admin \
+  --expected-commit <task-commit-or-merge-commit> \
+  --json
+
+python3 ~/.hermes/scripts/brain_task_orchestrator.py authorize-railway-deploy <ui-retest-task-id> \
+  --service uvisa-admin \
+  --expected-commit <task-commit-or-merge-commit> \
+  --json
+```
+
+If the CLI is logged in from any linked UVISA repo, the helper can reuse that linked workdir; `uvisa-admin` itself may be unlinked while `/Users/charles/Desktop/folder/work/uvisa-backend` or `/Users/charles/Desktop/folder/work/uvisa-app-2.0` can still query all services in project `uvisa-test`. The gate fails closed on `NEEDS_APPROVAL`, `stopped=true`, non-green service status, missing deployment commit, or commit mismatch.
+
 Interpret `service status` as the current monitor gate: record service name, deploymentId, status, and `stopped`. For example, a closeout can cite `uvisa-app-tRnN: SUCCESS stopped=false deployment <id>` and `uvisa-backend: SUCCESS stopped=false deployment <id>`. If a local commit has not been pushed/deployed, phrase this precisely as “relevant remote services are currently healthy/successful,” not “this commit is deployed.” Treat `NEEDS_APPROVAL`, `stopped=true`, `FAILED`, `CANCELLED`, and long-lived `PENDING/BUILDING/DEPLOYING` timeouts as remote blockers. A public smoke HTTP 200 from an older deployment is useful availability evidence, but it does not upgrade a current `NEEDS_APPROVAL/stopped=true` frontend package to success.
 
 Also compare the pushed task-loop commit with the Railway deployment `meta.branch` and `meta.commitHash`. If Railway tracks a different branch (for example `feat/uvisa-2.0`) and the pushed task-loop commit is not the deployed commit, the remote service can be healthy but the task's latest code is not remotely verified. Report this as `closed_with_remote_blocker` for latest-task deployment, with wording like: “service is SUCCESS and `/login` smoke is 200, but Railway currently deploys `<branch>/<hash>`, not pushed task commit `<hash>`; merge/deploy is required for latest-code verification.”

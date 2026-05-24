@@ -88,6 +88,13 @@ SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES = {
 VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "blocked", "done", "archived", "expired"]
 WORK_CLOSEOUT_PHASES = {"generic", "implementation", "online_ui_retest"}
 MANUAL_UI_RETEST_GATE = "awaiting_user_ui_retest_dispatch"
+RAILWAY_DEPLOY_GATE = "awaiting_railway_deploy_green"
+PROJECT_RAILWAY_SERVICE_DEFAULTS = {
+    "uvisa-admin": "uvisa-admin",
+    "uvisa-backend": "uvisa-backend",
+    "uvisa-app-2.0": "uvisa-app-tRnN",
+    "uvisa-app": "uvisa-app-tRnN",
+}
 DEPENDENCY_COMPLETE_STATUSES = {"done", "archived"}
 STATUS_ALIASES = {"completed": "done"}  # legacy notes may use completed; normalize as terminal done.
 ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review", "blocked"}
@@ -2144,6 +2151,12 @@ class Task:
             "dependency_status": task_dependency_status(self),
             "manual_dispatch_gate": str(self.fm.get("manual_dispatch_gate") or ""),
             "manual_dispatch_released": truthy_frontmatter_value(self.fm.get("manual_dispatch_released")),
+            "railway_deploy_gate": str(self.fm.get("railway_deploy_gate") or ""),
+            "railway_service": str(self.fm.get("railway_service") or ""),
+            "railway_expected_commit": str(self.fm.get("railway_expected_commit") or ""),
+            "railway_deploy_released": truthy_frontmatter_value(self.fm.get("railway_deploy_released")),
+            "railway_deployment_id": str(self.fm.get("railway_deployment_id") or ""),
+            "railway_deployment_commit": str(self.fm.get("railway_deployment_commit") or ""),
             "manual_dispatch_blockers": work_dispatch_blockers(self),
             "score": self.score(),
             "lane": self.lane,
@@ -2222,6 +2235,28 @@ def task_dependency_status(task: Task) -> dict[str, str]:
     return statuses
 
 
+def railway_service_for_project(project: str) -> str:
+    project = str(project or "").strip()
+    return PROJECT_RAILWAY_SERVICE_DEFAULTS.get(project, project)
+
+
+def railway_deploy_gate_required(task: Task) -> bool:
+    if work_closeout_phase(task) != "online_ui_retest":
+        return False
+    return str(task.fm.get("railway_deploy_gate") or RAILWAY_DEPLOY_GATE).strip() == RAILWAY_DEPLOY_GATE
+
+
+def railway_deploy_gate_blockers(task: Task) -> list[str]:
+    if not railway_deploy_gate_required(task):
+        return []
+    if truthy_frontmatter_value(task.fm.get("railway_deploy_released")):
+        return []
+    service = str(task.fm.get("railway_service") or railway_service_for_project(task.project) or "").strip()
+    if service:
+        return [f"railway_deploy_gate:{service}:not_released"]
+    return ["railway_deploy_gate:missing_service"]
+
+
 def work_dispatch_blockers(task: Task) -> list[str]:
     blockers: list[str] = []
     for dep_id, status in task_dependency_status(task).items():
@@ -2230,6 +2265,7 @@ def work_dispatch_blockers(task: Task) -> list[str]:
     gate = str(task.fm.get("manual_dispatch_gate") or "").strip()
     if gate and not truthy_frontmatter_value(task.fm.get("manual_dispatch_released")):
         blockers.append(f"manual_dispatch_gate:{gate}")
+    blockers.extend(railway_deploy_gate_blockers(task))
     return blockers
 
 
@@ -3690,7 +3726,13 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
     retest_task.fm["depends_on_task"] = [impl_task.id]
     retest_task.fm["manual_dispatch_gate"] = MANUAL_UI_RETEST_GATE
     retest_task.fm["manual_dispatch_released"] = "false"
-    retest_task.body += f"\n- Work closeout phase: online UI retest. Blocked until dependency `{impl_task.id}` is done and user explicitly dispatches UI retest via `authorize-dispatch`.\n"
+    retest_task.fm["railway_deploy_gate"] = RAILWAY_DEPLOY_GATE
+    retest_task.fm["railway_service"] = railway_service_for_project(args.project)
+    retest_task.fm["railway_expected_commit"] = ""
+    retest_task.fm["railway_deploy_released"] = "false"
+    retest_task.fm["railway_deployment_id"] = ""
+    retest_task.fm["railway_deployment_commit"] = ""
+    retest_task.body += f"\n- Work closeout phase: online UI retest. Blocked until dependency `{impl_task.id}` is done, user explicitly dispatches UI retest via `authorize-dispatch`, and Railway deploy gate `{RAILWAY_DEPLOY_GATE}` is released for service `{retest_task.fm['railway_service']}` via `authorize-railway-deploy`.\n"
     save_task(retest_task)
     created_tasks.append(retest_task.row())
 
@@ -3744,6 +3786,62 @@ def command_authorize_dispatch(args: argparse.Namespace) -> dict[str, Any]:
         "already_released": already,
         "dispatchable": find_task(task.id).is_dispatchable(),
         "manual_dispatch_blockers": work_dispatch_blockers(find_task(task.id)),
+        "derived_refresh": derived_refresh,
+        "event_hook": event_hook,
+    }
+
+
+def command_authorize_railway_deploy(args: argparse.Namespace) -> dict[str, Any]:
+    task = find_task(args.task)
+    actor = (args.actor or "hermes").strip()
+    expected_commit = (args.expected_commit or str(task.fm.get("railway_expected_commit") or "")).strip()
+    service = (args.service or str(task.fm.get("railway_service") or railway_service_for_project(task.project))).strip()
+    validate_clean_values(actor=actor, service=service, expected_commit=expected_commit, workdir=args.workdir or "")
+    if work_closeout_phase(task) != "online_ui_retest":
+        raise SystemExit(f"authorize-railway-deploy only applies to online_ui_retest tasks: {task.id}")
+    if not expected_commit:
+        raise SystemExit("authorize-railway-deploy requires --expected-commit or task frontmatter railway_expected_commit")
+    try:
+        import railway_deploy_gate  # type: ignore
+    except Exception as exc:
+        raise SystemExit(f"failed to import railway_deploy_gate.py: {exc}") from exc
+    result = railway_deploy_gate.evaluate_gate(project=task.project, service=service, expected_commit=expected_commit, workdir=args.workdir or "")
+    if not result.get("allowed"):
+        return {
+            "status": "BLOCKED",
+            "task": task.id,
+            "manual_dispatch_blockers": work_dispatch_blockers(task),
+            "railway_gate": result,
+        }
+    stamp = now()
+    safe = result.get("safe_evidence") or {}
+    task.fm["railway_deploy_gate"] = RAILWAY_DEPLOY_GATE
+    task.fm["railway_service"] = service
+    task.fm["railway_expected_commit"] = expected_commit
+    task.fm["railway_deploy_released"] = "true"
+    task.fm["railway_deployment_id"] = str(safe.get("deployment_id") or "")
+    task.fm["railway_deployment_commit"] = str(safe.get("commit_hash") or "")
+    task.fm["railway_deployment_status"] = str(safe.get("service_status") or "")
+    task.fm["railway_deployment_branch"] = str(safe.get("branch") or "")
+    task.fm["updated"] = iso(stamp)
+    existing_evidence = task.fm.get("evidence")
+    evidence = list(existing_evidence) if isinstance(existing_evidence, list) else []
+    marker = f"railway_deploy:{service}:{safe.get('deployment_id','')}:{safe.get('commit_hash','')}"
+    if marker not in evidence:
+        evidence.append(marker)
+    task.fm["evidence"] = evidence
+    task.body += f"\n- {iso(stamp)}: Railway deploy gate `{RAILWAY_DEPLOY_GATE}` released by `{actor}` for service `{service}`. Deployment `{safe.get('deployment_id','')}` status `{safe.get('service_status','')}`, branch `{safe.get('branch','')}`, commit `{safe.get('commit_hash','')}` matched expected `{expected_commit}`.\n"
+    save_task(task)
+    derived_refresh = refresh_derived_task_views("authorize-railway-deploy")
+    event_hook = maybe_fire_taskpool_event_hook("task_dispatch_authorized", task_id=task.id, reason="command_authorize_railway_deploy")
+    fresh = find_task(task.id)
+    return {
+        "status": "OK",
+        "task": task.id,
+        "railway_deploy_released": True,
+        "dispatchable": fresh.is_dispatchable(),
+        "manual_dispatch_blockers": work_dispatch_blockers(fresh),
+        "railway_gate": result,
         "derived_refresh": derived_refresh,
         "event_hook": event_hook,
     }
@@ -5501,6 +5599,21 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
     skipped: list[dict[str, Any]] = []
     used_boundaries: dict[str, str] = {}  # boundary_key -> first task_id
     boundary_parallel_groups: dict[str, str] = {}  # boundary_key -> parallel_group of first task
+
+    # Boundary de-dup must include tasks that are already claimed/running by
+    # another worker.  Otherwise a new parallel batch can safely de-dupe within
+    # itself while still colliding with an in-flight task on the same boundary.
+    active_tasks = [active for active in iter_tasks() if active.status in {"claimed", "running"}]
+    active_count = len(active_tasks)
+    for active in active_tasks:
+        boundary_key = task_parallel_boundary_key(active)
+        if not boundary_key:
+            continue
+        used_boundaries.setdefault(boundary_key, active.id)
+        active_pg = parallel_group_key(active)
+        if active_pg and boundary_key not in boundary_parallel_groups:
+            boundary_parallel_groups[boundary_key] = active_pg
+
     for t in candidates:
         if priority_mode == "work-first" and work_available and t.lane != "work":
             skipped.append({"id": t.id, "lane": t.lane, "reason": "lane_preempted_by_work", "path": str(t.path), "priority_mode": priority_mode})
@@ -5523,8 +5636,8 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
                     "parallel_group": t_pg, "path": str(t.path),
                 })
                 continue
-        if len(selected) >= max_agents:
-            skipped.append({"id": t.id, "lane": t.lane, "reason": "capacity_exceeded", "boundary_key": boundary_key, "path": str(t.path)})
+        if active_count + len(selected) >= max_agents:
+            skipped.append({"id": t.id, "lane": t.lane, "reason": "capacity_exceeded", "boundary_key": boundary_key, "active_count": active_count, "path": str(t.path)})
             continue
         selected.append(t)
         used_boundaries[boundary_key] = t.id
@@ -7943,6 +8056,14 @@ def build_parser() -> argparse.ArgumentParser:
     adp.add_argument("--reason", required=True)
     adp.add_argument("--json", action="store_true")
 
+    rdp = sub.add_parser("authorize-railway-deploy")
+    rdp.add_argument("task")
+    rdp.add_argument("--actor", default="hermes")
+    rdp.add_argument("--service", default="")
+    rdp.add_argument("--expected-commit", default="")
+    rdp.add_argument("--workdir", default="")
+    rdp.add_argument("--json", action="store_true")
+
     ip = sub.add_parser("ingest-inbox")
     ip.add_argument("--write", action="store_true")
     ip.add_argument("--expires-days", type=int, default=30)
@@ -8158,6 +8279,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_add_work_closeout_pair(args), args.json)
     if args.cmd == "authorize-dispatch":
         return print_result(command_authorize_dispatch(args), args.json)
+    if args.cmd == "authorize-railway-deploy":
+        return print_result(command_authorize_railway_deploy(args), args.json)
     if args.cmd == "ingest-inbox":
         return print_result(command_ingest_inbox(args), args.json)
     if args.cmd == "reconcile":
@@ -8196,6 +8319,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_boundary_diff_check(args), args.json)
     if args.cmd == "parallel-dispatch-dry-run":
         return print_result(command_parallel_dispatch_dry_run(args), args.json)
+    if args.cmd == "parallel-claim-and-handoff":
+        return print_result(command_parallel_claim_and_handoff(args), args.json)
     if args.cmd == "multimodel-intervention-dry-run":
         return print_result(command_multimodel_intervention_dry_run(args), args.json)
     if args.cmd == "multimodel-intervention-step":

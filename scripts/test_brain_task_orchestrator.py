@@ -501,6 +501,7 @@ def test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch
         assert retest["dispatchable"] is False
         assert any(b.startswith(f"waiting_for_dependency:{implementation_id}") for b in retest["manual_dispatch_blockers"]), retest
         assert "manual_dispatch_gate:awaiting_user_ui_retest_dispatch" in retest["manual_dispatch_blockers"]
+        assert "railway_deploy_gate:uvisa-app-tRnN:not_released" in retest["manual_dispatch_blockers"]
 
         run(env, "claim", implementation_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
         run(env, "transition", implementation_id, "--to", "running", "--actor", "tester", "--json")
@@ -511,7 +512,10 @@ def test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch
         retest_after_parent = next(r for r in rows_after_parent if r["id"] == retest_id)
         assert retest_after_parent["dispatchable"] is False
         assert retest_after_parent["dependency_status"][implementation_id] == "done"
-        assert retest_after_parent["manual_dispatch_blockers"] == ["manual_dispatch_gate:awaiting_user_ui_retest_dispatch"]
+        assert retest_after_parent["manual_dispatch_blockers"] == [
+            "manual_dispatch_gate:awaiting_user_ui_retest_dispatch",
+            "railway_deploy_gate:uvisa-app-tRnN:not_released",
+        ]
 
         release = json.loads(run(env, "authorize-dispatch", retest_id, "--actor", "tester", "--reason", "user explicitly dispatched UI retest", "--json").stdout)
         assert release["status"] == "OK"
@@ -519,8 +523,74 @@ def test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch
 
         rows_released = json.loads(run(env, "list", "--json").stdout)["rows"]
         retest_released = next(r for r in rows_released if r["id"] == retest_id)
-        assert retest_released["dispatchable"] is True
-        assert retest_released["manual_dispatch_blockers"] == []
+        assert retest_released["dispatchable"] is False
+        assert retest_released["manual_dispatch_blockers"] == ["railway_deploy_gate:uvisa-app-tRnN:not_released"]
+
+
+def test_authorize_railway_deploy_releases_online_ui_retest_gate_with_matching_commit():
+    td, _vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    old_module = sys.modules.get("railway_deploy_gate")
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            setattr(mod, "maybe_fire_taskpool_event_hook", lambda *a, **k: {"status": "FAKE"})
+            pair = mod.command_add_work_closeout_pair(SimpleNamespace(
+                title="Railway gated Lark UI retest",
+                priority="P1",
+                project="uvisa-admin",
+                expires_at="2099-01-01",
+                expires_days=30,
+                objective="完成实现闭环，等待线上 UI 回测。",
+                accept="本地验收完成；线上 UI 回测需 Railway 发布绿色。",
+            ))
+            impl_id = pair["implementation_task"]["id"]
+            retest_id = pair["ui_retest_task"]["id"]
+            impl = mod.find_task(impl_id)
+            impl.fm["status"] = "done"
+            mod.save_task(impl)
+            retest = mod.find_task(retest_id)
+            retest.fm["manual_dispatch_released"] = "true"
+            mod.save_task(retest)
+
+            fake_gate = type(sys)("railway_deploy_gate")
+            fake_gate.evaluate_gate = lambda **kwargs: {
+                "allowed": True,
+                "blockers": [],
+                "safe_evidence": {
+                    "service": "uvisa-admin",
+                    "service_status": "SUCCESS",
+                    "deployment_id": "dep-1",
+                    "branch": "main",
+                    "commit_hash": "abc123def",
+                    "repo": "cryptolxd/uvisa-admin",
+                },
+            }
+            sys.modules["railway_deploy_gate"] = fake_gate
+            release = mod.command_authorize_railway_deploy(SimpleNamespace(
+                task=retest_id,
+                actor="tester",
+                service="",
+                expected_commit="abc123",
+                workdir="/tmp/linked-railway",
+                json=True,
+            ))
+            assert release["status"] == "OK", release
+            assert release["dispatchable"] is True
+            assert release["manual_dispatch_blockers"] == []
+            fresh = mod.find_task(retest_id)
+            assert fresh.fm["railway_deploy_released"] == "true"
+            assert fresh.fm["railway_service"] == "uvisa-admin"
+            assert fresh.fm["railway_deployment_id"] == "dep-1"
+            assert fresh.fm["railway_deployment_commit"] == "abc123def"
+        finally:
+            if old_module is None:
+                sys.modules.pop("railway_deploy_gate", None)
+            else:
+                sys.modules["railway_deploy_gate"] = old_module
+            os.environ.clear()
+            os.environ.update(old_env)
 
 
 def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
@@ -588,6 +658,7 @@ def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
             assert mod.work_dispatch_blockers(retest) == [
                 f"waiting_for_dependency:{impl_id}:pending",
                 "manual_dispatch_gate:awaiting_user_ui_retest_dispatch",
+                "railway_deploy_gate:uvisa-app-tRnN:not_released",
             ]
         finally:
             os.environ.clear()
@@ -1253,10 +1324,10 @@ def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics(
                 "enabled": True,
                 "schedule": "every 120m",
                 "last_status": "error",
-                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=super-secret-token-123456 Authorization: Bearer bearer-secret-1234567890 https://example.test/hook?access_token=query-secret-123456",
-                "last_delivery_error": "Bearer delivery-secret-1234567890",
-                "deliver": "telegram:private-secret-target",
-                "script": "/tmp/secret-script.sh",
+                "last_error": "bounded slice completed; state changed running -> review. PASS: scoped tests. full build unrelated baseline blocker TS6133 unused symbol. token=" + "super-secret-token-123456" + " Authorization: Bearer " + "bearer...7890" + " https://example.test/hook?access_token=***",
+                "last_delivery_error": "Bearer " + "delivery-secret-1234567890",
+                "deliver": "telegram:" + "private-secret-target",
+
                 "next_run_at": "2099-01-01T00:00:00+08:00",
             },
         ]
@@ -1987,6 +2058,7 @@ def main():
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()
     test_work_closeout_pair_blocks_ui_retest_until_parent_done_and_user_dispatch_release()
+    test_authorize_railway_deploy_releases_online_ui_retest_gate_with_matching_commit()
     test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted()
     test_generic_work_task_remains_dispatchable_without_work_closeout_fields()
     test_lifecycle_transition_gate_and_audit()
