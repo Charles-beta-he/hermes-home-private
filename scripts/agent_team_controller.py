@@ -103,6 +103,40 @@ def rows_by_id(ids):
     wanted = set(ids)
     return {row.get('id'): row for row in list_task_rows(include_done=True) if row.get('id') in wanted}
 
+
+def page_batch_siblings_for(row, rows=None, limit=8):
+    """Return same-boundary work/Lark UI siblings for page-level batching context.
+
+    The controller still claims/closes only the current task. Siblings are context
+    so a worker can make one coherent page-level code change and report which
+    acceptance atoms were covered.
+    """
+    boundary = str(row.get('parallel_boundary') or '').strip()
+    project = str(row.get('project') or '').strip()
+    task_id = str(row.get('id') or '')
+    if not boundary or not project:
+        return []
+    rows = rows if rows is not None else list_task_rows(include_done=False)
+    out = []
+    for other in rows:
+        if str(other.get('id') or '') == task_id:
+            continue
+        if str(other.get('project') or '').strip() != project:
+            continue
+        if str(other.get('parallel_boundary') or '').strip() != boundary:
+            continue
+        status = str(other.get('status') or '').strip()
+        if status not in {'pending', 'retry', 'claimed', 'running', 'review'}:
+            continue
+        title_blob = f"{other.get('id','')} {other.get('title','')}".lower()
+        row_blob = f"{row.get('id','')} {row.get('title','')}".lower()
+        if not (('lark' in title_blob or 'lark' in row_blob or project.startswith('uvisa')) and (row.get('lane') == 'work' or other.get('lane') == 'work')):
+            continue
+        out.append(other)
+        if len(out) >= limit:
+            break
+    return out
+
 def _looks_like_uvisa_lark_task(task):
     text = ' '.join(str(task.get(k, '') or '') for k in ('id', 'title', 'project', 'source', 'body', 'description')).lower()
     return ('lark' in text or '飞书' in text) and ('uvisa' in text or 'uvisa-admin' in text or '管理端' in text)
@@ -175,6 +209,10 @@ def build_worker_context(task, conflict_group, sibling_tasks=None):
 
     v3: Includes sibling awareness — other tasks in the same conflict group
     so the worker knows what else is running and can avoid cross-contamination.
+
+    v4: For Lark/work UI bursts, same-boundary sibling tasks are page-batch
+    acceptance atoms. The worker may implement them in the same page-level
+    code slice when safe, but lifecycle closeout remains per original task.
     """
     allowed_globs = task.get('allowed_globs', '')
     forbidden_globs = task.get('forbidden_globs', '')
@@ -204,18 +242,28 @@ def build_worker_context(task, conflict_group, sibling_tasks=None):
     if boundary_constraints:
         boundary_section = '\nBOUNDARY CONSTRAINTS (fail-closed: violations block task):\n' + '\n'.join(f'- {c}' for c in boundary_constraints)
 
-    # Sibling awareness: inform worker about other tasks in the same conflict group
+    # Sibling awareness: inform worker about other tasks in the same conflict group.
+    # For Lark/work UI bursts, same-boundary siblings are page-batch candidates:
+    # implement together only when safe, but keep proof/closeout mapped per task.
     sibling_section = ''
     if sibling_tasks:
         sib_lines = []
-        for sib in sibling_tasks[:5]:  # Cap at 5 to avoid context bloat
+        for sib in sibling_tasks[:8]:  # Cap to avoid context bloat while allowing page batches
             sib_id = sib.get('id', '?')
-            sib_title = sib.get('title', '?')[:40]
+            sib_title = sib.get('title', '?')[:80]
             sib_status = sib.get('status', '?')
             sib_boundary = sib.get('parallel_boundary', sib.get('workspace', ''))
             sib_lines.append(f'- [{sib_status}] {sib_id}: {sib_title} (boundary: {sib_boundary})')
         if sib_lines:
-            sibling_section = '\nSIBLING TASKS IN SAME CONFLICT GROUP (do NOT overlap files with these):\n' + '\n'.join(sib_lines)
+            sibling_section = '''
+PAGE-BATCH SIBLING TASKS (same boundary / likely same page surface):
+{lines}
+PAGE-BATCH RULES:
+- If these siblings target the same repo + route/page/module and can be verified in one browser pass, include their code changes in the same page-level slice.
+- Keep each original task/GUID as an acceptance atom; do not mark sibling tasks done from this worker.
+- PROOF_JSON should include page_batch_covered_task_ids when sibling acceptance atoms are covered.
+- Do not batch siblings that cross repos, need BE/schema changes, have unrelated modules, or are blocked by a different release gate.
+'''.format(lines='\n'.join(sib_lines))
 
     uvisa_contract = ensure_uvisa_lark_contract(task)
     uvisa_contract_section = format_uvisa_contract_context(uvisa_contract, task.get('uvisa_contract_path', ''))
@@ -893,7 +941,8 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
             continue
         update_status(eid, 'RUNNING')
         group = payload.get('conflict_group') or row.get('parallel_group') or row.get('conflict_group') or row.get('parallel_boundary') or row.get('project') or 'default'
-        worker_result = delegate_to_worker(row, str(group), eid, sibling_tasks=[])
+        siblings = page_batch_siblings_for(row)
+        worker_result = delegate_to_worker(row, str(group), eid, sibling_tasks=siblings)
         append_trace(eid, {'event': 'execute_cycle_worker_finished', 'result': worker_result.get('status', '?')})
         results.append(_process_worker_result(row, actor, eid, worker_result))
         processed += 1
@@ -985,7 +1034,8 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         task_id = record['task_id']
         eid = record['eid']
         actor = record['actor']
-        worker_result = delegate_to_worker(record['row'], record['group'], eid, sibling_tasks=[])
+        siblings = page_batch_siblings_for(record['row'])
+        worker_result = delegate_to_worker(record['row'], record['group'], eid, sibling_tasks=siblings)
         append_trace(eid, {'event': 'event_worker_finished', 'result': worker_result.get('status', '?')})
         out = {'task_id': task_id, 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
         if worker_result.get('status') == 'done':
