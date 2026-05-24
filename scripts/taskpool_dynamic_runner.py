@@ -111,6 +111,17 @@ def release_lock() -> None:
         pass
 
 
+
+def load_taskpool_dispatch_mode() -> str:
+    cfg = HERMES_HOME / "config.yaml"
+    try:
+        import yaml  # type: ignore
+        raw = yaml.safe_load(cfg.read_text(encoding="utf-8")) or {}
+        taskpool = raw.get("taskpool", {}) if isinstance(raw, dict) else {}
+        return str((taskpool or {}).get("dispatch_mode") or "single").strip().lower()
+    except Exception:
+        return "single"
+
 def parse_json_tail(text: str) -> dict[str, Any]:
     text = (text or "").strip()
     if not text: return {}
@@ -141,7 +152,11 @@ def main() -> int:
         env = os.environ.copy()
         env.setdefault("HERMES_LOCAL_BRAIN_AUTORUN", "1")
         event: dict[str, Any] = {"schema": "taskpool_dynamic_runner_v1", "ts": utc()}
-        tick = run([sys.executable, str(TICK), "--summary", "--autorun-step", "--no-state"], timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "240")), env=env)
+        dispatch_mode = load_taskpool_dispatch_mode()
+        autorun_flag = "--parallel-autorun" if dispatch_mode == "parallel" else "--autorun-step"
+        event["dispatch_mode"] = dispatch_mode
+        event["autorun_flag"] = autorun_flag
+        tick = run([sys.executable, str(TICK), "--summary", autorun_flag, "--no-state"], timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "240")), env=env)
         event["tick"] = compact_result(tick)
         summary = parse_json_tail(tick.get("stdout", ""))
         if tick.get("returncode") in (0, "0") and tick.get("stdout") and not summary:

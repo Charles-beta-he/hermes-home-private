@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import signal
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -179,6 +180,95 @@ def append_log(event: dict[str, Any]) -> None:
         f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def load_taskpool_runtime_config() -> dict[str, Any]:
+    """Best-effort config reader for dispatch concurrency/health knobs."""
+    cfg_path = Path(os.environ.get("HERMES_CONFIG", str(HOME / ".hermes" / "config.yaml"))).expanduser()
+    defaults = {
+        "dispatch_mode": "single",
+        "max_parallel_agents": 3,
+        "handoff_archive_threshold": 100,
+        "handoff_archive_keep": 50,
+        "continuation_backlog_threshold": 100,
+    }
+    try:
+        import yaml  # type: ignore
+        raw = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+        taskpool = raw.get("taskpool", {}) if isinstance(raw, dict) else {}
+        if isinstance(taskpool, dict):
+            defaults.update({k: v for k, v in taskpool.items() if k in defaults})
+    except Exception:
+        pass
+    for key, fallback in (
+        ("max_parallel_agents", 3),
+        ("handoff_archive_threshold", 100),
+        ("handoff_archive_keep", 50),
+        ("continuation_backlog_threshold", 100),
+    ):
+        try:
+            defaults[key] = max(0 if key != "max_parallel_agents" else 1, int(defaults.get(key) or fallback))
+        except Exception:
+            defaults[key] = fallback
+    defaults["dispatch_mode"] = str(defaults.get("dispatch_mode") or "single").strip().lower()
+    return defaults
+
+
+def continuation_backlog_status(*, backlog_warning_threshold: int = 100) -> dict[str, Any]:
+    try:
+        hermes_agent_dir = Path(os.environ.get("HERMES_AGENT_DIR", str(HOME / ".hermes" / "hermes-agent"))).expanduser()
+        if str(hermes_agent_dir) not in sys.path:
+            sys.path.insert(0, str(hermes_agent_dir))
+        from agent.continuation import continuation_status
+        return continuation_status(
+            root=HOME / ".hermes" / "state" / "continuations",
+            backlog_warning_threshold=backlog_warning_threshold,
+        )
+    except Exception as exc:
+        return {
+            "schema": "hermes_continuation_status_v1",
+            "status": "ERROR",
+            "error": str(exc),
+            "active_count": 0,
+            "counts": {},
+            "by_scope": {},
+            "backlog_warning": "",
+        }
+
+
+def handoff_backlog_status(*, archive: bool = False, threshold: int = 100, keep: int = 50) -> dict[str, Any]:
+    roots = {
+        "autorun": HOME / ".hermes" / "state" / "autorun" / "auto_run_handoffs",
+        "parallel": HOME / ".hermes" / "state" / "autorun" / "parallel_handoffs",
+    }
+    status: dict[str, Any] = {
+        "schema": "taskpool_handoff_backlog_v1",
+        "threshold": threshold,
+        "keep": keep,
+        "archive_requested": archive,
+        "archived_count": 0,
+        "dirs": {},
+    }
+    archive_root = HOME / ".hermes" / "state" / "autorun" / "archived_handoffs"
+    for name, root in roots.items():
+        files = sorted(root.glob("*.md"), key=lambda p: p.stat().st_mtime if p.exists() else 0) if root.exists() else []
+        entry = {"path": str(root), "count": len(files), "over_threshold": bool(threshold and len(files) > threshold), "archived": 0}
+        if archive and threshold and len(files) > threshold:
+            to_archive = files[: max(0, len(files) - keep)]
+            target = archive_root / name / datetime.now(TZ).strftime("%Y%m%d%H%M%S")
+            target.mkdir(parents=True, exist_ok=True)
+            for src in to_archive:
+                try:
+                    shutil.move(str(src), str(target / src.name))
+                    entry["archived"] += 1
+                    status["archived_count"] += 1
+                except Exception:
+                    pass
+            entry["archive_dir"] = str(target)
+            entry["count_after"] = len(list(root.glob("*.md"))) if root.exists() else 0
+        status["dirs"][name] = entry
+    status["warning"] = "handoff_backlog_high" if any(v.get("over_threshold") for v in status["dirs"].values()) else ""
+    return status
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Safe local-brain task dispatch tick")
     parser.add_argument("--print-always", action="store_true", help="Always print the event JSON")
@@ -186,10 +276,28 @@ def main() -> int:
     parser.add_argument("--no-state", action="store_true", help="Do not suppress repeated notifications")
     parser.add_argument("--autorun", action="store_true", help="Opt-in bridge: run auto-claim-and-handoff after all safe tick gates pass")
     parser.add_argument("--autorun-step", action="store_true", help="Opt-in bounded runner: claim, run static allowlisted command IDs, and stop at review")
+    parser.add_argument("--parallel-autorun", action="store_true", help="Opt-in parallel bridge: claim a non-conflicting batch and emit per-task handoffs")
+    parser.add_argument("--max-agents", type=int, default=0, help="Max agents for --parallel-autorun / parallel dry-run; default from taskpool.max_parallel_agents")
+    parser.add_argument("--archive-handoffs", action="store_true", help="Archive old autorun/parallel handoff files beyond configured keep count")
     parser.add_argument("--multimodel-step", action="store_true", help="Opt-in expensive multi-model step; still requires HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1")
     args = parser.parse_args()
+    taskpool_cfg = load_taskpool_runtime_config()
+    max_parallel_agents = int(args.max_agents or taskpool_cfg.get("max_parallel_agents") or 3)
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
+    event["taskpool_runtime"] = {
+        "dispatch_mode": taskpool_cfg.get("dispatch_mode"),
+        "max_parallel_agents": max_parallel_agents,
+        "parallel_requested": bool(args.parallel_autorun),
+    }
+    event["handoff_backlog"] = handoff_backlog_status(
+        archive=bool(args.archive_handoffs),
+        threshold=int(taskpool_cfg.get("handoff_archive_threshold") or 100),
+        keep=int(taskpool_cfg.get("handoff_archive_keep") or 50),
+    )
+    event["continuation"] = continuation_backlog_status(
+        backlog_warning_threshold=int(taskpool_cfg.get("continuation_backlog_threshold") or 100),
+    )
     event["ingest"] = run_json(["ingest-inbox", "--write", "--json"])
     event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
     event["dashboard"] = run_json(["dashboard", "--write", "--json"])
@@ -224,8 +332,14 @@ def main() -> int:
             "safety": "set HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 to enable",
         }
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
+    event["parallel_dispatch"] = run_json([
+        "parallel-dispatch-dry-run",
+        "--max-agents",
+        str(max_parallel_agents),
+        "--json",
+    ])
 
-    for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch"]:
+    for key in ["ingest", "reconcile", "dashboard", "proof_check", "evidence_spine", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
         if key in errored_steps:
             continue
         item = event.get(key, {})
@@ -236,7 +350,22 @@ def main() -> int:
     if errors:
         event["status"] = "ERROR"
 
-    if args.autorun_step and not errors:
+    if args.parallel_autorun and not errors:
+        event["autorun"] = run_json([
+            "parallel-claim-and-handoff",
+            "--max-agents",
+            str(max_parallel_agents),
+            "--write",
+            "--actor",
+            "hermes-parallel",
+            "--json",
+        ])
+        if event["autorun"].get("status") not in {"OK", "PASS"}:
+            errors.append({"step": "parallel_autorun", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout"), "reason": event["autorun"].get("reason")})
+            event["status"] = "ERROR"
+            event["errors"] = errors
+        event["post_autorun_dispatch"] = run_json(["parallel-dispatch-dry-run", "--max-agents", str(max_parallel_agents), "--json"])
+    elif args.autorun_step and not errors:
         event["autorun"] = run_cmd_json([sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"])
         if event["autorun"].get("status") not in {"OK", "PASS"}:
             errors.append({"step": "autorun_step", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout")})
@@ -313,8 +442,8 @@ def main() -> int:
         "safety": mm_raw.get("safety", ""),
     }
     autorun_summary = {
-        "requested": bool(args.autorun or args.autorun_step),
-        "step_mode": "bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none"),
+        "requested": bool(args.autorun or args.autorun_step or args.parallel_autorun),
+        "step_mode": "parallel_claim_and_handoff" if args.parallel_autorun else ("bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none")),
         "present": "autorun" in event,
         "status": autorun_raw.get("status"),
         "eligible": bool(autorun_raw.get("eligible")),
@@ -343,6 +472,10 @@ def main() -> int:
             "summary": evidence_spine_raw.get("summary", {}),
             "safety": evidence_spine_raw.get("safety", ""),
         },
+        "taskpool_runtime": event.get("taskpool_runtime", {}),
+        "handoff_backlog": event.get("handoff_backlog", {}),
+        "continuation": event.get("continuation", {}),
+        "parallel_dispatch": event.get("parallel_dispatch", {}),
         "multimodel_intervention": multimodel_summary,
         "multimodel_step": (event.get("multimodel_step") or {}) if isinstance(event.get("multimodel_step"), dict) else {},
         "auto_close_review": {
@@ -360,7 +493,7 @@ def main() -> int:
         "dispatch_hint": dispatch_hint,
         "recovery_command": recovery_command,
     }
-    if args.autorun or args.autorun_step:
+    if args.autorun or args.autorun_step or args.parallel_autorun:
         summary_payload["autorun"] = autorun_summary
     event["observability"] = {
         "schema": "brain_task_dispatch_tick_observability_v1",
