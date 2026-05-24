@@ -14,9 +14,10 @@ import tempfile
 import time
 from pathlib import Path
 
-HOME = Path.home()
-ORCH = HOME / ".hermes" / "scripts" / "brain_task_orchestrator.py"
-TICK = HOME / ".hermes" / "scripts" / "brain_task_dispatch_tick.py"
+SCRIPT_DIR = Path(__file__).resolve().parent
+HERMES_ROOT = SCRIPT_DIR.parent
+ORCH = SCRIPT_DIR / "brain_task_orchestrator.py"
+TICK = SCRIPT_DIR / "brain_task_dispatch_tick.py"
 
 
 def run(cmd, env, check=True):
@@ -42,7 +43,7 @@ def make_env_and_vault():
     hermes_home = root / "hermes-home"
     scripts_dir = hermes_home / "scripts"
     scripts_dir.mkdir(parents=True)
-    real_scripts = Path.home() / ".hermes" / "scripts"
+    real_scripts = SCRIPT_DIR
     for name in ("brain_task_orchestrator.py", "autonomy-write-guard.py", "autonomy-precondition.py", "permission_taxonomy.py"):
         shutil.copy2(real_scripts / name, scripts_dir / name)
     fake_p10 = scripts_dir / "p10-health.sh"
@@ -87,12 +88,12 @@ def make_env_and_vault():
     return td, vault, env
 
 
-def add_task(env):
+def add_task(env, title="验证 safe tick autorun bridge"):
     r = run([
         sys.executable,
         str(ORCH),
         "add",
-        "验证 safe tick autorun bridge",
+        title,
         "--priority",
         "P1",
         "--project",
@@ -199,6 +200,18 @@ def add_review_evolution_task(env):
     return task_id
 
 
+def add_claim_state_fixture(env):
+    task_ids = [add_task(env, title=f"claim-state fixture #{i}") for i in range(1, 5)]
+    for task_id in task_ids[:3]:
+        run([sys.executable, str(ORCH), "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json"], env)
+    run([sys.executable, str(ORCH), "transition", task_ids[0], "--to", "running", "--actor", "tester", "--json"], env)
+    return {
+        "running": task_ids[0],
+        "claimed": task_ids[1:3],
+        "pending": task_ids[3],
+    }
+
+
 def test_tick_autorun_bridge_is_opt_in_and_fail_closed():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -282,6 +295,31 @@ def test_tick_autorun_step_auto_closes_review_tasks_with_done_gate():
         assert payload["auto_close_review"]["closed_count"] == 1, payload
         assert payload["auto_close_review"]["closed"][0]["task_id"] == task_id, payload
         assert task_row(env, task_id, include_done=True)["status"] == "done"
+
+
+def test_tick_summary_claim_state_surfaces_execution_starvation_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        fixture = add_claim_state_fixture(env)
+        payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state"], env).stdout)
+        claim_state = payload["claim_state"]
+        assert payload["status"] == "OK", payload
+        assert claim_state["claimed_total"] == 2, payload
+        assert claim_state["running_total"] == 1, payload
+        assert claim_state["review_total"] == 0, payload
+        assert claim_state["pending_total"] == 1, payload
+        assert claim_state["stale_claim_count"] == 0, payload
+        assert claim_state["unsafe_unknown_claim_count"] == 0, payload
+        assert claim_state["claimed_running_ratio"] == 2.0, payload
+        assert claim_state["parallel_selected_count"] == 0, payload
+        assert claim_state["proof_gate_status"] == "PASS", payload
+        assert claim_state["execution_starvation"] is True, payload
+        assert claim_state["concurrency_raise_gate"]["status"] == "DENY", payload
+        assert claim_state["concurrency_raise_gate"]["raise_allowed"] is False, payload
+        assert "execution_starvation" in claim_state["concurrency_raise_gate"]["reasons"], payload
+        assert task_row(env, fixture["running"])["status"] == "running"
+        assert all(task_row(env, task_id)["status"] == "claimed" for task_id in fixture["claimed"])
+        assert task_row(env, fixture["pending"])["status"] == "pending"
 
 
 def test_tick_summary_surfaces_multimodel_intervention_hint():
@@ -496,6 +534,56 @@ def test_event_next_tick_not_requested_skips_without_side_effects():
     assert result["reason"] == "not_requested"
     assert result["skip_reasons"] == ["not_requested"]
     assert calls == []
+
+
+def test_tick_evidence_spine_warn_is_visible_but_not_fatal():
+    module = load_tick_module()
+
+    def fake_run_json(args):
+        step = args[0]
+        if step == "evidence-spine":
+            return {
+                "status": "FAIL",
+                "gate_status": "WARN",
+                "summary": {"auto_completer_semantic_status": "error"},
+            }
+        if step == "dispatch-dry-run":
+            return {"status": "OK", "dispatchable": False, "next": None}
+        if step == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 0, "selected": []}
+        return {"status": "OK"}
+
+    old_argv = sys.argv[:]
+    old_run_json = module.run_json
+    old_append_log = module.append_log
+    old_save_state = module.save_state
+    old_load_state = module.load_state
+    try:
+        module.run_json = fake_run_json
+        module.append_log = lambda event: None
+        module.save_state = lambda state: None
+        module.load_state = lambda: {}
+        sys.argv = [str(TICK), "--summary", "--no-state", "--parallel-autorun", "--max-agents", "2"]
+        import io
+        import contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = module.main()
+        assert rc == 0
+        payload = json.loads(buf.getvalue())
+    finally:
+        sys.argv = old_argv
+        module.run_json = old_run_json
+        module.append_log = old_append_log
+        module.save_state = old_save_state
+        module.load_state = old_load_state
+
+    assert payload["status"] == "WARN", payload
+    assert payload["error_count"] == 0, payload
+    assert payload["warning_count"] == 1, payload
+    assert payload["warnings"][0]["step"] == "evidence_spine", payload
+    assert payload["evidence_spine"]["gate_status"] == "WARN", payload
+    assert payload["autorun"]["present"] is True, payload
 
 
 def test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics():

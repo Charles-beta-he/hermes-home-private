@@ -554,14 +554,28 @@ def main() -> int:
     event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
 
     errors = []
+    warnings = []
     errored_steps: set[str] = set()
     allowed_statuses = {"OK", "PASS", "SKIP"}  # SKIP for multimodel_step when env var not set
-    if (event.get("evidence_spine") or {}).get("gate_status") not in {None, "PASS"}:
+    evidence_spine = event.get("evidence_spine") or {}
+    evidence_spine_gate = evidence_spine.get("gate_status")
+    evidence_spine_status = evidence_spine.get("status")
+    if evidence_spine_gate == "FAIL":
         errors.append({
             "step": "evidence_spine",
-            "status": (event.get("evidence_spine") or {}).get("status"),
-            "gate_status": (event.get("evidence_spine") or {}).get("gate_status"),
-            "summary": (event.get("evidence_spine") or {}).get("summary", {}),
+            "status": evidence_spine_status,
+            "gate_status": evidence_spine_gate,
+            "summary": evidence_spine.get("summary", {}),
+        })
+        errored_steps.add("evidence_spine")
+    elif evidence_spine_gate == "WARN":
+        # Evidence-spine WARN is governance/observability debt. It must remain visible,
+        # but it must not block a bounded dispatch tick for otherwise safe work.
+        warnings.append({
+            "step": "evidence_spine",
+            "status": evidence_spine_status,
+            "gate_status": evidence_spine_gate,
+            "summary": evidence_spine.get("summary", {}),
         })
         errored_steps.add("evidence_spine")
 
@@ -599,8 +613,11 @@ def main() -> int:
             errors.append({"step": key, "status": item.get("status"), "stderr": item.get("stderr"), "stdout": item.get("stdout")})
             errored_steps.add(key)
     event["errors"] = errors
+    event["warnings"] = warnings
     if errors:
         event["status"] = "ERROR"
+    elif warnings:
+        event["status"] = "WARN"
 
     if args.parallel_autorun and not errors:
         event["autorun"] = run_json([
@@ -754,6 +771,8 @@ def main() -> int:
         "ingested_count": event["ingested_count"],
         "railway_retest_released_count": event["railway_retest_released_count"],
         "error_count": len(errors),
+        "warning_count": len(warnings),
+        "warnings": warnings,
         "evidence_spine": {
             "status": evidence_spine_raw.get("status"),
             "gate_status": evidence_spine_raw.get("gate_status"),
@@ -815,7 +834,7 @@ def main() -> int:
         print(json.dumps(summary_payload, ensure_ascii=False, indent=2, sort_keys=True))
     elif args.print_always or noteworthy:
         print(json.dumps(event, ensure_ascii=False, indent=2))
-    return 0 if event["status"] == "OK" else 2
+    return 0 if event["status"] in {"OK", "WARN"} else 2
 
 
 if __name__ == "__main__":
