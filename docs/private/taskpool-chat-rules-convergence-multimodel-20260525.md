@@ -32,6 +32,13 @@ Scope: Hermes taskpool execution workers launched with `hermes chat --ignore-rul
 - `ignore_chat_rules` must never affect permission/tool/proof/lifecycle/multimodel truth gates.
 - Distinguish task_worker execution from multimodel_review and smoke.
 
+### Claude Code
+- The first-pass digest restores global safety invariants, but it does **not** by itself solve the user's main complaint: "I do not want to say the same requirement once in taskpool and again in chat."
+- Root cause: `build_worker_context()` included title/id/project/boundary but did not include task-level requirement fields such as `body`, `acceptance_criteria`, `red_lines`, `non_goals`, `workflow_contract`, and `evidence_refs`.
+- Correct interpretation of isolation: workers should not inherit chat persona, arbitrary memory, or unrelated conversation history; workers **must** inherit the concrete requirements already persisted into the task record.
+- Minimal fix: add a deterministic task-spec snapshot section. Chat says it once, taskpool stores it once, worker receives a compact snapshot once.
+- Keep caps/truncation on every injected field to avoid token blowup and prevent reintroducing full chat history through the back door.
+
 ## Synthesis
 
 Implement the smallest safe step now:
@@ -39,12 +46,20 @@ Implement the smallest safe step now:
    - `~/.hermes/AGENTS.md`
    - selected durable memory/profile files if readable later, but avoid full memory dump in this slice.
 2. Inject the digest into execution-worker prompts in `agent_team_controller.py` before launching `hermes chat --ignore-rules`.
-3. Do not inject it into consult_models / smoke / independent review paths in this slice.
-4. Add tests proving:
+3. Add a compact task-level requirements snapshot sourced from the task record:
+   - `body` / `description`
+   - `acceptance_criteria`
+   - `red_lines`
+   - `non_goals`
+   - `evidence_refs`
+   - `workflow_contract`
+4. Do not inject these sections into consult_models / smoke / independent review paths in this slice unless explicitly scoped later.
+5. Add tests proving:
    - digest contains the key execution-worker invariant and source text;
-   - `delegate_to_worker` prompt contains the digest while command still uses `--ignore-rules`;
+   - task-spec snapshot preserves user requirements already captured in the task;
+   - `delegate_to_worker` prompt contains both digest and task-spec snapshot while command still uses `--ignore-rules`;
    - no broad CLI behavior is changed.
 
 ## Boundary for this pass
 
-Stop before a broad CLI/runtime-kind migration. That needs a larger contract and could break existing `hermes chat --ignore-rules` workflows. The current pass should only close the unsafe execution-worker gap with targeted tests.
+Stop before a broad CLI/runtime-kind migration. That needs a larger contract and could break existing `hermes chat --ignore-rules` workflows. The current pass should only close the unsafe execution-worker gap with targeted tests: global safety digest plus task-spec requirement inheritance.

@@ -235,6 +235,65 @@ def build_execution_rules_digest(hermes_home=None, max_source_chars=1800):
 """.strip()
 
 
+def _compact_task_text(value, max_chars=1200):
+    """Render task-local requirements compactly for worker prompts."""
+    if value is None or value == '':
+        return ''
+    if isinstance(value, (list, tuple)):
+        lines = []
+        for item in value[:12]:
+            rendered = _compact_task_text(item, max_chars=300)
+            if rendered:
+                lines.append(f'- {rendered}')
+        text = '\n'.join(lines)
+    elif isinstance(value, dict):
+        try:
+            text = json.dumps(value, ensure_ascii=False, sort_keys=True)
+        except TypeError:
+            text = str(value)
+    else:
+        text = str(value)
+    text = '\n'.join(line.rstrip() for line in text.strip().splitlines() if line.strip())
+    if len(text) > max_chars:
+        text = text[:max_chars].rstrip() + '… [truncated]'
+    return text
+
+
+def build_task_spec_section(task, max_body_chars=1800, max_field_chars=900):
+    """Build a compact task-level requirements snapshot for execution workers.
+
+    `--ignore-rules` should isolate workers from chat history/persona, not from
+    the concrete requirement that was already captured into the task record.
+    This section is the chat→taskpool SSOT bridge: say it once in chat, persist
+    it on the task, and let workers read this deterministic snapshot.
+    """
+    body = _compact_task_text(task.get('body') or task.get('description'), max_body_chars)
+    field_map = [
+        ('ACCEPTANCE_CRITERIA', 'acceptance_criteria'),
+        ('RED_LINES', 'red_lines'),
+        ('NON_GOALS', 'non_goals'),
+        ('EVIDENCE_REFS', 'evidence_refs'),
+        ('WORKFLOW_CONTRACT', 'workflow_contract'),
+    ]
+    sections = []
+    if body:
+        sections.append(f'BODY_OR_DESCRIPTION:\n{body}')
+    for label, key in field_map:
+        rendered = _compact_task_text(task.get(key), max_field_chars)
+        if rendered:
+            sections.append(f'{label}:\n{rendered}')
+    if not sections:
+        return ''
+    return '''
+TASK-SPEC REQUIREMENTS SNAPSHOT (chat-to-task SSOT; do not ask user to repeat):
+{sections}
+TASK-SPEC RULES:
+- Treat this snapshot as the task-level source of truth for user requirements already captured before dispatch.
+- If it conflicts with global/project red lines, fail closed and return BLOCKED with the conflict.
+- Do not import unrelated chat history or memory; preserve isolation while honoring these explicit requirements.
+'''.format(sections='\n\n'.join(sections)).strip()
+
+
 def build_worker_context(task, conflict_group, sibling_tasks=None):
     """Build context for delegate_task child.
 
@@ -303,10 +362,13 @@ PAGE-BATCH RULES:
     uvisa_contract = ensure_uvisa_lark_contract(task)
     uvisa_contract_section = format_uvisa_contract_context(uvisa_contract, task.get('uvisa_contract_path', ''))
     execution_rules_digest = build_execution_rules_digest()
+    task_spec_section = build_task_spec_section(task)
 
     return f"""You are a Kanban worker executing a brain task.
 
 {execution_rules_digest}
+
+{task_spec_section}
 
 TASK: {task.get('title', 'untitled')}
 ID: {task.get('id', '')}

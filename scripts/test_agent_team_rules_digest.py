@@ -35,7 +35,34 @@ def test_execution_rules_digest_includes_local_constitution(tmp_path):
     assert "--ignore-rules only skips chat context" in digest
 
 
-def test_delegate_worker_injects_digest_while_preserving_ignore_rules(monkeypatch, tmp_path):
+def test_task_spec_section_preserves_task_level_requirements():
+    module = load_module()
+
+    section = module.build_task_spec_section(
+        {
+            "id": "task-1",
+            "title": "实现 Hermes worker 规则收敛",
+            "body": "用户已经在 chat 里说过一次：任务池 worker 必须继承验收标准，不要让用户重复描述。",
+            "acceptance_criteria": [
+                "worker prompt includes task acceptance criteria",
+                "chat-to-task requirements remain the single source of truth",
+            ],
+            "red_lines": ["不得要求用户在 chat 和 taskpool 各说一遍"],
+            "non_goals": ["不要取消 --ignore-rules 隔离"],
+            "workflow_contract": {"proof": "PROOF_JSON required"},
+            "evidence_refs": ["plans/taskpool-chat-rules.md"],
+        }
+    )
+
+    assert "TASK-SPEC REQUIREMENTS SNAPSHOT" in section
+    assert "用户已经在 chat 里说过一次" in section
+    assert "worker prompt includes task acceptance criteria" in section
+    assert "不得要求用户在 chat 和 taskpool 各说一遍" in section
+    assert "不要取消 --ignore-rules 隔离" in section
+    assert "PROOF_JSON required" in section
+
+
+def test_delegate_worker_injects_digest_and_task_spec_while_preserving_ignore_rules(monkeypatch, tmp_path):
     module = load_module()
     captured = {}
 
@@ -57,6 +84,9 @@ def test_delegate_worker_injects_digest_while_preserving_ignore_rules(monkeypatc
             "title": "实现 Hermes worker 规则收敛",
             "project": "hermes",
             "parallel_boundary": "scripts/agent_team_controller.py",
+            "body": "用户要求：任务池继承 chat 中已表达的验收标准。",
+            "acceptance_criteria": ["不需要重复在 chat 再说一次"],
+            "red_lines": ["不得丢失任务级验收"],
         },
         conflict_group="hermes-control-plane",
         eid="abcdef123456",
@@ -68,3 +98,6 @@ def test_delegate_worker_injects_digest_while_preserving_ignore_rules(monkeypatc
     prompt = cmd[cmd.index("-q") + 1]
     assert "CANONICAL EXECUTION RULES DIGEST" in prompt
     assert "shared red line" in prompt
+    assert "TASK-SPEC REQUIREMENTS SNAPSHOT" in prompt
+    assert "不需要重复在 chat 再说一次" in prompt
+    assert "不得丢失任务级验收" in prompt
