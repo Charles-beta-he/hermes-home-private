@@ -186,7 +186,11 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
     cfg_path = Path(os.environ.get("HERMES_CONFIG", str(HOME / ".hermes" / "config.yaml"))).expanduser()
     defaults = {
         "dispatch_mode": "single",
+        # Floor only.  Parallel mode can raise the effective cap after a
+        # read-only boundary dry-run so Lark/work bursts use their existing
+        # parallel_boundary classification instead of being pinned to 3.
         "max_parallel_agents": 3,
+        "dynamic_max_parallel_agents": 24,
         "review_close_max_tasks": 50,
         "handoff_archive_threshold": 100,
         "handoff_archive_keep": 50,
@@ -202,6 +206,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         pass
     for key, fallback in (
         ("max_parallel_agents", 3),
+        ("dynamic_max_parallel_agents", 24),
         ("review_close_max_tasks", 50),
         ("handoff_archive_threshold", 100),
         ("handoff_archive_keep", 50),
@@ -212,7 +217,82 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         except Exception:
             defaults[key] = fallback
     defaults["dispatch_mode"] = str(defaults.get("dispatch_mode") or "single").strip().lower()
+    defaults["dynamic_max_parallel_agents"] = max(
+        int(defaults.get("max_parallel_agents") or 3),
+        int(defaults.get("dynamic_max_parallel_agents") or 24),
+    )
     return defaults
+
+
+def resolve_parallel_agent_cap(*, requested_max_agents: int, taskpool_cfg: dict[str, Any]) -> dict[str, Any]:
+    """Resolve the effective parallel cap from live boundary-safe capacity.
+
+    `taskpool.max_parallel_agents` is a floor, not a hard global worker ceiling.
+    In parallel mode the existing task metadata (`parallel_boundary`,
+    `parallel_group`, `conflict_group`) is the source of truth.  We therefore
+    probe the orchestrator at a configurable ceiling and let its fail-closed
+    boundary selector decide how many additional tasks can safely run now.
+    """
+    configured = int(taskpool_cfg.get("max_parallel_agents") or 3)
+    if requested_max_agents > 0:
+        return {
+            "configured": configured,
+            "effective": max(1, int(requested_max_agents)),
+            "dynamic_ceiling": int(taskpool_cfg.get("dynamic_max_parallel_agents") or configured),
+            "source": "cli",
+            "selected_count_at_ceiling": None,
+            "dispatchable_at_ceiling": None,
+            "probe": {},
+        }
+    dynamic_ceiling = int(taskpool_cfg.get("dynamic_max_parallel_agents") or configured)
+    env_ceiling_raw = os.environ.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP", "")
+    if env_ceiling_raw:
+        try:
+            dynamic_ceiling = max(dynamic_ceiling, int(env_ceiling_raw))
+        except Exception:
+            pass
+    dynamic_ceiling = max(configured, dynamic_ceiling, 1)
+    payload = {
+        "configured": configured,
+        "effective": configured,
+        "dynamic_ceiling": dynamic_ceiling,
+        "source": "configured_floor",
+        "selected_count_at_ceiling": 0,
+        "dispatchable_at_ceiling": False,
+        "probe": {},
+    }
+    if str(taskpool_cfg.get("dispatch_mode") or "").strip().lower() != "parallel" or dynamic_ceiling <= configured:
+        return payload
+    probe = run_json(["parallel-dispatch-dry-run", "--max-agents", str(dynamic_ceiling), "--json"])
+    payload["probe"] = {
+        "status": probe.get("status"),
+        "max_agents": probe.get("max_agents"),
+        "selected_count": probe.get("selected_count"),
+        "dispatchable": probe.get("dispatchable"),
+        "skipped_reason_counts": _count_skipped_reasons(probe.get("skipped") or []),
+    }
+    try:
+        selected_count = int(probe.get("selected_count") or 0)
+    except Exception:
+        selected_count = 0
+    payload["selected_count_at_ceiling"] = selected_count
+    payload["dispatchable_at_ceiling"] = bool(probe.get("dispatchable"))
+    if probe.get("status") in {"OK", "PASS"}:
+        payload["effective"] = dynamic_ceiling
+        payload["source"] = "boundary_classified_dynamic_ceiling"
+    return payload
+
+
+def _count_skipped_reasons(skipped: Any) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    if not isinstance(skipped, list):
+        return counts
+    for item in skipped:
+        if not isinstance(item, dict):
+            continue
+        reason = str(item.get("reason") or "unknown")
+        counts[reason] = counts.get(reason, 0) + 1
+    return counts
 
 
 def continuation_backlog_status(*, backlog_warning_threshold: int = 100) -> dict[str, Any]:
@@ -342,13 +422,18 @@ def main() -> int:
     parser.add_argument("--multimodel-task", default="", help="Optional task id to scope --multimodel-step; used by task_added event hooks")
     args = parser.parse_args()
     taskpool_cfg = load_taskpool_runtime_config()
-    max_parallel_agents = int(args.max_agents or taskpool_cfg.get("max_parallel_agents") or 3)
+    parallel_cap = resolve_parallel_agent_cap(requested_max_agents=int(args.max_agents or 0), taskpool_cfg=taskpool_cfg)
+    max_parallel_agents = int(parallel_cap.get("effective") or taskpool_cfg.get("max_parallel_agents") or 3)
     review_close_max_tasks = int(args.review_close_max_tasks or taskpool_cfg.get("review_close_max_tasks") or 50)
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
     event["taskpool_runtime"] = {
         "dispatch_mode": taskpool_cfg.get("dispatch_mode"),
         "max_parallel_agents": max_parallel_agents,
+        "configured_max_parallel_agents": parallel_cap.get("configured"),
+        "dynamic_max_parallel_agents": parallel_cap.get("dynamic_ceiling"),
+        "parallel_cap_source": parallel_cap.get("source"),
+        "parallel_cap_probe": parallel_cap.get("probe"),
         "review_close_max_tasks": review_close_max_tasks,
         "parallel_requested": bool(args.parallel_autorun),
     }
