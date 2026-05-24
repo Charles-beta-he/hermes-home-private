@@ -342,6 +342,13 @@
     "skip_condition": "task_type == frontend-only OR task_type == backend-only"
   },
   "aliases": [
-    "uvisa-app-2.0-work"
+    "uvisa-app-2.0-work",
+    "uvisa-admin",
+    "uvisa-admin-work",
+    "uvisa-admin-new",
+    "UVISA-2.0新版开发",
+    "UVISA-2.0",
+    "uvisa_backend",
+    "uvisa-backend"
   ]
 }
