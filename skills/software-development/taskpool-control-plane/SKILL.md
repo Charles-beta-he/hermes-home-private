@@ -23,6 +23,8 @@ When a session produces “后续任务” / follow-up work, use `references/fol
 
 Reference: `references/native-multimodel-contracts.md` captures the native multimodel task-contract pattern: separate intake triage (`priority_layer`, `dependency_order`, `multimodel_triage_result`) from certification contract (`requires_multimodel`, `expected_participants`, `truth_gate`, `evidence_bundle`), wire it through add/intake/frontmatter/row JSON, and keep expensive autorun fail-closed.
 
+When daily/external-repo sidecars propose multimodel fields, treat the sidecar as advisory only. `daily_report_task_ingest.py` must normalize candidates locally: ordinary `work`/product/Lark tasks lose weak multimodel fields and do not trigger expensive panels, including retry/architecture-target heuristics; explicit `requires_multimodel: true` remains a strong override. P0/P1/P2 `evolution`/Hermes control-plane/self-strengthening/repo-intake candidates may keep the contract, must include `claude-code` in expected participants, and must resolve local evidence bundles or emit a TG/manual evidence request instead of blocking workers.
+
 Reference: `references/self-proving-executor-proof-pattern.md` captures the AutoResearch-style self-proving executor pattern for Hermes/taskpool evolution: bounded command bundles, structured PASS/FAIL proof artifacts, nonzero failure exits, opt-in checkpoint side effects, and required control-plane verification before lifecycle advancement.
 
 References:

@@ -1482,6 +1482,50 @@ def task_requires_multimodel_contract(task: "Task") -> bool:
     return truthy_frontmatter_value(task.fm.get("requires_multimodel") or task.fm.get("multimodel_required"))
 
 
+MULTIMODEL_CONTROL_PLANE_TARGETS = {
+    "taskpool",
+    "local-brain",
+    "memory",
+    "prompt",
+    "prompts",
+    "provider-quota",
+    "provider-routing",
+    "quota",
+    "gateway",
+    "browser-automation",
+    "skill-graph",
+    "skills",
+    "hermes-agent",
+    "control-plane",
+}
+
+
+def task_multimodel_eligible(task: "Task") -> bool:
+    """Return whether weak multimodel contract/advisory signals may count.
+
+    This keeps ordinary work/Lark/product tasks from firing expensive panels just
+    because they carry provenance fields such as evidence_bundle/truth_gate.  The
+    explicit requires_multimodel strong trigger remains handled separately.
+    """
+    priority = str(task.priority or "").upper()
+    priority_layer = str(task.fm.get("priority_layer") or "").strip().lower()
+    architecture_target = str(task.architecture_target or "").strip().lower()
+    project = str(task.project or "").strip().lower()
+    concepts = " ".join(list_value(task.fm.get("concepts"))).lower()
+    title = task.title.lower()
+    structural_self_strengthening = (
+        task.lane == "evolution"
+        or priority_layer.startswith(("control-plane", "self-strengthening", "evolution", "repo-intake"))
+        or architecture_target in MULTIMODEL_CONTROL_PLANE_TARGETS
+        or project in {"hermes", "hermes-agent", "local-brain"}
+        or "self-strengthening" in concepts
+        or "skill-graph" in concepts
+        or "taskpool" in title
+        or "任务池" in title
+    )
+    return priority in {"P0", "P1", "P2"} and structural_self_strengthening
+
+
 def task_multimodel_status(task: "Task") -> str:
     return str(
         task.fm.get("multimodel_status")
@@ -1934,15 +1978,18 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     reasons: list[str] = []
 
     # --- Explicit contract triggers (native task/intake contract, not heuristic) ---
+    weak_contract_eligible = task_multimodel_eligible(task)
     if task_requires_multimodel_contract(task):
         reasons.append("explicit_requires_multimodel")
+    if not weak_contract_eligible:
+        return reasons
     if str(task.fm.get("multimodel_reason") or "").strip():
         reasons.append("explicit_multimodel_reason")
-    if split_csv_frontmatter_value(task.fm.get("expected_participants")):
+    if weak_contract_eligible and split_csv_frontmatter_value(task.fm.get("expected_participants")):
         reasons.append("expected_participants_contract")
-    if str(task.fm.get("truth_gate") or "").strip():
+    if weak_contract_eligible and str(task.fm.get("truth_gate") or "").strip():
         reasons.append("truth_gate_contract")
-    if str(task.fm.get("evidence_bundle") or "").strip():
+    if weak_contract_eligible and str(task.fm.get("evidence_bundle") or "").strip():
         reasons.append("evidence_bundle_contract")
 
     # --- Strong structural triggers (fire immediately) ---
@@ -1975,7 +2022,7 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     # --- Keyword signals (title + concepts only; only add if structural exists) ---
     kw_text = task_keyword_text(task)
     structural_count = len(reasons)
-    if structural_count > 0:
+    if structural_count > 0 and weak_contract_eligible:
         if has_any_keyword(kw_text, MULTIMODEL_ACCURACY_KEYWORDS):
             reasons.append("accuracy_keyword")
         if has_any_keyword(kw_text, MULTIMODEL_LONG_TERM_KEYWORDS):
@@ -2147,6 +2194,16 @@ class Task:
         return {
             "id": self.id,
             "title": self.title,
+            "body": self.body,
+            "description": self.body,
+            "objective": str(self.fm.get("objective") or self.fm.get("mission_objective") or ""),
+            "mission_objective": str(self.fm.get("mission_objective") or self.fm.get("objective") or ""),
+            "acceptance_criteria": list_value(self.fm.get("acceptance_criteria")),
+            "acceptance_evidence": str(self.fm.get("acceptance_evidence") or ""),
+            "red_lines": list_value(self.fm.get("red_lines")),
+            "non_goals": list_value(self.fm.get("non_goals")),
+            "evidence_refs": list_value(self.fm.get("evidence_refs")),
+            "workflow_contract": self.fm.get("workflow_contract") or "",
             "status": self.status,
             "priority": self.priority,
             "priority_layer": str(self.fm.get("priority_layer") or ""),
@@ -3652,7 +3709,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
             "task creation requires explicit priority/dependency/triage metadata; "
             f"missing={missing_required_fields}"
         )
-    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, priority_layer=normalized_priority_layer, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", parallel_boundary=getattr(args, "parallel_boundary", "") or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""), dependency_order=",".join(dependency_order), multimodel_triage_result=normalized_multimodel_triage_result, multimodel_reason=getattr(args, "multimodel_reason", ""), expected_participants=getattr(args, "expected_participants", ""), truth_gate=getattr(args, "truth_gate", ""), evidence_bundle=getattr(args, "evidence_bundle", ""))
+    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, priority_layer=normalized_priority_layer, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", parallel_boundary=getattr(args, "parallel_boundary", "") or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), objective=getattr(args, "objective", ""), accept=getattr(args, "accept", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""), dependency_order=",".join(dependency_order), multimodel_triage_result=normalized_multimodel_triage_result, multimodel_reason=getattr(args, "multimodel_reason", ""), expected_participants=getattr(args, "expected_participants", ""), truth_gate=getattr(args, "truth_gate", ""), evidence_bundle=getattr(args, "evidence_bundle", ""))
     created = now()
     expires = parse_dt(args.expires_at) if args.expires_at else created + timedelta(days=args.expires_days)
     slug = slugify(title)
@@ -3678,6 +3735,11 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "expires_at": iso(expires) if expires else "",
         "project": args.project,
         "architecture_target": getattr(args, "architecture_target", "") or "",
+        "mission_objective": args.objective or title,
+        "acceptance_criteria": [args.accept] if args.accept else [],
+        "red_lines": split_csv_frontmatter_value(",".join(getattr(args, "red_line", []) or [])),
+        "non_goals": split_csv_frontmatter_value(",".join(getattr(args, "non_goal", []) or [])),
+        "evidence_refs": split_csv_frontmatter_value(",".join(getattr(args, "evidence_ref", []) or [])),
         "capability_delta": getattr(args, "capability_delta", "") or "",
         "anti_drift_check": getattr(args, "anti_drift_check", "") or "",
         "acceptance_evidence": getattr(args, "acceptance_evidence", "") or "",
@@ -8265,6 +8327,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--parallel-boundary", default="")
     ap.add_argument("--objective", default="")
     ap.add_argument("--accept", default="")
+    ap.add_argument("--red-line", action="append", default=[])
+    ap.add_argument("--non-goal", action="append", default=[])
+    ap.add_argument("--evidence-ref", action="append", default=[])
     ap.add_argument("--json", action="store_true")
 
     wcp = sub.add_parser("add-work-closeout-pair")
