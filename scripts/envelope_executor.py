@@ -130,12 +130,15 @@ def delegate_to_worker(envelope):
     project = envelope.get('project') or payload.get('project') or ''
     boundary = payload.get('boundary') or payload.get('parallel_boundary') or ''
     workspace_map = {
-        'uvisa-admin': '/Users/charles/Desktop/folder/work/uvisa-admin',
-        'uvisa-admin-work': '/Users/charles/Desktop/folder/work/uvisa-admin',
-        'uvisa-app-2.0': '/Users/charles/Desktop/folder/work/uvisa-app-2.0',
-        'uvisa-app-2.0-work': '/Users/charles/Desktop/folder/work/uvisa-app-2.0',
-        'uvisa-backend': '/Users/charles/Desktop/folder/work/uvisa-backend',
-        'uvisa-backend-work': '/Users/charles/Desktop/folder/work/uvisa-backend',
+        # Use clean shared task-loop worktrees, not the user's main working copies.
+        # The main work/ repos often contain human/WIP branches; envelope workers
+        # must be isolated to avoid overwriting or mixing unrelated changes.
+        'uvisa-admin': '/Users/charles/Desktop/folder/work/.agent-team-worktrees/uvisa-admin-task-loop',
+        'uvisa-admin-work': '/Users/charles/Desktop/folder/work/.agent-team-worktrees/uvisa-admin-task-loop',
+        'uvisa-app-2.0': '/Users/charles/Desktop/folder/work/.agent-team-worktrees/uvisa-app-task-loop',
+        'uvisa-app-2.0-work': '/Users/charles/Desktop/folder/work/.agent-team-worktrees/uvisa-app-task-loop',
+        'uvisa-backend': '/Users/charles/Desktop/folder/work/.agent-team-worktrees/uvisa-backend-task-loop',
+        'uvisa-backend-work': '/Users/charles/Desktop/folder/work/.agent-team-worktrees/uvisa-backend-task-loop',
     }
     cwd = workspace_map.get(project)
     if not cwd and boundary.startswith('workspace:'):

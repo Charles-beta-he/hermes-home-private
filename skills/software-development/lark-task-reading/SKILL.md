@@ -196,6 +196,9 @@ Lark/Feishu API shapes vary by tenant, version, and permission set. Code should 
   - `/task/v2/tasks/{task_guid}/comments?page_size=...`
   - `/task/v2/comments?resource_id={task_guid}&resource_type=task&page_size=...`
 - Comment `content` can be JSON rich text, plain string, list, dict, or malformed. Parse defensively.
+- Inline images pasted into Task comments may be downgraded by the official Task API to literal `"[Image]"` with no `image_key` / `file_token`. Verified on larksuite.com with user token and scopes including `task:comment:read`, `task:attachment:read`, `task:task:read`: `/task/v2/comments`, `/task/v2/comments/{comment_id}`, `user_id_type` variants, and `include_attachments=true` still returned only `[Image]`; `/task/v2/attachments?resource_id=<task_guid>&resource_type=task` returned native task attachments, not inline comment images. Treat this as an official API limitation/evidence gap, not a parser miss.
+- Task-native attachments are different from inline comment images. `/task/v2/attachments` can return `file_token`, `name`, `size`, and `url` for files explicitly attached to the task, including screenshot files added as native attachments or evidence backfills. Use these when present, but do not assume they cover screenshots pasted inside comments.
+- Tenant/bot token is not a replacement for user token on personal/assigned tasks: in the same probe, tenant token returned 403 for task/comment/attachment reads even though tenant scopes listed task read permissions. Keep user OAuth as the primary live-task read path.
 - Linked-doc URLs may be `docx` or `wiki`; wiki nodes may need a `wiki -> docx` conversion before fetching doc content.
 - Support both `larksuite.com` and `feishu.cn` domains when extracting links.
 
