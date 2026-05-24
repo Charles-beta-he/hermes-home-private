@@ -27,7 +27,14 @@ Session pattern extracted from UVISA Lark task loop work (remit recipient valida
    - Example: a task asking to update SWIFT/CNH “备注栏下提示语” could refer to both the notice page (`topup.noticeRefDesc`) and the receiving-info Reference row (`topup.refHint`).
    - Prefer the minimal product change that updates both keys and add a regression test locking both locations.
 
-5. Browser verification can use project-scoped test auth only for local acceptance.
+5. Merge page-level Lark/UI tasks into one execution slice when they target the same repo + route/page/module and can be verified in one browser pass.
+   - Do not create a separate branch per screenshot or per field-level copy/style issue when they share the same page surface.
+   - Keep each original Lark GUID/taskpool item as its own acceptance atom and closeout row, but execute them together as a page-batch commit/PR when conflict boundary is identical.
+   - Batch key should include project, route/module, tab/dialog, and data fixture when relevant, e.g. `uvisa-admin:user-detail:card-transactions`.
+   - Still split tasks when they cross repos, require backend/schema changes, touch unrelated modules, have different release gates, or one task is blocked while others can ship.
+   - Verification must map every original task/GUID to explicit runtime proof; a shared screenshot is valid only if it visibly covers that task's target surface.
+
+6. Browser verification can use project-scoped test auth only for local acceptance.
    - Inject local auth state in the browser only as test-session setup; do not persist credentials/secrets in global memory/docs.
    - For copy/validation tasks, verify the exact DOM text and check browser console JS errors after the walkthrough.
 
