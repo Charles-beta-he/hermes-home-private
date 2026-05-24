@@ -4,6 +4,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import tempfile
 from pathlib import Path
 import unittest
 from unittest import mock
@@ -55,6 +56,32 @@ class EmptyThenFallbackClient(FakeClient):
             self.calls.append((path, dict(query or {})))
             return {"code": 0, "data": {"items": [], "has_more": False}}
         return super().get(path, token, query)
+
+
+class BinaryImageClient(FakeClient):
+    def __init__(self, fail_first=False, fail_all=False):
+        super().__init__()
+        self.binary_calls = []
+        self.fail_first = fail_first
+        self.fail_all = fail_all
+
+    def get_binary(self, path, token, query=None, max_bytes=0):
+        self.binary_calls.append((path, dict(query or {}), max_bytes))
+        if self.fail_all:
+            raise RuntimeError("not found")
+        if self.fail_first and len(self.binary_calls) == 1:
+            raise RuntimeError("primary not found")
+        return b"\x89PNG\r\nimage", {"content-type": "image/png"}
+
+
+class BrokenBinaryClient(FakeClient):
+    def __init__(self):
+        super().__init__()
+        self.binary_calls = []
+
+    def get_binary(self, path, token, query=None, max_bytes=0):
+        self.binary_calls.append((path, dict(query or {}), max_bytes))
+        raise TimeoutError("slow")
 
 
 class LarkTaskReaderTest(unittest.TestCase):
@@ -136,6 +163,46 @@ class LarkTaskReaderTest(unittest.TestCase):
         fake = EmptyThenFallbackClient()
         payloads = self.mod.collect_tasks(token="tok", client=fake, scope_mode="prefer", include_comments=True, include_docs=False)
         self.assertIn("补充描述", payloads[0]["comments"])
+
+    def test_download_comment_images_success_and_payload_paths(self):
+        fake = BinaryImageClient()
+        with tempfile.TemporaryDirectory() as td:
+            payloads = self.mod.collect_tasks(token="tok", client=fake, scope_mode="prefer", include_comments=True, include_docs=False, download_images=True, image_cache_dir=td)
+            images = payloads[0]["comment_images"]
+            self.assertEqual(len(images), 1)
+            self.assertEqual(images[0]["status"], "downloaded")
+            self.assertEqual(images[0]["content_type"], "image/png")
+            self.assertTrue(Path(images[0]["local_path"]).exists())
+            self.assertIn(images[0]["local_path"], payloads[0]["issue_body"])
+            self.assertEqual(fake.binary_calls[0][0], "/im/v1/images/img_key_1234567890")
+            self.assertEqual(fake.binary_calls[0][1], {"image_type": "message"})
+
+    def test_download_comment_images_fallback_after_primary_failure(self):
+        fake = BinaryImageClient(fail_first=True)
+        with tempfile.TemporaryDirectory() as td:
+            records = self.mod.download_comment_images("tok", ["img_key_1234567890"], cache_dir=td, client=fake)
+        self.assertEqual(records[0]["status"], "downloaded")
+        self.assertGreaterEqual(len(fake.binary_calls), 2)
+        self.assertEqual(fake.binary_calls[1][0], "/im/v1/images/img_key_1234567890")
+        self.assertEqual(fake.binary_calls[1][1], {})
+
+    def test_download_comment_images_failure_does_not_abort(self):
+        fake = BrokenBinaryClient()
+        with tempfile.TemporaryDirectory() as td:
+            records = self.mod.download_comment_images("tok", ["img_key_1234567890"], cache_dir=td, client=fake)
+        self.assertEqual(records[0]["status"], "failed")
+        self.assertEqual(records[0]["local_path"], "")
+        self.assertIn("TimeoutError", records[0]["error"])
+
+    def test_download_comment_images_uses_existing_cache(self):
+        fake = BinaryImageClient()
+        with tempfile.TemporaryDirectory() as td:
+            path = self.mod._image_cache_path("img_key_1234567890", "image/png", td)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"cached")
+            records = self.mod.download_comment_images("tok", ["img_key_1234567890"], cache_dir=td, client=fake)
+        self.assertEqual(records[0]["status"], "cached")
+        self.assertEqual(fake.binary_calls, [])
 
     def test_get_token_invokes_guard_on_missing_token_by_default(self):
         calls = {"count": 0}

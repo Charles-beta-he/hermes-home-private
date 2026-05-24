@@ -144,6 +144,7 @@ Keep these strengths together when changing either project.
    - Extract plain text, URLs, doc/wiki links, images, files, and creator names.
    - Fetch linked docs with a strict `max_docs` cap and `max_chars` cap.
    - Preserve both normalized text (`comments`, `docs_content`/`linked_docs`) and machine-actionable handles (`comment_image_keys`, `lark_url`).
+   - When screenshot-only acceptance is likely, run the reader with `--download-images` so `comment_images[]` contains local cache paths for downstream vision analysis. Downloads are read-only, bounded, local-only evidence; failed image downloads must be recorded per image and must not abort task collection.
 
 7. **Routing**
    - If the title/scope makes a project unambiguous, route immediately like `arc-dispatch`.
@@ -168,6 +169,7 @@ Keep these strengths together when changing either project.
      - `tasklist_names`
      - `tasklist_scope_enrichment_warning` when `/task/v2/tasklists` is unavailable
      - `comment_image_keys`
+     - `comment_images` (optional, only when `--download-images` is enabled): list of `{image_key, source, status, local_path, content_type, size_bytes, endpoint, error}`. `local_path` is local evidence for vision analysis and must not be pasted into public Lark closeout comments.
      - `project_id`
      - `project_path`
      - `reference_path`
@@ -446,7 +448,7 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 - **Do not confuse Security Redirect URL with bot/event callback.** The Lark console page `安全设置 → 重定向 URL` is for OAuth/免登授权码 redirects. A screenshot showing `http://localhost:8765/callback` there proves only that this OAuth redirect is registered; it does **not** prove the bot/event callback URL. Bot/event callbacks must be verified separately under `事件与回调` / request URL-style settings.
 - **Lark MCP Task OAuth redirect must be registered exactly.** If `lark-mcp login` for task/user auth uses `redirect_uri=http://localhost:3010/callback` with the same Lark app, then `http://localhost:3010/callback` must also appear in `安全设置 → 重定向 URL`; otherwise error 20029 or auth-code redirect failure is expected. Do not assume 3010 is valid from a page that only lists 8765. Do not apply this rule to separate docx-specific OAuth helpers that have their own registered redirect.
 - Error 20029 means the redirect URI is not registered in the developer console. The user must add `http://localhost:{port}/callback` at `https://open.larksuite.com/app/{appId}/safe` → 安全设置. This requires their Lark account login; the controlled browser and user Chrome don't share sessions.
-- A failed `lark-mcp login` wipes old tokens from `authStore.storageDataCache.tokens` but preserves `clients`. Extract appId/appSecret from `clients[client_id_for_local_auth].extra` to retry. Recovery pattern: run `node -e "const {authStore}=require('...lark-mcp/dist/auth/store.js'); authStore.initialize().then(()=>{const d=authStore.getAll(); const c=d.clients['client_id_for_local_auth']||{}; const e=c.extra||{}; console.log(JSON.stringify({appId:e.appId,secret:e.appSecret}))})"` to get credentials, then `lark-mcp login --appId ... --appSecret ... --domain https://open.larksuite.com --scope "auth:user.id:read,task:task:read,task:tasklist:read" --port 3010`. If the browser auth page shows error 20029, the redirect URI `http://localhost:3010/callback` must be registered at the Lark developer console first.
+- A failed `lark-mcp login` wipes old tokens from `authStore.storageDataCache.tokens` but preserves `clients`. Use a redacted local helper to validate that real app credentials exist in `clients[client_id_for_local_auth].extra` without printing secret values, then run `lark-mcp login --appId ... --appSecret ... --domain https://open.larksuite.com --scope "auth:user.id:read,task:task:read,task:tasklist:read" --port 3010` with credentials supplied via a non-logged local path/environment. If the browser auth page shows error 20029, the redirect URI `http://localhost:3010/callback` must be registered at the Lark developer console first.
 - Missing/expired user auth is not the same as a broken reader. If live collection returns `NO_TOKEN` or `lark-mcp` reports unbound Hermes context, report the auth blocker and any available previous snapshot separately.
 - After `NO_TOKEN`, do not repeat the exact same live-read command. Switch to auth preflight (credential presence + token-store shape) or stale-snapshot triage. When probing `lark-mcp` auth-store from Node, call `process.exit(0)` after printing non-secret token-key counts; the keytar/auth-store handles can otherwise keep the process alive until the shell timeout.
 - Existing snapshot files are not evidence until parsed. Validate JSON and task count before using `/tmp` or `~/.hermes/tmp` Lark snapshots; invalid/empty files must be ignored, and valid snapshots must be labeled `stale/non-live` in evidence and TG closeout.

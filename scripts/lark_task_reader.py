@@ -8,6 +8,7 @@ it never enqueues, writes back to Lark, or mutates project repos.
 """
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -24,6 +25,8 @@ LARK_API = "https://open.larksuite.com/open-apis"
 DEFAULT_PREFERRED_SCOPES = ["UVISA-2.0新版开发"]
 SCOPE_ALIASES = ["UVISA-2.0新版开发", "uvisa-app-2.0", "UVISA-2.0", "新版开发"]
 VALID_SCOPE_MODES = {"prefer", "only", "off"}
+DEFAULT_IMAGE_CACHE_DIR = Path.home() / ".hermes" / "cache" / "lark_task_images"
+MAX_IMAGE_BYTES = 8 * 1024 * 1024
 _DOCX_RE = re.compile(r"https?://[a-z0-9.\-]+\.(?:larksuite|feishu)\.(?:com|cn)/docx/([A-Za-z0-9]+)")
 _WIKI_RE = re.compile(r"https?://[a-z0-9.\-]+\.(?:larksuite|feishu)\.(?:com|cn)/wiki/([A-Za-z0-9]+)")
 _URL_RE = re.compile(r"https?://[^\s)\]}>'\"]+")
@@ -181,6 +184,26 @@ class LarkClient:
         req.add_header("Authorization", f"Bearer {token}")
         with urllib.request.urlopen(req, timeout=self.timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
+
+    def get_binary(self, path: str, token: str, query: dict[str, Any] | None = None, max_bytes: int = MAX_IMAGE_BYTES) -> tuple[bytes, dict[str, str]]:
+        url = self.api_base + path
+        if query:
+            url += "?" + urllib.parse.urlencode({k: v for k, v in query.items() if v is not None})
+        req = urllib.request.Request(url)
+        req.add_header("Authorization", f"Bearer {token}")
+        with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            chunks: list[bytes] = []
+            total = 0
+            while True:
+                chunk = resp.read(64 * 1024)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > max_bytes:
+                    raise RuntimeError(f"binary response exceeds max_bytes={max_bytes}")
+                chunks.append(chunk)
+            headers = {str(k).lower(): str(v) for k, v in resp.info().items()}
+            return b"".join(chunks), headers
 
 
 def _read_lark_mcp_token(root: Path) -> str:
@@ -495,6 +518,98 @@ def extract_comment_image_keys(comments: list[dict[str, Any]], limit: int = 20) 
     return keys
 
 
+def _image_extension(content_type: str, image_key: str) -> str:
+    ctype = (content_type or "").split(";", 1)[0].strip().lower()
+    if ctype == "image/png":
+        return ".png"
+    if ctype in {"image/jpeg", "image/jpg"}:
+        return ".jpg"
+    if ctype == "image/gif":
+        return ".gif"
+    if ctype == "image/webp":
+        return ".webp"
+    suffix = Path(image_key).suffix.lower()
+    if suffix in {".png", ".jpg", ".jpeg", ".gif", ".webp"}:
+        return ".jpg" if suffix == ".jpeg" else suffix
+    return ".jpg"
+
+
+def _image_cache_path(image_key: str, content_type: str = "", cache_dir: str | Path | None = None) -> Path:
+    cache_root = Path(cache_dir or DEFAULT_IMAGE_CACHE_DIR).expanduser()
+    digest = hashlib.sha256(image_key.encode("utf-8")).hexdigest()[:24]
+    return cache_root / f"{digest}{_image_extension(content_type, image_key)}"
+
+
+def download_comment_images(token: str, image_keys: list[str], cache_dir: str | Path | None = None, client: LarkClient | Any | None = None, max_bytes: int = MAX_IMAGE_BYTES) -> list[dict[str, Any]]:
+    """Best-effort read-only download of task/comment image keys for downstream vision.
+
+    Lark rich-text image resources vary by tenant/API surface. Try a bounded set of
+    read-only endpoints and return per-image status instead of aborting task intake.
+    """
+    client = client or LarkClient()
+    cache_root = Path(cache_dir or DEFAULT_IMAGE_CACHE_DIR).expanduser()
+    cache_root.mkdir(parents=True, exist_ok=True)
+    records: list[dict[str, Any]] = []
+    seen_keys = [k for k in dict.fromkeys(image_keys) if k]
+    endpoints = [
+        ("/im/v1/images/{key}", {"image_type": "message"}),
+        ("/im/v1/images/{key}", {}),
+        ("/drive/v1/medias/{key}/download", {}),
+    ]
+    for image_key in seen_keys:
+        cached_candidates = list(cache_root.glob(f"{hashlib.sha256(image_key.encode('utf-8')).hexdigest()[:24]}.*"))
+        if cached_candidates:
+            path = cached_candidates[0]
+            records.append({
+                "image_key": image_key,
+                "source": "lark_task_comment_or_description",
+                "status": "cached",
+                "local_path": str(path),
+                "content_type": "",
+                "size_bytes": path.stat().st_size,
+                "endpoint": "cache",
+                "error": "",
+            })
+            continue
+        last_error = ""
+        for template, query in endpoints:
+            path = template.format(key=urllib.parse.quote(image_key, safe=""))
+            try:
+                raw, headers = client.get_binary(path, token, query=query, max_bytes=max_bytes)
+                if not raw:
+                    last_error = "empty_response"
+                    continue
+                content_type = headers.get("content-type") or headers.get("Content-Type") or "application/octet-stream"
+                local_path = _image_cache_path(image_key, content_type, cache_root)
+                local_path.write_bytes(raw)
+                records.append({
+                    "image_key": image_key,
+                    "source": "lark_task_comment_or_description",
+                    "status": "downloaded",
+                    "local_path": str(local_path),
+                    "content_type": content_type,
+                    "size_bytes": len(raw),
+                    "endpoint": path,
+                    "error": "",
+                })
+                break
+            except Exception as exc:
+                last_error = type(exc).__name__ + ": " + str(exc)[:180]
+                continue
+        else:
+            records.append({
+                "image_key": image_key,
+                "source": "lark_task_comment_or_description",
+                "status": "failed",
+                "local_path": "",
+                "content_type": "",
+                "size_bytes": 0,
+                "endpoint": "",
+                "error": last_error or "download_failed",
+            })
+    return records
+
+
 def _extract_lark_links(text: str) -> tuple[list[str], list[str]]:
     return list(dict.fromkeys(_DOCX_RE.findall(text or ""))), list(dict.fromkeys(_WIKI_RE.findall(text or "")))
 
@@ -538,7 +653,7 @@ def fetch_linked_docs(token: str, text: str, max_docs: int = 3, max_chars: int =
     return "\n\n".join(parts)
 
 
-def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any | None = None, include_comments: bool = True, include_docs: bool = True) -> dict[str, Any]:
+def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any | None = None, include_comments: bool = True, include_docs: bool = True, download_images: bool = False, image_cache_dir: str | Path | None = None) -> dict[str, Any]:
     client = client or LarkClient()
     comments_raw = fetch_comments(token, task["guid"], client=client) if include_comments else []
     comments_text = extract_comment_text(comments_raw)
@@ -552,10 +667,14 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
         body_parts.append(description)
     if comments_text:
         body_parts.append("## 评论补充\n" + comments_text)
+    image_keys = list(dict.fromkeys(description_image_keys + comment_image_keys))
+    comment_images = download_comment_images(token, image_keys, cache_dir=image_cache_dir, client=client) if download_images and image_keys else []
+    downloaded_paths = [img.get("local_path", "") for img in comment_images if img.get("status") in {"downloaded", "cached"} and img.get("local_path")]
+    if downloaded_paths:
+        body_parts.append("## 评论图片本地证据\n" + "\n".join(downloaded_paths))
     if docs_content:
         body_parts.append("## 关联文档内容\n" + docs_content)
     issue_body = "\n\n".join(body_parts)
-    image_keys = list(dict.fromkeys(description_image_keys + comment_image_keys))
     return {
         "lark_task_guid": task["guid"],
         "issue_number": task["guid"],
@@ -565,6 +684,7 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
         "description": description,
         "comments": comments_text,
         "comment_image_keys": image_keys,
+        "comment_images": comment_images,
         "linked_docs": docs_content,
         "docs_content": docs_content,
         "custom_fields": task.get("custom_fields", []),
@@ -581,7 +701,7 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
     }
 
 
-def collect_tasks(token: str | None = None, client: LarkClient | Any | None = None, preferred_scopes: list[str] | None = None, scope_mode: str | None = None, include_comments: bool = True, include_docs: bool = True, auto_auth: bool | None = None, auto_authorize: bool = True) -> list[dict[str, Any]]:
+def collect_tasks(token: str | None = None, client: LarkClient | Any | None = None, preferred_scopes: list[str] | None = None, scope_mode: str | None = None, include_comments: bool = True, include_docs: bool = True, auto_auth: bool | None = None, auto_authorize: bool = True, download_images: bool = False, image_cache_dir: str | Path | None = None) -> list[dict[str, Any]]:
     token = token or get_token(auto_auth=auto_auth, auto_authorize=auto_authorize)
     client = client or LarkClient()
     raw = enrich_tasks_with_tasklists(fetch_tasks(token, client=client), token, client=client)
@@ -594,7 +714,7 @@ def collect_tasks(token: str | None = None, client: LarkClient | Any | None = No
         if not guid or guid in seen:
             continue
         seen.add(guid)
-        payloads.append(payload_from_task(token, task, client=client, include_comments=include_comments, include_docs=include_docs))
+        payloads.append(payload_from_task(token, task, client=client, include_comments=include_comments, include_docs=include_docs, download_images=download_images, image_cache_dir=image_cache_dir))
     return payloads
 
 
@@ -604,6 +724,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--scope-mode", choices=sorted(VALID_SCOPE_MODES), default=None, help="prefer=default scoped tasks first; only=hard filter; off=disable scope preference")
     parser.add_argument("--no-comments", action="store_true")
     parser.add_argument("--no-docs", action="store_true")
+    parser.add_argument("--download-images", action="store_true", help="download comment/description images to a local cache for downstream vision analysis")
+    parser.add_argument("--image-cache-dir", default=str(DEFAULT_IMAGE_CACHE_DIR), help="local cache directory used with --download-images")
     parser.add_argument("--no-auto-auth", action="store_true", help="do not invoke the Lark OAuth guard when the user token is missing/expired")
     parser.add_argument("--no-auto-authorize", action="store_true", help="open auth URL but do not auto-click the visible 授权 button")
     parser.add_argument("--summary", action="store_true", help="Print compact human-readable summary instead of JSON")
@@ -615,12 +737,19 @@ def main(argv: list[str] | None = None) -> int:
         include_docs=not args.no_docs,
         auto_auth=not args.no_auto_auth,
         auto_authorize=not args.no_auto_authorize,
+        download_images=args.download_images,
+        image_cache_dir=args.image_cache_dir,
     )
     if args.summary:
         print(f"tasks={len(payloads)}")
         for i, p in enumerate(payloads, 1):
             desc = (p.get("description") or p.get("comments") or "").replace("\n", " ")[:180]
-            print(f"{i}. {p.get('summary')} | guid={p.get('lark_task_guid')} | scope={p.get('lark_task_scope')} | desc={desc}")
+            image_records = p.get("comment_images") or []
+            image_summary = ""
+            if image_records:
+                ok = sum(1 for img in image_records if img.get("status") in {"downloaded", "cached"})
+                image_summary = f" | images={ok}/{len(image_records)}"
+            print(f"{i}. {p.get('summary')} | guid={p.get('lark_task_guid')} | scope={p.get('lark_task_scope')}{image_summary} | desc={desc}")
     else:
         print(json.dumps(payloads, ensure_ascii=False, indent=2))
     return 0
