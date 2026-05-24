@@ -6105,7 +6105,13 @@ def mark_multimodel_step_running(task_id: str, actor: str = "hermes-multimodel")
 
 
 def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: str = "hermes-multimodel") -> dict[str, Any]:
-    """Exit multimodel inflight marker after the external process/gate finishes."""
+    """Exit multimodel inflight marker after the external process/gate finishes.
+
+    Multi-model advisory is not project completion authority.  Only a strong
+    PASS/LOOP_DONE certification may enter review for normal done-gate closure.
+    Advisory-only or failed rounds are recorded, then released back to pending so
+    a real project worker can produce test/build/browser/curl/commit evidence.
+    """
     task = find_task(task_id)
     if not task:
         return {"status": "SKIP", "reason": "task_not_found", "task_id": task_id}
@@ -6115,12 +6121,47 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
     gate = gate_obj if isinstance(gate_obj, dict) else {}
     gate_status = str(gate.get("status") or "unknown")
     decision = str(gate.get("decision") or "")
+    normalized_status = gate_status.upper()
+    normalized_decision = decision.upper()
     discussion_path = str(result.get("discussion_path") or "")
     evidence = f"command: multimodel-intervention-step gate={gate_status} decision={decision or 'n/a'} artifact={discussion_path or 'missing'}"
-    apply_lifecycle_status(task, "review", actor, evidence=[evidence])
+
+    if normalized_status == "PASS" and normalized_decision == "LOOP_DONE":
+        apply_lifecycle_status(
+            task,
+            "review",
+            actor,
+            evidence=[evidence],
+            reason="multimodel_certification_passed_enter_review",
+        )
+        refresh_reason = "multimodel-review"
+        to_status = "review"
+    else:
+        gap_evidence = (
+            "artifact:taskpool-review-gap advisory_only_or_failed_multimodel_requires_"
+            "project_execution_evidence:test-build-browser-curl-commit-verification"
+        )
+        apply_lifecycle_status(
+            task,
+            "pending",
+            actor,
+            evidence=[evidence, gap_evidence],
+            reason="multimodel_advisory_not_completion_requeue_for_project_evidence",
+            force=True,
+        )
+        refresh_reason = "multimodel-advisory-requeue"
+        to_status = "pending"
+
     save_task(task)
-    derived_refresh = refresh_derived_task_views("multimodel-review")
-    return {"status": "OK", "task_id": task_id, "from_status": "running", "to_status": "review", "evidence": evidence, "derived_refresh": derived_refresh}
+    derived_refresh = refresh_derived_task_views(refresh_reason)
+    return {
+        "status": "OK",
+        "task_id": task_id,
+        "from_status": "running",
+        "to_status": to_status,
+        "evidence": evidence,
+        "derived_refresh": derived_refresh,
+    }
 
 
 def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, Any]:
