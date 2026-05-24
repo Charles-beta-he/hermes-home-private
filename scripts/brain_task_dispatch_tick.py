@@ -186,6 +186,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
     defaults = {
         "dispatch_mode": "single",
         "max_parallel_agents": 3,
+        "review_close_max_tasks": 50,
         "handoff_archive_threshold": 100,
         "handoff_archive_keep": 50,
         "continuation_backlog_threshold": 100,
@@ -200,6 +201,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         pass
     for key, fallback in (
         ("max_parallel_agents", 3),
+        ("review_close_max_tasks", 50),
         ("handoff_archive_threshold", 100),
         ("handoff_archive_keep", 50),
         ("continuation_backlog_threshold", 100),
@@ -278,16 +280,19 @@ def main() -> int:
     parser.add_argument("--autorun-step", action="store_true", help="Opt-in bounded runner: claim, run static allowlisted command IDs, and stop at review")
     parser.add_argument("--parallel-autorun", action="store_true", help="Opt-in parallel bridge: claim a non-conflicting batch and emit per-task handoffs")
     parser.add_argument("--max-agents", type=int, default=0, help="Max agents for --parallel-autorun / parallel dry-run; default from taskpool.max_parallel_agents")
+    parser.add_argument("--review-close-max-tasks", type=int, default=0, help="Max review tasks scanned by auto-close-review during --autorun-step; default from taskpool.review_close_max_tasks")
     parser.add_argument("--archive-handoffs", action="store_true", help="Archive old autorun/parallel handoff files beyond configured keep count")
     parser.add_argument("--multimodel-step", action="store_true", help="Opt-in expensive multi-model step; still requires HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1")
     args = parser.parse_args()
     taskpool_cfg = load_taskpool_runtime_config()
     max_parallel_agents = int(args.max_agents or taskpool_cfg.get("max_parallel_agents") or 3)
+    review_close_max_tasks = int(args.review_close_max_tasks or taskpool_cfg.get("review_close_max_tasks") or 50)
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
     event["taskpool_runtime"] = {
         "dispatch_mode": taskpool_cfg.get("dispatch_mode"),
         "max_parallel_agents": max_parallel_agents,
+        "review_close_max_tasks": review_close_max_tasks,
         "parallel_requested": bool(args.parallel_autorun),
     }
     event["handoff_backlog"] = handoff_backlog_status(
@@ -373,7 +378,7 @@ def main() -> int:
             event["status"] = "ERROR"
             event["errors"] = errors
         if not errors:
-            event["auto_close_review"] = run_json(["auto-close-review", "--json"])
+            event["auto_close_review"] = run_json(["auto-close-review", "--max-tasks", str(review_close_max_tasks), "--json"])
             if event["auto_close_review"].get("status") not in {"OK", "PASS"}:
                 errors.append({"step": "auto_close_review", "status": event["auto_close_review"].get("status"), "stderr": event["auto_close_review"].get("stderr"), "stdout": event["auto_close_review"].get("stdout")})
                 event["status"] = "ERROR"
