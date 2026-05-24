@@ -827,6 +827,18 @@ def _process_worker_result(row, actor, eid, worker_result):
         update_status(eid, 'PENDING')
         record['to_status'] = 'pending'
         return record
+    if worker_result.get('status') == 'timeout':
+        retry = transition_task(
+            row.get('id', ''),
+            'retry',
+            actor,
+            'worker timed out without proof; requeue for proof-gated retry',
+            evidence=['command:agent_team_controller execute-cycle worker timeout'],
+        )
+        record['retry_transition'] = retry
+        update_status(eid, 'FAILED', error='worker_timeout')
+        record['to_status'] = 'retry' if retry.get('ok') else 'running'
+        return record
     update_status(eid, 'FAILED', error=str(worker_result)[:200])
     record['to_status'] = 'running'
     return record
@@ -1001,6 +1013,17 @@ def consume_claimed_batch(claimed_items, max_agents=3):
             out['to_status'] = 'running'
         elif worker_result.get('status') == 'continuation_pending':
             out['to_status'] = 'running'
+        elif worker_result.get('status') == 'timeout':
+            retry = transition_task(
+                task_id,
+                'retry',
+                actor,
+                'event-driven worker timed out without proof; requeue for proof-gated retry',
+                evidence=['command:agent_team_controller consume-claimed worker timeout'],
+            )
+            out['retry_transition'] = retry
+            update_status(eid, 'FAILED', error='worker_timeout')
+            out['to_status'] = 'retry' if retry.get('ok') else 'running'
         else:
             update_status(eid, 'FAILED', error=str(worker_result)[:200])
             out['to_status'] = 'running'

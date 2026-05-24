@@ -92,6 +92,7 @@ Prefer archive over deletion. Move old files into an archive area so the audit c
    - `consume-claimed` must not serialize the claimed batch; claimed handoffs are already boundary/conflict classified.
    - It should transition eligible items to `running` first, then run workers concurrently up to the effective cap.
    - Verify with `ps` that multiple `hermes chat --source team-worker-*` processes exist for different boundary keys.
+   - Worker timeout without `PROOF_JSON` must not leave a false-active running task; transition it to `retry` with command evidence so the next tick can requeue under proof gates.
 6. If handoff count exceeds threshold, run with `--archive-handoffs`.
 7. Only after eligibility, handoff backlog, and consume parallelism are understood should you tune `max_parallel_agents`.
 
