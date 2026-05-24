@@ -24,13 +24,19 @@ Purpose: prevent credential leakage, screenshot/evidence sprawl, and split workf
 2. Redacted audit script:
    - `/Users/charles/.hermes/scripts/uvisa_lark_governance_audit.py`
    - It prints only paths, counts, line numbers, variable/key names, and hashes; it never prints secret values.
+3. Git staging guard:
+   - `/Users/charles/.hermes/scripts/uvisa_lark_git_guard.py`
+   - Installed local hook: `/Users/charles/.hermes/.git/hooks/pre-commit`
+   - Blocks staged runtime/cache/secret paths and secret-like staged values before commit.
+   - This is enforcement, not only documentation; bypassing it requires explicit `--no-verify`, which should be treated as an exception requiring manual review.
 
 ## Verification commands
 
 ```bash
 python3 ~/.hermes/scripts/uvisa_lark_governance_audit.py --json --redact --scope uvisa-lark > ~/.hermes/tmp/uvisa_lark_governance_audit_latest.json
 python3 -m json.tool ~/.hermes/tmp/uvisa_lark_governance_audit_latest.json >/dev/null
-git -C ~/.hermes check-ignore -v .env auth.json sessions/example.json cache/screenshots/example.png state/continuations/example.json tick-example/state.json
+git -C ~/.hermes check-ignore -v --no-index .env auth.json sessions/example.json cache/screenshots/example.png state/continuations/example.json tick-example/state.json
+python3 ~/.hermes/scripts/uvisa_lark_git_guard.py
 python3 -m json.tool ~/.hermes/project-profiles/lark.json >/dev/null
 python3 -m json.tool ~/.hermes/project-profiles/uvisa-app-2.0.json >/dev/null
 ```
@@ -53,6 +59,11 @@ Requires explicit maintenance window:
 3. If the private repository was pushed with secrets, consider history rewrite (`git filter-repo`/BFG) only after backup and coordination.
 
 ## P1 runbook: unify workflow facts
+
+Automation/cadence requirement:
+- Run the redacted governance audit at least daily while `sensitive_tracked_count > 0` or `lark_skill_drift` contains mismatched hashes.
+- Once P0/P1 debt is cleared, reduce to weekly or post-`hermes update` checks.
+- Drift is not only informational: a root/overlay hash mismatch must block promotion of the overlay as canonical until either synced or deleted.
 
 1. Make root `lark-task-reading` skill canonical.
 2. Compare overlay copies by hash:
@@ -95,6 +106,15 @@ Rules:
 - Login-gate screenshots prove authentication blocker only; they do not prove target task UI.
 - `.playwright-mcp` and `test-results` screenshots are raw local artifacts until promoted by manifest.
 - Duplicate hashes should be classified before deletion.
+
+## P2 rotation/history/evidence cleanup SLA
+
+These actions require explicit maintenance-window approval, but they are not optional indefinite backlog:
+
+- Trigger: any audit where `sensitive_tracked_count > 0`, pushed secret suspicion, or Lark/model auth failure after suspected exposure.
+- SLA: create/confirm a maintenance window within 7 days of the trigger; if blocked, record blocker and next review date in this document or taskpool.
+- Rotation order: Lark/Feishu app secret first, model provider keys second, Hermes/Nous auth token third, then history rewrite decision.
+- Deletion rule: no screenshot/evidence deletion without manifest classification and duplicate-hash review.
 
 ## Rollback
 
