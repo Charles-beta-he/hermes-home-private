@@ -1406,6 +1406,42 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
     }
 
 
+def release_claimed_batch_for_escape(claimed_items, escape_info, actor='hermes-parallel'):
+    """Fail-soft release for event-driven claims when human-escape is active.
+
+    The escape circuit intentionally blocks worker execution.  Leaving tasks in
+    `claimed` after that skip wedges the pool until lease expiry and causes the
+    next tick to see zero dispatchable work.  Release only the just-passed claimed
+    handoffs back to retry with explicit evidence; do not execute workers and do
+    not mark anything done.
+    """
+    items = list(claimed_items or [])
+    ids = [str(item.get('task_id') or item.get('id') or '') for item in items if isinstance(item, dict)]
+    ids = [x for x in ids if x]
+    row_map = rows_by_id(ids) if ids else {}
+    released = []
+    skipped = []
+    reason = f'event-driven worker blocked by human escape; claim released for retry: {str(escape_info)[:300]}'
+    for task_id in ids:
+        row = row_map.get(task_id)
+        if not row:
+            skipped.append({'task_id': task_id, 'reason': 'task_not_found'})
+            continue
+        if row.get('status') != 'claimed':
+            skipped.append({'task_id': task_id, 'reason': f"not_claimed:{row.get('status')}"})
+            continue
+        task_actor = str(row.get('claimed_by') or actor)
+        retry = transition_task(
+            task_id,
+            'retry',
+            task_actor,
+            reason,
+            evidence=['command:agent_team_controller consume-claimed human_escape_release'],
+        )
+        released.append({'task_id': task_id, 'retry_transition': retry, 'to_status': 'retry' if retry.get('ok') else 'claimed'})
+    return {'released': released, 'skipped': skipped}
+
+
 def consume_claimed_batch(claimed_items, max_agents=3):
     """Immediately consume tasks just claimed by parallel-claim-and-handoff.
 
@@ -1425,7 +1461,17 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         return {'status': 'SKIP', 'event_driven': True, 'reason': 'kill switch active', 'consumed_count': 0}
     escape, escape_info = human_escape_check()
     if escape:
-        return {'status': 'SKIP', 'event_driven': True, 'reason': f'Human escape: {escape_info}', 'consumed_count': 0}
+        released = release_claimed_batch_for_escape(claimed_items, escape_info)
+        return {
+            'status': 'SKIP',
+            'event_driven': True,
+            'reason': f'Human escape: {escape_info}',
+            'consumed_count': 0,
+            'released_count': sum(1 for item in released.get('released', []) if (item.get('retry_transition') or {}).get('ok')),
+            'released': released.get('released', []),
+            'skipped': released.get('skipped', []),
+            'safety': 'worker execution skipped; claimed handoffs released to retry to avoid claimed-without-progress wedge',
+        }
     try:
         max_agents = max(1, int(max_agents or 3))
     except Exception:
