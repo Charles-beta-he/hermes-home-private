@@ -1,808 +1,168 @@
 ---
 name: hermes-agent
-description: Complete guide to using and extending Hermes Agent — CLI usage, setup, configuration, spawning additional agents, gateway platforms, skills, voice, tools, profiles, and a concise contributor reference. Load this skill when helping users configure Hermes, troubleshoot issues, spawn agent instances, or make code contributions.
-version: 2.0.0
-author: Hermes Agent + Teknium
-license: MIT
-metadata:
-  hermes:
-    tags: [hermes, setup, configuration, multi-agent, spawning, cli, gateway, development]
-    homepage: https://github.com/NousResearch/hermes-agent
-    related_skills: [claude-code, codex, opencode]
+description: Use when extending or operating Hermes Agent including CLI/setup, skills, tools, profiles, gateway, taskpool hooks, certified auto-done, blocked-task closure, memory-cap selfcheck, and self-evolution / PUA-loop workflows. See references/ for taskpool hook debugging, evolution-task add rules, pre-ingest triage, memory compaction, bad-case to proposal to benchmark self-optimization, `references/budget-handoff-automation.md` for default-safe budget/context exhaustion behavior, `references/budget-relay-debugging.md` for delegated continuation / relay pitfalls, and other Hermes-specific deep dives.
 ---
+
+Reference addendum: `references/provider-version-drift-and-codex-breaker.md` captures the workflow for separating Hermes runtime package skew from local source drift when provider/version mismatch or `agent.codex_circuit_breaker` incidents appear.
+
+Reference addendum: `references/dreaming-outcomes-skill-review-and-evaluator.md` maps Dreaming-style post-run procedure distillation and Outcomes-style independent evaluator gates into Hermes skill review, memory hygiene, taskpool proof logs, and fail-closed lifecycle advancement.
+
+Reference addendum: `references/external-skill-to-brain-overlay.md` captures the governed workflow for absorbing an external Agent Skills package into Hermes as a discoverable brain overlay with registry routing, skill discovery, diagnostics, taskpool evidence, and fail-closed review/done handling.
+
+Reference addendum: `references/rokid-lingzhu-sse-bridge.md` captures the workflow for exposing Hermes to Rokid smart glasses through the Rokid Rizon/Lingzhu custom third-party agent SSE protocol, including FastAPI bridge shape, Cloudflare temporary/named tunnel handling, macOS LaunchAgent recovery, Rizon custom-agent API fallback, and verification gates.
+
+Reference addendum: `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md` captures the Vercel monorepo review pattern for Hermes self-optimization: first-class `AGENTS.md`, named validation surfaces, affected-check fail-safe broadening, fixture/evidence protection, release/evidence notes, and reference-repo analysis without cargo-culting the source stack.
 
 # Hermes Agent
 
-Hermes Agent is an open-source AI agent framework by Nous Research that runs in your terminal, messaging platforms, and IDEs. It belongs to the same category as Claude Code (Anthropic), Codex (OpenAI), and OpenClaw — autonomous coding and task-execution agents that use tool calling to interact with your system. Hermes works with any LLM provider (OpenRouter, Anthropic, OpenAI, DeepSeek, local models, and 15+ others) and runs on Linux, macOS, and WSL.
-
-What makes Hermes different:
-
-- **Self-improving through skills** — Hermes learns from experience by saving reusable procedures as skills. When it solves a complex problem, discovers a workflow, or gets corrected, it can persist that knowledge as a skill document that loads into future sessions. Skills accumulate over time, making the agent better at your specific tasks and environment.
-- **Persistent memory across sessions** — remembers who you are, your preferences, environment details, and lessons learned. Pluggable memory backends (built-in, Honcho, Mem0, and more) let you choose how memory works.
-- **Multi-platform gateway** — the same agent runs on Telegram, Discord, Slack, WhatsApp, Signal, Matrix, Email, and 10+ other platforms with full tool access, not just chat.
-- **Provider-agnostic** — swap models and providers mid-workflow without changing anything else. Credential pools rotate across multiple API keys automatically.
-- **Profiles** — run multiple independent Hermes instances with isolated configs, sessions, skills, and memory.
-- **Extensible** — plugins, MCP servers, custom tools, webhook triggers, cron scheduling, and the full Python ecosystem.
-
-People use Hermes for software development, research, system administration, data analysis, content creation, home automation, and anything else that benefits from an AI agent with persistent context and full system access.
-
-**This skill helps you work with Hermes Agent effectively** — setting it up, configuring features, spawning additional agent instances, troubleshooting issues, finding the right commands and settings, and understanding how the system works when you need to extend or contribute to it.
-
-**Docs:** https://hermes-agent.nousresearch.com/docs/
-
-## Quick Start
-
-```bash
-# Install
-curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
-
-# Interactive chat (default)
-hermes
-
-# Single query
-hermes chat -q "What is the capital of France?"
-
-# Setup wizard
-hermes setup
-
-# Change model/provider
-hermes model
-
-# Check health
-hermes doctor
-```
-
----
-
-## CLI Reference
-
-### Global Flags
-
-```
-hermes [flags] [command]
-
-  --version, -V             Show version
-  --resume, -r SESSION      Resume session by ID or title
-  --continue, -c [NAME]     Resume by name, or most recent session
-  --worktree, -w            Isolated git worktree mode (parallel agents)
-  --skills, -s SKILL        Preload skills (comma-separate or repeat)
-  --profile, -p NAME        Use a named profile
-  --yolo                    Skip dangerous command approval
-  --pass-session-id         Include session ID in system prompt
-```
-
-No subcommand defaults to `chat`.
-
-### Chat
-
-```
-hermes chat [flags]
-  -q, --query TEXT          Single query, non-interactive
-  -m, --model MODEL         Model (e.g. anthropic/claude-sonnet-4)
-  -t, --toolsets LIST       Comma-separated toolsets
-  --provider PROVIDER       Force provider (openrouter, anthropic, nous, etc.)
-  -v, --verbose             Verbose output
-  -Q, --quiet               Suppress banner, spinner, tool previews
-  --checkpoints             Enable filesystem checkpoints (/rollback)
-  --source TAG              Session source tag (default: cli)
-```
-
-### Configuration
-
-```
-hermes setup [section]      Interactive wizard (model|terminal|gateway|tools|agent)
-hermes model                Interactive model/provider picker
-hermes config               View current config
-hermes config edit          Open config.yaml in $EDITOR
-hermes config set KEY VAL   Set a config value
-hermes config path          Print config.yaml path
-hermes config env-path      Print .env path
-hermes config check         Check for missing/outdated config
-hermes config migrate       Update config with new options
-hermes login [--provider P] OAuth login (nous, openai-codex)
-hermes logout               Clear stored auth
-hermes doctor [--fix]       Check dependencies and config
-hermes status [--all]       Show component status
-```
-
-### Tools & Skills
-
-```
-hermes tools                Interactive tool enable/disable (curses UI)
-hermes tools list           Show all tools and status
-hermes tools enable NAME    Enable a toolset
-hermes tools disable NAME   Disable a toolset
-
-hermes skills list          List installed skills
-hermes skills search QUERY  Search the skills hub
-hermes skills install ID    Install a skill
-hermes skills inspect ID    Preview without installing
-hermes skills config        Enable/disable skills per platform
-hermes skills check         Check for updates
-hermes skills update        Update outdated skills
-hermes skills uninstall N   Remove a hub skill
-hermes skills publish PATH  Publish to registry
-hermes skills browse        Browse all available skills
-hermes skills tap add REPO  Add a GitHub repo as skill source
-```
-
-### MCP Servers
-
-```
-hermes mcp serve            Run Hermes as an MCP server
-hermes mcp add NAME         Add an MCP server (--url or --command)
-hermes mcp remove NAME      Remove an MCP server
-hermes mcp list             List configured servers
-hermes mcp test NAME        Test connection
-hermes mcp configure NAME   Toggle tool selection
-```
-
-### Gateway (Messaging Platforms)
-
-```
-hermes gateway run          Start gateway foreground
-hermes gateway install      Install as background service
-hermes gateway start/stop   Control the service
-hermes gateway restart      Restart the service
-hermes gateway status       Check status
-hermes gateway setup        Configure platforms
-```
-
-Supported platforms: Telegram, Discord, Slack, WhatsApp, Signal, Email, SMS, Matrix, Mattermost, Home Assistant, DingTalk, Feishu, WeCom, BlueBubbles (iMessage), Weixin (WeChat), API Server, Webhooks. Open WebUI connects via the API Server adapter.
-
-Platform docs: https://hermes-agent.nousresearch.com/docs/user-guide/messaging/
-
-### Sessions
-
-```
-hermes sessions list        List recent sessions
-hermes sessions browse      Interactive picker
-hermes sessions export OUT  Export to JSONL
-hermes sessions rename ID T Rename a session
-hermes sessions delete ID   Delete a session
-hermes sessions prune       Clean up old sessions (--older-than N days)
-hermes sessions stats       Session store statistics
-```
-
-### Cron Jobs
-
-```
-hermes cron list            List jobs (--all for disabled)
-hermes cron create SCHED    Create: '30m', 'every 2h', '0 9 * * *'
-hermes cron edit ID         Edit schedule, prompt, delivery
-hermes cron pause/resume ID Control job state
-hermes cron run ID          Trigger on next tick
-hermes cron remove ID       Delete a job
-hermes cron status          Scheduler status
-```
-
-Operational troubleshooting pattern:
-- If `last_status=error` with no delivery error and the message is "Agent completed but produced empty response", treat it as a cron-agent/wrapper problem before blaming the scheduler.
-- Prefer script-first cron jobs: put deterministic work in `~/.hermes/scripts/<job>.py`, emit JSON/JSONL, and make the cron prompt only summarize injected output in 2-3 lines with "Always produce a non-empty final response."
-- If a cron job reports `Script not found: /path/script.py arg1 arg2`, check whether the job's `script` field contains arguments and the scheduler is treating the whole string as a filename. Verify the underlying file and run `python3 /path/script.py arg1 arg2` manually before claiming the script is absent; report scheduler wrapper parsing separately from the script's real return status.
-- Minimal operational fix for cron `script` arguments: do **not** patch scheduler parsing or store shell commands in `script`. Create small no-space wrapper scripts under `~/.hermes/scripts/` (for example `pipeline_tick_tick.py` that `os.execv(sys.executable, [sys.executable, target, "tick"])`), then update jobs with `hermes cron edit <job_id> --script wrapper.py`. This preserves the scheduler containment model and survives Hermes updates.
-- When auditing cron parameter/script issues, enumerate every job whose `script` contains whitespace from `~/.hermes/cron/jobs.json`, reproduce with `cron.scheduler._run_job_script(<script>)`, and treat `last_status=ok` as insufficient proof because non-`no_agent` jobs can inject script errors into an LLM prompt and still finish `ok`.
-- For cron jobs that drive local task pools/envelope buses, watch for two coupled failure modes: (1) `script` values like `pipeline_tick.py tick` being parsed as one path instead of path+argv, and (2) `human_escape` counting all historical `FAILED`/`BLOCKED` rows, causing permanent熔断. In reviewer mode, recommend structured `script` + `script_args`, fail-closed script status, and human ack/watermark semantics. See `references/cron-taskpool-script-args-and-human-escape.md`.
-- For envelope executors that spawn `hermes chat`, verify process lifecycle as well as DB state: `ps -ax -o pid,etime,command | grep -E 'envelope_executor|hermes chat'` should show no orphan worker after timeout/completion. Run workers in their own process group (`start_new_session=True`) and kill the whole process group on timeout/SIGTERM; otherwise the envelope may be marked FAILED/PENDING while the old worker keeps editing concurrently.
-- For `deliver=origin` jobs, `last_delivery_error: no delivery target resolved for deliver=origin` is a delivery binding problem, not necessarily a job/runtime failure. Prefer explicit delivery targets for recurring status reports after checking user intent.
-- For long-running multi-model jobs, wrap them with explicit timeouts and record `timeout_recorded`/`degraded_recorded`; then run a lightweight health/score script afterward so the cron still leaves an auditable result.
-- Local-brain multimodel intervention scripts are guarded by an explicit safety flag: if `brain_task_orchestrator.py multimodel-intervention-parallel-step ... --json` returns `{"status":"SKIP","reason":"autorun_multimodel_disabled"}`, rerun with `HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1` rather than reporting an empty/no-op result. These runs can exceed normal terminal timeouts; start them as background processes with unbuffered output (`PYTHONUNBUFFERED=1`), poll/wait until exit, then summarize the JSON from the process log. Treat gate `SKIP` results such as `no_discussion_result` as task errors for reporting if the command summary counts them in `tasks_errors`.
-- Keep local-brain safe summary heartbeats cheap and explicit: do not let ambient `HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1` alone trigger expensive multimodel execution from `brain_task_dispatch_tick.py --summary`. Expensive steps should be double-gated by an explicit CLI flag plus env var, and subprocess timeouts should be recorded as structured JSON (`subprocess_timeout` / `timeout_recorded`) instead of crashing the cron tick.
-- When local-brain/taskpool cron jobs repeatedly time out, prefer the dynamic no-agent pattern in `references/local-brain-dynamic-cron.md`: collect cron/log evidence, classify provider-model mismatch separately from taskpool corruption, keep the cron tick short/event-gated, move T3/quorum4 multi-model work into a pid-locked detached worker without weakening certification gates, and close `review -> done` only through a proof-gated auto-closer that reuses normal lifecycle gates and records multi-model ratification artifacts as explicit evidence.
-- When `evidence-spine` is WARN only because `local-brain-taskpool-auto-completer` has `last_status=error`, inspect the semantic content before treating it as scheduler failure. `Request timed out`, `timeout_recorded`, `truth_grounded_advisory_not_ratified`, `not_certified`, missing `discussion_result.json`, “T3 still running / cannot closeout”, or a nested `taskpool_dynamic_runner_v1` → tick → evidence_spine self-lock are usually retryable/task-level/recursive gate states; classify them separately and keep unknown errors fail-closed. Keep evidence-spine and autonomy-readiness using the same scheduler-safe semantic set, parse structured stdout even on non-zero subprocess exits, and add ratchet fixtures for each safe error class. See `references/taskpool-auto-completer-semantics.md`.
-- Local-brain/taskpool priority can be globally switched without cron env hacks by writing `~/.hermes/state/taskpool_priority_mode.json` with `{"mode":"evolution-first"}` (or `work-first`). The orchestrator also accepts `HERMES_TASKPOOL_PRIORITY_MODE`, but the state file is durable for cron/no-agent ticks. Verify with `brain_task_orchestrator.py boundary-check --json` gates `priority_mode`, `next --json`, `parallel-dispatch-dry-run --json`, and `eligibility-check --json`. See `references/taskpool-priority-mode.md` for the full implementation/verification pattern.
-- After editing a job, use `hermes cron run <id>` or the cronjob tool's run action, wait for scheduler execution, then re-check `hermes cron list` and any health script. Do not assume `next_run_at` change means it already ran.
-- `last_run_at=null` is not automatically a failure for daily/weekly jobs; compare `next_run_at` with current time and distinguish first-run-pending from missed windows.
-
-### Webhooks
-
-```
-hermes webhook subscribe N  Create route at /webhooks/<name>
-hermes webhook list         List subscriptions
-hermes webhook remove NAME  Remove a subscription
-hermes webhook test NAME    Send a test POST
-```
-
-### Profiles
-
-```
-hermes profile list         List all profiles
-hermes profile create NAME  Create (--clone, --clone-all, --clone-from)
-hermes profile use NAME     Set sticky default
-hermes profile delete NAME  Delete a profile
-hermes profile show NAME    Show details
-hermes profile alias NAME   Manage wrapper scripts
-hermes profile rename A B   Rename a profile
-hermes profile export NAME  Export to tar.gz
-hermes profile import FILE  Import from archive
-```
-
-### Credential Pools
-
-```
-hermes auth add             Interactive credential wizard
-hermes auth list [PROVIDER] List pooled credentials
-hermes auth remove P INDEX  Remove by provider + index
-hermes auth reset PROVIDER  Clear exhaustion status
-```
-
-### Other
-
-```
-hermes insights [--days N]  Usage analytics
-hermes update               Update to latest version
-hermes pairing list/approve/revoke  DM authorization
-hermes plugins list/install/remove  Plugin management
-hermes honcho setup/status  Honcho memory integration (requires honcho plugin)
-hermes memory setup/status/off  Memory provider config
-hermes completion bash|zsh  Shell completions
-hermes acp                  ACP server (IDE integration)
-hermes claw migrate         Migrate from OpenClaw
-hermes uninstall            Uninstall Hermes
-```
-
-### Self-update operator flow
-
-When the user says `自更新`, `/update`, or asks to update Hermes itself, treat it as an operational update, not an explanation request:
-
-1. Run `hermes update` with a long timeout/background strategy. Updates can legitimately exceed a short terminal timeout during `git pull`/`pip install`; if the command times out, inspect the Hermes repo state before claiming failure.
-2. Run the post-update checker after the update. If `~/.hermes/scripts/post-update-check.py` exits `126`, it is usually not executable; run it as `python3 ~/.hermes/scripts/post-update-check.py` or `chmod +x` then rerun. Use `--fix` when the checker reports known repairable issues.
-3. Verify update state with `cd ~/.hermes/hermes-agent && git rev-list --left-right --count HEAD...origin/main`, `hermes --version`, and `hermes doctor` or the local verify script when available.
-4. If the user has private Hermes patches, follow `post-update-patch-healing` before/after `hermes update`; do not assume upstream preserved local vendor edits.
-5. Report concise status: updated/current, checker result, verification result, and whether anything remains manual. Do not stop after a timeout without follow-up evidence.
-
----
-
-## Slash Commands (In-Session)
-
-Type these during an interactive chat session.
-
-### Session Control
-```
-/new (/reset)        Fresh session
-/clear               Clear screen + new session (CLI)
-/retry               Resend last message
-/undo                Remove last exchange
-/title [name]        Name the session
-/compress            Manually compress context
-/stop                Kill background processes
-/rollback [N]        Restore filesystem checkpoint
-/background <prompt> Run prompt in background
-/queue <prompt>      Queue for next turn
-/resume [name]       Resume a named session
-```
-
-### Configuration
-```
-/config              Show config (CLI)
-/model [name]        Show or change model
-/personality [name]  Set personality
-/reasoning [level]   Set reasoning (none|minimal|low|medium|high|xhigh|show|hide)
-/verbose             Cycle: off → new → all → verbose
-/voice [on|off|tts]  Voice mode
-/yolo                Toggle approval bypass
-/skin [name]         Change theme (CLI)
-/statusbar           Toggle status bar (CLI)
-```
-
-### Tools & Skills
-```
-/tools               Manage tools (CLI)
-/toolsets            List toolsets (CLI)
-/skills              Search/install skills (CLI)
-/skill <name>        Load a skill into session
-/cron                Manage cron jobs (CLI)
-/reload-mcp          Reload MCP servers
-/plugins             List plugins (CLI)
-```
-
-### Gateway
-```
-/approve             Approve a pending command (gateway)
-/deny                Deny a pending command (gateway)
-/restart             Restart gateway (gateway)
-/sethome             Set current chat as home channel (gateway)
-/update              Update Hermes to latest (gateway)
-/platforms (/gateway) Show platform connection status (gateway)
-```
-
-### Utility
-```
-/branch (/fork)      Branch the current session
-/btw                 Ephemeral side question (doesn't interrupt main task)
-/fast                Toggle priority/fast processing
-/browser             Open CDP browser connection
-/history             Show conversation history (CLI)
-/save                Save conversation to file (CLI)
-/paste               Attach clipboard image (CLI)
-/image               Attach local image file (CLI)
-```
-
-### Info
-```
-/help                Show commands
-/commands [page]     Browse all commands (gateway)
-/usage               Token usage
-/insights [days]     Usage analytics
-/status              Session info (gateway)
-/profile             Active profile info
-```
-
-### Exit
-```
-/quit (/exit, /q)    Exit CLI
-```
-
----
-
-### Key Paths & Config
-
-```
-~/.hermes/config.yaml       Main configuration
-~/.hermes/.env              API keys and secrets
-$HERMES_HOME/skills/        Installed skills
-~/.hermes/sessions/         Session transcripts
-~/.hermes/logs/             Gateway and error logs
-~/.hermes/auth.json         OAuth tokens and credential pools
-~/.hermes/hermes-agent/     Source code (if git-installed)
-```
-
-Profiles use `~/.hermes/profiles/<name>/` with the same layout.
-
-### Private repo sync / reproducing a personal Hermes assistant
-
-When the user wants to sync or reproduce their Hermes personal assistant through GitHub/private Git, use `references/private-repo-personal-assistant-sync.md`. Key rule: never commit the whole `~/.hermes` and never upload raw persistent memory (`~/.hermes/memories/MEMORY.md`, `USER.md`, or `~/.hermes/memory/`). Sync only reviewed brain notes, skills, selected deterministic scripts, and sanitized config templates. Add fail-closed secret/raw-memory validation plus a pre-push guard; local commits are fine, but do not push unless explicitly approved.
-
-### Auditing Project-Local Hermes Artifacts
-
-Use this when a non-Hermes project contains Python scripts or files that mention Hermes, `~/.hermes`, `hermes-agent`, `agent.spl`, `consult_models.py`, `ensemble-vote.py`, `model_health`, or scripts that hardcode paths under `~/.hermes/hermes-agent/`. The goal is to distinguish app code from Hermes support artifacts before deleting, moving, or modifying anything.
-
-Recommended verification flow:
-
-```bash
-# 1. Identify the project root and tracked Python files
-pwd
-git rev-parse --show-toplevel 2>/dev/null || true
-git ls-files '*.py'
-find . -name '*.py' -not -path './node_modules/*'
-
-# 2. Search for Hermes-specific references
-grep -RIn "hermes\|Hermes\|HERMES\|~/.hermes\|hermes-agent\|agent\.spl\|consult_models\|ensemble-vote\|model_health" . \
-  --exclude-dir=node_modules --exclude-dir=.git
-
-# 3. If a project-local file looks like a copy of a Hermes runtime module,
-# compare it with the actual runtime file instead of assuming it is live.
-python3 - <<'PY'
-from pathlib import Path
-import hashlib
-pairs = [
-    (Path('spl.py'), Path.home()/'.hermes/hermes-agent/agent/spl.py'),
-]
-for a,b in pairs:
-    if a.exists() and b.exists():
-        ah = hashlib.sha256(a.read_bytes()).hexdigest()
-        bh = hashlib.sha256(b.read_bytes()).hexdigest()
-        print(a, ah)
-        print(b, bh)
-        print('identical:', ah == bh)
-PY
-
-# 4. Check whether Hermes actually imports the runtime module.
-grep -RIn "from agent\.spl\|import agent\.spl\|SPLEncoder\|SPLDecoder\|SPLTier" ~/.hermes/scripts ~/.hermes/hermes-agent \
-  --include='*.py'
-
-# 5. Syntax-check before making cleanup recommendations.
-python3 -m py_compile <suspect-file.py>
-```
-
-Interpretation:
-- A file inside the app repo that hardcodes `~/.hermes/hermes-agent/...` is probably a Hermes patch/helper artifact, not app runtime code.
-- A project-local copy may be only a source/staging copy; Hermes runtime usually imports from `~/.hermes/hermes-agent/...` or `~/.hermes/scripts/...`.
-- If the project-local file is byte-identical to the Hermes runtime copy, report that relationship explicitly.
-- Do not delete Hermes-related artifacts until project references, Hermes runtime references, and git tracked/untracked status have all been checked.
-- One-off patch scripts that modify vendor files should be migrated to an update-safe checker/plugin pattern; see `post-update-patch-healing`.
-
-### Local taskpool project-profile governance
-
-When working on Hermes local-brain/taskpool automation that dispatches Markdown tasks from the brain vault, remember that project profiles are a hard gate, not a hint:
-
-- `~/.hermes/scripts/brain_task_orchestrator.py` resolves task `project` frontmatter to `~/.hermes/project-profiles/<project>.json`, then slug fallback, then `hermes.json`.
-- Missing profile is **fail-closed**: the task becomes non-dispatchable and `claim` fails with `project_profile_missing`.
-- Worker dispatch injects project-profile context (tech stack, conventions, acceptance, forbidden rules) into the spawned agent prompt, so mismatched project IDs silently weaken execution quality even when dispatch still works.
-- When renaming a canonical project key (for example consolidating `foo-work` into `foo`), migrate task frontmatter and tests first, but keep a deprecated alias profile temporarily with the same constraints plus explicit alias metadata. Remove the alias only after searches/tests show no remaining references.
-- If two profiles describe the same project at different strictness levels, prefer one canonical profile and make any alias byte-equivalent in constraints except alias metadata. This prevents work tasks from inheriting weaker rules than the main project profile.
-
-### Config Sections
-
-Edit with `hermes config edit` or `hermes config set section.key value`.
-
-| Section | Key options |
-|---------|-------------|
-| `model` | `default`, `provider`, `base_url`, `api_key`, `context_length` |
-| `agent` | `max_turns` (90), `tool_use_enforcement` |
-| `terminal` | `backend` (local/docker/ssh/modal), `cwd`, `timeout` (180) |
-| `compression` | `enabled`, `threshold` (0.50), `target_ratio` (0.20) |
-| `display` | `skin`, `tool_progress`, `show_reasoning`, `show_cost` |
-| `stt` | `enabled`, `provider` (local/groq/openai/mistral) |
-| `tts` | `provider` (edge/elevenlabs/openai/minimax/mistral/neutts) |
-| `memory` | `memory_enabled`, `user_profile_enabled`, `provider` |
-| `security` | `tirith_enabled`, `website_blocklist` |
-| `delegation` | `model`, `provider`, `base_url`, `api_key`, `max_iterations` (50), `reasoning_effort` |
-| `checkpoints` | `enabled`, `max_snapshots` (50) |
-
-Full config reference: https://hermes-agent.nousresearch.com/docs/user-guide/configuration
-
-### Providers
-
-20+ providers supported. Set via `hermes model` or `hermes setup`.
-
-| Provider | Auth | Key env var |
-|----------|------|-------------|
-| OpenRouter | API key | `OPENROUTER_API_KEY` |
-| Anthropic | API key | `ANTHROPIC_API_KEY` |
-| Nous Portal | OAuth | `hermes auth` |
-| OpenAI Codex | OAuth | `hermes auth` |
-| GitHub Copilot | Token | `COPILOT_GITHUB_TOKEN` |
-| Google Gemini | API key | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
-| DeepSeek | API key | `DEEPSEEK_API_KEY` |
-| xAI / Grok | API key | `XAI_API_KEY` |
-| Hugging Face | Token | `HF_TOKEN` |
-| Z.AI / GLM | API key | `GLM_API_KEY` |
-| MiniMax | API key | `MINIMAX_API_KEY` |
-| MiniMax CN | API key | `MINIMAX_CN_API_KEY` |
-| Kimi / Moonshot | API key | `KIMI_API_KEY` |
-| Alibaba / DashScope | API key | `DASHSCOPE_API_KEY` |
-| Xiaomi MiMo | API key | `XIAOMI_API_KEY` |
-| Kilo Code | API key | `KILOCODE_API_KEY` |
-| AI Gateway (Vercel) | API key | `AI_GATEWAY_API_KEY` |
-| OpenCode Zen | API key | `OPENCODE_ZEN_API_KEY` |
-| OpenCode Go | API key | `OPENCODE_GO_API_KEY` |
-| Qwen OAuth | OAuth | `hermes login --provider qwen-oauth` |
-| Custom endpoint | Config | `model.base_url` + `model.api_key` in config.yaml |
-| GitHub Copilot ACP | External | `COPILOT_CLI_PATH` or Copilot CLI |
-
-Full provider docs: https://hermes-agent.nousresearch.com/docs/integrations/providers
-
-### Toolsets
-
-Enable/disable via `hermes tools` (interactive) or `hermes tools enable/disable NAME`.
-
-| Toolset | What it provides |
-|---------|-----------------|
-| `web` | Web search and content extraction |
-| `browser` | Browser automation (Browserbase, Camofox, or local Chromium) |
-| `terminal` | Shell commands and process management |
-| `file` | File read/write/search/patch |
-| `code_execution` | Sandboxed Python execution |
-| `vision` | Image analysis |
-| `image_gen` | AI image generation |
-| `tts` | Text-to-speech |
-| `skills` | Skill browsing and management |
-| `memory` | Persistent cross-session memory |
-| `session_search` | Search past conversations |
-| `delegation` | Subagent task delegation |
-| `cronjob` | Scheduled task management |
-| `clarify` | Ask user clarifying questions |
-| `messaging` | Cross-platform message sending |
-| `search` | Web search only (subset of `web`) |
-| `todo` | In-session task planning and tracking |
-| `rl` | Reinforcement learning tools (off by default) |
-| `moa` | Mixture of Agents (off by default) |
-| `homeassistant` | Smart home control (off by default) |
-
-Tool changes take effect on `/reset` (new session). They do NOT apply mid-conversation to preserve prompt caching.
-
----
-
-## Voice & Transcription
-
-### STT (Voice → Text)
-
-Voice messages from messaging platforms are auto-transcribed.
-
-Provider priority (auto-detected):
-1. **Local faster-whisper** — free, no API key: `pip install faster-whisper`
-2. **Groq Whisper** — free tier: set `GROQ_API_KEY`
-3. **OpenAI Whisper** — paid: set `VOICE_TOOLS_OPENAI_KEY`
-4. **Mistral Voxtral** — set `MISTRAL_API_KEY`
-
-Config:
-```yaml
-stt:
-  enabled: true
-  provider: local        # local, groq, openai, mistral
-  local:
-    model: base          # tiny, base, small, medium, large-v3
-```
-
-### TTS (Text → Voice)
-
-| Provider | Env var | Free? |
-|----------|---------|-------|
-| Edge TTS | None | Yes (default) |
-| ElevenLabs | `ELEVENLABS_API_KEY` | Free tier |
-| OpenAI | `VOICE_TOOLS_OPENAI_KEY` | Paid |
-| MiniMax | `MINIMAX_API_KEY` | Paid |
-| Mistral (Voxtral) | `MISTRAL_API_KEY` | Paid |
-| NeuTTS (local) | None (`pip install neutts[all]` + `espeak-ng`) | Free |
-
-Voice commands: `/voice on` (voice-to-voice), `/voice tts` (always voice), `/voice off`.
-
----
-
-### Tool-call budgets and permission gates
-
-For long autonomous loops, single-session tool-call limits, and permission problems, use `references/tool-budget-and-permission-gates.md`: batch mechanical calls into scripts, externalize state into durable artifacts, split work into resumable ticks, use subagents/background jobs for long work, and enforce least-privilege typed tool proxies with dry-run-first external effects.
-
-For the specific `Iteration budget reached (N/N) — response may be incomplete` failure mode in cron/task-pool/idle-runner work, use `references/p10-iteration-budget-loop.md`: diagnose effective caps, run a bounded task tick, write a durable handoff, and require structured proof before done.
-
-### Spawning Additional Hermes Instances
-
-Run additional Hermes processes as fully independent subprocesses — separate sessions, tools, and environments.
-
-### When to Use This vs delegate_task
-
-| | `delegate_task` | Spawning `hermes` process |
-|-|-----------------|--------------------------|
-| Isolation | Separate conversation, shared process | Fully independent process |
-| Duration | Minutes (bounded by parent loop) | Hours/days |
-| Tool access | Subset of parent's tools | Full tool access |
-| Interactive | No | Yes (PTY mode) |
-| Use case | Quick parallel subtasks | Long autonomous missions |
-
-### One-Shot Mode
-
-```
-terminal(command="hermes chat -q 'Research GRPO papers and write summary to ~/research/grpo.md'", timeout=300)
-
-# Background for long tasks:
-terminal(command="hermes chat -q 'Set up CI/CD for ~/myapp'", background=true)
-```
-
-### Interactive PTY Mode (via tmux)
-
-Hermes uses prompt_toolkit, which requires a real terminal. Use tmux for interactive spawning:
-
-```
-# Start
-terminal(command="tmux new-session -d -s agent1 -x 120 -y 40 'hermes'", timeout=10)
-
-# Wait for startup, then send a message
-terminal(command="sleep 8 && tmux send-keys -t agent1 'Build a FastAPI auth service' Enter", timeout=15)
-
-# Read output
-terminal(command="sleep 20 && tmux capture-pane -t agent1 -p", timeout=5)
-
-# Send follow-up
-terminal(command="tmux send-keys -t agent1 'Add rate limiting middleware' Enter", timeout=5)
-
-# Exit
-terminal(command="tmux send-keys -t agent1 '/exit' Enter && sleep 2 && tmux kill-session -t agent1", timeout=10)
-```
-
-### Multi-Agent Coordination
-
-```
-# Agent A: backend
-terminal(command="tmux new-session -d -s backend -x 120 -y 40 'hermes -w'", timeout=10)
-terminal(command="sleep 8 && tmux send-keys -t backend 'Build REST API for user management' Enter", timeout=15)
-
-# Agent B: frontend
-terminal(command="tmux new-session -d -s frontend -x 120 -y 40 'hermes -w'", timeout=10)
-terminal(command="sleep 8 && tmux send-keys -t frontend 'Build React dashboard for user management' Enter", timeout=15)
-
-# Check progress, relay context between them
-terminal(command="tmux capture-pane -t backend -p | tail -30", timeout=5)
-terminal(command="tmux send-keys -t frontend 'Here is the API schema from the backend agent: ...' Enter", timeout=5)
-```
-
-### Session Resume
-
-```
-# Resume most recent session
-terminal(command="tmux new-session -d -s resumed 'hermes --continue'", timeout=10)
-
-# Resume specific session
-terminal(command="tmux new-session -d -s resumed 'hermes --resume 20260225_143052_a1b2c3'", timeout=10)
-```
-
-### Tips
-
-- **Prefer `delegate_task` for quick subtasks** — less overhead than spawning a full process
-- **Use `-w` (worktree mode)** when spawning agents that edit code — prevents git conflicts
-- **Set timeouts** for one-shot mode — complex tasks can take 5-10 minutes
-- **Use `hermes chat -q` for fire-and-forget** — no PTY needed
-- **Use tmux for interactive sessions** — raw PTY mode has `\r` vs `\n` issues with prompt_toolkit
-- **For scheduled tasks**, use the `cronjob` tool instead of spawning — handles delivery and retry
-
----
-
-## Troubleshooting
-
-### Voice not working
-1. Check `stt.enabled: true` in config.yaml
-2. Verify provider: `pip install faster-whisper` or set API key
-3. In gateway: `/restart`. In CLI: exit and relaunch.
-
-### Tool not available
-1. `hermes tools` — check if toolset is enabled for your platform
-2. Some tools need env vars (check `.env`)
-3. `/reset` after enabling tools
-
-### Model/provider issues
-1. `hermes doctor` — check config and dependencies
-2. `hermes login` — re-authenticate OAuth providers
-3. Check `.env` has the right API key
-4. **Copilot 403**: `gh auth login` tokens do NOT work for Copilot API. You must use the Copilot-specific OAuth device code flow via `hermes model` → GitHub Copilot.
-
-### Changes not taking effect
-- **Tools/skills:** `/reset` starts a new session with updated toolset
-- **Config changes:** In gateway: `/restart`. In CLI: exit and relaunch.
-- **Code changes:** Restart the CLI or gateway process
-
-### Skills not showing
-1. `hermes skills list` — verify installed
-2. `hermes skills config` — check platform enablement
-3. Load explicitly: `/skill name` or `hermes -s name`
-
-### Gateway issues
-Check logs first:
-```bash
-grep -i "failed to send\|error" ~/.hermes/logs/gateway.log | tail -20
-```
-
-Background process watch notifications can be stale: if a `[IMPORTANT: Background process ... matched watch pattern ...]` event is followed by `poll=not_found` or closed ports, verify process/port liveness before acting. For the repair pattern (event metadata, stale classifier, CLI/gateway drain gates, tombstone poll UX, and regression tests), see `references/background-watch-notifications.md`.
-
-Gateway file-descriptor exhaustion can surface as cron/script/tool failures with `[Errno 24] Too many open files`. Diagnose `ulimit -n`, gateway PID, `lsof -p <pid>`, numeric FD count/max FD, and FD type distribution before blaming the script. If the gateway is near its limit (for example `ulimit -n=256`, numeric FDs≈252, many IPv4 sockets), complete the job via fallback commands when possible, report the script failure, recommend `hermes gateway restart`, raise `nofile` to 1024–4096, and investigate socket lifecycle leaks. See `references/gateway-fd-exhaustion.md`.
-
-Common gateway problems:
-- **Gateway dies on SSH logout**: Enable linger: `sudo loginctl enable-linger $USER`
-- **Gateway dies on WSL2 close**: WSL2 requires `systemd=true` in `/etc/wsl.conf` for systemd services to work. Without it, gateway falls back to `nohup` (dies when session closes).
-- **Gateway crash loop**: Reset the failed state: `systemctl --user reset-failed hermes-gateway`
-
-### Platform-specific issues
-- **Discord bot silent**: Must enable **Message Content Intent** in Bot → Privileged Gateway Intents.
-- **Slack bot only works in DMs**: Must subscribe to `message.channels` event. Without it, the bot ignores public channels.
-- **Windows HTTP 400 "No models provided"**: Config file encoding issue (BOM). Ensure `config.yaml` is saved as UTF-8 without BOM.
-
-### Auxiliary models not working
-If `auxiliary` tasks (vision, compression, session_search) fail silently, the `auto` provider can't find a backend. Either set `OPENROUTER_API_KEY` or `GOOGLE_API_KEY`, or explicitly configure each auxiliary task's provider:
-```bash
-hermes config set auxiliary.vision.provider <your_provider>
-hermes config set auxiliary.vision.model <model_name>
-```
-
-For context-compression failures that mention a Nous 401 after another provider timed out, use `references/auxiliary-compression-provider-fallback.md`. Key pitfall: the surfaced Nous 401 may be the *second* failure in the fallback chain, not the original cause; inspect `agent.auxiliary_client` logs and credential expiry before changing config.
-
----
-
-## Where to Find Things
-
-| Looking for... | Location |
-|----------------|----------|
-| Config options | `hermes config edit` or [Configuration docs](https://hermes-agent.nousresearch.com/docs/user-guide/configuration) |
-| Available tools | `hermes tools list` or [Tools reference](https://hermes-agent.nousresearch.com/docs/reference/tools-reference) |
-| Slash commands | `/help` in session or [Slash commands reference](https://hermes-agent.nousresearch.com/docs/reference/slash-commands) |
-| Skills catalog | `hermes skills browse` or [Skills catalog](https://hermes-agent.nousresearch.com/docs/reference/skills-catalog) |
-| Provider setup | `hermes model` or [Providers guide](https://hermes-agent.nousresearch.com/docs/integrations/providers) |
-| Platform setup | `hermes gateway setup` or [Messaging docs](https://hermes-agent.nousresearch.com/docs/user-guide/messaging/) |
-| MCP servers | `hermes mcp list` or [MCP guide](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp) |
-| Profiles | `hermes profile list` or [Profiles docs](https://hermes-agent.nousresearch.com/docs/user-guide/profiles) |
-| Cron jobs | `hermes cron list` or [Cron docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/cron) |
-| Memory | `hermes memory status` or [Memory docs](https://hermes-agent.nousresearch.com/docs/user-guide/features/memory) |
-| Env variables | `hermes config env-path` or [Env vars reference](https://hermes-agent.nousresearch.com/docs/reference/environment-variables) |
-| CLI commands | `hermes --help` or [CLI reference](https://hermes-agent.nousresearch.com/docs/reference/cli-commands) |
-| Gateway logs | `~/.hermes/logs/gateway.log` |
-| Session files | `~/.hermes/sessions/` or `hermes sessions browse` |
-| Source code | `~/.hermes/hermes-agent/` |
-
----
-
-## Contributor Quick Reference
-
-For occasional contributors and PR authors. Full developer docs: https://hermes-agent.nousresearch.com/docs/developer-guide/
-
-### Project Layout
-
-```
-hermes-agent/
-├── run_agent.py          # AIAgent — core conversation loop
-├── model_tools.py        # Tool discovery and dispatch
-├── toolsets.py           # Toolset definitions
-├── cli.py                # Interactive CLI (HermesCLI)
-├── hermes_state.py       # SQLite session store
-├── agent/                # Prompt builder, context compression, memory, model routing, credential pooling, skill dispatch
-├── hermes_cli/           # CLI subcommands, config, setup, commands
-│   ├── commands.py       # Slash command registry (CommandDef)
-│   ├── config.py         # DEFAULT_CONFIG, env var definitions
-│   └── main.py           # CLI entry point and argparse
-├── tools/                # One file per tool
-│   └── registry.py       # Central tool registry
-├── gateway/              # Messaging gateway
-│   └── platforms/        # Platform adapters (telegram, discord, etc.)
-├── cron/                 # Job scheduler
-├── tests/                # ~3000 pytest tests
-└── website/              # Docusaurus docs site
-```
-
-Config: `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (API keys).
-
-### Adding a Tool (3 files)
-
-**1. Create `tools/your_tool.py`:**
-```python
-import json, os
-from tools.registry import registry
-
-def check_requirements() -> bool:
-    return bool(os.getenv("EXAMPLE_API_KEY"))
-
-def example_tool(param: str, task_id: str = None) -> str:
-    return json.dumps({"success": True, "data": "..."})
-
-registry.register(
-    name="example_tool",
-    toolset="example",
-    schema={"name": "example_tool", "description": "...", "parameters": {...}},
-    handler=lambda args, **kw: example_tool(
-        param=args.get("param", ""), task_id=kw.get("task_id")),
-    check_fn=check_requirements,
-    requires_env=["EXAMPLE_API_KEY"],
-)
-```
-
-**2. Add to `toolsets.py`** → `_HERMES_CORE_TOOLS` list.
-
-Auto-discovery: any `tools/*.py` file with a top-level `registry.register()` call is imported automatically — no manual list needed.
-
-All handlers must return JSON strings. Use `get_hermes_home()` for paths, never hardcode `~/.hermes`.
-
-### Adding a Slash Command
-
-1. Add `CommandDef` to `COMMAND_REGISTRY` in `hermes_cli/commands.py`
-2. Add handler in `cli.py` → `process_command()`
-3. (Optional) Add gateway handler in `gateway/run.py`
-
-All consumers (help text, autocomplete, Telegram menu, Slack mapping) derive from the central registry automatically.
-
-### Agent Loop (High Level)
-
-```
-run_conversation():
-  1. Build system prompt
-  2. Loop while iterations < max:
-     a. Call LLM (OpenAI-format messages + tool schemas)
-     b. If tool_calls → dispatch each via handle_function_call() → append results → continue
-     c. If text response → return
-  3. Context compression triggers automatically near token limit
-```
-
-### Testing
-
-```bash
-python -m pytest tests/ -o 'addopts=' -q   # Full suite
-python -m pytest tests/tools/ -q            # Specific area
-```
-
-- Tests auto-redirect `HERMES_HOME` to temp dirs — never touch real `~/.hermes/`
-- Run full suite before pushing any change
-- Use `-o 'addopts='` to clear any baked-in pytest flags
-- When testing user-local Hermes scripts under `~/.hermes/scripts/`, do not assume the system `python3` has pytest. Prefer the Hermes checkout venv first (`~/.hermes/hermes-agent/.venv/bin/python -m pytest ...`, then `venv/bin/python` fallback), and only then fall back to system Python. Record the interpreter used in validation evidence so a missing global pytest is not mistaken for a product/test failure.
-
-### Commit Conventions
-
-```
-type: concise subject line
-
-Optional body.
-```
-
-Types: `fix:`, `feat:`, `refactor:`, `docs:`, `chore:`
-
-### Key Rules
-
-- **Never break prompt caching** — don't change context, tools, or system prompt mid-conversation
-- **Message role alternation** — never two assistant or two user messages in a row
-- Use `get_hermes_home()` from `hermes_constants` for all paths (profile-safe)
-- Config values go in `config.yaml`, secrets go in `.env`
-- New tools need a `check_fn` so they only appear when requirements are met
+Use this skill when operating or extending Hermes Agent itself: CLI behavior, setup, update/upgrade workflows, built-in tools, memory system, gateway/taskpool hooks, self-evolution loops, certified auto-done, and related local-control-plane hardening.
+
+## Triggers
+
+Use this skill when the user asks to:
+- inspect, update, repair, or self-check Hermes itself
+- modify Hermes core code, skills, hooks, memory, gateway, or taskpool behavior
+- troubleshoot Hermes-specific regressions after upstream pulls or self-updates
+- run Hermes-local benchmarking, post-update validation, or self-evolution workflows
+
+## Conductor / async multi-model orchestration
+
+When adding Sakana/Fugu/Conductor-inspired behavior to Hermes, use the default-off scaffold pattern in `references/hermes-conductor-runtime-scaffold.md`: land isolated router calls, durable task ledger, optional Fugu fail-soft adapter, model profile placeholders, and post-update regression before mainline conversation-loop wiring. Critical invariant: a default-main-model bootstrap/router call never counts as a later planner/implementer/arbiter participant. For the evidence-based Sakana pattern and model profile sketches, see `references/sakana-conductor-pattern.md`.
+
+## Reference-repo self-optimization workflow
+
+When a user asks to analyze an external repository to improve Hermes itself, use the Vercel-derived pattern in `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md`:
+
+1. Clone/read the reference repo under `~/.hermes/runs/`.
+2. Read `AGENTS.md`/`CLAUDE.md`, README, package manifests, build/test config, and fixture/error/skill directories before drawing conclusions.
+3. Separate transferable governance patterns from stack-specific implementation details.
+4. Map findings to Hermes impact classes: docs/skills, scripts, core agent loop, gateway/platform adapters, taskpool/brain, or tests/evidence fixtures.
+5. Implement only scoped, low-risk self-optimizations immediately unless the user explicitly asks for a larger code change.
+6. Validate by the changed impact class, then make a scoped local commit and report the commit hash.
+
+## Core workflow
+
+1. Identify the target object first.
+   - If the user explicitly names Hermes (for example, "Hermes自检更新"), operate on the local Hermes installation/repo.
+   - If the user uses a short verb like “自检 / 更新 / 同步” without an object, default to assistant-self clarification/correction behavior rather than expanding into project-level repo actions.
+2. Inspect current state before acting.
+   - `hermes --version`
+   - `git -C ~/.hermes/hermes-agent status --short --branch`
+   - `git -C ~/.hermes/hermes-agent remote -v`
+3. For self-update, prefer:
+   - `hermes update --backup --yes`
+4. Immediately run update validation/repair:
+   - `python3 ~/.hermes/scripts/post-update-check.py --fix`
+5. Re-verify after update:
+   - `hermes --version`
+   - `git -C ~/.hermes/hermes-agent status --short --branch`
+   - `git -C ~/.hermes/hermes-agent log --oneline -1`
+   - `git -C ~/.hermes/hermes-agent stash list --max-count=5`
+6. Report both success and leftovers.
+   - version change / up-to-date state
+   - whether worktree is still dirty
+   - whether autostash remains
+   - whether any post-update guard still shows `FIX_FAILED`
+
+## Pitfalls
+
+- `hermes update` (git pull) overwrites vendor patches — use `post-update-check.py --fix` to detect and reapply.
+- Brain task file status changes may be reverted by `dashboard --write` if multimodel state files still have FAIL — update both brain file AND kanban.db.
+- Adding evolution tasks can trigger advisory/multimodel hooks that advance newly created tasks to `review`/`done` even though the user only asked to enqueue future work. After batch-adding taskpool items, verify their actual statuses and explicitly transition them back to `pending` when they are queued work, not completed implementation. Use evidence with an accepted prefix such as `command:` when calling `transition`; free-form evidence strings are rejected.
+- Long `brain_task_orchestrator.py add` calls may time out while still creating the task file and firing hooks. Before retrying or declaring failure, search/read the taskpool for the expected titles and reconcile status; avoid duplicate task creation.
+- `build_environment_hints()` contains dynamic CWD — MUST be in `context_parts`, NOT `stable_parts` (breaks prefix cache).
+- Evolution lane certification deadloop: retry_count >= 2 triggers loop_non_convergence too aggressively. See `references/evolution-lane-cert-loop.md`.
+- Convergence subtasks don't auto-trigger parent ratification — must manually unblock parent after children are done.
+- ContinuationPacket / auto-relay is recursive — keep max_relay_count <= 3 to avoid deep stack, and treat both `budget_exhausted` and `max_iterations_reached(...)` as relay-eligible exit reasons.
+- Dashboard `active_count` only shows evolution lane tasks with multimodel scores, not all kanban ready tasks.
+- For taskpool concurrency complaints, check `dispatchable` and `parallel_dispatch.selected_count` before tuning `max_parallel_agents`; zero dispatchable tasks means parallelism has nothing to execute.
+- `post-update-check.py --fix` can exit 0 while still reporting a specific guard as `FIX_FAILED`; read the summary instead of trusting exit code alone.
+- `post-update-check.py` includes `private_repo_governance`: verify `origin` remains the private Hermes repo, `upstream` remains official, `docs/private/` governance docs exist, and no `state.db` / source-local `.hermes/` runtime state leaks back into the code checkout.
+- When vendor/local hardening patches are expected, run `post-update-check.py --fix` after every self-update before declaring Hermes healthy.
+- Cron runtime provider/model resolution must share `hermes_cli.config.load_config()` normalization, not a parallel `yaml.safe_load(config.yaml)` path. Otherwise legacy-but-supported shapes like `model: {model: ...}` and root-level `provider:` / `base_url:` fallbacks diverge from CLI behavior. Preserve the existing no-stale-env invariant: do not pass `HERMES_INFERENCE_PROVIDER` as `requested` for unpinned cron jobs; pass `target_model` separately when the provider resolver needs model-specific API mode.
+- For "cron job / daily report / scheduled message did not send" incidents, do not stop at `cronjob list`. Also inspect scheduler logs for `missed its scheduled time` and `Fast-forwarding to next run`; if Hermes or the gateway was offline past the job's grace window, the scheduler will skip the missed fire and jump to the next schedule.
+- Historical `deliver=origin` warnings are not automatically the root cause of a current missed report. Verify the job's current `deliver` target and correlate with process start times plus the missed-run log line before concluding it is a routing problem.
+- For "conversation ended but async/background work did not happen" incidents, split the mechanism first: background process notification, main-task continuation/relay, or background memory/skill review. Do not infer continuation from config names alone; verify code paths and logs. For bg-review specifically, look for `thread=bg-review`, the review prompt turn, successful/failed `skill_manage`/`memory` tool calls, and missing `Turn ended`/`agent_close` before concluding. See `references/background-review-async-debugging.md`.
+- For bg-review taskpool integration, distinguish safe candidate extraction from side effects: `background_review.taskpool.mode: suggest` only records candidates in status/HTML, while `mode: enqueue` mutates the taskpool. See `references/background-review-taskpool-suggest-mode.md`.
+- For bg-review summary regressions, remember the review agent inherits the parent conversation snapshot. Both successful action summaries and failed tool-result summaries must skip tool messages already present in `messages_snapshot` by `tool_call_id`/content; otherwise resolved main-turn tool failures can be re-announced as false `Self-improvement review failed` notifications.
+
+## Gemini CLI / OAuth provider wiring
+
+When the user asks to connect Gemini to Hermes because they already subscribed in the browser, do not assume a fresh login is required.
+
+1. Check whether Hermes already has a reusable Gemini OAuth session before changing config.
+   - Run `hermes doctor` and look for `Google Gemini OAuth (logged in ...)`.
+   - If already logged in, prefer wiring the existing `google-gemini-cli` provider instead of forcing a new auth flow.
+2. Verify the provider with a one-shot query before editing config.
+   - Example: `hermes chat --provider google-gemini-cli -m gemini-3.1-pro-preview -q '只回复: GEMINI_OK'`
+3. If the user did not explicitly ask to replace their main model, preserve the current primary provider and attach Gemini as a fallback first.
+   - Use top-level `fallback_providers` in `~/.hermes/config.yaml`.
+   - Example entry:
+     ```yaml
+     fallback_providers:
+       - provider: google-gemini-cli
+         model: gemini-3.1-pro-preview
+     ```
+4. Verify the wiring after config change.
+   - `hermes fallback list`
+   - another direct `hermes chat --provider google-gemini-cli ... -q ...` probe
+5. Report the distinction clearly:
+   - `google-gemini-cli` = Gemini CLI / Cloud Code Assist OAuth path
+   - `gemini` = Google AI Studio API-key provider
+
+### Multi-model integration points for Gemini OAuth
+
+If Gemini should participate in Hermes multi-model orchestration (not just direct `/model` switching), wire every layer that resolves models by pricing/quorum metadata:
+
+1. `/model` picker: `hermes_cli/model_switch.py` must ask `hermes_cli.auth.get_auth_status()` for `oauth_external` / `external_process` providers because `google-gemini-cli` login state lives in `~/.hermes/auth/google_oauth.json`, not generic `auth.json` or credential pool.
+2. Provider display: `hermes_cli/providers.py` should label `google-gemini-cli` as `Google Gemini (OAuth)` so picker output is user-readable.
+3. Main/fallback config: preserve current primary unless explicitly changed; set Gemini under top-level `fallback_providers`.
+4. Pricing/router metadata: add canonical Gemini OAuth models such as `gemini-3.1-pro-preview` and `gemini-3-flash-preview` to `pricing.models` with `provider: google-gemini-cli` and candidate groups (`chat`, `codegen`, `reviewer`, optionally `hard_reasoning`/`arbiter`).
+5. Multi-brain quorum: add the canonical Gemini model to `~/.hermes/config/quorum.yaml` tiers as an additional planner while keeping `min_quorum` below total planners so expired OAuth/capacity throttle does not block certification. If taskpool ratification has a hardcoded core panel (e.g. `REQUIRED_RATIFICATION_MODELS`), do **not** remove Gemini from quorum to silence `unexpected_*`; model it as an optional/allowed ratification participant and set T2/T3 `quorum` high enough to actually include it.
+6. Script invocation: `~/.hermes/scripts/consult_models.py`, `~/.hermes/scripts/cross-patch.py`, and `~/.hermes/scripts/ensemble-vote.py` must treat `google-gemini-cli` as a supported Hermes provider so they pass `--provider google-gemini-cli` to `hermes chat`. Prefer augmenting from `hermes_cli.providers.HERMES_OVERLAYS` with a static fallback to avoid hardcoded-list drift.
+7. Smart routing / verification: add Gemini models to `smart_model_routing.candidate_models` and, where useful, `verification.tiers.*.reviewers` rather than making Gemini the default producer.
+8. Verification commands:
+   - `./venv/bin/python -m pytest tests/hermes_cli/test_gemini_oauth_in_model_picker.py tests/agent/test_gemini_fast_fallback.py`
+   - `./venv/bin/python -m py_compile ~/.hermes/scripts/consult_models.py ~/.hermes/scripts/cross-patch.py ~/.hermes/scripts/ensemble-vote.py`
+   - `python3 ~/.hermes/scripts/consult_models.py status`
+   - `hermes chat --provider google-gemini-cli -m gemini-3.1-pro-preview -q '只回复: GEMINI_OK' --quiet --max-turns 1 --ignore-rules`
+   - `python3 ~/.hermes/scripts/model-router.py probe`
+9. If the user says only “测试一下” after Gemini wiring, run the concise smoke-test triad instead of re-auditing everything:
+   - Direct OAuth call: `hermes chat --provider google-gemini-cli -m gemini-3.1-pro-preview -q '只回复: GEMINI_OK' --quiet --max-turns 1 --ignore-rules`
+   - Router probe: `python3 ~/.hermes/scripts/model-router.py probe`
+   - Focused regression: `./venv/bin/python -m pytest tests/hermes_cli/test_gemini_oauth_in_model_picker.py tests/agent/test_gemini_fast_fallback.py`
+- For multi-provider power users, switching the default model to Gemini without being asked can unnecessarily displace an existing primary workflow. Safer default: keep the current main provider and add Gemini as fallback unless the user explicitly wants Gemini as primary.
+- `google-gemini-cli` and `gemini` are different Hermes providers; do not describe the OAuth path as AI Studio API-key setup.
+- `anthropic` and `claude-code` are different Claude entitlement paths. For Claude Max / Claude Code OAuth users, canonical Claude models should resolve to runtime provider `claude-code` when the `claude` CLI is available; do not treat `hermes chat --provider anthropic ...` extra-usage errors as proof that Claude Code / Claude Max is offline or exhausted.
+
+## Verification
+
+- Confirm the Hermes version again after update.
+- Confirm the repo branch/upstream and whether local modifications remain.
+- Confirm whether `git stash list` contains a fresh `hermes-update-autostash-*` entry.
+- Read the post-update-check summary and call out every non-OK item explicitly.
+
+## References
+- `references/rokid-lingzhu-sse-bridge.md` — fixed-domain Rokid Lingzhu custom-agent integration pattern for Hermes: FastAPI SSE bridge, Cloudflare Tunnel, DNS route, launchd persistence, and end-to-end SSE verification.
+- `references/budget-relay-delegation.md` — debugging pattern for Hermes budget-relay features that appear wired at the CLI layer but fail on delegated child-agent execution paths; includes the staged-vs-worktree check.
+
+- `references/hermes-self-check-update.md` — explicit Hermes self-check/update workflow and reporting checklist
+- `references/rokid-lingzhu-bridge.md` — Rokid 灵珠/Rizon custom-agent bridge architecture, schema, safety red lines, and public exposure options
+- `references/hermes-rokid-lingzhu-bridge.md` — implementation/operations notes for FastAPI SSE bridge, temporary Cloudflare tunnels, launchd recovery, and endpoint refresh
+- `references/budget-handoff-automation.md` — default-safe budget/context exhaustion handoff automation
+- `references/self-evolution-pua-loop.md` — Hermes-hosted OpenClaw SE-AOS fusion
+- `references/pa-evolution-daily-reporting.md` — scheduled PA health reporting workflow, trigger interpretation, and when not to create a skill from `unknown`
+- `references/openclaw-inspired-hermes-control-plane.md`
+- `references/sakana-conductor-pattern.md` — Sakana-inspired multi-model conductor pattern for Hermes: evidence boundary, model capability profiles, role-specific prompting, default-off role plans, and truth-gate-preserving integration points.
+- `references/ratchet-upgrades.md` — ratchet upgrade pattern for combining upstream Hermes updates with local overlays using multi-model impact review, fail-closed patch replay, and verified baseline advancement. — OpenClaw/external agent framework → Hermes-local control-plane hardening
+- `references/continuation-control-plane.md` — global durable packet architecture for unfinished work across conversation, delegation, taskpool, bg-review, cron, and gateway; includes `agent/continuation.py` contracts and verification commands
+- `references/auto-relay-continuation.md` — budget/tool-iteration exhaustion auto-relay with relay packets; includes the `max_iterations_reached(...)` exit-reason pitfall and verification checklist
+- `references/taskpool-parallel-dispatch-and-handoff-governance.md` — taskpool parallel dispatch runtime config, dry-run observability, and handoff backlog archive workflow
+- `references/prompt-builder-cache-layers.md` — 3-tier stable/context/volatile prompt cache architecture
+- `references/layered-prompt-cache-implementation.md` — implementation pattern for Anthropic system content blocks, internal `_hermes_cacheable` markers, native tool cache markers, byte-stability fallback, and regression tests
+- `references/evolution-lane-cert-loop.md` — evolution lane multimodel certification deadloop pattern and prevention
+
+## Related umbrella skills
+
+- `software-development` — general development workflow and verification discipline
+- `devops` — infrastructure/deploy operations that are not Hermes-specific
