@@ -74,6 +74,10 @@ SAFE_USAGE_FIELDS = {
 }
 
 SUBSCRIPTION_PROVIDERS = {"claude-code", "openai-codex", "qwen-oauth"}
+DOCUMENTED_NO_HEADER_BUDGET_PROVIDERS = {"claude-code", "openai-codex", "qwen-oauth", "xiaomi"}
+DOCUMENTED_NO_HEADER_BUDGET_SOURCES = {"subprocess_success_no_quota_headers", "direct_api_no_quota_headers"}
+DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS = _env_int("HERMES_DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS", 3600)
+DOCUMENTED_NO_HEADER_BUDGET_CONFIDENCE = 0.55
 HEADER_TOKEN_KEYS = (
     "x-ratelimit-remaining-tokens",
     "anthropic-ratelimit-tokens-remaining",
@@ -865,6 +869,67 @@ def gate_models(
     return allowed, skipped
 
 
+def documented_no_header_budget_evidence(
+    snap: dict,
+    *,
+    now: Optional[datetime] = None,
+    min_confidence: float = 0.50,
+) -> Optional[dict]:
+    """Return bounded budget evidence for providers that document no quota headers.
+
+    Some local/OAuth/subscription providers can prove recent runtime entitlement
+    only by a successful call; they do not expose quota headers or balance APIs.
+    This policy intentionally remains narrower than generic routing: only named
+    providers, known no-header success sources, recent timestamps, and no safety
+    blocker statuses can pass budget handoff.
+    """
+    if not isinstance(snap, dict):
+        return None
+    provider = str(snap.get("provider") or "")
+    source = str(snap.get("source") or "")
+    status = str(snap.get("status") or "")
+    observability = str(snap.get("observability") or "")
+    original_status = str(snap.get("original_status") or status)
+    original_observability = str(snap.get("original_observability") or observability)
+    if provider not in DOCUMENTED_NO_HEADER_BUDGET_PROVIDERS:
+        return None
+    if source not in DOCUMENTED_NO_HEADER_BUDGET_SOURCES:
+        return None
+    raw_success = status == "unobservable" and observability == "unobservable"
+    normalized_success = (
+        status == "ok"
+        and observability == "estimated_subscription_window"
+        and original_status == "unobservable"
+        and original_observability == "unobservable"
+        and isinstance(snap.get("documented_policy_evidence"), dict)
+    )
+    if not (raw_success or normalized_success):
+        return None
+    updated = _parse_utc_datetime(snap.get("last_updated"))
+    if updated is None:
+        return None
+    now = now or datetime.now(timezone.utc)
+    age_seconds = int(max(0, (now.astimezone(timezone.utc) - updated).total_seconds()))
+    freshness = DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS
+    if freshness <= 0 or age_seconds > freshness:
+        return None
+    confidence = max(float(min_confidence), DOCUMENTED_NO_HEADER_BUDGET_CONFIDENCE)
+    return {
+        "policy": "documented_no_quota_header_provider",
+        "provider": provider,
+        "source": source,
+        "freshness_seconds": freshness,
+        "age_seconds": age_seconds,
+        "confidence": round(confidence, 4),
+        "evidence_state": "usable_under_documented_no_header_policy",
+        "constraints": [
+            "requires_recent_real_success",
+            "does_not_claim_exact_remaining_quota",
+            "revoked_by_exhausted_rate_limited_or_malformed_snapshot",
+        ],
+    }
+
+
 def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) -> dict:
     """Summarize quota observability as machine-readable evidence.
 
@@ -918,16 +983,24 @@ def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) 
             stale = bool(stale_after and stale_after > 0 and age_seconds > stale_after)
         else:
             stale = True
-        if stale:
-            counts["stale"] += 1
-        if confidence < min_confidence:
-            counts["low_confidence"] += 1
         refresh_action = "none"
         provider = str(snap.get("provider") or "unknown")
         status = str(snap.get("status") or "unknown")
-        usable_for_budget = status == "ok" and confidence >= min_confidence and not stale
+        policy_evidence = documented_no_header_budget_evidence(snap, now=generated, min_confidence=min_confidence)
+        if policy_evidence:
+            stale = False
+            age_seconds = policy_evidence.get("age_seconds")
+        usable_for_budget = (status == "ok" and confidence >= min_confidence and not stale) or bool(policy_evidence)
         if usable_for_budget:
             counts["usable"] += 1
+        evidence_status = "ok" if policy_evidence else status
+        evidence_observability = "estimated_subscription_window" if policy_evidence else observability
+        evidence_quota_type = "documented_no_quota_header_policy" if policy_evidence else snap.get("quota_type")
+        evidence_confidence = max(confidence, _to_float(policy_evidence.get("confidence"), default=confidence) or confidence) if policy_evidence else confidence
+        if stale:
+            counts["stale"] += 1
+        if evidence_confidence < min_confidence:
+            counts["low_confidence"] += 1
         if observability == "unobservable":
             if str(snap.get("source") or "").startswith("direct_api_no_quota_headers"):
                 refresh_action = "provider_unobservable_lower_risk_tier_or_documented_policy"
@@ -944,16 +1017,17 @@ def quota_observability_evidence(snapshots: dict, min_confidence: float = 0.50) 
         by_model[str(key)] = {
             "model": snap.get("model"),
             "provider": snap.get("provider"),
-            "status": status,
-            "observability": observability,
-            "quota_type": snap.get("quota_type"),
-            "confidence": round(confidence, 4),
+            "status": evidence_status,
+            "observability": evidence_observability,
+            "quota_type": evidence_quota_type,
+            "confidence": round(evidence_confidence, 4),
             "source": snap.get("source"),
             "last_updated": snap.get("last_updated"),
             "age_seconds": age_seconds,
             "stale": stale,
             "reset_at": snap.get("reset_at"),
             "evidence_state": "usable" if usable_for_budget else "not_sufficient_for_budget_handoff",
+            "documented_policy_evidence": policy_evidence,
             "refresh_action": refresh_action,
         }
     return {
@@ -997,13 +1071,18 @@ def assess_quota_confidence(
         updated = _parse_utc_datetime(snap.get("last_updated"))
         age_seconds = None
         stale = False
+        now = datetime.now(timezone.utc)
         if updated is None:
             stale = True
         else:
-            now = datetime.now(timezone.utc)
             age_seconds = int(max(0, (now - updated).total_seconds()))
             stale_after = _to_float(snap.get("stale_after_seconds"), default=DEFAULT_STALE_AFTER_SECONDS)
             stale = bool(stale_after and stale_after > 0 and age_seconds > stale_after)
+        policy_evidence = documented_no_header_budget_evidence(snap, now=now, min_confidence=min_confidence)
+        if policy_evidence:
+            confidence = max(confidence, _to_float(policy_evidence.get("confidence"), default=confidence) or confidence)
+            stale = False
+            age_seconds = policy_evidence.get("age_seconds")
         entry = {
             "key": str(key),
             "model": model,
@@ -1020,8 +1099,28 @@ def assess_quota_confidence(
             "last_updated": snap.get("last_updated"),
             "age_seconds": age_seconds,
             "stale": stale,
+            "documented_policy_evidence": policy_evidence,
         }
         reasons: List[str] = []
+        if policy_evidence:
+            entry["status"] = "ok"
+            entry["observability"] = "estimated_subscription_window"
+            entry["quota_type"] = "documented_no_quota_header_policy"
+            entry["confidence"] = round(confidence, 4)
+            normalized_snap = dict(snap)
+            normalized_snap.update({
+                "status": "ok",
+                "observability": "estimated_subscription_window",
+                "quota_type": "documented_no_quota_header_policy",
+                "confidence": round(confidence, 4),
+                "documented_policy_evidence": policy_evidence,
+                "original_status": status,
+                "original_observability": snap.get("observability"),
+                "original_quota_type": snap.get("quota_type"),
+            })
+            snapshots[key] = normalized_snap
+            passes.append(entry)
+            continue
         if status in fail_statuses:
             reasons.append(f"status_{status}")
         if confidence < min_confidence:
@@ -1047,7 +1146,7 @@ def assess_quota_confidence(
         "failures": failures,
         "snapshots": snapshots,
         "observability_evidence": quota_observability_evidence(snapshots, min_confidence=min_confidence),
-        "policy": "unknown/unobservable/low/exhausted quota is allowed for low-risk routing only; budget handoff and autonomy fail closed",
+        "policy": "budget handoff accepts exact/estimated quota evidence or fresh documented no-quota-header provider policy evidence; unknown/low/exhausted/malformed remains fail-closed",
     }
 
 

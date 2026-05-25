@@ -649,7 +649,7 @@ class TestModelQuota(unittest.TestCase):
             self.assertEqual(blocker["error_class"], "rate_limit")
             state = json.loads(Path(state_path).read_text())
             self.assertEqual(state["deepseek::deepseek-v4-pro"]["status"], "exhausted")
-    def test_unobservable_success_snapshot_is_actionable_but_not_budget_ready(self):
+    def test_unobservable_success_snapshot_passes_under_documented_no_header_policy(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
             snap = mq.snapshot_unobservable_success(
@@ -665,13 +665,49 @@ class TestModelQuota(unittest.TestCase):
             self.assertLess(snap["confidence"], 0.5)
             mq.record_snapshot(snap)
             report = mq.assess_quota_confidence(["mimo-v2.5-pro"], providers={"mimo-v2.5-pro": "xiaomi"})
-            self.assertFalse(report["ok"])
-            self.assertEqual(report["failures"][0]["reasons"], ["status_unobservable", "low_confidence"])
+            self.assertTrue(report["ok"])
+            self.assertEqual(report["passes"][0]["status"], "ok")
+            self.assertEqual(report["passes"][0]["observability"], "estimated_subscription_window")
+            self.assertEqual(report["passes"][0]["documented_policy_evidence"]["policy"], "documented_no_quota_header_provider")
             evidence = mq.quota_observability_evidence({"xiaomi::mimo-v2.5-pro": snap})
+            self.assertEqual(evidence["counts"]["usable"], 1)
             self.assertEqual(
-                evidence["by_model"]["xiaomi::mimo-v2.5-pro"]["refresh_action"],
-                "provider_unobservable_lower_risk_tier_or_documented_policy",
+                evidence["by_model"]["xiaomi::mimo-v2.5-pro"]["documented_policy_evidence"]["evidence_state"],
+                "usable_under_documented_no_header_policy",
             )
+
+    def test_documented_no_header_policy_fails_closed_when_stale(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            snap = mq.snapshot_unobservable_success(
+                "mimo-v2.5-pro",
+                "xiaomi",
+                source="direct_api_no_quota_headers",
+                quota_type="provider_api_no_quota_headers",
+            )
+            snap["last_updated"] = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+            mq.record_snapshot(snap)
+            report = mq.assess_quota_confidence(["mimo-v2.5-pro"], providers={"mimo-v2.5-pro": "xiaomi"})
+            self.assertFalse(report["ok"])
+            self.assertIn("stale_quota_evidence", report["failures"][0]["reasons"])
+
+    def test_documented_no_header_policy_remains_usable_after_normalization(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            snap = mq.snapshot_unobservable_success(
+                "mimo-v2.5-pro",
+                "xiaomi",
+                source="direct_api_no_quota_headers",
+                quota_type="provider_api_no_quota_headers",
+            )
+            mq.record_snapshot(snap)
+            first = mq.assess_quota_confidence(["mimo-v2.5-pro"], providers={"mimo-v2.5-pro": "xiaomi"})
+            normalized = first["snapshots"]["xiaomi::mimo-v2.5-pro"]
+            normalized["last_updated"] = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+            evidence = mq.quota_observability_evidence({"xiaomi::mimo-v2.5-pro": normalized})
+            self.assertEqual(evidence["counts"]["usable"], 1)
+            self.assertEqual(evidence["counts"]["stale"], 0)
+            self.assertEqual(evidence["by_model"]["xiaomi::mimo-v2.5-pro"]["status"], "ok")
 
     def test_unobservable_success_does_not_downgrade_fresh_exact_snapshot(self):
         with tempfile.TemporaryDirectory() as td:

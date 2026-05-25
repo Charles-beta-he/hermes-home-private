@@ -53,6 +53,32 @@ python3 ~/.hermes/scripts/self-test.py
 
 If the change is part of a taskpool closeout, run proof/selfcheck/dashboard gates after the code tests and record the sanitized evidence path in the task note.
 
+## Budget-handoff policy for no-header providers
+
+Some providers prove entitlement only through recent successful execution, not quota headers or balance APIs:
+
+- `claude-code` / Claude Max CLI: `subprocess_success_no_quota_headers`
+- `openai-codex` / Codex subscription CLI: `subprocess_success_no_quota_headers`
+- `xiaomi` MiMo compatible API: `direct_api_no_quota_headers`
+
+Hermes may certify these for budget-handoff only through `documented_no_quota_header_provider` policy evidence, not by pretending exact remaining quota exists. Required constraints:
+
+1. provider is explicitly allowlisted in `DOCUMENTED_NO_HEADER_BUDGET_PROVIDERS`;
+2. source is a known no-header successful-call source;
+3. snapshot is fresh under `HERMES_DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS` (default 3600s);
+4. status is the non-blocking successful-call form (`unobservable`) and any later exhausted/rate_limited/malformed snapshot revokes the pass;
+5. confidence is promoted only to the policy floor (`0.55`) and report snapshots retain `original_status` / `original_observability` / `original_quota_type` so audits can see it was a policy estimate, not exact quota.
+
+Verification:
+
+```bash
+python3 ~/.hermes/scripts/model_quota.py probe --deepseek --json
+python3 ~/.hermes/scripts/multi-model-smoke.py --model claude-opus-4-7 --model gpt-5.5 --model mimo-v2.5-pro --repeat 1 --timeout 120 --route 'budget-policy-refresh:{model}:{run_id}:{iteration}'
+python3 ~/.hermes/scripts/model_quota.py confidence-gate --json --min-confidence 0.5 --model claude-opus-4-7 --model gpt-5.5 --model deepseek-v4-pro --model mimo-v2.5-pro
+python3 ~/.hermes/scripts/model-router.py readiness --json
+python3 ~/.hermes/scripts/autonomy-precondition.py --mode budget-handoff --gate
+```
+
 ## Pitfalls
 
 - Keep runtime provider identity consistent across smoke/warm-up scripts and quota/router code. For Claude Max / Claude Code OAuth, `multi-model-smoke.py` should record `provider: claude-code`, not `anthropic`; otherwise route warm-up evidence and quota snapshots are attributed to the wrong entitlement path.
