@@ -55,7 +55,7 @@ MODELS: Dict[str, Dict[str, Any]] = {
         "out": 9.6,
     },
     "claude-opus-4-7": {
-        "provider": "anthropic",
+        "provider": "claude-code",
         "unobservable_on_success_no_headers": "external_cli_no_quota_headers",
         "cmd": ["claude", "-p", "{prompt}", "--model", "opus", "--max-turns", "1", "--allowedTools", ""],
         "in": 15.0,
