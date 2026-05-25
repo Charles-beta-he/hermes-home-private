@@ -130,16 +130,24 @@ def get_tier_planners(quorum: dict, tier: str, skip_claude: bool = False) -> Tup
     """
     tiers = quorum.get("tiers", {})
     tier_cfg = tiers.get(tier, {})
-    planners = tier_cfg.get("planners", [])
+    resident_planners = list((quorum.get("multi_brain", {}) or {}).get("resident_planners", []) or [])
+    planners = list(tier_cfg.get("planners", []) or [])
 
-    # Claude budget guard
+    # Claude budget guard applies to normal tier members only. Models declared as
+    # multi_brain.resident_planners are intentionally always present across T0-T3
+    # because they represent an operator policy, not an optional tier choice.
     if skip_claude or _claude_excluded(quorum):
         planners = [m for m in planners if "claude" not in m.lower()]
+
+    merged: List[str] = []
+    for model in resident_planners + planners:
+        if model and model not in merged:
+            merged.append(model)
 
     q = tier_cfg.get("quorum", 3)
     mq = tier_cfg.get("min_quorum", 2)
 
-    return planners, q, mq
+    return merged, q, mq
 
 
 def _claude_excluded(quorum: dict) -> bool:
@@ -546,8 +554,8 @@ def build_discussion_comm_packet(
             "Discuss only unresolved round_delta issues and novel severity>=3 blockers.",
             "If a fact needs omitted detail, emit evidence_requests rather than restating full context.",
             "Vote approve only if best_within_constraints and truth_gate permits certification.",
-            "An empty current_best_summary.patches list is not by itself a blocker when current_best_summary.planner_patch_summary.certification_intent == 'no_action_certification' and concrete_patch_count == 0; treat it as evidence that planners explicitly signed off with noop/advisory patches, not as a dropped-patch contradiction.",
-            "When certification_intent == 'unresolved_noop_vs_change', do not claim current_best dropped implementation_required patches; resolve the explicit noop-vs-change issue ledger first, then either accept concrete patches or downgrade them to advisory/noop with evidence.",
+            "An empty current_best_summary.patches list is not by itself a blocker when the planner summary explicitly classifies the round as no-action and concrete_patch_count is zero; treat it as evidence that planners signed off with noop/advisory patches, not as a dropped-patch contradiction.",
+            "When the planner summary classifies an unresolved noop-vs-change conflict, do not claim current_best dropped implementation_required patches; resolve the explicit issue ledger first, then either accept concrete patches or downgrade them to advisory/noop with evidence.",
         ],
         "required_output": {
             "critiques": [{"target_model": "...", "severity": 1, "claim": "...", "evidence": "evidence id/ref, not full blob", "correction": "...", "novel": True}],
@@ -1635,6 +1643,55 @@ def _plan_declares_no_action(plan: dict) -> bool:
     )
     return any(marker in summary for marker in no_action_markers)
 
+def _is_doc_only_advisory_patch(patch: dict, plan: dict) -> bool:
+    """Return true for doc/verifier-only advisory deltas with no runtime authority.
+
+    Architecture certification rounds often surface a minority "add verifier/doc"
+    patch while the task constraints explicitly say no runtime implementation is
+    authorized. That must be represented as doc_only_advisory, not as an
+    implementation patch that conflicts with noop/no-change votes.
+    """
+    if not isinstance(patch, dict) or not isinstance(plan, dict):
+        return False
+    op = str(patch.get("op", "")).strip().lower()
+    if op not in {"add_verifier", "document", "update_docs"}:
+        return False
+    target = str(patch.get("target_file") or patch.get("file") or "").strip().lower()
+    rationale = str(patch.get("rationale", "")).strip().lower()
+    diagnosis = plan.get("diagnosis") if isinstance(plan.get("diagnosis"), dict) else {}
+    if not isinstance(diagnosis, dict):
+        diagnosis = {}
+    root = str(diagnosis.get("root_cause_class") or "").strip().lower()
+    summary = str(diagnosis.get("summary") or "").strip().lower()
+    risk = str(patch.get("risk", "")).strip().lower()
+    blast = str(patch.get("blast_radius", "")).strip().lower()
+    if risk and risk not in {"low", "p2", "p3", "minor"}:
+        return False
+    safe_scope = (not blast) or blast in {"single_tier", "single-file", "single_file", "none"}
+    doc_target = target.startswith("docs/") or "/docs/" in target or target.endswith(".md")
+    doc_intent = any(marker in rationale for marker in (
+        "doc-first",
+        "architecture",
+        "document",
+        "static verifier",
+        "verifier gate",
+        "no runtime",
+        "without authorizing live code",
+        "no live code",
+    ))
+    plan_non_runtime = root in {"no_action", "certification_only", "already_satisfied", "verifier_gap"} or any(
+        marker in summary for marker in (
+            "no runtime",
+            "no live code",
+            "doc-first",
+            "architecture decision",
+            "current gates already pass",
+            "no severity>=3 blockers remain",
+        )
+    )
+    return safe_scope and doc_target and doc_intent and plan_non_runtime
+
+
 def _is_no_action_advisory_patch(patch: dict, plan: dict) -> bool:
     """Classify low-risk follow-up ideas under a no-action plan as advisory.
 
@@ -1721,6 +1778,7 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
         "total_patch_count": 0,
         "noop_patch_count": 0,
         "conditional_advisory_patch_count": 0,
+        "doc_only_advisory_patch_count": 0,
         "concrete_patch_count": 0,
         "malformed_plan_count": 0,
         "plans_missing_patches_count": 0,
@@ -1728,12 +1786,15 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
         "non_dict_patch_count": 0,
         "models_with_concrete_patches": [],
         "models_with_noop_only_patches": [],
+        "models_with_doc_only_advisory_patches": [],
         "concrete_model_count": 0,
         "noop_only_model_count": 0,
+        "doc_only_advisory_model_count": 0,
         "certification_intent": "unknown",
     }
     concrete_models: List[str] = []
     noop_only_models: List[str] = []
+    doc_only_advisory_models: List[str] = []
     for idx, plan in enumerate(plans or []):
         if not isinstance(plan, dict):
             summary["malformed_plan_count"] += 1
@@ -1742,6 +1803,7 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
         model = _plan_model(plan, f"model_{idx}")
         model_has_concrete = False
         model_has_noop_or_advisory = False
+        model_has_doc_only_advisory = False
         if "patches" not in plan:
             summary["plans_missing_patches_count"] += 1
             continue
@@ -1758,6 +1820,10 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
             if op == "noop":
                 summary["noop_patch_count"] += 1
                 model_has_noop_or_advisory = True
+            elif _is_doc_only_advisory_patch(patch_obj, plan):
+                summary["doc_only_advisory_patch_count"] += 1
+                model_has_noop_or_advisory = True
+                model_has_doc_only_advisory = True
             elif (
                 _is_conditional_advisory_patch(patch_obj)
                 or _is_no_action_advisory_patch(patch_obj, plan)
@@ -1772,10 +1838,14 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
             concrete_models.append(model)
         elif model_has_noop_or_advisory:
             noop_only_models.append(model)
+        if model_has_doc_only_advisory:
+            doc_only_advisory_models.append(model)
     summary["models_with_concrete_patches"] = sorted(set(concrete_models))
     summary["models_with_noop_only_patches"] = sorted(set(noop_only_models))
+    summary["models_with_doc_only_advisory_patches"] = sorted(set(doc_only_advisory_models))
     summary["concrete_model_count"] = len(summary["models_with_concrete_patches"])
     summary["noop_only_model_count"] = len(summary["models_with_noop_only_patches"])
+    summary["doc_only_advisory_model_count"] = len(summary["models_with_doc_only_advisory_patches"])
     malformed_count = (
         summary["malformed_plan_count"]
         + summary["plans_missing_patches_count"]
@@ -1785,7 +1855,10 @@ def _planner_patch_summary(plans: List[dict]) -> dict:
     if malformed_count:
         summary["certification_intent"] = "malformed_patch_data"
     elif summary["concrete_patch_count"] == 0 and summary["planner_count"] > 0:
-        summary["certification_intent"] = "no_action_certification"
+        if summary["doc_only_advisory_patch_count"] > 0:
+            summary["certification_intent"] = "doc_only_advisory"
+        else:
+            summary["certification_intent"] = "no_action_certification"
     elif summary["concrete_patch_count"] > 0 and summary["noop_only_model_count"] > 0:
         summary["certification_intent"] = "unresolved_noop_vs_change"
     elif summary["concrete_patch_count"] > 0:
@@ -1833,6 +1906,7 @@ def build_issue_ledger(plans: List[dict]) -> List[dict]:
             # blockers, but noop-vs-real-change is still a real disagreement below.
             if (
                 op == "noop"
+                or _is_doc_only_advisory_patch(patch, plan)
                 or _is_conditional_advisory_patch(patch)
                 or _is_no_action_advisory_patch(patch, plan)
                 or _is_self_relaxing_governance_patch(patch)
@@ -2147,9 +2221,9 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
     all_models: List[str] = []
     for tier_name in ("T0", "T1", "T2", "T3"):
         tier_cfg = tiers.get(tier_name, {}) if isinstance(tiers, dict) else {}
-        planners = list(tier_cfg.get("planners") or []) if isinstance(tier_cfg.get("planners") or [], list) else []
-        quorum_count = _safe_int(tier_cfg.get("quorum"), 0)
-        min_quorum = _safe_int(tier_cfg.get("min_quorum"), 0)
+        planners, quorum_count_raw, min_quorum_raw = get_tier_planners(quorum, tier_name, skip_claude=False)
+        quorum_count = _safe_int(quorum_count_raw, 0)
+        min_quorum = _safe_int(min_quorum_raw, 0)
         providers = {model: model_provider(config, model) for model in planners}
         unknown_providers = sorted([model for model, provider in providers.items() if not provider])
         provider_values = [provider for provider in providers.values() if provider]
@@ -2295,10 +2369,17 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
     ]
     advisory_summary = _planner_patch_summary(advisory_plans)
     advisory_discussion = run_discussion_rounds(advisory_plans, current_best={"patches": [], "planner_patch_summary": advisory_summary}, models=["model-a", "model-b", "model-c", "model-d"], offline=True, evidence_bundle=supported_bundle)
-    report["discussion_matrix"] = {"clean": clean_discussion.get("status"), "conflict": conflict_discussion.get("status"), "advisory": advisory_discussion.get("status")}
+    doc_only_plans = [
+        {"meta": {"planner_model": "model-a"}, "diagnosis": {"root_cause_class": "no_action", "summary": "no runtime implementation authorized"}, "patches": [{"op": "noop", "rationale": "no live code change needed"}]},
+        {"meta": {"planner_model": "model-b"}, "diagnosis": {"root_cause_class": "verifier_gap", "summary": "architecture decision is grounded; no live code authorized"}, "patches": [{"target_file": "docs/architecture/evidence-governed-control-plane.md", "op": "add_verifier", "risk": "low", "blast_radius": "single_tier", "rationale": "Doc-first architecture verifier gate with no runtime code authorization."}]},
+    ]
+    doc_only_summary = _planner_patch_summary(doc_only_plans)
+    doc_only_discussion = run_discussion_rounds(doc_only_plans, current_best={"patches": [], "planner_patch_summary": doc_only_summary}, models=["model-a", "model-b"], offline=True, evidence_bundle=supported_bundle)
+    report["discussion_matrix"] = {"clean": clean_discussion.get("status"), "conflict": conflict_discussion.get("status"), "advisory": advisory_discussion.get("status"), "doc_only": doc_only_discussion.get("status")}
     _append_analysis_check(report, "discussion", "offline_clean_discussion_certifies", clean_discussion.get("status") in {"certified", "certified_with_minor_risks"}, clean_discussion.get("reasons"))
     _append_analysis_check(report, "discussion", "offline_conflict_discussion_fails_closed", conflict_discussion.get("status") == "not_certified" and conflict_discussion.get("remaining_risks"), {"status": conflict_discussion.get("status"), "risks": conflict_discussion.get("remaining_risks")})
     _append_analysis_check(report, "discussion", "offline_no_action_advisory_certifies", advisory_discussion.get("status") in {"certified", "certified_with_minor_risks"} and advisory_summary.get("certification_intent") == "no_action_certification" and advisory_summary.get("concrete_patch_count") == 0, {"status": advisory_discussion.get("status"), "summary": advisory_summary, "risks": advisory_discussion.get("remaining_risks")})
+    _append_analysis_check(report, "discussion", "offline_doc_only_advisory_certifies_without_concrete_patch", doc_only_discussion.get("status") in {"certified", "certified_with_minor_risks"} and doc_only_summary.get("certification_intent") == "doc_only_advisory" and doc_only_summary.get("concrete_patch_count") == 0 and doc_only_summary.get("doc_only_advisory_patch_count") == 1, {"status": doc_only_discussion.get("status"), "summary": doc_only_summary, "risks": doc_only_discussion.get("remaining_risks")})
 
     if include_temp_audit:
         with tempfile.TemporaryDirectory(prefix="consult-models-selfcheck-") as td:
@@ -2883,13 +2964,18 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
         if len(patches) != 0:
             return True
         summary = plan.get("planner_patch_summary") if isinstance(plan.get("planner_patch_summary"), dict) else {}
+        if not isinstance(summary, dict):
+            summary = {}
+        stored_intent = str(summary.get("certification_intent", "")).strip().casefold()
+        recomputed_intent = str(recomputed_patch_summary.get("certification_intent", "")).strip().casefold()
+        valid_empty_intents = {"no_action_certification", "doc_only_advisory"}
         stored_no_action = (
             _strict_int(summary.get("concrete_patch_count")) == 0
-            and str(summary.get("certification_intent", "")).strip().casefold() == "no_action_certification"
+            and stored_intent in valid_empty_intents
         )
         recomputed_no_action = (
             _strict_int(recomputed_patch_summary.get("concrete_patch_count")) == 0
-            and str(recomputed_patch_summary.get("certification_intent", "")).strip().casefold() == "no_action_certification"
+            and recomputed_intent in valid_empty_intents
         )
         return stored_no_action and recomputed_no_action
 
@@ -3042,6 +3128,11 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
     gates["discussion_status"] = discussion_status or "missing"
     gates["merged_patches_are_list"] = _merged_patches_are_list(merged)
     gates["empty_patches_have_no_action_intent"] = _empty_patch_no_action_summary_valid(merged)
+    gates["planner_patch_intent"] = recomputed_patch_summary.get("certification_intent")
+    gates["planner_concrete_patch_count"] = recomputed_patch_summary.get("concrete_patch_count")
+    gates["planner_doc_only_advisory_patch_count"] = recomputed_patch_summary.get("doc_only_advisory_patch_count")
+    gates["fanout_scope"] = "planner_fanout_quorum_only"
+    gates["final_certification_requires_discussion"] = True
     gates["plan_patch_artifacts_well_formed"] = not any(
         _strict_int(recomputed_patch_summary.get(key)) or 0
         for key in (
@@ -3154,12 +3245,24 @@ def audit_certification(tick_dir: str, write: bool = False) -> dict:
         status = discussion_status
 
     can_claim = status in complete_statuses and not reasons
+    classification = {
+        "fanout_quorum": fanout.get("status") if fanout else "missing",
+        "truth_grounded": bool(gates.get("truth_can_certify")) and str(truth.get("truth_status", "")).strip().casefold() == "grounded",
+        "planner_patch_intent": recomputed_patch_summary.get("certification_intent"),
+        "no_action_certification": recomputed_patch_summary.get("certification_intent") == "no_action_certification",
+        "doc_only_advisory": recomputed_patch_summary.get("certification_intent") == "doc_only_advisory",
+        "concrete_patch_authorization": bool(can_claim and (_strict_int(recomputed_patch_summary.get("concrete_patch_count")) or 0) > 0),
+        "final_discussion_status": status,
+        "can_claim_complete_certification": can_claim,
+    }
     manifest = {
         "schema_version": CERTIFICATION_MANIFEST_SCHEMA_VERSION,
         "generated_at": _utc_now_iso(),
         "tick_dir": tick_dir,
         "status": status,
         "can_claim_complete_certification": can_claim,
+        "certification_classification": classification,
+        "planner_patch_summary": recomputed_patch_summary,
         "reasons": reasons,
         "gates": gates,
         "artifacts": {
@@ -3948,7 +4051,19 @@ def run_fanout(
                 loaded_plan_summaries.append(json.load(f))
         except (OSError, json.JSONDecodeError):
             continue
-    merged["planner_patch_summary"] = _planner_patch_summary(loaded_plan_summaries)
+    merged_patch_summary = _planner_patch_summary(loaded_plan_summaries)
+    merged["planner_patch_summary"] = merged_patch_summary
+    merged["certification_classification"] = {
+        "fanout_quorum": fanout_status.get("status"),
+        "fanout_scope": "planner_fanout_quorum_only",
+        "truth_grounded": bool(truth_gate.get("can_certify_truth")) and str(truth_gate.get("truth_status", "")).strip().casefold() == "grounded",
+        "planner_patch_intent": merged_patch_summary.get("certification_intent"),
+        "no_action_certification": merged_patch_summary.get("certification_intent") == "no_action_certification",
+        "doc_only_advisory": merged_patch_summary.get("certification_intent") == "doc_only_advisory",
+        "concrete_patch_authorization": False,
+        "final_certification_requires_discussion": True,
+        "final_discussion_status": "pending" if discussion else "not_requested",
+    }
     merged["evidence_bundle"] = evidence_bundle
     merged["truth_assessment"] = truth_gate
     if not truth_gate.get("can_certify_truth", True):
@@ -4228,7 +4343,7 @@ def cli():
                 avail_snapshot = {}
         for t_name in ["T0", "T1", "T2", "T3"]:
             t = tiers.get(t_name, {})
-            planners = t.get("planners", [])
+            planners, q_count, min_q = get_tier_planners(quorum, t_name, skip_claude=False)
             skipped = []
             try:
                 config = load_config()
@@ -4240,16 +4355,17 @@ def cli():
             except Exception:
                 pass
             extra = f" skipped={skipped}" if skipped else ""
-            print(f"  {t_name}: quorum={t.get('quorum','?')} "
-                  f"min={t.get('min_quorum','?')} "
+            print(f"  {t_name}: quorum={q_count} "
+                  f"min={min_q} "
                   f"arbiter={t.get('arbiter') or mb.get('default_arbiter') or '<none>'} "
                   f"planners={planners}{extra}")
         if getattr(args, "quota", False):
             print("\nQuota snapshot:")
             if model_quota:
                 all_planners = []
-                for t in tiers.values():
-                    for m in t.get("planners", []) or []:
+                for t_name in ["T0", "T1", "T2", "T3"]:
+                    planners, _, _ = get_tier_planners(quorum, t_name, skip_claude=False)
+                    for m in planners:
                         if m not in all_planners:
                             all_planners.append(m)
                 snapshots = model_quota.snapshot_models(all_planners, config=load_config()) if all_planners else model_quota.load_state()
