@@ -10,6 +10,7 @@ Use this skill when the user asks about:
 - 3D printing, slicing, STL/3MF/G-code, AMS, filament/material, nozzle/bed/layer issues
 - print abnormality diagnosis or whether to pause/continue/cancel
 - manufacturing workflow evolution
+- printed mechatronic assemblies: robot shells, actuator mounts, servo/motor ID maps, IMU/contact-sensor bring-up, calibration offsets, and policy-run readiness for 3D-printed robots or fixtures
 
 ## Architecture decision
 
@@ -34,6 +35,7 @@ Manufacturing must not directly:
 - publish MQTT control commands,
 - upload/delete files over FTPS,
 - heat, move, pause/resume/stop/start hardware,
+- enable/disable motor torque, command actuators, run robot walking/navigation policies, pair controllers, read private camera/microphone streams, or call LLM tools that can move a device,
 - store or reveal access codes.
 
 All real-world actions go through the external-control brain safety gate.
@@ -88,6 +90,22 @@ Adapters prefer `BAMBU_ACCESS_CODE` env for one-off overrides, then Keychain `he
 3. Diagnose with manufacturing semantics.
 4. If action is needed, emit an action_request with risk and command preview.
 5. Let external-control execute only after confirmation and audit.
+
+## Printed mechatronic / robot bring-up
+
+Use `~/.hermes/brains/manufacturing/protocols/mechatronic-robot-bringup.md` when a 3D print becomes a powered/sensorized assembly: robot body, servo bracket, actuator linkage, motorized fixture, IMU/contact-sensor platform, or learned-policy robot.
+
+Default stance:
+- Treat upstream robot runtimes as reference evidence, not executable integrations.
+- Require an actuator topology map: joint/axis name, motor ID/channel, bus/driver, neutral pose, safe range, and physical label.
+- Require calibration evidence before motion: zero-pose photo/description, soft offsets, low-torque/read-only motor proof, voltage/power evidence, and sensor orientation/freshness.
+- For learned or scripted controllers, require artifact hash, observation/action contract, control frequency, action scaling/filters, simulation/replay or bench proof, stop condition, and rollback plan.
+- Manufacturing may output `blocked`, `read_only_ready`, `bench_ready`, or `external_control_action_request_ready`; it must not execute motion.
+- Any torque enable, actuator movement, walking, camera-guided navigation, Bluetooth/GPIO/I2C/serial access, or LLM-to-robot function call routes through External-Control. Electrical/current/thermal/fusing questions route through Electrical Brain.
+
+Hard vetoes: missing motor ID map, unknown zero/motor direction, no low-torque/read-only proof, stale/missing IMU/contact data for closed-loop control, unknown policy hash/contract, unknown power protection, or absent External-Control packet.
+
+Reference review: `~/.hermes/brains/manufacturing/reviews/2026-05-25_open-duck-mini-runtime-review.md`.
 
 ## Photo-to-print state machine
 

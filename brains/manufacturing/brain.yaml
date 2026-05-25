@@ -31,6 +31,10 @@ capabilities:
   - desktop_lamp_v3_web_best_practice_profile_generation
   - pickup_ready_certification
   - domain_safety_verdicts
+  - mechatronic_assembly_bringup
+  - actuator_topology_and_calibration_review
+  - robot_policy_run_preflight
+  - physical_action_boundary_handoff
 promotion_threshold:
   one_printer_sufficient: true
   required_conditions:
@@ -94,13 +98,28 @@ routing_hints:
     - 拉丝
     - 堵头
     - 制造脑
+    - 舵机
+    - 机器人
+    - 机器人校准
+    - 机电装配
+    - actuator
+    - servo
+    - motor id
+    - IMU
+    - 足底接触
+    - 行走策略
+    - ONNX policy
   delegate_to_external_control_when:
     - physical action must be executed
     - runtime auth material or local device transport is needed
     - camera stream is fetched or recorded
+    - motor torque, actuator movement, robot walking, navigation, Bluetooth pairing, GPIO/I2C/serial device access, or LLM-to-robot tools are involved
+  mechatronic_robot_bringup:
+    - protocols/mechatronic-robot-bringup.md
 smoke_checks:
   - python3 ~/.hermes/scripts/brainctl.py --json brains route "Bambu X2D 打印状态是否正常，要不要暂停"
   - python3 ~/.hermes/scripts/brainctl.py --json brains route "PLA Matte 首层翘边怎么处理"
+  - python3 ~/.hermes/scripts/brainctl.py --json brains route "3D打印机器人舵机校准和行走前检查"
   - python3 ~/.hermes/scripts/test_photo_to_print_job.py
   - python3 ~/.hermes/scripts/test_model_candidate_search.py
   - python3 ~/.hermes/scripts/test_manufacturing_preflight.py
