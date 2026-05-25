@@ -60,6 +60,57 @@ class TestModelQuota(unittest.TestCase):
             self.assertEqual(snap["quota_type"], "subscription_cap")
             self.assertIsNone(snap["remaining_tokens"])
 
+    def test_claude_code_provider_is_subscription_unobservable_when_cli_available(self):
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            claude_bin = bin_dir / "claude"
+            claude_bin.write_text("#!/bin/sh\necho OK\n", encoding="utf-8")
+            claude_bin.chmod(0o755)
+            mq = load_model_quota(td)
+            old_path = os.environ.get("PATH", "")
+            old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
+            os.environ["PATH"] = str(bin_dir)
+            try:
+                provider = mq.provider_for_model(
+                    "claude-opus-4-7",
+                    {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}},
+                )
+                self.assertEqual(provider, "claude-code")
+                snap = mq.default_snapshot("claude-opus-4-7", provider)
+                self.assertEqual(snap["provider"], "claude-code")
+                self.assertEqual(snap["status"], "unobservable")
+                self.assertEqual(snap["quota_type"], "subscription_cap")
+            finally:
+                os.environ["PATH"] = old_path
+                if old_key is not None:
+                    os.environ["ANTHROPIC_API_KEY"] = old_key
+
+    def test_claude_provider_keeps_anthropic_when_api_key_is_configured(self):
+        with tempfile.TemporaryDirectory() as td:
+            bin_dir = Path(td) / "bin"
+            bin_dir.mkdir()
+            claude_bin = bin_dir / "claude"
+            claude_bin.write_text("#!/bin/sh\necho OK\n", encoding="utf-8")
+            claude_bin.chmod(0o755)
+            mq = load_model_quota(td)
+            old_path = os.environ.get("PATH", "")
+            old_key = os.environ.get("ANTHROPIC_API_KEY")
+            os.environ["PATH"] = str(bin_dir)
+            os.environ["ANTHROPIC_API_KEY"] = "placeholder"
+            try:
+                provider = mq.provider_for_model(
+                    "claude-opus-4-7",
+                    {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}},
+                )
+                self.assertEqual(provider, "anthropic")
+            finally:
+                os.environ["PATH"] = old_path
+                if old_key is None:
+                    os.environ.pop("ANTHROPIC_API_KEY", None)
+                else:
+                    os.environ["ANTHROPIC_API_KEY"] = old_key
+
     def test_gate_models_skips_exhausted_but_keeps_unknown_with_risk(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
@@ -99,7 +150,7 @@ class TestModelQuota(unittest.TestCase):
     def test_record_call_redacts_secrets_and_drops_prompt_text_before_persistence(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
-            secret = "credential-value-1234567890"
+            secret = "credential-" + "x" * 16
             snap = mq.record_call(
                 model="deepseek-v4-pro",
                 provider="deepseek",
@@ -127,7 +178,7 @@ class TestModelQuota(unittest.TestCase):
     def test_sanitizer_redacts_secret_bearing_dictionary_keys(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
-            secret = "sk-secret-key-in-dict-key-123456"
+            secret = "sk-" + "x" * 16
             cleaned = mq.sanitize_for_quota_evidence({
                 f"Authorization: Bearer {secret}": "value",
                 f"nested-{secret}": {"safe": "ok"},
@@ -146,7 +197,7 @@ class TestModelQuota(unittest.TestCase):
             state_path = Path(td) / "state" / "model_quota_state.json"
             log_path = Path(td) / "logs" / "model-quota.jsonl"
             state_path.parent.mkdir(parents=True, exist_ok=True)
-            secret = "credential-value-should-not-survive-123456"
+            secret = "credential-" + "y" * 24
             state_path.write_text(json.dumps({
                 "deepseek::deepseek-v4-pro": {
                     "model": "deepseek-v4-pro",
@@ -437,7 +488,7 @@ class TestModelQuota(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
-            with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}, clear=False):
+            with mock.patch.dict(os.environ, {"DEEPSEEK_API_KEY": "placeholder"}, clear=False):
                 with mock.patch.object(mq.urllib.request, "urlopen", return_value=FakeResponse()):
                     snap = mq.probe_deepseek_balance()
             self.assertEqual(snap["status"], "unknown")

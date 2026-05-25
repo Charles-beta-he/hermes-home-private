@@ -13,6 +13,7 @@ import json
 import math
 import os
 import re
+import shutil
 import sys
 import time
 import tempfile
@@ -72,7 +73,7 @@ SAFE_USAGE_FIELDS = {
     "latency_ms",
 }
 
-SUBSCRIPTION_PROVIDERS = {"openai-codex", "qwen-oauth"}
+SUBSCRIPTION_PROVIDERS = {"claude-code", "openai-codex", "qwen-oauth"}
 HEADER_TOKEN_KEYS = (
     "x-ratelimit-remaining-tokens",
     "anthropic-ratelimit-tokens-remaining",
@@ -223,16 +224,32 @@ def quota_key(provider: str, model: str) -> str:
     return f"{provider or 'unknown'}::{model}"
 
 
+def _is_claude_model(model: str) -> bool:
+    return "claude" in (model or "").lower()
+
+
+def _claude_code_available() -> bool:
+    return shutil.which("claude") is not None
+
+
 def provider_for_model(model: str, config: Optional[dict] = None) -> str:
+    configured_provider = None
     if config:
-        provider = (
+        configured_provider = (
             config.get("pricing", {})
             .get("models", {})
             .get(model, {})
             .get("provider")
         )
-        if provider:
-            return provider
+    if _is_claude_model(model) and configured_provider in {None, "", "anthropic", "claude-code"}:
+        # Claude Max/Code is routed through the local Claude Code CLI when it is
+        # available. Treating that path as Anthropic API quota is misleading: the
+        # CLI exposes runtime availability but not provider quota headers, so it
+        # must remain low-risk-routing-only and fail budget-handoff confidence.
+        if _claude_code_available() and not os.environ.get("ANTHROPIC_API_KEY"):
+            return "claude-code"
+    if configured_provider:
+        return configured_provider
     lower = (model or "").lower()
     if "claude" in lower:
         return "anthropic"
