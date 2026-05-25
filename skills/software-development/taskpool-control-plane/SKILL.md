@@ -140,7 +140,7 @@ If the user shares an external AI/agent/RAG/tooling repo with intent like “分
 
 If the user shares an OpenClaw/ClawHub/Garden Skills repo, awesome-list, video summary, or local-first skill-pack and asks to absorb/evaluate/add it, use `references/openclaw-garden-skills-intake.md`: treat it as a class-level local skill-bundle pattern, inspect source/index first, write a `docs/private/` gap-analysis, classify skill-graph vs local-brain, add rich taskpool metadata, and never auto-install or execute third-party skills during intake.
 
-If the user asks to “全盘推进” / advance the whole pool rather than only inspect it, use `references/full-pool-advance-bounded-loop.md`: first rerun the read-only baseline (`list`, `next`, `dispatch-dry-run`, `selfcheck`), then try the normal automation path (`autorun-runner`, `auto-claim-and-handoff`, multimodel intervention step). If automation is blocked by `autorun_disabled` / `allowlist_miss`, manually advance exactly one highest-value dispatchable task, land a bounded evidence tranche, and release it back to `pending` unless the task is actually ready for the next lifecycle state. This keeps the pool moving without faking completion or leaving advisory work wedged in `claimed`.
+If the user asks to "全盘推进" / advance the whole pool rather than only inspect it, use `references/full-pool-advance-bounded-loop.md`. If the pool is congested with many stale claims + blocked + review evidence gaps (20+ stuck items), use `references/bulk-taskpool-unclog.md` for the three-phase bulk unclog pattern.: first rerun the read-only baseline (`list`, `next`, `dispatch-dry-run`, `selfcheck`), then try the normal automation path (`autorun-runner`, `auto-claim-and-handoff`, multimodel intervention step). If automation is blocked by `autorun_disabled` / `allowlist_miss`, manually advance exactly one highest-value dispatchable task, land a bounded evidence tranche, and release it back to `pending` unless the task is actually ready for the next lifecycle state. This keeps the pool moving without faking completion or leaving advisory work wedged in `claimed`.
 
 If the taskpool ends with `running=0`, do not assume it is still stuck. Use `references/no-running-final-drain-and-policy-boundary.md`: when all advisory dispatchables were evidence-closed and the only remaining active item is a pause-gated / non-dispatchable blocked evolution parent, the healthy terminal state is `dispatchable=0`, `claimed=0`, `running=0`, `stale_claim=0`, `next=null`, with the blocked task explicitly named. Prefer evidence-first manual closeout of low-value advisory tasks over broadening an evolution-first autorun policy just to make something run.
 
@@ -201,14 +201,18 @@ When `proof-check --json` fails but the failures are historical closeout debt ra
 
 A recurring stall pattern is: the pool shows an active `claimed` task, but `eligibility-check` / `autorun-runner` return `eligible=false` with reasons like `no_dispatchable_task`, while nothing is actually progressing.
 
+Human-escape wedge pattern: `parallel-claim-and-handoff` may claim tasks, then `agent_team_controller.py consume-claimed` sees `human_escape_triggered` and refuses to start workers. The safe controller behavior is to release the just-claimed handoff batch back to `retry` with structured evidence such as `command:agent_team_controller consume-claimed human_escape_release`; never leave them occupying the claim lease with no worker. After patching or recovering, verify `claimed=0`, `agent_team_controller.py status` shows `human_escape_triggered=false` after an explicit ack, and `selfcheck`/`proof-check` still PASS.
+
+If envelope workers actually finished `BLOCKED` but the corresponding brain markdown task remains `status: running`, align the brain task to `blocked` (or `retry` only when safe to rerun immediately) with evidence `command:agent_team_controller event_worker_finished result=blocked` plus a no-live-worker check. Then acknowledge the envelope escape only after the blocked outcomes are understood; otherwise the same post-ack BLOCKED rows will retrigger escape.
+
 Use this recovery sequence:
 1. Inspect the claimed task note directly and confirm `claimed_by`, `claim_expires_at`, and recent lifecycle transitions.
 2. Compare the live clock to `claim_expires_at`.
    - If the claim is already stale, do not treat the pool as truly busy.
 3. Search runner / cron logs for the task id to see whether the claim came from `hermes-autorun`, guardian cleanup, or a previous intervention worker.
 4. If the task is stale or wedged in `claimed` without a live worker, force-transition it back to `pending`.
-   - Proven command pattern:
-     - `python3 ~/.hermes/scripts/brain_task_orchestrator.py transition <task-id> --to pending --actor hermes --authority budget-handoff --reason manual_claim_cleanup_for_autorun_step_requeue --force --json`
+   - Proven command pattern (use `claim-and-handoff` or `budget-handoff` — see `references/bulk-taskpool-unclog.md` for all valid authority values):
+     - `python3 ~/.hermes/scripts/brain_task_orchestrator.py transition <task-id> --to pending --actor hermes --authority claim-and-handoff --reason manual_claim_cleanup_for_autorun_step_requeue --force --json`
 5. Immediately run a real dispatch tick with autorun enabled:
    - `HERMES_LOCAL_BRAIN_AUTORUN=1 python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always --autorun-step --no-state`
 6. Verify whether the task cleanly moves through `running -> review -> done`, or whether the pool now reports only genuine blocked work.
