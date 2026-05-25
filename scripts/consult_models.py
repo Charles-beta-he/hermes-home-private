@@ -412,16 +412,23 @@ def _finalize_packet_token_budget(packet: dict, raw_chars: int) -> dict:
     # not converge inside the safety cap.  Non-convergence of the self-referential
     # packet_chars field is not evidence of zero manifest savings; only claim zero
     # when the final packet is actually no smaller than the raw context.
-    actual_packet_chars = len(json.dumps(packet, ensure_ascii=False))
-    chars_saved = max(0, raw_chars - actual_packet_chars)
-    packet["token_budget"].update({
-        "raw_context_chars": raw_chars,
-        "packet_chars": actual_packet_chars,
-        "estimated_chars_saved": chars_saved,
-        "estimated_tokens_saved": 0 if chars_saved <= 0 else _approx_tokens(chars_saved),
-        "compression_ratio": round(actual_packet_chars / raw_chars, 4) if raw_chars else 1.0,
-        "policy": "size telemetry did not converge; final-size savings reported",
-    })
+    packet["token_budget"]["policy"] = "size telemetry did not converge; final-size savings reported"
+    for _ in range(10):
+        actual_packet_chars = len(json.dumps(packet, ensure_ascii=False))
+        chars_saved = max(0, raw_chars - actual_packet_chars)
+        packet["token_budget"].update({
+            "raw_context_chars": raw_chars,
+            "packet_chars": actual_packet_chars,
+            "estimated_chars_saved": chars_saved,
+            "estimated_tokens_saved": 0 if chars_saved <= 0 else _approx_tokens(chars_saved),
+            "compression_ratio": round(actual_packet_chars / raw_chars, 4) if raw_chars else 1.0,
+        })
+        if len(json.dumps(packet, ensure_ascii=False)) == actual_packet_chars:
+            return packet
+    # Final honesty guard: packet_chars is self-referential telemetry, so make the
+    # persisted value describe the final emitted JSON rather than the pre-update
+    # size from the previous loop iteration.
+    packet["token_budget"]["packet_chars"] = len(json.dumps(packet, ensure_ascii=False))
     return packet
 
 
