@@ -501,6 +501,24 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(len(result["ratification_votes"]), 4)
         self.assertEqual(result["rounds_used"], 1)
 
+    def test_get_tier_planners_keeps_resident_planners_across_tiers(self):
+        """Resident planners should be prepended to every tier and survive skip flags."""
+        quorum = {
+            "multi_brain": {"resident_planners": ["claude-opus-4-7"]},
+            "tiers": {
+                "T0": {"planners": ["mimo-v2.5-pro"], "quorum": 2, "min_quorum": 1},
+                "T1": {"planners": ["gpt-5.5", "deepseek-v4-pro"], "quorum": 3, "min_quorum": 2},
+            },
+            "claude_budget_guard": {"exclude_below_5_usd": True},
+        }
+        with mock.patch.object(consult, "_claude_excluded", return_value=True):
+            t0_planners, t0_quorum, _ = consult.get_tier_planners(quorum, "T0", skip_claude=True)
+            t1_planners, t1_quorum, _ = consult.get_tier_planners(quorum, "T1", skip_claude=True)
+        self.assertEqual(t0_planners, ["claude-opus-4-7", "mimo-v2.5-pro"])
+        self.assertEqual(t0_quorum, 2)
+        self.assertEqual(t1_planners, ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"])
+        self.assertEqual(t1_quorum, 3)
+
     def test_filter_planners_by_quota_skips_exhausted_and_reports_snapshot(self):
         """Fan-out should gate exhausted providers and preserve quota provenance for outputs."""
         config = {"pricing": {"models": {
