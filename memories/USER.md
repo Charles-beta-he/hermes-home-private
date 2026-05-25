@@ -1,15 +1,27 @@
-用户偏好长时间自运行 Agent 工作流：P10(战略)→P9(任务拆解)→Loop(自动迭代执行)，每轮本地 git commit；除非明确要求，不 push 远程。要持续找新角度直到真正穷尽。
+改码前先fetch/pull防覆盖；优先patch skill；短指令未指对象按助手自身纠偏；模糊UI“对齐/处理”需先问对象/参考/验收。
 §
-用户优化原则: 拒绝丢失功能与精准度，纯增益方案优先。arc-dispatch 项目路径: /Users/charles/Desktop/folder/arc-dispatch，前端项目在 work/ 目录。用户接受自然语言触发工作流（如"开始处理 lark 任务"）。
+用户是贺程，西安资深前端工程师；强项 React/Vue/TS/工程化/组件库/性能/测试。目标：远程居家，薪资 3737U；区块链/金融为职业方向/课程学习。优化原则：不丢功能、不降精度、纯增益。arc-dispatch: `/Users/charles/Desktop/folder/arc-dispatch`，可自然语言触发。
 §
-browser-harness 验证针对 work/ 目录项目优化: web-ui (Vue+Element UI 桌面端), uaec-h5 (Vue+Vant 移动端), partner-ui/excloud-ui (React+Ant Design 桌面端)。支持移动端 375px 和桌面端 1280px 视口测试。
+用户常用 browser-harness 验证 work/ 项目；Lark/UI验收截图默认用14寸浏览器界面，仅明确移动H5时用375px。验收严禁 mock，除非用户明确允许；必须真实认证/真实后端/真实接口数据。
 §
-用户偏好连续 exhaustive loop 执行：说"全部推进"时要求同时推进所有可识别方向，不逐个等待确认；接受自然语言触发大规模并行任务。对"loop并每次全部推进"的指令应理解为：找到所有可推进方向→并行执行→完成后扫描新方向→继续循环，直到用户明确喊停或确实穷尽。
+用户偏好 taskpool 更独立：外部仓库/文章类任务应在创建入池前完成固定的多模型优先级分析与 P1/P2/P3 分层，而不是入池后再分析优先级；任务池停住时主动查 hook/cron/policy/eligibility/tick。
 §
-供应商代码修补原则：vendor code 补丁被 `hermes update`（git pull）覆盖后，用 `~/.hermes/scripts/post-update-check.py` 自动检测并重打。不直接改 vendor 文件。先检查上游是否已修复（PR #15478 merge 等），避免重复劳动。修复模式 `--fix`。
+Vendor 补丁原则：`hermes update` 后用 `~/.hermes/scripts/post-update-check.py --fix` 检测/重打；不直接改 vendor；先查上游是否已修复，避免重复劳动。
 §
-多模型架构: OpenAI Codex/gpt-5.5 已接入(Plus/seat $20/月, codegen主力与cross-patch producer, 边际token成本按0但受滥用防护), MiMo用于低成本日常/T0与备用多样性, Claude用于P10架构/仲裁, DeepSeek按量审查。多模型印证优于单模型盲信。
+多模型架构: Codex/gpt-5.5 codegen主力, MiMo低成本T0/备用, Claude P10架构/仲裁, DeepSeek审查；多模型=真实外部模型印证，不等同单模型多角色模拟。
 §
-用户对 uvisa-app 的工作模式偏好: (1) "loop 直至无问题" — 要求持续迭代到 0 差距, 不接受"留给后续"; (2) 多模型验证 — 架构决策需多视角审查印证最佳方案; (3) P10 每轮自检 — 每轮 loop 结束做 P10 自检确认真实进展; (4) "不改动UI展示" — 架构/功能填充时保持 UI 布局不变; (5) 全量覆盖 — 要求 PWA、埋点、错误捕获、测试等长期运行功能全部落地, 不留尾巴。
+红线=不删功能/入口/字段、不修坏H5；PAD不得直接写`kyc_level`授权，须走KYC证据/能力映射。Entity字段变更须检查Flyway migration+确认prod已执行(2026-05-16教训)。画像=canonical profile；必要时TDD修BE。
 §
-用户的 Hermes 是跟踪他人/上游仓库并持续自我调整的个人助理；仅使用 git 做本地版本管理，无需推送代码到远程。上游拉取属于更新升级；对其他项目的分析参考也视为 Hermes 更新进化的一部分，应按自进化规范管理。
+Hermes自身已有私仓，改动完成并验证后可push；项目代码默认不push；长任务需可恢复审计验证。
+§
+项目/Lark/代码查询需evidence-first+关联面全盘覆盖；work可跨admin/app/backend改动；blocked不阻塞其他任务；先判落点FE/BE/契约/基础设施。
+§
+用户偏好：任务入池带顺序/依赖；增强任务主链闭环+真实验证；后续任务自动化触发；所有方案默认生产长期级，先多角度审查再给最终版。
+§
+人工流程沉淀为Hermes skill；多脑结构下，按项目仓库包含范围选择的全局最佳方案/共识规则写公共Hermes共识，项目特定锚点/红线/验证命令写profile。
+§
+人物画像：长期主义/系统化/证据优先；讨厌假完成；自我优化要按边界落地。
+§
+Lark闭环SSOT：uvisa-app-2.0有线上地址+完整发布流程，Lark任务必须线上地址UI回收/验收后才能关闭；代码合并/build/proof只到待验收。
+§
+用户要求 Hermes 自身（~/.hermes scripts/skills 等）改动也必须用 git 做 scoped commit 管理，避免只改不提交。
