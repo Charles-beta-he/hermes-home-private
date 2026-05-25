@@ -1,0 +1,143 @@
+version: 0.6.1
+updated_at: 2026-05-26T01:45:19+0800
+runtime:
+  id: hermes-runtime
+  path: /Users/charles/.hermes/hermes-agent
+  stable_branch: private/main
+  private_remote: https://github.com/Charles-beta-he/hermes-agent-private.git
+  upstream_remote: https://github.com/NousResearch/hermes-agent.git
+  governance_docs:
+  - /Users/charles/.hermes/hermes-agent/docs/private/overlay-registry.md
+  - /Users/charles/.hermes/hermes-agent/docs/private/upgrade-sop.md
+  - /Users/charles/.hermes/hermes-agent/docs/private/stable-points.md
+  - /Users/charles/.hermes/hermes-agent/docs/private/multibrain-architecture.md
+  post_update_guard: /Users/charles/.hermes/scripts/post-update-check.py
+  required_selfcheck: private_repo_governance
+brain_repos:
+  personal_hermes_brain:
+    role: sanitized-knowledge-and-brain-overlay-backup
+    path: /Users/charles/Code/personal-hermes-brain
+    remote: https://github.com/Charles-beta-he/personal-hermes-brain.git
+    branch: main
+    backup_branch_for_private_repo_selfcheck: backup/selfcheck-private-repo-governance-20260518
+    contains:
+    - sanitized brain markdown
+    - selected scripts
+    - skills
+    - project-profiles
+    excludes:
+    - raw memory
+    - sessions
+    - state.db/sqlite/wal/shm
+    - private access files and local environment material
+subbrains:
+  base:
+    path: /Users/charles/.hermes/brains/base/brain.yaml
+    version: 0.1.0
+    role: common constitution, memory policy, evidence packet, tool policy
+  main:
+    path: /Users/charles/.hermes/brains/main/brain.yaml
+    version: 0.2.0
+    role: router, dispatcher, acceptance arbiter, multi-brain delegation steward
+  dev:
+    path: /Users/charles/.hermes/brains/dev/brain.yaml
+    version: 0.3.2
+    role: senior software delivery, project engineering, verification, worker handoff,
+      cross-brain capability-gap closure, external repo absorption, source validation,
+      local-first static app delivery, design-manual guided UI, machine-readable
+      automation contracts, version-matched tool workflows, sandbox-first experimental
+      tooling
+  hermes-core:
+    path: /Users/charles/.hermes/brains/hermes-core/brain.yaml
+    version: 0.2.0
+    role: Hermes runtime/private fork/overlay governance and agent control-plane absorption
+      brain
+  design:
+    path: /Users/charles/.hermes/brains/design/brain.yaml
+    version: 0.1.0
+    role: design systems, UI quality, DESIGN.md, brand/variable/component governance
+  research:
+    path: /Users/charles/.hermes/brains/research/brain.yaml
+    version: 0.1.0
+    role: external source registry, fresh context, web research, provenance/citation
+      governance
+  last30days:
+    path: /Users/charles/.hermes/brains/last30days/brain.yaml
+    version: 0.1.0
+    role: last-30-days engagement-weighted social/community signal research and trend
+      monitoring
+  media:
+    path: /Users/charles/.hermes/brains/media/brain.yaml
+    version: 0.1.0
+    role: voice/video/media tool validation, local media automation, model-weight/privacy
+      safety
+  mlops:
+    path: /Users/charles/.hermes/brains/mlops/brain.yaml
+    version: 0.1.0
+    role: model routing, quota/cost, inference/training/evaluation, model runtime
+      governance
+  workflow:
+    path: /Users/charles/.hermes/brains/workflow/brain.yaml
+    version: 0.1.0
+    role: skill/workflow ecosystem, template/protocol extraction, eval-driven skill
+      accessoring
+  external-control:
+    path: /Users/charles/.hermes/brains/external-control/brain.yaml
+    version: 0.1.0
+    role: physical-world actuation, local IoT device adapters, private-access boundary,
+      confirmation/idempotency/audit gate
+  electrical:
+    path: /Users/charles/.hermes/brains/electrical/brain.yaml
+    version: 0.1.0
+    role: low-voltage electrical/electronics semantics brain; USB/SELV power architecture,
+      LED modules/drivers, wires/connectors/switches, fuse/polyfuse sizing, certification,
+      and thermal validation for powered builds
+  manufacturing:
+    path: /Users/charles/.hermes/brains/manufacturing/brain.yaml
+    version: 0.1.0
+    role: independent manufacturing and 3D-printing semantics brain; Bambu/X2D status,
+      material/slicer/G-code reasoning, print diagnosis, action requests to external-control
+routing:
+  default_entry: main
+  hermes_private_repo_governance: hermes-core
+  personal_brain_backup_governance: hermes-core
+  brain_overlay_schema_changes: hermes-core
+  taskpool_multimodel_hook_changes: hermes-core
+  model_quorum_provider_or_router_policy: hermes-core
+  hermes_runtime_or_private_fork_changes: hermes-core
+  general_software_project_changes: dev
+  frontend_backend_fullstack_delivery: dev
+  api_contract_and_browser_harness_verification: dev
+  project_ci_build_test_fixes: dev
+  ui_ux_admin_product_delivery: dev
+  external_repo_absorption_or_source_validation: dev
+  local_first_static_app_delivery: dev
+  design_manual_guided_ui_delivery: dev
+  web_research_browser_automation: dev
+  media_tool_evaluation: dev
+  external_source_registry_planning: dev
+  cross_brain_capability_gap_closure: dev
+  machine_readable_cli_contract_or_repair_plan: dev
+  version_matched_tool_workflow_request: dev
+  experimental_compiler_or_generated_artifact_review: dev
+  design_system_or_design_manual: design
+  visual_quality_or_ui_brand_governance: design
+  external_source_registry_or_fresh_context: research
+  last30days_social_signal_research: last30days
+  engagement_weighted_recent_community_research: last30days
+  web_research_browser_source_retrieval: research
+  media_voice_video_tool_evaluation: media
+  model_routing_quota_or_mlops: mlops
+  inference_training_eval_tool_assessment: mlops
+  skill_workflow_ecosystem_or_template_extraction: workflow
+  spec_driven_or_planning_workflow_absorption: workflow
+  physical_world_actuation_or_iot_control: external-control
+  local_device_adapter_or_camera_transport: external-control
+  bambu_x2d_physical_command: external-control
+  low_voltage_electrical_or_led_bom: electrical
+  usb_selv_power_wire_fuse_or_thermal_validation: electrical
+  powered_printed_object_visual_qa: electrical
+  glasses_photo_print_quality_or_model_fit: manufacturing
+  manufacturing_or_3d_printing_semantics: manufacturing
+  bambu_x2d_status_or_print_diagnosis: manufacturing
+  slicer_gcode_material_or_ams_reasoning: manufacturing
