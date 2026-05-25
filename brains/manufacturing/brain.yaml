@@ -1,0 +1,114 @@
+id: manufacturing
+name: Manufacturing / 3D Printing Brain Overlay
+version: 0.2.0
+status: active-baseline
+updated_at: 2026-05-21T01:25:00+0800
+inherits: base
+purpose: "Own manufacturing intent, 3D-printing semantics, print-job planning, material/process reasoning, slicer/G-code safety interpretation, failure diagnosis, and production workflow evolution. A single sufficiently capable printer is enough to justify this independent brain when real telemetry/control and recurring workflows exist. Physical actuation still routes through external-control."
+capabilities:
+  - print_job_semantics
+  - material_profile_reasoning
+  - slicer_and_gcode_review
+  - ams_filament_mapping
+  - print_failure_diagnosis
+  - camera_and_telemetry_interpretation
+  - manufacturing_workflow_planning
+  - model_candidate_evidence_generation
+  - photo_to_print_pipeline_planning
+  - model_studio_bridge_planning
+  - generated_mesh_draft_gate
+  - provider_asset_ledger_generation
+  - photo_to_print_job_state_machine
+  - external_control_action_request_generation
+  - manufacturing_preflight_report_generation
+  - manufacturing_slice_artifact_generation
+  - manufacturing_trick_research_and_casebook
+  - multimodel_deliberation_hard_gate_enforcement
+  - desktop_lamp_low_voltage_base_generation
+  - desktop_lamp_v2_serviceable_base_generation
+  - desktop_lamp_diffuser_shade_generation
+  - desktop_lamp_v2_retention_lip_diffuser_generation
+  - desktop_lamp_v3_web_best_practice_profile_generation
+  - pickup_ready_certification
+  - domain_safety_verdicts
+promotion_threshold:
+  one_printer_sufficient: true
+  required_conditions:
+    - real local telemetry or control surface exists
+    - recurring print/material/job decisions are expected
+    - device can affect physical world and needs domain-specific safety interpretation
+    - at least one adapter is registered under external-control
+profiles:
+  bambu_x2d:
+    owns:
+      - status interpretation: progress, remaining time, layer, temperatures, AMS trays, errors
+      - print-specific risk assessment and pause/continue recommendations
+      - material and profile compatibility reasoning
+      - G-code/3MF preflight semantics
+    delegates_to_external_control_for:
+      - MQTT connection and publish
+      - FTPS upload/delete
+      - RTSPS camera access
+      - any start/pause/resume/stop/heat/move action
+    delegates_to_electrical_for:
+      - LED module, USB adapter, switch/dimmer, wire, connector, fuse/polyfuse, current/power budget, certification, and thermal-soak validation for powered builds
+    adapter_profile: devices/bambu-x2d.yaml
+  gcode_preflight:
+    owns:
+      - thermal envelope check
+      - motion/home/start/end command risk review
+      - material/nozzle/bed compatibility
+      - human-readable command preview for external-control gate
+    stop_conditions:
+      - unknown printer model or build volume
+      - unknown material/profile mapping
+      - unbounded temperature or motion command
+      - file provenance unknown for an irreversible print action
+routing_hints:
+  positive:
+    - Bambu
+    - X2D
+    - 拓竹
+    - 打印机
+    - 3D打印
+    - 切片
+    - G-code
+    - 3MF
+    - STL
+    - GLB
+    - GLTF
+    - image-to-3D
+    - 图片生成3D模型
+    - Rodin
+    - Tripo
+    - Hunyuan3D
+    - Fal
+    - AMS
+    - 料盘
+    - 耗材
+    - 喷嘴
+    - 热床
+    - 层数
+    - 首层
+    - 翘边
+    - 拉丝
+    - 堵头
+    - 制造脑
+  delegate_to_external_control_when:
+    - physical action must be executed
+    - runtime auth material or local device transport is needed
+    - camera stream is fetched or recorded
+smoke_checks:
+  - python3 ~/.hermes/scripts/brainctl.py --json brains route "Bambu X2D 打印状态是否正常，要不要暂停"
+  - python3 ~/.hermes/scripts/brainctl.py --json brains route "PLA Matte 首层翘边怎么处理"
+  - python3 ~/.hermes/scripts/test_photo_to_print_job.py
+  - python3 ~/.hermes/scripts/test_model_candidate_search.py
+  - python3 ~/.hermes/scripts/test_manufacturing_preflight.py
+  - python3 ~/.hermes/scripts/test_manufacturing_slice.py
+  - python3 ~/.hermes/scripts/test_manufacturing_calibration_cube.py
+  - python3 ~/.hermes/scripts/test_manufacturing_trick_research.py
+  - python3 ~/.hermes/scripts/test_external_control_gate.py
+  - python3 ~/.hermes/scripts/test_manufacturing_lamp_base.py
+  - python3 ~/.hermes/scripts/test_manufacturing_lamp_shade.py
+  - python3 ~/.hermes/scripts/test_photo_to_print_e2e.py
+  - python3 ~/.hermes/scripts/test_photo_to_print_runner.py
