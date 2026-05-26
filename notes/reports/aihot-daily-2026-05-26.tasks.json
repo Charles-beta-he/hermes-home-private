@@ -1,0 +1,336 @@
+{
+  "schema": "daily_report_task_candidates_v1",
+  "report_id": "aihot-daily-2026-05-26",
+  "report_path": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+  "candidates": [
+    {
+      "dedupe_key": "provider-cache-observability",
+      "title": "为 Hermes provider routing 增加缓存命中与失效可观测门",
+      "priority": "P1",
+      "project": "hermes-agent",
+      "concepts": [
+        "provider-routing",
+        "provider-quota",
+        "cache-observability",
+        "control-plane"
+      ],
+      "priority_layer": "control-plane:provider-routing",
+      "dependency_order": [
+        "1. 盘点现有 provider/quota 日志字段与调用路径",
+        "2. 定义隐式/显式缓存命中、失效、成本估算的最小事件 schema",
+        "3. 增加 fail-closed freshness gate 与回退记录",
+        "4. 用一条 dry-run/fixture 调用证明日志可审计且不泄露 prompt 内容"
+      ],
+      "multimodel_triage_result": "external signal: Qwen3.7-Max 隐式缓存上线；对 Hermes 直接相关的是 provider routing/quota 可观测性，而非接入单一模型功能。建议多模型评审 schema 与隐私边界后再实施。",
+      "objective": "把模型缓存从临时成本技巧提升为 Hermes provider routing 的可审计控制面信号，记录缓存策略、命中/未命中、失效原因和成本估算，而不保存敏感 prompt 正文。",
+      "capability_delta": "Hermes 在长上下文/重复上下文任务中能解释为什么选用某 provider、缓存是否降低成本、何时应切换显式缓存或禁用缓存，减少不可解释的 quota 漂移。",
+      "anti_drift_check": "不得把某一家厂商的缓存语义硬编码为通用事实；必须保留 unknown/unsupported 状态，并在 provider 未声明缓存能力时降级为普通调用日志。",
+      "acceptance_evidence": "提交一份 provider-cache event schema、至少一个本地 fixture/测试输出，以及一段不含敏感 prompt 的样例日志，证明可追踪命中/失效/估算成本。",
+      "parallel_boundary": "可与 UI/浏览器证据任务并行；不得同时修改 provider 凭据、真实 API key 或生产 quota 配置。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "taskpool",
+      "truth_gate": "report-evidence-present",
+      "lane": "auto",
+      "expires_days": 14,
+      "requires_multimodel": true,
+      "expected_participants": [
+        "codex",
+        "claude-code"
+      ],
+      "multimodel_reason": "Provider routing/quota 是 Hermes 控制面主链；需要第二模型审查缓存事件 schema 是否过拟合单一厂商并检查隐私边界。",
+      "priority_rationale": "Provider routing/quota/cache affects Hermes core control-plane selection, cost observability, and privacy-sensitive logging; implementation should wait for true multi-model review."
+    },
+    {
+      "dedupe_key": "file-access-leakage-gate",
+      "title": "为 Hermes taskpool/browser 自动化增加文件访问泄露 fail-closed 证据门",
+      "priority": "P1",
+      "project": "hermes-agent",
+      "concepts": [
+        "browser-automation",
+        "taskpool",
+        "security",
+        "file-access",
+        "control-plane"
+      ],
+      "priority_layer": "control-plane:browser-automation",
+      "dependency_order": [
+        "1. 枚举 Hermes browser/automation 与 taskpool 任务可触达的本地文件/证据路径",
+        "2. 定义允许读取、允许写入、禁止外发的路径类别与审计字段",
+        "3. 在任务入池/执行验收中加入文件访问边界声明与泄露检查",
+        "4. 用模拟任务证明越界读取或报告外带敏感路径时会 fail-closed"
+      ],
+      "multimodel_triage_result": "external signal: AIHOT 报道微软 Copilot Cowork 文件泄露问题，同时 GitHub Trending 出现 knowledge-work plugins 与文档治理项目。该信号直接映射到 Hermes 本地自动化和任务池文件访问边界。",
+      "objective": "为 Hermes 自动化主链建立文件访问和证据外带的 fail-closed gate，确保浏览器/任务池在处理知识工作、文档或本地证据时有明确授权边界、最小权限和可审计拒绝路径。",
+      "capability_delta": "减少 cron/agent 在无用户在场时误读、误写或外带本地私有文件的风险，使日报、浏览器读取和任务入池都能携带可验证的文件访问边界。",
+      "anti_drift_check": "不得把所有本地文件访问一刀切禁止；必须区分用户显式要求的报告路径、Hermes 状态/证据路径和敏感凭据/私人资料，并保留人工授权升级路径。",
+      "acceptance_evidence": "提供一份路径分类策略、一个越界读取被拒绝的测试/演练输出、一个正常报告写入仍可通过的测试输出，并在 taskpool 任务模板中出现文件访问边界字段。",
+      "parallel_boundary": "可与 provider cache observability 并行；不得在未完成分类前修改全局文件权限或删除既有证据目录。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "taskpool",
+      "truth_gate": "report-evidence-present",
+      "lane": "auto",
+      "expires_days": 14,
+      "requires_multimodel": true,
+      "expected_participants": [
+        "codex",
+        "claude-code"
+      ],
+      "multimodel_reason": "文件访问边界影响 browser/automation 与 taskpool 主链安全，需要多模型审查路径分类是否过宽或过窄，并验证 fail-closed 验收证据。"
+    },
+    {
+      "dedupe_key": "harness-scaffold-boundary-governance",
+      "title": "建立 Hermes harness/scaffold/model 能力边界与任务归因标准",
+      "priority": "P1",
+      "project": "hermes-agent",
+      "concepts": [
+        "harness",
+        "scaffold",
+        "taskpool-governance",
+        "skill-governance",
+        "agent-loop"
+      ],
+      "priority_layer": "control-plane:agent-harness",
+      "impact_class": "core agent loop + taskpool governance + skills",
+      "dependency_order": [
+        "1. 盘点现有 taskpool/skill/report 中对 prompt、tool、harness、model 能力的混用表述",
+        "2. 定义 Model / Scaffolding / Harness / Tool / Skill 五类影响字段",
+        "3. 将字段加入日报任务 sidecar 与任务池模板",
+        "4. 用历史任务回放验证归因不会把 prompt 优化误报为 harness 能力"
+      ],
+      "multimodel_triage_result": "external signal: Hugging Face 术语文章与 ECC 同时强调 harness。对 Hermes 的高价值点是治理分类与证据边界，而不是简单改提示词。",
+      "objective": "让 Hermes 自优化任务能明确说明能力变化发生在模型、prompt/scaffold、tool/harness、skill 还是外部控制面，避免长期治理漂移。",
+      "capability_delta": "任务池和日报不再把所有 agent 改进混写成泛泛‘优化’，后续可按影响层选择验证命令和多模型评审强度。",
+      "anti_drift_check": "不得把术语治理变成空标签；每个分类必须绑定验证方式或证据字段。",
+      "acceptance_evidence": "sidecar/task 模板出现 impact_class 字段；至少 3 个样例任务能被稳定归类；多模型/人工审查能看到归因依据。",
+      "parallel_boundary": "可与 reference review 并行；在分类字段稳定前不得批量改写历史任务状态。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "taskpool",
+      "truth_gate": "report-evidence-present",
+      "lane": "auto",
+      "expires_days": 14,
+      "requires_multimodel": true,
+      "expected_participants": [
+        "codex",
+        "claude-code",
+        "deepseek"
+      ],
+      "multimodel_reason": "这是 Hermes 自优化元分类，会影响后续任务入池、证据门和 skill 沉淀标准，需要跨模型审查是否过拟合或漏分类。"
+    },
+    {
+      "dedupe_key": "daily-report-to-taskpool-preingest-triage",
+      "title": "补齐 AIHOT 日报到 Hermes 自优化任务池的 pre-ingest 分层器",
+      "priority": "P1",
+      "project": "hermes-agent",
+      "concepts": [
+        "daily-report",
+        "taskpool-pre-ingest",
+        "priority-triage",
+        "multimodel-gating",
+        "sidecar"
+      ],
+      "priority_layer": "control-plane:taskpool-ingest",
+      "impact_class": "local scripts + taskpool governance",
+      "dependency_order": [
+        "1. 固化 sidecar 字段: impact_class/priority/requires_multimodel/dependencies/evidence_needed/verification_gate",
+        "2. 增加传闻/观察/watchlist 不入实现任务的降级规则",
+        "3. 对近 7 日日报回放，检查是否漏掉 Hermes 可迁移项",
+        "4. 接入任务池前保持 dry-run，避免日报自动创建低质量任务"
+      ],
+      "multimodel_triage_result": "user feedback 指出日报启发未覆盖完整优化项。根因是 report->taskpool 缺少固定 triage schema，导致总结与任务化断层。",
+      "objective": "让每日外部信号自动生成可审计、可去重、带优先级与依赖的 Hermes 自优化候选，而不是只停留在自然语言启发。",
+      "capability_delta": "Hermes 能把外部趋势稳定转为 P1/P2/P3 候选，并明确哪些必须多模型评审、哪些只观察。",
+      "anti_drift_check": "不得把所有热门仓库/传闻自动升为实现任务；必须有 direct Hermes mapping 与 evidence_needed。",
+      "acceptance_evidence": "2026-05-26 sidecar 补齐至少 6 个候选；JSON schema 可解析；报告正文有 P1/P2/P3 分层；dry-run 不直接入池。",
+      "parallel_boundary": "可与单个 reference repo review 并行；不得自动关闭或创建任务池任务，除非用户明确授权。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "taskpool",
+      "truth_gate": "sidecar-json-valid",
+      "lane": "auto",
+      "expires_days": 7,
+      "requires_multimodel": true,
+      "expected_participants": [
+        "codex",
+        "claude-code"
+      ],
+      "multimodel_reason": "影响任务入池主链和自动化优先级，错误会制造噪声任务或漏掉高价值安全/控制面任务。"
+    },
+    {
+      "dedupe_key": "external-reference-repo-review-queue",
+      "title": "为 AIHOT/GitHub Trending 建立 Hermes reference repo review 队列",
+      "priority": "P2",
+      "project": "hermes-agent",
+      "concepts": [
+        "reference-repo-review",
+        "github-trending",
+        "knowledge-plugins",
+        "agent-harness",
+        "evidence"
+      ],
+      "priority_layer": "advisory:reference-intake",
+      "impact_class": "docs/skills/governance + tests/evidence fixtures",
+      "dependency_order": [
+        "1. 为 ECC、knowledge-work-plugins、claude-cookbooks、cmux、paperless-ngx 建立候选清单",
+        "2. 每个仓库读取 README/agent 指令/测试或示例后再归纳",
+        "3. 映射到 Hermes impact class",
+        "4. 仅把低风险治理模式落为 docs/private 或 skill 补丁"
+      ],
+      "multimodel_triage_result": "GitHub Trending 当日多个仓库与 agent harness、知识插件、本地终端控制面相关，适合作为 reference review，而不是直接实现。",
+      "objective": "把外部热门仓库转为可迁移模式审查队列，形成 evidence-first 的 Hermes 自优化素材。",
+      "capability_delta": "降低漏掉外部 agent 实践的风险，同时避免盲目接入第三方实现。",
+      "anti_drift_check": "不得只读项目简介就下结论；必须记录读取文件和不可迁移原因。",
+      "acceptance_evidence": "每个仓库有 review note 或明确 skip reason；至少 1 个可迁移模式进入 skill/doc/task 候选。",
+      "parallel_boundary": "各仓库 review 可并行；不得写入外部仓库或执行未知安装脚本。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "advisory",
+      "truth_gate": "repo-readme-or-docs-read",
+      "lane": "auto",
+      "expires_days": 14,
+      "requires_multimodel": false,
+      "expected_participants": [
+        "codex"
+      ],
+      "multimodel_reason": "单仓库低风险阅读可先单模型；若产出涉及 core loop/security/provider routing，再升级多模型。"
+    },
+    {
+      "dedupe_key": "agent-harness-regression-fixtures",
+      "title": "为 Hermes harness 优化建立回归评测 fixture 与指标",
+      "priority": "P2",
+      "project": "hermes-agent",
+      "concepts": [
+        "harness-benchmark",
+        "regression-fixtures",
+        "tool-call-accuracy",
+        "evidence-completeness",
+        "continuation"
+      ],
+      "priority_layer": "verification:harness-eval",
+      "impact_class": "tests/evidence fixtures",
+      "dependency_order": [
+        "1. 选取 5-10 个 Hermes 典型任务: 文件读取、工具调用、背景进程、continuation、taskpool closeout",
+        "2. 定义指标: tool-call 正确率/evidence completeness/false auto-done/timeout resume",
+        "3. 建立不依赖真实密钥的 fixture",
+        "4. 把 harness 改动要求绑定至少一个相关 fixture"
+      ],
+      "multimodel_triage_result": "外部 signal 强调 harness，但 Hermes 需要能验证 harness 改动是否真的降低错误，而非只改善叙述。",
+      "objective": "给 Hermes harness/scaffold 改动提供可重复、可审计的回归基线。",
+      "capability_delta": "自优化从主观‘更好’变为指标可比较，减少 false done 和证据缺失。",
+      "anti_drift_check": "不得引入依赖真实 API key/私人数据的 fixture；不得用 mock 掩盖工具边界。",
+      "acceptance_evidence": "fixture 清单、基线运行输出、至少一个失败样例能被指标捕获。",
+      "parallel_boundary": "可与分类治理并行；不要同时修改 agent loop 行为和评测阈值。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "tests",
+      "truth_gate": "fixture-baseline-present",
+      "lane": "auto",
+      "expires_days": 21,
+      "requires_multimodel": false,
+      "expected_participants": [
+        "codex"
+      ],
+      "multimodel_reason": "评测 fixture 初版可单模型落地；若用于认证 core loop 大改，再升级多模型。"
+    },
+    {
+      "dedupe_key": "external-skills-plugins-quarantine-governance",
+      "title": "建立外部 skills/plugins/cookbooks 吸收的 quarantine 与 provenance 治理",
+      "priority": "P2",
+      "project": "hermes-agent",
+      "concepts": [
+        "external-skills",
+        "plugins",
+        "cookbooks",
+        "provenance",
+        "quarantine",
+        "skill-governance"
+      ],
+      "priority_layer": "control-plane:skill-plugin-intake",
+      "impact_class": "skills + plugin governance + security review",
+      "dependency_order": [
+        "1. 定义外部 skill/plugin/cookbook 的来源、许可、风险、执行权限字段",
+        "2. 进入 quarantine 区而非直接写入公共 skill",
+        "3. 要求最小测试或人工 review 才能 promote",
+        "4. 与 absorbed_into/provenance 记录打通"
+      ],
+      "multimodel_triage_result": "Anthropic plugins、Claude cookbooks、ECC 表明外部能力包会持续出现；Hermes 需要吸收治理，而不是逐个临时复制。",
+      "objective": "让外部能力包进入 Hermes 前有隔离、来源、风险和测试证据，防止供应链/权限漂移。",
+      "capability_delta": "可安全复用外部 agent 生态成果，并保留审计链。",
+      "anti_drift_check": "不得把未审查内容直接放入 active skills/plugins；不得保存密钥或私人路径到 skill。",
+      "acceptance_evidence": "quarantine 模板、promotion checklist、一个外部 cookbook/skill 的 dry-run intake 记录。",
+      "parallel_boundary": "可与 reference review 并行；涉及可执行脚本或文件访问权限时必须先安全审查。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "skills",
+      "truth_gate": "quarantine-template-present",
+      "lane": "auto",
+      "expires_days": 21,
+      "requires_multimodel": false,
+      "expected_participants": [
+        "codex",
+        "claude-code"
+      ],
+      "multimodel_reason": "治理模板可单模型初稿；若允许外部代码执行/插件安装，必须升级多模型安全评审。"
+    },
+    {
+      "dedupe_key": "local-multi-agent-terminal-control-plane",
+      "title": "先补 Hermes 本地多 agent 终端/进程控制面，再评估 cmux 类 UI",
+      "priority": "P2",
+      "project": "hermes-agent",
+      "concepts": [
+        "terminal-control-plane",
+        "background-process",
+        "taskpool-worker",
+        "evidence-archive",
+        "cmux-watchlist"
+      ],
+      "priority_layer": "control-plane:terminal-process",
+      "impact_class": "tools/process + taskpool worker + evidence archive",
+      "dependency_order": [
+        "1. 盘点 terminal/process/background notify 与 taskpool worker 状态字段",
+        "2. 定义 session lifecycle: start/ready/interrupt/kill/resume/archive",
+        "3. 将 worker 输出与 evidence bundle 关联",
+        "4. 再评估是否需要 cmux/GUI 层"
+      ],
+      "multimodel_triage_result": "cmux 上榜说明本地多 agent 终端控制面需求存在，但 Hermes 当前更应先补内生 lifecycle 与 evidence 统一。",
+      "objective": "让本地多 agent/背景进程运行有可恢复、可审计、可终止的统一控制语义。",
+      "capability_delta": "降低长任务丢失、终端状态与任务池状态不一致、输出不可追溯的问题。",
+      "anti_drift_check": "不得因为 UI 新鲜度跳过现有 process/taskpool 语义；不得引入未验证 GUI 依赖作为主链。",
+      "acceptance_evidence": "状态字段设计、一个 background process 到 evidence archive 的演练、interrupt/kill/resume 行为说明。",
+      "parallel_boundary": "可与 harness benchmark 并行；不要同时替换 terminal 后端和 taskpool worker 调度。",
+      "evidence_bundle": "/Users/charles/.hermes/notes/reports/aihot-daily-2026-05-26.md",
+      "architecture_target": "tools/taskpool",
+      "truth_gate": "lifecycle-design-present",
+      "lane": "auto",
+      "expires_days": 21,
+      "requires_multimodel": false,
+      "expected_participants": [
+        "codex"
+      ],
+      "multimodel_reason": "设计初稿可单模型；若改 terminal/taskpool 执行循环或权限边界，再升级多模型。"
+    }
+  ],
+  "watchlist": [
+    {
+      "signal": "cmux UI/terminal shape",
+      "priority": "P3",
+      "reason": "先观察 UI 形态；不应先于 Hermes terminal/process/evidence 内生补强。"
+    },
+    {
+      "signal": "GPT-5.6 / iris-alpha long-context rumor",
+      "priority": "P3",
+      "reason": "未正式发布前不改主路由，只保留模型观察。"
+    },
+    {
+      "signal": "Apple + Google next Siri model",
+      "priority": "P3",
+      "reason": "行业信号强，但当前对 Hermes 直接可迁移性弱。"
+    }
+  ],
+  "multimodel_attempt": {
+    "status": "all_failed",
+    "command": "python3 ~/.hermes/scripts/consult_models.py run /Users/charles/.hermes/runs/hermes-aihot-gap-state-20260526.json --tier T2 --quorum 2 --discussion --max-rounds 1 --timeout 90 --keep",
+    "tick_dir": "/Users/charles/.hermes/tick-20260526-023335-359449-p32813-98068e60-5f93e71f",
+    "failed_models": [
+      "claude-opus-4-7 timeout after 90s",
+      "gpt-5.5 timeout after 90s"
+    ],
+    "note": "This sidecar is grounded triage, not multi-model certified."
+  },
+  "last_updated": "2026-05-26"
+}
