@@ -31,14 +31,16 @@ When adding Sakana/Fugu/Conductor-inspired behavior to Hermes, use the default-o
 
 ## Reference-repo self-optimization workflow
 
-When a user asks to analyze an external repository to improve Hermes itself, use the Vercel-derived pattern in `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md`:
+When a user asks to analyze an external repository to improve Hermes itself, use the Vercel-derived pattern in `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md` and the LangGraph-derived evidence-gating addendum in `/Users/charles/.hermes/docs/private/langgraph-reference-self-optimization-20260526.md`:
 
 1. Clone/read the reference repo under `~/.hermes/runs/`.
 2. Read `AGENTS.md`/`CLAUDE.md`, README, package manifests, build/test config, and fixture/error/skill directories before drawing conclusions.
-3. Separate transferable governance patterns from stack-specific implementation details.
-4. Map findings to Hermes impact classes: docs/skills, scripts, core agent loop, gateway/platform adapters, taskpool/brain, or tests/evidence fixtures.
-5. Implement only scoped, low-risk self-optimizations immediately unless the user explicitly asks for a larger code change.
-6. Validate by the changed impact class, then make a scoped local commit and report the commit hash.
+3. Extract explicit claim-linked evidence before asking models to certify conclusions. If using `consult_models.py state`, pass `--evidence-json` records with source file/line references or run `consult_models.py fulfill-evidence` before `run --discussion`; raw excerpts inside `context_json` are not enough for the truth gate.
+4. Separate transferable governance patterns from stack-specific implementation details.
+5. Map findings to Hermes impact classes: docs/skills, scripts, core agent loop, gateway/platform adapters, taskpool/brain, or tests/evidence fixtures.
+6. If multi-model fanout drops below `min_quorum` or truth gating reports unsupported claims, report degraded/not-certified and land only low-risk docs/skills/process improvements; do not claim architecture certification or make high-blast-radius code changes from that run.
+7. Implement only scoped, low-risk self-optimizations immediately unless the user explicitly asks for a larger code change.
+8. Validate by the changed impact class, then make a scoped local commit and report the commit hash.
 
 ## Core workflow
 
