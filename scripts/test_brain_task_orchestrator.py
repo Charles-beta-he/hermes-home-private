@@ -325,6 +325,114 @@ def mark_task_done_directly(task_path):
 
 
 
+def test_mission_envelope_create_boundary_synthesizes_complete_envelope():
+    td, _vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            setattr(mod, "maybe_fire_taskpool_event_hook", lambda *a, **k: {"status": "FAKE"})
+            created = mod.command_add(SimpleNamespace(
+                title="Mission envelope producer guard",
+                priority="P1",
+                project="hermes-evolution",
+                status="pending",
+                expires_at="2099-01-01",
+                expires_days=30,
+                concepts="task,mission-envelope",
+                lane="evolution",
+                architecture_target="taskpool",
+                capability_delta="prevent partial mission envelopes",
+                anti_drift_check="selfcheck must remain fail-closed",
+                acceptance_evidence="mission_envelope_missing returns empty",
+                priority_layer="P1",
+                dependency_order="1",
+                multimodel_triage_result="P2",
+                requires_multimodel=False,
+                multimodel_reason="",
+                expected_participants="",
+                truth_gate="",
+                evidence_bundle="",
+                layer="L3",
+                workflow_contract=mod.DEFAULT_WORKFLOW,
+                workspace="",
+                parallel_boundary="",
+                objective="Create a mission envelope task without partial structure.",
+                accept="selfcheck can parse the created note.",
+                red_line=[],
+                non_goal=[],
+                evidence_ref=[],
+            ))
+            task = mod.find_task(created["id"])
+            assert task is not None
+            assert mod.is_mission_envelope_fm(task.fm) is True
+            assert mod.mission_envelope_missing(task.fm) == []
+            assert task.fm["mission_schema_version"] == "mission_envelope_v1"
+            assert task.fm["certification_status"] == "not_certified"
+            assert task.fm["ratification_artifact"] == "proof:ratification-pending"
+            assert "proof:task-add-boundary" in task.fm["evidence_refs"]
+            assert "do not treat synthesized envelope structure as implementation proof" in task.fm["non_goals"]
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
+
+def test_multimodel_writeback_completes_partial_mission_envelope_without_certifying_failure():
+    td, _vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            setattr(mod, "refresh_derived_task_views", lambda *a, **k: {"status": "SKIPPED"})
+            created = mod.create_task_note(
+                title="Mission envelope writeback guard",
+                priority="P1",
+                project="hermes-evolution",
+                status="pending",
+                expires_at="2099-01-01",
+                concepts=["task", "mission-envelope"],
+                lane="evolution",
+                architecture_target="taskpool",
+                capability_delta="repair writeback boundary",
+                anti_drift_check="failed multimodel round must not certify task",
+                acceptance_evidence="mission_envelope_missing returns empty after writeback",
+                priority_layer="P1",
+                dependency_order=["1"],
+                multimodel_triage_result="P2",
+                objective="Keep mission envelope complete after multimodel writeback.",
+                extra_frontmatter={"ratification_artifact": ""},
+            )
+            task = mod.find_task(created["id"])
+            assert task is not None
+            for field in mod.MISSION_ENVELOPE_REQUIRED_FIELDS:
+                task.fm.pop(field, None)
+            task.fm["concepts"] = ["task", "mission-envelope"]
+            task.fm["mission_title"] = "Partial writeback fixture"
+            assert "mission_schema_version" in mod.mission_envelope_missing(task.fm)
+
+            result = mod.write_multimodel_result_to_task(
+                task,
+                {"status": "FAIL", "decision": "CONTINUE_LOOP", "failures": ["fixture_failure"]},
+                "/tmp/discussion_result.json",
+                "/tmp/state.json",
+            )
+            fresh = mod.find_task(created["id"])
+            assert result["passed"] is False
+            assert fresh is not None
+            assert mod.mission_envelope_missing(fresh.fm) == []
+            assert fresh.fm["certification_status"] == "not_certified"
+            assert fresh.fm["ratification_artifact"] == "artifact:/tmp/discussion_result.json"
+            assert "multimodel_ratification_artifact" not in fresh.fm
+            assert "proof:multimodel-writeback-boundary" in fresh.fm["evidence_refs"]
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
+
 def test_add_persists_explicit_multimodel_contract_and_triggers_without_heuristics():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -2261,6 +2369,8 @@ tiers:
 def main():
     test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
     test_railway_deploy_gate_evaluate_uses_ancestor_relation()
+    test_mission_envelope_create_boundary_synthesizes_complete_envelope()
+    test_multimodel_writeback_completes_partial_mission_envelope_without_certifying_failure()
     test_mission_envelope_schema_is_enforced_fail_closed()
     test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_gate()
     test_add_list_claim_release_dashboard_inbox_selfcheck()

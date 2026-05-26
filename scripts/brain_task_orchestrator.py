@@ -1303,6 +1303,143 @@ def mission_envelope_valid(fm: dict[str, Any]) -> bool:
     return not mission_envelope_missing(fm)
 
 
+def _mission_structured_ref(value: Any) -> str:
+    """Normalize a user/source ref into the structured evidence vocabulary.
+
+    This is intentionally narrow: it makes existing evidence machine-readable,
+    but it does not claim that implementation proof exists.
+    """
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    if evidence_is_structured(text):
+        return text
+    if text.startswith(("http://", "https://")):
+        return f"url:{text}"
+    expanded = Path(os.path.expanduser(text))
+    if expanded.is_absolute():
+        return f"artifact:{expanded}"
+    return f"proof:{text}"
+
+
+def _mission_list_with_defaults(value: Any, defaults: list[str]) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for item in [*list_value(value), *defaults]:
+        text = str(item or "").strip()
+        if text and text not in seen:
+            seen.add(text)
+            out.append(text)
+    return out
+
+
+def _mission_artifact_ref(value: Any) -> str:
+    text = str(value or "").strip()
+    if text:
+        expanded = Path(os.path.expanduser(text))
+        if expanded.is_absolute():
+            return f"artifact:{expanded}"
+    ref = _mission_structured_ref(value)
+    if ref.startswith("proof:/"):
+        return "artifact:" + ref[len("proof:"):]
+    return ref
+
+
+def ensure_mission_envelope_defaults(
+    fm: dict[str, Any],
+    *,
+    title: str = "",
+    task_id: str = "",
+    objective: str = "",
+    synthesized_reason: str = "mission-envelope-defaults",
+) -> dict[str, Any]:
+    """Fill structural mission-envelope fields at producer boundaries.
+
+    The helper prevents partial envelopes from being written while preserving
+    fail-closed execution semantics: synthesized proof placeholders are explicit
+    `proof:` audit markers, not test/build/runtime proof, and certified tasks
+    still require a structured ratification artifact.
+    """
+    if not is_mission_envelope_fm(fm):
+        return fm
+
+    now_iso = iso()
+    mission_title = (title or str(fm.get("mission_title") or "") or str(fm.get("title") or "") or task_id or "mission task").strip()
+    mission_objective = (
+        objective
+        or str(fm.get("mission_objective") or "").strip()
+        or str(fm.get("objective") or "").strip()
+        or mission_title
+    )
+    mission_id = str(fm.get("mission_id") or "").strip() or f"mission-{task_id or slugify(mission_title)}"
+    architecture_target = str(fm.get("architecture_target") or "taskpool").strip() or "taskpool"
+    required_authority = str(task_permission_contract_for_fm(fm).get("required_authority") or "dispatch-hint")
+    max_authority = str(task_permission_contract_for_fm(fm).get("max_authority") or "budget-handoff")
+
+    if not str(fm.get("mission_schema_version") or "").strip():
+        fm["mission_schema_version"] = "mission_envelope_v1"
+    if not str(fm.get("mission_id") or "").strip():
+        fm["mission_id"] = mission_id
+    if not str(fm.get("mission_title") or "").strip():
+        fm["mission_title"] = mission_title
+    if not str(fm.get("mission_objective") or "").strip():
+        fm["mission_objective"] = mission_objective
+    fm["mission_constraints"] = _mission_list_with_defaults(fm.get("mission_constraints"), [
+        "fail-closed: missing proof, permission, or ratification evidence must block lifecycle advancement",
+        f"scope:{architecture_target}",
+    ])
+    fm["red_lines"] = _mission_list_with_defaults(fm.get("red_lines"), [
+        "do not weaken taskpool proof, permission, or mission-envelope gates",
+    ])
+    fm["non_goals"] = _mission_list_with_defaults(fm.get("non_goals"), [
+        "do not treat synthesized envelope structure as implementation proof",
+    ])
+    evidence_defaults = [
+        _mission_structured_ref(fm.get("multimodel_last_discussion_artifact") or fm.get("multimodel_ratification_artifact")),
+        f"proof:{synthesized_reason}",
+    ]
+    fm["evidence_refs"] = _mission_list_with_defaults(
+        [_mission_structured_ref(item) for item in list_value(fm.get("evidence_refs"))],
+        [item for item in evidence_defaults if item],
+    )
+    fm["acceptance_criteria"] = _mission_list_with_defaults(fm.get("acceptance_criteria"), [
+        str(fm.get("acceptance_evidence") or "Observable result is recorded in Proof Log.")
+    ])
+    fm["dag_nodes"] = _mission_list_with_defaults(fm.get("dag_nodes"), [
+        f"node:{task_id or slugify(mission_title)}:status:{str(fm.get('status') or 'pending')}"
+    ])
+    fm["checkpoint_states"] = _mission_list_with_defaults(fm.get("checkpoint_states"), [
+        f"checkpoint:created:{now_iso}",
+        "checkpoint:proof-pending",
+    ])
+    fm["permission_gates"] = _mission_list_with_defaults(fm.get("permission_gates"), [
+        f"authority:{required_authority}",
+        f"max_authority:{max_authority}",
+    ])
+
+    ratification_source = fm.get("ratification_artifact") or fm.get("multimodel_ratification_artifact") or fm.get("multimodel_last_discussion_artifact")
+    ratification_ref = _mission_artifact_ref(ratification_source) if ratification_source else "proof:ratification-pending"
+    if not str(fm.get("ratification_artifact") or "").strip():
+        fm["ratification_artifact"] = ratification_ref
+    fm["handoff_artifacts"] = _mission_list_with_defaults(fm.get("handoff_artifacts"), [
+        ratification_ref,
+        f"proof:mission-envelope-synthesized:{now_iso}",
+    ])
+    fm["proof_artifacts"] = _mission_list_with_defaults(fm.get("proof_artifacts"), [
+        ratification_ref,
+        f"proof:mission-envelope-structure-complete:{now_iso}",
+    ])
+    if not str(fm.get("rollback_signal") or "").strip():
+        fm["rollback_signal"] = "selfcheck/proof-check mission_envelope_missing or invalid ratification artifact"
+    if not str(fm.get("certification_status") or "").strip():
+        fm["certification_status"] = str(fm.get("multimodel_status") or "not_certified") if str(fm.get("multimodel_status") or "") in MISSION_CERTIFICATION_STATUSES else "not_certified"
+    if not str(fm.get("mission_envelope_origin") or "").strip():
+        fm["mission_envelope_origin"] = "orchestrator_synthesized"
+    fm["mission_envelope_last_synthesized_at"] = now_iso
+    fm["mission_envelope_synthesized_reason"] = synthesized_reason
+    return fm
+
+
 def mission_node_id(task: "Task") -> str:
     return str(task.fm.get("mission_node_id") or task.id).strip()
 
@@ -1900,6 +2037,17 @@ def write_multimodel_result_to_task(task: "Task", gate_result: dict[str, Any], d
         updates["multimodel_ratification_artifact"] = discussion_path
 
     task.fm.update(updates)
+    if mission_envelope:
+        ensure_mission_envelope_defaults(
+            task.fm,
+            title=task.title,
+            task_id=task.id,
+            objective=str(task.fm.get("mission_objective") or task.fm.get("objective") or extract_markdown_section(task.body, "Objective") or task.title),
+            synthesized_reason="multimodel-writeback-boundary",
+        )
+        missing_mission = mission_envelope_missing(task.fm)
+        if missing_mission:
+            raise SystemExit(f"multimodel writeback produced invalid mission envelope for {task.id}: {missing_mission}")
     if not mission_envelope:
         task.fm.pop("certification_status", None)
     if not passed:
@@ -2578,9 +2726,19 @@ def create_task_note(
     if extra_frontmatter:
         fm.update(extra_frontmatter)
     apply_permission_defaults(fm)
+    ensure_mission_envelope_defaults(
+        fm,
+        title=title,
+        task_id=path.stem,
+        objective=objective or title,
+        synthesized_reason="task-create-boundary",
+    )
     missing_alignment = architecture_alignment_missing(fm)
     if missing_alignment:
         raise SystemExit(f"evolution tasks require architecture alignment fields; missing/invalid={missing_alignment}")
+    missing_mission = mission_envelope_missing(fm)
+    if missing_mission:
+        raise SystemExit(f"mission-envelope task creation produced invalid envelope; missing/invalid={missing_mission}")
     sections = [
         f"# Task - {title}",
         "",
@@ -3761,9 +3919,19 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "concepts": concepts,
     }
     apply_permission_defaults(fm)
+    ensure_mission_envelope_defaults(
+        fm,
+        title=title,
+        task_id=path.stem,
+        objective=args.objective or title,
+        synthesized_reason="task-add-boundary",
+    )
     missing_alignment = architecture_alignment_missing(fm)
     if missing_alignment:
         raise SystemExit(f"evolution tasks require architecture alignment fields; missing/invalid={missing_alignment}")
+    missing_mission = mission_envelope_missing(fm)
+    if missing_mission:
+        raise SystemExit(f"mission-envelope task add produced invalid envelope; missing/invalid={missing_mission}")
     body = f"# Task - {title}\n\n## Objective\n\n{args.objective or title}\n\n## Acceptance Criteria\n\n- [ ] {args.accept or 'Observable result is recorded in Proof Log.'}\n\n## Plan / Workpad\n\n- [ ] Reconcile current state, dependency order, and architecture boundaries before execution.\n- [ ] Advance the long-term maintainable mainline plan with the next bounded step and staged evidence.\n- [ ] Record proof, status, and any next dependency or handoff required.\n\n## Validation\n\n| Command / Check | Status | Evidence |\n|---|---|---|\n| brain_task_orchestrator list | pending | |\n\n## Proof Log\n\n- {iso(created)}: Task created from local-brain control point.\n\n## Blockers / Confusions\n\n- None.\n\n## Final Handoff\n\n- Status:\n- Evidence:\n- Residual risk:\n"
     atomic_write(path, render_frontmatter(fm) + "\n" + body)
     derived_refresh = refresh_derived_task_views("add")
