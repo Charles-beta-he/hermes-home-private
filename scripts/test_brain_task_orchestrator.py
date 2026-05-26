@@ -1850,6 +1850,61 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
 
 
 
+def test_autorun_eligibility_skips_unallowlisted_raw_next_for_allowlisted_fallback():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        env["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
+        raw = run(env, "add", "AAA unallowlisted advisory", "--priority", "P1", "--project", "outside-project", "--lane", "advisory", "--architecture-target", "provider-quota", "--expires-at", "2099-01-01", "--json")
+        raw_id = json.loads(raw.stdout)["id"]
+        fallback = run(env, "add", "ZZZ allowlisted advisory", "--priority", "P1", "--project", "reading-programming-books", "--lane", "advisory", "--architecture-target", "skill-graph", "--expires-at", "2099-01-01", "--json")
+        fallback_id = json.loads(fallback.stdout)["id"]
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([{
+            "project": "reading-programming-books",
+            "architecture_target": "skill-graph",
+            "lane": "advisory",
+            "required_authority": "dispatch-hint",
+        }], ensure_ascii=False), encoding="utf-8")
+        run(env, "dashboard", "--write", "--json")
+
+        nxt = json.loads(run(env, "next", "--json").stdout)
+        assert nxt["next"]["id"] == raw_id, nxt
+        eligible = json.loads(run(env, "eligibility-check", "--json").stdout)
+        assert eligible["status"] == "PASS", eligible
+        assert eligible["eligible"] is True, eligible
+        assert eligible["task_id"] == fallback_id, eligible
+        assert eligible["raw_task_id"] == raw_id, eligible
+        assert eligible["raw_allowlist_hit"] is False, eligible
+        assert eligible["allowlist_hit"] is True, eligible
+        assert any("raw_next_allowlist_miss" in w for w in eligible["warnings"]), eligible
+
+
+def test_autorun_allowlist_dict_constraints_are_conjunctive_for_advisory_scope():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        env["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        bad = run(env, "add", "Constrained advisory wrong architecture", "--priority", "P1", "--project", "reading-programming-books", "--lane", "advisory", "--architecture-target", "provider-quota", "--expires-at", "2099-01-01", "--json")
+        bad_id = json.loads(bad.stdout)["id"]
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([{
+            "project": "reading-programming-books",
+            "architecture_target": "skill-graph",
+            "lane": "advisory",
+        }], ensure_ascii=False), encoding="utf-8")
+        run(env, "dashboard", "--write", "--json")
+
+        eligible = json.loads(run(env, "eligibility-check", "--json").stdout)
+        assert eligible["task_id"] == bad_id, eligible
+        assert eligible["eligible"] is False, eligible
+        assert "allowlist_miss" in eligible["reasons"], eligible
+
+
+
 def test_non_blocking_auto_subtask_reconcile_actions_do_not_block_next_or_eligibility():
     td, _vault, env = make_env_and_vault()
     with td:

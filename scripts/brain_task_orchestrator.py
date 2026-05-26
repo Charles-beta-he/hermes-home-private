@@ -3630,38 +3630,67 @@ def load_multimodel_allowlist() -> list[Any]:
     return data if isinstance(data, list) else []
 
 
-def autorun_allowlist_matches(task: Task, allowlist: list[Any]) -> bool:
+def _allowlist_values(value: Any) -> list[str]:
+    if value in (None, ""):
+        return []
+    if isinstance(value, (list, tuple, set)):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [str(value).strip()]
+
+
+def _allowlist_constraint(value: Any, candidates: set[str]) -> bool:
+    values = _allowlist_values(value)
+    return not values or bool(set(values) & candidates)
+
+
+def autorun_allowlist_match_entry(task: Task, item: Any) -> bool:
     architecture_target = str(getattr(task, "architecture_target", "") or task.fm.get("architecture_target") or "").strip()
     brain = str(task.fm.get("brain") or "").strip()
-    for item in allowlist:
-        if isinstance(item, str):
-            token = item.strip()
-            # Backward compatibility: older allowlists used project:local-brain
-            # for the local-brain execution surface even when task.project is the
-            # broader project name (for example `hermes`).  Match the explicit
-            # project plus the architecture/brain routing surfaces without
-            # broadening to all Hermes tasks.
-            if token in {
-                task.id, f"task:{task.id}", task.project, f"project:{task.project}", task.title,
-                architecture_target, f"architecture:{architecture_target}", f"project:{architecture_target}",
-                brain, f"brain:{brain}",
-            }:
-                return True
-        elif isinstance(item, dict):
-            task_id = str(item.get("task_id") or item.get("id") or "").strip()
-            project = str(item.get("project") or "").strip()
-            architecture = str(item.get("architecture_target") or item.get("architecture") or "").strip()
-            item_brain = str(item.get("brain") or "").strip()
-            title = str(item.get("title") or "").strip()
-            if (
-                (task_id and task_id == task.id)
-                or (project and project in {task.project, architecture_target})
-                or (architecture and architecture == architecture_target)
-                or (item_brain and item_brain == brain)
-                or (title and title == task.title)
-            ):
-                return True
-    return False
+    required_authority = str(task.fm.get("required_authority") or "").strip()
+    max_authority = str(task.fm.get("max_authority") or "").strip()
+    if isinstance(item, str):
+        token = item.strip()
+        # Backward compatibility: older allowlists used project:local-brain
+        # for the local-brain execution surface even when task.project is the
+        # broader project name (for example `hermes`).  Match the explicit
+        # project plus the architecture/brain routing surfaces without
+        # broadening to all Hermes tasks.
+        return token in {
+            task.id, f"task:{task.id}", task.project, f"project:{task.project}", task.title,
+            architecture_target, f"architecture:{architecture_target}", f"project:{architecture_target}",
+            brain, f"brain:{brain}",
+        }
+    if not isinstance(item, dict):
+        return False
+
+    # Dict entries are conjunctive constrained grants.  This lets runtime policy
+    # authorize a narrow advisory class (for example skill-graph reading tasks)
+    # without accidentally opening every task in the same project or lane.
+    checks = [
+        _allowlist_constraint(item.get("task_id") or item.get("id"), {task.id, f"task:{task.id}"}),
+        _allowlist_constraint(item.get("project"), {task.project, f"project:{task.project}"}),
+        _allowlist_constraint(item.get("architecture_target") or item.get("architecture"), {architecture_target, f"architecture:{architecture_target}", f"project:{architecture_target}"}),
+        _allowlist_constraint(item.get("brain"), {brain, f"brain:{brain}"}),
+        _allowlist_constraint(item.get("title"), {task.title}),
+        _allowlist_constraint(item.get("lane"), {task.lane}),
+        _allowlist_constraint(item.get("priority"), {task.priority}),
+        _allowlist_constraint(item.get("required_authority"), {required_authority}),
+        _allowlist_constraint(item.get("max_authority"), {max_authority}),
+    ]
+    return all(checks)
+
+
+def autorun_allowlist_matches(task: Task, allowlist: list[Any]) -> bool:
+    return any(autorun_allowlist_match_entry(task, item) for item in allowlist)
+
+
+def first_autorun_allowlisted_dispatchable(allowlist: list[Any], *, exclude_task_id: str = "") -> Task | None:
+    for candidate in dispatchable_tasks():
+        if exclude_task_id and candidate.id == exclude_task_id:
+            continue
+        if autorun_allowlist_matches(candidate, allowlist):
+            return candidate
+    return None
 
 
 def is_autorun_context(task: Task, actor: str) -> bool:
@@ -7259,6 +7288,13 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         else:
             reasons.append("no_dispatchable_task")
     allowlist = load_autorun_allowlist()
+    raw_task = task
+    raw_allowlist_hit = bool(raw_task and autorun_allowlist_matches(raw_task, allowlist))
+    if task and allowlist and not raw_allowlist_hit and not getattr(args, "task", ""):
+        fallback = first_autorun_allowlisted_dispatchable(allowlist, exclude_task_id=task.id)
+        if fallback:
+            warnings.append(f"raw_next_allowlist_miss:{task.id}; using allowlisted fallback:{fallback.id}")
+            task = fallback
     allowlist_hit = bool(task and autorun_allowlist_matches(task, allowlist))
     if os.environ.get(AUTORUN_ENV_FLAG) != "1":
         reasons.append("autorun_disabled")
@@ -7306,6 +7342,8 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         "allowlist": str(AUTORUN_ALLOWLIST),
         "policy": str(AUTORUN_POLICY),
         "allowlist_hit": allowlist_hit,
+        "raw_task_id": raw_task.id if raw_task else "",
+        "raw_allowlist_hit": raw_allowlist_hit,
         "kill_switch": bool(os.environ.get(AUTORUN_ENV_FLAG) != "1" or os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1" or AUTORUN_KILL_SWITCH.exists()),
         "required_proof": ["proof:<sha256:...> required before autorun-originated done"],
         "budget_ceiling": None,

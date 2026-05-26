@@ -1378,7 +1378,13 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
             update_status(eid, 'SKIPPED', error=f"not_claimed_skipped:{row.get('status')}")
             skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': f"not_claimed:{row.get('status')}"})
             continue
-        actor = str(payload.get('claimed_by') or row.get('claimed_by') or 'agent-team-controller')
+        payload_actor = str(payload.get('claimed_by') or '').strip()
+        row_actor = str(row.get('claimed_by') or '').strip()
+        if payload_actor and row_actor and payload_actor != row_actor:
+            update_status(eid, 'SKIPPED', error=f"claimed_by_mismatch_skipped:payload={payload_actor}:row={row_actor}")
+            skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'claimed_by_mismatch', 'payload_actor': payload_actor, 'row_actor': row_actor})
+            continue
+        actor = row_actor or payload_actor or 'agent-team-controller'
         running = transition_task(task_id, 'running', actor, 'execute-cycle worker trigger after queued claim')
         if not running.get('ok'):
             update_status(eid, 'FAILED', error=str(running)[:200])
