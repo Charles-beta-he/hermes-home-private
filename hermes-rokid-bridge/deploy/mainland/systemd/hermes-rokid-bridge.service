@@ -1,0 +1,26 @@
+[Unit]
+Description=Hermes Rokid Bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hermes-rokid
+Group=hermes-rokid
+WorkingDirectory=/opt/hermes-rokid-bridge
+EnvironmentFile=/opt/hermes-rokid-bridge/.env
+ExecStart=/opt/hermes-rokid-bridge/.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8787 --proxy-headers
+Restart=always
+RestartSec=3
+TimeoutStopSec=10
+KillSignal=SIGINT
+
+# Fail closed and keep the service narrow.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/hermes-rokid-bridge
+
+[Install]
+WantedBy=multi-user.target

@@ -148,6 +148,32 @@ Live smoke evidence from 2026-05-22:
 - Location query pitfall: phrases like `获取本地位置` / `本地位置` must stay in the L0 location route, not model fallback; otherwise coords-only context may produce “无法直接获取”. The bridge also normalizes nested `metadata.context.location={city,latitude,longitude,accuracy}`. Regression tests live in `tests/test_rokid_long_term_entry.py` and `tests/test_lingzhu_plugin_routes.py`.
 
 
+## China-mainland production entry
+
+For China-mainland glasses users, do not use Cloudflare Tunnel as the primary SSE URL. Cloudflare can remain the overseas/fallback endpoint, but the Rizon `openSseUrl` for mainland production should point to an ICP-approved mainland HTTPS domain backed by a mainland ECS/VPS.
+
+Recommended shape:
+
+```text
+Glasses / Rizon → https://rokid-cn.<备案域名>/rokid/sse → mainland Nginx/Caddy → hermes-rokid-bridge:8787
+```
+
+Implementation assets in the bridge repo:
+
+- `/Users/charles/.hermes/hermes-rokid-bridge/deploy/mainland/README.md`
+- `/Users/charles/.hermes/hermes-rokid-bridge/deploy/mainland/nginx/rokid-mainland.conf`
+- `/Users/charles/.hermes/hermes-rokid-bridge/deploy/mainland/systemd/hermes-rokid-bridge.service`
+- `/Users/charles/.hermes/hermes-rokid-bridge/deploy/mainland/scripts/smoke_sse.sh`
+
+Mainland verification gates:
+
+```bash
+curl -i https://<mainland-domain>/health
+ROKID_SMOKE_VALUE=<value-from-local-env> deploy/mainland/scripts/smoke_sse.sh https://<mainland-domain>
+```
+
+The Nginx/Caddy proxy must disable buffering/cache/gzip for `/rokid/sse`, preserve streaming, and return the first ACK immediately; otherwise Rizon may report “环境链接不通”.
+
 ## Platform UI Gotchas
 
 1. **Workspace required**: `rizon.rokid.com/custom-agent` shows "无法查看智能体" if user has no workspace. Create workspace first on the platform.
