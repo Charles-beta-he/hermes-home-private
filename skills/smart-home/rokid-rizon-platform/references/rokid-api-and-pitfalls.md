@@ -119,6 +119,20 @@ After skill reinstall (agent delete + re-add), glasses show this if:
 
 Fix: reconfigure → resubmit → wait for approval.
 
+## Lingzhu native-plugin receipt pitfall
+
+Rokid/Lingzhu custom-agent SSE requests may only include read-only context fields such as `weather`, `location`, `battery`, and `network`; they do not always include an explicit native-plugin execution receipt. Do not stop low-risk/read-only intents at “recognized plugin but no receipt”. Production bridge behavior should be:
+
+- If a platform receipt exists (`pluginReceipts` / `plugin_receipts` / `lingzhu_plugin_receipts`), answer from the receipt.
+- For low-risk/read-only capabilities, answer from current payload context or deterministic local fallback:
+  - weather -> `metadata.weather` / `metadata.context.weather` plus location/time when present;
+  - location -> normalized location/lat/lng from metadata;
+  - device status -> battery/network/device fields;
+  - calculator -> local safe arithmetic parser.
+- For high-risk/control capabilities (photo, navigation, exit, payment), still fail closed without a platform receipt and avoid fake completion wording such as “已拍照/付款成功/已退出”.
+
+This keeps glasses-visible plugin intents usable while preserving real-world action safety.
+
 ## Mainland glasses SSE connectivity and X2D status pattern
 
 For China mainland glasses runtime, do not use Cloudflare Tunnel as the production primary入口. Use a mainland ECS with direct DNS/HTTPS and Nginx reverse proxy to the FastAPI bridge. Nginx must keep SSE streaming semantics: HTTP/1.1 upstream, no proxy buffering, no gzip buffering, and read timeouts long enough for SSE while the app still sends a quick ACK within the 8.5s Rokid budget.
