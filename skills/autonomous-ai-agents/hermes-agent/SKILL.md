@@ -13,6 +13,8 @@ Reference addendum: `references/rokid-lingzhu-sse-bridge.md` captures the workfl
 
 Reference addendum: `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md` captures the Vercel monorepo review pattern for Hermes self-optimization: first-class `AGENTS.md`, named validation surfaces, affected-check fail-safe broadening, fixture/evidence protection, release/evidence notes, and reference-repo analysis without cargo-culting the source stack.
 
+Reference addendum: `/Users/charles/.hermes/docs/private/hermes-self-optimization-ssot-20260526.md` is the canonical multi-entry SSOT rule for Hermes self-optimization. Before changing Hermes itself through chat, taskpool, cron/bg-review, multi-model certification, skill patches, or code edits, identify/create exactly one SSOT artifact and make all derived entrypoints reference it rather than copying parallel facts.
+
 # Hermes Agent
 
 Use this skill when operating or extending Hermes Agent itself: CLI behavior, setup, update/upgrade workflows, built-in tools, memory system, gateway/taskpool hooks, self-evolution loops, certified auto-done, and related local-control-plane hardening.
@@ -29,18 +31,30 @@ Use this skill when the user asks to:
 
 When adding Sakana/Fugu/Conductor-inspired behavior to Hermes, use the default-off scaffold pattern in `references/hermes-conductor-runtime-scaffold.md`: land isolated router calls, durable task ledger, optional Fugu fail-soft adapter, model profile placeholders, and post-update regression before mainline conversation-loop wiring. Critical invariant: a default-main-model bootstrap/router call never counts as a later planner/implementer/arbiter participant. For the evidence-based Sakana pattern and model profile sketches, see `references/sakana-conductor-pattern.md`.
 
+## Self-optimization SSOT prerequisite
+
+Before any Hermes self-optimization landing, use `/Users/charles/.hermes/docs/private/hermes-self-optimization-ssot-20260526.md` as the controlling rule:
+
+1. Identify or create exactly one canonical SSOT artifact for the change before model certification, taskpool enqueue, skill patch, or code edit.
+2. Make every entrypoint reference that SSOT instead of copying facts into parallel truths: chat, taskpool, cron/bg-review, gateway, `consult_models`, docs, skills, and git/code diffs.
+3. For reference-repo reviews, the SSOT is a `ReferenceReview`/evidence pack with repo URL, commit, claims, file/line evidence, impact classes, decisions, and verification.
+4. For taskpool execution, task record fields (`body`, `description`, `acceptance_criteria`, `red_lines`, `non_goals`, `evidence_refs`, `workflow_contract`) are the task-local SSOT; worker prompts and dashboard rows are derived snapshots.
+5. If an entrypoint discovers conflicting facts, update/review the SSOT first; do not fork a second truth in memory, skill text, task notes, or model state.
+6. If no SSOT can be named, fail closed and land only the smallest SSOT document/evidence pack first.
+
 ## Reference-repo self-optimization workflow
 
-When a user asks to analyze an external repository to improve Hermes itself, use the Vercel-derived pattern in `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md` and the LangGraph-derived evidence-gating addendum in `/Users/charles/.hermes/docs/private/langgraph-reference-self-optimization-20260526.md`:
+When a user asks to analyze an external repository to improve Hermes itself, first apply the SSOT prerequisite above, then use the Vercel-derived pattern in `/Users/charles/.hermes/docs/private/vercel-reference-self-optimization-20260526.md` and the LangGraph-derived evidence-gating addendum in `/Users/charles/.hermes/docs/private/langgraph-reference-self-optimization-20260526.md`:
 
 1. Clone/read the reference repo under `~/.hermes/runs/`.
 2. Read `AGENTS.md`/`CLAUDE.md`, README, package manifests, build/test config, and fixture/error/skill directories before drawing conclusions.
-3. Extract explicit claim-linked evidence before asking models to certify conclusions. If using `consult_models.py state`, pass `--evidence-json` records with source file/line references or run `consult_models.py fulfill-evidence` before `run --discussion`; raw excerpts inside `context_json` are not enough for the truth gate.
-4. Separate transferable governance patterns from stack-specific implementation details.
-5. Map findings to Hermes impact classes: docs/skills, scripts, core agent loop, gateway/platform adapters, taskpool/brain, or tests/evidence fixtures.
-6. If multi-model fanout drops below `min_quorum` or truth gating reports unsupported claims, report degraded/not-certified and land only low-risk docs/skills/process improvements; do not claim architecture certification or make high-blast-radius code changes from that run.
-7. Implement only scoped, low-risk self-optimizations immediately unless the user explicitly asks for a larger code change.
-8. Validate by the changed impact class, then make a scoped local commit and report the commit hash.
+3. Create/update the reference-review SSOT artifact with source repo, commit, claims, evidence links, impact classes, decisions, and verification; all later chat/taskpool/model/docs outputs must reference this artifact.
+4. Extract explicit claim-linked evidence before asking models to certify conclusions. If using `consult_models.py state`, pass `--evidence-json` records with source file/line references or run `consult_models.py fulfill-evidence` before `run --discussion`; raw excerpts inside `context_json` are not enough for the truth gate.
+5. Separate transferable governance patterns from stack-specific implementation details.
+6. Map findings to Hermes impact classes: docs/skills, scripts, core agent loop, gateway/platform adapters, taskpool/brain, or tests/evidence fixtures.
+7. If multi-model fanout drops below `min_quorum` or truth gating reports unsupported claims, report degraded/not-certified and land only low-risk docs/skills/process improvements; do not claim architecture certification or make high-blast-radius code changes from that run.
+8. Implement only scoped, low-risk self-optimizations immediately unless the user explicitly asks for a larger code change.
+9. Validate by the changed impact class, then make a scoped local commit and report the commit hash plus SSOT path/id.
 
 ## Core workflow
 
