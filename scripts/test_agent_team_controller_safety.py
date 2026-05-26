@@ -114,6 +114,32 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertTrue(Path(artifact["uvisa_lark_contract"]["contract_path"]).exists())
         self.assertEqual(artifact["safety"]["uvisa_closeout_contract_required"], True)
 
+    def test_consume_claimed_batch_treats_max_agents_as_concurrency_not_claim_limit(self):
+        rows = {
+            "t1": {"id": "t1", "status": "claimed", "title": "one", "project": "proj", "parallel_boundary": "b1", "claimed_by": "hermes-parallel"},
+            "t2": {"id": "t2", "status": "claimed", "title": "two", "project": "proj", "parallel_boundary": "b2", "claimed_by": "hermes-parallel"},
+        }
+        claimed = [{"task_id": "t1", "handoff": "/tmp/t1.md"}, {"task_id": "t2", "handoff": "/tmp/t2.md"}]
+        with patch.object(self.ctrl, "is_disabled", return_value=False), \
+             patch.object(self.ctrl, "human_escape_check", return_value=(False, {})), \
+             patch.object(self.ctrl, "rows_by_id", return_value=rows), \
+             patch.object(self.ctrl, "create", side_effect=["env-1", "env-2"]) as create, \
+             patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "delegate_to_worker", return_value={"status": "blocked", "blockers": ["synthetic"]}) as delegate, \
+             patch.object(self.ctrl, "update_status") as update_status, \
+             patch.object(self.ctrl, "append_trace"):
+            result = self.ctrl.consume_claimed_batch(claimed, max_agents=1)
+
+        self.assertEqual(result["requested_count"], 2)
+        self.assertEqual(result["launched_count"], 2)
+        self.assertEqual(result["consumed_count"], 2)
+        self.assertEqual(create.call_count, 2)
+        self.assertEqual(delegate.call_count, 2)
+        running = [call for call in transition.call_args_list if call.args[:2] in [("t1", "running"), ("t2", "running")]]
+        self.assertEqual(len(running), 2)
+        self.assertTrue(any(call.args[0] == "env-1" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
+        self.assertTrue(any(call.args[0] == "env-2" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
+
 
 if __name__ == "__main__":
     unittest.main()

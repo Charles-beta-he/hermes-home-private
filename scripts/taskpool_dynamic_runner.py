@@ -159,6 +159,24 @@ def positive_int(value: Any, default: int, *, minimum: int = 1) -> int:
     return max(minimum, parsed)
 
 
+def human_escape_status() -> dict[str, Any]:
+    """Read the envelope human-escape breaker before claiming new work.
+
+    The controller also checks this after claim, but the dynamic runner is the
+    outer claim trigger.  If the breaker is already active, claiming first and
+    releasing later creates retry churn and can wedge on controller timeout.
+    """
+    try:
+        script_dir = str(HERMES_HOME / "scripts")
+        if script_dir not in sys.path:
+            sys.path.insert(0, script_dir)
+        from envelope_bus import human_escape_check  # type: ignore
+        triggered, info = human_escape_check()
+        return {"status": "OK", "triggered": bool(triggered), "info": info}
+    except Exception as exc:
+        return {"status": "ERROR", "triggered": True, "reason": "human_escape_check_failed", "error": str(exc)[:300]}
+
+
 def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
     """Choose a safe parallel cap from the live boundary classifier.
 
@@ -221,8 +239,11 @@ def main() -> int:
         autorun_flag = "--parallel-autorun" if dispatch_mode == "parallel" else "--autorun-step"
         event["dispatch_mode"] = dispatch_mode
         event["autorun_flag"] = autorun_flag
+        escape_status = human_escape_status()
+        event["human_escape"] = escape_status
+        autorun_allowed = not bool(escape_status.get("triggered"))
         tick_cmd = [sys.executable, str(TICK), "--summary", "--no-state"]
-        if autorun_flag == "--parallel-autorun":
+        if autorun_flag == "--parallel-autorun" and autorun_allowed:
             parallel_cap = compute_parallel_max_agents(env)
             event["parallel_cap"] = {k: v for k, v in parallel_cap.items() if k != "probe"}
             event["parallel_cap_probe"] = parallel_cap.get("probe", {})
@@ -255,7 +276,10 @@ def main() -> int:
                     print(json.dumps(event, ensure_ascii=False, indent=2, sort_keys=True))
                 return 0
         else:
-            tick_cmd.insert(3, autorun_flag)
+            if autorun_allowed:
+                tick_cmd.insert(3, autorun_flag)
+            else:
+                event["autorun_skipped_reason"] = "human_escape_active_preclaim"
         tick = run(tick_cmd, timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "1200")), env=env)
         event["tick"] = compact_result(tick)
         summary = parse_json_tail(tick.get("stdout", ""))

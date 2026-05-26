@@ -109,6 +109,67 @@ def test_compute_parallel_max_agents_keeps_configured_floor_when_no_boundary_saf
     assert result["reason"] == "configured_cap_sufficient"
 
 
+def test_main_skips_autorun_preclaim_when_human_escape_active():
+    m = load_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        state = root / "state.json"
+        log = root / "log.jsonl"
+        lock = root / "lock.pid"
+        calls = []
+
+        summary = {
+            "status": "OK",
+            "next_task_id": "",
+            "dispatchable": True,
+            "error_count": 0,
+            "reconcile_action_count": 0,
+            "ingested_count": 0,
+            "auto_close_review": {"closed_count": 0, "error_count": 0},
+            "multimodel_intervention": {},
+        }
+
+        def fake_run(cmd, timeout=240, env=None):
+            calls.append(list(cmd))
+            assert "--parallel-autorun" not in cmd, cmd
+            assert "--autorun-step" not in cmd, cmd
+            return {"returncode": 0, "stdout": json.dumps(summary), "stderr": "", "stdout_tail": json.dumps(summary), "stderr_tail": ""}
+
+        def fake_compute_parallel_max_agents(env):
+            raise AssertionError("parallel cap probe must not run while human_escape is active")
+
+        old_state, old_log, old_lock = m.STATE, m.LOG, m.LOCK
+        old_run = m.run
+        old_dispatch_mode = m.load_taskpool_dispatch_mode
+        old_escape = m.human_escape_status
+        old_compute = m.compute_parallel_max_agents
+        try:
+            m.STATE = state
+            m.LOG = log
+            m.LOCK = lock
+            m.run = fake_run
+            m.load_taskpool_dispatch_mode = lambda: "parallel"
+            m.human_escape_status = lambda: {"status": "OK", "triggered": True, "info": {"failures": 3}}
+            m.compute_parallel_max_agents = fake_compute_parallel_max_agents
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = m.main()
+        finally:
+            m.STATE = old_state
+            m.LOG = old_log
+            m.LOCK = old_lock
+            m.run = old_run
+            m.load_taskpool_dispatch_mode = old_dispatch_mode
+            m.human_escape_status = old_escape
+            m.compute_parallel_max_agents = old_compute
+
+        assert rc == 0
+        assert len(calls) == 1
+        assert calls[0][-2:] == ["--summary", "--no-state"], calls[0]
+        event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
+        assert event["autorun_skipped_reason"] == "human_escape_active_preclaim"
+        assert event["human_escape"]["triggered"] is True
+
+
 def test_main_parses_large_summary_and_invokes_multimodel_probe_without_silent_nulls():
     m = load_module()
     with tempfile.TemporaryDirectory() as td:

@@ -498,6 +498,78 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
     assert any(call[0] == "run_json" and call[1][:1] == ["auto-close-review"] for call in calls), calls
 
 
+def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(("run_json", list(args)))
+        step = args[0]
+        if step == "parallel-claim-and-handoff":
+            return {
+                "status": "OK",
+                "claimed": True,
+                "claimed_count": 2,
+                "batch_id": "parallel-timeout-batch",
+                "claimed_tasks": [
+                    {"task_id": "task-1", "handoff": "/tmp/task-1.md", "run_id": "r1"},
+                    {"task_id": "task-2", "handoff": "/tmp/task-2.md", "run_id": "r2"},
+                ],
+            }
+        if step == "transition":
+            return {"ok": True, "status": "OK", "task": args[1], "to_status": "retry"}
+        if step == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 2, "selected": [{"id": "task-1"}, {"id": "task-2"}]}
+        if step == "dispatch-dry-run":
+            return {"status": "OK", "dispatchable": True, "next": {"id": "task-1", "title": "Task 1"}}
+        if step == "evidence-spine":
+            return {"status": "OK", "gate_status": "PASS", "summary": {}}
+        return {"status": "OK"}
+
+    def fake_run_cmd_json(cmd, timeout=None):
+        calls.append(("run_cmd_json", list(cmd), timeout))
+        assert "consume-claimed" in cmd, cmd
+        return {"status": "ERROR", "reason": "subprocess_timeout", "returncode": "timeout"}
+
+    old_argv = sys.argv[:]
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_append_log = module.append_log
+    old_save_state = module.save_state
+    old_load_state = module.load_state
+    try:
+        module.run_json = fake_run_json
+        module.run_cmd_json = fake_run_cmd_json
+        module.append_log = lambda event: None
+        module.save_state = lambda state: None
+        module.load_state = lambda: {}
+        sys.argv = [str(TICK), "--summary", "--no-state", "--parallel-autorun", "--max-agents", "2"]
+        import io
+        import contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = module.main()
+        assert rc == 2
+        payload = json.loads(buf.getvalue())
+    finally:
+        sys.argv = old_argv
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.append_log = old_append_log
+        module.save_state = old_save_state
+        module.load_state = old_load_state
+
+    transition_calls = [call for call in calls if call[0] == "run_json" and call[1][:1] == ["transition"]]
+    assert len(transition_calls) == 2, calls
+    for _, args in transition_calls:
+        assert "--to" in args and args[args.index("--to") + 1] == "retry", args
+        assert "--force" in args, args
+        assert "event_worker_trigger_timeout_cleanup" in " ".join(args), args
+    cleanup = payload["autorun"]["worker_timeout_cleanup"]
+    assert cleanup["released_count"] == 2, cleanup
+    assert payload["errors"][0]["timeout_cleanup"]["released_count"] == 2, payload
+
+
 def test_event_next_tick_depth_zero_skips_without_claiming_or_closing():
     module = load_tick_module()
     calls = []
@@ -664,6 +736,7 @@ if __name__ == "__main__":
     test_tick_multimodel_step_requires_explicit_flag_and_env()
     test_tick_multimodel_task_argument_routes_to_targeted_step()
     test_parallel_autorun_triggers_event_driven_worker_consumer_summary()
+    test_parallel_autorun_timeout_releases_claimed_batch_to_retry()
     test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
     test_event_next_tick_not_requested_skips_without_side_effects()
     test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()

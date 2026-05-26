@@ -115,6 +115,62 @@ def run_json(args: list[str]) -> dict[str, Any]:
     return run_cmd_json(cmd)
 
 
+def cleanup_event_worker_timeout_claims(claimed_items: list[dict[str, Any]], *, actor: str = "hermes-parallel") -> dict[str, Any]:
+    """Release a just-claimed batch when the event worker trigger times out.
+
+    `parallel-claim-and-handoff` mutates task notes to `claimed` before the
+    controller process starts workers. If that controller process is killed by
+    the tick timeout, any items it had not yet promoted to `running` remain as
+    claim-only wedges. Treat the timeout as no trustworthy worker proof and move
+    every still claim-bound item from the batch back to retry with structured
+    evidence; already-finished/review items are skipped by the lifecycle gate.
+    """
+    released: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for item in claimed_items:
+        if not isinstance(item, dict):
+            skipped.append({"task_id": "", "reason": "invalid_claim_payload"})
+            continue
+        task_id = str(item.get("task_id") or item.get("id") or "").strip()
+        if not task_id or task_id in seen:
+            skipped.append({"task_id": task_id, "reason": "missing_or_duplicate_task_id"})
+            continue
+        seen.add(task_id)
+        result = run_json([
+            "transition",
+            task_id,
+            "--to",
+            "retry",
+            "--actor",
+            actor,
+            "--authority",
+            "claim-and-handoff",
+            "--reason",
+            "event worker trigger timed out; killed worker group; release claim-bound batch for proof-gated retry",
+            "--evidence",
+            "command:brain_task_dispatch_tick event_worker_trigger_timeout_cleanup",
+            "--delay-minutes",
+            "5",
+            "--force",
+            "--json",
+        ])
+        entry = {"task_id": task_id, "transition": result, "to_status": "retry" if result.get("ok") else "unchanged"}
+        if result.get("ok"):
+            released.append(entry)
+        else:
+            skipped.append(entry)
+    return {
+        "status": "OK" if not skipped else "WARN",
+        "reason": "event_worker_trigger_timeout_cleanup",
+        "attempted_count": len(seen),
+        "released_count": len(released),
+        "released": released,
+        "skipped": skipped,
+        "safety": "timeout cleanup prevents claimed-without-running wedges; no task marked done",
+    }
+
+
 def run_cmd_json(cmd: list[str], timeout: float | None = None) -> dict[str, Any]:
     timeout = float(timeout if timeout is not None else command_timeout_seconds())
     proc = subprocess.Popen(
@@ -650,7 +706,12 @@ def main() -> int:
                 ),
             )
             if event["event_worker_trigger"].get("status") not in {"ok", "OK", "PASS", "SKIP"}:
-                errors.append({"step": "event_worker_trigger", "status": event["event_worker_trigger"].get("status"), "stderr": event["event_worker_trigger"].get("stderr"), "stdout": event["event_worker_trigger"].get("stdout"), "reason": event["event_worker_trigger"].get("reason")})
+                if event["event_worker_trigger"].get("reason") == "subprocess_timeout":
+                    event["event_worker_timeout_cleanup"] = cleanup_event_worker_timeout_claims(
+                        event["autorun"].get("claimed_tasks") or [],
+                        actor="hermes-parallel",
+                    )
+                errors.append({"step": "event_worker_trigger", "status": event["event_worker_trigger"].get("status"), "stderr": event["event_worker_trigger"].get("stderr"), "stdout": event["event_worker_trigger"].get("stdout"), "reason": event["event_worker_trigger"].get("reason"), "timeout_cleanup": event.get("event_worker_timeout_cleanup")})
                 event["status"] = "ERROR"
                 event["errors"] = errors
             else:
@@ -763,6 +824,7 @@ def main() -> int:
         "claimed_count": int(autorun_raw.get("claimed_count") or 0),
         "batch_id": autorun_raw.get("batch_id", ""),
         "worker_trigger": event.get("event_worker_trigger", {}) if isinstance(event.get("event_worker_trigger"), dict) else {},
+        "worker_timeout_cleanup": event.get("event_worker_timeout_cleanup", {}) if isinstance(event.get("event_worker_timeout_cleanup"), dict) else {},
         "event_next_tick": event_next_tick_raw,
         "safety": autorun_raw.get("safety", ""),
     }
@@ -776,6 +838,7 @@ def main() -> int:
         "ingested_count": event["ingested_count"],
         "railway_retest_released_count": event["railway_retest_released_count"],
         "error_count": len(errors),
+        "errors": errors,
         "warning_count": len(warnings),
         "warnings": warnings,
         "evidence_spine": {

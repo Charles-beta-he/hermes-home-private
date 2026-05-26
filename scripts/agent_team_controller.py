@@ -1482,7 +1482,12 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         max_agents = max(1, int(max_agents or 3))
     except Exception:
         max_agents = 3
-    claimed_items = list(claimed_items)[:max_agents]
+    # Do not truncate the claimed batch.  `max_agents` is a worker concurrency
+    # limit, not a consumption limit: every already-claimed handoff must be
+    # either advanced to running/review or explicitly released by the timeout /
+    # escape cleanup paths.  Truncating here leaves overflow items stuck in
+    # claimed with no worker or controller ownership.
+    claimed_items = list(claimed_items)
     ids = [str(item.get('task_id') or item.get('id') or '') for item in claimed_items if isinstance(item, dict)]
     ids = [x for x in ids if x]
     row_map = rows_by_id(ids)
