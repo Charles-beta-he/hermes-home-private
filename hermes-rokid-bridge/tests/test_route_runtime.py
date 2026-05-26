@@ -241,7 +241,7 @@ class RouteRuntimeContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("眼镜快答模型", result.answer)
         self.assertIn("后台长任务", result.answer)
 
-    async def test_lingzhu_plugin_native_action_is_clamped_before_high_impact_or_model(self):
+    async def test_lingzhu_plugin_native_action_degrades_before_high_impact_or_model(self):
         from route_runtime import RouteContext
 
         async def forbidden_model(prompt: str, user_text: str, session_key: str) -> str:
@@ -263,9 +263,10 @@ class RouteRuntimeContractTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertTrue(result.handled)
         self.assertEqual(result.route_id, "lingzhu_plugin")
-        self.assertIn("灵珠平台插件", result.answer)
-        self.assertIn("需要先确认", result.answer)
-        self.assertIn("不能声称已经执行", result.answer)
+        self.assertIn("降级为路线准备模式", result.answer)
+        self.assertIn("钟楼", result.answer)
+        self.assertNotIn("需要先确认", result.answer)
+        self.assertNotIn("不能声称已经执行", result.answer)
 
     async def test_lingzhu_plugin_uses_platform_receipt_when_present(self):
         from route_runtime import RouteContext
@@ -334,7 +335,27 @@ class RouteRuntimeContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("444", result.answer)
         self.assertNotIn("当前没有插件回执", result.answer)
 
-    async def test_lingzhu_high_risk_plugin_without_receipt_still_fails_closed(self):
+    async def test_lingzhu_photo_without_receipt_degrades_to_guidance(self):
+        from route_runtime import RouteContext
+
+        payload = _text_payload("帮我拍一张")
+        ctx = RouteContext(
+            payload=payload,
+            prompt=app.extract_user_prompt(payload),
+            user_text=app.extract_user_text(payload),
+            session_key=app.session_key_for(payload),
+        )
+
+        result = await app.resolve_runtime_route(ctx)
+
+        self.assertTrue(result.handled)
+        self.assertEqual(result.route_id, "lingzhu_plugin")
+        self.assertIn("降级为拍照引导模式", result.answer)
+        self.assertIn("收到图片后", result.answer)
+        self.assertNotIn("当前没有插件回执", result.answer)
+        self.assertNotIn("拍照成功", result.answer)
+
+    async def test_lingzhu_payment_without_receipt_still_fails_closed(self):
         from route_runtime import RouteContext
 
         payload = _text_payload("支付宝付款 12 元")

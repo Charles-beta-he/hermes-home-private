@@ -129,9 +129,12 @@ Rokid/Lingzhu custom-agent SSE requests may only include read-only context field
   - location -> normalized location/lat/lng from metadata;
   - device status -> battery/network/device fields;
   - calculator -> local safe arithmetic parser.
-- For high-risk/control capabilities (photo, navigation, exit, payment), still fail closed without a platform receipt and avoid fake completion wording such as “已拍照/付款成功/已退出”.
+- For medium/high UX control capabilities that can be safely degraded:
+  - photo -> degrade to photo guidance or image-received mode; if the payload already includes an image, continue with analysis/print-precheck, but never claim Hermes completed the physical shutter action.
+  - navigation -> degrade to route-preparation wording with the extracted destination; tell the user to confirm in Lingzhu/maps, but never claim navigation has launched without receipt.
+- For critical-risk capabilities (payment) and explicit exit-agent control, still fail closed without a platform receipt and avoid fake completion wording such as “付款成功/已退出”.
 
-This keeps glasses-visible plugin intents usable while preserving real-world action safety.
+This keeps glasses-visible plugin intents usable while preserving real-world action safety. Payment remains receipt-required.
 
 ## Mainland glasses SSE connectivity and X2D status pattern
 

@@ -932,8 +932,30 @@ def _safe_calculate_expression(user_text: str) -> str:
     return f"计算结果：{expr} = {result_text}。这是 Hermes 本地安全计算兜底。"
 
 
+def _extract_navigation_destination(user_text: str) -> str:
+    text = str(user_text or "").strip()
+    for marker in ("导航到", "路线到", "带我去", "去哪里怎么走"):
+        if marker in text:
+            dest = text.split(marker, 1)[1].strip(" ，。！？?：:")
+            if dest:
+                return dest[:40]
+    return "你说的目的地"
+
+
+def build_photo_degraded_answer(payload: RokidRequest) -> str:
+    images = extract_image_urls(payload)
+    if images:
+        return "拍照插件没有返回平台回执；我降级为图片接收模式：本次请求已经带有图片，我可以继续做后台视觉分析、打印预检或文字说明，但不会声称眼镜拍照动作由 Hermes 完成。"
+    return "拍照插件没有返回平台回执；我降级为拍照引导模式：请用眼镜系统拍照并发送图片。收到图片后，我可以继续做后台视觉分析、打印预检或文字说明，但不会声称已经替你完成拍照。"
+
+
+def build_navigation_degraded_answer(user_text: str) -> str:
+    destination = _extract_navigation_destination(user_text)
+    return f"导航插件没有返回平台回执；我降级为路线准备模式：目的地是{destination}。请在灵珠或地图端确认目的地后发起导航；我不能在没有平台回执时声称导航已经启动。"
+
+
 def build_local_plugin_fallback_answer(payload: RokidRequest, user_text: str, capability: str) -> str | None:
-    """Make low-risk Lingzhu plugin intents usable even when no platform receipt arrives."""
+    """Keep safe Lingzhu plugin intents usable even when no platform receipt arrives."""
     if capability == "weather":
         return build_weather_status_text(payload)
     if capability == "device_info":
@@ -942,6 +964,10 @@ def build_local_plugin_fallback_answer(payload: RokidRequest, user_text: str, ca
         return build_location_status_text(payload)
     if capability == "calculator":
         return _safe_calculate_expression(user_text)
+    if capability == "photo":
+        return build_photo_degraded_answer(payload)
+    if capability == "navigation":
+        return build_navigation_degraded_answer(user_text)
     return None
 
 
