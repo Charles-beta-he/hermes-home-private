@@ -3530,6 +3530,120 @@ def _evidence_blob(evidence: list[str]) -> str:
     return "\n".join(str(e or "").strip().lower() for e in evidence)
 
 
+FINAL_LANDED_ALLOWED_MANUAL_REVIEW_ACTIONS = {"approve_close_as_partial", "approve_watch"}
+FINAL_LANDED_IMPLEMENTATION_TOKENS = (
+    "git commit",
+    "commit:",
+    "commit=",
+    "patch:",
+    "implementation",
+    "implemented",
+    "script",
+    "skill",
+    "config",
+    "code",
+)
+FINAL_LANDED_VERIFICATION_TOKENS = (
+    "pytest",
+    "vitest",
+    "npm test",
+    "pnpm test",
+    "yarn test",
+    "mvn test",
+    "benchmark",
+    "read-back",
+    "readback",
+    "browser",
+    "playwright",
+    "curl",
+    "real-api",
+    "regression",
+    "test pass",
+    "tests pass",
+    "verification pass",
+)
+FINAL_LANDED_CODE_PATH_MARKERS = (
+    "/scripts/",
+    "/skills/",
+    "/hermes-agent/",
+    "config.yaml",
+    "shell-hooks-allowlist.json",
+)
+FINAL_LANDED_WEAK_ONLY_MARKERS = (
+    "py_compile_taskpool",
+    "pass_advisory_only",
+    "experienceatom",
+    "experience atom",
+    "discussion_result.json",
+    "manual-review-multimodel-result",
+    "manual_review",
+)
+
+
+def task_requires_final_landed_evidence(task: "Task") -> bool:
+    if "manual_review_final_landed" not in task.fm:
+        return False
+    if _frontmatter_bool(task.fm.get("manual_review_final_landed")):
+        return False
+    action = str(task.fm.get("manual_review_approval_action") or "").strip().lower()
+    return action not in FINAL_LANDED_ALLOWED_MANUAL_REVIEW_ACTIONS
+
+
+def _final_landed_evidence_classes(evidence: list[str]) -> tuple[bool, bool]:
+    """Return whether evidence contains a real implementation artifact and verification.
+
+    This gate intentionally does not scan for a single broad token.  Manual-review
+    reopen/needs-more-evidence tasks were previously reclosed by incidental words
+    in py_compile/advisory/proof evidence.  A final landing requires both sides of
+    the bundle: a concrete implementation artifact and a feature-specific
+    verification signal.  Generic selfcheck/proof hashes can still satisfy the
+    lane completion gate, but they do not prove final landing by themselves.
+    """
+    has_implementation = False
+    has_verification = False
+    for raw in evidence:
+        text = str(raw or "").strip().lower()
+        if not text:
+            continue
+        if any(marker in text for marker in FINAL_LANDED_WEAK_ONLY_MARKERS):
+            continue
+        prefix, _sep, payload = text.partition(":")
+        payload = payload.strip()
+        if prefix == "proof":
+            continue
+        if prefix == "file":
+            if any(marker in payload for marker in FINAL_LANDED_CODE_PATH_MARKERS):
+                has_implementation = True
+            if any(token in payload for token in FINAL_LANDED_VERIFICATION_TOKENS):
+                has_verification = True
+            continue
+        if prefix == "artifact":
+            if any(token in payload for token in FINAL_LANDED_IMPLEMENTATION_TOKENS):
+                has_implementation = True
+            if any(token in payload for token in FINAL_LANDED_VERIFICATION_TOKENS):
+                has_verification = True
+            continue
+        if prefix == "command":
+            if any(token in payload for token in FINAL_LANDED_IMPLEMENTATION_TOKENS):
+                has_implementation = True
+            if any(token in payload for token in FINAL_LANDED_VERIFICATION_TOKENS):
+                has_verification = True
+            continue
+        # Backward-compatible structured evidence that points at an existing
+        # absolute path can be an implementation artifact only when the path is
+        # inside a known code/config surface; docs/private review reports should
+        # not accidentally count as final landing.
+        if text.startswith("/") and any(marker in text for marker in FINAL_LANDED_CODE_PATH_MARKERS):
+            has_implementation = True
+        if any(token in text for token in FINAL_LANDED_VERIFICATION_TOKENS):
+            has_verification = True
+    return has_implementation, has_verification
+
+
+def evidence_has_final_landed_signal(evidence: list[str]) -> bool:
+    return all(_final_landed_evidence_classes(evidence))
+
+
 def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
     """Validate lane-specific done evidence beyond generic structured evidence.
 
@@ -3574,6 +3688,8 @@ def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
             failures.append("advisory-evidence-review-done requires deposited advisory evidence/report artifact")
     else:
         failures.append(f"completion_gate:unknown:{gate}")
+    if task_requires_final_landed_evidence(task) and not evidence_has_final_landed_signal(evidence):
+        failures.append("manual_review_final_landed=false requires final landed evidence bundle (implementation artifact + feature-specific verification evidence); advisory-only/py_compile/hash/ExperienceAtom evidence is insufficient")
     return failures
 
 
@@ -4651,6 +4767,7 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
         # gate is PASS + LOOP_DONE.
         should_trigger_certification = (
             bool(base_failures)
+            and not any("manual_review_final_landed=false requires final landed evidence" in str(f) for f in base_failures)
             and task_multimodel_intervention_required(task)
             and not task_multimodel_passed(task)
             and (

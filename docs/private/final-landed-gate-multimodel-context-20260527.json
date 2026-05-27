@@ -1,0 +1,38 @@
+{
+  "problem": "Hermes taskpool manual-review reopened tasks were falsely auto-closed again as done using weak evidence such as py_compile_taskpool PASS, proof hashes, and PASS_ADVISORY_ONLY/advisory artifacts. User approved fixing according to final plan with real multi-model analysis.",
+  "observed_incident": {
+    "T02": "done -> pending after manual review, then auto-closed back to done using py_compile/hash/multimodel-only evidence; manually corrected to blocked",
+    "T04": "same false close recurrence; manually corrected to blocked",
+    "T17": "retry after agent-team human escape release; not complete",
+    "control_plane": "selfcheck PASS and proof-check PASS, so the issue is semantic closeout gating rather than global health"
+  },
+  "current_code": {
+    "file": "/Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+    "current_final_landed_hook": "completion_gate_failures appends manual_review_final_landed=false failure when task_requires_final_landed_evidence(task) and not evidence_has_final_landed_signal(evidence)",
+    "current_risk": "evidence_has_final_landed_signal is token-based and accepts broad tokens such as commit/skill/script/config/test/verification anywhere in the evidence blob; it may accept weak or incidental text rather than a structured feature-specific implementation+verification bundle.",
+    "relevant_lines": "FINAL_LANDED_EVIDENCE_TOKENS lines 3533-3551; task_requires_final_landed_evidence 3554-3560; completion_gate_failures 3568-3614; lifecycle_gate calls completion_gate_failures at 3879-3880; auto-close-review probes lifecycle_gate before closing around 4681-4682."
+  },
+  "existing_tests": {
+    "file": "/Users/charles/.hermes/scripts/test_brain_task_orchestrator.py",
+    "tests": [
+      "test_manual_review_final_landed_false_blocks_weak_done_transition",
+      "test_manual_review_final_landed_false_blocks_auto_close_review_without_real_landing_evidence",
+      "test_manual_review_partial_closeout_can_still_close_without_final_landed_gate",
+      "test_manual_review_reopen_accepts_real_final_landed_evidence"
+    ],
+    "gap": "No RED test yet proves that one weak incidental token, e.g. command:pytest PASS alone or file path containing config, cannot satisfy final_landed for approve_reopen/needs_more_evidence."
+  },
+  "desired_final_plan_candidate": {
+    "rule": "For manual_review_final_landed=false tasks whose approval action is not approve_close_as_partial/approve_watch, done requires a structured final-landed bundle, not a substring token.",
+    "bundle_shape": "At least one implementation artifact evidence (commit OR script/code/config/skill file path/artifact) AND at least one verification evidence (test/pytest/vitest/benchmark/read-back/browser/curl/selfcheck/proof-check tied to the implementation). Weak evidence classes such as py_compile_taskpool, proof:sha256 only, PASS_ADVISORY_ONLY, ExperienceAtom-only, generic manual-review report, or advisory discussion artifacts remain insufficient.",
+    "closeout_path": "Apply in lifecycle_gate -> completion_gate_failures so transition done and auto-close-review both fail closed. Keep approve_close_as_partial and approve_watch closable as partial/watch outcomes. Keep blocked T02/T04 until gate is committed and verified."
+  },
+  "constraints": [
+    "No feature loss, no precision loss; fail closed for ambiguous evidence.",
+    "Use TDD: add failing regression before production patch.",
+    "Do not broaden expensive multimodel autorun; this is deterministic lifecycle gating.",
+    "Preserve partial close/watch exceptions because those are explicit non-final outcomes.",
+    "Hermes own changes need scoped git commit in ~/.hermes."
+  ],
+  "question": "Critique the candidate final plan and return a concise final implementation recommendation. Should the gate be simple token-based or structured bundle-based? What exact evidence classes should block/allow, and where should it be enforced?"
+}

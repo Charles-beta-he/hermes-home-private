@@ -257,6 +257,41 @@ def add_evolution_task(env, title="优化本地任务池自进化", priority="P0
     return created["id"], Path(created["created"])
 
 
+def add_review_evolution_task(env, title="验证 final landed 证据门"):
+    task_id, task_path = add_evolution_task(env, title=title, priority="P1")
+    text = task_path.read_text(encoding="utf-8")
+    for status in ("pending", "claimed", "running", "retry", "blocked", "done"):
+        if f"status: {status}" in text:
+            text = text.replace(f"status: {status}", "status: review", 1)
+            break
+    for prefix in ("claimed_by:", "claim_expires_at:", "run_id:"):
+        lines = []
+        for line in text.splitlines():
+            if line.startswith(prefix):
+                lines.append(prefix + " ")
+            else:
+                lines.append(line)
+        text = "\n".join(lines) + ("\n" if text.endswith("\n") else "")
+    text = text.replace("evidence: []", "evidence:\n  - command:selfcheck PASS", 1)
+    task_path.write_text(text, encoding="utf-8")
+    return task_id, task_path
+
+
+def annotate_manual_review(task_path, *, action="approve_reopen", final_landed=False, reason="needs real final landed evidence"):
+    text = task_path.read_text(encoding="utf-8")
+    fields = (
+        f'manual_review_decided_at: "2026-05-27T16:00:00+08:00"\n'
+        'manual_review_decided_by: "user-approved-multimodel-review"\n'
+        'manual_review_classification: "REOPEN_FOR_TASKPOOL"\n'
+        f'manual_review_approval_action: "{action}"\n'
+        f'manual_review_final_landed: {str(final_landed).lower()}\n'
+        'manual_review_result_ref: "/tmp/manual-review.json"\n'
+        f'manual_review_reason: "{reason}"\n'
+    )
+    text = text.replace("claimed_by: ", fields + "claimed_by: ", 1)
+    task_path.write_text(text, encoding="utf-8")
+
+
 def add_mission_envelope_fields(task_path, *, valid=True):
     text = task_path.read_text(encoding="utf-8")
     marker = "evidence: []"
@@ -1518,6 +1553,152 @@ def test_passed_advisory_only_review_task_does_not_rerun_weak_multimodel_loop():
         dry = json.loads(run(env, "multimodel-intervention-dry-run", "--json").stdout)
         assert dry["intervention_required"] is False, dry
         assert dry.get("selected_task_id", "") != task_id, dry
+
+
+def test_manual_review_final_landed_false_blocks_weak_done_transition():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_review_evolution_task(env, title="manual review reopen must not auto-close from selfcheck")
+        annotate_manual_review(task_path, action="approve_reopen", final_landed=False)
+
+        weak_done = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command:selfcheck PASS",
+            "--json",
+            check=False,
+        )
+        assert weak_done.returncode != 0
+        assert "manual_review_final_landed=false requires final landed evidence" in weak_done.stderr
+
+
+def test_manual_review_final_landed_false_blocks_auto_close_review_without_real_landing_evidence():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_review_evolution_task(env, title="auto-close review must not treat weak evidence as final landed")
+        annotate_manual_review(task_path, action="needs_more_evidence", final_landed=False)
+
+        payload = json.loads(run(env, "auto-close-review", "--task", task_id, "--json").stdout)
+        assert payload["closed_count"] == 0, payload
+        assert payload["skipped_count"] == 1, payload
+        assert payload["skipped"][0]["task_id"] == task_id, payload
+        assert payload["skipped"][0]["action"] in {"skip", "return_to_retry", "block_after_certification"}, payload
+        row = next(r for r in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["status"] != "done", row
+
+
+def test_manual_review_partial_closeout_can_still_close_without_final_landed_gate():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_review_evolution_task(env, title="approved close_as_partial should remain closable")
+        annotate_manual_review(task_path, action="approve_close_as_partial", final_landed=False, reason="partial closeout is explicitly allowed")
+
+        allowed_done = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command:selfcheck PASS",
+            "--json",
+        )
+        payload = json.loads(allowed_done.stdout)
+        assert payload["status"] == "OK", payload
+        row = next(r for r in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["status"] == "done", row
+
+
+def test_manual_review_reopen_rejects_verification_only_final_landed_evidence():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_review_evolution_task(env, title="pytest alone is not final landed")
+        annotate_manual_review(task_path, action="approve_reopen", final_landed=False)
+
+        verification_only_done = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command:selfcheck PASS",
+            "--evidence",
+            "command:pytest PASS",
+            "--json",
+            check=False,
+        )
+        assert verification_only_done.returncode != 0
+        assert "requires final landed evidence bundle" in verification_only_done.stderr
+
+
+
+def test_manual_review_reopen_rejects_implementation_only_final_landed_evidence():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_review_evolution_task(env, title="commit alone is not final landed")
+        annotate_manual_review(task_path, action="approve_reopen", final_landed=False)
+
+        implementation_only_done = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command:selfcheck PASS",
+            "--evidence",
+            "command:git commit abc123",
+            "--json",
+            check=False,
+        )
+        assert implementation_only_done.returncode != 0
+        assert "requires final landed evidence bundle" in implementation_only_done.stderr
+
+
+
+def test_manual_review_reopen_accepts_real_final_landed_evidence():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_review_evolution_task(env, title="real final landed evidence should allow done")
+        annotate_manual_review(task_path, action="approve_reopen", final_landed=False)
+        readback = task_path.parent / "readback.txt"
+        readback.write_text("read-back verified", encoding="utf-8")
+
+        landed_done = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command:selfcheck PASS",
+            "--evidence",
+            "command:pytest PASS",
+            "--evidence",
+            "command:git commit abc123",
+            "--evidence",
+            f"file:{readback}",
+            "--json",
+        )
+        payload = json.loads(landed_done.stdout)
+        assert payload["status"] == "OK", payload
+        row = next(r for r in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["status"] == "done", row
 
 
 def test_strong_multimodel_trigger_still_preempts_completed_advisory_state():
