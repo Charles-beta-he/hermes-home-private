@@ -210,6 +210,12 @@ def normalize_candidate(report_payload: dict[str, Any], candidate: dict[str, Any
     normalized["concepts"] = csvify(candidate.get("concepts"))
     normalized["dependency_order"] = csvify(candidate.get("dependency_order"))
     normalized["expected_participants"] = csvify(candidate.get("expected_participants"))
+    normalized["acceptance_evidence"] = csvify(candidate.get("acceptance_evidence"))
+    evidence_bundle = candidate.get("evidence_bundle")
+    if isinstance(evidence_bundle, (dict, list)):
+        normalized["evidence_bundle"] = json.dumps(evidence_bundle, ensure_ascii=False, sort_keys=True)
+    else:
+        normalized["evidence_bundle"] = csvify(evidence_bundle)
     return normalize_multimodel_contract(normalized)
 
 

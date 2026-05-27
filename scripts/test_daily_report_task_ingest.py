@@ -219,6 +219,31 @@ def test_ingest_blocks_eligible_multimodel_candidate_with_missing_local_evidence
         assert request["dedupe_key"] == "pa-health-regression"
 
 
+def test_ingest_accepts_list_and_object_fields_from_browser_sidecar():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        vault = make_vault(root)
+        report_path = root / "aihot-daily-2026-05-27.md"
+        report_path.write_text("# AIHOT Daily\n", encoding="utf-8")
+        proposal = build_payload(report_path)
+        candidate = proposal["candidates"][0]
+        candidate.update({
+            "dedupe_key": "aihot-object-fields",
+            "title": "Validate browser daily sidecar structured fields",
+            "acceptance_evidence": ["report exists", "sidecar has schema", "ingest succeeds"],
+            "evidence_bundle": {"report_path": str(report_path), "source_urls": ["https://aihot.virxact.com/daily"]},
+        })
+        proposal_path = root / "aihot-object-fields.tasks.json"
+        proposal_path.write_text(json.dumps(proposal, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        state_path = root / "daily_report_ingest_state.json"
+
+        result = run_ingest(proposal_path, vault, state_path, write=True)
+        assert result["created_count"] == 1, result
+        created_text = Path(result["actions"][0]["task_path"]).read_text(encoding="utf-8")
+        assert "report exists" in created_text
+        assert "https://aihot.virxact.com/daily" in created_text
+
+
 def test_ingest_dedupes_same_repo_signal_across_reports():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -250,6 +275,7 @@ def main() -> int:
     test_ingest_accepts_external_aihot_sidecar_when_contract_is_present()
     test_ingest_suppresses_product_task_sidecar_self_asserted_multimodel_contract()
     test_ingest_blocks_eligible_multimodel_candidate_with_missing_local_evidence_bundle()
+    test_ingest_accepts_list_and_object_fields_from_browser_sidecar()
     test_ingest_dedupes_same_repo_signal_across_reports()
     print("PASS")
     return 0
