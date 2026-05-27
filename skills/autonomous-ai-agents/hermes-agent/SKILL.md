@@ -88,6 +88,7 @@ When a user asks to analyze an external repository to improve Hermes itself, fir
 - Long `brain_task_orchestrator.py add` calls may time out while still creating the task file and firing hooks. Before retrying or declaring failure, search/read the taskpool for the expected titles and reconcile status; avoid duplicate task creation.
 - `build_environment_hints()` contains dynamic CWD — MUST be in `context_parts`, NOT `stable_parts` (breaks prefix cache).
 - Evolution lane certification deadloop: retry_count >= 2 triggers loop_non_convergence too aggressively. See `references/evolution-lane-cert-loop.md`.
+- Taskpool multi-model fan-out must not run as a long synchronous tick/hook step. Use `multimodel-intervention-step --background` (or dispatch tick `--multimodel-step` without `--multimodel-foreground`) so T2/T3 consult_models fan-out is represented by a durable async job under `~/.hermes/state/taskpool-multimodel/jobs/`, with logs under `~/.hermes/logs/taskpool-multimodel/`. Check `multimodel-intervention-jobs --json` before retrying to avoid duplicate certification on the same task.
 - Convergence subtasks don't auto-trigger parent ratification — must manually unblock parent after children are done.
 - ContinuationPacket / auto-relay is recursive — keep max_relay_count <= 3 to avoid deep stack, and treat both `budget_exhausted` and `max_iterations_reached(...)` as relay-eligible exit reasons.
 - Dashboard `active_count` only shows evolution lane tasks with multimodel scores, not all kanban ready tasks.
