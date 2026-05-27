@@ -574,6 +574,7 @@ def main() -> int:
     parser.add_argument("--event-next-tick-depth", type=int, default=1, help="Depth cap for event-driven follow-through after workers stop at review; 0 disables, max 3")
     parser.add_argument("--archive-handoffs", action="store_true", help="Archive old autorun/parallel handoff files beyond configured keep count")
     parser.add_argument("--multimodel-step", action="store_true", help="Opt-in expensive multi-model step; still requires HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1")
+    parser.add_argument("--multimodel-foreground", action="store_true", help="Wait synchronously for --multimodel-step instead of spawning durable background job")
     parser.add_argument("--multimodel-task", default="", help="Optional task id to scope --multimodel-step; used by task_added event hooks")
     args = parser.parse_args()
     taskpool_cfg = load_taskpool_runtime_config()
@@ -642,6 +643,8 @@ def main() -> int:
         multimodel_cmd = ["multimodel-intervention-step"]
         if args.multimodel_task:
             multimodel_cmd.extend(["--task", args.multimodel_task])
+        if not args.multimodel_foreground:
+            multimodel_cmd.append("--background")
         multimodel_cmd.append("--json")
         event["multimodel_step"] = run_json(multimodel_cmd)
         if event["multimodel_step"].get("status") not in allowed_statuses:

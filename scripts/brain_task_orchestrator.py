@@ -156,6 +156,8 @@ MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_m
 MULTIMODEL_AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"
 MULTIMODEL_ALLOWLIST = AUTORUN_STATE_DIR / "multimodel_intervention_allowlist.json"
 MULTIMODEL_PASS_STATUSES = {"certified", "certified_with_minor_risks"}
+MULTIMODEL_ASYNC_JOB_DIR = HERMES_HOME / "state" / "taskpool-multimodel" / "jobs"
+MULTIMODEL_ASYNC_LOG_DIR = HERMES_HOME / "logs" / "taskpool-multimodel"
 QUORUM_CONFIG = Path(os.environ.get("HERMES_QUORUM_CONFIG", str(HERMES_HOME / "config" / "quorum.yaml"))).expanduser()
 DEFAULT_REQUIRED_RATIFICATION_MODELS = ("claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
 DEFAULT_OPTIONAL_RATIFICATION_MODELS = ("gemini-3.1-pro-preview",)
@@ -6495,6 +6497,124 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
     }
 
 
+def multimodel_async_job_alive(job: dict[str, Any]) -> bool:
+    try:
+        pid = int(job.get("pid") or 0)
+    except Exception:
+        return False
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except Exception:
+        return False
+
+
+def multimodel_async_job_files() -> list[Path]:
+    if not MULTIMODEL_ASYNC_JOB_DIR.exists():
+        return []
+    return sorted(MULTIMODEL_ASYNC_JOB_DIR.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def load_multimodel_async_jobs(task_id: str = "") -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    for path in multimodel_async_job_files():
+        try:
+            job = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if task_id and str(job.get("task_id") or "") != task_id:
+            continue
+        job["job_file"] = str(path)
+        job["alive"] = multimodel_async_job_alive(job)
+        jobs.append(job)
+    return jobs
+
+
+def start_multimodel_async_job(task_id: str, *, selected: dict[str, Any], allowlist_active: bool) -> dict[str, Any]:
+    """Spawn a durable background multimodel step and return immediately.
+
+    This is the control-plane async boundary: ticks/hooks record a job receipt and
+    release their own process instead of synchronously waiting for long T2/T3
+    model fan-out. The child still runs the existing fail-closed step and owns
+    final gate/task mutation.
+    """
+    live = [j for j in load_multimodel_async_jobs(task_id) if j.get("alive")]
+    if live:
+        return {
+            "status": "OK",
+            "action": "already_running",
+            "task_id": task_id,
+            "job": live[0],
+            "safety": "dedupe prevents parallel certification on the same task",
+        }
+    MULTIMODEL_ASYNC_JOB_DIR.mkdir(parents=True, exist_ok=True)
+    MULTIMODEL_ASYNC_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    job_id = f"{now().strftime('%Y%m%dT%H%M%S')}-{task_id[:48]}-{os.getpid()}"
+    log_path = MULTIMODEL_ASYNC_LOG_DIR / f"{job_id}.jsonl"
+    job_path = MULTIMODEL_ASYNC_JOB_DIR / f"{job_id}.json"
+    env = os.environ.copy()
+    env[MULTIMODEL_AUTORUN_ENV_FLAG] = "1"
+    cmd = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "multimodel-intervention-step",
+        "--task",
+        task_id,
+        "--json",
+    ]
+    lifecycle_running = mark_multimodel_step_running(task_id)
+    try:
+        with log_path.open("a", encoding="utf-8") as logf:
+            proc = subprocess.Popen(cmd, stdout=logf, stderr=subprocess.STDOUT, text=True, start_new_session=True, env=env)
+    except Exception as exc:
+        return {
+            "status": "ERROR",
+            "action": "spawn_failed",
+            "task_id": task_id,
+            "error": str(exc),
+            "lifecycle_running": lifecycle_running,
+        }
+    job = {
+        "schema": "taskpool_multimodel_async_job_v1",
+        "job_id": job_id,
+        "task_id": task_id,
+        "pid": proc.pid,
+        "cmd": cmd,
+        "started_at": iso(),
+        "job_file": str(job_path),
+        "log_path": str(log_path),
+        "state_path": str(selected.get("state_path") or ""),
+        "recommended_tier": str(selected.get("recommended_tier") or ""),
+        "advisory_only": bool(selected.get("advisory_only")),
+        "allowlist_active": allowlist_active,
+        "lifecycle_running": lifecycle_running,
+        "safety": "background process owns build->discussion->gate->mutation; parent tick returns immediately",
+    }
+    job_path.write_text(json.dumps(job, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return {"status": "OK", "action": "spawned", "task_id": task_id, "job": {**job, "alive": True}}
+
+
+def command_multimodel_async_jobs(args: argparse.Namespace) -> dict[str, Any]:
+    jobs = load_multimodel_async_jobs(getattr(args, "task", "") or "")
+    max_jobs = max(1, int(getattr(args, "max_jobs", 20) or 20))
+    jobs = jobs[:max_jobs]
+    return {
+        "status": "OK",
+        "schema": "taskpool_multimodel_async_jobs_v1",
+        "generated_at": iso(),
+        "job_count": len(jobs),
+        "alive_count": sum(1 for j in jobs if j.get("alive")),
+        "jobs": jobs,
+        "safety": "status only; child step remains the sole owner of task mutation",
+    }
+
+
 def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, Any]:
     """Execute one multimodel intervention step: build state -> run discussion -> gate -> mutate.
 
@@ -6565,6 +6685,15 @@ def command_multimodel_intervention_step(args: argparse.Namespace) -> dict[str, 
         "advisory_only": advisory_only_plan,
         "tier_routing": "advisory" if advisory_only_plan else "certification",
     }
+    if getattr(args, "background", False):
+        async_result = start_multimodel_async_job(task_id, selected=selected, allowlist_active=allowlist_active)
+        return {
+            **result,
+            "status": async_result.get("status", "ERROR"),
+            "action": "background_start",
+            "async_job": async_result,
+            "safety": "async start returns without waiting for model fan-out; child step performs fail-closed mutation",
+        }
     result["lifecycle_running"] = mark_multimodel_step_running(task_id)
 
     # Step 1: Build state file (shell=True for && chains)
@@ -8771,7 +8900,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     msp = sub.add_parser("multimodel-intervention-step")
     msp.add_argument("--task", default="")
+    msp.add_argument("--background", action="store_true", help="spawn the selected multimodel step as a durable background job and return immediately")
     msp.add_argument("--json", action="store_true")
+
+    mjp = sub.add_parser("multimodel-intervention-jobs")
+    mjp.add_argument("--task", default="")
+    mjp.add_argument("--max-jobs", type=int, default=20)
+    mjp.add_argument("--json", action="store_true")
 
     mpp = sub.add_parser("multimodel-intervention-parallel-step")
     mpp.add_argument("--max-workers", type=int, default=3)
@@ -8898,6 +9033,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_multimodel_intervention_dry_run(args), args.json)
     if args.cmd == "multimodel-intervention-step":
         return print_result(command_multimodel_intervention_step(args), args.json)
+    if args.cmd == "multimodel-intervention-jobs":
+        return print_result(command_multimodel_async_jobs(args), args.json)
     if args.cmd == "multimodel-intervention-parallel-step":
         return print_result(command_multimodel_intervention_parallel_step(args), args.json)
     if args.cmd == "ratification-gate":

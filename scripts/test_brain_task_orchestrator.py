@@ -2297,6 +2297,78 @@ def test_multimodel_step_marks_task_running_while_external_process_is_inflight_t
             os.environ.update(old_env)
 
 
+def test_multimodel_step_background_spawns_durable_job_without_waiting_for_models():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        old_env = os.environ.copy()
+        try:
+            os.environ.clear()
+            os.environ.update(env)
+            os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = "1"
+            mod = load_orchestrator_module()
+            setattr(mod, "MULTIMODEL_ASYNC_JOB_DIR", Path(td.name) / "jobs")
+            setattr(mod, "MULTIMODEL_ASYNC_LOG_DIR", Path(td.name) / "logs")
+            created = mod.create_task_note(
+                title="后台多模型 fanout 不阻塞 tick",
+                priority="P0",
+                project="self-improvement",
+                lane="evolution",
+                concepts=["task"],
+                expires_days=30,
+                expires_at="2099-01-01",
+                workflow_contract="[[08-模板/task-workflow-contract-template]]",
+                priority_layer="P1",
+                dependency_order=["1"],
+                multimodel_triage_result="P1",
+                architecture_target="taskpool",
+                capability_delta="background multimodel receipt exists",
+                anti_drift_check="parent command must not synchronously wait for consult_models fanout",
+                acceptance_evidence="async job json written and task marked running",
+            )
+            task = mod.find_task(created["id"])
+            plan = {
+                "task": task.row(),
+                "build_state_command": "fake-build-state",
+                "run_discussion_command": "fake-run-discussion-that-would-be-long",
+                "state_path": str(Path(td.name) / "state.json"),
+                "recommended_tier": "T3_certification",
+                "advisory_only": False,
+                "intervention_required": True,
+            }
+            setattr(
+                mod,
+                "command_multimodel_intervention_dry_run",
+                lambda _args: {"intervention_required": True, "selected": plan, "convergence": {"total_active": 1}},
+            )
+
+            class FakePopen:
+                def __init__(self, cmd, **kwargs):
+                    self.pid = 424242
+                    self.cmd = cmd
+                    self.kwargs = kwargs
+
+            calls = {"popen": 0, "run": 0}
+            def fake_popen(cmd, **kwargs):
+                calls["popen"] += 1
+                return FakePopen(cmd, **kwargs)
+            def fake_run(*_args, **_kwargs):
+                calls["run"] += 1
+                raise AssertionError("background start must not run consult_models synchronously")
+            mod.subprocess.Popen = fake_popen
+            mod.subprocess.run = fake_run
+
+            result = mod.command_multimodel_intervention_step(type("Args", (), {"task": task.id, "background": True, "json": True})())
+            assert result["status"] == "OK", result
+            assert result["action"] == "background_start", result
+            assert result["async_job"]["action"] == "spawned", result
+            assert calls == {"popen": 1, "run": 0}, calls
+            assert list(mod.MULTIMODEL_ASYNC_JOB_DIR.glob("*.json")), result
+            assert mod.find_task(task.id).status == "running"
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
 def test_multimodel_parallel_allowlist_matches_architecture_target_local_brain():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -2509,6 +2581,7 @@ def main():
     test_proof_check_flags_persisted_autorun_done_without_proof_hash()
     test_proof_check_include_active_does_not_fail_historical_autorun_hashes()
     test_multimodel_step_marks_task_running_while_external_process_is_inflight_then_review()
+    test_multimodel_step_background_spawns_durable_job_without_waiting_for_models()
     test_ratification_policy_is_loaded_from_quorum_config_not_code_literals()
     test_terminal_boundary_debt_does_not_block_active_dispatch_boundary()
     print("PASS")
