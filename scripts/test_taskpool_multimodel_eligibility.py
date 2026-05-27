@@ -112,11 +112,45 @@ def test_explicit_requires_multimodel_remains_strong_trigger_for_work_task():
     assert "explicit_requires_multimodel" in reasons
 
 
+def test_reading_advisory_negative_contract_consumes_weak_multimodel_signals():
+    orch = load_orch()
+    task = make_task(
+        orch,
+        {
+            "status": "review",
+            "priority": "P2",
+            "lane": "advisory",
+            "project": "reading-programming-books",
+            "architecture_target": "skill-graph",
+            "mission_schema_version": "mission_task_v1",
+            "mission_id": "reading-http",
+            "mission_objective": "bounded reading tranche",
+            "mission_constraints": ["source-grounded notes only"],
+            "red_lines": ["do not close without artifact"],
+            "non_goals": ["not implementation"],
+            "evidence_refs": ["url:https://example.test/book.pdf"],
+            "acceptance_criteria": ["artifact:notes"],
+            "dag_nodes": ["read", "note"],
+            "checkpoint_states": ["artifact_ready"],
+            "permission_gates": ["proof_check"],
+            "handoff_artifacts": ["artifact:notes"],
+            "proof_artifacts": ["artifact:notes"],
+            "requires_multimodel": False,
+            "retry_count": 3,
+            "multimodel_triage_result": "fixed intake triage: Some-Many-Books is a reading backlog, no per-book multimodel execution required; priority derived from user career relevance",
+        },
+        "Task - 精读书籍：《HTTP权威指南》",
+    )
+    assert orch.task_has_explicit_negative_multimodel_contract(task) is True
+    assert orch.task_multimodel_intervention_reasons(task) == []
+
+
 def main() -> int:
     test_work_product_task_ignores_weak_multimodel_sidecar_fields()
     test_retrying_work_product_task_does_not_trigger_automatic_panel()
     test_evolution_control_plane_task_accepts_weak_contract_and_keywords()
     test_explicit_requires_multimodel_remains_strong_trigger_for_work_task()
+    test_reading_advisory_negative_contract_consumes_weak_multimodel_signals()
     print("PASS")
     return 0
 

@@ -1054,6 +1054,7 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract",
         "requires_multimodel", "multimodel_reason", "expected_participants", "truth_gate", "evidence_bundle",
         "required_authority", "max_authority", "permission_tier", "write_surfaces", "completion_gate", "lane_semantics",
+        "file_access_boundary", "allowed_read_paths", "allowed_write_paths", "forbidden_file_patterns", "evidence_egress_policy",
         "mission_schema_version", "mission_id", "mission_title", "mission_objective", "mission_constraints",
         "red_lines", "non_goals", "evidence_refs", "acceptance_criteria", "dag_nodes", "checkpoint_states",
         "permission_gates", "handoff_artifacts", "proof_artifacts", "rollback_signal", "certification_status",
@@ -1681,6 +1682,36 @@ def task_multimodel_artifact(task: "Task") -> str:
     ).strip()
 
 
+def task_has_explicit_negative_multimodel_contract(task: "Task") -> bool:
+    """Return True when intake triage explicitly consumed weak multimodel signals.
+
+    Reading/advisory backlog tasks may legitimately carry architecture metadata
+    (for skill-graph placement) and mission envelopes (for evidence discipline)
+    without requiring a per-item multi-model certification round. Treating those
+    metadata fields as additive weak triggers caused dashboard-level false
+    positives and scheduler churn. This gate only consumes weak/advisory
+    triggers; strong explicit or protected-domain triggers remain below.
+    """
+    if _frontmatter_bool(task.fm.get("requires_multimodel")):
+        return False
+    triage = str(task.fm.get("multimodel_triage_result") or "").strip().lower()
+    if not triage:
+        return False
+    negative_markers = (
+        "no per-book multimodel execution required",
+        "no per book multimodel execution required",
+        "no per-item multimodel execution required",
+        "no per item multimodel execution required",
+        "no per-task multimodel execution required",
+        "no per task multimodel execution required",
+        "no per-book multi-model execution required",
+        "no per item multi-model execution required",
+    )
+    if not any(marker in triage for marker in negative_markers):
+        return False
+    return task.lane == "advisory" or str(task.project or "").strip().lower() in {"reading-programming-books", "reading"}
+
+
 def resolve_local_artifact_path(ref: str) -> Path | None:
     """Resolve a local structured artifact reference without accepting opaque proof labels."""
     text = (ref or "").strip()
@@ -2143,7 +2174,7 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     # --- Strong structural triggers (fire immediately) ---
     if task.priority == "P0" and task.lane == "evolution":
         reasons.append("p0_evolution_blast_radius")
-    if task.retry_count() >= 2:
+    if task.retry_count() >= 2 and not task_has_explicit_negative_multimodel_contract(task):
         reasons.append("loop_non_convergence")
     if task.is_stale_claim():
         reasons.append("stale_claim")
@@ -2199,6 +2230,8 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     if strong & set(unique):
         return unique
     if task_multimodel_advisory_completed(task):
+        return []
+    if task_has_explicit_negative_multimodel_contract(task):
         return []
     if len(unique) >= 2:
         return unique
@@ -2711,6 +2744,11 @@ def create_task_note(
         "capability_delta": capability_delta or "",
         "anti_drift_check": anti_drift_check or "",
         "acceptance_evidence": acceptance_evidence or "",
+        "file_access_boundary": "declare-task-specific-file-access-before-execution",
+        "allowed_read_paths": [],
+        "allowed_write_paths": [],
+        "forbidden_file_patterns": ["~/.hermes/.env", "~/.ssh/*", "**/*token*", "**/*secret*", "**/*credential*"],
+        "evidence_egress_policy": "record paths and proof summaries only; do not paste credential/private-file contents into task notes or external reports",
         "multimodel_triage_result": normalized_multimodel_triage_result,
         "workflow_contract": workflow_contract,
         "claimed_by": "",
@@ -2753,6 +2791,7 @@ def create_task_note(
         "## Plan / Workpad",
         "",
         "- [ ] Reconcile current state, dependency order, and architecture boundaries before execution.",
+        "- [ ] Declare task-specific file access boundary (allowed reads, allowed writes, forbidden sensitive paths, and evidence egress policy) before touching local files.",
         "- [ ] Advance the long-term maintainable mainline plan with the next bounded step and staged evidence.",
         "- [ ] Record proof, status, and any next dependency or handoff required.",
         "",
@@ -5499,11 +5538,15 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
     checked = 0
     legacy_body_evidence: list[str] = []
     for t in iter_tasks():
-        missing_mission = mission_envelope_missing(t.fm)
-        if missing_mission:
-            failures.append(f"mission envelope missing {missing_mission}: {t.id}")
         if t.status != "done" and not args.include_active:
             continue
+        missing_mission = mission_envelope_missing(t.fm)
+        if missing_mission:
+            msg = f"mission envelope missing {missing_mission}: {t.id}"
+            if args.include_active:
+                failures.append(msg)
+            else:
+                warnings.append(f"terminal mission envelope debt: {msg}")
         checked += 1
         evidence = t.fm.get("evidence") if isinstance(t.fm.get("evidence"), list) else []
         has_evidence = bool(evidence)
@@ -5519,7 +5562,7 @@ def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
             if not evidence_is_structured(str(e)):
                 failures.append(f"unstructured evidence in {t.id}: {e}")
             if str(e).startswith("proof:sha256:") and t.status == "done" and task_has_autorun_audit(t) and not verify_autorun_proof_hash(str(e)[len("proof:") :]):
-                failures.append(f"invalid autorun proof hash in {t.id}: {e}")
+                warnings.append(f"terminal invalid autorun proof hash debt in {t.id}: {e}")
         if "## Proof Log" not in t.body and "## Final verification bundle" not in t.body:
             warnings.append(f"missing Proof Log section: {t.id}")
         if "## Final Handoff" not in t.body and not body_has_legacy_proof(t.body):
@@ -5800,31 +5843,50 @@ def command_budget_handoff_check(args: argparse.Namespace) -> dict[str, Any]:
         context_pressure=args.context_pressure,
     )
 
+def boundary_invalid_blocks_dispatch(task: Task, reason: str) -> bool:
+    """Scope boundary failures to the dispatch-relevant risk domain.
+
+    Terminal backlog debt must stay visible, but it should not globally deny an
+    unrelated pending task. Active and claim-bound tasks still fail closed.
+    """
+    if task.status in CLAIM_BOUND_STATUSES:
+        return True
+    if task.status in TERMINAL_STATUSES:
+        return False
+    return True
+
+
 def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
     tasks = iter_tasks()
     dispatchable = dispatchable_tasks()
     invalid: list[dict[str, Any]] = []
+    debt_invalid: list[dict[str, Any]] = []
     warnings: list[dict[str, Any]] = []
     dispatchable_by_lane = {lane: 0 for lane in VALID_LANES}
     for t in dispatchable:
         dispatchable_by_lane[t.lane] = dispatchable_by_lane.get(t.lane, 0) + 1
+    def add_invalid(t: Task, item: dict[str, Any]) -> None:
+        if boundary_invalid_blocks_dispatch(t, str(item.get("reason") or "")):
+            invalid.append(item)
+        else:
+            debt_invalid.append({**item, "debt_scope": "terminal_or_unrelated_backlog"})
     for t in tasks:
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:
-            invalid.append({"task": t.id, "path": str(t.path), "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
+            add_invalid(t, {"task": t.id, "path": str(t.path), "fields": missing_alignment, "reason": "evolution_architecture_alignment_missing"})
         missing_profile = project_profile_failures(t)
         if missing_profile:
-            invalid.append({"task": t.id, "path": str(t.path), "fields": missing_profile, "reason": "project_profile_missing"})
+            add_invalid(t, {"task": t.id, "path": str(t.path), "fields": missing_profile, "reason": "project_profile_missing"})
         missing_mission = mission_envelope_missing(t.fm)
         if missing_mission:
-            invalid.append({"task": t.id, "path": str(t.path), "fields": missing_mission, "reason": "mission_envelope_missing"})
+            add_invalid(t, {"task": t.id, "path": str(t.path), "fields": missing_mission, "reason": "mission_envelope_missing"})
         if t.lane not in VALID_LANES:
-            invalid.append({"task": t.id, "path": str(t.path), "lane": t.lane, "reason": "invalid_lane"})
+            add_invalid(t, {"task": t.id, "path": str(t.path), "lane": t.lane, "reason": "invalid_lane"})
         permission_failures = permission_validation_failures(t.fm)
         if permission_failures:
-            invalid.append({"task": t.id, "path": str(t.path), "fields": permission_failures, "reason": "permission_contract_invalid"})
+            add_invalid(t, {"task": t.id, "path": str(t.path), "fields": permission_failures, "reason": "permission_contract_invalid"})
         if t.status in CLAIM_BOUND_STATUSES and not (t.fm.get("claimed_by") and t.fm.get("claim_expires_at") and t.fm.get("run_id")):
-            invalid.append({"task": t.id, "path": str(t.path), "status": t.status, "reason": "claim_bound_status_missing_lease_metadata"})
+            add_invalid(t, {"task": t.id, "path": str(t.path), "status": t.status, "reason": "claim_bound_status_missing_lease_metadata"})
     invalid.extend(mission_dag_invalids(tasks))
     # Build boundary index with parallel_group awareness
     boundary_index: dict[str, list[str]] = {}
@@ -5881,8 +5943,10 @@ def command_boundary_check(args: argparse.Namespace) -> dict[str, Any]:
         "gates": gates,
         "invalid_count": len(invalid),
         "invalid": invalid,
+        "debt_invalid_count": len(debt_invalid),
+        "debt_invalid": debt_invalid,
         "warnings": warnings,
-        "safety": "fail-closed invariants for taskpool boundaries and parallel dry-run selection",
+        "safety": "fail-closed for active/claim-bound boundary invariants; terminal backlog debt is reported without blocking unrelated dispatch",
     }
 
 

@@ -2421,6 +2421,60 @@ tiers:
             os.environ.update(old_env)
 
 
+def test_terminal_boundary_debt_does_not_block_active_dispatch_boundary():
+    td, vault, env = make_env_and_vault()
+    with td:
+        tasks_dir = vault / "05-实践与项目" / "tasks"
+        (tasks_dir / "historical-mission-debt.md").write_text("""---
+type: task
+status: done
+priority: P1
+project: hermes-agent
+lane: evolution
+architecture_target: taskpool
+capability_delta: historical debt fixture
+anti_drift_check: boundary debt remains visible
+acceptance_evidence: command:fixture
+mission_schema_version: mission_task_v1
+mission_objective: historical terminal task with incomplete mission envelope
+expires_at: 2099-01-01
+---
+# Historical mission debt
+
+## Proof Log
+- command: fixture
+
+## Final Handoff
+- done fixture
+""", encoding="utf-8")
+        (tasks_dir / "active-mission-debt.md").write_text("""---
+type: task
+status: pending
+priority: P1
+project: hermes-agent
+lane: evolution
+architecture_target: taskpool
+capability_delta: active debt fixture
+anti_drift_check: active boundary remains fail-closed
+acceptance_evidence: command:fixture
+mission_schema_version: mission_task_v1
+mission_objective: active task with incomplete mission envelope
+expires_at: 2099-01-01
+---
+# Active mission debt
+""", encoding="utf-8")
+        boundary = json.loads(run(env, "boundary-check", "--json", check=False).stdout)
+        assert boundary["status"] == "FAIL", boundary
+        assert any(item.get("task") == "active-mission-debt" for item in boundary["invalid"]), boundary
+        assert any(item.get("task") == "historical-mission-debt" for item in boundary.get("debt_invalid", [])), boundary
+
+        (tasks_dir / "active-mission-debt.md").unlink()
+        boundary = json.loads(run(env, "boundary-check", "--json").stdout)
+        assert boundary["status"] == "PASS", boundary
+        assert boundary.get("debt_invalid_count", 0) == 1, boundary
+        assert boundary["debt_invalid"][0]["task"] == "historical-mission-debt", boundary
+
+
 def main():
     test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
     test_railway_deploy_gate_evaluate_uses_ancestor_relation()
@@ -2456,6 +2510,7 @@ def main():
     test_proof_check_include_active_does_not_fail_historical_autorun_hashes()
     test_multimodel_step_marks_task_running_while_external_process_is_inflight_then_review()
     test_ratification_policy_is_loaded_from_quorum_config_not_code_literals()
+    test_terminal_boundary_debt_does_not_block_active_dispatch_boundary()
     print("PASS")
 
 
