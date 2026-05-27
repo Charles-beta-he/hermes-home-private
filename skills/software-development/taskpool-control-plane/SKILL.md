@@ -23,6 +23,10 @@ When a session produces “后续任务” / follow-up work, use `references/fol
 
 Reference: `references/native-multimodel-contracts.md` captures the native multimodel task-contract pattern: separate intake triage (`priority_layer`, `dependency_order`, `multimodel_triage_result`) from certification contract (`requires_multimodel`, `expected_participants`, `truth_gate`, `evidence_bundle`), wire it through add/intake/frontmatter/row JSON, and keep expensive autorun fail-closed.
 
+## Operational Watchdog Cron Scripts
+
+When building or modifying `no_agent=True` cron scripts that monitor task pool health (budget-exhausted triage, auth-blocked notifications, stale-claim cleanup), load `references/operational-cron-watchdogs.md`: it covers the script-path pitfall (`script` takes filename only, not full path), deduplication/cooldown patterns, JSONL logging, kanban DB query templates, hook registry `post_task_block` integration, and the budget-exhausted triage decision matrix (续费/拆分/降级/放弃 by domain × complexity × progress).
+
 When daily/external-repo sidecars propose multimodel fields, treat the sidecar as advisory only. `daily_report_task_ingest.py` must normalize candidates locally: ordinary `work`/product/Lark tasks lose weak multimodel fields and do not trigger expensive panels, including retry/architecture-target heuristics; explicit `requires_multimodel: true` remains a strong override. P0/P1/P2 `evolution`/Hermes control-plane/self-strengthening/repo-intake candidates may keep the contract, must include `claude-code` in expected participants, and must resolve local evidence bundles or emit a TG/manual evidence request instead of blocking workers.
 
 Reference: `references/self-proving-executor-proof-pattern.md` captures the AutoResearch-style self-proving executor pattern for Hermes/taskpool evolution: bounded command bundles, structured PASS/FAIL proof artifacts, nonzero failure exits, opt-in checkpoint side effects, and required control-plane verification before lifecycle advancement.
@@ -275,6 +279,10 @@ Key rule:
 Patch target that proved correct:
 - In `brain_task_orchestrator.py`, inside `command_blocked_resolve_step()`, catch `SystemExit` from `load_discussion_artifact()` inside the taxonomy helper and continue with empty discussion data while preserving the missing-artifact message in the result payload.
 
+### Parallel worker async default
+
+- `brain_task_dispatch_tick.py --parallel-autorun` normally claims/handoffs a boundary-safe batch, then starts ordinary workers asynchronously via `agent_team_controller.py consume-claimed --background`. The tick should not wait for `hermes chat` workers. Use `agent_team_controller.py worker-jobs` to inspect durable jobs; use `--parallel-worker-foreground` only for debug/timeout-cleanup tests.
+
 ## References
 References:
 - `references/blocked-task-resolution.md` — How to resolve blocked tasks (dual state store, subtask execution, parent unblocking)
@@ -471,6 +479,7 @@ After a fix or manual intervention, verify:
 
 - `references/blocked-ratification-certification.md` — safe sequence for blocked parent tasks with `multimodel_status: not_certified`: freeze original objective, dry-run blocked-resolve, diagnose certification gaps, split convergence subtasks, and claim only dispatchable children without changing the parent goal.
 - `references/manual-targeted-evidence-refresh.md` — parent-level targeted-evidence refresh pattern: run a fresh manual discussion, write the new FAIL/PASS artifact back into the parent, then verify whether a new dispatchable convergence child appears.
+- `references/operational-cron-watchdogs.md` — Pattern for no_agent cron watchdog scripts: task pool health monitoring, notification dedup, hook registry integration, budget triage decision matrix, auth-blocked categorization.
 
 - `references/blocked-task-diagnosis.md`: diagnose dashboards with no in-progress work, all-active-tasks-blocked states, `task_not_dispatchable`, multi-model certification blockers, and child-axis/proof-check failures.
 - `references/proof-debt-migration.md` — how to migrate historical body proof into structured `evidence:` entries and normalize ad-hoc multimodel status lines so `proof-check`/`evidence-spine` return PASS again.

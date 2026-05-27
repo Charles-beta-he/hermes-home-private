@@ -18,6 +18,16 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 HERMES_ROOT = SCRIPT_DIR.parent
 ORCH = SCRIPT_DIR / "brain_task_orchestrator.py"
 TICK = SCRIPT_DIR / "brain_task_dispatch_tick.py"
+AGENT_TEAM = SCRIPT_DIR / "agent_team_controller.py"
+
+
+def load_agent_team_module():
+    spec = importlib.util.spec_from_file_location("agent_team_controller", AGENT_TEAM)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
 def run(cmd, env, check=True):
@@ -409,10 +419,10 @@ def test_tick_multimodel_task_argument_routes_to_targeted_step():
             os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = old_env
 
     assert payload["multimodel_step"]["status"] == "OK", payload
-    assert ["multimodel-intervention-step", "--task", "task-1", "--json"] in calls, calls
+    assert ["multimodel-intervention-step", "--task", "task-1", "--background", "--json"] in calls, calls
 
 
-def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
+def test_parallel_autorun_spawns_async_worker_consumer_summary_without_foreground_wait():
     module = load_tick_module()
     calls = []
 
@@ -442,16 +452,23 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
         calls.append(("run_cmd_json", list(cmd), timeout))
         assert "agent_team_controller.py" in " ".join(map(str, cmd)), cmd
         assert "consume-claimed" in cmd, cmd
-        assert timeout is not None and timeout >= 900, timeout
+        assert "--background" in cmd, cmd
+        assert "--batch-id" in cmd and cmd[cmd.index("--batch-id") + 1] == "parallel-test-batch", cmd
+        assert timeout is not None and timeout < 900, timeout
         return {
-            "status": "ok",
+            "status": "OK",
             "event_driven": True,
-            "consumed_count": 1,
-            "running_count": 1,
-            "reviewed_count": 1,
+            "async_worker": True,
+            "started": True,
+            "job_id": "job-1",
+            "pid": 12345,
+            "requested_count": 1,
+            "consumed_count": 0,
+            "running_count": 0,
+            "reviewed_count": 0,
             "done_count": 0,
-            "next_tick_requested": True,
-            "safety": "controller-consumed claimed handoffs; worker cannot mark done",
+            "next_tick_requested": False,
+            "safety": "taskpool worker spawned as durable async job; parent tick does not wait for hermes chat workers",
         }
 
     old_argv = sys.argv[:]
@@ -483,19 +500,15 @@ def test_parallel_autorun_triggers_event_driven_worker_consumer_summary():
         module.load_state = old_load_state
 
     assert any(call[0] == "run_cmd_json" and "consume-claimed" in call[1] for call in calls), calls
-    assert payload["autorun"]["step_mode"] == "parallel_claim_and_execute"
+    assert payload["autorun"]["step_mode"] == "parallel_claim_and_async_worker"
     assert payload["autorun"]["claimed"] is True
-    assert payload["autorun"]["worker_trigger"]["event_driven"] is True
-    assert payload["autorun"]["worker_trigger"]["consumed_count"] == 1
+    assert payload["autorun"]["worker_trigger"]["async_worker"] is True
+    assert payload["autorun"]["worker_trigger"]["started"] is True
+    assert payload["autorun"]["worker_trigger"]["job_id"] == "job-1"
     assert payload["autorun"]["worker_trigger"]["done_count"] == 0
-    assert payload["autorun"]["event_next_tick"]["status"] == "OK"
-    assert payload["autorun"]["event_next_tick"]["depth_used"] == 1
-    assert payload["autorun"]["event_next_tick"]["executed_steps"] == ["auto-close-review", "parallel-dispatch-dry-run"]
-    assert payload["autorun"]["event_next_tick"]["closed_count"] == 1
-    assert payload["autorun"]["event_next_tick"]["next_dispatch_selected_count"] == 1
-    assert payload["autorun"]["event_next_tick"]["next_dispatch_status"] == "OK"
-    assert payload["autorun"]["event_next_tick"]["auto_close_review"]["closed_count"] == 1
-    assert any(call[0] == "run_json" and call[1][:1] == ["auto-close-review"] for call in calls), calls
+    assert payload["autorun"]["event_next_tick"]["status"] == "SKIP"
+    assert payload["autorun"]["event_next_tick"]["reason"] == "not_requested"
+    assert not any(call[0] == "run_json" and call[1][:1] == ["auto-close-review"] for call in calls), calls
 
 
 def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
@@ -529,6 +542,7 @@ def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
     def fake_run_cmd_json(cmd, timeout=None):
         calls.append(("run_cmd_json", list(cmd), timeout))
         assert "consume-claimed" in cmd, cmd
+        assert "--background" not in cmd, cmd
         return {"status": "ERROR", "reason": "subprocess_timeout", "returncode": "timeout"}
 
     old_argv = sys.argv[:]
@@ -543,7 +557,7 @@ def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
         module.append_log = lambda event: None
         module.save_state = lambda state: None
         module.load_state = lambda: {}
-        sys.argv = [str(TICK), "--summary", "--no-state", "--parallel-autorun", "--max-agents", "2"]
+        sys.argv = [str(TICK), "--summary", "--no-state", "--parallel-autorun", "--parallel-worker-foreground", "--max-agents", "2"]
         import io
         import contextlib
         buf = io.StringIO()
@@ -725,6 +739,44 @@ def test_run_cmd_json_timeout_is_structured_and_kills_process_group():
     assert leftovers == [], leftovers
 
 
+def test_agent_team_background_worker_job_records_and_dedupes_alive_batches():
+    module = load_agent_team_module()
+    td = tempfile.TemporaryDirectory()
+    with td:
+        root = Path(td.name)
+        module.WORKER_JOB_DIR = root / "jobs"
+        module.WORKER_LOG_DIR = root / "logs"
+        module.human_escape_check = lambda: (False, {})
+        module.is_disabled = lambda: False
+        module.process_alive = lambda pid: True
+
+        popen_calls = []
+
+        class FakePopen:
+            def __init__(self, cmd, **kwargs):
+                self.pid = 4242
+                popen_calls.append((list(cmd), kwargs))
+
+        old_popen = module.subprocess.Popen
+        try:
+            module.subprocess.Popen = FakePopen
+            claimed = [{"task_id": "task-1", "handoff": "/tmp/task-1.md", "run_id": "r1"}]
+            first = module.start_consume_claimed_background(claimed, max_agents=2, batch_id="batch-1")
+            second = module.start_consume_claimed_background(claimed, max_agents=2, batch_id="batch-1")
+            jobs = module.command_worker_jobs()
+        finally:
+            module.subprocess.Popen = old_popen
+
+    assert first["status"] == "OK", first
+    assert first["async_worker"] is True and first["started"] is True, first
+    assert first["job"]["batch_id"] == "batch-1", first
+    assert first["job"]["task_ids"] == ["task-1"], first
+    assert "--background" not in popen_calls[0][0], popen_calls
+    assert second["status"] == "OK" and second["already_running"] is True, second
+    assert len(popen_calls) == 1, popen_calls
+    assert jobs["job_count"] == 1 and jobs["alive_count"] == 1, jobs
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
@@ -735,11 +787,12 @@ if __name__ == "__main__":
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()
     test_tick_multimodel_task_argument_routes_to_targeted_step()
-    test_parallel_autorun_triggers_event_driven_worker_consumer_summary()
+    test_parallel_autorun_spawns_async_worker_consumer_summary_without_foreground_wait()
     test_parallel_autorun_timeout_releases_claimed_batch_to_retry()
     test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
     test_event_next_tick_not_requested_skips_without_side_effects()
     test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()
     test_run_cmd_json_forces_nonzero_ok_stdout_to_error()
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()
+    test_agent_team_background_worker_job_records_and_dedupes_alive_batches()
     print("PASS")

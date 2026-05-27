@@ -28,11 +28,203 @@ from task_continuation import detect_budget_exhausted, save_checkpoint, can_cont
 from self_optimizing_verifier import save_rejection, analyze_rejection, generate_enhanced_criteria, generate_retry_prompt, update_project_profile
 from uvisa_lark_work_contract import generate_acceptance_atoms, extract_lark_guid
 
-ORCHESTRATOR = Path.home() / '.hermes' / 'scripts' / 'brain_task_orchestrator.py'
-STATE_DIR = Path.home() / '.hermes' / 'state'
+HERMES_HOME = Path(os.environ.get('HERMES_HOME', str(Path.home() / '.hermes'))).expanduser()
+ORCHESTRATOR = HERMES_HOME / 'scripts' / 'brain_task_orchestrator.py'
+STATE_DIR = HERMES_HOME / 'state'
+LOG_DIR = HERMES_HOME / 'logs'
 KILL_SWITCH = STATE_DIR / 'agent_team_disabled'
 PROOF_DIR = STATE_DIR / 'proof_artifacts'
+WORKER_JOB_DIR = STATE_DIR / 'taskpool-workers' / 'jobs'
+WORKER_LOG_DIR = LOG_DIR / 'taskpool-workers'
 UVISA_CONTRACT_DIRNAME = 'uvisa_lark_contracts'
+
+def utc_ts():
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+
+
+def worker_job_task_ids(claimed_items):
+    ids = []
+    for item in claimed_items or []:
+        if not isinstance(item, dict):
+            continue
+        task_id = str(item.get('task_id') or item.get('id') or '').strip()
+        if task_id:
+            ids.append(task_id)
+    return ids
+
+
+def worker_job_safe_token(value, max_len=96):
+    text = str(value or '').strip() or 'batch'
+    safe = ''.join(ch if ch.isalnum() or ch in '._-' else '-' for ch in text).strip('-._')
+    return (safe or 'batch')[:max_len]
+
+
+def worker_job_signature(claimed_items, batch_id=''):
+    payload = {
+        'batch_id': str(batch_id or ''),
+        'task_ids': sorted(worker_job_task_ids(claimed_items)),
+    }
+    return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+
+
+def process_alive(pid):
+    try:
+        pid = int(pid or 0)
+    except Exception:
+        return False
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except Exception:
+        return False
+
+
+def load_worker_job(path):
+    try:
+        job = json.loads(Path(path).read_text(encoding='utf-8'))
+        if not isinstance(job, dict):
+            return None
+        job['job_file'] = str(path)
+        job['alive'] = process_alive(job.get('pid'))
+        return job
+    except Exception:
+        return None
+
+
+def list_worker_jobs():
+    WORKER_JOB_DIR.mkdir(parents=True, exist_ok=True)
+    jobs = []
+    for path in sorted(WORKER_JOB_DIR.glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True):
+        job = load_worker_job(path)
+        if job:
+            jobs.append(job)
+    return jobs
+
+
+def find_alive_worker_job_for(claimed_items, batch_id=''):
+    sig = worker_job_signature(claimed_items, batch_id=batch_id)
+    requested_ids = set(worker_job_task_ids(claimed_items))
+    for job in list_worker_jobs():
+        if not job.get('alive'):
+            continue
+        if job.get('signature') == sig:
+            return job
+        job_ids = set(job.get('task_ids') or [])
+        if requested_ids and requested_ids.intersection(job_ids):
+            return job
+    return None
+
+
+def command_worker_jobs():
+    jobs = list_worker_jobs()
+    return {
+        'status': 'OK',
+        'schema': 'taskpool_worker_async_jobs_v1',
+        'generated_at': utc_ts(),
+        'job_count': len(jobs),
+        'alive_count': sum(1 for job in jobs if job.get('alive')),
+        'jobs': jobs,
+        'safety': 'status only; worker child remains the sole owner of task mutation',
+    }
+
+
+def start_consume_claimed_background(claimed_items, max_agents=3, batch_id=''):
+    if not claimed_items:
+        return {'status': 'SKIP', 'event_driven': True, 'reason': 'no claimed tasks', 'consumed_count': 0}
+    if is_disabled():
+        return {'status': 'SKIP', 'event_driven': True, 'reason': 'kill switch active', 'consumed_count': 0}
+    escape, escape_info = human_escape_check()
+    if escape:
+        released = release_claimed_batch_for_escape(claimed_items, escape_info)
+        return {
+            'status': 'SKIP',
+            'event_driven': True,
+            'async_worker': False,
+            'reason': f'Human escape: {escape_info}',
+            'consumed_count': 0,
+            'released_count': sum(1 for item in released.get('released', []) if (item.get('retry_transition') or {}).get('ok')),
+            'released': released.get('released', []),
+            'skipped': released.get('skipped', []),
+            'safety': 'background worker not spawned; claimed handoffs released to retry to avoid claimed-without-progress wedge',
+        }
+    try:
+        max_agents = max(1, int(max_agents or 3))
+    except Exception:
+        max_agents = 3
+    existing = find_alive_worker_job_for(claimed_items, batch_id=batch_id)
+    if existing:
+        return {
+            'status': 'OK',
+            'event_driven': True,
+            'async_worker': True,
+            'already_running': True,
+            'job': existing,
+            'job_id': existing.get('job_id'),
+            'pid': existing.get('pid'),
+            'task_ids': worker_job_task_ids(claimed_items),
+            'safety': 'dedupe: an alive taskpool worker job already owns this batch/task set',
+        }
+    WORKER_JOB_DIR.mkdir(parents=True, exist_ok=True)
+    WORKER_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    task_ids = worker_job_task_ids(claimed_items)
+    token = worker_job_safe_token(batch_id or '-'.join(task_ids[:2]) or 'batch')
+    job_id = f"{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{token}-{os.getpid()}"
+    job_path = WORKER_JOB_DIR / f'{job_id}.json'
+    log_path = WORKER_LOG_DIR / f'{job_id}.jsonl'
+    cmd = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        'consume-claimed',
+        '--claimed-json',
+        json.dumps(claimed_items, ensure_ascii=False),
+        '--max-agents',
+        str(max_agents),
+        '--batch-id',
+        str(batch_id or ''),
+    ]
+    logf = log_path.open('a', encoding='utf-8')
+    proc = subprocess.Popen(cmd, stdout=logf, stderr=subprocess.STDOUT, text=True, start_new_session=True, env=os.environ.copy())
+    job = {
+        'schema': 'taskpool_worker_async_job_v1',
+        'job_id': job_id,
+        'batch_id': str(batch_id or ''),
+        'task_ids': task_ids,
+        'signature': worker_job_signature(claimed_items, batch_id=batch_id),
+        'pid': proc.pid,
+        'cmd': cmd,
+        'started_at': utc_ts(),
+        'job_file': str(job_path),
+        'log_path': str(log_path),
+        'max_agents': max_agents,
+        'safety': 'background process owns claimed->running->review/retry/blocked; parent tick returns immediately; worker cannot mark done',
+    }
+    job_path.write_text(json.dumps(job, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    job['alive'] = True
+    return {
+        'status': 'OK',
+        'event_driven': True,
+        'async_worker': True,
+        'started': True,
+        'job': job,
+        'job_id': job_id,
+        'pid': proc.pid,
+        'task_ids': task_ids,
+        'requested_count': len(claimed_items),
+        'launched_count': 0,
+        'consumed_count': 0,
+        'running_count': 0,
+        'reviewed_count': 0,
+        'done_count': 0,
+        'next_tick_requested': False,
+        'safety': 'taskpool worker spawned as durable async job; parent tick does not wait for hermes chat workers',
+    }
+
 
 def is_disabled():
     return os.environ.get('AGENT_TEAM_DISABLED') == '1' or KILL_SWITCH.exists()
@@ -1796,13 +1988,20 @@ if __name__ == '__main__':
             parser = argparse.ArgumentParser(prog='agent_team_controller.py consume-claimed')
             parser.add_argument('--claimed-json', default='[]')
             parser.add_argument('--max-agents', type=int, default=3)
+            parser.add_argument('--batch-id', default='')
+            parser.add_argument('--background', action='store_true', help='spawn durable async worker job and return immediately')
             ns = parser.parse_args(sys.argv[2:])
             try:
                 claimed_items = json.loads(ns.claimed_json or '[]')
             except json.JSONDecodeError as exc:
                 print(json.dumps({'status': 'ERROR', 'event_driven': True, 'reason': 'invalid_claimed_json', 'error': str(exc)}, ensure_ascii=False))
                 raise SystemExit(2)
-            print(json.dumps(consume_claimed_batch(claimed_items, max_agents=ns.max_agents), indent=2, ensure_ascii=False))
+            if ns.background:
+                print(json.dumps(start_consume_claimed_background(claimed_items, max_agents=ns.max_agents, batch_id=ns.batch_id), indent=2, ensure_ascii=False))
+            else:
+                print(json.dumps(consume_claimed_batch(claimed_items, max_agents=ns.max_agents), indent=2, ensure_ascii=False))
+        elif cmd == 'worker-jobs':
+            print(json.dumps(command_worker_jobs(), indent=2, ensure_ascii=False))
         elif cmd == 'status':
             print(json.dumps(show_status(), indent=2, ensure_ascii=False))
         elif cmd == 'enable':
@@ -1813,8 +2012,8 @@ if __name__ == '__main__':
             KILL_SWITCH.touch()
             print('Agent team disabled')
         else:
-            print('Usage: agent_team_controller.py [cycle|claim-cycle|execute-cycle|consume-claimed|status|enable|disable]')
+            print('Usage: agent_team_controller.py [cycle|claim-cycle|execute-cycle|consume-claimed|worker-jobs|status|enable|disable]')
     else:
-        print('Usage: agent_team_controller.py [cycle|claim-cycle|execute-cycle|consume-claimed|status|enable|disable]')
+        print('Usage: agent_team_controller.py [cycle|claim-cycle|execute-cycle|consume-claimed|worker-jobs|status|enable|disable]')
 
 

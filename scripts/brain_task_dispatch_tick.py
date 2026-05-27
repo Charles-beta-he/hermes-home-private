@@ -569,6 +569,7 @@ def main() -> int:
     parser.add_argument("--autorun", action="store_true", help="Opt-in bridge: run auto-claim-and-handoff after all safe tick gates pass")
     parser.add_argument("--autorun-step", action="store_true", help="Opt-in bounded runner: claim, run static allowlisted command IDs, and stop at review")
     parser.add_argument("--parallel-autorun", action="store_true", help="Opt-in parallel bridge: claim a non-conflicting batch and emit per-task handoffs")
+    parser.add_argument("--parallel-worker-foreground", action="store_true", help="Debug only: wait synchronously for agent_team_controller consume-claimed instead of spawning durable worker job")
     parser.add_argument("--max-agents", type=int, default=0, help="Max agents for --parallel-autorun / parallel dry-run; default from taskpool.max_parallel_agents")
     parser.add_argument("--review-close-max-tasks", type=int, default=0, help="Max review tasks scanned by auto-close-review during --autorun-step; default from taskpool.review_close_max_tasks")
     parser.add_argument("--event-next-tick-depth", type=int, default=1, help="Depth cap for event-driven follow-through after workers stop at review; 0 disables, max 3")
@@ -694,7 +695,7 @@ def main() -> int:
             event["errors"] = errors
         elif event["autorun"].get("claimed"):
             claimed_payload = json.dumps(event["autorun"].get("claimed_tasks") or [], ensure_ascii=False)
-            event["event_worker_trigger"] = run_cmd_json([
+            worker_cmd = [
                 sys.executable,
                 str(AGENT_TEAM_SCRIPT),
                 "consume-claimed",
@@ -702,10 +703,16 @@ def main() -> int:
                 claimed_payload,
                 "--max-agents",
                 str(max_parallel_agents),
-            ],
+                "--batch-id",
+                str(event["autorun"].get("batch_id") or ""),
+            ]
+            if not args.parallel_worker_foreground:
+                worker_cmd.append("--background")
+            event["event_worker_trigger"] = run_cmd_json(
+                worker_cmd,
                 timeout=max(
                     command_timeout_seconds(),
-                    float(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_WORKER_TIMEOUT_SECONDS", "900")),
+                    60.0 if not args.parallel_worker_foreground else float(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_WORKER_TIMEOUT_SECONDS", "900")),
                 ),
             )
             if event["event_worker_trigger"].get("status") not in {"ok", "OK", "PASS", "SKIP"}:
@@ -812,7 +819,7 @@ def main() -> int:
     }
     autorun_summary = {
         "requested": bool(args.autorun or args.autorun_step or args.parallel_autorun),
-        "step_mode": "parallel_claim_and_execute" if args.parallel_autorun else ("bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none")),
+        "step_mode": "parallel_claim_and_async_worker" if (args.parallel_autorun and not args.parallel_worker_foreground) else ("parallel_claim_and_execute_foreground" if args.parallel_autorun else ("bounded_step" if args.autorun_step else ("claim_and_handoff" if args.autorun else "none"))),
         "present": "autorun" in event,
         "status": autorun_raw.get("status"),
         "eligible": bool(autorun_raw.get("eligible")),
