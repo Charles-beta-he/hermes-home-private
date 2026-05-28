@@ -478,6 +478,13 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
     }
     if not plan.should_spawn:
         return result
+    if args.auto_authorize and args.no_open:
+        result.update({
+            "ok": False,
+            "action": "invalid_args",
+            "error": "--auto-authorize requires opening the OAuth URL; remove --no-open or run status-only without --force-refresh",
+        })
+        return result
     if not lock.acquire():
         result.update({"ok": False, "action": "login_already_in_progress"})
         return result

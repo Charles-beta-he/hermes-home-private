@@ -262,6 +262,22 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertEqual(result["action"], "login_success")
         run_login.assert_called_once()
 
+    def test_ensure_login_force_refresh_rejects_no_open_auto_authorize(self):
+        args = self.mod.build_parser().parse_args(["--json", "--no-open", "--force-refresh", "--auto-authorize"])
+        snapshot = {
+            "tokens": {"tok-valid": {"expiresAt": time.time() + 3600}},
+            "localTokens": {"cli_a96f6a6211f91ed2": "tok-valid"},
+            "clients": {"client": {"appId": "cli_a96f6a6211f91ed2", "appSecret": "secret_test"}},
+        }
+        with mock.patch.object(self.mod, "auth_snapshot", return_value=snapshot), \
+             mock.patch.object(self.mod, "port_busy", return_value=False), \
+             mock.patch.object(self.mod, "run_login") as run_login:
+            result = self.mod.ensure_login(args)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["action"], "invalid_args")
+        self.assertIn("requires opening", result["error"])
+        run_login.assert_not_called()
+
     def test_json_main_output_redacts_token_key(self):
         token = "eyJhbGciOiJmainentrypointtokenpayload1234567890"
         with mock.patch.object(self.mod, "ensure_login", return_value={"ok": True, "token_status": {"token_key": token}}):

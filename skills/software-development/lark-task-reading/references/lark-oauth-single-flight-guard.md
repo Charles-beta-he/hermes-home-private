@@ -15,7 +15,7 @@ Treat those as workflow/state-machine symptoms, not as proof that the Lark reade
 
 ## Preferred command
 
-For status-only checks:
+For status-only checks, first prove whether existing auth is already usable:
 
 ```bash
 python3 ~/.hermes/scripts/lark_oauth_guard.py --json --no-open
@@ -33,6 +33,8 @@ For full on-demand automation after the user has authorized Hermes to automate t
 python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale --auto-authorize
 python3 ~/.hermes/scripts/lark_task_reader.py --scope-mode only --summary
 ```
+
+Do **not** combine `--auto-authorize` with `--no-open` for a login-spawning run such as `--force-refresh`; the auto-clicker can only click a visible browser consent page after the guard opens the OAuth URL. The guard fails closed on this invalid combination so future sessions do not silently believe auto-authorization was attempted.
 
 For an explicit real refresh test even when the current token is still valid, add `--force-refresh`:
 
