@@ -115,6 +115,11 @@ def run_json(args: list[str]) -> dict[str, Any]:
     return run_cmd_json(cmd)
 
 
+def run_agent_team_json(args: list[str], *, timeout: float | None = None) -> dict[str, Any]:
+    cmd = [sys.executable, str(AGENT_TEAM_SCRIPT), *args]
+    return run_cmd_json(cmd, timeout=timeout)
+
+
 def cleanup_event_worker_timeout_claims(claimed_items: list[dict[str, Any]], *, actor: str = "hermes-parallel") -> dict[str, Any]:
     """Release a just-claimed batch when the event worker trigger times out.
 
@@ -338,6 +343,10 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         "handoff_archive_threshold": 100,
         "handoff_archive_keep": 50,
         "continuation_backlog_threshold": 100,
+        # Hooks below only run under explicit --parallel-autorun / worker follow-through.
+        "drain_claimed_first": True,
+        "event_refill_enabled": False,
+        "batch_merge_conflict_threshold": 3,
     }
     try:
         import yaml  # type: ignore
@@ -354,12 +363,15 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         ("handoff_archive_threshold", 100),
         ("handoff_archive_keep", 50),
         ("continuation_backlog_threshold", 100),
+        ("batch_merge_conflict_threshold", 3),
     ):
         try:
             defaults[key] = max(0 if key != "max_parallel_agents" else 1, int(defaults.get(key) or fallback))
         except Exception:
             defaults[key] = fallback
     defaults["dispatch_mode"] = str(defaults.get("dispatch_mode") or "single").strip().lower()
+    defaults["drain_claimed_first"] = str(defaults.get("drain_claimed_first", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["event_refill_enabled"] = str(defaults.get("event_refill_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
     defaults["dynamic_max_parallel_agents"] = max(
         int(defaults.get("max_parallel_agents") or 3),
         int(defaults.get("dynamic_max_parallel_agents") or 24),
@@ -395,18 +407,26 @@ def resolve_parallel_agent_cap(*, requested_max_agents: int, taskpool_cfg: dict[
         except Exception:
             pass
     dynamic_ceiling = max(configured, dynamic_ceiling, 1)
+    resource_probe = resource_capacity_probe(dynamic_ceiling=dynamic_ceiling)
+    resource_ceiling = int(resource_probe.get("effective_resource_ceiling") or dynamic_ceiling)
+    # Resource pressure is a safety cap, not merely telemetry.  It may lower
+    # effective concurrency below the configured floor; explicit --max-agents
+    # remains the only manual override path.
+    probe_ceiling = max(1, min(dynamic_ceiling, resource_ceiling))
     payload = {
         "configured": configured,
-        "effective": configured,
+        "effective": probe_ceiling,
         "dynamic_ceiling": dynamic_ceiling,
-        "source": "configured_floor",
+        "resource_ceiling": resource_ceiling,
+        "resource_probe": resource_probe,
+        "source": "resource_capped_configured_floor",
         "selected_count_at_ceiling": 0,
         "dispatchable_at_ceiling": False,
         "probe": {},
     }
-    if str(taskpool_cfg.get("dispatch_mode") or "").strip().lower() != "parallel" or dynamic_ceiling <= configured:
+    if str(taskpool_cfg.get("dispatch_mode") or "").strip().lower() != "parallel":
         return payload
-    probe = run_json(["parallel-dispatch-dry-run", "--max-agents", str(dynamic_ceiling), "--json"])
+    probe = run_json(["parallel-dispatch-dry-run", "--max-agents", str(probe_ceiling), "--json"])
     payload["probe"] = {
         "status": probe.get("status"),
         "max_agents": probe.get("max_agents"),
@@ -421,8 +441,8 @@ def resolve_parallel_agent_cap(*, requested_max_agents: int, taskpool_cfg: dict[
     payload["selected_count_at_ceiling"] = selected_count
     payload["dispatchable_at_ceiling"] = bool(probe.get("dispatchable"))
     if probe.get("status") in {"OK", "PASS"}:
-        payload["effective"] = dynamic_ceiling
-        payload["source"] = "boundary_classified_dynamic_ceiling"
+        payload["effective"] = probe_ceiling
+        payload["source"] = "resource_and_boundary_classified_dynamic_ceiling"
     return payload
 
 
@@ -436,6 +456,221 @@ def _count_skipped_reasons(skipped: Any) -> dict[str, int]:
         reason = str(item.get("reason") or "unknown")
         counts[reason] = counts.get(reason, 0) + 1
     return counts
+
+
+def _rows_from_task_list(task_list: Any) -> list[dict[str, Any]]:
+    if not isinstance(task_list, dict):
+        return []
+    rows = task_list.get("rows")
+    return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+
+
+def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
+    """Return an advisory resource ceiling for dynamic taskpool dispatch.
+
+    Boundary/quality gates still decide which tasks may run together.  This
+    probe only caps how many slots the machine/API/quality feedback should let
+    the scheduler ask for in this tick.
+    """
+    cpu_count = os.cpu_count() or 1
+    try:
+        load_1m = float(os.getloadavg()[0])
+    except Exception:
+        load_1m = 0.0
+    try:
+        disk = shutil.disk_usage(str(HOME))
+        disk_free_gb = round(disk.free / (1024 ** 3), 2)
+    except Exception:
+        disk_free_gb = 0.0
+    env_cap_raw = os.environ.get("HERMES_TASKPOOL_RESOURCE_CAP", "")
+    env_cap = 0
+    if env_cap_raw:
+        try:
+            env_cap = max(1, int(env_cap_raw))
+        except Exception:
+            env_cap = 0
+    machine_slots = max(1, min(int(dynamic_ceiling or 1), cpu_count * 2))
+    pressure_reasons: list[str] = []
+    if load_1m and load_1m > cpu_count * 1.5:
+        machine_slots = max(1, machine_slots // 2)
+        pressure_reasons.append("loadavg_high")
+    if disk_free_gb and disk_free_gb < 2.0:
+        machine_slots = 1
+        pressure_reasons.append("disk_free_low")
+    api_slots = env_cap or int(dynamic_ceiling or machine_slots or 1)
+    quality_slots = int(dynamic_ceiling or machine_slots or 1)
+    effective = max(1, min(int(dynamic_ceiling or 1), machine_slots, api_slots, quality_slots))
+    return {
+        "schema": "taskpool_resource_capacity_v1",
+        "dynamic_ceiling": int(dynamic_ceiling or 0),
+        "effective_resource_ceiling": effective,
+        "machine_slots": machine_slots,
+        "api_slots": api_slots,
+        "quality_slots": quality_slots,
+        "cpu_count": cpu_count,
+        "load_1m": round(load_1m, 2),
+        "disk_free_gb": disk_free_gb,
+        "pressure_reasons": pressure_reasons,
+        "env_cap": env_cap,
+        "safety": "advisory cap only; boundary/dependency/quality gates remain hard constraints",
+    }
+
+
+def worker_jobs_status() -> dict[str, Any]:
+    return run_agent_team_json(["worker-jobs"], timeout=max(command_timeout_seconds(), 30.0))
+
+
+def alive_worker_task_ids(worker_jobs: dict[str, Any]) -> set[str]:
+    ids: set[str] = set()
+    for job in worker_jobs.get("jobs") or []:
+        if not isinstance(job, dict) or not job.get("alive"):
+            continue
+        for task_id in job.get("task_ids") or []:
+            text = str(task_id or "").strip()
+            if text:
+                ids.add(text)
+    return ids
+
+
+def claimed_rows_without_alive_worker(rows: list[dict[str, Any]], worker_jobs: dict[str, Any]) -> list[dict[str, Any]]:
+    status = str(worker_jobs.get("status") or "").upper()
+    covered = alive_worker_task_ids(worker_jobs) if status in {"OK", "PASS"} else set()
+    drainable: list[dict[str, Any]] = []
+    allowed_actors = {"hermes-parallel", "hermes-parallel-follow-through"}
+    for row in rows:
+        if str(row.get("status") or "") != "claimed":
+            continue
+        task_id = str(row.get("id") or row.get("task_id") or "").strip()
+        actor = str(row.get("claimed_by") or "").strip()
+        # Drain-first is a recovery hook for Hermes-owned parallel claims.
+        # Claims from humans or other actors stay untouched.  Stale reclaim for
+        # foreign actors belongs to the dedicated stale-claim cleanup path, not
+        # this throughput-oriented drain hook.
+        if actor not in allowed_actors:
+            continue
+        if not (row.get("claimed_by") and row.get("claim_expires_at") and row.get("run_id")):
+            continue
+        if task_id and task_id not in covered:
+            drainable.append(row)
+    return drainable
+
+
+def trigger_claimed_drain_first(*, task_list: dict[str, Any], max_agents: int, foreground: bool) -> dict[str, Any]:
+    """Drain historical claimed tasks before claiming more pending work.
+
+    This runs only under explicit parallel autorun.  It prevents already-claimed
+    tasks from occupying leases/boundaries without a worker owner.  It does not
+    mark tasks done; the agent-team child still owns claimed->running->review.
+    """
+    # Re-read rows after the caller snapshot so the worker coverage check and
+    # claim status are as close together as possible.  This still remains
+    # idempotent because agent_team_controller re-checks row status before
+    # transitioning claimed -> running.
+    fresh_task_list = run_json(["list", "--json"])
+    rows = _rows_from_task_list(fresh_task_list if fresh_task_list.get("status") == "OK" else task_list)
+    worker_jobs = worker_jobs_status()
+    if str(worker_jobs.get("status") or "").upper() not in {"OK", "PASS"}:
+        return {
+            "status": "SKIP",
+            "reason": "worker_jobs_unavailable",
+            "worker_jobs": worker_jobs,
+            "drained_count": 0,
+            "safety": "fail-closed; do not drain claimed without live-worker coverage data",
+        }
+    drainable = claimed_rows_without_alive_worker(rows, worker_jobs)
+    if not drainable:
+        return {
+            "status": "SKIP",
+            "reason": "no_uncovered_claimed_tasks",
+            "worker_jobs": {"status": worker_jobs.get("status"), "alive_count": worker_jobs.get("alive_count"), "job_count": worker_jobs.get("job_count")},
+            "drained_count": 0,
+            "safety": "no side effects; claimed tasks are either absent or already covered by live workers",
+        }
+    claimed_payload = json.dumps(drainable, ensure_ascii=False)
+    cmd = [
+        "consume-claimed",
+        "--claimed-json",
+        claimed_payload,
+        "--max-agents",
+        str(max(1, max_agents)),
+        "--batch-id",
+        f"drain-first-{iso()}",
+    ]
+    if not foreground:
+        cmd.append("--background")
+    trigger = run_agent_team_json(
+        cmd,
+        timeout=max(command_timeout_seconds(), 60.0 if not foreground else float(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_WORKER_TIMEOUT_SECONDS", "900"))),
+    )
+    return {
+        "status": trigger.get("status", "OK"),
+        "reason": "drain_first_triggered",
+        "drainable_count": len(drainable),
+        "drained_task_ids": [str(row.get("id") or row.get("task_id") or "") for row in drainable],
+        "worker_trigger": trigger,
+        "safety": "drain-first only consumes existing claimed tasks; no pending task is claimed here and workers cannot mark done",
+    }
+
+
+def boundary_merge_candidates(parallel_dispatch: dict[str, Any], *, threshold: int = 3) -> list[dict[str, Any]]:
+    buckets: dict[str, list[dict[str, Any]]] = {}
+    for item in parallel_dispatch.get("skipped") or []:
+        if not isinstance(item, dict) or item.get("reason") != "parallel_boundary_conflict":
+            continue
+        key = str(item.get("boundary_key") or "unknown")
+        buckets.setdefault(key, []).append(item)
+    candidates: list[dict[str, Any]] = []
+    for key, items in sorted(buckets.items(), key=lambda pair: len(pair[1]), reverse=True):
+        if len(items) < threshold:
+            continue
+        candidates.append({
+            "boundary_key": key,
+            "conflict_count": len(items),
+            "sample_task_ids": [str(x.get("id") or "") for x in items[:8]],
+            "recommended_action": "merge_planner_review",
+            "merge_policy": "propose_only",
+            "safety": "candidate only; batch coordinator must prove compatible goals and per-task acceptance before execution",
+        })
+    return candidates
+
+
+def scheduler_decision_snapshot(*, event: dict[str, Any], resource_probe: dict[str, Any], threshold: int) -> dict[str, Any]:
+    parallel_dispatch = event.get("parallel_dispatch") if isinstance(event.get("parallel_dispatch"), dict) else {}
+    task_list = event.get("task_list") if isinstance(event.get("task_list"), dict) else {}
+    rows = _rows_from_task_list(task_list)
+    active_count = sum(1 for row in rows if str(row.get("status") or "") in {"claimed", "running"})
+    selected_count = int(parallel_dispatch.get("selected_count") or 0)
+    skipped_counts = _count_skipped_reasons(parallel_dispatch.get("skipped") or [])
+    resource_ceiling = int(resource_probe.get("effective_resource_ceiling") or 1)
+    reasons: list[str] = []
+    if selected_count > 0:
+        action = "claim_and_consume_selected"
+        reasons.append("boundary_safe_slots_available")
+    elif active_count >= resource_ceiling:
+        action = "wait_for_running_or_claimed_completion"
+        reasons.append("resource_ceiling_reached")
+    elif skipped_counts.get("parallel_boundary_conflict", 0) > 0:
+        action = "boundary_refinement_or_batch_merge"
+        reasons.append("boundary_conflict_with_resource_headroom")
+    elif not bool(parallel_dispatch.get("dispatchable")):
+        action = "idle_no_dispatchable_task"
+        reasons.append("no_dispatchable_task")
+    else:
+        action = "wait_classified_blocker"
+        reasons.append("selected_zero_unknown_blocker")
+    candidates = boundary_merge_candidates(parallel_dispatch, threshold=threshold)
+    return {
+        "schema": "taskpool_dynamic_scheduler_decision_v1",
+        "active_count": active_count,
+        "resource_ceiling": resource_ceiling,
+        "selected_count": selected_count,
+        "skipped_reason_counts": skipped_counts,
+        "action": action,
+        "reasons": reasons,
+        "batch_merge_candidates": candidates,
+        "batch_merge_candidate_count": len(candidates),
+        "safety": "advisory unless under explicit autorun; acceptance remains per-task and proof-gated",
+    }
 
 
 def continuation_backlog_status(*, backlog_warning_threshold: int = 100) -> dict[str, Any]:
@@ -507,15 +742,15 @@ def handoff_backlog_status(*, archive: bool = False, threshold: int = 100, keep:
     return status
 
 
-def event_next_tick_follow_through(*, worker_trigger: dict[str, Any], review_close_max_tasks: int, max_depth: int) -> dict[str, Any]:
+def event_next_tick_follow_through(*, worker_trigger: dict[str, Any], review_close_max_tasks: int, max_depth: int, refill_enabled: bool = False, max_agents: int = 1, worker_foreground: bool = False) -> dict[str, Any]:
     """Run a bounded follow-through tick after event-driven workers stop at review.
 
     The event-driven worker bridge is intentionally not allowed to mark brain
     tasks done. When workers produce review-ready proof, this helper performs
-    only the normal proof-gated review closer and a read-only dispatch refresh.
-    It does not claim new tasks, consume more handoffs, or recursively invoke
-    another dispatch tick; depth is telemetry plus a hard cap so future stages
-    cannot grow into an unbounded execution storm.
+    the normal proof-gated review closer and dispatch refresh.  If explicitly
+    enabled by taskpool config it may run exactly one bounded refill
+    claim+consume round.  Depth remains capped so follow-through cannot grow
+    into an unbounded execution storm.
     """
     requested = bool(worker_trigger.get("next_tick_requested"))
     try:
@@ -533,7 +768,8 @@ def event_next_tick_follow_through(*, worker_trigger: dict[str, Any], review_clo
         "next_dispatch_selected_count": 0,
         "next_dispatch_status": "",
         "reason": "not_requested" if not requested else "depth_limit_zero",
-        "safety": "bounded review-close/dispatch-refresh only; no recursive claim or direct done by workers",
+        "refill_enabled": bool(refill_enabled),
+        "safety": "bounded review-close/dispatch-refresh/refill only; no direct done by workers; max one refill round per depth",
     }
     if not requested or depth_limit <= 0:
         payload["skip_reasons"].append(str(payload["reason"]))
@@ -548,7 +784,7 @@ def event_next_tick_follow_through(*, worker_trigger: dict[str, Any], review_clo
         payload["reason"] = "auto_close_review_failed"
         return payload
     payload["executed_steps"].append("parallel-dispatch-dry-run")
-    refresh = run_json(["parallel-dispatch-dry-run", "--max-agents", "1", "--json"])
+    refresh = run_json(["parallel-dispatch-dry-run", "--max-agents", str(max(1, int(max_agents or 1))), "--json"])
     payload["dispatch_refresh"] = refresh
     payload["next_dispatch_status"] = str(refresh.get("status") or "")
     payload["next_dispatch_selected_count"] = int(refresh.get("selected_count") or 0)
@@ -556,6 +792,51 @@ def event_next_tick_follow_through(*, worker_trigger: dict[str, Any], review_clo
         payload["status"] = "ERROR"
         payload["reason"] = "dispatch_refresh_failed"
         return payload
+    if refill_enabled and int(refresh.get("selected_count") or 0) > 0:
+        payload["executed_steps"].append("parallel-claim-and-handoff")
+        refill = run_json([
+            "parallel-claim-and-handoff",
+            "--max-agents",
+            str(max(1, int(max_agents or 1))),
+            "--write",
+            "--actor",
+            "hermes-parallel-follow-through",
+            "--json",
+        ])
+        payload["refill"] = refill
+        if refill.get("status") not in {"OK", "PASS"}:
+            payload["status"] = "ERROR"
+            payload["reason"] = "refill_claim_failed"
+            return payload
+        if refill.get("claimed"):
+            payload["executed_steps"].append("consume-claimed")
+            worker_cmd = [
+                "consume-claimed",
+                "--claimed-json",
+                json.dumps(refill.get("claimed_tasks") or [], ensure_ascii=False),
+                "--max-agents",
+                str(max(1, int(max_agents or 1))),
+                "--batch-id",
+                str(refill.get("batch_id") or ""),
+            ]
+            if not worker_foreground:
+                worker_cmd.append("--background")
+            worker = run_agent_team_json(
+                worker_cmd,
+                timeout=max(command_timeout_seconds(), 60.0 if not worker_foreground else float(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_WORKER_TIMEOUT_SECONDS", "900"))),
+            )
+            payload["refill_worker_trigger"] = worker
+            if worker.get("status") not in {"ok", "OK", "PASS", "SKIP"}:
+                payload["refill_worker_failure_cleanup"] = cleanup_event_worker_timeout_claims(
+                    refill.get("claimed_tasks") or [],
+                    actor="hermes-parallel-follow-through",
+                )
+                # Backward-compatible alias for the timeout-specific diagnostic.
+                if worker.get("reason") == "subprocess_timeout":
+                    payload["refill_worker_timeout_cleanup"] = payload["refill_worker_failure_cleanup"]
+                payload["status"] = "ERROR"
+                payload["reason"] = "refill_worker_trigger_failed"
+                return payload
     payload["status"] = "OK"
     payload["reason"] = "bounded_follow_through_complete"
     return payload
@@ -589,8 +870,13 @@ def main() -> int:
         "max_parallel_agents": max_parallel_agents,
         "configured_max_parallel_agents": parallel_cap.get("configured"),
         "dynamic_max_parallel_agents": parallel_cap.get("dynamic_ceiling"),
+        "resource_ceiling": parallel_cap.get("resource_ceiling"),
+        "resource_probe": parallel_cap.get("resource_probe", {}),
         "parallel_cap_source": parallel_cap.get("source"),
         "parallel_cap_probe": parallel_cap.get("probe"),
+        "drain_claimed_first_enabled": bool(taskpool_cfg.get("drain_claimed_first")),
+        "event_refill_enabled": bool(taskpool_cfg.get("event_refill_enabled")),
+        "batch_merge_conflict_threshold": int(taskpool_cfg.get("batch_merge_conflict_threshold") or 3),
         "review_close_max_tasks": review_close_max_tasks,
         "parallel_requested": bool(args.parallel_autorun),
     }
@@ -665,6 +951,12 @@ def main() -> int:
         "--json",
     ])
 
+    event["scheduler_decision"] = scheduler_decision_snapshot(
+        event=event,
+        resource_probe=parallel_cap.get("resource_probe", {}) if isinstance(parallel_cap.get("resource_probe"), dict) else {},
+        threshold=int(taskpool_cfg.get("batch_merge_conflict_threshold") or 3),
+    )
+
     for key in ["ingest", "reconcile", "dashboard", "task_list", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
         if key in errored_steps:
             continue
@@ -680,15 +972,28 @@ def main() -> int:
         event["status"] = "WARN"
 
     if args.parallel_autorun and not errors:
-        event["autorun"] = run_json([
-            "parallel-claim-and-handoff",
-            "--max-agents",
-            str(max_parallel_agents),
-            "--write",
-            "--actor",
-            "hermes-parallel",
-            "--json",
-        ])
+        if bool(taskpool_cfg.get("drain_claimed_first")):
+            event["drain_first"] = trigger_claimed_drain_first(
+                task_list=event.get("task_list", {}) if isinstance(event.get("task_list"), dict) else {},
+                max_agents=max_parallel_agents,
+                foreground=bool(args.parallel_worker_foreground),
+            )
+            if event["drain_first"].get("status") not in {"OK", "PASS", "SKIP", "ok"}:
+                errors.append({"step": "drain_first", "status": event["drain_first"].get("status"), "reason": event["drain_first"].get("reason"), "worker_trigger": event["drain_first"].get("worker_trigger")})
+                event["status"] = "ERROR"
+                event["errors"] = errors
+        if errors:
+            event["autorun"] = {"status": "SKIP", "reason": "drain_first_failed", "claimed": False}
+        else:
+            event["autorun"] = run_json([
+                "parallel-claim-and-handoff",
+                "--max-agents",
+                str(max_parallel_agents),
+                "--write",
+                "--actor",
+                "hermes-parallel",
+                "--json",
+            ])
         if event["autorun"].get("status") not in {"OK", "PASS"}:
             errors.append({"step": "parallel_autorun", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout"), "reason": event["autorun"].get("reason")})
             event["status"] = "ERROR"
@@ -729,6 +1034,9 @@ def main() -> int:
                     worker_trigger=event["event_worker_trigger"],
                     review_close_max_tasks=review_close_max_tasks,
                     max_depth=args.event_next_tick_depth,
+                    refill_enabled=bool(taskpool_cfg.get("event_refill_enabled")),
+                    max_agents=max_parallel_agents,
+                    worker_foreground=bool(args.parallel_worker_foreground),
                 )
                 if event["event_next_tick"].get("status") not in {"OK", "PASS", "SKIP"}:
                     errors.append({"step": "event_next_tick", "status": event["event_next_tick"].get("status"), "reason": event["event_next_tick"].get("reason")})
@@ -861,6 +1169,8 @@ def main() -> int:
         "handoff_backlog": event.get("handoff_backlog", {}),
         "continuation": event.get("continuation", {}),
         "claim_state": event.get("claim_state", {}),
+        "scheduler_decision": event.get("scheduler_decision", {}),
+        "drain_first": event.get("drain_first", {}),
         "parallel_dispatch": event.get("parallel_dispatch", {}),
         "railway_published_retests": event.get("railway_published_retests", {}),
         "multimodel_intervention": multimodel_summary,

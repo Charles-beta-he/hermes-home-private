@@ -451,6 +451,8 @@ def test_parallel_autorun_spawns_async_worker_consumer_summary_without_foregroun
     def fake_run_cmd_json(cmd, timeout=None):
         calls.append(("run_cmd_json", list(cmd), timeout))
         assert "agent_team_controller.py" in " ".join(map(str, cmd)), cmd
+        if "worker-jobs" in cmd:
+            return {"status": "OK", "job_count": 0, "alive_count": 0, "jobs": []}
         assert "consume-claimed" in cmd, cmd
         assert "--background" in cmd, cmd
         assert "--batch-id" in cmd and cmd[cmd.index("--batch-id") + 1] == "parallel-test-batch", cmd
@@ -541,6 +543,8 @@ def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
 
     def fake_run_cmd_json(cmd, timeout=None):
         calls.append(("run_cmd_json", list(cmd), timeout))
+        if "worker-jobs" in cmd:
+            return {"status": "OK", "job_count": 0, "alive_count": 0, "jobs": []}
         assert "consume-claimed" in cmd, cmd
         assert "--background" not in cmd, cmd
         return {"status": "ERROR", "reason": "subprocess_timeout", "returncode": "timeout"}
@@ -622,6 +626,237 @@ def test_event_next_tick_not_requested_skips_without_side_effects():
     assert result["skip_reasons"] == ["not_requested"]
     assert calls == []
 
+
+
+def test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates():
+    module = load_tick_module()
+    event = {
+        "task_list": {"status": "OK", "rows": [
+            {"id": "running-1", "status": "running"},
+            {"id": "pending-1", "status": "pending"},
+        ]},
+        "parallel_dispatch": {
+            "status": "OK",
+            "dispatchable": True,
+            "selected_count": 0,
+            "skipped": [
+                {"id": "t1", "reason": "parallel_boundary_conflict", "boundary_key": "boundary:repo-a"},
+                {"id": "t2", "reason": "parallel_boundary_conflict", "boundary_key": "boundary:repo-a"},
+                {"id": "t3", "reason": "parallel_boundary_conflict", "boundary_key": "boundary:repo-a"},
+            ],
+        },
+    }
+    decision = module.scheduler_decision_snapshot(
+        event=event,
+        resource_probe={"effective_resource_ceiling": 4},
+        threshold=3,
+    )
+    assert decision["action"] == "boundary_refinement_or_batch_merge", decision
+    assert "boundary_conflict_with_resource_headroom" in decision["reasons"], decision
+    assert decision["batch_merge_candidate_count"] == 1, decision
+    assert decision["batch_merge_candidates"][0]["merge_policy"] == "propose_only", decision
+
+
+def test_drain_first_consumes_only_uncovered_claimed_tasks():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_agent_team_json(args, timeout=None):
+        calls.append((list(args), timeout))
+        if args[:1] == ["worker-jobs"]:
+            return {"status": "OK", "job_count": 1, "alive_count": 1, "jobs": [{"alive": True, "task_ids": ["claimed-covered"]}]}
+        assert args[0] == "consume-claimed", args
+        payload = json.loads(args[args.index("--claimed-json") + 1])
+        assert [row["id"] for row in payload] == ["claimed-open"], payload
+        assert "--background" in args, args
+        return {"status": "OK", "async_worker": True, "started": True, "task_ids": ["claimed-open"]}
+
+    old_run_agent_team_json = module.run_agent_team_json
+    old_run_json = module.run_json
+    rows = [
+        {"id": "claimed-covered", "status": "claimed", "claimed_by": "hermes-parallel", "claim_expires_at": "2099", "run_id": "r1"},
+        {"id": "claimed-open", "status": "claimed", "claimed_by": "hermes-parallel", "claim_expires_at": "2099", "run_id": "r2"},
+        {"id": "human-claimed", "status": "claimed", "claimed_by": "human", "claim_expires_at": "2099", "run_id": "r3", "stale_claim": True},
+        {"id": "pending-1", "status": "pending"},
+    ]
+    try:
+        module.run_agent_team_json = fake_run_agent_team_json
+        module.run_json = lambda args: {"status": "OK", "rows": rows} if args[:1] == ["list"] else {"status": "OK"}
+        result = module.trigger_claimed_drain_first(
+            task_list={"rows": rows},
+            max_agents=4,
+            foreground=False,
+        )
+    finally:
+        module.run_agent_team_json = old_run_agent_team_json
+        module.run_json = old_run_json
+    assert result["status"] == "OK", result
+    assert result["drainable_count"] == 1, result
+    assert result["drained_task_ids"] == ["claimed-open"], result
+    assert len(calls) == 2, calls
+
+
+def test_event_next_tick_refill_is_bounded_and_explicit():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(("run_json", list(args)))
+        step = args[0]
+        if step == "auto-close-review":
+            return {"status": "OK", "closed_count": 1}
+        if step == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 1, "selected": [{"id": "task-2"}]}
+        if step == "parallel-claim-and-handoff":
+            return {
+                "status": "OK",
+                "claimed": True,
+                "batch_id": "follow-batch",
+                "claimed_tasks": [{"task_id": "task-2", "run_id": "r2"}],
+            }
+        return {"status": "OK"}
+
+    def fake_run_agent_team_json(args, timeout=None):
+        calls.append(("run_agent_team_json", list(args), timeout))
+        assert args[0] == "consume-claimed", args
+        assert "--background" in args, args
+        return {"status": "OK", "async_worker": True, "started": True}
+
+    old_run_json = module.run_json
+    old_run_agent_team_json = module.run_agent_team_json
+    try:
+        module.run_json = fake_run_json
+        module.run_agent_team_json = fake_run_agent_team_json
+        result = module.event_next_tick_follow_through(
+            worker_trigger={"next_tick_requested": True, "reviewed_count": 1},
+            review_close_max_tasks=50,
+            max_depth=3,
+            refill_enabled=True,
+            max_agents=7,
+            worker_foreground=False,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_agent_team_json = old_run_agent_team_json
+
+    assert result["status"] == "OK", result
+    assert result["depth_used"] == 1, result
+    assert result["refill"]["batch_id"] == "follow-batch", result
+    assert result["refill_worker_trigger"]["started"] is True, result
+    assert [c for c in calls if c[0] == "run_json" and c[1][:1] == ["parallel-claim-and-handoff"]], calls
+    assert len([c for c in calls if c[0] == "run_agent_team_json"]) == 1, calls
+
+
+def test_event_next_tick_refill_timeout_releases_claimed_tasks():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(("run_json", list(args)))
+        step = args[0]
+        if step == "auto-close-review":
+            return {"status": "OK", "closed_count": 1}
+        if step == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 1, "selected": [{"id": "task-2"}]}
+        if step == "parallel-claim-and-handoff":
+            return {"status": "OK", "claimed": True, "batch_id": "follow-batch", "claimed_tasks": [{"task_id": "task-2", "run_id": "r2"}]}
+        if step == "transition":
+            return {"status": "OK", "ok": True, "task": args[1], "to_status": "retry"}
+        return {"status": "OK"}
+
+    def fake_run_agent_team_json(args, timeout=None):
+        calls.append(("run_agent_team_json", list(args), timeout))
+        return {"status": "ERROR", "reason": "subprocess_timeout", "returncode": "timeout"}
+
+    old_run_json = module.run_json
+    old_run_agent_team_json = module.run_agent_team_json
+    try:
+        module.run_json = fake_run_json
+        module.run_agent_team_json = fake_run_agent_team_json
+        result = module.event_next_tick_follow_through(
+            worker_trigger={"next_tick_requested": True, "reviewed_count": 1},
+            review_close_max_tasks=50,
+            max_depth=3,
+            refill_enabled=True,
+            max_agents=7,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_agent_team_json = old_run_agent_team_json
+
+    assert result["status"] == "ERROR", result
+    assert result["reason"] == "refill_worker_trigger_failed", result
+    cleanup = result["refill_worker_failure_cleanup"]
+    assert cleanup["released_count"] == 1, cleanup
+    assert result["refill_worker_timeout_cleanup"]["released_count"] == 1, result
+    transition_calls = [call for call in calls if call[0] == "run_json" and call[1][:1] == ["transition"]]
+    assert transition_calls and "hermes-parallel-follow-through" in " ".join(transition_calls[0][1]), transition_calls
+
+
+def test_event_next_tick_refill_non_timeout_failure_releases_claimed_tasks():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(("run_json", list(args)))
+        if args[0] == "auto-close-review":
+            return {"status": "OK", "closed_count": 1}
+        if args[0] == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 1}
+        if args[0] == "parallel-claim-and-handoff":
+            return {"status": "OK", "claimed": True, "batch_id": "follow-batch", "claimed_tasks": [{"task_id": "task-2", "run_id": "r2"}]}
+        if args[0] == "transition":
+            return {"status": "OK", "ok": True, "task": args[1], "to_status": "retry"}
+        return {"status": "OK"}
+
+    old_run_json = module.run_json
+    old_run_agent_team_json = module.run_agent_team_json
+    try:
+        module.run_json = fake_run_json
+        module.run_agent_team_json = lambda args, timeout=None: {"status": "ERROR", "reason": "spawn_failed"}
+        result = module.event_next_tick_follow_through(
+            worker_trigger={"next_tick_requested": True, "reviewed_count": 1},
+            review_close_max_tasks=50,
+            max_depth=3,
+            refill_enabled=True,
+            max_agents=7,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_agent_team_json = old_run_agent_team_json
+
+    assert result["status"] == "ERROR", result
+    assert result["refill_worker_failure_cleanup"]["released_count"] == 1, result
+    transition_calls = [call for call in calls if call[0] == "run_json" and call[1][:1] == ["transition"]]
+    assert transition_calls, calls
+
+
+def test_event_next_tick_refill_default_off_does_not_claim():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(list(args))
+        if args[0] == "auto-close-review":
+            return {"status": "OK", "closed_count": 1}
+        if args[0] == "parallel-dispatch-dry-run":
+            return {"status": "OK", "selected_count": 1, "selected": [{"id": "task-2"}]}
+        raise AssertionError(f"unexpected side effect: {args}")
+
+    old_run_json = module.run_json
+    try:
+        module.run_json = fake_run_json
+        result = module.event_next_tick_follow_through(
+            worker_trigger={"next_tick_requested": True, "reviewed_count": 1},
+            review_close_max_tasks=50,
+            max_depth=3,
+        )
+    finally:
+        module.run_json = old_run_json
+
+    assert result["status"] == "OK", result
+    assert result["next_dispatch_selected_count"] == 1, result
+    assert not any(call[:1] == ["parallel-claim-and-handoff"] for call in calls), calls
 
 def test_tick_evidence_spine_warn_is_visible_but_not_fatal():
     module = load_tick_module()
@@ -791,6 +1026,12 @@ if __name__ == "__main__":
     test_parallel_autorun_timeout_releases_claimed_batch_to_retry()
     test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
     test_event_next_tick_not_requested_skips_without_side_effects()
+    test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
+    test_drain_first_consumes_only_uncovered_claimed_tasks()
+    test_event_next_tick_refill_is_bounded_and_explicit()
+    test_event_next_tick_refill_timeout_releases_claimed_tasks()
+    test_event_next_tick_refill_non_timeout_failure_releases_claimed_tasks()
+    test_event_next_tick_refill_default_off_does_not_claim()
     test_run_cmd_json_preserves_structured_nonzero_stdout_for_diagnostics()
     test_run_cmd_json_forces_nonzero_ok_stdout_to_error()
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()
