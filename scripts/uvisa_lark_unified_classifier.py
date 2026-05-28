@@ -16,6 +16,45 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+PROJECT_PROFILE = Path.home() / ".hermes" / "project-profiles" / "uvisa-app-2.0.json"
+
+
+def _load_project_profile() -> dict[str, Any]:
+    """加载项目画像。"""
+    try:
+        return json.loads(PROJECT_PROFILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _build_domain_keywords(profile: dict[str, Any]) -> dict[str, dict[str, list[str]]]:
+    """从项目画像的 fullstack_domain_map 构建域关键词映射。
+
+    返回 {domain: {"frontend": [路径片段], "backend": [路径片段]}}
+    """
+    dm = profile.get("fullstack_domain_map", {})
+    result = {}
+    for domain, paths in dm.items():
+        if domain.startswith("_"):
+            continue
+        fe = [str(p).split("/")[-1].replace(".ts", "").replace(".tsx", "").replace(".java", "").lower()
+              for p in (paths.get("frontend") or [])]
+        be = [str(p).split("/")[-1].replace(".java", "").lower()
+              for p in (paths.get("backend") or [])]
+        result[domain] = {"frontend": fe, "backend": be}
+    return result
+
+
+def _convention_keywords(profile: dict[str, Any]) -> list[str]:
+    """从项目画像 conventions 提取后端相关关键词。"""
+    keywords = []
+    for c in profile.get("conventions", []):
+        if any(kw in c for kw in ["后端", "Controller", "Service", "Domain", "Repository", "migration", "Flyway"]):
+            keywords.append("backend_landing_required")
+        if any(kw in c for kw in ["全链路", "前后端", "fullstack"]):
+            keywords.append("fullstack_integration")
+    return keywords
+
 
 # ── 工具函数 ──────────────────────────────────────────────────────────
 
@@ -130,6 +169,47 @@ def _analyze_human_requirement(text: str) -> list[tuple[str, str, int]]:
 
 # ── admin 域专用信号提取器 ─────────────────────────────────────────────
 
+def _analyze_project_profile_signals(phrases: list[str], profile: dict[str, Any]) -> list[tuple[str, str, int]]:
+    """从项目画像的 domain_map 提取后端服务信号。
+
+    用 domain_map 的域中文关键词映射到具体后端服务，
+    当任务提到某个业务域时，自动关联对应的后端 Controller/Service。
+    """
+    signals = []
+    # 中文业务关键词 → domain 映射（从 domain_map 语义推导）
+    domain_chinese = {
+        "auth": ["登录", "注册", "验证", "安全中心", "设备管理", "密码", "OTP"],
+        "wallet": ["钱包", "余额", "钱包流水", "钱包列表"],
+        "card": ["卡列表", "绑卡", "卡片", "激活", "冻结", "3DS"],
+        "topup": ["充值", "U-VISA", "活期宝"],
+        "exchange": ["兑换", "汇率", "换汇", "币种选择"],
+        "remit": ["汇款", "收款人", "跨境", "SWIFT", "电汇"],
+        "payout": ["提现", "转出", "支付密码"],
+        "wealth": ["财富", "理财", "持仓", "收益", "赎回", "APY"],
+        "kyc": ["KYC", "身份核验", "复核"],
+        "notification": ["通知", "消息", "站内信", "横幅"],
+    }
+    # 检查 domain_map 中该域是否有后端服务
+    dm = profile.get("fullstack_domain_map", {})
+    domains_with_backend = set()
+    for domain, paths in dm.items():
+        if domain.startswith("_"):
+            continue
+        if isinstance(paths, dict) and paths.get("backend"):
+            domains_with_backend.add(domain)
+
+    for p in phrases:
+        for domain, keywords in domain_chinese.items():
+            if domain not in domains_with_backend:
+                continue
+            for kw in keywords:
+                if kw in p:
+                    # 该域有后端服务 → 如果任务涉及该域，就标记后端信号
+                    signals.append((f"profile_backend_{domain}", p, 2))
+                    break
+    return signals
+
+
 def _analyze_admin_security(phrases: list[str]) -> list[tuple[str, str, int]]:
     """admin 安全审查信号。"""
     signals = []
@@ -181,7 +261,9 @@ def _analyze_admin_page_batch(phrases: list[str]) -> list[tuple[str, str, int]]:
 
 # ── 统一冰山分析 ──────────────────────────────────────────────────────
 
-def iceberg_analyze(task: dict[str, Any]) -> dict[str, Any]:
+def iceberg_analyze(task: dict[str, Any], profile: dict[str, Any] | None = None) -> dict[str, Any]:
+    if profile is None:
+        profile = _load_project_profile()
     full_text = _text(task)
     title = _title(task)
     phrases = _split_phrases(title)
@@ -196,6 +278,10 @@ def iceberg_analyze(task: dict[str, Any]) -> dict[str, Any]:
     all_signals.extend(_analyze_navigation_semantics(phrases))
     all_signals.extend(_analyze_backend_signals(phrases))
     all_signals.extend(_analyze_human_requirement(full_text))
+
+    # 项目画像信号（domain_map 跨端映射）
+    if profile:
+        all_signals.extend(_analyze_project_profile_signals(phrases, profile))
 
     # admin 额外信号
     if side == "admin":
@@ -219,7 +305,7 @@ def iceberg_analyze(task: dict[str, Any]) -> dict[str, Any]:
             ui_weight += weight
         elif name in ("explicit_human_required", "missing_prototype"):
             human_weight += weight
-        elif name in ("api_data_issue", "websocket_realtime", "amount_mismatch",
+        elif name.startswith("profile_backend_") or name in ("api_data_issue", "websocket_realtime", "amount_mismatch",
                        "wallet_balance_logic", "fx_rate_logic", "remittance_flow",
                        "admin_config_dependency", "otp_verification", "pwa_installation",
                        "admin_webhook_dependency", "admin_risk_config", "admin_wallet_config",
@@ -332,9 +418,10 @@ def _infer_domain(title: str, phrases: list[str], side: str) -> str:
 # ── 批量处理 ──────────────────────────────────────────────────────────
 
 def classify_all(tasks: list[dict[str, Any]]) -> dict[str, Any]:
+    profile = _load_project_profile()
     results = []
     for task in tasks:
-        analysis = iceberg_analyze(task)
+        analysis = iceberg_analyze(task, profile=profile)
         analysis["guid"] = str(task.get("lark_task_guid") or task.get("guid") or "")
         analysis["title"] = _title(task)
         results.append(analysis)
