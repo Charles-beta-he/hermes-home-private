@@ -21,6 +21,9 @@ def test_data_correctness_generates_source_to_sink_atom():
     assert equality["proof_type"] == "source_to_sink_equality"
     assert "network" in equality["required_runtime_kinds"]
     assert contract.viewport == {"width": 1512, "height": 982, "label": "14-inch-admin"}
+    assert contract.source_weighting_policy["source_weighting_policy_ref"].endswith("uvisa-app-2.0.json#source_weighting_policy")
+    assert contract.source_weighting_policy["ranked_sources"][0]["source"].startswith("latest product document")
+    assert contract.proof_policy["project_profile_preflight_required"] is True
 
 
 def test_closeout_bundle_fails_closed_without_tg_or_atom_mapping(tmp_path):

@@ -28,6 +28,38 @@ UVISA_REPOS = {
     "uvisa-backend": "/Users/charles/Desktop/folder/work/uvisa-backend",
 }
 PROTECTED_BRANCHES = {"main", "master", "production", "prod"}
+UVISA_PROJECT_PROFILE = "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json"
+SOURCE_WEIGHTING_POLICY = {
+    "project_profile_ref": UVISA_PROJECT_PROFILE,
+    "source_weighting_policy_ref": UVISA_PROJECT_PROFILE + "#source_weighting_policy",
+    "ranked_sources": [
+        {
+            "rank": 1,
+            "source": "latest product document / PRD / canonical project profile",
+            "authority": "business semantics, money/status/accounting rules, permissions, state transitions",
+            "required_evidence": "product_doc_evidence or explicit product-doc-missing marker",
+        },
+        {
+            "rank": 2,
+            "source": "prototype / PM screenshot / Lark comment image",
+            "authority": "UI layout, interaction flow, visual parity, component/empty/loading/error states",
+            "required_evidence": "prototype_evidence when UI/interaction parity is in scope",
+        },
+        {
+            "rank": 3,
+            "source": "live Lark task title/body/comments",
+            "authority": "task symptom, reproduction example, affected surface, assignee/scope metadata",
+            "required_evidence": "lark_evidence from live Lark payload, not generated summary alone",
+        },
+        {
+            "rank": 4,
+            "source": "current implementation/runtime behavior",
+            "authority": "actual landing surface and regression proof",
+            "required_evidence": "code/test/browser evidence; cannot redefine expected product behavior by itself",
+        },
+    ],
+    "conflict_rule": "If product doc, prototype, Lark, or implementation disagree, record evidence and block for product confirmation unless rank-1 source clearly resolves it.",
+}
 FINAL_STATES = [
     "pending",
     "planned",
@@ -109,6 +141,7 @@ class WorkContract:
     required_closeout_states: list[str]
     closeout_blockers: list[str]
     proof_policy: dict[str, Any]
+    source_weighting_policy: dict[str, Any]
 
 
 def infer_task_type(text: str) -> str:
@@ -240,7 +273,10 @@ def generate_acceptance_atoms(task_id: str, title: str, body: str = "", lark_tas
             "same_repo_merges_are_serial": True,
             "lark_close_requires_online_ui_retest": True,
             "tg_notification_requires_evidence_directory": True,
+            "project_profile_preflight_required": True,
+            "source_weighting_policy_required": True,
         },
+        source_weighting_policy=json.loads(json.dumps(SOURCE_WEIGHTING_POLICY, ensure_ascii=False)),
     )
 
 
