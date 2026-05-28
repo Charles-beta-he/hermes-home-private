@@ -1,4 +1,4 @@
-关键教训: 删前grep+build; 改后test+build; Lark先分类→基础设施扫描→杠杆点分析→执行；横切必须基础设施化；重复要求=继续落地/验证/补测；方案判定按用户目标/长期稳定架构，不按字面触发限缩。
+关键教训: 删前grep+build; 改后test+build; Lark先分类→基础设施扫描→杠杆点分析→执行；横切必须基础设施化；重复要求=继续落地/验证/补测；方案判定按用户目标/长期稳定架构，所有人类模糊描述含提示词都先目标校准。
 §
 Hermes: 私库`Charles-beta-he/hermes-agent-private`, upstream官方；稳定线`private/main`；SOP在`docs/private/`；norm治理见`hermes norms`/`agent/norm_governance.py`/`agent/norm_write_guard.py`。
 §
