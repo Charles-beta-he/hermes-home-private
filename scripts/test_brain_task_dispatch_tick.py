@@ -628,6 +628,71 @@ def test_event_next_tick_not_requested_skips_without_side_effects():
 
 
 
+def test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns():
+    module = load_tick_module()
+    old_run_cmd_json = module.run_cmd_json
+    try:
+        def fake_run_cmd_json(cmd, timeout=None):
+            assert "model_quota.py" in " ".join(map(str, cmd)), cmd
+            return {
+                "status": "FAIL_CLOSED",
+                "pass_count": 1,
+                "failure_count": 3,
+                "failures": [
+                    {"model": "claude-opus-4-7", "provider": "claude-code", "status": "unobservable", "reasons": ["status_unobservable"]},
+                    {"model": "deepseek-v4-pro", "provider": "deepseek", "status": "exhausted", "reasons": ["quota_exhausted"]},
+                    {"model": "mimo-v2.5-pro", "provider": "xiaomi", "status": "unknown", "reasons": ["status_unknown"]},
+                ],
+            }
+        module.run_cmd_json = fake_run_cmd_json
+        probe = module.api_quota_capacity_probe(dynamic_ceiling=6)
+    finally:
+        module.run_cmd_json = old_run_cmd_json
+    assert probe["status"] == "OK", probe
+    assert probe["api_slots"] == 5, probe
+    assert probe["hard_blocker_count"] == 1, probe
+    assert probe["soft_unknown_count"] == 2, probe
+
+
+def test_api_quota_capacity_probe_unavailable_error_does_not_echo_stdout_stderr():
+    module = load_tick_module()
+    old_run_cmd_json = module.run_cmd_json
+    try:
+        module.run_cmd_json = lambda cmd, timeout=None: {
+            "status": "ERROR",
+            "reason": "subprocess_failed",
+            "returncode": 2,
+            "stdout": "token=SECRET",
+            "stderr": "Authorization: bearer ***",
+        }
+        probe = module.api_quota_capacity_probe(dynamic_ceiling=6)
+    finally:
+        module.run_cmd_json = old_run_cmd_json
+    assert probe["status"] == "SKIP", probe
+    error = probe["confidence_gate_error"]
+    assert error["status"] == "ERROR", error
+    assert "stdout" not in error and "stderr" not in error, error
+    assert probe["api_slots"] == 6, probe
+
+
+def test_api_quota_capacity_probe_env_cap_overrides_slots():
+    module = load_tick_module()
+    old_run_cmd_json = module.run_cmd_json
+    old_env = os.environ.get("HERMES_TASKPOOL_API_CAP")
+    try:
+        os.environ["HERMES_TASKPOOL_API_CAP"] = "2"
+        module.run_cmd_json = lambda cmd, timeout=None: {"status": "PASS", "pass_count": 4, "failure_count": 0, "failures": []}
+        probe = module.api_quota_capacity_probe(dynamic_ceiling=6)
+    finally:
+        module.run_cmd_json = old_run_cmd_json
+        if old_env is None:
+            os.environ.pop("HERMES_TASKPOOL_API_CAP", None)
+        else:
+            os.environ["HERMES_TASKPOOL_API_CAP"] = old_env
+    assert probe["api_slots"] == 2, probe
+    assert probe["env_api_cap"] == 2, probe
+
+
 def test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates():
     module = load_tick_module()
     event = {
@@ -1026,6 +1091,9 @@ if __name__ == "__main__":
     test_parallel_autorun_timeout_releases_claimed_batch_to_retry()
     test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
     test_event_next_tick_not_requested_skips_without_side_effects()
+    test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns()
+    test_api_quota_capacity_probe_unavailable_error_does_not_echo_stdout_stderr()
+    test_api_quota_capacity_probe_env_cap_overrides_slots()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
     test_drain_first_consumes_only_uncovered_claimed_tasks()
     test_event_next_tick_refill_is_bounded_and_explicit()

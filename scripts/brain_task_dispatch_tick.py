@@ -30,6 +30,7 @@ HOME = Path.home()
 SCRIPT = SCRIPT_DIR / "brain_task_orchestrator.py"
 AUTORUN_STEP_SCRIPT = SCRIPT_DIR / "brain_task_autorun_step.py"
 AGENT_TEAM_SCRIPT = SCRIPT_DIR / "agent_team_controller.py"
+MODEL_QUOTA_SCRIPT = SCRIPT_DIR / "model_quota.py"
 STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME / ".hermes" / "state"))).expanduser()
 LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
@@ -465,6 +466,83 @@ def _rows_from_task_list(task_list: Any) -> list[dict[str, Any]]:
     return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
 
 
+def api_quota_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
+    """Return a conservative API/provider quota slot cap.
+
+    The model_quota confidence gate is strict for budget handoff, but taskpool
+    dispatch should not collapse to one slot merely because a provider is
+    unobservable or stale.  This probe therefore lowers concurrency only on
+    hard blocker evidence (exhausted/rate_limited/malformed/unavailable) or an
+    explicit HERMES_TASKPOOL_API_CAP override; unknown/unobservable remains
+    visible telemetry.
+    """
+    env_api_cap_raw = os.environ.get("HERMES_TASKPOOL_API_CAP", "")
+    env_api_cap = 0
+    if env_api_cap_raw:
+        try:
+            env_api_cap = max(1, int(env_api_cap_raw))
+        except Exception:
+            env_api_cap = 0
+    payload: dict[str, Any] = {
+        "schema": "taskpool_api_quota_capacity_v1",
+        "status": "UNKNOWN",
+        "api_slots": max(1, min(int(dynamic_ceiling or 1), env_api_cap or int(dynamic_ceiling or 1))),
+        "env_api_cap": env_api_cap,
+        "hard_blocker_count": 0,
+        "soft_unknown_count": 0,
+        "hard_blockers": [],
+        "soft_unknowns": [],
+        "safety": "only hard quota/provider blockers reduce taskpool concurrency; unknown/unobservable is telemetry",
+    }
+    if not MODEL_QUOTA_SCRIPT.exists():
+        payload["status"] = "SKIP"
+        payload["reason"] = "model_quota_script_missing"
+        return payload
+    gate = run_cmd_json([sys.executable, str(MODEL_QUOTA_SCRIPT), "confidence-gate", "--json"], timeout=min(command_timeout_seconds(), 30.0))
+    payload["confidence_gate_status"] = gate.get("status")
+    if gate.get("status") not in {"PASS", "FAIL_CLOSED"}:
+        payload["status"] = "SKIP"
+        payload["reason"] = "confidence_gate_unavailable"
+        # Do not echo stdout/stderr here: provider errors may include sensitive
+        # environment or auth context. Keep only controlled machine fields.
+        payload["confidence_gate_error"] = {k: gate.get(k) for k in ["status", "reason", "returncode"] if gate.get(k)}
+        return payload
+    hard_statuses = {"exhausted", "rate_limited", "malformed", "unavailable"}
+    hard: list[dict[str, Any]] = []
+    soft: list[dict[str, Any]] = []
+    for item in gate.get("failures") or []:
+        if not isinstance(item, dict):
+            continue
+        status = str(item.get("status") or "unknown")
+        entry = {
+            "model": item.get("model"),
+            "provider": item.get("provider"),
+            "status": status,
+            "reasons": item.get("reasons") or [],
+            "reset_at": item.get("reset_at"),
+        }
+        if status in hard_statuses:
+            hard.append(entry)
+        else:
+            soft.append(entry)
+    cap = int(dynamic_ceiling or 1)
+    if hard:
+        cap = max(1, cap - len(hard))
+    if env_api_cap:
+        cap = min(cap, env_api_cap)
+    payload.update({
+        "status": "OK",
+        "api_slots": max(1, min(int(dynamic_ceiling or 1), cap)),
+        "hard_blocker_count": len(hard),
+        "soft_unknown_count": len(soft),
+        "hard_blockers": hard[:8],
+        "soft_unknowns": soft[:8],
+        "pass_count": gate.get("pass_count"),
+        "failure_count": gate.get("failure_count"),
+    })
+    return payload
+
+
 def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
     """Return an advisory resource ceiling for dynamic taskpool dispatch.
 
@@ -489,6 +567,7 @@ def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
             env_cap = max(1, int(env_cap_raw))
         except Exception:
             env_cap = 0
+    api_probe = api_quota_capacity_probe(dynamic_ceiling=int(dynamic_ceiling or 1))
     machine_slots = max(1, min(int(dynamic_ceiling or 1), cpu_count * 2))
     pressure_reasons: list[str] = []
     if load_1m and load_1m > cpu_count * 1.5:
@@ -497,7 +576,7 @@ def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
     if disk_free_gb and disk_free_gb < 2.0:
         machine_slots = 1
         pressure_reasons.append("disk_free_low")
-    api_slots = env_cap or int(dynamic_ceiling or machine_slots or 1)
+    api_slots = env_cap or int(api_probe.get("api_slots") or dynamic_ceiling or machine_slots or 1)
     quality_slots = int(dynamic_ceiling or machine_slots or 1)
     effective = max(1, min(int(dynamic_ceiling or 1), machine_slots, api_slots, quality_slots))
     return {
@@ -506,13 +585,14 @@ def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
         "effective_resource_ceiling": effective,
         "machine_slots": machine_slots,
         "api_slots": api_slots,
+        "api_probe": api_probe,
         "quality_slots": quality_slots,
         "cpu_count": cpu_count,
         "load_1m": round(load_1m, 2),
         "disk_free_gb": disk_free_gb,
         "pressure_reasons": pressure_reasons,
         "env_cap": env_cap,
-        "safety": "advisory cap only; boundary/dependency/quality gates remain hard constraints",
+        "safety": "resource/API/quality cap only; boundary/dependency/quality gates remain hard constraints",
     }
 
 

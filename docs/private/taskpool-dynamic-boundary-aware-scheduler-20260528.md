@@ -29,7 +29,7 @@ Certification status: advisory, not truth-gate certification. Code evidence and 
 `dynamic_max_parallel_agents` is treated as a probe ceiling. The effective probe is further capped by `resource_capacity_probe()`. Resource pressure may lower effective concurrency below the configured floor unless the operator explicitly passes `--max-agents`:
 
 - machine slots: CPU count, 1m load average, disk pressure;
-- API slots: optional `HERMES_TASKPOOL_RESOURCE_CAP` / provider budget cap;
+- API slots: optional `HERMES_TASKPOOL_RESOURCE_CAP` / `HERMES_TASKPOOL_API_CAP` and `model_quota.py confidence-gate --json` hard-blocker evidence; unknown/unobservable quota remains telemetry and does not collapse concurrency by itself;
 - quality slots: reserved hook point for live success/timeout/review feedback.
 
 The scheduler asks the boundary selector only up to the resource-aware ceiling. Boundary/dependency checks still decide which tasks can actually run.
@@ -114,9 +114,23 @@ A second real multi-model review of the diff returned AMEND, and the must-fix it
 
 Remaining accepted risks:
 
-- API and quality slots are still conservative hook points rather than provider telemetry integrations.
+- API slots now consume `model_quota.py` confidence-gate hard blockers and explicit env caps; quality slots are still conservative hook points rather than live success/timeout integrations.
 - Batch merge candidates are propose-only telemetry; no coordinator executor consumes them yet.
 
 - Final Codex复审指出 follow-through refill worker timeout 需要与主 autorun 同等 cleanup；已补充 `refill_worker_timeout_cleanup`，actor=`hermes-parallel-follow-through`。
 
 - Final Codex复审继续要求 refill worker 任意失败都释放刚 claim 的任务；已将 cleanup 扩展到所有非 OK/PASS/SKIP worker trigger failure，并保留 timeout alias。
+
+
+## Follow-up landing: API quota hard-blocker cap
+
+After the initial commit, `resource_capacity_probe()` was extended to call `api_quota_capacity_probe()`, which reads `model_quota.py confidence-gate --json`. The mapping is deliberately non-catastrophic:
+
+- `exhausted`, `rate_limited`, `malformed`, and `unavailable` snapshots are hard blockers and reduce API slots.
+- `unknown` / `unobservable` / stale confidence failures remain visible as soft unknown telemetry but do not collapse taskpool concurrency by themselves.
+- `HERMES_TASKPOOL_API_CAP` is an explicit operator override for API slot cap.
+- `HERMES_TASKPOOL_RESOURCE_CAP` remains the global cap override.
+
+This turns provider quota evidence into a real scheduling input without making missing quota evidence slower than the old fixed pool.
+
+- Follow-up multi-model review required that confidence-gate unavailable errors must not echo stdout/stderr because provider errors may contain sensitive context; `api_probe.confidence_gate_error` now keeps only status/reason/returncode and has focused regression coverage.
