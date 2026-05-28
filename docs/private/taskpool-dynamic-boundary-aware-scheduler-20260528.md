@@ -249,3 +249,33 @@ Recovery boundary remains active until a clean canary window is observed:
 - batch executor stays enabled but `skip_when_regular_selected=true` prevents overclaim while ordinary parallel tasks are selected/running;
 - no auto-done, no merged acceptance, no proof-gate bypass;
 - any new post-ack FAILED/BLOCKED streak should retrigger human_escape and pause scale-up.
+
+
+## Dynamic recovery scaler and batch headroom gate (2026-05-28)
+
+The previous recovery cap of 6 is now a deterministic canary floor, not a permanent hard ceiling.
+
+Runtime policy landed:
+- `taskpool_dynamic_runner.py` computes a `recovery_cap` from the envelope escape watermark before probing dispatch capacity.
+- If `human_escape_triggered=true`, or if post-ack `FAILED`/`BLOCKED`/invalid timestamps exist, the runner holds at `dynamic_recovery_min_agents`.
+- If the post-ack window is clean, the runner raises the probe ceiling by `dynamic_recovery_step_agents` every `dynamic_recovery_stable_window_seconds`, capped by `dynamic_recovery_max_agents` and any operator env ceiling.
+- This scaler only controls the claim ceiling. It does not bypass proof gates, acceptance gates, human escape, stale-manifest rejection, or secret config governance.
+
+Runtime knobs enabled locally through `hermes config set`:
+- `taskpool.dynamic_recovery_enabled=true`
+- `taskpool.dynamic_recovery_min_agents=6`
+- `taskpool.dynamic_recovery_max_agents=24`
+- `taskpool.dynamic_recovery_step_agents=2`
+- `taskpool.dynamic_recovery_stable_window_seconds=900`
+- `taskpool.dynamic_recovery_failure_hold_seconds=1800`
+- `taskpool.batch_executor_require_headroom=true`
+
+Batch executor policy landed:
+- Batch coordinator now requires explicit parallel headroom before claiming work when `batch_executor_require_headroom=true`.
+- `headroom = resource_ceiling - active_count` must be positive; otherwise it returns `SKIP:no_parallel_headroom_for_batch_executor`.
+- Effective batch claim size is capped to headroom, preventing overclaim when ordinary parallel workers already fill the pool.
+- `batch_executor_skip_when_regular_selected=true` still wins first: ordinary boundary-safe dispatch has priority over batch/cohort execution.
+
+Multi-model boundary interpretation applied:
+- Model review may tune scaling policy and classify failure causes.
+- Runtime execution remains deterministic and fail-closed for proof, human escape, stale manifests, worker startup cleanup, and config-secret protection.

@@ -1466,6 +1466,69 @@ def test_batch_executor_apply_claims_existing_single_task_worker_path_only():
     assert lease_files, "lease should be durable"
 
 
+def test_batch_executor_requires_headroom_and_caps_claims():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_state_dir = module.BATCH_EXECUTOR_STATE_DIR
+    try:
+        root = Path(td.name)
+        module.BATCH_EXECUTOR_STATE_DIR = root / "leases"
+        path = root / "manifest.json"
+        path.write_text(json.dumps({
+            "schema": "taskpool_batch_merge_plan_v1",
+            "manifest_id": "m-headroom",
+            "execution_approved": True,
+            "candidates": [{"sample_task_ids": ["t1", "t2", "t3"]}],
+        }), encoding="utf-8")
+        no_room = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=False,
+            require_approval=True,
+            max_tasks=8,
+            per_batch_parallelism=1,
+            active_count=6,
+            resource_ceiling=6,
+            require_headroom=True,
+        )
+        assert no_room["status"] == "SKIP" and no_room["reason"] == "no_parallel_headroom_for_batch_executor", no_room
+        claim_calls = []
+        def fake_run_json(args):
+            if args == ["list", "--json"]:
+                return {"status": "OK", "rows": [
+                    {"id": "t1", "status": "pending", "dispatchable": True},
+                    {"id": "t2", "status": "pending", "dispatchable": True},
+                    {"id": "t3", "status": "pending", "dispatchable": True},
+                ]}
+            if args and args[0] == "claim":
+                claim_calls.append(args[1])
+                return {"status": "OK", "ok": True}
+            raise AssertionError(f"unexpected run_json call: {args}")
+        module.run_json = fake_run_json
+        module.run_cmd_json = lambda cmd, timeout=None: {"status": "OK", "background": True}
+        result = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=False,
+            require_approval=True,
+            max_tasks=8,
+            per_batch_parallelism=1,
+            active_count=4,
+            resource_ceiling=6,
+            require_headroom=True,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.BATCH_EXECUTOR_STATE_DIR = old_state_dir
+        td.cleanup()
+    assert result["status"] == "OK", result
+    assert result["headroom"] == 2 and result["effective_max_tasks"] == 2, result
+    assert claim_calls == ["t1", "t2"], claim_calls
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
@@ -1496,6 +1559,7 @@ if __name__ == "__main__":
     test_batch_executor_requires_current_tick_manifest_when_not_allowed_latest()
     test_batch_executor_worker_skip_after_claim_triggers_cleanup()
     test_batch_executor_apply_claims_existing_single_task_worker_path_only()
+    test_batch_executor_requires_headroom_and_caps_claims()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
     test_drain_first_consumes_only_uncovered_claimed_tasks()
     test_event_next_tick_refill_is_bounded_and_explicit()

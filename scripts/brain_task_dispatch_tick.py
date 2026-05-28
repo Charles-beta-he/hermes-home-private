@@ -365,6 +365,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         "batch_executor_max_tasks_per_batch": 8,
         "batch_executor_per_batch_parallelism": 1,
         "batch_executor_skip_when_regular_selected": True,
+        "batch_executor_require_headroom": True,
     }
     try:
         import yaml  # type: ignore
@@ -404,6 +405,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
     defaults["batch_executor_dry_run"] = str(defaults.get("batch_executor_dry_run", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["batch_executor_require_approval"] = str(defaults.get("batch_executor_require_approval", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["batch_executor_skip_when_regular_selected"] = str(defaults.get("batch_executor_skip_when_regular_selected", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["batch_executor_require_headroom"] = str(defaults.get("batch_executor_require_headroom", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["dynamic_max_parallel_agents"] = max(
         int(defaults.get("max_parallel_agents") or 3),
         int(defaults.get("dynamic_max_parallel_agents") or 24),
@@ -1103,7 +1105,10 @@ def execute_batch_merge_manifest(
     max_tasks: int,
     per_batch_parallelism: int,
     regular_selected_count: int = 0,
+    active_count: int = 0,
+    resource_ceiling: int = 0,
     skip_when_regular_selected: bool = True,
+    require_headroom: bool = False,
     worker_background: bool = True,
     allow_latest_manifest: bool = False,
 ) -> dict[str, Any]:
@@ -1121,6 +1126,9 @@ def execute_batch_merge_manifest(
         "enabled": bool(enabled),
         "dry_run": bool(dry_run),
         "require_approval": bool(require_approval),
+        "require_headroom": bool(require_headroom),
+        "active_count": int(active_count or 0),
+        "resource_ceiling": int(resource_ceiling or 0),
         "claimed_count": 0,
         "worker_started": False,
         "safety": "thin coordinator only; per-task worker/proof/acceptance gates remain authoritative; no done transitions",
@@ -1131,6 +1139,11 @@ def execute_batch_merge_manifest(
     if skip_when_regular_selected and int(regular_selected_count or 0) > 0:
         payload["reason"] = "regular_parallel_dispatch_has_selected_tasks"
         payload["regular_selected_count"] = int(regular_selected_count or 0)
+        return payload
+    headroom = max(0, int(resource_ceiling or 0) - int(active_count or 0)) if int(resource_ceiling or 0) > 0 else 0
+    payload["headroom"] = headroom
+    if require_headroom and headroom <= 0:
+        payload["reason"] = "no_parallel_headroom_for_batch_executor"
         return payload
     if manifest_path:
         path = Path(manifest_path).expanduser()
@@ -1152,7 +1165,9 @@ def execute_batch_merge_manifest(
     if require_approval and not approved:
         payload["reason"] = "manifest_not_execution_approved"
         return payload
-    task_ids = _batch_manifest_task_ids(manifest, max_tasks=max_tasks)
+    effective_max_tasks = max(1, min(int(max_tasks or 1), headroom if require_headroom and headroom > 0 else int(max_tasks or 1)))
+    payload["effective_max_tasks"] = effective_max_tasks
+    task_ids = _batch_manifest_task_ids(manifest, max_tasks=effective_max_tasks)
     payload["candidate_task_ids"] = task_ids
     if not task_ids:
         payload["reason"] = "manifest_has_no_task_ids"
@@ -1186,7 +1201,7 @@ def execute_batch_merge_manifest(
     actor = "hermes-batch-coordinator"
     claimed: list[dict[str, Any]] = []
     claim_errors: list[dict[str, Any]] = []
-    for row in eligible[: max(1, int(max_tasks or 1))]:
+    for row in eligible[: effective_max_tasks]:
         task_id = str(row.get("id") or row.get("task_id") or "")
         claim = run_json([
             "claim", task_id,
@@ -1486,6 +1501,7 @@ def main() -> int:
         "batch_executor_max_tasks_per_batch": int(taskpool_cfg.get("batch_executor_max_tasks_per_batch") or 8),
         "batch_executor_per_batch_parallelism": int(taskpool_cfg.get("batch_executor_per_batch_parallelism") or 1),
         "batch_executor_skip_when_regular_selected": bool(taskpool_cfg.get("batch_executor_skip_when_regular_selected")),
+        "batch_executor_require_headroom": bool(taskpool_cfg.get("batch_executor_require_headroom")),
         "quality_slots_enabled": bool(taskpool_cfg.get("quality_slots_enabled")),
         "stale_claim_reclaim_enabled": bool(taskpool_cfg.get("stale_claim_reclaim_enabled")),
         "stale_claim_reclaim_dry_run": bool(taskpool_cfg.get("stale_claim_reclaim_dry_run")),
@@ -1589,7 +1605,10 @@ def main() -> int:
         max_tasks=int(taskpool_cfg.get("batch_executor_max_tasks_per_batch") or 8),
         per_batch_parallelism=int(taskpool_cfg.get("batch_executor_per_batch_parallelism") or 1),
         regular_selected_count=int((event.get("scheduler_decision") or {}).get("selected_count") or 0),
+        active_count=int((event.get("scheduler_decision") or {}).get("active_count") or 0),
+        resource_ceiling=int((event.get("scheduler_decision") or {}).get("resource_ceiling") or max_parallel_agents),
         skip_when_regular_selected=bool(taskpool_cfg.get("batch_executor_skip_when_regular_selected")),
+        require_headroom=bool(taskpool_cfg.get("batch_executor_require_headroom")),
         worker_background=not bool(args.parallel_worker_foreground),
     )
     if event["batch_executor"].get("status") not in {"OK", "PASS", "SKIP", "ok"}:

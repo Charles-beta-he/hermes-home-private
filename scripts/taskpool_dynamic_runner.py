@@ -177,6 +177,76 @@ def human_escape_status() -> dict[str, Any]:
         return {"status": "ERROR", "triggered": True, "reason": "human_escape_check_failed", "error": str(exc)[:300]}
 
 
+
+
+def _parse_iso_z(value: Any) -> float | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+        try:
+            return datetime.strptime(value.strip(), fmt).timestamp()
+        except Exception:
+            pass
+    return None
+
+
+def recovery_cap_from_escape(*, cfg: dict[str, Any], escape_status: dict[str, Any], env: dict[str, str]) -> dict[str, Any]:
+    """Return a bounded dynamic ceiling for post-escape recovery.
+
+    Multi-model can advise scale-up, but the runtime uses deterministic gates:
+    any post-ack block/failure holds the canary cap; a clean window gradually
+    raises concurrency.  This never bypasses proof gates or human_escape.
+    """
+    base = positive_int(cfg.get("max_parallel_agents"), 3)
+    configured_dynamic = positive_int(cfg.get("dynamic_max_parallel_agents"), base)
+    recovery_enabled = str(cfg.get("dynamic_recovery_enabled", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    recovery_min = positive_int(cfg.get("dynamic_recovery_min_agents"), base)
+    recovery_max = positive_int(cfg.get("dynamic_recovery_max_agents"), configured_dynamic)
+    recovery_step = positive_int(cfg.get("dynamic_recovery_step_agents"), 2)
+    stable_window = positive_int(cfg.get("dynamic_recovery_stable_window_seconds"), 900)
+    failure_hold = positive_int(cfg.get("dynamic_recovery_failure_hold_seconds"), 1800)
+    operator_ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), recovery_max)
+    hard_max = max(base, min(recovery_max, operator_ceiling))
+    info = escape_status.get("info") if isinstance(escape_status.get("info"), dict) else {}
+    since = info.get("since_ack") if isinstance(info.get("since_ack"), dict) else {}
+    ack = info.get("ack") if isinstance(info.get("ack"), dict) else {}
+    failures = int(since.get("failures") or 0)
+    blocks = int(since.get("blocks") or 0)
+    invalid_ts = int(since.get("invalid_timestamps") or 0)
+    ack_ts = _parse_iso_z(ack.get("acked_at"))
+    age = max(0, int(time.time() - ack_ts)) if ack_ts else 0
+    payload = {
+        "enabled": recovery_enabled,
+        "base": base,
+        "min": recovery_min,
+        "max": recovery_max,
+        "operator_ceiling": operator_ceiling,
+        "hard_max": hard_max,
+        "step": recovery_step,
+        "stable_window_seconds": stable_window,
+        "failure_hold_seconds": failure_hold,
+        "since_ack_failures": failures,
+        "since_ack_blocks": blocks,
+        "since_ack_invalid_timestamps": invalid_ts,
+        "ack_age_seconds": age,
+    }
+    if not recovery_enabled:
+        payload.update({"ceiling": configured_dynamic, "reason": "dynamic_recovery_disabled"})
+        return payload
+    if bool(escape_status.get("triggered")):
+        payload.update({"ceiling": recovery_min, "reason": "human_escape_active_hold_min"})
+        return payload
+    if failures or blocks or invalid_ts:
+        payload.update({"ceiling": max(base, recovery_min), "reason": "post_ack_failure_hold"})
+        return payload
+    if not ack_ts:
+        payload.update({"ceiling": max(base, recovery_min), "reason": "no_valid_escape_ack_hold_min"})
+        return payload
+    increments = age // stable_window if stable_window > 0 else 0
+    ceiling = min(hard_max, max(base, recovery_min) + int(increments) * recovery_step)
+    payload.update({"ceiling": ceiling, "reason": "clean_window_scaled" if ceiling > recovery_min else "clean_window_canary"})
+    return payload
+
 def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
     """Choose a safe parallel cap from the live boundary classifier.
 
@@ -190,9 +260,12 @@ def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
     configured = positive_int(cfg.get("max_parallel_agents"), 3)
     # Probe above the configured floor for Lark/work bursts.  The dry-run owns
     # boundary classification; the write tick only runs when it reports
-    # additional non-conflicting slots.  This is not unbounded full-pool autorun.
-    configured_dynamic = positive_int(cfg.get("dynamic_max_parallel_agents"), 24)
-    ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), configured_dynamic)
+    # additional non-conflicting slots.  During recovery, a deterministic
+    # envelope-backed scaler raises this ceiling gradually; model review may
+    # tune the policy, but not bypass it.
+    escape_status = human_escape_status()
+    recovery_cap = recovery_cap_from_escape(cfg=cfg, escape_status=escape_status, env=env)
+    ceiling = positive_int(recovery_cap.get("ceiling"), configured)
     ceiling = max(configured, ceiling)
     probe = run(
         [sys.executable, str(HERMES_HOME / "scripts" / "brain_task_orchestrator.py"), "parallel-dispatch-dry-run", "--max-agents", str(ceiling), "--json"],
@@ -206,6 +279,7 @@ def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
         "recommended": configured,
         "reason": "probe_unavailable",
         "probe": compact_result(probe),
+        "recovery_cap": recovery_cap,
     }
     if probe.get("returncode") not in (0, "0"):
         return result
