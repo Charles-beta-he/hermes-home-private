@@ -139,6 +139,10 @@ Treat prototypes, screenshots, and old implementations as evidence of desired ef
 6. Goal drift: calibrating once, then letting implementation expand into unrelated refactors or a different success metric.
 7. False completion: verifying only the touched layer instead of the calibrated target dimensions.
 
+## Regression Evals
+
+See `references/eval-cases.md` for positive triggers, negative/light-path cases, neighbor-skill boundaries, and failure checks. Use it when editing this skill or auditing whether goal calibration is over- or under-triggering.
+
 ## Verification Checklist
 
 - [ ] The target class is stated or inferred: UX/effect, business, contract, visual, prompt behavior, or verification.
