@@ -156,3 +156,25 @@ Final review raised two hard requirements and two config-drift risks; all were c
 - Stale reclaim revalidates immediately before mutation by re-reading task rows and worker jobs, then only transitions if the row is still an expired Hermes-owned claim with no alive worker coverage.
 - `quality_slots_enabled` is honored by `resource_capacity_probe()`; disabled quality slots become a neutral cap.
 - `api_quota_cache_ttl_seconds` is passed into the API quota probe instead of relying only on environment overrides.
+
+
+## Runtime enablement approval (2026-05-28)
+
+User approved enabling all implemented boundary-aware controls. Runtime config now enables:
+
+- `taskpool.max_parallel_agents: 24`
+- `taskpool.dynamic_max_parallel_agents: 24`
+- `taskpool.drain_claimed_first: true`
+- `taskpool.event_refill_enabled: true`
+- `taskpool.api_quota_cache_ttl_seconds: 45`
+- `taskpool.quality_slots_enabled: true`
+- `taskpool.stale_claim_reclaim_enabled: true`
+- `taskpool.stale_claim_reclaim_dry_run: false`
+- `taskpool.batch_merge_manifest_enabled: true`
+
+Boundary retained after approval:
+
+- Batch merge remains `propose_only`; the dispatcher writes durable manifests but does not execute merged source edits or merged acceptance.
+- Stale reclaim is apply-enabled only for expired Hermes-owned parallel claims with fresh worker coverage revalidation; it never touches human/foreign claims and never transitions to done.
+- Event refill is enabled, but still bounded by resource/API/quality slots, selected task count, and fail-closed worker-start cleanup.
+- API quota cache remains sanitized; raw stdout/stderr/env are not persisted.
