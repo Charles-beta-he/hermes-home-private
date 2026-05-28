@@ -178,3 +178,39 @@ Boundary retained after approval:
 - Stale reclaim is apply-enabled only for expired Hermes-owned parallel claims with fresh worker coverage revalidation; it never touches human/foreign claims and never transitions to done.
 - Event refill is enabled, but still bounded by resource/API/quality slots, selected task count, and fail-closed worker-start cleanup.
 - API quota cache remains sanitized; raw stdout/stderr/env are not persisted.
+
+
+## Batch Coordinator executor landing (2026-05-28)
+
+A controlled executor has been added for batch merge manifests. Multi-model boundary review converged on a thin coordinator rather than a new execution or acceptance path:
+
+- The executor consumes one manifest boundary bucket at a time.
+- It re-reads the fresh task list before any side effect.
+- It only claims `pending` / `retry` tasks that are still dispatchable.
+- It claims with actor `hermes-batch-coordinator` and a batch run id.
+- It hands the claimed rows to the existing `agent_team_controller.py consume-claimed` path, so each child task still advances independently to `running` / `review` / `retry`.
+- It writes a durable batch lease under state for idempotence/audit.
+- It never writes source files, never marks tasks done, never merges acceptance, and never bypasses proof-gated closeout.
+- If the worker trigger fails after claims, it runs the same retry cleanup pattern used by event workers.
+
+Runtime enablement after user approval:
+
+- `taskpool.batch_executor_enabled: true`
+- `taskpool.batch_executor_dry_run: false`
+- `taskpool.batch_executor_require_approval: false` (the chat approval is the operator approval for this rollout)
+- `taskpool.batch_executor_max_tasks_per_batch: 8`
+- `taskpool.batch_executor_per_batch_parallelism: 1`
+- `taskpool.batch_executor_skip_when_regular_selected: true`
+
+The last flag preserves the current high-throughput path: when normal boundary-safe parallel dispatch already selected tasks, the executor skips instead of over-claiming beyond the resource/API/quality ceiling. It activates when the scheduler is otherwise stalled on batchable boundary conflicts.
+
+
+### Batch executor AMEND closure
+
+Post-diff multi-model review returned AMEND and the must-fix items were applied:
+
+- Batch executor eligibility now requires `dispatchable is true`; missing/unknown dispatchability is not enough to claim.
+- `consume-claimed` status `SKIP` after claims is treated as a worker trigger failure and runs cleanup, preventing claimed-without-worker wedges.
+- Scheduler execution requires the current tick manifest path; it does not fall back to the latest historical manifest during automatic runs.
+- Batch run ids include a microsecond timestamp suffix so audit leases are not overwritten by repeated manifest attempts.
+- Runtime summary exposes `batch_executor_skip_when_regular_selected` for overclaim auditability.

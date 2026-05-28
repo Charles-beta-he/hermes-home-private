@@ -37,6 +37,7 @@ STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
 LOG_FILE = LOG_DIR / "brain_task_dispatch_tick.jsonl"
 API_QUOTA_CACHE_FILE = STATE_DIR / "taskpool-api-quota-cache.json"
 BATCH_MERGE_PLAN_DIR = STATE_DIR / "taskpool-batch-merge-plans"
+BATCH_EXECUTOR_STATE_DIR = STATE_DIR / "taskpool-batch-executor"
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 120.0
 DEFAULT_TERMINATE_GRACE_SECONDS = 5.0
 
@@ -358,6 +359,12 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         "stale_claim_reclaim_dry_run": True,
         "stale_claim_reclaim_max_tasks": 20,
         "batch_merge_manifest_enabled": True,
+        "batch_executor_enabled": False,
+        "batch_executor_dry_run": True,
+        "batch_executor_require_approval": True,
+        "batch_executor_max_tasks_per_batch": 8,
+        "batch_executor_per_batch_parallelism": 1,
+        "batch_executor_skip_when_regular_selected": True,
     }
     try:
         import yaml  # type: ignore
@@ -379,6 +386,8 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         ("quality_slots_min_samples", 3),
         ("quality_slots_window", 80),
         ("stale_claim_reclaim_max_tasks", 20),
+        ("batch_executor_max_tasks_per_batch", 8),
+        ("batch_executor_per_batch_parallelism", 1),
     ):
         try:
             defaults[key] = max(0 if key != "max_parallel_agents" else 1, int(defaults.get(key) or fallback))
@@ -391,6 +400,10 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
     defaults["stale_claim_reclaim_enabled"] = str(defaults.get("stale_claim_reclaim_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
     defaults["stale_claim_reclaim_dry_run"] = str(defaults.get("stale_claim_reclaim_dry_run", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["batch_merge_manifest_enabled"] = str(defaults.get("batch_merge_manifest_enabled", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["batch_executor_enabled"] = str(defaults.get("batch_executor_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
+    defaults["batch_executor_dry_run"] = str(defaults.get("batch_executor_dry_run", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["batch_executor_require_approval"] = str(defaults.get("batch_executor_require_approval", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["batch_executor_skip_when_regular_selected"] = str(defaults.get("batch_executor_skip_when_regular_selected", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["dynamic_max_parallel_agents"] = max(
         int(defaults.get("max_parallel_agents") or 3),
         int(defaults.get("dynamic_max_parallel_agents") or 24),
@@ -1043,6 +1056,186 @@ def write_batch_merge_manifest(*, decision: dict[str, Any], event: dict[str, Any
     return {"status": "OK", "written": True, "path": str(path), "candidate_count": len(candidates), "mode": "propose_only"}
 
 
+
+
+def _latest_batch_manifest_path() -> Path | None:
+    try:
+        files = sorted(BATCH_MERGE_PLAN_DIR.glob("batch-merge-plan-*.json"), key=lambda x: x.stat().st_mtime, reverse=True)
+    except Exception:
+        return None
+    return files[0] if files else None
+
+
+def _batch_manifest_task_ids(manifest: dict[str, Any], *, max_tasks: int) -> list[str]:
+    seen: set[str] = set()
+    task_ids: list[str] = []
+    candidates = manifest.get("candidates") if isinstance(manifest.get("candidates"), list) else []
+    # The executor consumes one boundary bucket at a time.  This keeps the batch
+    # lease scoped and avoids mixing unrelated conflict groups into one worker.
+    for cand in candidates[:1]:
+        if not isinstance(cand, dict):
+            continue
+        for raw in cand.get("sample_task_ids") or cand.get("task_ids") or []:
+            task_id = str(raw or "").strip()
+            if task_id and task_id not in seen:
+                seen.add(task_id)
+                task_ids.append(task_id)
+            if len(task_ids) >= max(1, int(max_tasks or 1)):
+                return task_ids
+    return task_ids
+
+
+def _fresh_rows_by_id(task_list: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    rows: dict[str, dict[str, Any]] = {}
+    for row in _rows_from_task_list(task_list):
+        task_id = str(row.get("id") or row.get("task_id") or "").strip()
+        if task_id:
+            rows[task_id] = row
+    return rows
+
+
+def execute_batch_merge_manifest(
+    *,
+    manifest_path: str | Path | None,
+    enabled: bool,
+    dry_run: bool,
+    require_approval: bool,
+    max_tasks: int,
+    per_batch_parallelism: int,
+    regular_selected_count: int = 0,
+    skip_when_regular_selected: bool = True,
+    worker_background: bool = True,
+    allow_latest_manifest: bool = False,
+) -> dict[str, Any]:
+    """Thin batch coordinator: claim a manifest bucket into existing task workers.
+
+    This is intentionally not a new execution or acceptance path.  It only
+    changes orchestration granularity: pending tasks from one manifest bucket are
+    claimed with a batch run id and then handed to agent_team_controller, which
+    still advances every child task independently to review/retry.  The executor
+    never writes source, never marks done, and never merges acceptance.
+    """
+    payload: dict[str, Any] = {
+        "schema": "taskpool_batch_executor_v1",
+        "status": "SKIP",
+        "enabled": bool(enabled),
+        "dry_run": bool(dry_run),
+        "require_approval": bool(require_approval),
+        "claimed_count": 0,
+        "worker_started": False,
+        "safety": "thin coordinator only; per-task worker/proof/acceptance gates remain authoritative; no done transitions",
+    }
+    if not enabled:
+        payload["reason"] = "disabled"
+        return payload
+    if skip_when_regular_selected and int(regular_selected_count or 0) > 0:
+        payload["reason"] = "regular_parallel_dispatch_has_selected_tasks"
+        payload["regular_selected_count"] = int(regular_selected_count or 0)
+        return payload
+    if manifest_path:
+        path = Path(manifest_path).expanduser()
+    elif allow_latest_manifest:
+        path = _latest_batch_manifest_path()
+    else:
+        payload["reason"] = "no_current_tick_manifest"
+        return payload
+    if not path or not path.exists():
+        payload["reason"] = "no_manifest"
+        return payload
+    manifest = _read_json_file(path)
+    if manifest.get("schema") != "taskpool_batch_merge_plan_v1":
+        payload.update({"status": "ERROR", "reason": "invalid_manifest_schema", "path": str(path)})
+        return payload
+    payload["path"] = str(path)
+    payload["manifest_id"] = str(manifest.get("manifest_id") or path.stem)
+    approved = bool(manifest.get("execution_approved") or manifest.get("operator_approved")) or os.environ.get("HERMES_TASKPOOL_BATCH_EXECUTOR_APPROVED", "").strip().lower() in {"1", "true", "yes", "on"}
+    if require_approval and not approved:
+        payload["reason"] = "manifest_not_execution_approved"
+        return payload
+    task_ids = _batch_manifest_task_ids(manifest, max_tasks=max_tasks)
+    payload["candidate_task_ids"] = task_ids
+    if not task_ids:
+        payload["reason"] = "manifest_has_no_task_ids"
+        return payload
+    fresh = run_json(["list", "--json"])
+    if fresh.get("status") != "OK":
+        payload.update({"status": "SKIP", "reason": "fresh_task_list_unavailable", "task_list_status": fresh.get("status")})
+        return payload
+    rows_by_id = _fresh_rows_by_id(fresh)
+    eligible: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for task_id in task_ids:
+        row = rows_by_id.get(task_id)
+        if not row:
+            skipped.append({"task_id": task_id, "reason": "missing_from_fresh_list"})
+            continue
+        status = str(row.get("status") or "")
+        if status not in {"pending", "retry"}:
+            skipped.append({"task_id": task_id, "reason": f"not_pending_or_retry:{status}"})
+            continue
+        if row.get("dispatchable") is not True:
+            skipped.append({"task_id": task_id, "reason": "not_explicitly_dispatchable"})
+            continue
+        eligible.append(row)
+    payload["eligible_count"] = len(eligible)
+    payload["skipped"] = skipped
+    if dry_run or not eligible:
+        payload.update({"status": "OK", "mode": "dry_run" if dry_run else "apply", "reason": "dry_run" if dry_run else "no_eligible_tasks", "eligible_task_ids": [str(r.get("id") or r.get("task_id") or "") for r in eligible]})
+        return payload
+    batch_id = f"batch-executor-{payload['manifest_id']}-{datetime.now(TZ).strftime('%Y%m%dT%H%M%S%f%z')}"
+    actor = "hermes-batch-coordinator"
+    claimed: list[dict[str, Any]] = []
+    claim_errors: list[dict[str, Any]] = []
+    for row in eligible[: max(1, int(max_tasks or 1))]:
+        task_id = str(row.get("id") or row.get("task_id") or "")
+        claim = run_json([
+            "claim", task_id,
+            "--actor", actor,
+            "--ttl-minutes", "60",
+            "--run-id", batch_id,
+            "--reason", "batch coordinator claim; execution remains per-task proof-gated",
+            "--json",
+        ])
+        if claim.get("status") in {"OK", "PASS"} or claim.get("ok"):
+            claimed_row = dict(row)
+            claimed_row.update({"id": task_id, "task_id": task_id, "claimed_by": actor, "run_id": batch_id, "claim_source": "batch-coordinator", "batch_manifest_id": payload["manifest_id"]})
+            claimed.append(claimed_row)
+        else:
+            claim_errors.append({"task_id": task_id, "status": claim.get("status"), "reason": claim.get("reason")})
+    payload["claimed_count"] = len(claimed)
+    payload["claim_errors"] = claim_errors
+    if not claimed:
+        payload.update({"status": "WARN", "mode": "apply", "reason": "no_tasks_claimed"})
+        return payload
+    BATCH_EXECUTOR_STATE_DIR.mkdir(parents=True, exist_ok=True)
+    _write_json_file(BATCH_EXECUTOR_STATE_DIR / f"{batch_id}.json", {
+        "schema": "taskpool_batch_executor_lease_v1",
+        "batch_id": batch_id,
+        "manifest_id": payload["manifest_id"],
+        "manifest_path": str(path),
+        "created_at": iso(),
+        "task_ids": [str(x.get("id") or x.get("task_id") or "") for x in claimed],
+        "actor": actor,
+        "safety": "lease only; child tasks still own proof and acceptance independently",
+    })
+    worker_cmd = [
+        sys.executable, str(AGENT_TEAM_SCRIPT), "consume-claimed",
+        "--claimed-json", json.dumps(claimed, ensure_ascii=False),
+        "--max-agents", str(max(1, int(per_batch_parallelism or 1))),
+        "--batch-id", batch_id,
+    ]
+    if worker_background:
+        worker_cmd.append("--background")
+    worker = run_cmd_json(worker_cmd, timeout=max(command_timeout_seconds(), 60.0))
+    payload["worker_trigger"] = worker
+    payload["worker_started"] = worker.get("status") in {"ok", "OK", "PASS"}
+    if not payload["worker_started"]:
+        payload["worker_failure_cleanup"] = cleanup_event_worker_timeout_claims(claimed, actor=actor)
+        payload.update({"status": "ERROR", "mode": "apply", "reason": "worker_trigger_failed"})
+        return payload
+    payload.update({"status": "OK", "mode": "apply", "reason": "claimed_and_worker_triggered", "batch_id": batch_id, "claimed_task_ids": [str(x.get("id") or x.get("task_id") or "") for x in claimed]})
+    return payload
+
 def scheduler_decision_snapshot(*, event: dict[str, Any], resource_probe: dict[str, Any], threshold: int) -> dict[str, Any]:
     parallel_dispatch = event.get("parallel_dispatch") if isinstance(event.get("parallel_dispatch"), dict) else {}
     task_list = event.get("task_list") if isinstance(event.get("task_list"), dict) else {}
@@ -1287,6 +1480,12 @@ def main() -> int:
         "event_refill_enabled": bool(taskpool_cfg.get("event_refill_enabled")),
         "batch_merge_conflict_threshold": int(taskpool_cfg.get("batch_merge_conflict_threshold") or 3),
         "batch_merge_manifest_enabled": bool(taskpool_cfg.get("batch_merge_manifest_enabled")),
+        "batch_executor_enabled": bool(taskpool_cfg.get("batch_executor_enabled")),
+        "batch_executor_dry_run": bool(taskpool_cfg.get("batch_executor_dry_run")),
+        "batch_executor_require_approval": bool(taskpool_cfg.get("batch_executor_require_approval")),
+        "batch_executor_max_tasks_per_batch": int(taskpool_cfg.get("batch_executor_max_tasks_per_batch") or 8),
+        "batch_executor_per_batch_parallelism": int(taskpool_cfg.get("batch_executor_per_batch_parallelism") or 1),
+        "batch_executor_skip_when_regular_selected": bool(taskpool_cfg.get("batch_executor_skip_when_regular_selected")),
         "quality_slots_enabled": bool(taskpool_cfg.get("quality_slots_enabled")),
         "stale_claim_reclaim_enabled": bool(taskpool_cfg.get("stale_claim_reclaim_enabled")),
         "stale_claim_reclaim_dry_run": bool(taskpool_cfg.get("stale_claim_reclaim_dry_run")),
@@ -1381,6 +1580,21 @@ def main() -> int:
             max_tasks=int(taskpool_cfg.get("stale_claim_reclaim_max_tasks") or 20),
             reclaim_enabled=reclaim_enabled,
         )
+
+    event["batch_executor"] = execute_batch_merge_manifest(
+        manifest_path=(event.get("batch_merge_manifest") or {}).get("path") if isinstance(event.get("batch_merge_manifest"), dict) else None,
+        enabled=bool(args.parallel_autorun and taskpool_cfg.get("batch_executor_enabled")),
+        dry_run=bool(taskpool_cfg.get("batch_executor_dry_run")),
+        require_approval=bool(taskpool_cfg.get("batch_executor_require_approval")),
+        max_tasks=int(taskpool_cfg.get("batch_executor_max_tasks_per_batch") or 8),
+        per_batch_parallelism=int(taskpool_cfg.get("batch_executor_per_batch_parallelism") or 1),
+        regular_selected_count=int((event.get("scheduler_decision") or {}).get("selected_count") or 0),
+        skip_when_regular_selected=bool(taskpool_cfg.get("batch_executor_skip_when_regular_selected")),
+        worker_background=not bool(args.parallel_worker_foreground),
+    )
+    if event["batch_executor"].get("status") not in {"OK", "PASS", "SKIP", "ok"}:
+        errors.append({"step": "batch_executor", "status": event["batch_executor"].get("status"), "reason": event["batch_executor"].get("reason"), "worker_trigger": event["batch_executor"].get("worker_trigger")})
+        errored_steps.add("batch_executor")
 
     for key in ["ingest", "reconcile", "dashboard", "task_list", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
         if key in errored_steps:
@@ -1596,6 +1810,7 @@ def main() -> int:
         "claim_state": event.get("claim_state", {}),
         "scheduler_decision": event.get("scheduler_decision", {}),
         "batch_merge_manifest": event.get("batch_merge_manifest", {}),
+        "batch_executor": event.get("batch_executor", {}),
         "stale_claim_reclaim": event.get("stale_claim_reclaim", {}),
         "drain_first": event.get("drain_first", {}),
         "parallel_dispatch": event.get("parallel_dispatch", {}),

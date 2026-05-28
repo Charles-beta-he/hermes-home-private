@@ -1254,6 +1254,218 @@ def test_resource_capacity_probe_quality_can_be_disabled_and_api_ttl_config_used
 
 
 
+
+def test_batch_executor_disabled_has_no_side_effects():
+    module = load_tick_module()
+    old_run_json = module.run_json
+    try:
+        module.run_json = lambda args: (_ for _ in ()).throw(AssertionError("disabled executor must not call orchestrator"))
+        result = module.execute_batch_merge_manifest(
+            manifest_path=None,
+            enabled=False,
+            dry_run=False,
+            require_approval=False,
+            max_tasks=8,
+            per_batch_parallelism=1,
+        )
+    finally:
+        module.run_json = old_run_json
+    assert result["status"] == "SKIP" and result["reason"] == "disabled", result
+
+
+def test_batch_executor_requires_manifest_approval_when_configured():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    try:
+        path = Path(td.name) / "manifest.json"
+        path.write_text(json.dumps({
+            "schema": "taskpool_batch_merge_plan_v1",
+            "manifest_id": "m1",
+            "candidates": [{"sample_task_ids": ["t1"]}],
+        }), encoding="utf-8")
+        result = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=False,
+            require_approval=True,
+            max_tasks=8,
+            per_batch_parallelism=1,
+        )
+    finally:
+        td.cleanup()
+    assert result["status"] == "SKIP", result
+    assert result["reason"] == "manifest_not_execution_approved", result
+
+
+def test_batch_executor_dry_run_revalidates_eligible_without_claiming():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    try:
+        path = Path(td.name) / "manifest.json"
+        path.write_text(json.dumps({
+            "schema": "taskpool_batch_merge_plan_v1",
+            "manifest_id": "m2",
+            "execution_approved": True,
+            "candidates": [{"sample_task_ids": ["t1", "done"]}],
+        }), encoding="utf-8")
+        calls = []
+        def fake_run_json(args):
+            calls.append(list(args))
+            if args == ["list", "--json"]:
+                return {"status": "OK", "rows": [
+                    {"id": "t1", "status": "pending", "dispatchable": True},
+                    {"id": "done", "status": "done", "dispatchable": False},
+                ]}
+            raise AssertionError(f"unexpected run_json call: {args}")
+        module.run_json = fake_run_json
+        module.run_cmd_json = lambda *a, **k: (_ for _ in ()).throw(AssertionError("dry run must not start worker"))
+        result = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=True,
+            require_approval=True,
+            max_tasks=8,
+            per_batch_parallelism=1,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        td.cleanup()
+    assert result["status"] == "OK" and result["mode"] == "dry_run", result
+    assert result["eligible_task_ids"] == ["t1"], result
+    assert result["skipped"][0]["reason"].startswith("not_pending_or_retry"), result
+    assert calls == [["list", "--json"]], calls
+
+
+
+def test_batch_executor_requires_current_tick_manifest_when_not_allowed_latest():
+    module = load_tick_module()
+    old_run_json = module.run_json
+    try:
+        module.run_json = lambda args: (_ for _ in ()).throw(AssertionError("must not read task list without current manifest"))
+        result = module.execute_batch_merge_manifest(
+            manifest_path=None,
+            enabled=True,
+            dry_run=False,
+            require_approval=False,
+            max_tasks=8,
+            per_batch_parallelism=1,
+        )
+    finally:
+        module.run_json = old_run_json
+    assert result["status"] == "SKIP", result
+    assert result["reason"] == "no_current_tick_manifest", result
+
+
+def test_batch_executor_worker_skip_after_claim_triggers_cleanup():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_cleanup = module.cleanup_event_worker_timeout_claims
+    old_state_dir = module.BATCH_EXECUTOR_STATE_DIR
+    try:
+        root = Path(td.name)
+        module.BATCH_EXECUTOR_STATE_DIR = root / "leases"
+        path = root / "manifest.json"
+        path.write_text(json.dumps({
+            "schema": "taskpool_batch_merge_plan_v1",
+            "manifest_id": "m4",
+            "execution_approved": True,
+            "candidates": [{"sample_task_ids": ["t1"]}],
+        }), encoding="utf-8")
+        cleanup_calls = []
+        def fake_run_json(args):
+            if args == ["list", "--json"]:
+                return {"status": "OK", "rows": [{"id": "t1", "status": "pending", "dispatchable": True}]}
+            if args and args[0] == "claim":
+                return {"status": "OK", "ok": True}
+            raise AssertionError(f"unexpected run_json call: {args}")
+        module.run_json = fake_run_json
+        module.run_cmd_json = lambda cmd, timeout=None: {"status": "SKIP", "reason": "no worker started"}
+        module.cleanup_event_worker_timeout_claims = lambda claimed, actor='': cleanup_calls.append((claimed, actor)) or {"status": "OK", "released_count": len(claimed)}
+        result = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=False,
+            require_approval=True,
+            max_tasks=8,
+            per_batch_parallelism=1,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.cleanup_event_worker_timeout_claims = old_cleanup
+        module.BATCH_EXECUTOR_STATE_DIR = old_state_dir
+        td.cleanup()
+    assert result["status"] == "ERROR", result
+    assert result["reason"] == "worker_trigger_failed", result
+    assert cleanup_calls and cleanup_calls[0][1] == "hermes-batch-coordinator", cleanup_calls
+
+
+def test_batch_executor_apply_claims_existing_single_task_worker_path_only():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_state_dir = module.BATCH_EXECUTOR_STATE_DIR
+    try:
+        root = Path(td.name)
+        module.BATCH_EXECUTOR_STATE_DIR = root / "leases"
+        path = root / "manifest.json"
+        path.write_text(json.dumps({
+            "schema": "taskpool_batch_merge_plan_v1",
+            "manifest_id": "m3",
+            "execution_approved": True,
+            "candidates": [{"sample_task_ids": ["t1", "t2"]}],
+        }), encoding="utf-8")
+        run_calls = []
+        cmd_calls = []
+        def fake_run_json(args):
+            run_calls.append(list(args))
+            if args == ["list", "--json"]:
+                return {"status": "OK", "rows": [
+                    {"id": "t1", "status": "pending", "dispatchable": True, "conflict_group": "g"},
+                    {"id": "t2", "status": "pending", "dispatchable": True, "conflict_group": "g"},
+                ]}
+            if args and args[0] == "claim":
+                assert "--actor" in args and args[args.index("--actor") + 1] == "hermes-batch-coordinator", args
+                assert "--run-id" in args and str(args[args.index("--run-id") + 1]).startswith("batch-executor-"), args
+                return {"status": "OK", "ok": True}
+            raise AssertionError(f"unexpected run_json call: {args}")
+        def fake_run_cmd_json(cmd, timeout=None):
+            cmd_calls.append(list(map(str, cmd)))
+            text = " ".join(map(str, cmd))
+            assert "consume-claimed" in text, cmd
+            assert "--background" in cmd, cmd
+            assert "done" not in text, cmd
+            return {"status": "OK", "background": True}
+        module.run_json = fake_run_json
+        module.run_cmd_json = fake_run_cmd_json
+        result = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=False,
+            require_approval=True,
+            max_tasks=8,
+            per_batch_parallelism=1,
+        )
+        lease_files = list(module.BATCH_EXECUTOR_STATE_DIR.glob("*.json"))
+    finally:
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.BATCH_EXECUTOR_STATE_DIR = old_state_dir
+        td.cleanup()
+    assert result["status"] == "OK" and result["mode"] == "apply", result
+    assert result["claimed_count"] == 2, result
+    assert result["claimed_task_ids"] == ["t1", "t2"], result
+    assert len([c for c in run_calls if c and c[0] == "claim"]) == 2, run_calls
+    assert len(cmd_calls) == 1, cmd_calls
+    assert lease_files, "lease should be durable"
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
@@ -1278,6 +1490,12 @@ if __name__ == "__main__":
     test_reclaim_stale_claims_apply_requires_explicit_enable()
     test_resource_capacity_probe_quality_can_be_disabled_and_api_ttl_config_used()
     test_batch_merge_manifest_is_propose_only_artifact()
+    test_batch_executor_disabled_has_no_side_effects()
+    test_batch_executor_requires_manifest_approval_when_configured()
+    test_batch_executor_dry_run_revalidates_eligible_without_claiming()
+    test_batch_executor_requires_current_tick_manifest_when_not_allowed_latest()
+    test_batch_executor_worker_skip_after_claim_triggers_cleanup()
+    test_batch_executor_apply_claims_existing_single_task_worker_path_only()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
     test_drain_first_consumes_only_uncovered_claimed_tasks()
     test_event_next_tick_refill_is_bounded_and_explicit()
