@@ -34,6 +34,43 @@ Don't use for:
 - Explicitly scoped one-line edits where the user names the exact file/string/change and no broader behavior is implied.
 - Situations where a more specific emergency or safety workflow must run first.
 
+## Position in the Agent Flow
+
+Goal calibration is a fixed high-priority internal gate, not a mandatory human interruption. It should run after intent parsing and any cheap read-only context gathering that clarifies the baseline, but before planning, implementation, file writes, deployments, messages, or other side effects.
+
+Default flow:
+
+```text
+User input -> intent parse -> read-only context if useful -> goal calibration gate -> task contract -> plan/tool routing -> execute -> verify against task contract
+```
+
+Use risk to decide whether calibration stays internal or becomes a user question:
+
+- Low risk: infer the target and act.
+- Medium risk: state the assumption and continue, or ask one compact multiple-choice question.
+- High risk: ask before implementation because plausible targets produce different edits.
+- Critical risk: list planned side effects and wait for approval.
+
+Do not turn calibration into "always ask the user what they mean". That is over-asking. Use external clarification only when it changes the work.
+
+## Task Contract
+
+Calibration should leave behind a compact working contract, even if only in the response/plan:
+
+```json
+{
+  "user_goal": "durable target outcome",
+  "task_type": "answer | implement | debug | review | prototype_migration | prompt_optimization | ui_fix | api_design",
+  "baseline": "prototype | old_version | sibling_component | design_system | live_behavior | user_examples | none",
+  "success_criteria": ["observable checks"],
+  "constraints": ["must not break", "scope", "style", "source of truth"],
+  "ambiguity_level": "low | medium | high | critical",
+  "execution_mode": "act_now | ask_once | propose_then_wait"
+}
+```
+
+Planner/executor/verifier should stay anchored to this contract. Recalibrate only at task-type switches, phase boundaries, discovered constraint conflicts, or verification failures that imply target mismatch.
+
 ## Calibration Pipeline
 
 1. Identify the likely target class.
@@ -95,11 +132,12 @@ Treat prototypes, screenshots, and old implementations as evidence of desired ef
 ## Common Pitfalls
 
 1. Keyword-trigger narrowing: only running calibration for specific phrases like "prototype states" or "missing fields". Calibration applies to all fuzzy human-language goals.
-2. Literal noun trap: treating "dropdown alignment" as CSS only while ignoring options, disabled state, dependent fields, payload, and read-back behavior.
-3. Prototype schema trap: copying mock fields instead of reproducing observable user effects.
-4. Prompt literalism: improving a prompt for the shown sentence instead of the future task class and negative space.
-5. Over-asking: asking broad clarification even when context reveals the dominant baseline. Ask only the smallest question that changes the implementation.
-6. False completion: verifying only the touched layer instead of the calibrated target dimensions.
+2. Human-interruption trap: asking "what is your goal?" for every request. Calibration is usually internal; ask only when competing targets require different work.
+3. Literal noun trap: treating "dropdown alignment" as CSS only while ignoring options, disabled state, dependent fields, payload, and read-back behavior.
+4. Prototype schema trap: copying mock fields instead of reproducing observable user effects.
+5. Prompt literalism: improving a prompt for the shown sentence instead of the future task class and negative space.
+6. Goal drift: calibrating once, then letting implementation expand into unrelated refactors or a different success metric.
+7. False completion: verifying only the touched layer instead of the calibrated target dimensions.
 
 ## Verification Checklist
 
