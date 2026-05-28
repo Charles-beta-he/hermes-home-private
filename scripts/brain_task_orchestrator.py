@@ -6184,6 +6184,59 @@ def command_boundary_diff_check(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def _task_retry_text(task: "Task") -> str:
+    parts: list[str] = []
+    fm = getattr(task, "fm", {}) or {}
+    for key in ("evidence", "last_error", "blocker_summary", "retry_reason", "last_retry_reason"):
+        value = fm.get(key) if isinstance(fm, dict) else None
+        if isinstance(value, list):
+            parts.extend(str(item) for item in value)
+        elif value:
+            parts.append(str(value))
+    return "\n".join(parts).lower()
+
+
+def retry_lane_for_task(task: "Task") -> dict[str, Any]:
+    """Classify retry pressure without changing the task objective.
+
+    The lane only controls dispatch pressure. It must never relax proof/closeout
+    requirements for the book/project task itself.
+    """
+    fm = getattr(task, "fm", {}) or {}
+    status = str(getattr(task, "status", fm.get("status", "")) or "")
+    try:
+        retry_count = int(fm.get("retry_count") or (task.retry_count() if hasattr(task, "retry_count") else 0) or 0)
+    except Exception:
+        retry_count = 0
+    if status != "retry":
+        return {"lane": "clean_pending", "retry_count": retry_count, "reason": "not_retry"}
+    text = _task_retry_text(task)
+    if retry_count >= 4:
+        return {"lane": "escape_quarantine", "retry_count": retry_count, "reason": "retry_budget_hot"}
+    if "human_escape" in text or "human escape" in text:
+        return {"lane": "escape_quarantine", "retry_count": retry_count, "reason": "human_escape_release"}
+    if "worker timeout" in text or "timed out without proof" in text or "timeout_without_proof" in text or "timeout_with_proof_stub" in text or "subprocess_timeout" in text or "proof_stub_path" in text:
+        return {"lane": "timeout_debug", "retry_count": retry_count, "reason": "worker_timeout_without_proof"}
+    return {"lane": "retry_general", "retry_count": retry_count, "reason": "retry_uncategorized"}
+
+
+def retry_lane_caps(max_agents: int) -> dict[str, int]:
+    """Bound noisy retry lanes so clean dispatchable work keeps headroom."""
+    try:
+        ceiling = max(1, int(max_agents or 1))
+    except Exception:
+        ceiling = 1
+    retry_budget = max(1, ceiling - 1) if ceiling >= 2 else 1
+    escape_cap = 1 if retry_budget >= 1 else 0
+    timeout_cap = min(2, max(0, retry_budget - escape_cap))
+    general_cap = max(0, retry_budget - escape_cap - timeout_cap)
+    return {
+        "escape_quarantine": escape_cap,
+        "timeout_debug": timeout_cap,
+        "retry_general": general_cap,
+    }
+
+
 def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str, Any]]]:
     """Select tasks for parallel dispatch with boundary isolation.
 
@@ -6206,8 +6259,24 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
     # Boundary de-dup must include tasks that are already claimed/running by
     # another worker.  Otherwise a new parallel batch can safely de-dupe within
     # itself while still colliding with an in-flight task on the same boundary.
-    active_tasks = [active for active in iter_tasks() if active.status in {"claimed", "running"}]
+    # Use sanitized active semantics for stale claims: expired claims should not
+    # consume scarce recovery headroom, but they still surface as reclaim work in
+    # the dispatch tick.
+    def _is_live_active(active: Task) -> bool:
+        stale_check = getattr(active, "is_stale_claim", None)
+        if callable(stale_check):
+            try:
+                return not bool(stale_check())
+            except Exception:
+                return True
+        return True
+
+    raw_active_tasks = [active for active in iter_tasks() if active.status in {"claimed", "running"}]
+    active_tasks = [active for active in raw_active_tasks if _is_live_active(active)]
+    raw_active_count = len(raw_active_tasks)
     active_count = len(active_tasks)
+    lane_caps = retry_lane_caps(max_agents)
+    lane_used: dict[str, int] = {key: 0 for key in lane_caps}
     for active in active_tasks:
         boundary_key = task_parallel_boundary_key(active)
         if not boundary_key:
@@ -6223,6 +6292,20 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
             continue
         if priority_mode == "evolution-first" and evolution_available and t.lane != "evolution":
             skipped.append({"id": t.id, "lane": t.lane, "reason": "lane_preempted_by_evolution", "path": str(t.path), "priority_mode": priority_mode})
+            continue
+        retry_lane = retry_lane_for_task(t)
+        lane_name = str(retry_lane.get("lane") or "")
+        if lane_name in lane_caps and lane_used.get(lane_name, 0) >= lane_caps[lane_name]:
+            skipped.append({
+                "id": t.id,
+                "lane": t.lane,
+                "reason": "retry_lane_cap_exceeded",
+                "retry_lane": lane_name,
+                "retry_lane_reason": retry_lane.get("reason"),
+                "retry_count": retry_lane.get("retry_count"),
+                "cap": lane_caps[lane_name],
+                "path": str(t.path),
+            })
             continue
         boundary_key = task_parallel_boundary_key(t)
         t_pg = parallel_group_key(t)
@@ -6243,6 +6326,8 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
             skipped.append({"id": t.id, "lane": t.lane, "reason": "capacity_exceeded", "boundary_key": boundary_key, "active_count": active_count, "path": str(t.path)})
             continue
         selected.append(t)
+        if lane_name in lane_caps:
+            lane_used[lane_name] = lane_used.get(lane_name, 0) + 1
         used_boundaries[boundary_key] = t.id
         if t_pg and boundary_key not in boundary_parallel_groups:
             boundary_parallel_groups[boundary_key] = t_pg
@@ -6275,8 +6360,14 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
         "max_agents": max_agents,
         "priority_mode": taskpool_priority_mode(),
         "selected_count": len(selected),
-        "selected": [t.row() for t in selected],
+        "selected": [dict(t.row(), retry_lane=retry_lane_for_task(t).get("lane"), retry_lane_reason=retry_lane_for_task(t).get("reason")) for t in selected],
         "skipped": skipped,
+        "retry_lane_caps": retry_lane_caps(max_agents),
+        "active_accounting": {
+            "mode": "sanitized_active_excludes_stale_claims",
+            "raw_claimed_running": len([active for active in iter_tasks() if active.status in {"claimed", "running"}]),
+            "sanitized_claimed_running": len([active for active in iter_tasks() if active.status in {"claimed", "running"} and not (callable(getattr(active, "is_stale_claim", None)) and active.is_stale_claim())]),
+        },
         "dispatch_plan": dispatch_plan,
         "boundary": boundary,
         "safety": "dry-run only; does not claim, execute, or mark tasks done",

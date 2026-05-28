@@ -1571,3 +1571,32 @@ if __name__ == "__main__":
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()
     test_agent_team_background_worker_job_records_and_dedupes_alive_batches()
     print("PASS")
+
+def test_scheduler_decision_uses_sanitized_active_accounting_from_parallel_dispatch():
+    mod = load_tick_module()
+    event = {
+        "parallel_dispatch": {
+            "selected_count": 0,
+            "dispatchable": True,
+            "active_accounting": {
+                "mode": "sanitized_active_excludes_stale_claims",
+                "raw_claimed_running": 5,
+                "sanitized_claimed_running": 2,
+            },
+            "skipped": [],
+        },
+        "task_list": {
+            "rows": [
+                {"id": "a", "status": "claimed"},
+                {"id": "b", "status": "running"},
+                {"id": "c", "status": "claimed"},
+                {"id": "d", "status": "running"},
+                {"id": "e", "status": "claimed"},
+            ]
+        },
+    }
+    decision = mod.scheduler_decision_snapshot(event=event, resource_probe={"effective_resource_ceiling": 3}, threshold=3)
+    assert decision["active_count"] == 2
+    assert decision["raw_active_count"] == 5
+    assert decision["active_accounting_mode"] == "sanitized_active_excludes_stale_claims"
+    assert decision["action"] != "wait_for_running_or_claimed_completion"

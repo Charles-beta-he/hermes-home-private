@@ -2770,3 +2770,71 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def test_retry_classification_detects_escape_timeout_and_hot_retry():
+    mod = load_orchestrator_module()
+
+    escape = SimpleNamespace(status="retry", fm={"retry_count": 2, "evidence": ["command:agent_team_controller consume-claimed human_escape_release"]}, body="")
+    timeout = SimpleNamespace(status="retry", fm={"retry_count": 1, "evidence": ["command:agent_team_controller consume-claimed worker timeout"]}, body="")
+    timeout_stub = SimpleNamespace(status="retry", fm={"retry_count": 1, "last_error": "timeout_with_proof_stub proof_stub_path=/tmp/proof.json"}, body="")
+    hot = SimpleNamespace(status="retry", fm={"retry_count": 4, "evidence": []}, body="")
+    clean = SimpleNamespace(status="pending", fm={}, body="")
+
+    assert mod.retry_lane_for_task(escape)["lane"] == "escape_quarantine"
+    assert mod.retry_lane_for_task(timeout)["lane"] == "timeout_debug"
+    assert mod.retry_lane_for_task(timeout_stub)["lane"] == "timeout_debug"
+    assert mod.retry_lane_for_task(hot)["lane"] == "escape_quarantine"
+    assert mod.retry_lane_for_task(clean)["lane"] == "clean_pending"
+
+
+def test_select_parallel_dispatch_caps_retry_lanes_and_preserves_clean_headroom():
+    mod = load_orchestrator_module()
+
+    class FakeTask:
+        def __init__(self, task_id, status, boundary, retry_count=0, evidence=None):
+            self.id = task_id
+            self.status = status
+            self.lane = "work"
+            self.path = Path(f"/tmp/{task_id}.md")
+            self.fm = {
+                "status": status,
+                "parallel_boundary": boundary,
+                "retry_count": retry_count,
+                "evidence": evidence or [],
+            }
+            self.body = ""
+        def row(self):
+            return {"id": self.id, "status": self.status, "retry_count": self.fm.get("retry_count"), "parallel_boundary": self.fm.get("parallel_boundary")}
+
+    tasks = [
+        FakeTask("escape-1", "retry", "b-escape-1", 2, ["command:agent_team_controller consume-claimed human_escape_release"]),
+        FakeTask("escape-2", "retry", "b-escape-2", 2, ["command:agent_team_controller consume-claimed human_escape_release"]),
+        FakeTask("timeout-1", "retry", "b-timeout-1", 1, ["command:agent_team_controller consume-claimed worker timeout"]),
+        FakeTask("timeout-2", "retry", "b-timeout-2", 1, ["command:agent_team_controller consume-claimed worker timeout"]),
+        FakeTask("timeout-3", "retry", "b-timeout-3", 1, ["command:agent_team_controller consume-claimed worker timeout"]),
+        FakeTask("clean-1", "pending", "b-clean-1"),
+        FakeTask("clean-2", "pending", "b-clean-2"),
+        FakeTask("clean-3", "pending", "b-clean-3"),
+    ]
+    old_dispatchable = mod.dispatchable_tasks
+    old_iter = mod.iter_tasks
+    old_mode = mod.taskpool_priority_mode
+    try:
+        mod.dispatchable_tasks = lambda: tasks
+        mod.iter_tasks = lambda: []
+        mod.taskpool_priority_mode = lambda: "work-first"
+        selected, skipped = mod.select_parallel_dispatch(6)
+    finally:
+        mod.dispatchable_tasks = old_dispatchable
+        mod.iter_tasks = old_iter
+        mod.taskpool_priority_mode = old_mode
+
+    selected_ids = [t.id for t in selected]
+    assert selected_ids.count("escape-1") == 1
+    assert "escape-2" not in selected_ids
+    assert {"timeout-1", "timeout-2"}.issubset(set(selected_ids))
+    assert "timeout-3" not in selected_ids
+    assert any(i.startswith("clean-") for i in selected_ids), selected_ids
+    assert any(s.get("reason") == "retry_lane_cap_exceeded" and s.get("retry_lane") == "escape_quarantine" for s in skipped)
+    assert any(s.get("reason") == "retry_lane_cap_exceeded" and s.get("retry_lane") == "timeout_debug" for s in skipped)

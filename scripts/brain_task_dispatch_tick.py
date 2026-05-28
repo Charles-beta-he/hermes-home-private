@@ -1252,10 +1252,18 @@ def execute_batch_merge_manifest(
     return payload
 
 def scheduler_decision_snapshot(*, event: dict[str, Any], resource_probe: dict[str, Any], threshold: int) -> dict[str, Any]:
-    parallel_dispatch = event.get("parallel_dispatch") if isinstance(event.get("parallel_dispatch"), dict) else {}
+    raw_parallel_dispatch = event.get("parallel_dispatch")
+    parallel_dispatch: dict[str, Any] = raw_parallel_dispatch if isinstance(raw_parallel_dispatch, dict) else {}
     task_list = event.get("task_list") if isinstance(event.get("task_list"), dict) else {}
     rows = _rows_from_task_list(task_list)
-    active_count = sum(1 for row in rows if str(row.get("status") or "") in {"claimed", "running"})
+    raw_active_accounting = parallel_dispatch.get("active_accounting") if isinstance(parallel_dispatch, dict) else None
+    active_accounting = raw_active_accounting if isinstance(raw_active_accounting, dict) else {}
+    if active_accounting.get("sanitized_claimed_running") is not None:
+        active_count = int(active_accounting.get("sanitized_claimed_running") or 0)
+        raw_active_count = int(active_accounting.get("raw_claimed_running") or active_count)
+    else:
+        active_count = sum(1 for row in rows if str(row.get("status") or "") in {"claimed", "running"})
+        raw_active_count = active_count
     selected_count = int(parallel_dispatch.get("selected_count") or 0)
     skipped_counts = _count_skipped_reasons(parallel_dispatch.get("skipped") or [])
     resource_ceiling = int(resource_probe.get("effective_resource_ceiling") or 1)
@@ -1279,6 +1287,8 @@ def scheduler_decision_snapshot(*, event: dict[str, Any], resource_probe: dict[s
     return {
         "schema": "taskpool_dynamic_scheduler_decision_v1",
         "active_count": active_count,
+        "raw_active_count": raw_active_count,
+        "active_accounting_mode": active_accounting.get("mode") or "raw_task_list",
         "resource_ceiling": resource_ceiling,
         "selected_count": selected_count,
         "skipped_reason_counts": skipped_counts,

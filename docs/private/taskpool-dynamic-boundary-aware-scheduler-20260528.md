@@ -279,3 +279,34 @@ Batch executor policy landed:
 Multi-model boundary interpretation applied:
 - Model review may tune scaling policy and classify failure causes.
 - Runtime execution remains deterministic and fail-closed for proof, human escape, stale manifests, worker startup cleanup, and config-secret protection.
+
+## Retry lane router and worker proof checkpoints (2026-05-28)
+
+Goal is unchanged: each book-reading task still requires the original per-task deliverables, final `PROOF_JSON`, and independent proof-gated review/done. The change only hardens scheduling and worker diagnostics so retries no longer consume recovery headroom blindly.
+
+Multi-model direction check:
+- Claude Opus 4.7 and GPT-5.5 both agreed the direction is control-plane-only and should not reduce task quality.
+- Required fixes from the review were applied: checkpoint stubs are explicitly rejected as completion proof, `timeout_with_proof_stub` routes to timeout-debug, retry routing no longer scans task bodies, retry caps preserve clean-lane headroom, and scheduler decisions consume sanitized active accounting.
+
+Implemented boundaries:
+- `retry_lane_for_task(...)` classifies retry pressure into `escape_quarantine`, `timeout_debug`, `retry_general`, or `clean_pending`.
+- `retry_lane_caps(max_agents)` reserves at least one clean-pending slot whenever the ceiling permits; at cap=6 the retry caps are escape=1, timeout=2, general=2.
+- `select_parallel_dispatch(...)` uses sanitized active accounting: live claimed/running tasks keep boundary isolation, while stale claims no longer consume scarce recovery capacity.
+- `parallel-dispatch-dry-run` emits `retry_lane_caps`, `active_accounting`, and selected-task retry-lane fields for auditability.
+- `scheduler_decision_snapshot(...)` now reads `parallel_dispatch.active_accounting.sanitized_claimed_running` and reports both `active_count` and `raw_active_count`.
+- Worker handoff creates a `taskpool_worker_proof_checkpoint_v1` stub before long `hermes chat` execution, updates heartbeat before/after execution, and records timeout checkpoints with `reason=timeout_with_proof_stub`.
+- `validate_worker_proof_against_task(...)` fail-closes if a checkpoint stub is supplied as completion proof: `checkpoint_stub_is_not_completion_proof`.
+
+Rollback / hold conditions:
+- Any `proof_gate_bypass_count > 0`, checkpoint accepted as done proof, boundary collision increase, or human-escape retrigger keeps/returns recovery cap to the canary floor.
+- `human_escape_triggered=true` remains a global veto; retry lane routing must not spawn around it.
+
+Verification performed:
+- `python3 -m py_compile` over the changed runtime/test scripts: PASS.
+- `test_agent_team_controller.py`: PASS.
+- New retry-lane orchestrator tests: PASS.
+- New sanitized scheduler decision test: PASS.
+- `test_brain_task_dispatch_tick.py`: PASS.
+- `brain_task_orchestrator.py selfcheck --json`: PASS with existing warnings only.
+- `brain_task_dispatch_tick.py --summary --no-state`: OK and reports sanitized active accounting.
+- `parallel-dispatch-dry-run --max-agents 6 --json`: OK and reports retry caps plus sanitized active accounting.

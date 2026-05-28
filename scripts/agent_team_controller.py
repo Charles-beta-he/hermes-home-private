@@ -226,6 +226,77 @@ def start_consume_claimed_background(claimed_items, max_agents=3, batch_id=''):
     }
 
 
+def create_worker_proof_stub(task, envelope_id='', run_id=''):
+    """Create a durable pre-flight proof checkpoint before long worker execution.
+
+    This preserves the original per-task proof gate: the stub is not completion
+    proof; it only prevents timeout_without_proof from erasing execution context.
+    """
+    task_id = str((task or {}).get('id') or (task or {}).get('task_id') or '').strip() or 'unknown-task'
+    PROOF_DIR.mkdir(parents=True, exist_ok=True)
+    checkpoint_dir = PROOF_DIR / 'checkpoints'
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    proof_path = checkpoint_dir / f'{worker_job_safe_token(task_id)}-{worker_job_safe_token(envelope_id or run_id or str(int(time.time())))}.json'
+    payload = {
+        'schema': 'taskpool_worker_proof_checkpoint_v1',
+        'task_id': task_id,
+        'title': str((task or {}).get('title') or ''),
+        'project': str((task or {}).get('project') or ''),
+        'envelope_id': str(envelope_id or ''),
+        'run_id': str(run_id or ''),
+        'status': 'started',
+        'created_at': utc_ts(),
+        'updated_at': utc_ts(),
+        'checkpoints_required': ['stub', 'structure_map', 'concept_cards', 'practice_tasks', 'final_notes'],
+        'completed_checkpoints': ['stub'],
+        'acceptance_preserved': True,
+        'safety': 'checkpoint only; not sufficient for review/done; final PROOF_JSON remains required',
+    }
+    proof_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    return {'status': 'OK', 'proof_stub_path': str(proof_path), 'task_id': task_id, 'checkpoint': payload}
+
+
+def record_worker_heartbeat(task, *, envelope_id='', proof_stub_path='', checkpoint='worker_started', note=''):
+    path = Path(proof_stub_path) if proof_stub_path else None
+    if not path or not path.exists():
+        stub = create_worker_proof_stub(task, envelope_id=envelope_id)
+        path = Path(stub['proof_stub_path'])
+    try:
+        payload = json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        payload = {}
+    payload.setdefault('schema', 'taskpool_worker_proof_checkpoint_v1')
+    payload['status'] = 'running'
+    payload['updated_at'] = utc_ts()
+    payload['last_heartbeat_at'] = utc_ts()
+    payload['last_checkpoint'] = str(checkpoint or 'worker_started')
+    if note:
+        payload.setdefault('heartbeat_notes', []).append(str(note)[:500])
+    payload['acceptance_preserved'] = True
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    return {'status': 'OK', 'proof_stub_path': str(path), 'checkpoint': payload.get('last_checkpoint')}
+
+
+def record_worker_timeout_checkpoint(task, *, envelope_id='', proof_stub_path='', reason='timeout'):
+    path = Path(proof_stub_path) if proof_stub_path else None
+    if not path or not path.exists():
+        stub = create_worker_proof_stub(task, envelope_id=envelope_id)
+        path = Path(stub['proof_stub_path'])
+    try:
+        payload = json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        payload = {}
+    payload.setdefault('schema', 'taskpool_worker_proof_checkpoint_v1')
+    payload['status'] = 'timeout'
+    payload['updated_at'] = utc_ts()
+    payload['timeout_reason'] = str(reason or 'timeout')
+    payload['partial_proof_available'] = True
+    payload['acceptance_preserved'] = True
+    payload['safety'] = 'timeout checkpoint only; task must retry/resume and still produce final PROOF_JSON before review/done'
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    return {'status': 'timeout_with_proof_stub', 'proof_stub_path': str(path), 'task_id': payload.get('task_id') or str((task or {}).get('id') or '')}
+
+
 def is_disabled():
     return os.environ.get('AGENT_TEAM_DISABLED') == '1' or KILL_SWITCH.exists()
 
@@ -887,6 +958,8 @@ def validate_worker_proof_against_task(task, proof):
     toward lifecycle closeout.
     """
     proof_status = str(proof.get('status') or '').strip().lower()
+    if str(proof.get('schema') or '') == 'taskpool_worker_proof_checkpoint_v1':
+        return {'status': 'FAIL', 'proof_status': proof_status or 'checkpoint', 'violations': ['checkpoint_stub_is_not_completion_proof']}
     if proof_status in {'blocked', 'block'}:
         return {'status': 'PASS', 'proof_status': 'blocked', 'violations': []}
 
@@ -1291,6 +1364,10 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
     max_turns = 30 if needs_code else 15
     timeout_s = 600 if needs_code else 300
 
+    proof_stub = create_worker_proof_stub(task, envelope_id=eid, run_id=f'worker-{eid[:8]}')
+    append_trace(eid, {'event': 'proof_stub_created', 'path': proof_stub.get('proof_stub_path'), 'task_id': task_id})
+    record_worker_heartbeat(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), checkpoint='before_hermes_chat')
+
     try:
         cmd = [
             'hermes', 'chat', '-q', context,
@@ -1302,6 +1379,7 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             cmd.extend(['--skills', skill_name])
         cmd.append('--ignore-rules')
         r = _sp.run(cmd, capture_output=True, text=True, timeout=timeout_s)
+        record_worker_heartbeat(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), checkpoint='hermes_chat_returned', note=f'returncode={r.returncode}')
         output = r.stdout
         
         # Check budget exhaustion
@@ -1330,7 +1408,9 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             return {'status': 'failed', 'reason': 'missing_proof', 'output': output[-300:]}
     
     except _sp.TimeoutExpired:
-        return {'status': 'timeout'}
+        timeout_checkpoint = record_worker_timeout_checkpoint(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), reason='subprocess_timeout')
+        append_trace(eid, {'event': 'worker_timeout_checkpoint', 'path': timeout_checkpoint.get('proof_stub_path'), 'reason': 'subprocess_timeout'})
+        return {'status': 'timeout', 'reason': 'timeout_with_proof_stub', 'proof_stub_path': timeout_checkpoint.get('proof_stub_path')}
     except Exception as e:
         return {'status': 'error', 'error': str(e)[:200]}
 
