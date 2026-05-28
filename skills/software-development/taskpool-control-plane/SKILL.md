@@ -121,6 +121,8 @@ This skill is the umbrella for the taskpool lifecycle, not only stalled-pool dia
 
 Default class rule: do not treat taskpool work as raw capture or ad hoc execution. Every item should have a governed lane, priority, dependency/parallel boundary, proof expectation, and automation status appropriate to its lifecycle phase.
 
+For `lane=work` project/product tasks, attach the project profile contract at intake/claim time when a profile exists under `~/.hermes/project-profiles/<project>.json` (or an equivalent resolved project profile). The task should carry `project_profile_ref` plus a source-weighting reference when available. Default evidence authority order: (1) newest product doc / PRD / canonical project profile for business semantics and acceptance, (2) prototype / PM screenshot / comment image for UI layout, interaction, and visual parity, (3) live task source such as Lark title/body/comments for symptom/scope/reproduction, (4) current implementation/runtime for landing and regression proof. If these sources conflict, record the conflict and block for product confirmation unless the rank-1 source clearly resolves it; do not let generated taskpool summaries or prototypes override product-doc business rules.
+
 ## Adding external repo / doc analysis tasks to the pool
 
 When the user asks to add a GitHub repository, article, or documentation set into the taskpool, do **not** dump a vague title into the inbox and leave classification for later. For this user, pre-classify before or at creation time.
