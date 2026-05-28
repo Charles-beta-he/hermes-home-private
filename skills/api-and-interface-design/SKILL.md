@@ -95,7 +95,9 @@ When reviewing prototype/API gaps for UI-facing features (notifications, status 
 - Do not ask backend to expose `iconKind`, `ctaText`, `cssTone`, or other display-mechanism fields unless the requirement is explicitly CMS/ops-configurable presentation.
 - Do not parse localized title/body text to drive logic. If the frontend needs finer variants, use stable business semantic fields (`type`, `subType`, `status`, `eventType`) rather than template wording.
 - Do not limit this analysis to prompts that literally mention "prototype states", "implementation coverage", or "missing fields". Apply it whenever the user's expected direction or conversation goal is a long-term stable product/API boundary.
+- Treat prototypes as UX/effect specifications, not schema or storage specifications. Extract observable user effects first: visible states, copy intent, read/unread behavior, success/failure/warning perception, CTA behavior, navigation, empty/loading/error states, and acceptance evidence.
 - When comparing against a prototype data file, ask whether the goal is to copy the prototype data structure or reproduce the user experience with the new architecture; prefer semantic contracts plus frontend mapping when feasible.
+- For each prototype effect, map the implementation carrier explicitly: backend business event/fact, backend content, frontend visual mapping, frontend route/action, or test evidence. Recommend backend changes only for missing business facts/semantic states, not for missing prototype mock fields.
 - Optimize for the user's underlying target direction and durable architecture, not the surface wording of the immediate audit question.
 
 ## tRPC-Specific (matrimonial project)
