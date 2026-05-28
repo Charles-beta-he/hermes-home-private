@@ -232,7 +232,8 @@ def write_back_to_tasks(result: dict[str, Any], *, dry_run: bool = False) -> lis
 
         # 添加多模型共识字段
         consensus = r["multimodel_consensus"]
-        consensus_line = f"iceberg_multimodel_consensus: agreement={consensus.get('agreement', 0):.0%}; deterministic={consensus.get('deterministic_tier', '?')}; models={','.join(consensus.get('models_used', []))}"
+        agreement_val = consensus.get("agreement") or 0
+        consensus_line = f"iceberg_multimodel_consensus: agreement={agreement_val:.0%}; deterministic={consensus.get('deterministic_tier', '?')}; models={','.join(consensus.get('models_used', []))}"
         if "iceberg_multimodel_consensus:" in fm:
             old = re.search(r'^iceberg_multimodel_consensus:.*$', fm, re.M)
             fm = fm[:old.start()] + consensus_line + fm[old.end():]
