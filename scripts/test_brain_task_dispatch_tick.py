@@ -631,7 +631,9 @@ def test_event_next_tick_not_requested_skips_without_side_effects():
 def test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns():
     module = load_tick_module()
     old_run_cmd_json = module.run_cmd_json
+    old_cache_env = os.environ.get("HERMES_TASKPOOL_API_CACHE")
     try:
+        os.environ["HERMES_TASKPOOL_API_CACHE"] = "0"
         def fake_run_cmd_json(cmd, timeout=None):
             assert "model_quota.py" in " ".join(map(str, cmd)), cmd
             return {
@@ -648,6 +650,10 @@ def test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns():
         probe = module.api_quota_capacity_probe(dynamic_ceiling=6)
     finally:
         module.run_cmd_json = old_run_cmd_json
+        if old_cache_env is None:
+            os.environ.pop("HERMES_TASKPOOL_API_CACHE", None)
+        else:
+            os.environ["HERMES_TASKPOOL_API_CACHE"] = old_cache_env
     assert probe["status"] == "OK", probe
     assert probe["api_slots"] == 5, probe
     assert probe["hard_blocker_count"] == 1, probe
@@ -657,17 +663,23 @@ def test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns():
 def test_api_quota_capacity_probe_unavailable_error_does_not_echo_stdout_stderr():
     module = load_tick_module()
     old_run_cmd_json = module.run_cmd_json
+    old_cache_env = os.environ.get("HERMES_TASKPOOL_API_CACHE")
     try:
+        os.environ["HERMES_TASKPOOL_API_CACHE"] = "0"
         module.run_cmd_json = lambda cmd, timeout=None: {
             "status": "ERROR",
             "reason": "subprocess_failed",
             "returncode": 2,
             "stdout": "token=SECRET",
-            "stderr": "Authorization: bearer ***",
+            "stderr": "sensitive stderr",
         }
         probe = module.api_quota_capacity_probe(dynamic_ceiling=6)
     finally:
         module.run_cmd_json = old_run_cmd_json
+        if old_cache_env is None:
+            os.environ.pop("HERMES_TASKPOOL_API_CACHE", None)
+        else:
+            os.environ["HERMES_TASKPOOL_API_CACHE"] = old_cache_env
     assert probe["status"] == "SKIP", probe
     error = probe["confidence_gate_error"]
     assert error["status"] == "ERROR", error
@@ -679,7 +691,9 @@ def test_api_quota_capacity_probe_env_cap_overrides_slots():
     module = load_tick_module()
     old_run_cmd_json = module.run_cmd_json
     old_env = os.environ.get("HERMES_TASKPOOL_API_CAP")
+    old_cache_env = os.environ.get("HERMES_TASKPOOL_API_CACHE")
     try:
+        os.environ["HERMES_TASKPOOL_API_CACHE"] = "0"
         os.environ["HERMES_TASKPOOL_API_CAP"] = "2"
         module.run_cmd_json = lambda cmd, timeout=None: {"status": "PASS", "pass_count": 4, "failure_count": 0, "failures": []}
         probe = module.api_quota_capacity_probe(dynamic_ceiling=6)
@@ -689,6 +703,10 @@ def test_api_quota_capacity_probe_env_cap_overrides_slots():
             os.environ.pop("HERMES_TASKPOOL_API_CAP", None)
         else:
             os.environ["HERMES_TASKPOOL_API_CAP"] = old_env
+        if old_cache_env is None:
+            os.environ.pop("HERMES_TASKPOOL_API_CACHE", None)
+        else:
+            os.environ["HERMES_TASKPOOL_API_CACHE"] = old_cache_env
     assert probe["api_slots"] == 2, probe
     assert probe["env_api_cap"] == 2, probe
 
@@ -1077,6 +1095,165 @@ def test_agent_team_background_worker_job_records_and_dedupes_alive_batches():
     assert jobs["job_count"] == 1 and jobs["alive_count"] == 1, jobs
 
 
+def test_api_quota_capacity_probe_uses_sanitized_ttl_cache():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_cache = module.API_QUOTA_CACHE_FILE
+    old_run_cmd_json = module.run_cmd_json
+    old_env = os.environ.get("HERMES_TASKPOOL_API_CACHE_TTL_SECONDS")
+    calls = []
+    try:
+        root = Path(td.name)
+        module.API_QUOTA_CACHE_FILE = root / "cache.json"
+        os.environ["HERMES_TASKPOOL_API_CACHE_TTL_SECONDS"] = "60"
+        def fake_run_cmd_json(cmd, timeout=None):
+            calls.append(list(cmd))
+            return {
+                "status": "FAIL_CLOSED",
+                "pass_count": 0,
+                "failure_count": 1,
+                "stdout": "token=SECRET",
+                "stderr": "secret stderr",
+                "failures": [{"model": "m", "provider": "p", "status": "rate_limited", "reasons": ["quota"]}],
+            }
+        module.run_cmd_json = fake_run_cmd_json
+        first = module.api_quota_capacity_probe(dynamic_ceiling=6)
+        second = module.api_quota_capacity_probe(dynamic_ceiling=6)
+        cached_text = module.API_QUOTA_CACHE_FILE.read_text(encoding="utf-8")
+    finally:
+        module.API_QUOTA_CACHE_FILE = old_cache
+        module.run_cmd_json = old_run_cmd_json
+        if old_env is None:
+            os.environ.pop("HERMES_TASKPOOL_API_CACHE_TTL_SECONDS", None)
+        else:
+            os.environ["HERMES_TASKPOOL_API_CACHE_TTL_SECONDS"] = old_env
+        td.cleanup()
+    assert len(calls) == 1, calls
+    assert first["api_slots"] == 5, first
+    assert second["cache"]["hit"] is True, second
+    cache_obj = json.loads(cached_text)
+    assert "stdout" not in cache_obj.get("payload", {}) and "stderr" not in cache_obj.get("payload", {}), cache_obj
+    assert "SECRET" not in cached_text, cached_text
+
+
+def test_quality_capacity_probe_is_neutral_without_history_and_caps_on_failures():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    with td:
+        log = Path(td.name) / "tick.jsonl"
+        neutral = module.quality_capacity_probe(dynamic_ceiling=8, log_file=log, min_samples=3)
+        events = [
+            {"status": "OK", "parallel_dispatch": {"selected_count": 1}},
+            {"status": "ERROR", "event_worker_trigger": {"status": "ERROR"}, "errors": [{"step": "event_worker_trigger"}]},
+            {"status": "ERROR", "proof_check": {"status": "FAIL"}, "errors": [{"step": "proof_check"}]},
+            {"status": "OK", "autorun": {"status": "OK"}},
+        ]
+        log.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8")
+        capped = module.quality_capacity_probe(dynamic_ceiling=8, log_file=log, window=10, min_samples=3)
+    assert neutral["status"] == "NEUTRAL" and neutral["quality_slots"] == 8, neutral
+    assert capped["status"] == "OK", capped
+    assert capped["quality_slots"] < 8, capped
+    assert "event_worker_trigger" in capped["reasons"], capped
+
+
+def test_stale_claim_candidates_only_hermes_owned_expired_and_uncovered():
+    module = load_tick_module()
+    now = module.parse_ts("2026-05-28T00:10:00Z")
+    task_list = {"status": "OK", "rows": [
+        {"id": "expired", "status": "claimed", "claimed_by": "hermes-parallel", "run_id": "r1", "claim_expires_at": "2026-05-28T00:00:00Z"},
+        {"id": "covered", "status": "claimed", "claimed_by": "hermes-parallel", "run_id": "r2", "claim_expires_at": "2026-05-28T00:00:00Z"},
+        {"id": "foreign", "status": "claimed", "claimed_by": "human", "run_id": "r3", "claim_expires_at": "2026-05-28T00:00:00Z"},
+        {"id": "fresh", "status": "claimed", "claimed_by": "hermes-parallel", "run_id": "r4", "claim_expires_at": "2026-05-28T00:20:00Z"},
+        {"id": "missing-run", "status": "claimed", "claimed_by": "hermes-parallel", "claim_expires_at": "2026-05-28T00:00:00Z"},
+    ]}
+    worker_jobs = {"status": "OK", "jobs": [{"alive": True, "task_ids": ["covered"]}]}
+    candidates = module.hermes_owned_stale_claim_candidates(task_list=task_list, worker_jobs=worker_jobs, now=now)
+    assert [c["task_id"] for c in candidates] == ["expired"], candidates
+
+
+def test_batch_merge_manifest_is_propose_only_artifact():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_dir = module.BATCH_MERGE_PLAN_DIR
+    try:
+        module.BATCH_MERGE_PLAN_DIR = Path(td.name) / "plans"
+        decision = {"batch_merge_candidates": [{"boundary_key": "b", "sample_task_ids": ["t1", "t2"], "merge_policy": "propose_only"}]}
+        event = {"parallel_dispatch": {"selected": [{"id": "s1"}]}}
+        result = module.write_batch_merge_manifest(decision=decision, event=event)
+        payload = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+    finally:
+        module.BATCH_MERGE_PLAN_DIR = old_dir
+        td.cleanup()
+    assert result["status"] == "OK" and result["mode"] == "propose_only", result
+    assert payload["mode"] == "propose_only", payload
+    assert "no source edits" in payload["non_goals"], payload
+    assert "obtain explicit human approval before any merged code execution" in payload["required_before_execution"], payload
+
+
+
+def test_reclaim_stale_claims_revalidates_before_apply():
+    module = load_tick_module()
+    calls = []
+    task_list = {"status": "OK", "rows": [
+        {"id": "expired", "status": "claimed", "claimed_by": "hermes-parallel", "run_id": "r1", "claim_expires_at": "2026-05-28T00:00:00Z"},
+    ]}
+    old_worker_jobs = module.worker_jobs_status
+    old_run_json = module.run_json
+    try:
+        module.worker_jobs_status = lambda: {"status": "OK", "jobs": []}
+        def fake_run_json(args):
+            calls.append(list(args))
+            if args[:2] == ["list", "--json"]:
+                return {"status": "OK", "rows": [{"id": "expired", "status": "running", "claimed_by": "hermes-parallel", "run_id": "r1", "claim_expires_at": "2026-05-28T00:00:00Z"}]}
+            raise AssertionError(f"unexpected mutation call: {args}")
+        module.run_json = fake_run_json
+        result = module.reclaim_stale_hermes_claims(task_list=task_list, dry_run=False, max_tasks=5, reclaim_enabled=True)
+    finally:
+        module.worker_jobs_status = old_worker_jobs
+        module.run_json = old_run_json
+    assert result["status"] == "WARN", result
+    assert result["reclaimed_count"] == 0, result
+    assert result["skipped"][0]["reason"] == "revalidation_failed_or_claim_changed", result
+    assert calls == [["list", "--json"]], calls
+
+
+
+def test_reclaim_stale_claims_apply_requires_explicit_enable():
+    module = load_tick_module()
+    old_worker_jobs = module.worker_jobs_status
+    old_run_json = module.run_json
+    try:
+        module.worker_jobs_status = lambda: {"status": "OK", "jobs": []}
+        module.run_json = lambda args: (_ for _ in ()).throw(AssertionError("must not mutate when disabled"))
+        result = module.reclaim_stale_hermes_claims(task_list={"status": "OK", "rows": []}, dry_run=False, reclaim_enabled=False)
+    finally:
+        module.worker_jobs_status = old_worker_jobs
+        module.run_json = old_run_json
+    assert result["status"] == "SKIP", result
+    assert result["reason"] == "apply_requires_explicit_reclaim_enabled", result
+
+
+def test_resource_capacity_probe_quality_can_be_disabled_and_api_ttl_config_used():
+    module = load_tick_module()
+    old_api = module.api_quota_capacity_probe
+    old_worker = module.worker_jobs_status
+    old_quality = module.quality_capacity_probe
+    calls = []
+    try:
+        module.api_quota_capacity_probe = lambda *, dynamic_ceiling, cache_ttl_seconds=None: calls.append((dynamic_ceiling, cache_ttl_seconds)) or {"status": "OK", "api_slots": dynamic_ceiling}
+        module.worker_jobs_status = lambda: {"status": "OK", "jobs": []}
+        module.quality_capacity_probe = lambda **kwargs: (_ for _ in ()).throw(AssertionError("quality probe should be disabled"))
+        probe = module.resource_capacity_probe(dynamic_ceiling=7, quality_enabled=False, api_cache_ttl_seconds=12)
+    finally:
+        module.api_quota_capacity_probe = old_api
+        module.worker_jobs_status = old_worker
+        module.quality_capacity_probe = old_quality
+    assert calls == [(7, 12)], calls
+    assert probe["quality_probe"]["status"] == "DISABLED", probe
+    assert probe["quality_slots"] == 7, probe
+
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
@@ -1094,6 +1271,13 @@ if __name__ == "__main__":
     test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns()
     test_api_quota_capacity_probe_unavailable_error_does_not_echo_stdout_stderr()
     test_api_quota_capacity_probe_env_cap_overrides_slots()
+    test_api_quota_capacity_probe_uses_sanitized_ttl_cache()
+    test_quality_capacity_probe_is_neutral_without_history_and_caps_on_failures()
+    test_stale_claim_candidates_only_hermes_owned_expired_and_uncovered()
+    test_reclaim_stale_claims_revalidates_before_apply()
+    test_reclaim_stale_claims_apply_requires_explicit_enable()
+    test_resource_capacity_probe_quality_can_be_disabled_and_api_ttl_config_used()
+    test_batch_merge_manifest_is_propose_only_artifact()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
     test_drain_first_consumes_only_uncovered_claimed_tasks()
     test_event_next_tick_refill_is_bounded_and_explicit()

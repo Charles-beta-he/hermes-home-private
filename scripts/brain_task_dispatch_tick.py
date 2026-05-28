@@ -35,6 +35,8 @@ STATE_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_STATE_DIR", str(HOME
 LOG_DIR = Path(os.environ.get("HERMES_BRAIN_DISPATCH_TICK_LOG_DIR", str(HOME / ".hermes" / "logs"))).expanduser()
 STATE_FILE = STATE_DIR / "brain_task_dispatch_tick_state.json"
 LOG_FILE = LOG_DIR / "brain_task_dispatch_tick.jsonl"
+API_QUOTA_CACHE_FILE = STATE_DIR / "taskpool-api-quota-cache.json"
+BATCH_MERGE_PLAN_DIR = STATE_DIR / "taskpool-batch-merge-plans"
 DEFAULT_COMMAND_TIMEOUT_SECONDS = 120.0
 DEFAULT_TERMINATE_GRACE_SECONDS = 5.0
 
@@ -348,6 +350,14 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         "drain_claimed_first": True,
         "event_refill_enabled": False,
         "batch_merge_conflict_threshold": 3,
+        "api_quota_cache_ttl_seconds": 45,
+        "quality_slots_enabled": True,
+        "quality_slots_min_samples": 3,
+        "quality_slots_window": 80,
+        "stale_claim_reclaim_enabled": False,
+        "stale_claim_reclaim_dry_run": True,
+        "stale_claim_reclaim_max_tasks": 20,
+        "batch_merge_manifest_enabled": True,
     }
     try:
         import yaml  # type: ignore
@@ -365,6 +375,10 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         ("handoff_archive_keep", 50),
         ("continuation_backlog_threshold", 100),
         ("batch_merge_conflict_threshold", 3),
+        ("api_quota_cache_ttl_seconds", 45),
+        ("quality_slots_min_samples", 3),
+        ("quality_slots_window", 80),
+        ("stale_claim_reclaim_max_tasks", 20),
     ):
         try:
             defaults[key] = max(0 if key != "max_parallel_agents" else 1, int(defaults.get(key) or fallback))
@@ -373,6 +387,10 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
     defaults["dispatch_mode"] = str(defaults.get("dispatch_mode") or "single").strip().lower()
     defaults["drain_claimed_first"] = str(defaults.get("drain_claimed_first", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["event_refill_enabled"] = str(defaults.get("event_refill_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
+    defaults["quality_slots_enabled"] = str(defaults.get("quality_slots_enabled", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["stale_claim_reclaim_enabled"] = str(defaults.get("stale_claim_reclaim_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
+    defaults["stale_claim_reclaim_dry_run"] = str(defaults.get("stale_claim_reclaim_dry_run", "true")).strip().lower() not in {"0", "false", "no", "off"}
+    defaults["batch_merge_manifest_enabled"] = str(defaults.get("batch_merge_manifest_enabled", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["dynamic_max_parallel_agents"] = max(
         int(defaults.get("max_parallel_agents") or 3),
         int(defaults.get("dynamic_max_parallel_agents") or 24),
@@ -408,7 +426,13 @@ def resolve_parallel_agent_cap(*, requested_max_agents: int, taskpool_cfg: dict[
         except Exception:
             pass
     dynamic_ceiling = max(configured, dynamic_ceiling, 1)
-    resource_probe = resource_capacity_probe(dynamic_ceiling=dynamic_ceiling)
+    resource_probe = resource_capacity_probe(
+        dynamic_ceiling=dynamic_ceiling,
+        quality_enabled=bool(taskpool_cfg.get("quality_slots_enabled")),
+        quality_window=int(taskpool_cfg.get("quality_slots_window") or 80),
+        quality_min_samples=int(taskpool_cfg.get("quality_slots_min_samples") or 3),
+        api_cache_ttl_seconds=int(taskpool_cfg.get("api_quota_cache_ttl_seconds") or 45),
+    )
     resource_ceiling = int(resource_probe.get("effective_resource_ceiling") or dynamic_ceiling)
     # Resource pressure is a safety cap, not merely telemetry.  It may lower
     # effective concurrency below the configured floor; explicit --max-agents
@@ -466,7 +490,165 @@ def _rows_from_task_list(task_list: Any) -> list[dict[str, Any]]:
     return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
 
 
-def api_quota_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
+def parse_ts(value: Any) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(text)
+    except Exception:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=TZ)
+    return dt.astimezone(timezone.utc)
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(microsecond=0)
+
+
+def _read_json_file(path: Path) -> dict[str, Any]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _write_json_file(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def api_quota_cache_ttl_seconds(default: int = 45) -> int:
+    raw = os.environ.get("HERMES_TASKPOOL_API_CACHE_TTL_SECONDS", "")
+    if raw:
+        try:
+            return max(0, int(raw))
+        except Exception:
+            return default
+    return default
+
+
+def _safe_api_probe_for_cache(payload: dict[str, Any]) -> dict[str, Any]:
+    allowed = {
+        "schema", "status", "api_slots", "env_api_cap", "hard_blocker_count",
+        "soft_unknown_count", "hard_blockers", "soft_unknowns", "pass_count",
+        "failure_count", "confidence_gate_status", "reason", "safety",
+    }
+    return {k: payload.get(k) for k in allowed if k in payload}
+
+
+def load_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds: int) -> dict[str, Any] | None:
+    if ttl_seconds <= 0 or os.environ.get("HERMES_TASKPOOL_API_CACHE", "1").strip().lower() in {"0", "false", "no", "off"}:
+        return None
+    cache = _read_json_file(API_QUOTA_CACHE_FILE)
+    if not cache or int(cache.get("dynamic_ceiling") or 0) != int(dynamic_ceiling or 0) or int(cache.get("env_api_cap") or 0) != int(env_api_cap or 0):
+        return None
+    expires_at = parse_ts(cache.get("expires_at"))
+    if not expires_at or expires_at <= utc_now():
+        return None
+    payload = cache.get("payload") if isinstance(cache.get("payload"), dict) else {}
+    if not payload:
+        return None
+    payload = dict(payload)
+    payload["cache"] = {"hit": True, "expires_at": cache.get("expires_at"), "observed_at": cache.get("observed_at"), "ttl_seconds": ttl_seconds}
+    return payload
+
+
+def save_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds: int, payload: dict[str, Any]) -> None:
+    if ttl_seconds <= 0 or os.environ.get("HERMES_TASKPOOL_API_CACHE", "1").strip().lower() in {"0", "false", "no", "off"}:
+        return
+    now = utc_now()
+    safe = _safe_api_probe_for_cache(payload)
+    try:
+        _write_json_file(API_QUOTA_CACHE_FILE, {
+            "schema": "taskpool_api_quota_cache_v1",
+            "observed_at": now.isoformat().replace("+00:00", "Z"),
+            "expires_at": (now + timedelta(seconds=ttl_seconds)).isoformat().replace("+00:00", "Z"),
+            "dynamic_ceiling": int(dynamic_ceiling or 0),
+            "env_api_cap": int(env_api_cap or 0),
+            "payload": safe,
+            "safety": "sanitized api quota cache; raw command output and environment never persisted",
+        })
+    except Exception:
+        pass
+
+
+def _recent_tick_events(log_file: Path, *, window: int) -> list[dict[str, Any]]:
+    try:
+        lines = log_file.read_text(encoding="utf-8").splitlines()[-max(1, int(window or 1)):]
+    except Exception:
+        return []
+    events: list[dict[str, Any]] = []
+    for line in lines:
+        try:
+            obj = json.loads(line)
+        except Exception:
+            continue
+        if isinstance(obj, dict):
+            events.append(obj)
+    return events
+
+
+def quality_capacity_probe(*, dynamic_ceiling: int, worker_jobs: dict[str, Any] | None = None, log_file: Path = LOG_FILE, window: int = 80, min_samples: int = 3) -> dict[str, Any]:
+    events = _recent_tick_events(log_file, window=window)
+    samples = 0
+    failures = 0
+    reasons: list[str] = []
+    for event in events:
+        if event.get("event_worker_trigger") or event.get("autorun") or event.get("parallel_dispatch"):
+            samples += 1
+        if event.get("status") == "ERROR":
+            failures += 1
+            reasons.append("tick_error")
+        for err in event.get("errors") or []:
+            if not isinstance(err, dict):
+                continue
+            step = str(err.get("step") or "")
+            if step in {"event_worker_trigger", "parallel_autorun", "drain_first", "event_next_tick", "proof_check"}:
+                failures += 1
+                reasons.append(step)
+    if worker_jobs and str(worker_jobs.get("status") or "").upper() in {"OK", "PASS"}:
+        for job in worker_jobs.get("jobs") or []:
+            if not isinstance(job, dict) or job.get("alive"):
+                continue
+            if job.get("returncode") not in {None, 0, "0"}:
+                samples += 1
+                failures += 1
+                reasons.append("worker_returncode_nonzero")
+    neutral_slots = max(1, int(dynamic_ceiling or 1))
+    if samples < max(1, int(min_samples or 1)):
+        return {
+            "schema": "taskpool_quality_capacity_v1",
+            "status": "NEUTRAL",
+            "quality_slots": neutral_slots,
+            "sample_count": samples,
+            "failure_count": failures,
+            "reason": "insufficient_history",
+            "safety": "insufficient quality history is neutral and never punitive",
+        }
+    failure_rate = failures / max(samples, 1)
+    slots = neutral_slots
+    if failure_rate >= 0.50:
+        slots = max(1, neutral_slots // 2)
+    elif failure_rate >= 0.25:
+        slots = max(1, int(neutral_slots * 0.75))
+    return {
+        "schema": "taskpool_quality_capacity_v1",
+        "status": "OK",
+        "quality_slots": slots,
+        "sample_count": samples,
+        "failure_count": failures,
+        "failure_rate": round(failure_rate, 3),
+        "reasons": sorted(set(reasons))[:12],
+        "safety": "quality cap only reduces concurrency; it does not bypass proof, acceptance, dependency, or boundary gates",
+    }
+
+
+def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | None = None) -> dict[str, Any]:
     """Return a conservative API/provider quota slot cap.
 
     The model_quota confidence gate is strict for budget handoff, but taskpool
@@ -483,6 +665,10 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
             env_api_cap = max(1, int(env_api_cap_raw))
         except Exception:
             env_api_cap = 0
+    ttl_seconds = api_quota_cache_ttl_seconds(int(cache_ttl_seconds if cache_ttl_seconds is not None else 45))
+    cached = load_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds)
+    if cached is not None:
+        return cached
     payload: dict[str, Any] = {
         "schema": "taskpool_api_quota_capacity_v1",
         "status": "UNKNOWN",
@@ -492,11 +678,13 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
         "soft_unknown_count": 0,
         "hard_blockers": [],
         "soft_unknowns": [],
+        "cache": {"hit": False, "ttl_seconds": ttl_seconds},
         "safety": "only hard quota/provider blockers reduce taskpool concurrency; unknown/unobservable is telemetry",
     }
     if not MODEL_QUOTA_SCRIPT.exists():
         payload["status"] = "SKIP"
         payload["reason"] = "model_quota_script_missing"
+        save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload)
         return payload
     gate = run_cmd_json([sys.executable, str(MODEL_QUOTA_SCRIPT), "confidence-gate", "--json"], timeout=min(command_timeout_seconds(), 30.0))
     payload["confidence_gate_status"] = gate.get("status")
@@ -506,6 +694,7 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
         # Do not echo stdout/stderr here: provider errors may include sensitive
         # environment or auth context. Keep only controlled machine fields.
         payload["confidence_gate_error"] = {k: gate.get(k) for k in ["status", "reason", "returncode"] if gate.get(k)}
+        save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload)
         return payload
     hard_statuses = {"exhausted", "rate_limited", "malformed", "unavailable"}
     hard: list[dict[str, Any]] = []
@@ -540,10 +729,11 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
         "pass_count": gate.get("pass_count"),
         "failure_count": gate.get("failure_count"),
     })
+    save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload)
     return payload
 
 
-def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
+def resource_capacity_probe(*, dynamic_ceiling: int, quality_enabled: bool = True, quality_window: int = 80, quality_min_samples: int = 3, api_cache_ttl_seconds: int | None = None) -> dict[str, Any]:
     """Return an advisory resource ceiling for dynamic taskpool dispatch.
 
     Boundary/quality gates still decide which tasks may run together.  This
@@ -567,7 +757,22 @@ def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
             env_cap = max(1, int(env_cap_raw))
         except Exception:
             env_cap = 0
-    api_probe = api_quota_capacity_probe(dynamic_ceiling=int(dynamic_ceiling or 1))
+    api_probe = api_quota_capacity_probe(dynamic_ceiling=int(dynamic_ceiling or 1), cache_ttl_seconds=api_cache_ttl_seconds)
+    worker_jobs = worker_jobs_status()
+    if quality_enabled:
+        quality_probe = quality_capacity_probe(
+            dynamic_ceiling=int(dynamic_ceiling or 1),
+            worker_jobs=worker_jobs if isinstance(worker_jobs, dict) else None,
+            window=int(os.environ.get("HERMES_TASKPOOL_QUALITY_WINDOW", str(quality_window)) or quality_window),
+            min_samples=int(os.environ.get("HERMES_TASKPOOL_QUALITY_MIN_SAMPLES", str(quality_min_samples)) or quality_min_samples),
+        )
+    else:
+        quality_probe = {
+            "schema": "taskpool_quality_capacity_v1",
+            "status": "DISABLED",
+            "quality_slots": max(1, int(dynamic_ceiling or 1)),
+            "safety": "quality slots disabled by config; neutral cap",
+        }
     machine_slots = max(1, min(int(dynamic_ceiling or 1), cpu_count * 2))
     pressure_reasons: list[str] = []
     if load_1m and load_1m > cpu_count * 1.5:
@@ -577,7 +782,7 @@ def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
         machine_slots = 1
         pressure_reasons.append("disk_free_low")
     api_slots = env_cap or int(api_probe.get("api_slots") or dynamic_ceiling or machine_slots or 1)
-    quality_slots = int(dynamic_ceiling or machine_slots or 1)
+    quality_slots = int(quality_probe.get("quality_slots") or dynamic_ceiling or machine_slots or 1)
     effective = max(1, min(int(dynamic_ceiling or 1), machine_slots, api_slots, quality_slots))
     return {
         "schema": "taskpool_resource_capacity_v1",
@@ -587,6 +792,7 @@ def resource_capacity_probe(*, dynamic_ceiling: int) -> dict[str, Any]:
         "api_slots": api_slots,
         "api_probe": api_probe,
         "quality_slots": quality_slots,
+        "quality_probe": quality_probe,
         "cpu_count": cpu_count,
         "load_1m": round(load_1m, 2),
         "disk_free_gb": disk_free_gb,
@@ -712,6 +918,129 @@ def boundary_merge_candidates(parallel_dispatch: dict[str, Any], *, threshold: i
             "safety": "candidate only; batch coordinator must prove compatible goals and per-task acceptance before execution",
         })
     return candidates
+
+
+def hermes_owned_stale_claim_candidates(*, task_list: dict[str, Any], worker_jobs: dict[str, Any], now: datetime | None = None, max_tasks: int = 20) -> list[dict[str, Any]]:
+    rows = _rows_from_task_list(task_list)
+    covered = alive_worker_task_ids(worker_jobs) if str(worker_jobs.get("status") or "").upper() in {"OK", "PASS"} else set()
+    allowed_actors = {"hermes-parallel", "hermes-parallel-follow-through"}
+    now_dt = (now or utc_now()).astimezone(timezone.utc)
+    candidates: list[dict[str, Any]] = []
+    for row in rows:
+        if str(row.get("status") or "") != "claimed":
+            continue
+        task_id = str(row.get("id") or row.get("task_id") or "").strip()
+        actor = str(row.get("claimed_by") or "").strip()
+        if not task_id or actor not in allowed_actors or task_id in covered:
+            continue
+        if not row.get("run_id"):
+            continue
+        expires_at = parse_ts(row.get("claim_expires_at"))
+        if not expires_at or expires_at > now_dt:
+            continue
+        candidates.append({
+            "task_id": task_id,
+            "claimed_by": actor,
+            "run_id": row.get("run_id"),
+            "claim_expires_at": row.get("claim_expires_at"),
+            "age_seconds_after_expiry": max(0, int((now_dt - expires_at).total_seconds())),
+        })
+        if len(candidates) >= max(1, int(max_tasks or 1)):
+            break
+    return candidates
+
+
+def reclaim_stale_hermes_claims(*, task_list: dict[str, Any], dry_run: bool = True, max_tasks: int = 20, reclaim_enabled: bool = False) -> dict[str, Any]:
+    if not dry_run and not reclaim_enabled:
+        return {"status": "SKIP", "reason": "apply_requires_explicit_reclaim_enabled", "reclaimed_count": 0, "candidates": [], "safety": "apply mode is gated by stale_claim_reclaim_enabled"}
+    worker_jobs = worker_jobs_status()
+    if str(worker_jobs.get("status") or "").upper() not in {"OK", "PASS"}:
+        return {"status": "SKIP", "reason": "worker_jobs_unavailable", "reclaimed_count": 0, "candidates": [], "safety": "fail-closed without worker coverage data"}
+    candidates = hermes_owned_stale_claim_candidates(task_list=task_list, worker_jobs=worker_jobs, max_tasks=max_tasks)
+    if dry_run or not candidates:
+        return {
+            "status": "OK",
+            "mode": "dry_run" if dry_run else "apply",
+            "reason": "propose_only" if dry_run else "no_stale_hermes_claims",
+            "candidate_count": len(candidates),
+            "reclaimed_count": 0,
+            "candidates": candidates,
+            "safety": "Hermes-owned expired claims only; dry-run does not mutate tasks" if dry_run else "no side effects; no candidates",
+        }
+    reclaimed: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for item in candidates:
+        task_id = item["task_id"]
+        actor = str(item.get("claimed_by") or "hermes-parallel")
+        # Revalidate immediately before mutation: the original candidate list is
+        # only a snapshot and may race with a worker or a human reclaim.
+        fresh_list = run_json(["list", "--json"])
+        fresh_jobs = worker_jobs_status()
+        if fresh_list.get("status") != "OK" or str(fresh_jobs.get("status") or "").upper() not in {"OK", "PASS"}:
+            skipped.append({"task_id": task_id, "reason": "fresh_revalidation_unavailable"})
+            continue
+        fresh_candidates = hermes_owned_stale_claim_candidates(
+            task_list=fresh_list,
+            worker_jobs=fresh_jobs,
+            max_tasks=max_tasks,
+        )
+        if task_id not in {str(x.get("task_id") or "") for x in fresh_candidates}:
+            skipped.append({"task_id": task_id, "reason": "revalidation_failed_or_claim_changed"})
+            continue
+        result = run_json([
+            "transition", task_id,
+            "--to", "retry",
+            "--actor", actor,
+            "--authority", "stale-claim-reclaim",
+            "--reason", "expired Hermes-owned parallel claim with no alive worker coverage; release for retry",
+            "--evidence", "command:brain_task_dispatch_tick stale_hermes_claim_reclaim",
+            "--delay-minutes", "5",
+            "--force",
+            "--json",
+        ])
+        entry = {"task_id": task_id, "transition": {k: result.get(k) for k in ["status", "ok", "reason"] if k in result}}
+        if result.get("ok"):
+            reclaimed.append(entry)
+        else:
+            skipped.append(entry)
+    return {
+        "status": "OK" if not skipped else "WARN",
+        "mode": "apply",
+        "candidate_count": len(candidates),
+        "reclaimed_count": len(reclaimed),
+        "reclaimed": reclaimed,
+        "skipped": skipped,
+        "safety": "only expired Hermes-owned claims without live worker coverage are moved to retry; no done transitions",
+    }
+
+
+def write_batch_merge_manifest(*, decision: dict[str, Any], event: dict[str, Any]) -> dict[str, Any]:
+    candidates = decision.get("batch_merge_candidates") or []
+    if not isinstance(candidates, list) or not candidates:
+        return {"status": "SKIP", "reason": "no_batch_merge_candidates", "written": False}
+    BATCH_MERGE_PLAN_DIR.mkdir(parents=True, exist_ok=True)
+    manifest_id = datetime.now(TZ).strftime("%Y%m%dT%H%M%S%z")
+    path = BATCH_MERGE_PLAN_DIR / f"batch-merge-plan-{manifest_id}.json"
+    payload = {
+        "schema": "taskpool_batch_merge_plan_v1",
+        "generated_at": iso(),
+        "mode": "propose_only",
+        "manifest_id": manifest_id,
+        "candidate_count": len(candidates),
+        "candidates": candidates,
+        "selected_task_ids": [str(x.get("id") or x.get("task_id") or "") for x in ((event.get("parallel_dispatch") or {}).get("selected") or []) if isinstance(x, dict)][:32],
+        "required_before_execution": [
+            "prove goal compatibility for every child task",
+            "map per-task acceptance criteria to individual proof artifacts",
+            "prove touched-file/worktree compatibility",
+            "define rollback plan",
+            "obtain explicit human approval before any merged code execution",
+        ],
+        "non_goals": ["no source edits", "no lifecycle transitions", "no merged acceptance shortcut", "no done transitions"],
+        "safety": "artifact only; dispatcher never executes batch merge plans",
+    }
+    _write_json_file(path, payload)
+    return {"status": "OK", "written": True, "path": str(path), "candidate_count": len(candidates), "mode": "propose_only"}
 
 
 def scheduler_decision_snapshot(*, event: dict[str, Any], resource_probe: dict[str, Any], threshold: int) -> dict[str, Any]:
@@ -957,6 +1286,10 @@ def main() -> int:
         "drain_claimed_first_enabled": bool(taskpool_cfg.get("drain_claimed_first")),
         "event_refill_enabled": bool(taskpool_cfg.get("event_refill_enabled")),
         "batch_merge_conflict_threshold": int(taskpool_cfg.get("batch_merge_conflict_threshold") or 3),
+        "batch_merge_manifest_enabled": bool(taskpool_cfg.get("batch_merge_manifest_enabled")),
+        "quality_slots_enabled": bool(taskpool_cfg.get("quality_slots_enabled")),
+        "stale_claim_reclaim_enabled": bool(taskpool_cfg.get("stale_claim_reclaim_enabled")),
+        "stale_claim_reclaim_dry_run": bool(taskpool_cfg.get("stale_claim_reclaim_dry_run")),
         "review_close_max_tasks": review_close_max_tasks,
         "parallel_requested": bool(args.parallel_autorun),
     }
@@ -1036,6 +1369,18 @@ def main() -> int:
         resource_probe=parallel_cap.get("resource_probe", {}) if isinstance(parallel_cap.get("resource_probe"), dict) else {},
         threshold=int(taskpool_cfg.get("batch_merge_conflict_threshold") or 3),
     )
+    if bool(taskpool_cfg.get("batch_merge_manifest_enabled")):
+        event["batch_merge_manifest"] = write_batch_merge_manifest(decision=event["scheduler_decision"], event=event)
+    else:
+        event["batch_merge_manifest"] = {"status": "SKIP", "reason": "disabled", "written": False}
+    if args.parallel_autorun or bool(taskpool_cfg.get("stale_claim_reclaim_enabled")):
+        reclaim_enabled = bool(taskpool_cfg.get("stale_claim_reclaim_enabled"))
+        event["stale_claim_reclaim"] = reclaim_stale_hermes_claims(
+            task_list=event.get("task_list", {}) if isinstance(event.get("task_list"), dict) else {},
+            dry_run=(True if not reclaim_enabled else bool(taskpool_cfg.get("stale_claim_reclaim_dry_run"))),
+            max_tasks=int(taskpool_cfg.get("stale_claim_reclaim_max_tasks") or 20),
+            reclaim_enabled=reclaim_enabled,
+        )
 
     for key in ["ingest", "reconcile", "dashboard", "task_list", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
         if key in errored_steps:
@@ -1250,6 +1595,8 @@ def main() -> int:
         "continuation": event.get("continuation", {}),
         "claim_state": event.get("claim_state", {}),
         "scheduler_decision": event.get("scheduler_decision", {}),
+        "batch_merge_manifest": event.get("batch_merge_manifest", {}),
+        "stale_claim_reclaim": event.get("stale_claim_reclaim", {}),
         "drain_first": event.get("drain_first", {}),
         "parallel_dispatch": event.get("parallel_dispatch", {}),
         "railway_published_retests": event.get("railway_published_retests", {}),

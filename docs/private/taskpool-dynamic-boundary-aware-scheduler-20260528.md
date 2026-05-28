@@ -134,3 +134,25 @@ After the initial commit, `resource_capacity_probe()` was extended to call `api_
 This turns provider quota evidence into a real scheduling input without making missing quota evidence slower than the old fixed pool.
 
 - Follow-up multi-model review required that confidence-gate unavailable errors must not echo stdout/stderr because provider errors may contain sensitive context; `api_probe.confidence_gate_error` now keeps only status/reason/returncode and has focused regression coverage.
+
+
+## Follow-up landing: boundary-aware completion slices
+
+The full landing after the API hard-blocker cap adds the remaining safe slices agreed by real multi-model review:
+
+- Sanitized API quota TTL cache: `model_quota.py confidence-gate --json` evidence is cached briefly under state to avoid making every tick pay the full provider-probe cost. The cache stores only controlled fields (status/counts/hard/soft blocker summaries) and never raw command output or environment.
+- Quality slots: recent dispatch tick history and worker-job failures produce a concurrency reducer only. Insufficient history is neutral. Quality slots never increase capacity, never change boundary selection, and never bypass proof/acceptance.
+- Stale Hermes-owned claim reclaim: implemented as a dedicated path separate from drain-first. It only considers expired `claimed` rows owned by `hermes-parallel` / `hermes-parallel-follow-through`, with `run_id`, no alive worker coverage, and defaults to dry-run unless explicitly enabled for apply.
+- Batch merge plan manifest: batch candidates now produce a propose-only JSON artifact under state. The artifact contains candidate boundaries, task IDs, required proof/acceptance mapping, non-goals, and explicit human-approval requirement. It performs no source edits and no lifecycle transitions.
+
+Still forbidden: automatic batch code execution, merged acceptance, default-on event refill, foreign-actor claim reclaim, and any done transition outside the existing proof-gated closeout.
+
+
+### Multi-model AMEND closure for completion slices
+
+Final review raised two hard requirements and two config-drift risks; all were closed before commit:
+
+- Stale reclaim apply now requires `stale_claim_reclaim_enabled: true`; `--parallel-autorun` may surface dry-run candidates but cannot apply if the reclaim feature is disabled.
+- Stale reclaim revalidates immediately before mutation by re-reading task rows and worker jobs, then only transitions if the row is still an expired Hermes-owned claim with no alive worker coverage.
+- `quality_slots_enabled` is honored by `resource_capacity_probe()`; disabled quality slots become a neutral cap.
+- `api_quota_cache_ttl_seconds` is passed into the API quota probe instead of relying only on environment overrides.
