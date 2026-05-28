@@ -182,12 +182,19 @@ def human_escape_status() -> dict[str, Any]:
 def _parse_iso_z(value: Any) -> float | None:
     if not isinstance(value, str) or not value.strip():
         return None
-    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+    text = value.strip()
+    # A trailing Z is UTC.  Do not parse it as a naive local timestamp: on
+    # Asia/Shanghai hosts that makes a fresh ack look ~8h old and can jump the
+    # recovery scaler straight to the hard max.
+    if text.endswith("Z"):
         try:
-            return datetime.strptime(value.strip(), fmt).timestamp()
+            return datetime.strptime(text, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
         except Exception:
             pass
-    return None
+    try:
+        return datetime.strptime(text, "%Y-%m-%dT%H:%M:%S%z").timestamp()
+    except Exception:
+        return None
 
 
 def recovery_cap_from_escape(*, cfg: dict[str, Any], escape_status: dict[str, Any], env: dict[str, str]) -> dict[str, Any]:

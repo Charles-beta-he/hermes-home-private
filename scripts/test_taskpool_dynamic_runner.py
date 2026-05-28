@@ -57,50 +57,69 @@ def test_run_preserves_full_stdout_for_large_summary_json():
     assert result["stdout_tail"].endswith("}\n")
 
 
-def test_compute_parallel_max_agents_uses_boundary_probe_ceiling_not_configured_floor(monkeypatch=None):
+def test_compute_parallel_max_agents_uses_clean_utc_ack_recovery_ceiling(monkeypatch=None):
     m = load_module()
     calls = []
 
     def fake_load_taskpool_config():
-        return {"max_parallel_agents": 3}
+        return {
+            "max_parallel_agents": 3,
+            "dynamic_recovery_min_agents": 3,
+            "dynamic_recovery_max_agents": 24,
+            "dynamic_recovery_step_agents": 2,
+            "dynamic_recovery_stable_window_seconds": 900,
+        }
 
     def fake_run(cmd, timeout=None, env=None):
         calls.append(cmd)
         return {"returncode": 0, "stdout": json.dumps({"selected_count": 7, "dispatchable": True, "status": "OK"})}
 
-    old_cfg, old_run = getattr(m, "load_taskpool_config"), getattr(m, "run")
+    old_cfg, old_run, old_time, old_escape = getattr(m, "load_taskpool_config"), getattr(m, "run"), m.time.time, m.human_escape_status
     setattr(m, "load_taskpool_config", fake_load_taskpool_config)
     setattr(m, "run", fake_run)
+    m.time.time = lambda: m.datetime(2026, 5, 28, 8, 47, 1, tzinfo=m.timezone.utc).timestamp()
+    m.human_escape_status = lambda: {"status": "OK", "triggered": False, "info": {"since_ack": {"failures": 0, "blocks": 0, "invalid_timestamps": 0}, "ack": {"acked_at": "2026-05-28T08:32:01Z"}}}
     try:
         result = m.compute_parallel_max_agents({})
     finally:
         setattr(m, "load_taskpool_config", old_cfg)
         setattr(m, "run", old_run)
+        m.time.time = old_time
+        m.human_escape_status = old_escape
 
     assert result["configured"] == 3
-    assert result["ceiling"] == 24
+    assert result["ceiling"] == 5
     assert result["selected_count"] == 7
-    assert result["recommended"] == 24
-    assert "24" in calls[0]
+    assert result["recommended"] == 5
+    assert "5" in calls[0]
+
+
+def test_parse_iso_z_treats_z_as_utc_not_local_time():
+    m = load_module()
+    assert m._parse_iso_z("2026-05-28T08:32:01Z") == m.datetime(2026, 5, 28, 8, 32, 1, tzinfo=m.timezone.utc).timestamp()
 
 
 def test_compute_parallel_max_agents_keeps_configured_floor_when_no_boundary_safe_slots():
     m = load_module()
 
     def fake_load_taskpool_config():
-        return {"max_parallel_agents": 3}
+        return {"max_parallel_agents": 3, "dynamic_recovery_max_agents": 24}
 
     def fake_run(cmd, timeout=None, env=None):
         return {"returncode": 0, "stdout": json.dumps({"selected_count": 0, "dispatchable": True, "status": "OK"})}
 
-    old_cfg, old_run = getattr(m, "load_taskpool_config"), getattr(m, "run")
+    old_cfg, old_run, old_time, old_escape = getattr(m, "load_taskpool_config"), getattr(m, "run"), m.time.time, m.human_escape_status
     setattr(m, "load_taskpool_config", fake_load_taskpool_config)
     setattr(m, "run", fake_run)
+    m.time.time = lambda: m.datetime(2026, 5, 28, 8, 47, 1, tzinfo=m.timezone.utc).timestamp()
+    m.human_escape_status = lambda: {"status": "OK", "triggered": False, "info": {"since_ack": {"failures": 0, "blocks": 0, "invalid_timestamps": 0}, "ack": {"acked_at": "2026-05-28T00:00:00Z"}}}
     try:
         result = m.compute_parallel_max_agents({})
     finally:
         setattr(m, "load_taskpool_config", old_cfg)
         setattr(m, "run", old_run)
+        m.time.time = old_time
+        m.human_escape_status = old_escape
 
     assert result["configured"] == 3
     assert result["ceiling"] == 24
