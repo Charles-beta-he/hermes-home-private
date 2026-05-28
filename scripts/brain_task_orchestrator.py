@@ -2292,6 +2292,18 @@ class Task:
     def architecture_target(self) -> str:
         return str(self.fm.get("architecture_target") or "")
 
+    @property
+    def iceberg_tier(self) -> str:
+        return str(self.fm.get("iceberg_tier") or "").upper()
+
+    @property
+    def iceberg_scope(self) -> str:
+        return str(self.fm.get("iceberg_scope") or "")
+
+    @property
+    def iceberg_domain(self) -> str:
+        return str(self.fm.get("iceberg_domain") or "")
+
     def architecture_aligned(self) -> bool:
         return architecture_aligned(self.fm)
 
@@ -2326,6 +2338,18 @@ class Task:
     def score(self, at: datetime | None = None) -> int:
         at = at or now()
         score = PRIORITY_WEIGHT.get(self.priority, 150) + STATUS_WEIGHT.get(self.status, 0)
+        # Iceberg tier dispatch bonus: F (frontend) tasks are faster to complete
+        iceberg = self.iceberg_tier
+        if iceberg == "F":
+            score += 8
+        elif iceberg == "S0":
+            score += 12
+        elif iceberg == "S1":
+            score += 10
+        elif iceberg == "L":
+            score -= 3
+        elif iceberg == "B":
+            score -= 15
         exp = self.expires_at()
         if exp:
             days = (exp - at).total_seconds() / 86400
@@ -2362,6 +2386,9 @@ class Task:
         if self.lane == "evolution" and not self.architecture_aligned():
             return False
         if project_profile_failures(self):
+            return False
+        # Source weighting policy gate: work lane + project tasks must have source_weighting_policy_ref
+        if self.lane == "work" and self.project and not str(self.fm.get("source_weighting_policy_ref") or "").strip():
             return False
         if is_mission_envelope_fm(self.fm) and not mission_envelope_valid(self.fm):
             return False
@@ -5310,13 +5337,14 @@ def render_dashboard() -> tuple[str, str]:
     mission_summaries = mission_dag_summaries(all_tasks)
     stamp = iso()
     top_rows = tasks[:25]
-    table = ["| Rank | Score | Lane | Architecture | Priority | Status | Task | Project | Lease / Due |", "|---:|---:|---|---|---|---|---|---|---|"]
+    table = ["| Rank | Score | Tier | Lane | Architecture | Priority | Status | Task | Project | Lease / Due |", "|---:|---:|---|---|---|---|---|---|---|---|"]
     for i, t in enumerate(top_rows, 1):
         due = t.fm.get("expires_at") or ""
         lease = t.fm.get("claim_expires_at") or ""
         marker = "stale lease" if t.is_stale_claim() else ("expired" if t.is_expired() else "")
         arch = t.architecture_target or ("aligned" if t.architecture_aligned() else "missing")
-        table.append(f"| {i} | {t.score()} | {t.lane} | {arch} | {t.priority} | {t.status} | {obsidian_link(t.path)} | {t.project} | {marker or lease or due} |")
+        tier_display = t.iceberg_tier or "-"
+        table.append(f"| {i} | {t.score()} | {tier_display} | {t.lane} | {arch} | {t.priority} | {t.status} | {obsidian_link(t.path)} | {t.project} | {marker or lease or due} |")
     table_text = "\n".join(table)
     mission_table = ["| Mission | Progress | Done / Total | Ready Nodes | Blocked Nodes | Invalid |", "|---|---:|---:|---|---|---|"]
     for m in mission_summaries:
@@ -5396,6 +5424,18 @@ DERIVED VIEW — NOT SOURCE OF TRUTH.
 """
     for s in VALID_STATUSES:
         dashboard += f"| {s} | {c.get(s, 0)} |\n"
+    # Iceberg tier distribution for work lane tasks
+    tier_counts: dict[str, int] = {}
+    for t in tasks:
+        tier = t.iceberg_tier
+        if tier:
+            tier_counts[tier] = tier_counts.get(tier, 0) + 1
+    if tier_counts:
+        dashboard += "\n## Iceberg Tier Distribution (active work tasks)\n\n| Tier | Count | Meaning |\n|---|---:|---|\n"
+        tier_meanings = {"S0": "Simple UI", "S1": "Compound UI", "F": "Frontend logic", "L": "Requires backend", "B": "Human required", "R": "Security review", "M": "Needs triage"}
+        for tier in ["S0", "S1", "F", "L", "B", "R", "M"]:
+            if tier in tier_counts:
+                dashboard += f"| {tier} | {tier_counts[tier]} | {tier_meanings.get(tier, '')} |\n"
     dashboard += f"""
 
 ## Sorted Active Task Pool

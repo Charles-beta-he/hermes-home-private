@@ -187,7 +187,7 @@ def _atom(atom_id: str, typ: str, surface: str, req: str, proof_type: str, runti
     return AcceptanceAtom(atom_id, typ, surface, req, proof_type, runtime, artifacts)
 
 
-def generate_acceptance_atoms(task_id: str, title: str, body: str = "", lark_task_guid: str = "") -> WorkContract:
+def generate_acceptance_atoms(task_id: str, title: str, body: str = "", lark_task_guid: str = "", iceberg_tier: str = "") -> WorkContract:
     text = f"{title}\n{body}"
     task_type = infer_task_type(text)
     repos = infer_repos(text)
@@ -243,6 +243,29 @@ def generate_acceptance_atoms(task_id: str, title: str, body: str = "", lark_tas
         atoms.append(_atom("A-form-flow", "form", surface, "筛选/表单必须经过填充、提交、绿色网络响应和提交后 UI 变化。", "browser_form_flow", ["form", "network", "dom"], ["trace", "network_capture"]))
     if _contains_any(text, A11Y_HINTS):
         atoms.append(_atom("A-a11y", "a11y", surface, "交互控件必须具备键盘可达、可见焦点和 role/name 语义。", "browser_a11y_runtime", ["a11y", "interaction"], ["a11y_report"]))
+
+    # Iceberg-tier-aware atoms: L tasks need backend contract verification
+    tier = iceberg_tier.upper() if iceberg_tier else ""
+    if tier == "L":
+        atoms.append(_atom(
+            "A-backend-contract",
+            "backend_contract",
+            surface,
+            "涉及后端/接口的任务必须验证：真实 API 返回字段与前端消费契约一致，金额/状态/币种等业务语义正确。",
+            "backend_contract_verification",
+            ["network", "trace"],
+            ["api_request_response", "business_semantics_assertion"],
+        ))
+    if tier == "B":
+        atoms.append(_atom(
+            "A-human-confirmation",
+            "human_gate",
+            surface,
+            "需要人工确认的任务必须在继续前获得用户明确授权/owner 归属。",
+            "human_confirmation",
+            ["user_input"],
+            ["confirmation_record"],
+        ))
 
     blockers = [
         "missing_acceptance_atoms",
@@ -380,7 +403,7 @@ def ingest_task_rows(rows: list[dict[str, Any]], out_dir: str | Path) -> dict[st
         if not _is_uvisa_lark_work_row(row):
             skipped.append({"task_id": task_id, "title": title, "reason": "not_uvisa_lark_work"})
             continue
-        contract = generate_acceptance_atoms(task_id=task_id, title=title, body=body, lark_task_guid=lark_guid)
+        contract = generate_acceptance_atoms(task_id=task_id, title=title, body=body, lark_task_guid=lark_guid, iceberg_tier=str(row.get("iceberg_tier") or ""))
         data = asdict(contract)
         data["source_row"] = {k: row.get(k) for k in ("id", "task_id", "project", "lark_task_guid", "lark_task_url", "title") if k in row}
         path = root / _contract_file_name(task_id, lark_guid)
