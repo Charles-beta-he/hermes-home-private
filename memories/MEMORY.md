@@ -1,23 +1,27 @@
-UI skills installed: taste-skill, impeccable, ui-ux-pro-max, ui-skills(baseline-ui/accessibility/metadata/motion).
+关键教训: 删前grep+build; 改后test+build; Lark先分类→基础设施扫描→杠杆点分析→执行；横切必须基础设施化；重复要求=继续落地/验证/补测；方案判定按用户目标/长期稳定架构，不按字面触发限缩。
 §
-关键教训: 删除文件前必须 grep 全项目残留引用 + 跑 pnpm build。改文件后要同时跑 test + build 验证。
+Hermes: 私库`Charles-beta-he/hermes-agent-private`, upstream官方；稳定线`private/main`；SOP在`docs/private/`；norm治理见`hermes norms`/`agent/norm_governance.py`/`agent/norm_write_guard.py`。
 §
-L3-C MCP提案: git_operations→已安装 mcp-git-server.py (6 tools)。http_requests/pkg_manager/python_packages/file_searching→已驳回(工具覆盖或terminal足够)。
+UVISA: FE `/Users/charles/Desktop/folder/work/uvisa-app-2.0`, Admin `/Users/charles/Desktop/folder/work/uvisa-admin`, BE `/Users/charles/Desktop/folder/work/uvisa-backend`; 原型仅参照不可改；UI任务先pull；Railway `uvisa-test`; BE openjdk@21；Admin凭据在Keychain；C端线上验收优先复用既有登录/session态，不默认查Railway验证码。
 §
-L2=agent_protocol.py v2.0.0 (可导入模块+symlink, OTel链式关联chain_id/span_id, protocol_messages持久化, ProtocolError异常, try_wrap安全包装, 灵活extract, v1→v2迁移, TypedDict子结构, envelope块, 新verdict: pending/skipped/timeout)。cross-patch.py/ensemble-vote.py已集成。
+任务池evolution需capability_delta/anti_drift/evidence；Lark安全设置重定向URL=:8765/callback是OAuth/免登，不证明bot事件回调；MCP Task OAuth若用:3010须同app注册。
 §
-uvisa-app-2.0 path: /Users/charles/Desktop/folder/work/uvisa-app-2.0. User chose current-state baseline on 2026-05-08; old uvisa-app reference is non-blocking historical material.
+Hermes MCP RPC 统一经 `_mcp_rpc_call(..., timeout)` 管理超时，安全网 30s；`post-update-check.py --fix` 可修复相关补丁漂移。
 §
-Gateway 配置陷阱: config.yaml 的 platforms 必须顶层；PlatformConfig 用 token 非 bot_token；.env TELEGRAM_BOT_TOKEN 可启用；崩溃后清 gateway.pid/lock。
+任务池+Kanban: brain markdown/kanban.db可不同步；覆盖率诊断`python3 ~/.hermes/scripts/kanban_coverage.py --json`，v_state用spawnability-aware分数。taskpool默认parallel,max_agents=3,autorun走--parallel-autorun并按claimed/running boundary去重。
 §
-L0-L5+LX架构: trace→bandit router→agent_protocol v2→ensemble-vote→cross-patch/consensus→consult_models v3；LX=model_health电路断路器+model_quota。quorum: T1含DeepSeek, T2/T3 quorum=4。MCP timeout 用 _mcp_rpc_call(lock+wait_for)+_run_on_mcp_loop safety-net。
+多模型: 关键词“多模型式思考”表示应调用真实外部多模型思考，不是单模型多角度模拟；除非用户明确说“不要外调/内部思考”。“多模型式分析”仍按上下文判断。requires_multimodel仅标记。
 §
-关键教训: bash script 中 `set -euo pipefail` 时禁止 `grep -q` 在管道里 — -q 匹配后立即退出不读 stdin, 发 SIGPIPE(141) 给上游, pipefail 取 max → 整个 if 判 false。改用 `grep ... > /dev/null 2>&1`。
+brainctl=`python3 ~/.hermes/scripts/brainctl.py`; put `--json` before subcmd. HTML sidecars use `html build|status|refresh|watch|graph`; refresh script regenerates graph too.
 §
-consult_models.py 多脑默认是文本评审而非独立工具 Agent；真实性需 orchestrator evidence_bundle/truth_gate 支撑，其他模型用 evidence_requests 请求证据。
+Agent COS dashboard: `~/Documents/brain/07-仪表盘/Agent认知操作系统互补矩阵.md`; selfcheck script: `~/.hermes/scripts/agent_systems_engineering_control_plane_selfcheck.py`.
 §
-Skill Graphs 2.0 已落地为 Level 0 审计门: `~/.hermes/scripts/skill-steward.py --graph-check --json` 严格模式 cycle/depth/type violation exit 2，`--warn-only` 可写 `skills/steward/skill-graph-report.json`。当前生产图已治理到 cycles=0、depth_max=4，仍先审计不改 runtime loader。
+多模型canonical IDs: claude-opus-4-7, gpt-5.5, deepseek-v4-pro, mimo-v2.5-pro；Claude Max/Code走`claude-code`/`claude` CLI，`anthropic`是独立额度。路由tiers必须匹配canonical IDs。
 §
-Active brain vault: `/Users/charles/Documents/brain`; iCloud duplicate `/Users/charles/Documents/文稿 - charles的MacBook Pro/brain` symlinks back to canonical. brainctl/sync scripts in `~/.hermes/scripts/`.
+任务池event hook: task_added默认智能路由auto。P2 evolution/高优先级/cert reasons/显式requires启用多模型，并用--multimodel-task限定新增任务；P3 advisory等轻任务不跑模型；hook内auto-close不嵌套触发cert。
 §
-Agent COS/control-plane brain landing: canonical dashboard `~/Documents/brain/07-仪表盘/Agent认知操作系统互补矩阵.md`; systems-engineering overlay now includes `Agent技能树路由矩阵`, `项目工作记忆模板`, `前端闭环验收标准`, and self-check `~/.hermes/scripts/agent_systems_engineering_control_plane_selfcheck.py` (PASS).
+personal-hermes-brain备份profiles/scripts/skills；overlay在`~/.hermes/brains`；runtime/personal归hermes-core。dev=工程打通脑：为其他脑补功能/打通/测试/交付后交还。
+§
+Rokid: 入口脑>适配器>L0快答/L1意图板/L2升级/外控门。SSE ACK 8.5s。Metis API认证用令牌header；写入API返回10001系统异常(查询正常)，可能平台bug或rejected态限制。烟盒MW#25359231
+§
+Bambu/X2D: 单台有遥测/控制+持续制造语义即可升独立manufacturing脑；external-control管物理动作/凭据/确认/幂等/审计；制造脑管材料/切片/G-code/状态/诊断并提交action_request。
