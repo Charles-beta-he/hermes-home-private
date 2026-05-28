@@ -191,7 +191,8 @@ def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
     # Probe above the configured floor for Lark/work bursts.  The dry-run owns
     # boundary classification; the write tick only runs when it reports
     # additional non-conflicting slots.  This is not unbounded full-pool autorun.
-    ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), 24)
+    configured_dynamic = positive_int(cfg.get("dynamic_max_parallel_agents"), 24)
+    ceiling = positive_int(env.get("HERMES_TASKPOOL_DYNAMIC_MAX_CAP"), configured_dynamic)
     ceiling = max(configured, ceiling)
     probe = run(
         [sys.executable, str(HERMES_HOME / "scripts" / "brain_task_orchestrator.py"), "parallel-dispatch-dry-run", "--max-agents", str(ceiling), "--json"],

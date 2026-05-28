@@ -214,3 +214,38 @@ Post-diff multi-model review returned AMEND and the must-fix items were applied:
 - Scheduler execution requires the current tick manifest path; it does not fall back to the latest historical manifest during automatic runs.
 - Batch run ids include a microsecond timestamp suffix so audit leases are not overwritten by repeated manifest attempts.
 - Runtime summary exposes `batch_executor_skip_when_regular_selected` for overclaim auditability.
+
+
+## Bounded real-flow recovery after human escape (2026-05-28)
+
+User explicitly requested real taskpool flow recovery with multi-model boundary control.
+
+Evidence before recovery:
+- `envelope_bus.py stats` reported `human_escape_triggered=true`, since_ack blocks=1 and failures=3.
+- Post-ack terminal rows were heterogeneous: HTTP 500/502 -> missing_proof, appetite timeout, session_id failure, and one blocked Hermes benchmark task.
+- Taskpool had claimed rows but `agent_team_controller.py worker-jobs` had no alive worker for those rows.
+
+Multi-model boundary review:
+- Claude Opus 4.7: RESUME_WITH_BOUNDS; release claimed-without-worker rows, ack escape explicitly, recover in a bounded single/canary round, keep proof gates and no auto-done.
+- MiMo v2.5 Pro via `consult_models.py` T0 fanout: staged restart at reduced capacity, reaper/release phantom claims, keep human escape logic unchanged, monitor worker_alive_count / phantom_claim_count / consecutive failures.
+- A Codex read-only run timed out; its absence was treated as degraded advisory, not a reason to skip the two successful real-model checks.
+
+Actions taken:
+1. Released 9 Hermes-owned claimed-without-worker rows through `agent_team_controller.py consume-claimed` while human_escape was still active. Controller returned `released_count=9` and moved them to retry; no workers ran and no task was marked done.
+2. Ran `envelope_bus.py ack-escape` with operator-approved recovery reason. `human_escape_triggered=false`, since_ack blocks=0/failures=0.
+3. Ran a bounded real `brain_task_dispatch_tick.py --parallel-autorun --max-agents 6`, which claimed 6 boundary-safe tasks and started a durable async worker job.
+4. Temporarily set `taskpool.max_parallel_agents=6` and `taskpool.dynamic_max_parallel_agents=6` for recovery canary safety.
+5. Patched `taskpool_dynamic_runner.py` so the cron runner honors `taskpool.dynamic_max_parallel_agents` as the default dynamic ceiling instead of hardcoding 24 when `HERMES_TASKPOOL_DYNAMIC_MAX_CAP` is absent.
+
+Verification after recovery:
+- `envelope_bus.py stats`: `human_escape_triggered=false`; by_status includes `RUNNING: 6`.
+- `brain_task_orchestrator.py list --json`: 6 running tasks, 9 retry rows, 61 pending rows; no claimed-without-worker wedge in the restored batch.
+- `agent_team_controller.py worker-jobs --json`: latest batch `parallel-20260528133208-6` has alive worker PID and `max_agents=6`.
+- `taskpool_dynamic_runner.py` now probes `--max-agents 6` and skips overclaim when active boundary-safe slots are full.
+- `brain_task_orchestrator.py selfcheck --json`: PASS.
+
+Recovery boundary remains active until a clean canary window is observed:
+- parallel cap remains 6, not 24;
+- batch executor stays enabled but `skip_when_regular_selected=true` prevents overclaim while ordinary parallel tasks are selected/running;
+- no auto-done, no merged acceptance, no proof-gate bypass;
+- any new post-ack FAILED/BLOCKED streak should retrigger human_escape and pause scale-up.
