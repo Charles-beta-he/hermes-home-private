@@ -18,7 +18,7 @@ TICK = HERMES_HOME / "scripts" / "brain_task_dispatch_tick.py"
 
 
 def main() -> int:
-    proc = subprocess.run([sys.executable, str(TICK), "--summary"], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.run([sys.executable, str(TICK), "--summary", "--archive-handoffs"], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if proc.stdout:
         print(proc.stdout.rstrip())
     if proc.stderr:

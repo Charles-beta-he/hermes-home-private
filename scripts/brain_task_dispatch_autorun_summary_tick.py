@@ -16,4 +16,4 @@ TICK = Path.home() / ".hermes" / "scripts" / "brain_task_dispatch_tick.py"
 
 if __name__ == "__main__":
     os.environ.setdefault("HERMES_LOCAL_BRAIN_AUTORUN", "1")
-    raise SystemExit(subprocess.run([sys.executable, str(TICK), "--summary", "--parallel-autorun"]).returncode)
+    raise SystemExit(subprocess.run([sys.executable, str(TICK), "--summary", "--parallel-autorun", "--archive-handoffs"]).returncode)
