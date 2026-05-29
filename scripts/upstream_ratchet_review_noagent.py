@@ -17,7 +17,6 @@ proc = subprocess.run(
         str(script),
         "--only-if-needed",
         "--quiet-no-needed",
-        "--discussion",
     ],
     text=True,
     stdout=subprocess.PIPE,
