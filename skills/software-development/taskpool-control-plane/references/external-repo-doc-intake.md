@@ -40,6 +40,28 @@ Populate these fields during `brain_task_orchestrator.py add`:
 - `parallel_boundary`
 - `concepts`
 
+**Required but non-obvious fields** (will fail without them):
+- `--priority-layer` (e.g. `P2`) — separate from `--priority`; both are needed
+- `--dependency-order` (e.g. `0`) — integer, position in dependency chain
+- `--multimodel-triage-result` (e.g. `advisory`, `certify`, `skip`) — controls multimodel routing behavior
+
+Error if missing:
+```
+task creation requires explicit priority/dependency/triage metadata; missing=['priority_layer', 'dependency_order', 'multimodel_triage_result']
+```
+
+Example complete add command:
+```bash
+python3 ~/.hermes/scripts/brain_task_orchestrator.py add "Title" \
+  --lane evolution --priority P2 --project hermes-agent \
+  --architecture-target local-brain \
+  --capability-delta "..." --anti-drift-check "..." \
+  --acceptance-evidence "..." --parallel-boundary "..." \
+  --objective "..." \
+  --priority-layer P2 --dependency-order 0 \
+  --multimodel-triage-result advisory --json
+```
+
 Good wording pattern:
 - analysis surface → Hermes gap mapping → smallest verifiable integration slice
 
@@ -110,3 +132,5 @@ If an event hook or proof-only bounded step auto-closes an external-repo task be
 - Do not treat `task_added`, multimodel certification, py_compile proof, or proof-only auto-close as source-review/prototype completion.
 - Do not misread `autorun_disabled` in the add hook as a broken control plane; verify by running a real dispatch tick.
 - Do not classify memory/plugin/runtime integration work as `provider-quota` just because it touches models.
+- Do not forget `--priority-layer`, `--dependency-order`, and `--multimodel-triage-result` — these are required even though the help text doesn't highlight them prominently. The add will fail with `task creation requires explicit priority/dependency/triage metadata`.
+- Evolution lane tasks with `architecture_target=local-brain` are auto-claimed by `hermes-multimodel` immediately after creation. The task transitions `pending → claimed → running` automatically. This is expected smart-routing behavior, not a control-plane fault. After creation, `eligibility-check` may show `no_dispatchable_task` because the task is already being processed.
