@@ -2023,6 +2023,18 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         out = {'task_id': task_id, 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
 
         def _requeue(reason, evidence, *, envelope_status='FAILED', envelope_error=None):
+            current = rows_by_id([task_id]).get(task_id) or {}
+            current_status = str(current.get('status') or '').strip()
+            if current_status and current_status not in {'claimed', 'running'}:
+                # A worker process may time out after it already wrote a valid
+                # lifecycle result (for example running -> review). Never demote
+                # a progressed task back to retry from a late timeout/failure.
+                ignored_reason = f'worker_result_ignored_current_status_{current_status}'
+                update_status(eid, 'SKIPPED', error=ignored_reason)
+                out['retry_transition'] = {'ok': True, 'skipped': ignored_reason, 'current_status': current_status}
+                out['envelope_status'] = 'SKIPPED'
+                out['to_status'] = current_status
+                return out
             retry = transition_task(task_id, 'retry', actor, reason, evidence=evidence)
             out['retry_transition'] = retry
             if retry.get('ok'):

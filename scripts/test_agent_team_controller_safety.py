@@ -174,6 +174,27 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertEqual(transition.call_args.args[:2], ("t-blocked", "blocked"))
         self.assertTrue(any(call.args[0] == "env-blocked" and call.args[1] == "BLOCKED" for call in update_status.call_args_list))
 
+    def test_consume_claimed_batch_late_timeout_does_not_demote_review(self):
+        claimed_row = {"id": "t-late", "status": "claimed", "title": "late", "project": "proj", "parallel_boundary": "b", "claimed_by": "hermes-parallel"}
+        reviewed_row = dict(claimed_row, status="review")
+        claimed = [{"task_id": "t-late", "handoff": "/tmp/t-late.md"}]
+        with patch.object(self.ctrl, "is_disabled", return_value=False), \
+             patch.object(self.ctrl, "human_escape_check", return_value=(False, {})), \
+             patch.object(self.ctrl, "rows_by_id", side_effect=[{"t-late": claimed_row}, {"t-late": reviewed_row}]), \
+             patch.object(self.ctrl, "create", return_value="env-late"), \
+             patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "delegate_to_worker", return_value={"status": "timeout"}), \
+             patch.object(self.ctrl, "update_status") as update_status, \
+             patch.object(self.ctrl, "append_trace"):
+            result = self.ctrl.consume_claimed_batch(claimed, max_agents=1)
+
+        self.assertEqual(result["claimed"][0]["to_status"], "review")
+        running = [call for call in transition.call_args_list if call.args[:2] == ("t-late", "running")]
+        retry = [call for call in transition.call_args_list if call.args[:2] == ("t-late", "retry")]
+        self.assertEqual(len(running), 1)
+        self.assertEqual(len(retry), 0)
+        self.assertTrue(any(call.args[0] == "env-late" and call.args[1] == "SKIPPED" and "worker_result_ignored_current_status_review" in str(call.kwargs.get("error", "")) for call in update_status.call_args_list))
+
     def test_detect_infra_failure_recognizes_generic_provider_429(self):
         is_infra, category = self.ctrl._detect_infra_failure(
             "API call failed after 3 retries: HTTP 429: Too many requests"
