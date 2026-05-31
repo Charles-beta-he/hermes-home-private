@@ -93,8 +93,27 @@ def record_failure_quota(provider: str, model: str, error: str) -> dict:
     return mq.record_snapshot(snap, preserve_higher_confidence=False)
 
 
-def run_probe(provider: str, model: str, timeout: int) -> dict:
-    cmd = [
+def probe_command(provider: str, model: str) -> list[str]:
+    """Return the real runtime command used for a provider probe.
+
+    Claude Code is a CLI/OAuth node, not Hermes' Anthropic API adapter. Probing
+    it through `hermes chat --provider claude-code` can incorrectly report API
+    extra-usage errors while the `claude -p` node is healthy. Keep certification
+    aligned with consult_models.py, which already uses direct Claude Code CLI.
+    """
+    if provider == "claude-code":
+        return [
+            "claude",
+            "-p",
+            PROBE_PROMPT,
+            "--model",
+            model,
+            "--max-turns",
+            "1",
+            "--output-format",
+            "json",
+        ]
+    return [
         "hermes",
         "chat",
         "--provider",
@@ -110,6 +129,10 @@ def run_probe(provider: str, model: str, timeout: int) -> dict:
         "--source",
         "tool",
     ]
+
+
+def run_probe(provider: str, model: str, timeout: int) -> dict:
+    cmd = probe_command(provider, model)
     started = time.time()
     try:
         proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
