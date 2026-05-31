@@ -4,7 +4,7 @@
 This is the missing link: pipeline_tick creates PENDING envelopes,
 this executor claims them → RUNNING → delegates to delegate_task workers.
 """
-import json, subprocess, sys, time, os, hashlib, signal
+import json, subprocess, sys, time, os, hashlib, signal, calendar
 from pathlib import Path
 
 sys.path.insert(0, str(Path.home() / '.hermes' / 'scripts'))
@@ -12,6 +12,8 @@ from envelope_bus import get, update_status, append_trace, list_by_status, incre
 from task_continuation import detect_budget_exhausted, save_checkpoint, can_continue, build_continuation_context
 
 MAX_CONCURRENT = int(os.environ.get('ENVELOPE_EXECUTOR_MAX', '1'))
+STALE_PENDING_DAYS = float(os.environ.get('ENVELOPE_EXECUTOR_STALE_PENDING_DAYS', '1'))
+STALE_RUNNING_GRACE_SECONDS = int(os.environ.get('ENVELOPE_EXECUTOR_STALE_RUNNING_GRACE_SECONDS', '300'))
 ORCHESTRATOR = Path.home() / '.hermes' / 'scripts' / 'brain_task_orchestrator.py'
 _ACTIVE_WORKER_PGID = None
 
@@ -241,9 +243,69 @@ If blocked, still output PROOF_JSON with status=blocked and a concise summary of
         append_trace(eid, {'event': 'error', 'error': str(e)[:200]})
         return {'status': 'error', 'error': str(e)[:200]}
 
+def _parse_iso_z(value):
+    if not value:
+        return None
+    try:
+        return calendar.timegm(time.strptime(value, '%Y-%m-%dT%H:%M:%SZ'))
+    except Exception:
+        return None
+
+
+def _age_seconds(envelope, field='created_at'):
+    ts = _parse_iso_z(envelope.get(field))
+    if ts is None:
+        return None
+    return time.time() - ts
+
+
+def cleanup_stale_running():
+    """Fail stale RUNNING envelopes before considering new work.
+
+    Cron ticks must be bounded and quiet.  A previous killed/timeout executor can
+    leave RUNNING envelopes behind; retrying unrelated PENDING work while stale
+    RUNNING rows exist creates user-visible noise and duplicate work.
+    """
+    cleaned = []
+    for env in list_by_status('RUNNING'):
+        age = _age_seconds(env, 'started_at')
+        appetite = int(env.get('appetite_seconds') or 1800) + STALE_RUNNING_GRACE_SECONDS
+        if age is None or age <= appetite:
+            continue
+        update_status(env['id'], 'FAILED', error=f'stale RUNNING exceeded appetite+grace ({int(age)}s)')
+        append_trace(env['id'], {'event': 'stale_running_cleanup', 'age_seconds': int(age), 'appetite_plus_grace': appetite})
+        cleaned.append(env['id'])
+    return cleaned
+
+
+def skip_stale_pending(envelopes):
+    """Quarantine stale pending envelopes instead of unexpectedly launching LLM workers.
+
+    The envelope bus is a legacy escape lane; current taskpool state is the SSOT.
+    Old PENDING envelopes should not suddenly wake up after a scheduler repair and
+    start editing projects or spamming providers.  They remain auditable as
+    SKIPPED with trace evidence.
+    """
+    if STALE_PENDING_DAYS <= 0:
+        return envelopes, []
+    cutoff = STALE_PENDING_DAYS * 86400
+    fresh = []
+    skipped = []
+    for env in envelopes:
+        age = _age_seconds(env, 'created_at')
+        if age is not None and age > cutoff:
+            update_status(env['id'], 'SKIPPED', error=f'stale pending envelope older than {STALE_PENDING_DAYS:g}d')
+            append_trace(env['id'], {'event': 'stale_pending_quarantine', 'age_seconds': int(age), 'threshold_days': STALE_PENDING_DAYS})
+            skipped.append(env['id'])
+        else:
+            fresh.append(env)
+    return fresh, skipped
+
+
 def run_executor(max_concurrent=None):
     """Execute one cycle: claim PENDING → delegate → collect result."""
     max_n = max_concurrent or MAX_CONCURRENT
+    cleaned_running = cleanup_stale_running()
     
     # Check human escape
     escape, info = human_escape_check()
@@ -251,8 +313,15 @@ def run_executor(max_concurrent=None):
         return {'status': 'escaped', 'reason': str(info)}
     
     pending = list_by_status('PENDING')
+    pending, skipped_stale = skip_stale_pending(pending)
     if not pending:
-        return {'status': 'idle', 'pending': 0}
+        return {
+            'status': 'idle',
+            'pending': 0,
+            'stale_pending_quarantined': len(skipped_stale),
+            'stale_running_cleaned': len(cleaned_running),
+            'envelope_stats': stats(),
+        }
     
     results = []
     for envelope in pending[:max_n]:
@@ -275,6 +344,8 @@ def run_executor(max_concurrent=None):
         'status': 'ok',
         'processed': len(results),
         'remaining_pending': len(pending) - len(results),
+        'stale_pending_quarantined': len(skipped_stale),
+        'stale_running_cleaned': len(cleaned_running),
         'results': results,
         'envelope_stats': stats(),
     }

@@ -27,5 +27,67 @@
     "Starting a worker without project profile context",
     "Marking task done without structured evidence",
     "Treating model agreement as evidence without claim-linked artifacts"
-  ]
+  ],
+  "lark_task_execution_policy": {
+    "primary_goal": "Improve Hermes/local-brain control-plane behavior with bounded, evidence-backed changes rather than open-ended advisory notes.",
+    "default_classification": "hermes-control-plane",
+    "classification_required": [
+      "hermes-control-plane",
+      "taskpool-governance",
+      "provider-routing",
+      "memory-skill-governance",
+      "diagnostics"
+    ],
+    "execution_order": [
+      "read relevant Hermes/profile/workpad context",
+      "reproduce the issue or gather baseline evidence",
+      "land the smallest scoped code/config/skill change",
+      "run focused regression plus Hermes selfcheck/P10 where applicable"
+    ],
+    "closeout_rule": "A task is complete only with structured implementation evidence, focused verification output, and no unresolved high-severity selfcheck failure."
+  },
+  "lark_evidence_policy": {
+    "closeout_required_labels": [
+      "baseline",
+      "implementation_delta",
+      "verification",
+      "rollback_or_user_experience_guard"
+    ],
+    "accepted_evidence_prefixes": [
+      "artifact:",
+      "file:",
+      "proof:",
+      "command:",
+      "commit:"
+    ],
+    "minimum_closeout_evidence": [
+      "baseline",
+      "implementation_delta",
+      "verification"
+    ]
+  },
+  "backend_contract_policy": {
+    "contract_scope": "Hermes CLI, gateway, cron, taskpool, diagnostics, and profile/runtime state boundaries",
+    "schema_rule": "Runtime data migrations must be backward compatible and tolerate historical malformed rows without global scheduler/taskpool failure.",
+    "compatibility_rule": "Prefer no-agent deterministic watchdogs for health/maintenance jobs; avoid provider-dependent summaries for routine control-plane checks."
+  },
+  "regression_coverage_policy": {
+    "required_checks": [
+      "focused Python tests or py_compile for touched scripts",
+      "python3 ~/.hermes/diagnostics/runner.py --json",
+      "bash ~/.hermes/scripts/p10-health.sh --json",
+      "relevant taskpool selfcheck/proof/evidence command"
+    ],
+    "rollback_rule": "If a Hermes runtime patch introduces scheduler/taskpool regression, revert the patch and preserve the failing state as evidence."
+  },
+  "domain_aliases": {
+    "plugin-analysis": ["plugin分析", "插件分析", "[plugin分析]"],
+    "plugin-spec": ["cursor插件规范", "cursor插件", "插件规范"],
+    "governance": ["guardrails", "治理门", "治理概念"],
+    "skill-graph": ["skill-graph", "技能图", "skill graph"],
+    "provider": ["provider", "路由", "quota", "额度"],
+    "memory": ["memory", "记忆", "recall", "召回"],
+    "taskpool": ["taskpool", "任务池", "调度", "dispatch"],
+    "evidence": ["evidence", "证据", "proof", "证明"]
+  }
 }

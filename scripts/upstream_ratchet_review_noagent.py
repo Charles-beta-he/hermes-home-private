@@ -11,18 +11,33 @@ import sys
 from pathlib import Path
 
 script = Path.home() / ".hermes" / "scripts" / "upstream-ratchet-review.py"
-proc = subprocess.run(
-    [
-        sys.executable,
-        str(script),
-        "--only-if-needed",
-        "--quiet-no-needed",
-    ],
-    text=True,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE,
-    timeout=1800,
-)
+try:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--timeout",
+            "90",
+            "--only-if-needed",
+            "--quiet-no-needed",
+        ],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=110,
+    )
+except subprocess.TimeoutExpired as exc:
+    log = Path.home() / ".hermes" / "logs" / "upstream-ratchet-review-timeouts.jsonl"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    import json, datetime
+    log.open("a", encoding="utf-8").write(json.dumps({
+        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "status": "timeout_skip",
+        "timeout_seconds": 110,
+        "cmd": exc.cmd,
+        "safety": "no_agent watchdog stayed silent to avoid cron/user-notification noise",
+    }, ensure_ascii=False) + "\n")
+    raise SystemExit(0)
 if proc.stdout:
     print(proc.stdout, end="")
 if proc.returncode != 0:

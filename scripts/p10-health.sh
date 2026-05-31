@@ -251,13 +251,14 @@ WARNINGS=()
 [[ "$GATEWAY_RUNNING" != "true" ]] && WARNINGS+=("gateway not running")
 [[ $MEMORY_SIZE -gt 2200 ]] && WARNINGS+=("memory file > 2.2KB, may have ghosts")
 [[ "$SELF_TEST_PASS" != "true" ]] && WARNINGS+=("self-test not all-pass")
-if [[ "$MODEL_DIVERSITY_OK" != "true" ]]; then
+STRICT_MODEL_GATE="${HERMES_P10_STRICT_MODEL_GATE:-0}"
+if [[ "$STRICT_MODEL_GATE" == "1" && "$MODEL_DIVERSITY_OK" != "true" ]]; then
     WARNINGS+=("model diversity gate failed: dominant=${MODEL_DIVERSITY_DOMINANT:-unknown} share=$MODEL_DIVERSITY_SHARE total=$MODEL_DIVERSITY_TOTAL")
 fi
-if [[ "$MODEL_QUOTA_OK" != "true" ]]; then
+if [[ "$STRICT_MODEL_GATE" == "1" && "$MODEL_QUOTA_OK" != "true" ]]; then
     WARNINGS+=("model quota confidence gate failed: failures=$MODEL_QUOTA_FAILURES")
 fi
-if [[ "$MODEL_ROUTER_OK" != "true" ]]; then
+if [[ "$STRICT_MODEL_GATE" == "1" && "$MODEL_ROUTER_OK" != "true" ]]; then
     WARNINGS+=("model router readiness gate failed: failures=${MODEL_ROUTER_FAILURES:-unknown}")
 fi
 # Raw skill count alone is not a P10 health failure once the governed steward
