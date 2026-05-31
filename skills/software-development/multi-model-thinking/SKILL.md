@@ -77,7 +77,7 @@ When running 4-model concurrent ratification, four provider-specific issues can 
 
 3. **MiMo wraps JSON in ```json blocks** — The `extract_json()` function must handle markdown code block wrapping. Regex: `re.search(r'```(?:json)?\\\\s*(\\\\{.*?\\\\})\\\\s*```', s, re.S)`. Always fall through to `{`/`}` boundary extraction as last resort.
 
-4. **Claude `-p` mode hits max_turns on complex prompts** — `claude -p` with structured ratification prompts returns `error_max_turns` even with `--max-turns 1`. Claude's internal reasoning counts as turns. Fix: use `hermes chat -q --provider anthropic` for ratification instead of `claude -p`. Workaround: simplify prompt to bare JSON request if `-p` is required.
+4. **Claude Code has two distinct paths** — for Claude Max/OAuth local nodes, `claude -p ... --output-format json` is the authoritative runtime. Do **not** use `hermes chat --provider anthropic` or `hermes chat --provider claude-code` as a health/certification probe: those paths can hit Anthropic-compatible adapter quota errors while the Claude Code CLI node is healthy. If `claude -p` hits `error_max_turns` on complex structured ratification, simplify the Claude prompt / allow more turns for that CLI call; do not fall back to the Hermes Anthropic adapter as proof of Claude participation.
 
 4. **GPT-5.5 via openai-codex prefixes output** — May output `⚠️ Reached maximum iterations (1). Requesting summary...` before JSON. The `extract_json()` function must handle text before the JSON object via `s.find('{')` / `s.rfind('}')`.
 
@@ -481,7 +481,7 @@ For UVISA specifically: `src/lib/validators.ts` is the shared validation infrast
 11. DeepSeek reasoning_content 和 content 共享 max_tokens 预算。max_tokens=500 时 reasoning 占 400+ tokens，content 被截断。ratification 场景需 max_tokens>=2000。
 12. MiMo 即使在 prompt 中明确要求 "no markdown" 仍会用 ```json 包裹输出。extract_json 必须处理代码块。
 13. 多方向 ratification 中部分方向 amend 时，不要重跑全部方向。提取 amend 反馈的具體数字护栏（timeout/retry/threshold），修订后只重跑该方向，最后做一轮合并确认。详见 `references/multi-direction-amend-loop-pattern.md`。
-14. 4 模型存在时必须 4/4 全跑，不得只跑 2 个就声称认证。串行模式: 并发 Claude+GPT+DeepSeek → 串行 MiMo。Claude 用 `hermes chat -q` 而非 `claude -p`（后者对复杂 prompt 触发 max_turns）。
+14. 4 模型存在时必须 4/4 全跑，不得只跑 2 个就声称认证。串行模式: 并发 Claude+GPT+DeepSeek → 串行 MiMo。Claude Max/OAuth 本地节点用 `claude -p ... --output-format json` 直接证明参与；不要用 `hermes chat --provider anthropic/claude-code` 作为 Claude Code 健康或认证证据。
 15. 覆盖率审计必须区分"未覆盖"和"已替代/已内嵌"。旧脚本被新组件替代不算 gap；功能内嵌于其他组件也算 covered。只有真正的功能缺失才算未覆盖。
 16. 任务流转死锁检测: 当 orchestrator 显示 claimed 任务数 > 0 但 dispatchable 减少、且无 RUNNING 状态时，用 `stale_claim` 字段诊断。修复: `release --force --reason` 释放死锁，然后修复 claim→delegate 断裂。根因通常是 controller 只 claim 不 spawn worker。详见 `references/task-flow-deadlock-detection-and-fix.md`。
 17. "铁板"架构整合: 当 cron jobs 超过 20 个且有明显冗余/缺口时，按 5 层 (ops/health/evolve/watchdog/report) 合并。多模型分析应同时审计冗余(R1-Rn)和缺口(G1-Gn)，提出 N→M 整合方案。GenericAgent 的文件IPC子代理和任务后结晶模式值得采纳。详见 `references/iron-plate-consolidation-pattern.md`。
