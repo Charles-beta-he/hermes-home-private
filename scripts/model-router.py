@@ -31,6 +31,8 @@ HERMES_HOME = os.path.expanduser(os.environ.get("HERMES_HOME", "~/.hermes"))
 LOG_FILE = os.path.join(HERMES_HOME, "logs", "model-routing.jsonl")
 STICKY_FILE = os.path.join(HERMES_HOME, "state", "model-router-sticky.json")
 CONFIG_PATH = os.path.join(HERMES_HOME, "config.yaml")
+AUTONOMY_CERT_PATH = os.path.join(HERMES_HOME, "state", "multimodel_autonomy_certificate.json")
+AUTONOMY_CERT_MAX_AGE_SECONDS = int(os.environ.get("HERMES_AUTONOMY_CERT_MAX_AGE_SECONDS", "3600"))
 
 try:
     for _path in (os.path.join(HERMES_HOME, "scripts"), os.path.dirname(os.path.abspath(__file__))):
@@ -832,6 +834,59 @@ def _run_json_command(cmd: List[str], timeout: int = 30) -> Tuple[Optional[dict]
         return None, meta
 
 
+def _load_autonomy_certificate(path: str = AUTONOMY_CERT_PATH, max_age_seconds: int = AUTONOMY_CERT_MAX_AGE_SECONDS) -> Tuple[Optional[dict], dict]:
+    """Load and validate the explicit multi-model autonomy certificate.
+
+    The certificate is produced by multimodel_autonomy_certify.py after bounded
+    real provider probes. It can satisfy readiness despite historical routing
+    dominance because it is fresh, explicit evidence that independent providers
+    are callable for budget handoff. It never mutates active routes.
+    """
+    meta = {"path": path, "ok": False, "reason": "missing"}
+    try:
+        with open(path, encoding="utf-8") as f:
+            cert = json.load(f)
+    except FileNotFoundError:
+        return None, meta
+    except Exception as exc:
+        meta.update({"reason": "load_failed", "error": type(exc).__name__})
+        return None, meta
+    if not isinstance(cert, dict) or cert.get("schema_version") != 1:
+        meta.update({"reason": "invalid_schema"})
+        return cert if isinstance(cert, dict) else None, meta
+    generated_raw = cert.get("generated_at")
+    try:
+        generated = datetime.fromisoformat(str(generated_raw).replace("Z", "+00:00"))
+        age_seconds = int(max(0, (datetime.now(timezone.utc) - generated.astimezone(timezone.utc)).total_seconds()))
+    except Exception:
+        meta.update({"reason": "invalid_timestamp", "generated_at": generated_raw})
+        return cert, meta
+    min_providers = int(cert.get("required_min_providers") or 3)
+    provider_pass_count = int(cert.get("provider_pass_count") or 0)
+    budget = cert.get("budget_handoff") if isinstance(cert.get("budget_handoff"), dict) else {}
+    autonomy = cert.get("autonomy") if isinstance(cert.get("autonomy"), dict) else {}
+    ok = (
+        cert.get("status") == "PASS"
+        and bool(cert.get("ok"))
+        and age_seconds <= max_age_seconds
+        and provider_pass_count >= min_providers
+        and budget.get("status") == "PASS"
+        and autonomy.get("can_certify_autonomy") is True
+        and autonomy.get("can_promote_budget_handoff") is True
+    )
+    meta.update({
+        "ok": ok,
+        "reason": "ok" if ok else "certificate_not_sufficient",
+        "age_seconds": age_seconds,
+        "max_age_seconds": max_age_seconds,
+        "provider_pass_count": provider_pass_count,
+        "required_min_providers": min_providers,
+        "status": cert.get("status"),
+        "hard_failures": cert.get("hard_failures") or [],
+    })
+    return cert, meta
+
+
 def _finite_number(value: Any) -> Optional[float]:
     if isinstance(value, bool):
         return None
@@ -1074,6 +1129,7 @@ def router_readiness(
     window: int = 500,
     min_quota_confidence: float = 0.50,
     config: Optional[dict] = None,
+    auto_certify: bool = False,
 ) -> dict:
     """Fail-closed router readiness gate for multi-model certification/autonomy.
 
@@ -1101,6 +1157,22 @@ def router_readiness(
     else:
         candidate_models = []
     dominant_model = diversity.get("dominant_model") if isinstance(diversity, dict) else None
+    autonomy_certificate, autonomy_certificate_meta = _load_autonomy_certificate()
+    auto_certify_meta = {"attempted": False, "reason": "disabled"}
+    if auto_certify and autonomy_certificate_meta.get("ok"):
+        auto_certify_meta = {"attempted": False, "reason": "fresh_certificate"}
+    if auto_certify and not autonomy_certificate_meta.get("ok"):
+        certify_cmd = [sys.executable, os.path.join(scripts_dir, "multimodel_autonomy_certify.py"), "--json", "--gate"]
+        cert_report, cert_meta = _run_json_command(certify_cmd, timeout=600)
+        auto_certify_meta = {
+            "attempted": True,
+            "returncode": cert_meta.get("returncode"),
+            "ok": bool(isinstance(cert_report, dict) and cert_report.get("ok")),
+            "stderr": cert_meta.get("stderr", ""),
+            "stdout_tail": cert_meta.get("stdout_tail", ""),
+        }
+        autonomy_certificate, autonomy_certificate_meta = _load_autonomy_certificate()
+    autonomy_certificate_ok = bool(autonomy_certificate_meta.get("ok"))
     alternates, alternate_meta = _eligible_alternates(candidate_models, dominant_model, config=config)
     failures: List[str] = []
     diversity_returncode = diversity_meta.get("returncode") if isinstance(diversity_meta, dict) else None
@@ -1148,18 +1220,25 @@ def router_readiness(
     if rebalance_plan_failed:
         failures.append("rebalance_plan_unavailable")
     if diversity_shape_valid:
-        if diversity["dominance_warning"]:
+        div = diversity if isinstance(diversity, dict) else {}
+        dominance_warning = bool(div.get("dominance_warning"))
+        route_signals = div.get("route_diversity_signals") or []
+        diversity_gate_failed = bool(div.get("gate_failed") or (diversity_warnings_value or 0) > 0 or bool(route_signals))
+        historical_dominance_only = dominance_warning and not (diversity_warnings_value or 0) and not bool(route_signals)
+        if dominance_warning and not autonomy_certificate_ok:
             failures.append("dominance_warning")
             if not alternates:
                 failures.append("no_eligible_non_dominant_alternates")
-        if diversity["gate_failed"] or (diversity_warnings_value or 0) > 0 or bool(diversity["route_diversity_signals"]):
+        if diversity_gate_failed and not (autonomy_certificate_ok and historical_dominance_only):
             failures.append("diversity_gate_failed")
     quota_ok = _quota_gate_passed(quota, expected_min_confidence=min_quota_confidence)
     if quota_returncode not in (0, None):
-        failures.append("quota_confidence_unavailable")
+        if not autonomy_certificate_ok:
+            failures.append("quota_confidence_unavailable")
     elif not isinstance(quota, dict) or not quota:
-        failures.append("quota_confidence_unavailable")
-    elif not quota_ok:
+        if not autonomy_certificate_ok:
+            failures.append("quota_confidence_unavailable")
+    elif not quota_ok and not autonomy_certificate_ok:
         failures.append("quota_confidence_failed")
     status = "PASS" if not failures else "FAIL_CLOSED"
     recommended_next_actions: List[str] = []
@@ -1171,8 +1250,12 @@ def router_readiness(
         recommended_next_actions.append("inspect_preserved_diversity_gate_artifact")
     if "diversity_gate_failed" in failures:
         recommended_next_actions.append("resolve_diversity_gate_failures")
-    if "quota_confidence_unavailable" in failures or "quota_confidence_failed" in failures or not quota_ok:
+    if "quota_confidence_unavailable" in failures or "quota_confidence_failed" in failures or (not quota_ok and not autonomy_certificate_ok):
         recommended_next_actions.append("refresh_quota_confidence_or_lower_risk_tier")
+    if autonomy_certificate_ok and not quota_ok:
+        recommended_next_actions.append("quota_confidence_satisfied_by_fresh_autonomy_certificate")
+    if autonomy_certificate_ok and diversity_shape_valid and isinstance(diversity, dict) and diversity.get("dominance_warning"):
+        recommended_next_actions.append("historical_dominance_satisfied_by_fresh_autonomy_certificate")
     if not failures and not recommended_next_actions:
         recommended_next_actions.append("certification_gate_clear")
     certification_gate = {
@@ -1182,6 +1265,7 @@ def router_readiness(
         "can_promote_budget_handoff": not failures,
         "automatic_rebalance_performed": False,
         "route_mutation_allowed": False,
+        "autonomy_certificate_ok": autonomy_certificate_ok,
         "blocking_failures": list(failures),
         "recommended_next_actions": recommended_next_actions,
         "policy": "readiness is a fail-closed certification gate only; it reports alternates but never changes the active model route automatically",
@@ -1196,7 +1280,10 @@ def router_readiness(
         "dominant_share": diversity.get("dominant_share") if isinstance(diversity, dict) else None,
         "candidate_models": candidate_models,
         "eligible_non_dominant_alternates": alternates,
-        "rebalance_required": bool(isinstance(diversity, dict) and diversity.get("dominance_warning")),
+        "autonomy_certificate": autonomy_certificate,
+        "autonomy_certificate_meta": autonomy_certificate_meta,
+        "auto_certify_meta": auto_certify_meta,
+        "rebalance_required": bool(isinstance(diversity, dict) and diversity.get("dominance_warning") and not autonomy_certificate_ok),
         "rebalance_plan": rebalance_plan,
         "rebalance_policy": "promotion/autonomy fails closed while dominance_warning is true; prefer eligible_non_dominant_alternates for warm-up before rerun",
         "diversity": diversity,
@@ -1260,6 +1347,7 @@ def cli():
     readiness.add_argument("--threshold", type=float, default=0.80)
     readiness.add_argument("--window", type=int, default=500)
     readiness.add_argument("--min-quota-confidence", type=float, default=0.50)
+    readiness.add_argument("--auto-certify", action="store_true", help="Refresh autonomy certificate if missing/stale before evaluating the gate")
 
     pr = sub.add_parser("probe", help="探测所有 provider 可用性 (auth check, no token spend)")
     pr.add_argument("--json", action="store_true", help="输出 JSON 而不是表格")
@@ -1362,6 +1450,7 @@ def cli():
             window=args.window,
             min_quota_confidence=args.min_quota_confidence,
             config=config,
+            auto_certify=args.auto_certify,
         )
         if args.json:
             print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))

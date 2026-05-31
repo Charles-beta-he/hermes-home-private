@@ -74,7 +74,7 @@ SAFE_USAGE_FIELDS = {
 }
 
 SUBSCRIPTION_PROVIDERS = {"claude-code", "openai-codex", "qwen-oauth"}
-DOCUMENTED_NO_HEADER_BUDGET_PROVIDERS = {"claude-code", "openai-codex", "qwen-oauth", "xiaomi"}
+DOCUMENTED_NO_HEADER_BUDGET_PROVIDERS = {"claude-code", "openai-codex", "qwen-oauth", "google-gemini-cli", "xiaomi"}
 DOCUMENTED_NO_HEADER_BUDGET_SOURCES = {"subprocess_success_no_quota_headers", "direct_api_no_quota_headers"}
 DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS = _env_int("HERMES_DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS", 3600)
 DOCUMENTED_NO_HEADER_BUDGET_CONFIDENCE = 0.55
@@ -414,7 +414,7 @@ def snapshot_from_headers(model: str, provider: str, headers: dict, usage: Optio
 
 def _classify_error(text: str) -> Tuple[str, str]:
     text = (text or "").lower()
-    if "429" in text or "rate limit" in text or "rate_limit" in text:
+    if "429" in text or "rate limit" in text or "rate_limit" in text or "too many requests" in text or "out of extra usage" in text:
         return "rate_limit", "rate_limit_window"
     if "529" in text or "overloaded" in text or "503" in text or "temporarily unavailable" in text:
         return "provider_overloaded", "provider_overload"

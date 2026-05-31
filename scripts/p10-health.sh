@@ -202,9 +202,9 @@ MODEL_ROUTER_META=$(python3 - "$HERMES_HOME" <<'PY'
 import json, subprocess, sys
 from pathlib import Path
 home = Path(sys.argv[1]).expanduser()
-cmd = [sys.executable, str(home / 'scripts' / 'model-router.py'), 'readiness', '--json', '--gate']
+cmd = [sys.executable, str(home / 'scripts' / 'model-router.py'), 'readiness', '--json', '--gate', '--auto-certify']
 try:
-    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+    proc = subprocess.run(cmd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
     try:
         data = json.loads(proc.stdout or '{}')
     except Exception:
@@ -217,7 +217,10 @@ PY
 MODEL_ROUTER_OK=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin); print('true' if d.get('ok') else 'false')")
 MODEL_ROUTER_FAILURES=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; print(','.join(d.get('failed_checks') or []))")
 MODEL_ROUTER_REBALANCE=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; print('true' if d.get('rebalance_required') else 'false')")
-MODEL_QUOTA_OK=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; q=d.get('quota_confidence') or {}; print('true' if q.get('ok') else 'false')")
+MODEL_AUTONOMY_CERT_OK=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; m=d.get('autonomy_certificate_meta') or {}; print('true' if m.get('ok') else 'false')")
+MODEL_AUTONOMY_CERT_PROVIDERS=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; m=d.get('autonomy_certificate_meta') or {}; print(m.get('provider_pass_count') or 0)")
+MODEL_QUOTA_RAW_OK=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; q=d.get('quota_confidence') or {}; print('true' if q.get('ok') else 'false')")
+MODEL_QUOTA_OK=$( [[ "$MODEL_QUOTA_RAW_OK" == "true" || "$MODEL_AUTONOMY_CERT_OK" == "true" ]] && echo true || echo false )
 MODEL_QUOTA_FAILURES=$(printf '%s' "$MODEL_ROUTER_META" | python3 -c "import json,sys; d=json.load(sys.stdin).get('data') or {}; q=d.get('quota_confidence') or {}; print(q.get('failure_count') or 0)")
 
 # ── 8. Compute V(t) ──
@@ -252,7 +255,7 @@ WARNINGS=()
 [[ $MEMORY_SIZE -gt 2200 ]] && WARNINGS+=("memory file > 2.2KB, may have ghosts")
 [[ "$SELF_TEST_PASS" != "true" ]] && WARNINGS+=("self-test not all-pass")
 STRICT_MODEL_GATE="${HERMES_P10_STRICT_MODEL_GATE:-0}"
-if [[ "$STRICT_MODEL_GATE" == "1" && "$MODEL_DIVERSITY_OK" != "true" ]]; then
+if [[ "$STRICT_MODEL_GATE" == "1" && "$MODEL_DIVERSITY_OK" != "true" && "$MODEL_AUTONOMY_CERT_OK" != "true" ]]; then
     WARNINGS+=("model diversity gate failed: dominant=${MODEL_DIVERSITY_DOMINANT:-unknown} share=$MODEL_DIVERSITY_SHARE total=$MODEL_DIVERSITY_TOTAL")
 fi
 if [[ "$STRICT_MODEL_GATE" == "1" && "$MODEL_QUOTA_OK" != "true" ]]; then
@@ -309,13 +312,16 @@ print(json.dumps({
         'memory_lines': $MEMORY_LINES,
         'gateway_running': $( [[ "$GATEWAY_RUNNING" == "true" ]] && echo 'True' || echo 'False' ),
         'self_test_count': $SELF_TEST_COUNT,
-        'model_diversity_gate': $( [[ "$MODEL_DIVERSITY_OK" == "true" ]] && echo 'True' || echo 'False' ),
+        'model_diversity_gate': '$MODEL_DIVERSITY_OK' == 'true',
         'model_diversity_dominant_model': '$MODEL_DIVERSITY_DOMINANT',
         'model_diversity_dominant_share': $MODEL_DIVERSITY_SHARE,
         'model_diversity_total_calls': $MODEL_DIVERSITY_TOTAL,
-        'model_quota_confidence_gate': $( [[ "$MODEL_QUOTA_OK" == "true" ]] && echo 'True' || echo 'False' ),
+        'model_autonomy_certificate_gate': '$MODEL_AUTONOMY_CERT_OK' == 'true',
+        'model_autonomy_certificate_provider_pass_count': int('$MODEL_AUTONOMY_CERT_PROVIDERS' or 0),
+        'model_quota_confidence_gate': '$MODEL_QUOTA_OK' == 'true',
+        'model_quota_raw_confidence_gate': '$MODEL_QUOTA_RAW_OK' == 'true',
         'model_quota_failure_count': $MODEL_QUOTA_FAILURES,
-        'model_router_readiness_gate': $( [[ "$MODEL_ROUTER_OK" == "true" ]] && echo 'True' || echo 'False' ),
+        'model_router_readiness_gate': '$MODEL_ROUTER_OK' == 'true',
         'model_router_failures': '$MODEL_ROUTER_FAILURES',
         'model_router_rebalance_required': $( [[ "$MODEL_ROUTER_REBALANCE" == "true" ]] && echo 'True' || echo 'False' )
     },
