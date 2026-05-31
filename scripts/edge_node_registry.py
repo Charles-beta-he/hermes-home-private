@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Hermes Edge Node Registry selfcheck (Phase 1, read-only).
+"""Hermes Edge Node Registry selfcheck.
 
-This module is intentionally conservative: it observes local/registered edge nodes
-and reports health/capability/security warnings, but it never dispatches tasks and
-never mutates the canonical task pool.  It is the first production-safe bridge
-between the prototype edge worker and the formal Hermes taskpool SSOT.
+This module observes local/registered edge nodes and reports health/capability
+security warnings. Dispatch remains SSOT-safe: the registry can enable automatic
+read-only edge leases, but it never owns tasks and never mutates the canonical
+task pool.
 """
 from __future__ import annotations
 
@@ -230,7 +230,7 @@ def probe_endpoint(endpoint: str, timeout: float = DEFAULT_PROBE_TIMEOUT_SECONDS
     return {"probe_status": "ok", "health": health, "info": info}
 
 
-def classify_node(node: dict[str, Any], *, now: float, probe: bool) -> dict[str, Any]:
+def classify_node(node: dict[str, Any], *, now: float, probe: bool, registry_dispatch_enabled: bool = False) -> dict[str, Any]:
     warnings: list[str] = []
     errors: list[str] = []
     capabilities = list(node.get("capabilities") or [])
@@ -247,7 +247,7 @@ def classify_node(node: dict[str, Any], *, now: float, probe: bool) -> dict[str,
         status = "healthy"
 
     if not node.get("brain_url"):
-        warnings.append("brain_url missing; node is standalone and not dispatch-eligible")
+        warnings.append("brain_url missing; node is standalone")
     if not node.get("token_configured"):
         warnings.append("token not configured")
     if str(node.get("bind_host") or "") == "0.0.0.0" and not node.get("token_configured"):
@@ -271,7 +271,14 @@ def classify_node(node: dict[str, Any], *, now: float, probe: bool) -> dict[str,
             if status not in {"disabled", "quarantined"}:
                 status = "degraded"
 
-    dispatch_eligible = status == "healthy" and bool(node.get("brain_url")) and not errors
+    dispatch_eligible = (
+        registry_dispatch_enabled
+        and bool(node.get("dispatch_enabled"))
+        and status == "healthy"
+        and bool(node.get("token_configured"))
+        and bool(node.get("allowed_commands_configured"))
+        and not errors
+    )
     return {
         "worker_id": node.get("worker_id"),
         "name": node.get("name"),
@@ -306,7 +313,7 @@ def register_local(*, path: Path = REGISTRY_PATH) -> dict[str, Any]:
         "registered_at": now,
         "last_seen_at": now,
         "status": "registered",
-        "dispatch_enabled": False,
+        "dispatch_enabled": bool(registry.get("dispatch_enabled", False)),
     })
     # Never persist plaintext token material.
     node.pop("token", None)
@@ -314,12 +321,12 @@ def register_local(*, path: Path = REGISTRY_PATH) -> dict[str, Any]:
     out = {
         "schema": "edge_node_registry_v1",
         "read_only_dispatch": True,
-        "dispatch_enabled": False,
+        "dispatch_enabled": bool(registry.get("dispatch_enabled", False)),
         "updated_at": now,
         "nodes": nodes,
     }
     save_registry(out, path)
-    return {"status": "OK", "registered": node.get("worker_id"), "registry_path": str(path), "dispatch_enabled": False}
+    return {"status": "OK", "registered": node.get("worker_id"), "registry_path": str(path), "dispatch_enabled": bool(out.get("dispatch_enabled"))}
 
 
 def selfcheck(*, probe: bool = True) -> dict[str, Any]:
@@ -328,7 +335,8 @@ def selfcheck(*, probe: bool = True) -> dict[str, Any]:
     local = local_config_node(config)
     nodes = merge_nodes(registry_nodes(registry), [local] if local else [])
     now = time.time()
-    checked = [classify_node(node, now=now, probe=probe) for node in nodes]
+    registry_dispatch_enabled = bool(registry.get("dispatch_enabled", False))
+    checked = [classify_node(node, now=now, probe=probe, registry_dispatch_enabled=registry_dispatch_enabled) for node in nodes]
     warnings: list[str] = []
     errors: list[str] = []
 
@@ -360,7 +368,7 @@ def selfcheck(*, probe: bool = True) -> dict[str, Any]:
         "status": status,
         "schema": "edge_node_selfcheck_v1",
         "read_only": True,
-        "dispatch_enabled": False,
+        "dispatch_enabled": registry_dispatch_enabled,
         "registry_path": str(REGISTRY_PATH),
         "config_path": str(EDGE_CONFIG_PATH),
         "node_count": len(checked),

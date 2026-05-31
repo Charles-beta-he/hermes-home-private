@@ -74,7 +74,7 @@ security:
         self.assertTrue(any("brain_url missing" in w for w in result["warnings"]))
         self.assertFalse(result["dispatch_enabled"])
 
-    def test_register_local_persists_redacted_node_without_enabling_dispatch(self):
+    def test_register_local_preserves_existing_dispatch_state(self):
         with tempfile.TemporaryDirectory() as td:
             home = Path(td)
             cfg = home / "edge-worker" / "config.yaml"
@@ -90,18 +90,21 @@ worker:
   heartbeat_interval: 30
 security:
   token: "secret-token-value"
-  allowed_commands: []
+  allowed_commands: ["date"]
   max_timeout: 300
 """.strip(),
                 encoding="utf-8",
             )
+            registry.parent.mkdir(parents=True)
+            registry.write_text(json.dumps({"schema": "edge_node_registry_v1", "dispatch_enabled": True, "nodes": []}), encoding="utf-8")
             with patch.object(edge_node_registry, "EDGE_CONFIG_PATH", cfg):
                 result = edge_node_registry.register_local(path=registry)
             saved = json.loads(registry.read_text(encoding="utf-8"))
         self.assertEqual(result["status"], "OK")
-        self.assertFalse(result["dispatch_enabled"])
-        self.assertFalse(saved["dispatch_enabled"])
+        self.assertTrue(result["dispatch_enabled"])
+        self.assertTrue(saved["dispatch_enabled"])
         self.assertEqual(len(saved["nodes"]), 1)
+        self.assertTrue(saved["nodes"][0]["dispatch_enabled"])
         self.assertTrue(saved["nodes"][0]["token_configured"])
         self.assertNotIn("secret-token-value", json.dumps(saved, ensure_ascii=False))
 
@@ -117,9 +120,26 @@ security:
             "allowed_commands_configured": True,
             "last_seen_at": edge_node_registry.utc_now_iso(),
         }
-        checked = edge_node_registry.classify_node(node, now=__import__("time").time(), probe=False)
+        checked = edge_node_registry.classify_node(node, now=__import__("time").time(), probe=False, registry_dispatch_enabled=True)
         self.assertIn("0.0.0.0 endpoint without token is unsafe", checked["errors"])
         self.assertFalse(checked["dispatch_eligible"])
+
+    def test_readonly_standalone_node_can_be_dispatch_eligible_when_enabled(self):
+        node = {
+            "worker_id": "w1",
+            "name": "node-a",
+            "endpoint": "http://127.0.0.1:9001",
+            "bind_host": "127.0.0.1",
+            "brain_url": "",
+            "capabilities": ["run_command", "read_file", "list_dir"],
+            "token_configured": True,
+            "allowed_commands_configured": True,
+            "dispatch_enabled": True,
+            "last_seen_at": edge_node_registry.utc_now_iso(),
+        }
+        checked = edge_node_registry.classify_node(node, now=__import__("time").time(), probe=False, registry_dispatch_enabled=True)
+        self.assertTrue(checked["dispatch_eligible"])
+        self.assertTrue(any("standalone" in item for item in checked["warnings"]))
 
 
 if __name__ == "__main__":
