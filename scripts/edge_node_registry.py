@@ -82,6 +82,14 @@ def _parse_scalar(value: str) -> Any:
         return value
 
 
+def _dotenv_has_key(key: str) -> bool:
+    env_path = HERMES_HOME / ".env"
+    if not key or not env_path.exists():
+        return False
+    prefix = key + "="
+    return any(line.strip().startswith(prefix) for line in env_path.read_text(encoding="utf-8", errors="replace").splitlines())
+
+
 def read_edge_config(path: Path = EDGE_CONFIG_PATH) -> dict[str, Any]:
     """Read the small edge-worker config shape without requiring PyYAML.
 
@@ -107,6 +115,10 @@ def read_edge_config(path: Path = EDGE_CONFIG_PATH) -> dict[str, Any]:
                 sections[current]["token_configured"] = bool(parsed)
             else:
                 sections[current][key] = parsed
+    security_section = sections.get("security", {})
+    token_env = str(security_section.get("token_env") or "")
+    if token_env and (os.environ.get(token_env) or _dotenv_has_key(token_env)):
+        security_section["token_configured"] = True
     worker = sections.get("worker", {})
     security = sections.get("security", {})
     return {
@@ -147,7 +159,9 @@ def local_config_node(config: dict[str, Any]) -> dict[str, Any] | None:
     except Exception:
         port = 9000
     probe_host = "127.0.0.1" if host in {"0.0.0.0", "::", ""} else host
-    capabilities = ["run_command", "read_file", "write_file", "list_dir"]
+    capabilities = ["run_command", "read_file", "list_dir"]
+    if not bool(security.get("read_only", True)):
+        capabilities.append("write_file")
     return {
         "worker_id": stable_worker_id(name, host, port),
         "name": name,
@@ -280,7 +294,7 @@ def save_registry(registry: dict[str, Any], path: Path = REGISTRY_PATH) -> None:
 
 
 def register_local(*, path: Path = REGISTRY_PATH) -> dict[str, Any]:
-    config = read_edge_config()
+    config = read_edge_config(EDGE_CONFIG_PATH)
     local = local_config_node(config)
     if not local:
         return {"status": "FAIL", "error": f"edge worker config missing: {EDGE_CONFIG_PATH}", "registry_path": str(path)}
@@ -309,8 +323,8 @@ def register_local(*, path: Path = REGISTRY_PATH) -> dict[str, Any]:
 
 
 def selfcheck(*, probe: bool = True) -> dict[str, Any]:
-    registry = load_registry()
-    config = read_edge_config()
+    registry = load_registry(REGISTRY_PATH)
+    config = read_edge_config(EDGE_CONFIG_PATH)
     local = local_config_node(config)
     nodes = merge_nodes(registry_nodes(registry), [local] if local else [])
     now = time.time()
@@ -368,7 +382,7 @@ def print_result(result: dict[str, Any], as_json: bool) -> int:
             print(f"WARN: {warning}")
         for error in result.get("errors", []):
             print(f"ERROR: {error}")
-    return 0 if result.get("status") in {"PASS", "WARN"} else 2
+    return 0 if result.get("status") in {"OK", "PASS", "WARN"} else 2
 
 
 def main(argv: list[str] | None = None) -> int:
