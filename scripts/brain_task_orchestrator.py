@@ -60,6 +60,10 @@ try:
 except Exception:
     get_smoothed_n = None  # type: ignore[assignment]
 try:
+    from edge_node_registry import selfcheck as edge_node_selfcheck  # noqa: E402
+except Exception:  # pragma: no cover - taskpool must survive missing edge-node module
+    edge_node_selfcheck = None  # type: ignore[assignment]
+try:
     from agent.run_envelope import RunEnvelopeV1, append_run_event_best_effort, build_projection_ref  # noqa: E402
 except Exception:  # pragma: no cover - taskpool must survive missing dev checkout
     RunEnvelopeV1 = None  # type: ignore[assignment]
@@ -9139,8 +9143,21 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     semantic_cp = semantic_control_plane_selfcheck()
     for item in semantic_cp.get("warnings", []):
         warnings.append(f"semantic control-plane warning: {item}")
+    if edge_node_selfcheck is not None:
+        try:
+            edge_nodes = edge_node_selfcheck(probe=True)
+        except Exception as exc:
+            edge_nodes = {"status": "WARN", "warnings": [f"edge node selfcheck unavailable: {exc}"], "errors": []}
+    else:
+        edge_nodes = {"status": "WARN", "warnings": ["edge node selfcheck module unavailable"], "errors": []}
+    for item in edge_nodes.get("warnings", []):
+        warnings.append(f"edge node warning: {item}")
+    # Phase 1 is observability-only: edge node failures must be visible but must
+    # not block the canonical taskpool until remote dispatch is explicitly enabled.
+    for item in edge_nodes.get("errors", []):
+        warnings.append(f"edge node error (dispatch disabled): {item}")
     status = "PASS" if not failures else "FAIL"
-    return {"status": status, "task_count": len(iter_tasks()), "failures": failures, "warnings": warnings, "boundary": boundary, "semantic_control_plane": semantic_cp, "paths": {"dashboard": str(DASHBOARD), "control_center": str(CONTROL_CENTER), "sorted_pool": str(SORTED_POOL), "inbox": str(INBOX)}}
+    return {"status": status, "task_count": len(iter_tasks()), "failures": failures, "warnings": warnings, "boundary": boundary, "semantic_control_plane": semantic_cp, "edge_nodes": edge_nodes, "paths": {"dashboard": str(DASHBOARD), "control_center": str(CONTROL_CENTER), "sorted_pool": str(SORTED_POOL), "inbox": str(INBOX)}}
 
 
 def print_result(result: dict[str, Any], as_json: bool) -> int:
