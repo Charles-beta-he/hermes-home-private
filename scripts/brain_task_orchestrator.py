@@ -56,11 +56,16 @@ if str(HERMES_AGENT_DIR) not in sys.path:
 
 import permission_taxonomy as taxonomy  # noqa: E402
 try:
+    from dynamic_n import get_smoothed_n  # noqa: E402
+except Exception:
+    get_smoothed_n = None  # type: ignore[assignment]
+try:
     from agent.run_envelope import RunEnvelopeV1, append_run_event_best_effort, build_projection_ref  # noqa: E402
 except Exception:  # pragma: no cover - taskpool must survive missing dev checkout
     RunEnvelopeV1 = None  # type: ignore[assignment]
     append_run_event_best_effort = None  # type: ignore[assignment]
     build_projection_ref = None  # type: ignore[assignment]
+
 
 AUTONOMY_WRITE_GUARD = HERMES_HOME / "scripts" / "autonomy-write-guard.py"
 AUTONOMY_WRITE_ALLOWLIST = Path(
@@ -3986,6 +3991,14 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
         failures.extend(completion_gate_failures(task, evidence))
     if to_status == "done" and task_multimodel_certification_reasons(task) and not task_multimodel_passed(task):
         failures.append("multimodel_certification_required_before_done")
+    # Advisory-only PASS_ADVISORY_ONLY validates framing, not implementation.
+    # Block done unless real implementation evidence exists (commit, test, build, etc.).
+    if to_status == "done" and str(task.fm.get("multimodel_last_gate_status") or "").upper() == "PASS_ADVISORY_ONLY":
+        impl_tokens = ("commit", "test", "build", "pytest", "vitest", "npm run", "playwright", "browser_screenshot", "curl ", "railway", "mvn ", "pnpm ", "yarn ", "git diff --check", "real-api", "real api")
+        evidence_blob = " ".join(str(e).lower() for e in (evidence or []))
+        has_impl = any(t in evidence_blob for t in impl_tokens)
+        if not has_impl:
+            failures.append("advisory_only_multimodel_requires_implementation_evidence: PASS_ADVISORY_ONLY cannot authorize done without commit/test/build/browser/real-api evidence")
     if to_status == "done" and is_autorun_context(task, actor):
         proof_hashes = [str(e)[len("proof:") :] for e in evidence if str(e).startswith("proof:sha256:")]
         if not proof_hashes:
@@ -5795,6 +5808,135 @@ def infer_conflict_group_from_task(task: Task) -> str:
     return ""
 
 
+# ── Tree-shaped boundary refinement ────────────────────────────────────────
+# Refines coarse explicit boundaries with page/feature-level suffixes derived
+# from task titles, enabling parallel dispatch across independent work units.
+#
+# Design: reads domain groups from project profile's fullstack_domain_map
+# (or equivalent profile field). No project-specific patterns hardcoded here.
+# Falls back to title-based key extraction when no profile domain match found.
+
+import re as _re_boundary
+
+_BOUNDARY_DEPTH_RE = _re_boundary.compile(r":")
+_WORD_RE = _re_boundary.compile(r"[\u4e00-\u9fff]+|[a-zA-Z][a-zA-Z0-9_]+")
+
+
+def _boundary_depth(boundary: str) -> int:
+    """Count colon-separated segments in boundary."""
+    return len(_BOUNDARY_DEPTH_RE.split(boundary))
+
+
+def _load_domain_groups_from_profile(task: Task) -> dict[str, str]:
+    """Load domain->keywords mapping from project profile.
+
+    Reads fullstack_domain_map keys and domain_aliases from the project profile.
+    Returns {keyword: domain_name} mapping for matching.
+    """
+    project = task.project or ""
+    if not project:
+        return {}
+
+    try:
+        from pathlib import Path
+        import json as _json
+
+        # Try project-profiles directory
+        profile_path = Path.home() / ".hermes" / "project-profiles" / f"{project}.json"
+        if not profile_path.exists():
+            # Try aliases
+            for f in (Path.home() / ".hermes" / "project-profiles").glob("*.json"):
+                try:
+                    p = _json.loads(f.read_text())
+                    if project in (p.get("aliases") or []):
+                        profile_path = f
+                        break
+                except Exception:
+                    continue
+
+        if not profile_path.exists():
+            return {}
+
+        profile = _json.loads(profile_path.read_text())
+
+        # Build keyword->domain mapping from domain_aliases
+        domain_aliases = profile.get("domain_aliases", {})
+        if domain_aliases:
+            keyword_map = {}
+            for domain, keywords in domain_aliases.items():
+                keyword_map[domain.lower()] = domain.lower()
+                for kw in keywords:
+                    keyword_map[kw.lower()] = domain.lower()
+            return keyword_map
+
+        # Fallback: use fullstack_domain_map keys directly
+        domain_map = profile.get("fullstack_domain_map", {})
+        return {k.lower(): k.lower() for k in domain_map.keys() if not k.startswith("_")}
+    except Exception:
+        return {}
+
+
+def _extract_page_key_from_title(title: str, domains: dict[str, str]) -> str:
+    """Extract a page/feature key from task title.
+
+    Strategy:
+    1. First try to match against domain keywords from project profile
+    2. If no match, extract first meaningful Chinese/English phrase
+    3. Fallback to '通用'
+
+    domains is a {keyword: domain_name} mapping loaded from project profile.
+    """
+    if not title:
+        return "通用"
+
+    title_lower = title.lower()
+
+    # 1. Try matching against profile domain keywords (longest match first)
+    matched_domain = None
+    matched_len = 0
+    for keyword, domain in domains.items():
+        if keyword in title_lower and len(keyword) > matched_len:
+            matched_domain = domain
+            matched_len = len(keyword)
+
+    if matched_domain:
+        return matched_domain
+
+    # 2. Extract first meaningful phrase after common prefixes
+    stripped = _re_boundary.sub(
+        r"^(用户端[—\-—\s]*|admin[—\-—\s]*|(feat|fix|chore|refactor)[\s:：]+)", "", title
+    ).strip()
+
+    if not stripped:
+        return "通用"
+
+    # Take first Chinese phrase (2-8 chars) or English word pair
+    m = _re_boundary.match(r"([\u4e00-\u9fff]{2,8})", stripped)
+    if m:
+        return m.group(1)
+
+    m = _re_boundary.match(r"([a-zA-Z][a-zA-Z0-9_-]+(?:\s+[a-zA-Z][a-zA-Z0-9_-]+)?)", stripped)
+    if m:
+        return m.group(1)
+
+    return "通用"
+
+
+def _refine_boundary_with_page_key(task: Task, explicit_boundary: str) -> str:
+    """Refine a coarse boundary with page/feature-level tree key.
+
+    If boundary already has depth >= 3 (already refined), return as-is.
+    Otherwise, load domain groups from project profile and match against title.
+    """
+    if _boundary_depth(explicit_boundary) >= 3:
+        return explicit_boundary
+
+    domains = _load_domain_groups_from_profile(task)
+    title = task.title or ""
+    page_key = _extract_page_key_from_title(title, domains)
+    return f"{explicit_boundary}:{page_key}"
+
+
 def task_parallel_boundary_key(task: Task) -> str:
     """Compute the isolation boundary key for parallel dispatch.
 
@@ -5810,7 +5952,8 @@ def task_parallel_boundary_key(task: Task) -> str:
     """
     explicit = str(task.fm.get("parallel_boundary") or "").strip()
     if explicit:
-        return f"boundary:{explicit}"
+        refined = _refine_boundary_with_page_key(task, explicit)
+        return f"boundary:{refined}"
     # workspace_isolation: worktree/copy create independent copies, no shared-state conflict
     ws_isolation = str(task.fm.get("workspace_isolation") or "").strip()
     if ws_isolation in ("worktree", "copy"):
@@ -6375,9 +6518,20 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
 
 
 def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
-    max_agents = int(getattr(args, "max_agents", 3) or 3)
+    max_agents = int(getattr(args, "max_agents", 0) or 0)
     if max_agents < 1:
-        raise SystemExit("--max-agents must be >= 1")
+        # Dynamic N: use get_smoothed_n based on actual dispatchable count
+        candidates = dispatchable_tasks()
+        groups = set()
+        for t in candidates:
+            bk = task_parallel_boundary_key(t)
+            if bk:
+                groups.add(bk)
+        if get_smoothed_n is not None:
+            n_result = get_smoothed_n(len(candidates), max(len(groups), 1))
+            max_agents = max(1, int(n_result.get("applied_n", 3)))
+        else:
+            max_agents = 3
     boundary = command_boundary_check(args)
     if boundary.get("status") != "PASS":
         return {"status": "FAIL", "dry_run": True, "dispatchable": False, "reason": "boundary_check_failed", "boundary": boundary, "safety": "dry-run only; no claim or execution"}
@@ -6607,9 +6761,14 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
 def command_multimodel_intervention_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     tasks = iter_tasks()
     if getattr(args, "task", ""):
+        # Explicit operator-selected task keeps the historical override behavior.
         candidates = [find_task(args.task)]
     else:
-        candidates = [t for t in tasks if t.status not in TERMINAL_STATUSES]
+        # Automatic multimodel workers must not steal blocked/retry/running/review
+        # tasks from their lifecycle owners.  Blocked/retry-exhausted tasks need a
+        # resolver/decomposition decision; review tasks are handled by
+        # auto-close-review; running/claimed tasks already have an owner.
+        candidates = [t for t in tasks if t.status == "pending"]
     intervention_tasks = [t for t in candidates if task_multimodel_intervention_required(t)]
     intervention_tasks = sorted(intervention_tasks, key=multimodel_intervention_sort_key)
     max_tasks = max(1, int(getattr(args, "max_tasks", 5) or 5))
@@ -6754,13 +6913,42 @@ def multimodel_async_job_alive(job: dict[str, Any]) -> bool:
         return False
     try:
         os.kill(pid, 0)
-        return True
     except ProcessLookupError:
         return False
     except PermissionError:
-        return True
+        # A permission-only process can exist, but for local taskpool jobs we still
+        # need command-line identity below when available.
+        pass
     except Exception:
         return False
+
+    # PID reuse is common on long-lived macOS sessions.  A stale job file must
+    # not be treated as alive just because an unrelated process inherited the
+    # same pid (observed: old multimodel pid became a Chrome Renderer).  Validate
+    # the current command line still looks like the recorded multimodel worker.
+    expected_cmd = [str(x) for x in (job.get("cmd") or []) if str(x)]
+    task_id = str(job.get("task_id") or "")
+    try:
+        ps = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "command="],
+            text=True,
+            capture_output=True,
+            timeout=3,
+        )
+        command = (ps.stdout or "").strip()
+    except Exception:
+        command = ""
+    if not command:
+        return False
+    if "brain_task_orchestrator.py" not in command or "multimodel-intervention-step" not in command:
+        return False
+    if task_id and task_id not in command:
+        return False
+    # When the recorded cmd is available, require its meaningful tail tokens.
+    for token in ["multimodel-intervention-step", "--task"]:
+        if token not in command:
+            return False
+    return True
 
 
 def multimodel_async_job_files() -> list[Path]:
@@ -8006,9 +8194,20 @@ def command_parallel_claim_and_handoff(args: argparse.Namespace) -> dict[str, An
     Fail-closed: if any claim in a batch fails, all previously claimed tasks
     in this batch are released.
     """
-    max_agents = int(getattr(args, "max_agents", 3) or 3)
+    max_agents = int(getattr(args, "max_agents", 0) or 0)
     if max_agents < 1:
-        raise SystemExit("--max-agents must be >= 1")
+        # Dynamic N: use get_smoothed_n based on actual dispatchable count
+        candidates = dispatchable_tasks()
+        groups = set()
+        for t in candidates:
+            bk = task_parallel_boundary_key(t)
+            if bk:
+                groups.add(bk)
+        if get_smoothed_n is not None:
+            n_result = get_smoothed_n(len(candidates), max(len(groups), 1))
+            max_agents = max(1, int(n_result.get("applied_n", 3)))
+        else:
+            max_agents = 3
     dry_run = not getattr(args, "write", False)
     actor = getattr(args, "actor", "hermes-parallel")
     ttl_minutes = int(getattr(args, "ttl_minutes", 60) or 60)
@@ -8629,7 +8828,22 @@ def build_taskpool_evidence_spine(max_agents: int = 3) -> dict[str, Any]:
 
 
 def command_evidence_spine(args: argparse.Namespace) -> dict[str, Any]:
-    return build_taskpool_evidence_spine(max_agents=int(getattr(args, "max_agents", 3) or 3))
+    explicit = int(getattr(args, "max_agents", 0) or 0)
+    if explicit >= 1:
+        return build_taskpool_evidence_spine(max_agents=explicit)
+    # Dynamic N
+    candidates = dispatchable_tasks()
+    groups = set()
+    for t in candidates:
+        bk = task_parallel_boundary_key(t)
+        if bk:
+            groups.add(bk)
+    if get_smoothed_n is not None:
+        n_result = get_smoothed_n(len(candidates), max(len(groups), 1))
+        max_agents = max(1, int(n_result.get("applied_n", 3)))
+    else:
+        max_agents = 3
+    return build_taskpool_evidence_spine(max_agents=max_agents)
 
 
 def load_json_list_file(path: Path) -> tuple[list[Any], str]:

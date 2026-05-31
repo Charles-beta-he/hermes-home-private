@@ -137,9 +137,69 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertEqual(delegate.call_count, 2)
         running = [call for call in transition.call_args_list if call.args[:2] in [("t1", "running"), ("t2", "running")]]
         self.assertEqual(len(running), 2)
+        blocked = [call for call in transition.call_args_list if call.args[:2] in [("t1", "blocked"), ("t2", "blocked")]]
+        self.assertEqual(len(blocked), 2)
         self.assertTrue(any(call.args[0] == "env-1" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
         self.assertTrue(any(call.args[0] == "env-2" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
 
+    def test_process_worker_result_failed_requeues_brain_task_not_false_running(self):
+        row = {"id": "t-failed", "status": "running", "title": "failed", "project": "proj"}
+        with patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "update_status") as update_status:
+            result = self.ctrl._process_worker_result(
+                row,
+                "hermes-parallel",
+                "env-failed",
+                {"status": "failed", "reason": "missing_proof", "output": "no proof"},
+            )
+
+        self.assertEqual(result["to_status"], "retry")
+        transition.assert_called_once()
+        self.assertEqual(transition.call_args.args[:2], ("t-failed", "retry"))
+        self.assertTrue(any(call.args[0] == "env-failed" and call.args[1] == "FAILED" for call in update_status.call_args_list))
+
+    def test_process_worker_result_blocked_blocks_brain_task_not_false_running(self):
+        row = {"id": "t-blocked", "status": "running", "title": "blocked", "project": "proj"}
+        with patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "update_status") as update_status:
+            result = self.ctrl._process_worker_result(
+                row,
+                "hermes-parallel",
+                "env-blocked",
+                {"status": "blocked", "output": "BLOCKED: needs auth"},
+            )
+
+        self.assertEqual(result["to_status"], "blocked")
+        transition.assert_called_once()
+        self.assertEqual(transition.call_args.args[:2], ("t-blocked", "blocked"))
+        self.assertTrue(any(call.args[0] == "env-blocked" and call.args[1] == "BLOCKED" for call in update_status.call_args_list))
+
+    def test_detect_infra_failure_recognizes_generic_provider_429(self):
+        is_infra, category = self.ctrl._detect_infra_failure(
+            "API call failed after 3 retries: HTTP 429: Too many requests"
+        )
+        self.assertTrue(is_infra)
+        self.assertEqual(category, "provider_rate_limit_or_quota")
+
+    def test_collect_proof_accepts_multiline_proof_json(self):
+        output = '''analysis text
+PROOF_JSON: {
+  "status": "done",
+  "summary": "ok",
+  "files_changed": [],
+  "tests_passed": 0,
+  "proof_sha": "sha256:test",
+  "acceptance_criteria_covered": [{"criterion":"Observable result is recorded in Proof Log.","status":"covered","evidence":["artifact:/tmp/proof.md"]}],
+  "red_lines_status": {"do not weaken taskpool proof": "safe"},
+  "no_red_line_violations": true,
+  "blockers": [],
+  "evidence": ["artifact:/tmp/proof.md"]
+}
+'''
+        proof = self.ctrl.collect_proof('unit-test-multiline-proof', output)
+        self.assertIsInstance(proof, dict)
+        self.assertEqual(proof.get('status'), 'done')
+        self.assertEqual(proof.get('summary'), 'ok')
 
 if __name__ == "__main__":
     unittest.main()

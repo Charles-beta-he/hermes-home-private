@@ -7,6 +7,8 @@ description: Diagnose and operate the local brain/taskpool control plane — dis
 
 When the user asks to inspect blocked taskpool items, use `references/blocked-task-triage.md`: list all tasks and filter blocked if status filters drift, classify ordinary blockage vs `evolution_lane` + `loop_non_convergence`, and avoid direct status edits; fix certification/evidence/subtasks or run the resolver.
 
+When the user asks about retry tasks in the taskpool (retry状态/retry count/what's retrying), load `references/retry-task-diagnosis.md`: query brain_task_orchestrator list --json filtered by status=retry, classify the two failure patterns (worker timed out without proof vs stale_running_retry), and decide whether to let auto-retry proceed or intervene. When infrastructure is fixed and retry tasks are waiting for next_attempt_at, use `references/retry-task-force-promote.md`: force-promote with `transition --to pending --force`, then dispatch with `parallel-claim-and-off --write`.
+
 When diagnosing provider-routing-related taskpool stalls or multimodel script regressions, treat `~/.hermes/scripts/model-router.py` provider availability as **static**: its provider/env mapping and OAuth allowlist are intentionally whitelist-based so routing tests and pool diagnostics do not drift with runtime Hermes overlays. If you need Gemini or other overlay-backed providers to be available, prefer explicit config/routing wiring instead of relying on runtime overlay auto-detection.
 
 When a blocked task has multimodel ratification artifacts but `ratification-gate`, `blocked-resolve-step`, `proof-check`, or `lifecycle` disagree, use `references/multimodel-ratification-unblock-patterns.md`: bind artifacts to the target task, reject self-relaxing governance patches as current-task unblock evidence, normalize legacy shorthand evidence, and repair mission-envelope fields before resolving.
@@ -25,9 +27,17 @@ When a session produces “后续任务” / follow-up work, use `references/fol
 
 Reference: `references/native-multimodel-contracts.md` captures the native multimodel task-contract pattern: separate intake triage (`priority_layer`, `dependency_order`, `multimodel_triage_result`) from certification contract (`requires_multimodel`, `expected_participants`, `truth_gate`, `evidence_bundle`), wire it through add/intake/frontmatter/row JSON, and keep expensive autorun fail-closed.
 
+## Infrastructure-Blocked Evolution Task Archiving
+
+When an evolution lane task's analysis is complete but multimodel certification is blocked by infrastructure (missing API keys, quota expired, provider unavailable), the task can be archived with evidence of completion. `--force` does NOT bypass `multimodel_certification_required_before_done` gate; use `--to archived` instead. See `references/infrastructure-blocked-evolution-task-archiving.md`.
+
 ## Operational Watchdog Cron Scripts
 
 When building or modifying `no_agent=True` cron scripts that monitor task pool health (budget-exhausted triage, auth-blocked notifications, stale-claim cleanup), load `references/operational-cron-watchdogs.md`: it covers the script-path pitfall (`script` takes filename only, not full path), deduplication/cooldown patterns, JSONL logging, kanban DB query templates, hook registry `post_task_block` integration, and the budget-exhausted triage decision matrix (续费/拆分/降级/放弃 by domain × complexity × progress).
+
+## Cron Scheduler Recovery — Model Provider 429 Blocking
+
+When the Hermes cron scheduler appears stuck (jobs have `Next run` in the past but never fire), load `references/cron-scheduler-429-recovery.md`: it covers the diagnosis pattern (check `gateway.error.log` for repeated 429/RateLimitError on the default provider), the mechanism (all agent-based cron jobs share the default model, so 429 blocks the entire scheduler tick), and the recovery pattern (use `delegate_task` to manually execute the stuck job with `browser,file,terminal` toolsets, bypassing the blocked scheduler tick).
 
 When daily/external-repo sidecars propose multimodel fields, treat the sidecar as advisory only. `daily_report_task_ingest.py` must normalize candidates locally: ordinary `work`/product/Lark tasks lose weak multimodel fields and do not trigger expensive panels, including retry/architecture-target heuristics; explicit `requires_multimodel: true` remains a strong override. P0/P1/P2 `evolution`/Hermes control-plane/self-strengthening/repo-intake candidates may keep the contract, must include `claude-code` in expected participants, and must resolve local evidence bundles or emit a TG/manual evidence request instead of blocking workers.
 
@@ -49,6 +59,14 @@ Use when:
 
 
 
+## Event-Driven Auto-Execution (Preferred)
+
+When implementing task pool auto-execution, use **event-driven architecture** over polling/timed triggers. User preference (2026-05-31): "为什么是定时？而不是自动化根据待执行直接触发？" - Why is it timed instead of automatic trigger based on pending tasks?
+
+See `references/event-driven-auto-execution.md` for the full architecture: event types (task.created, task.status_changed, task.dependency_met, task.priority_changed, task.assigned), auto-claim logic, auto-execute logic, API integration, and deployment patterns.
+
+Key principle: Events should trigger immediate action when task state changes, not wait for the next polling cycle.
+
 ## Core principle
 
 The fail-safe objective is: taskpool must not idle-spin when there is a dispatchable priority task.
@@ -65,6 +83,13 @@ Global governance warnings should be surfaced, but they should not automatically
    - Do **not** assume `brainctl.py` exposes taskpool operations just because a memory note mentions it for brain index operations.
    - First check `python3 ~/.hermes/scripts/brain_task_orchestrator.py --help` and use its taskpool subcommands (`dashboard`, `eligibility-check`, `autorun-runner`, `proof-check`, `evidence-spine`, `selfcheck`) when present.
    - Treat `brainctl.py` as a separate brain/index utility unless its live `--help` output proves otherwise.
+
+0.5. Check the dynamic runner first — it's the cron entrypoint:
+   - `python3 ~/.hermes/scripts/taskpool_dynamic_runner.py --json`
+   - Key fields: `autorun_skipped_reason` (why autorun was skipped), `summary.next_task_id` (next task to run), `summary.dispatchable` (whether any task is dispatchable)
+   - If `autorun_skipped_reason` is `human_escape_active_preclaim` → escape is active, see `references/envelope-bus-escape-triage.md`
+   - If `autorun_skipped_reason` is `no_additional_boundary_safe_slots` → all boundary-safe slots are occupied by active claims
+   - If `next_task_id` is empty but `dispatchable: true` → eligibility gate is blocking (check `source_weighting_policy_ref`, project name, allowlist)
 
 1. Inspect whether the pool is actually empty.
    - Check active task count and status distribution (`pending`, `blocked`, `claimed`, `running`, `done`).
@@ -121,7 +146,11 @@ This skill is the umbrella for the taskpool lifecycle, not only stalled-pool dia
 
 Default class rule: do not treat taskpool work as raw capture or ad hoc execution. Every item should have a governed lane, priority, dependency/parallel boundary, proof expectation, and automation status appropriate to its lifecycle phase.
 
-For `lane=work` project/product tasks, attach the project profile contract at intake/claim time when a profile exists under `~/.hermes/project-profiles/<project>.json` (or an equivalent resolved project profile). The task should carry `project_profile_ref` plus a source-weighting reference when available. Default evidence authority order: (1) newest product doc / PRD / canonical project profile for business semantics and acceptance, (2) prototype / PM screenshot / comment image for UI layout, interaction, and visual parity, (3) live task source such as Lark title/body/comments for symptom/scope/reproduction, (4) current implementation/runtime for landing and regression proof. If these sources conflict, record the conflict and block for product confirmation unless the rank-1 source clearly resolves it; do not let generated taskpool summaries or prototypes override product-doc business rules.
+For `lane=work` project/product tasks, attach the project profile contract at intake/claim time when a profile exists under `~/.hermes/project-profiles/<project>.json` (or an equivalent resolved project profile). The task **must** carry `source_weighting_policy_ref` when the project profile defines a source weighting policy — this is a **hard fail-closed gate** in `is_dispatchable()` (line ~2396), not advisory. Missing `source_weighting_policy_ref` silently makes `eligibility-check` return `eligible=false` with `no_dispatchable_task` even when all other fields are correct. Format: `~/.hermes/project-profiles/<project>.json#source_weighting_policy`. See `references/project-profile-dispatchability-gates.md`. Default evidence authority order: (1) newest product doc / PRD / canonical project profile for business semantics and acceptance, (2) prototype / PM screenshot / comment image for UI layout, interaction, and visual parity, (3) live task source such as Lark title/body/comments for symptom/scope/reproduction, (4) current implementation/runtime for landing and regression proof. If these sources conflict, record the conflict and block for product confirmation unless the rank-1 source clearly resolves it; do not let generated taskpool summaries or prototypes override product-doc business rules. PRD extracts must be persisted under `~/.hermes/evidence/<project>/prd-extracts/` — never only in `/tmp/`. See `references/prd-evidence-persistence.md`.
+
+## Task Adapter Framework (pluggable source pattern)
+
+When the taskpool needs to ingest tasks from multiple distinct sources (Lark, brain notes, direct input, GitHub, etc.), use the pluggable TaskAdapter framework. See `references/task-adapter-framework.md`: it covers the TaskAdapter interface (fetch/enrich/classify/preflight/gates/complete), TaskRegistry, TaskPipeline, source-agnostic observer dict pattern, composite tasks (subtasks/parallelism/convergence), parallel execution, adversarial verification, checkpoint/resume, and the pitfalls around observer.observe() signature and gate checking behavior.
 
 ## Adding external repo / doc analysis tasks to the pool
 
@@ -174,7 +203,21 @@ For Lark/work bursts, treat `parallel-dispatch-dry-run --max-agents N` `selected
 
 When asked for Kanban coverage, distinguish three ratios instead of trusting a single health score: (1) taskpool dispatchable -> mirrored Kanban coverage, (2) brain-note -> Kanban provenance/link coverage, and (3) Kanban ready -> spawnable assignee coverage. Use the live diagnostic first: `python3 ~/.hermes/scripts/kanban_coverage.py --json`; it emits `dispatchable_mirror`, `brain_note_provenance`, `active_brain_note_provenance`, `kanban_ready_spawnability`, `ready_nonspawnable`, `skipped_nonspawnable`, and `missing_ready_assignees`. `v_state.py` now consumes this report, so kanban health is no longer false-green when `dispatchable == 0` but ready Kanban tasks are nonspawnable. Still verify raw sources with `hermes kanban stats --json`, `hermes kanban assignees --json`, and `hermes kanban dispatch --dry-run --json` when diagnosing discrepancies.
 
+## SSOT: One Task Pool Only
+
+When building any distributed worker, executor, or edge node, do NOT create a competing task pool. The canonical task pool is `brain_task_orchestrator.py` + `kanban.db`. Workers are execution-only layers that fetch tasks from the brain and report results back. See `references/ssot-violation-edge-worker-task-pool.md` for the anti-pattern, correct architecture, detection checklist, recovery steps, and the concrete three-layer implementation pattern (UnifiedTaskPool adapter → EdgeWorkerExecutor → UnifiedAPI).
+
+## Edge Worker Test Coverage
+
+When improving test coverage for hermes-edge-worker, use `references/edge-worker-test-coverage-improvement.md`: it covers the systematic pattern for baseline assessment, component test creation, syntax verification, assertion adjustment, and coverage targets.
+
 ## Implementation guidance for dispatch tick fixes
+
+When `max_agents` is hardcoded (e.g. `max_agents=3`) in `brain_task_orchestrator.py` instead of using the dynamic N module, load `references/dynamic-n-integration.md`: it covers the integration pattern for replacing hardcoded defaults with `get_smoothed_n(dispatchable, groups)` calls, the state-pitfall when testing, and the per-call-site computation pattern.
+
+When many tasks share a coarse `parallel_boundary` (e.g. all uvisa-app tasks grouped as one) and dynamic N is capped low despite many dispatchable tasks, load `references/tree-shaped-boundary-refinement.md`: it covers the read-time refinement pattern that extracts page/feature keys from task titles without changing frontmatter, the dual-path implementation (Task objects in orchestrator vs dicts in classifier), and the zero-migration rollback guarantee.
+
+When integrating a new task classification dimension (iceberg tier, capability level, etc.) into the dispatch pipeline, use `references/iceberg-tier-dispatch-integration.md`: the 4 integration points are score weighting, preflight gate, work contract atoms, and dashboard visualization.
 
 When adding or modifying brain-overlay-aware dispatch/runtime behavior, make the contract visible at every consumer boundary, not only in registry files:
 - task rows should expose `brain`, `brain_profile`, and a machine-readable `brain_contract`.
@@ -211,7 +254,9 @@ A recurring stall pattern is: the pool shows an active `claimed` task, but `elig
 
 Human-escape wedge pattern: `parallel-claim-and-handoff` may claim tasks, then `agent_team_controller.py consume-claimed` sees `human_escape_triggered` and refuses to start workers. The safe controller behavior is to release the just-claimed handoff batch back to `retry` with structured evidence such as `command:agent_team_controller consume-claimed human_escape_release`; never leave them occupying the claim lease with no worker. After patching or recovering, verify `claimed=0`, `agent_team_controller.py status` shows `human_escape_triggered=false` after an explicit ack, and `selfcheck`/`proof-check` still PASS.
 
-If envelope workers actually finished `BLOCKED` but the corresponding brain markdown task remains `status: running`, align the brain task to `blocked` (or `retry` only when safe to rerun immediately) with evidence `command:agent_team_controller event_worker_finished result=blocked` plus a no-live-worker check. Then acknowledge the envelope escape only after the blocked outcomes are understood; otherwise the same post-ack BLOCKED rows will retrigger escape.
+If envelope workers actually finished `BLOCKED` but the corresponding brain markdown task remains `status: running`, align the brain task to `blocked` (or `retry` only when safe to rerun immediately) with evidence `command:agent_team_controller event_worker_finished result=blocked` plus a no-live-worker check. If workers finished `FAILED` due provider/rate-limit infrastructure (for example `HTTP 429` / `missing_proof` with no live worker), align the brain task to `retry` with evidence like `command:agent_team_controller_worker_failed_provider_429_no_live_worker`; do not leave false `running` rows occupying active slots. Durable code fix pattern: patch `agent_team_controller.py` so `_detect_infra_failure()` recognizes generic `HTTP 429` / `Too many requests` / `RateLimitError` / quota strings, and so both `_process_worker_result()` and `consume_claimed_batch()._run_one()` transition worker `blocked -> brain blocked`, `timeout/continuation_pending -> retry + SKIPPED envelope`, and `failed/error -> retry + FAILED envelope` instead of reporting `to_status=running`. Add regression tests in `test_agent_team_controller_safety.py` for failed->retry, blocked->blocked, and generic provider 429 detection. Acknowledge envelope escape only after the failed/blocked outcomes are understood and either requeued or blocked; otherwise the same post-ack rows will retrigger escape.
+
+Retry-drain pitfalls observed 2026-05-31: (1) `collect_proof()` must accept multiline/fenced `PROOF_JSON`, not only single-line JSON, because DeepSeek/Gemini often wrap proof objects; invalid parsing creates false `invalid_proof` retries. (2) Automatic `multimodel-intervention-dry-run` candidates must be lifecycle-scoped to `pending`; blocked/review/retry/running/claimed tasks are owned by resolver/review/worker lanes and should only be targeted by explicit `--task`. (3) Async multimodel job liveness must validate the current process command line, not only `os.kill(pid, 0)`, because macOS PID reuse can make stale job files look alive (e.g. old multimodel pid reused by Chrome Renderer). (4) After full provider fallback and repeated timeout/missing-proof on an advisory/plugin analysis item, convert to `blocked` with decomposition/evidence-required reason instead of allowing infinite retry.
 
 Use this recovery sequence:
 1. Inspect the claimed task note directly and confirm `claimed_by`, `claim_expires_at`, and recent lifecycle transitions.
@@ -286,13 +331,15 @@ Patch target that proved correct:
 ### Parallel worker async default
 
 - `brain_task_dispatch_tick.py --parallel-autorun` normally claims/handoffs a boundary-safe batch, then starts ordinary workers asynchronously via `agent_team_controller.py consume-claimed --background`. The tick should not wait for `hermes chat` workers. Use `agent_team_controller.py worker-jobs` to inspect durable jobs; use `--parallel-worker-foreground` only for debug/timeout-cleanup tests.
-
 ## References
+
 References:
 - `references/blocked-task-resolution.md` — How to resolve blocked tasks (dual state store, subtask execution, parent unblocking)
 - `references/evolution-lane-certification-loop.md` — Root cause analysis of the CONTINUE_LOOP deadloop pattern and prevention mechanisms
 - `references/child-closeout-vs-parent-ratification.md` — When all narrowed child subtasks are closed out but the parent still stays blocked because the parent-level multimodel certification artifact was never refreshed.
 - `references/no-running-allowlist-vs-blocked-evolution.md` — Diagnose the specific stall where a blocked evolution P1 leaves only advisory dispatchables, but autorun still fail-closes on lane policy / allowlist mismatch (`allowlist_miss`).
+- `references/lark-batch-import-dedup.md` — GUID-based deduplication for Lark batch import duplicates; detection via `lark_task_guid`, cleanup priority order, and prevention.
+- `references/task-lifecycle-transition-chain.md` — Exact evidence requirements for each lifecycle step (`claimed → running → review → done`), common error messages and solutions, and bypass strategies when orchestrator gates block completion.
 
 ## Finished children do not equal a reopened parent
 
@@ -430,6 +477,50 @@ When the pool accumulates duplicates (same title from repeated ingest):
 
 Typical cleanup ratio: 86 raw → 38 clean (dedup 32 + archive 16).
 
+For **Lark batch import duplicates**, the canonical dedup key is `lark_task_guid` (not title slug). See `references/lark-batch-import-dedup.md` for detection, cleanup priority (keep review > claimed > pending), and prevention patterns.
+
+### Brain mirror dedup on repeated triggers
+
+The brain mirror script (`brain_task_orchestrator.py mirror-to-kanban`) can create duplicate brain task files when triggered multiple times for the same source task (e.g., multiple cron ticks, manual re-runs). The file naming scheme uses task title slugs without a hash-based dedup key, so repeated mirrors produce numbered copies (`-2`, `-3`, etc.). For Lark tasks specifically, the canonical dedup key is `lark_task_guid` — see `references/lark-batch-import-dedup.md`.
+
+**Detection:**
+```bash
+# Find duplicate task files by title pattern
+ls ~/Documents/brain/05-实践与项目/tasks/ | grep -E "review-claude-code|test-task-delete"
+```
+
+**Cleanup:** Keep only the largest (most content) file for each logical task; archive or remove the numbered duplicates.
+
+**Prevention:** The mirror script should check for existing files with matching normalized title before creating new ones. When enriching existing notes (adding Lark metadata, comments), update in-place rather than creating a new file.
+
+### YAML frontmatter escaping explosion
+
+Task files can bloat from ~10KB to 7-60MB when `evidence_bundle` or similar YAML fields contain deeply nested backslash-escaped URLs. The escaping compounds through YAML serialization layers, producing exponential growth of `\` characters.
+
+**Detection:**
+```bash
+# Find suspiciously large task files
+find ~/Documents/brain/05-实践与项目/tasks -name "*.md" -size +100k | xargs ls -lh
+```
+
+**Root cause:** `evidence_bundle` field stores URLs like `https://example.com/path` but YAML serialization adds `\\` for each `\`, then another layer adds `\\\\`, etc. After 3-4 layers of escaping, a 50-char URL becomes several KB of backslashes.
+
+**Fix:** Sanitize `evidence_bundle` before writing to YAML: strip excess escaping, or store URLs as a YAML list of plain strings instead of a single escaped blob. Use `yaml.safe_load` to verify the field roundtrips correctly.
+
+### Kanban worker crash loops from missing credentials
+
+When a kanban worker is assigned a task that requires external CLI credentials (e.g., Codex CLI, `hermes auth`), but those credentials are not configured, the worker enters an infinite crash-retry loop (87+ consecutive crashes observed). The crash log shows `No Codex credentials stored` repeating.
+
+**Detection:**
+```bash
+hermes kanban log t_XXXXXXXX | tail -20
+# Look for repeated "No credentials" / "not alive" patterns
+```
+
+**Fix:** Run `hermes auth` to configure the required credentials. If the task doesn't actually need that CLI, reassign or change the worker configuration.
+
+**Do NOT** auto-enable expensive external-model autorun just to clear a crash loop. Report the blocker and wait for explicit authorization.
+
 ## Blocked Task Resolution Workflow
 
 When evolution lane tasks are blocked by `loop_non_convergence`:
@@ -440,9 +531,46 @@ When evolution lane tasks are blocked by `loop_non_convergence`:
 
 Brain task files use YAML frontmatter — patch individual fields with exact string matches. Key fields: `status`, `blocker_summary`, `multimodel_last_gate_status`, `multimodel_last_decision`, `multimodel_round_status`, `multimodel_status`.
 
+## Sequential full-completion loop (batch processing)
+
+When the user says "全盘推进" and the tasks are evaluation/research items that can each be completed in a single session, use a sequential full-completion loop instead of the bounded single-tranche pattern above.
+
+### Pattern
+
+For each task in priority order:
+1. `claim` the task
+2. `transition --to running --reason "开始执行评估"`
+3. Clone/inspect the external repo or resource
+4. Analyze architecture, features, and gaps
+5. Write the evaluation report **inside** the task file (use `terminal` + `cat > ... << 'EOF'` to preserve frontmatter — never `write_file` which destroys YAML)
+6. Transition status to `done` via `sed` on the task file
+7. Create a summary document in the edge-worker repo
+8. `git commit + push` to GitHub with version bump
+9. Move to next task
+
+### Pitfalls
+
+- **Frontmatter destruction**: `write_file` replaces the entire file. Always use `terminal` + `cat > ... << 'EOF'` heredoc when writing to task files. After writing, verify with `grep "^status:" <file>` that frontmatter survived.
+- **Status field not updating**: If `sed -i '' 's/^status: running$/status: done/'` produces no output, the file was likely overwritten without frontmatter. Recreate the full file.
+- **Version bumping**: Update `version.txt` before each commit to track progress.
+
+### Verification after each task
+
+```bash
+# Confirm frontmatter survived
+grep "^status:" <task-file>
+
+# Confirm task pool updated
+python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard 2>&1 | head -5
+
+# Confirm git push succeeded
+git log --oneline -3
+```
+
 ## Pitfalls
 
-- Review-close backlog pitfall: if many `review` tasks remain but some are eligible for `done`, inspect `auto-close-review` scan depth before assuming all review tasks are genuinely blocked. Older dispatch ticks called `auto-close-review --json` with its small default window, so early non-closable review tasks could starve later passable ones. Use `python3 ~/.hermes/scripts/brain_task_orchestrator.py auto-close-review --max-tasks 50 --json` for diagnosis/repair, and ensure `brain_task_dispatch_tick.py --autorun-step` forwards `--max-tasks` via `--review-close-max-tasks` / `taskpool.review_close_max_tasks`.
+- **GitHub repo name verification**: When the user provides a repo name verbally or from memory, the actual GitHub URL may differ in punctuation (dots vs hyphens, underscores, etc.). Always confirm the live repo URL before committing to navigation. Example: user said "architecture-of-internet-product" but the real repo was `architecture.of.internet-product`. Search GitHub or use the API to verify exact repo path before browser navigation.
+- Do not add a vague "analyze repo X" task without checking the actual repo/doc shape.
 - Advisory-only / certification-without-project-evidence review pitfall: `PASS_ADVISORY_ONLY` / multimodel discussion artifacts prove consultation, and `PASS/LOOP_DONE` proves design ratification, not product delivery. For work/product tasks lacking test/build/browser/curl/commit/project-verification evidence, write a review-gap artifact, requeue to `pending`, and let a project worker produce the proper closeout chain. Do not close or keep them stranded in `review`.
 - Certification unblock pitfall: never resolve a failed multimodel certification by accepting a minority patch that relaxes the same certification gate. Classify self-relaxing threshold/gate patches as advisory governance work, bind `discussion_result.json` explicitly to the target task, keep lifecycle evidence structured, and rerun selfcheck/proof/lifecycle. See `references/certification-unblock-and-selfcheck-upgrade.md`.
 - Dry-run spawnability is not enough. If `hermes kanban dispatch --dry-run --json` says a task can spawn but the real run dies immediately with `pid ... not alive`, inspect `hermes kanban log <task>` before blaming dispatch logic. A durable bootstrap failure is `Unknown skill(s): kanban-worker` caused by `~/.hermes/config.yaml` listing `kanban-worker` under `skills.disabled`; runtime skill loading respects the disable list even when the skill file exists. See `references/kanban-worker-disabled-bootstrap.md`.
@@ -454,14 +582,21 @@ Brain task files use YAML frontmatter — patch individual fields with exact str
 - `blocker_summary` may be outside YAML frontmatter (e.g., line 90+). Use `grep -n` before patching.
 - Frontmatter `multimodel_last_failures` is a YAML list — contains structured failure reasons like `agreement_below_threshold:approach:0.65`
 - `execute_code` file writes may not persist to disk. Use `patch` tool or `terminal` with `sed` for brain markdown edits.
+- **`write_file` destroys YAML frontmatter on task markdown files.** When writing evaluation reports or task body content, `write_file` replaces the ENTIRE file — including the YAML frontmatter block. This silently removes `status`, `priority`, `lane`, `multimodel_*`, `evidence_*`, and all other structured metadata, making the task invisible to the orchestrator and breaking lifecycle transitions. Observed twice in one session: both times the file had to be fully recreated with `terminal` + `cat > ... << 'EOF'` heredoc. **Safe alternatives**: (1) `patch` tool for targeted body edits that preserve frontmatter, (2) `terminal` + `sed` for status field changes, (3) `terminal` + `cat > ... << 'EOF'` when you must rewrite the entire file (include the full frontmatter block). After any task file write, always `grep "^status:"` the file to confirm frontmatter survived.
 
+- `lane=work` tasks with a `project` but missing `source_weighting_policy_ref` are **silently non-dispatchable**. `is_dispatchable()` fails closed on this field. The symptom is `eligibility-check` returning `eligible=false` + `no_dispatchable_task` with no obvious error. Fix: add `source_weighting_policy_ref: ~/.hermes/project-profiles/<project>.json#source_weighting_policy` to the task frontmatter. This affects batch intake of Lark/imported tasks where the project was renamed (e.g. `uvisa-app-2.0` → `uvisa-app-2.0-work`) — both the project name AND the policy ref must be present and matching. See `references/project-profile-dispatchability-gates.md`.
+- PRD extracts saved only to `/tmp/` will be lost on reboot/cleanup, making rank-1 product evidence unavailable when Lark tasks are later audited. Always persist PRD extracts under `~/.hermes/evidence/<project>/prd-extracts/` and reference the persisted path in `evidence_refs`. Closing a task as "product-verified" without a surviving PRD artifact is a false-positive closeout risk. See `references/prd-evidence-persistence.md`.
 - Do not start with `brainctl.py dashboard` / `brainctl.py eligibility-check` unless live help shows those subcommands exist; on this setup they live under `brain_task_orchestrator.py`.
 - When programmatically editing task markdown frontmatter, prefer `brain_task_orchestrator.py` helpers (`find_task`, mutate `task.fm`, `save_task`) or the CLI. Avoid dumping task notes with generic PyYAML: block-style lists and `null` scalars can make the orchestrator's yamlish parser lose `depends_on_task` or treat `claimed_by: null` / `run_id: null` as truthy strings, making tasks non-dispatchable. After edits, verify `work_dispatch_blockers`, dependency lists, and `is_dispatchable()`.
+- `blocked-resolve-step` is a no-op when the blocker is infrastructure (missing API keys, quota expired). It only resolves analysis-quality blockers.
+- `--force` does NOT bypass `multimodel_certification_required_before_done` gate. For evolution tasks blocked on infrastructure (quota, credentials), archive with `--to archived` instead of trying `--to done --force`. See `references/task-lifecycle-transition-chain.md` for the full chain of evidence requirements at each step.
+- Skipping the `review` step and going directly from `running → done` always fails with `illegal lifecycle transition`. The required chain is `running → review` (with structured `--evidence`) → `done` (with project-verification evidence + multimodel certification). See `references/task-lifecycle-transition-chain.md`.
 - Do not equate `proof-check FAIL` with `current task unsafe to claim` without checking why it failed.
 - Do not let historical `done task missing evidence` automatically block the only dispatchable priority task.
 - If `dispatchable=true` but `eligibility-check` says `autorun_disabled`, do not misdiagnose the stall as "no candidate task".
 - Do not “fix” the symptom only by manual claim; always inspect and repair the tick/runner policy afterward.
 - Do not collapse all non-PASS control-plane signals into one fatal bucket.
+- **Never hardcode project-specific domain patterns in orchestrator/classifier code.** Domain groups, keyword mappings, and page-level classification rules belong in the project profile (`domain_aliases` / `fullstack_domain_map`), not in `brain_task_orchestrator.py` or `task_classifier.py`. New projects should only need to add config to their profile — zero code change. User correction (2026-05-30): "为什么是硬编码？寻找相关论点以及核心著作". See `references/tree-shaped-boundary-refinement.md` for the config-driven pattern.
 
 ## Verification
 
@@ -495,3 +630,7 @@ After a fix or manual intervention, verify:
 - `references/stale-claim-and-finished-subtasks.md` — stale-claim recovery pattern plus the interpretation that blocked parents may already have completed convergence subtasks and now need parent-level evidence reintegration rather than more decomposition.
 - `references/auto-subtask-backfill-paused.md` — how to backfill finished child evidence into blocked parents while keeping pause-gated multimodel tasks blocked and non-dispatchable.
 - `references/envelope-bus-escape-triage.md` — agent team controller / envelope bus escape mechanism: thresholds, ack watermark, post-ack failure tracing, proof gate error types, and re-enable procedure.
+- `references/envelope-bus-escape-triage-cli-patterns.md` — direct sqlite3 CLI queries for envelope bus diagnosis: schema discovery, status distribution, post-ack failure tracing, project-level failure clustering, and the `missing_proof` project-clustering diagnostic signal.
+- `references/project-profile-dispatchability-gates.md` — Silent fail-closed gate when `lane=work` tasks are missing `source_weighting_policy_ref`; diagnosis, batch fix, and project rename cascade checklist.
+- `references/brain-kanban-dual-store-desync.md` — Brain markdown files and kanban.db are independent stores; cleaning one does NOT clean the other. Covers bulk cleanup procedure, kanban.db corruption recovery (dump → fix → recreate), and the rule that brain/kanban status must always be checked in both stores.
+- `references/prd-evidence-persistence.md` — Lark PRD extracts in `/tmp/` are ephemeral; persist under `~/.hermes/evidence/<project>/prd-extracts/` at extraction time. Covers detection of missing PRD during audit, evidence authority enforcement, and the 0220b40e wealth-buy routing case study.

@@ -816,19 +816,70 @@ PROOF CLOSEOUT RULES:
 WORKSPACE: Use /tmp/agent-team-{task.get('id','unknown')[:12]} as your workspace.
 """
 
+def _extract_json_object(text):
+    """Return the first balanced JSON object from text, tolerating markdown fences."""
+    if not text:
+        return None
+    cleaned = str(text).strip()
+    if cleaned.startswith('```'):
+        cleaned = '\n'.join(line for line in cleaned.splitlines() if not line.strip().startswith('```')).strip()
+    start = cleaned.find('{')
+    if start < 0:
+        return None
+    in_string = False
+    escape = False
+    depth = 0
+    for idx in range(start, len(cleaned)):
+        ch = cleaned[idx]
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == '\\':
+                escape = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == '{':
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+            if depth == 0:
+                return cleaned[start:idx + 1]
+    return None
+
+
 def collect_proof(task_id, worker_output):
-    """Extract proof from worker output."""
-    for line in worker_output.split('\n'):
+    """Extract proof from worker output.
+
+    Some providers wrap or pretty-print the final proof across multiple lines.
+    The proof contract says "PROOF_JSON:" must appear as the final marker, but
+    not every provider keeps the JSON object on the same physical line.  Parse a
+    balanced object after the marker before declaring invalid_proof.
+    """
+    marker = 'PROOF_JSON:'
+    text = worker_output or ''
+    marker_pos = text.rfind(marker)
+    candidates = []
+    if marker_pos >= 0:
+        candidates.append(text[marker_pos + len(marker):])
+    for line in text.split('\n'):
         line = line.strip()
-        if line.startswith('PROOF_JSON:'):
-            try:
-                proof = json.loads(line[len('PROOF_JSON:'):].strip())
-                PROOF_DIR.mkdir(parents=True, exist_ok=True)
-                proof_path = PROOF_DIR / f'{task_id}.json'
-                proof_path.write_text(json.dumps(proof, indent=2))
-                return proof
-            except json.JSONDecodeError:
-                pass
+        if line.startswith(marker):
+            candidates.append(line[len(marker):].strip())
+    for candidate in candidates:
+        json_text = _extract_json_object(candidate)
+        if not json_text:
+            continue
+        try:
+            proof = json.loads(json_text)
+            PROOF_DIR.mkdir(parents=True, exist_ok=True)
+            proof_path = PROOF_DIR / f'{task_id}.json'
+            proof_path.write_text(json.dumps(proof, ensure_ascii=False, indent=2))
+            return proof
+        except json.JSONDecodeError:
+            continue
     return None
 
 
@@ -1316,6 +1367,76 @@ def handle_continuations():
     
     return continuations
 
+def _detect_infra_failure(output, stderr=''):
+    """Detect infrastructure-level failures that justify immediate model fallback.
+
+    Returns (is_infra, category) where category is a short label for tracing.
+    These are NOT task-level failures (bad code, missing proof) — they are
+    platform/SDK/network failures that waste the full timeout budget.
+    """
+    combined = (output or '') + '\n' + (stderr or '')
+    combined_l = combined.lower()
+    # Codex SDK null-response crash (150 occurrences in one session 2026-05-28)
+    if 'SDK parse_response crashed on null response' in combined:
+        return True, 'codex_sdk_null_response'
+    # MCP server connection failures (repeated retry loops burning 7+ seconds)
+    if combined.count('MCP server') > 3 and 'failed' in combined:
+        return True, 'mcp_server_connection_loop'
+    # OpenAI client closed / recreation
+    if 'Detected closed shared OpenAI client' in combined and 'recreating' in combined:
+        return True, 'openai_client_closed'
+    # Codex-specific auth/quota errors
+    if 'openai-codex' in combined and ('401' in combined or '429' in combined or '503' in combined):
+        return True, 'codex_auth_or_quota'
+    # Provider-generic auth/quota/rate-limit errors. These are infrastructure
+    # failures even when the active provider is not openai-codex (for example
+    # xiaomi/MiMo returning "HTTP 429: Too many requests"). Without this, the
+    # controller misclassifies quota exhaustion as a task-level missing-proof
+    # failure, leaves the brain task running, and trips human_escape.
+    if (
+        'http 429' in combined_l
+        or 'too many requests' in combined_l
+        or 'ratelimiterror' in combined_l
+        or 'rate limit' in combined_l
+        or 'quota exceeded' in combined_l
+        or 'insufficient quota' in combined_l
+        or "you're out of extra usage" in combined_l
+        or 'out of extra usage' in combined_l
+    ):
+        return True, 'provider_rate_limit_or_quota'
+    if (
+        'http 401' in combined_l
+        or 'error code: 401' in combined_l
+        or 'unauthorized' in combined_l
+        or 'missing api key' in combined_l
+        or 'not configured' in combined_l
+        or 'no credentials' in combined_l
+    ):
+        return True, 'provider_auth_or_config'
+    return False, ''
+
+
+def _verify_workspace_ready(task_id):
+    """Verify workspace directory exists and is accessible before spawning worker.
+
+    Returns (ok, workspace_path, error_msg).
+    """
+    ws = Path(f'/tmp/agent-team-{task_id[:12]}')
+    if not ws.exists():
+        try:
+            ws.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            return False, str(ws), f'mkdir failed: {e}'
+    # Check writability
+    test_file = ws / '.worker_ready_test'
+    try:
+        test_file.write_text('ok')
+        test_file.unlink()
+    except Exception as e:
+        return False, str(ws), f'workspace not writable: {e}'
+    return True, str(ws), ''
+
+
 def delegate_to_worker(task, conflict_group, eid, sibling_tasks=None):
     """Delegate task to a lightweight worker via hermes chat -q."""
     import subprocess as _sp
@@ -1345,11 +1466,11 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
     if cont_count > 0:
         context = build_continuation_context(task_id, context)
     
-    # Route by task type: code/product tasks → GPT-5.5, analysis → MiMo.
-    # Lark/work UI tasks often have titles like “管理后台/页面/下拉框” and carry
-    # the concrete repo only in project metadata, so classify using both title and
-    # project. Misrouting these to the low-cost analysis model creates 300s
-    # timeouts and trips the envelope human-escape guard without useful proof.
+    # Route by task type: code/product tasks prefer stronger code models; advisory
+    # analysis prefers cheaper/reliable analysis models first.  Never rely on a
+    # single provider: one-provider chains caused retry storms when MiMo returned
+    # HTTP 429 / timeout under parallel load.  Claude Code is intentionally not
+    # in the default chain while local smoke checks report "out of extra usage".
     project_l = str(task.get('project') or '').lower()
     title_l = title.lower()
     code_markers = [
@@ -1359,60 +1480,121 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
         'control-plane', '控制面', 'gate', 'worker', 'cron',
     ]
     needs_code = ('uvisa' in project_l) or ('hermes-agent' in project_l) or any(kw in title_l for kw in code_markers)
-    model = 'gpt-5.5' if needs_code else 'mimo-v2.5-pro'
-    provider = 'openai-codex' if needs_code else 'xiaomi'
-    max_turns = 30 if needs_code else 15
-    timeout_s = 600 if needs_code else 300
+    # Fallback chain: each entry is (model, provider, max_turns, timeout_s).
+    # Keep timeouts bounded; infra failures fall through to the next provider.
+    if needs_code:
+        model_chain = [
+            ('gpt-5.5', 'openai-codex', 25, 500),
+            ('gemini-3-flash-preview', 'google-gemini-cli', 18, 360),
+            ('deepseek-v4-flash', 'deepseek', 18, 360),
+            ('mimo-v2.5-pro', 'xiaomi', 12, 240),
+        ]
+    else:
+        model_chain = [
+            ('gemini-3-flash-preview', 'google-gemini-cli', 15, 300),
+            ('deepseek-v4-flash', 'deepseek', 15, 300),
+            ('gpt-5.5', 'openai-codex', 15, 360),
+            ('mimo-v2.5-pro', 'xiaomi', 10, 220),
+        ]
+    chain_idx = 0
+    model, provider, max_turns, timeout_s = model_chain[chain_idx]
+
+    # Workspace sync barrier: ensure directory exists before worker spawns
+    ws_ok, ws_path, ws_err = _verify_workspace_ready(task_id)
+    if not ws_ok:
+        append_trace(eid, {'event': 'workspace_not_ready', 'path': ws_path, 'error': ws_err})
+        return {'status': 'failed', 'reason': f'workspace_not_ready: {ws_err}'}
 
     proof_stub = create_worker_proof_stub(task, envelope_id=eid, run_id=f'worker-{eid[:8]}')
     append_trace(eid, {'event': 'proof_stub_created', 'path': proof_stub.get('proof_stub_path'), 'task_id': task_id})
     record_worker_heartbeat(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), checkpoint='before_hermes_chat')
 
-    try:
-        cmd = [
-            'hermes', 'chat', '-q', context,
-            '--model', model, '--provider', provider,
-            '--quiet', '--max-turns', str(max_turns),
-            '--source', f'team-worker-{eid[:8]}',
-        ]
-        for skill_name in required_skills:
-            cmd.extend(['--skills', skill_name])
-        cmd.append('--ignore-rules')
-        r = _sp.run(cmd, capture_output=True, text=True, timeout=timeout_s)
-        record_worker_heartbeat(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), checkpoint='hermes_chat_returned', note=f'returncode={r.returncode}')
-        output = r.stdout
-        
-        # Check budget exhaustion
-        exhausted, signal = detect_budget_exhausted(output)
-        if exhausted:
-            cp = save_checkpoint(task_id, output)
-            can_cont, _ = can_continue(task_id)
-            if can_cont:
-                return {'status': 'continuation_pending', 'signal': signal}
-            return {'status': 'failed', 'reason': 'budget_exhausted_max_continuations'}
-        
-        # Check for proof
-        if 'PROOF_JSON' in output:
-            proof = collect_proof(task_id, output)
-            if not proof:
-                return {'status': 'failed', 'reason': 'invalid_proof', 'output': output[-300:]}
-            proof_check = validate_worker_proof_against_task(task, proof)
-            if proof_check.get('proof_status') == 'blocked':
-                return {'status': 'blocked', 'proof': proof, 'proof_check': proof_check, 'output': output[:500]}
-            if proof_check.get('status') != 'PASS':
-                return {'status': 'blocked', 'reason': 'proof_consistency_failed', 'proof': proof, 'proof_check': proof_check, 'output': output[-500:]}
-            return {'status': 'done', 'proof': proof, 'proof_check': proof_check, 'output': output}
-        elif 'BLOCKED' in output:
-            return {'status': 'blocked', 'output': output[:200]}
-        else:
-            return {'status': 'failed', 'reason': 'missing_proof', 'output': output[-300:]}
-    
-    except _sp.TimeoutExpired:
-        timeout_checkpoint = record_worker_timeout_checkpoint(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), reason='subprocess_timeout')
-        append_trace(eid, {'event': 'worker_timeout_checkpoint', 'path': timeout_checkpoint.get('proof_stub_path'), 'reason': 'subprocess_timeout'})
-        return {'status': 'timeout', 'reason': 'timeout_with_proof_stub', 'proof_stub_path': timeout_checkpoint.get('proof_stub_path')}
-    except Exception as e:
-        return {'status': 'error', 'error': str(e)[:200]}
+    # Model fallback loop: try each model in chain until success or all exhausted.
+    # Infrastructure failures (SDK crashes, MCP loops) trigger immediate fallback.
+    # Task-level failures (missing proof, blocked) stop the loop.
+    last_output = ''
+    last_stderr = ''
+    for chain_idx, (model, provider, max_turns, timeout_s) in enumerate(model_chain):
+        try:
+            cmd = [
+                'hermes', 'chat', '-q', context,
+                '--model', model, '--provider', provider,
+                '--quiet', '--max-turns', str(max_turns),
+                '--source', f'team-worker-{eid[:8]}',
+            ]
+            for skill_name in required_skills:
+                cmd.extend(['--skills', skill_name])
+            cmd.append('--ignore-rules')
+            append_trace(eid, {'event': 'worker_attempt', 'chain_idx': chain_idx, 'model': model, 'provider': provider})
+            r = _sp.run(cmd, capture_output=True, text=True, timeout=timeout_s)
+            record_worker_heartbeat(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), checkpoint='hermes_chat_returned', note=f'model={model} returncode={r.returncode}')
+            output = r.stdout
+            last_output = output
+            last_stderr = r.stderr or ''
+
+            # Check for infrastructure failures → fallback to next model
+            is_infra, infra_cat = _detect_infra_failure(output, r.stderr)
+            if is_infra:
+                append_trace(eid, {
+                    'event': 'infra_failure_fallback',
+                    'chain_idx': chain_idx, 'model': model,
+                    'infra_category': infra_cat,
+                    'output_tail': output[-300:],
+                })
+                # If not the last model in chain, try next
+                if chain_idx < len(model_chain) - 1:
+                    continue
+                # Last model also failed with infra error
+                return {'status': 'timeout', 'reason': f'all_models_infra_failed:{infra_cat}', 'output': output[-300:]}
+
+            # Check budget exhaustion
+            exhausted, signal = detect_budget_exhausted(output)
+            if exhausted:
+                cp = save_checkpoint(task_id, output)
+                can_cont, _ = can_continue(task_id)
+                if can_cont:
+                    return {'status': 'continuation_pending', 'signal': signal}
+                return {'status': 'failed', 'reason': 'budget_exhausted_max_continuations'}
+
+            # Check for proof
+            if 'PROOF_JSON' in output:
+                proof = collect_proof(task_id, output)
+                if not proof:
+                    return {'status': 'failed', 'reason': 'invalid_proof', 'output': output[-300:]}
+                proof_check = validate_worker_proof_against_task(task, proof)
+                if proof_check.get('proof_status') == 'blocked':
+                    return {'status': 'blocked', 'proof': proof, 'proof_check': proof_check, 'output': output[:500]}
+                if proof_check.get('status') != 'PASS':
+                    return {'status': 'blocked', 'reason': 'proof_consistency_failed', 'proof': proof, 'proof_check': proof_check, 'output': output[-500:]}
+                return {'status': 'done', 'proof': proof, 'proof_check': proof_check, 'output': output, 'model_used': model}
+            elif 'BLOCKED' in output:
+                return {'status': 'blocked', 'output': output[:200], 'model_used': model}
+            else:
+                # Missing proof but not infra failure — task-level issue, don't fallback
+                return {'status': 'failed', 'reason': 'missing_proof', 'output': output[-300:], 'model_used': model}
+
+        except _sp.TimeoutExpired:
+            # Timeout could be infra (model hanging) or task (too complex)
+            # If we have stderr showing infra issues, fallback; otherwise treat as task timeout
+            is_infra, infra_cat = _detect_infra_failure(last_output, last_stderr)
+            if is_infra and chain_idx < len(model_chain) - 1:
+                append_trace(eid, {
+                    'event': 'timeout_infra_fallback',
+                    'chain_idx': chain_idx, 'model': model,
+                    'infra_category': infra_cat,
+                })
+                continue
+            timeout_checkpoint = record_worker_timeout_checkpoint(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), reason=f'subprocess_timeout_{model}')
+            append_trace(eid, {'event': 'worker_timeout_checkpoint', 'path': timeout_checkpoint.get('proof_stub_path'), 'reason': f'subprocess_timeout_{model}', 'chain_idx': chain_idx})
+            return {'status': 'timeout', 'reason': 'timeout_with_proof_stub', 'proof_stub_path': timeout_checkpoint.get('proof_stub_path'), 'model_used': model}
+        except Exception as e:
+            append_trace(eid, {'event': 'worker_exception', 'model': model, 'error': str(e)[:200]})
+            if chain_idx < len(model_chain) - 1:
+                continue
+            return {'status': 'error', 'error': str(e)[:200], 'model_used': model}
+
+    # Should not reach here, but safety fallback
+    return {'status': 'failed', 'reason': 'model_chain_exhausted', 'output': last_output[-300:]}
 
 
 def create_claim_envelope(task, conflict_group, actor='agent-team-controller', *, source='claim-cycle', handoff=''):
@@ -1554,14 +1736,29 @@ def claim_cycle(max_claims=3, wall_budget_seconds=20):
 
 def _process_worker_result(row, actor, eid, worker_result):
     record = {'task_id': row.get('id', ''), 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
+    task_id = row.get('id', '')
+
+    def _requeue(reason, evidence, *, envelope_status='FAILED', envelope_error=None):
+        retry = transition_task(task_id, 'retry', actor, reason, evidence=evidence)
+        record['retry_transition'] = retry
+        if retry.get('ok'):
+            update_status(eid, envelope_status, error=envelope_error or reason[:200])
+            record['envelope_status'] = envelope_status
+            record['to_status'] = 'retry'
+        else:
+            update_status(eid, 'FAILED', error=str(retry)[:200])
+            record['envelope_status'] = 'FAILED'
+            record['to_status'] = 'running'
+        return record
+
     if worker_result.get('status') == 'done':
         proof = worker_result.get('proof') or {}
         PROOF_DIR.mkdir(parents=True, exist_ok=True)
-        proof_path = PROOF_DIR / f"{row.get('id','')}.json"
+        proof_path = PROOF_DIR / f"{task_id}.json"
         if not proof_path.exists():
             proof_path.write_text(json.dumps(proof, ensure_ascii=False, indent=2))
         review = transition_task(
-            row.get('id', ''),
+            task_id,
             'review',
             actor,
             'worker produced proof; controller stops at review for proof-gated closeout',
@@ -1572,37 +1769,49 @@ def _process_worker_result(row, actor, eid, worker_result):
             update_status(eid, 'DONE')
             record['to_status'] = 'review'
         else:
-            update_status(eid, 'FAILED', error=str(review)[:200])
-            record['to_status'] = 'running'
+            _requeue(
+                'worker proof produced but review transition failed; requeue to avoid false running',
+                ['command:agent_team_controller execute-cycle review_transition_failed'],
+                envelope_status='FAILED',
+                envelope_error=str(review)[:200],
+            )
         return record
     if worker_result.get('status') == 'blocked':
-        update_status(eid, 'BLOCKED')
-        record['to_status'] = 'running'
+        blocked = transition_task(
+            task_id,
+            'blocked',
+            actor,
+            'worker reported blocked; release running task to blocked state',
+            evidence=['command:agent_team_controller execute-cycle worker blocked'],
+        )
+        record['blocked_transition'] = blocked
+        if blocked.get('ok'):
+            update_status(eid, 'BLOCKED')
+            record['to_status'] = 'blocked'
+        else:
+            update_status(eid, 'FAILED', error=str(blocked)[:200])
+            record['to_status'] = 'running'
         return record
     if worker_result.get('status') == 'continuation_pending':
-        update_status(eid, 'PENDING')
-        record['to_status'] = 'pending'
-        return record
-    if worker_result.get('status') == 'timeout':
-        retry = transition_task(
-            row.get('id', ''),
-            'retry',
-            actor,
-            'worker timed out without proof; requeue for proof-gated retry',
-            evidence=['command:agent_team_controller execute-cycle worker timeout'],
+        return _requeue(
+            'worker requested continuation; requeue checkpointed task for next continuation pass',
+            ['command:agent_team_controller execute-cycle continuation_pending'],
+            envelope_status='SKIPPED',
+            envelope_error='continuation_pending_requeued',
         )
-        record['retry_transition'] = retry
-        if retry.get('ok'):
-            update_status(eid, 'SKIPPED', error='worker_timeout_requeued')
-            record['envelope_status'] = 'SKIPPED'
-        else:
-            update_status(eid, 'FAILED', error='worker_timeout_retry_failed')
-            record['envelope_status'] = 'FAILED'
-        record['to_status'] = 'retry' if retry.get('ok') else 'running'
-        return record
-    update_status(eid, 'FAILED', error=str(worker_result)[:200])
-    record['to_status'] = 'running'
-    return record
+    if worker_result.get('status') == 'timeout':
+        return _requeue(
+            'worker timed out without proof; requeue for proof-gated retry',
+            ['command:agent_team_controller execute-cycle worker timeout'],
+            envelope_status='SKIPPED',
+            envelope_error='worker_timeout_requeued',
+        )
+    return _requeue(
+        f"worker failed without completion proof; requeue to avoid false running: {worker_result.get('reason') or worker_result.get('status') or 'unknown'}",
+        ['command:agent_team_controller execute-cycle worker failed'],
+        envelope_status='FAILED',
+        envelope_error=str(worker_result)[:200],
+    )
 
 
 def execute_cycle(max_workers=3, wall_budget_seconds=600):
@@ -1812,6 +2021,20 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         worker_result = delegate_to_worker(record['row'], record['group'], eid, sibling_tasks=siblings)
         append_trace(eid, {'event': 'event_worker_finished', 'result': worker_result.get('status', '?')})
         out = {'task_id': task_id, 'envelope_id': eid, 'worker_result': worker_result.get('status', '?')}
+
+        def _requeue(reason, evidence, *, envelope_status='FAILED', envelope_error=None):
+            retry = transition_task(task_id, 'retry', actor, reason, evidence=evidence)
+            out['retry_transition'] = retry
+            if retry.get('ok'):
+                update_status(eid, envelope_status, error=envelope_error or reason[:200])
+                out['envelope_status'] = envelope_status
+                out['to_status'] = 'retry'
+            else:
+                update_status(eid, 'FAILED', error=str(retry)[:200])
+                out['envelope_status'] = 'FAILED'
+                out['to_status'] = 'running'
+            return out
+
         if worker_result.get('status') == 'done':
             proof = worker_result.get('proof') or {}
             PROOF_DIR.mkdir(parents=True, exist_ok=True)
@@ -1830,32 +2053,48 @@ def consume_claimed_batch(claimed_items, max_agents=3):
                 update_status(eid, 'DONE')
                 out['to_status'] = 'review'
             else:
-                update_status(eid, 'FAILED', error=str(review)[:200])
-                out['to_status'] = 'running'
+                _requeue(
+                    'event-driven worker proof produced but review transition failed; requeue to avoid false running',
+                    ['command:agent_team_controller consume-claimed review_transition_failed'],
+                    envelope_status='FAILED',
+                    envelope_error=str(review)[:200],
+                )
         elif worker_result.get('status') == 'blocked':
-            update_status(eid, 'BLOCKED')
-            out['to_status'] = 'running'
-        elif worker_result.get('status') == 'continuation_pending':
-            out['to_status'] = 'running'
-        elif worker_result.get('status') == 'timeout':
-            retry = transition_task(
+            blocked = transition_task(
                 task_id,
-                'retry',
+                'blocked',
                 actor,
-                'event-driven worker timed out without proof; requeue for proof-gated retry',
-                evidence=['command:agent_team_controller consume-claimed worker timeout'],
+                'event-driven worker reported blocked; release running task to blocked state',
+                evidence=['command:agent_team_controller consume-claimed worker blocked'],
             )
-            out['retry_transition'] = retry
-            if retry.get('ok'):
-                update_status(eid, 'SKIPPED', error='worker_timeout_requeued')
-                out['envelope_status'] = 'SKIPPED'
+            out['blocked_transition'] = blocked
+            if blocked.get('ok'):
+                update_status(eid, 'BLOCKED')
+                out['to_status'] = 'blocked'
             else:
-                update_status(eid, 'FAILED', error='worker_timeout_retry_failed')
-                out['envelope_status'] = 'FAILED'
-            out['to_status'] = 'retry' if retry.get('ok') else 'running'
+                update_status(eid, 'FAILED', error=str(blocked)[:200])
+                out['to_status'] = 'running'
+        elif worker_result.get('status') == 'continuation_pending':
+            _requeue(
+                'event-driven worker requested continuation; requeue checkpointed task for next continuation pass',
+                ['command:agent_team_controller consume-claimed continuation_pending'],
+                envelope_status='SKIPPED',
+                envelope_error='continuation_pending_requeued',
+            )
+        elif worker_result.get('status') == 'timeout':
+            _requeue(
+                'event-driven worker timed out without proof; requeue for proof-gated retry',
+                ['command:agent_team_controller consume-claimed worker timeout'],
+                envelope_status='SKIPPED',
+                envelope_error='worker_timeout_requeued',
+            )
         else:
-            update_status(eid, 'FAILED', error=str(worker_result)[:200])
-            out['to_status'] = 'running'
+            _requeue(
+                f"event-driven worker failed without completion proof; requeue to avoid false running: {worker_result.get('reason') or worker_result.get('status') or 'unknown'}",
+                ['command:agent_team_controller consume-claimed worker failed'],
+                envelope_status='FAILED',
+                envelope_error=str(worker_result)[:200],
+            )
         return out
 
     if launch_records:
@@ -1867,13 +2106,21 @@ def consume_claimed_batch(claimed_items, max_agents=3):
                 try:
                     consumed.append(future.result())
                 except Exception as exc:
+                    retry = transition_task(
+                        rec['task_id'],
+                        'retry',
+                        rec['actor'],
+                        'event-driven worker raised exception; requeue to avoid false running',
+                        evidence=['command:agent_team_controller consume-claimed worker exception'],
+                    )
                     update_status(rec['eid'], 'FAILED', error=str(exc)[:200])
                     consumed.append({
                         'task_id': rec['task_id'],
                         'envelope_id': rec['eid'],
                         'worker_result': 'error',
                         'error': str(exc)[:200],
-                        'to_status': 'running',
+                        'retry_transition': retry,
+                        'to_status': 'retry' if retry.get('ok') else 'running',
                     })
 
     reviewed_count = sum(1 for item in consumed if item.get('to_status') == 'review')
