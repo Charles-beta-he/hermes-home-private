@@ -1,0 +1,37 @@
+# Hermes Edge Worker Configuration
+# 本机作为主节点，监听所有网络接口
+
+worker:
+  name: "charlesdeMacBook-Pro"
+  host: "0.0.0.0"  # 监听所有接口
+  port: 9001
+  brain_url: ""
+  auto_discover: true
+  discover_interval: 30
+  heartbeat_interval: 30
+  reconnect_interval: 10
+
+security:
+  access_key: ""
+  access_env: "HERMES_EDGE_WORKER_ACCESS"
+  allowed_commands: ["date", "uname", "pwd"]  # Phase 2 read-only smoke allowlist
+  max_timeout: 30
+  read_only: true
+
+logging:
+  level: "info"
+  file: "/Users/charles/.hermes/edge-worker/logs/edge.log"
+  max_size: "10MB"
+  max_files: 5
+
+updates:
+  auto_check: false
+  check_interval: 0
+  source: "local"
+
+update_sources:
+  primary: "local"
+  fallbacks:
+    - "github:https://raw.githubusercontent.com/nicholaschenai/hermes-edge-worker/main"
+    - "github-proxy:https://ghproxy.com/https://raw.githubusercontent.com/nicholaschenai/hermes-edge-worker/main"
+    - "cloudflare:https://hermes-edge.pages.dev"

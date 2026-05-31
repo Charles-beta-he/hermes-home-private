@@ -94,8 +94,8 @@ def read_edge_config(path: Path = EDGE_CONFIG_PATH) -> dict[str, Any]:
     """Read the small edge-worker config shape without requiring PyYAML.
 
     The parser is deliberately tiny and only extracts top-level section scalars
-    used by the selfcheck.  It never returns secret values; token is represented
-    by token_configured=True only.
+    used by the selfcheck. It never returns credential values; presence is
+    represented by token_configured=True only for registry compatibility.
     """
     if not path.exists():
         return {"exists": False, "path": str(path)}
@@ -111,13 +111,13 @@ def read_edge_config(path: Path = EDGE_CONFIG_PATH) -> dict[str, Any]:
         if current and raw.startswith("  ") and ":" in raw:
             key, value = raw.strip().split(":", 1)
             parsed = _parse_scalar(value)
-            if current == "security" and key == "token":
+            if current == "security" and key in {"access_key", "token"}:
                 sections[current]["token_configured"] = bool(parsed)
             else:
                 sections[current][key] = parsed
     security_section = sections.get("security", {})
-    token_env = str(security_section.get("token_env") or "")
-    if token_env and (os.environ.get(token_env) or _dotenv_has_key(token_env)):
+    access_env = str(security_section.get("access_env") or security_section.get("token_env") or "")
+    if access_env and (os.environ.get(access_env) or _dotenv_has_key(access_env)):
         security_section["token_configured"] = True
     worker = sections.get("worker", {})
     security = sections.get("security", {})

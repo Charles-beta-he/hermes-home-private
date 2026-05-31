@@ -92,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Explicit read-only edge execution smoke")
     parser.add_argument("command", nargs="?", default="pwd", help="read-only command: date, uname, or pwd")
     parser.add_argument("--worker-id")
-    parser.add_argument("--token-env", default="HERMES_EDGE_WORKER_TOKEN")
+    parser.add_argument("--token-env", default="HERMES_EDGE_WORKER_ACCESS")
     parser.add_argument("--timeout", type=float, default=5)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
