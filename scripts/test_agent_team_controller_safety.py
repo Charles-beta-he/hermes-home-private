@@ -244,6 +244,30 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertTrue(any(call.args[0] == "env-stale" and call.args[1] == "SKIPPED" and call.kwargs.get("error") == "stale_claim_running_transition_skipped" for call in update_status.call_args_list))
         self.assertFalse(any(call.args[0] == "env-stale" and call.args[1] == "FAILED" for call in update_status.call_args_list))
 
+    def test_workspace_path_is_collision_resistant_for_same_cjk_prefix(self):
+        first = "2026-06-02-评估-anthropic-harness-design"
+        second = "2026-06-02-评估-moso-毛竹"
+
+        p1 = self.ctrl._workspace_path(first)
+        p2 = self.ctrl._workspace_path(second)
+
+        self.assertNotEqual(p1, p2)
+        self.assertTrue(str(p1).startswith("/tmp/agent-team-"))
+        self.assertTrue(str(p2).startswith("/tmp/agent-team-"))
+        # The historical bug used this colliding prefix for both ids.
+        self.assertNotEqual(str(p1), "/tmp/agent-team-2026-06-02-评")
+        self.assertNotEqual(str(p2), "/tmp/agent-team-2026-06-02-评")
+
+    def test_verify_workspace_ready_creates_unique_writable_workspace(self):
+        task_id = "2026-06-02-评估-workspace-smoke"
+        ok, path, err = self.ctrl._verify_workspace_ready(task_id)
+
+        self.assertTrue(ok, err)
+        self.assertTrue(Path(path).is_dir())
+        self.assertIn(self.ctrl._workspace_path(task_id).name, path)
+        self.ctrl.cleanup_worktree(task_id)
+        self.assertFalse(Path(path).exists())
+
     def test_detect_infra_failure_recognizes_generic_provider_429(self):
         is_infra, category = self.ctrl._detect_infra_failure(
             "API call failed after 3 retries: HTTP 429: Too many requests"

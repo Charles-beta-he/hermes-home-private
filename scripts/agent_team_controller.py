@@ -867,7 +867,7 @@ PROOF CLOSEOUT RULES:
 - For done proof, red_lines_status must be safe and no_red_line_violations must be true; otherwise output BLOCKED instead of done.
 - If evidence is missing, status must be blocked with blockers explaining the missing proof.
 
-WORKSPACE: Use /tmp/agent-team-{task.get('id','unknown')[:12]} as your workspace.
+WORKSPACE: Use {_workspace_path(task.get('id','unknown'))} as your workspace.
 """
 
 def _extract_json_object(text):
@@ -1225,10 +1225,25 @@ def verify_worker_boundary(task, proof):
         'files_changed_count': len(files_changed),
     }
 
+def _workspace_path(task_id):
+    """Return a collision-resistant worker workspace path for a task id.
+
+    Many task ids share the same date/CJK prefix (for example
+    `2026-06-02-评...`).  Using only `task_id[:12]` made parallel workers share
+    `/tmp/agent-team-2026-06-02-评`; one worker's cleanup could delete another
+    worker's workspace between mkdir and the readiness write, producing false
+    `workspace_not_ready` failures and retriggering human_escape.
+    """
+    raw = str(task_id or 'unknown').strip() or 'unknown'
+    safe_prefix = ''.join(ch if ch.isascii() and (ch.isalnum() or ch in {'-', '_'}) else '-' for ch in raw[:24]).strip('-') or 'task'
+    digest = hashlib.sha256(raw.encode('utf-8')).hexdigest()[:12]
+    return Path(f'/tmp/agent-team-{safe_prefix[:32]}-{digest}')
+
+
 def cleanup_worktree(task_id):
     """Clean up temporary workspace."""
     import shutil
-    workspace = Path(f'/tmp/agent-team-{task_id[:12]}')
+    workspace = _workspace_path(task_id)
     if workspace.exists():
         try:
             shutil.rmtree(workspace)
@@ -1475,7 +1490,7 @@ def _verify_workspace_ready(task_id):
 
     Returns (ok, workspace_path, error_msg).
     """
-    ws = Path(f'/tmp/agent-team-{task_id[:12]}')
+    ws = _workspace_path(task_id)
     if not ws.exists():
         try:
             ws.mkdir(parents=True, exist_ok=True)

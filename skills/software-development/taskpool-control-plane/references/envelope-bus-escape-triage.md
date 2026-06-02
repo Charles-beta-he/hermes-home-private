@@ -91,6 +91,8 @@ DONE without valid proof. Stale/malformed queued envelopes should be `SKIPPED`, 
 
 Implementation pitfall: normalize queue identifiers before lookup/transition. `brain_id` or claimed `task_id` values can carry trailing newlines from JSON/string handoffs; controllers should `strip()` before `rows_by_id()` and before `transition_task()`. Otherwise a real task becomes `task_not_found`, repeated failures can trip `human_escape`, and the pool appears wedged even though the task exists.
 
+Parallel workspace pitfall: never derive worker temp directories from a short prefix such as `task_id[:12]`. Many Chinese task ids share the same date/CJK prefix (`2026-06-02-评...`), so parallel workers collide under one `/tmp/agent-team-*` directory; one worker cleanup can delete another worker's workspace between `mkdir` and `.worker_ready_test`, producing false `workspace_not_ready` failures that retrigger `human_escape`. Use a collision-resistant path that includes a hash of the full stripped task id, and cover it with a regression test for same-prefix CJK ids.
+
 ## Running the controller
 
 ```bash
