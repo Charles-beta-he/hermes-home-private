@@ -71,8 +71,31 @@ def test_validate_worker_proof_rejects_checkpoint_stub_as_completion_proof():
     assert "checkpoint_stub_is_not_completion_proof" in result["violations"]
 
 
+def test_worker_routes_external_evaluation_as_analysis_even_when_hermes_is_mentioned():
+    mod = load_module()
+    task = {
+        "id": "eval-openagents",
+        "title": "评估 OpenAgents workspace-network 对 Hermes 多智能体协作与外部工作区集成的参考价值",
+        "project": "hermes-agent",
+    }
+    assert mod._is_advisory_analysis_task(task) is True
+    assert mod._worker_needs_codegen(task) is False
+
+
+def test_worker_routes_explicit_hermes_implementation_as_codegen():
+    mod = load_module()
+    task = {
+        "id": "impl-worker",
+        "title": "实现 Hermes agent_team_controller worker timeout fallback 修复",
+        "project": "hermes-agent",
+    }
+    assert mod._worker_needs_codegen(task) is True
+
+
 if __name__ == "__main__":
     test_create_proof_stub_records_book_checkpoint_contract()
     test_record_worker_timeout_updates_stub_instead_of_losing_proof_context()
     test_validate_worker_proof_rejects_checkpoint_stub_as_completion_proof()
+    test_worker_routes_external_evaluation_as_analysis_even_when_hermes_is_mentioned()
+    test_worker_routes_explicit_hermes_implementation_as_codegen()
     print("PASS")

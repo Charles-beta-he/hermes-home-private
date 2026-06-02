@@ -1506,6 +1506,43 @@ def _verify_workspace_ready(task_id):
     return True, str(ws), ''
 
 
+def _is_advisory_analysis_task(task, title_l='', project_l=''):
+    """Return True for reference-review / evaluation tasks that should not start on codegen models.
+
+    External-framework evaluations often mention "Hermes", "worker", or "control-plane"
+    because they map ideas back to Hermes.  Treating those words as code markers routes the
+    task to expensive codegen workers, which repeatedly timed out without final proof.
+    """
+    title_l = title_l or str(task.get('title') or '').lower()
+    project_l = project_l or str(task.get('project') or '').lower()
+    body_l = str(task.get('body') or task.get('description') or '').lower()
+    combined = '\n'.join([title_l, project_l, body_l])
+    advisory_markers = [
+        '评估', '参考价值', 'reference review', 'framework evaluation', 'external framework',
+        'advisory', 'analysis', 'analyze', '调研', '研究', 'gap analysis', 'mapping', '对 hermes',
+    ]
+    implementation_markers = [
+        '实现', '修复', '修改代码', '落地实现', 'code change', 'patch', 'edit file',
+        'write code', 'implement', 'fix bug', '变更源码', '提交代码',
+    ]
+    return any(marker in combined for marker in advisory_markers) and not any(marker in combined for marker in implementation_markers)
+
+
+def _worker_needs_codegen(task, title_l='', project_l=''):
+    """Classify whether a worker should start with codegen providers."""
+    title_l = title_l or str(task.get('title') or '').lower()
+    project_l = project_l or str(task.get('project') or '').lower()
+    if _is_advisory_analysis_task(task, title_l=title_l, project_l=project_l):
+        return False
+    code_markers = [
+        '修复', 'fix', '实现', 'implement', '代码', 'uvisa', '前端', '后端', '恢复', '集成',
+        'lark', 'admin', '管理后台', '用户端', '页面', 'ui', '下拉', '弹窗', '抽屉', '复刻',
+        '回测', '接口', 'api', 'backend', 'frontend', 'taskpool', 'hermes', 'telemetry',
+        'control-plane', '控制面', 'gate', 'worker', 'cron',
+    ]
+    return ('uvisa' in project_l) or ('hermes-agent' in project_l) or any(kw in title_l for kw in code_markers)
+
+
 def delegate_to_worker(task, conflict_group, eid, sibling_tasks=None):
     """Delegate task to a lightweight worker via hermes chat -q."""
     import subprocess as _sp
@@ -1542,13 +1579,7 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
     # in the default chain while local smoke checks report "out of extra usage".
     project_l = str(task.get('project') or '').lower()
     title_l = title.lower()
-    code_markers = [
-        '修复', 'fix', '实现', 'implement', '代码', 'uvisa', '前端', '后端', '恢复', '集成',
-        'lark', 'admin', '管理后台', '用户端', '页面', 'ui', '下拉', '弹窗', '抽屉', '复刻',
-        '回测', '接口', 'api', 'backend', 'frontend', 'taskpool', 'hermes', 'telemetry',
-        'control-plane', '控制面', 'gate', 'worker', 'cron',
-    ]
-    needs_code = ('uvisa' in project_l) or ('hermes-agent' in project_l) or any(kw in title_l for kw in code_markers)
+    needs_code = _worker_needs_codegen(task, title_l=title_l, project_l=project_l)
     # Fallback chain: each entry is (model, provider, max_turns, timeout_s).
     # Keep timeouts bounded; infra failures fall through to the next provider.
     if needs_code:
