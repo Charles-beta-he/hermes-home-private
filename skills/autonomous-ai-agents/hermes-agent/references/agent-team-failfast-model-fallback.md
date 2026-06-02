@@ -16,7 +16,7 @@ GPT-5.5 (openai-codex) → Claude Sonnet (anthropic) → MiMo (xiaomi)
 
 For non-codegen tasks, MiMo (xiaomi) executes directly.
 
-Key rule: infrastructure failures trigger model switch; non-infra outcomes (PROOF_JSON, BLOCKED_JSON, non-zero exit) are NOT model failures — return them as-is.
+Key rule: infrastructure failures trigger model switch; terminal task outcomes (valid `PROOF_JSON`, `BLOCKED`/blocked proof, or proof-consistency failure) return as-is. Provider proof-contract failures (`PROOF_JSON` marker with unparsable JSON, or non-blocked output with no `PROOF_JSON`) should continue to the next provider before failing closed after the chain is exhausted; never synthesize DONE proof from prose output.
 
 ## Infra Error Detection
 
