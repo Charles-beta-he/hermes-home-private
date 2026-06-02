@@ -232,6 +232,20 @@ Abstraction Governance Result
 7. Confusing action repair with double-loop learning; sometimes the rule-generation process is the bug.
 8. Letting a default task schema fill missing slots without marking them as assumptions.
 
+## Runtime Gate Implementation
+
+Hermes core now includes a deterministic hot-path memory gate in `agent/abstraction_governance.py`, wired through `tools/memory_tool.py`.
+
+Default behavior:
+
+- enabled unless `HERMES_ABSTRACTION_GOVERNANCE_GATE=0`;
+- blocks high-confidence task/session progress from durable memory;
+- blocks procedure/checklist/workflow content from always-on `memory` and redirects it to skill or experience-ratchet landing zones;
+- allows compact declarative user preferences and scoped project facts;
+- returns a structured `abstraction_governance` payload naming reason, recommended landing zone, and required skill.
+
+The runtime gate is intentionally deterministic and conservative. It is not a substitute for full abstraction review; it catches obvious boundary violations before they enter persistent prompt context.
+
 ## Verification Checklist
 
 - [ ] The claim is split into event, local fact, pattern, rule, gate, ADR, or meta-policy pieces.
