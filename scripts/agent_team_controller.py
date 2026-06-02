@@ -351,6 +351,60 @@ def transition_task(task_id, to_status, actor, reason, evidence=None, ttl=60, fo
     return {'ok': data.get('status') == 'OK', 'data': data}
 
 
+def _transition_error_text(result):
+    if not isinstance(result, dict):
+        return str(result)
+    parts = []
+    for key in ('error', 'stderr', 'stdout'):
+        if result.get(key):
+            parts.append(str(result.get(key)))
+    data = result.get('data')
+    if isinstance(data, dict):
+        for key in ('error', 'reason', 'reasons', 'status'):
+            if data.get(key):
+                parts.append(str(data.get(key)))
+    if not parts:
+        parts.append(str(result))
+    return ' '.join(parts)
+
+
+def _is_stale_claim_transition_error(result):
+    text = _transition_error_text(result).lower()
+    return (
+        'claim-bound status requires claimed_by' in text
+        or 'task claim is stale' in text
+        or 'valid non-expired claim_expires_at' in text
+    )
+
+
+def _release_stale_claim_after_running_failure(task_id, actor, eid, running, *, source):
+    """Release stale claim envelopes without counting them as worker failures.
+
+    A stale claim is a lease cleanup condition, not an agent-quality failure. If
+    we mark the envelope FAILED here, three stale leases trip human_escape and
+    freeze unrelated dispatchable work. Force-release the brain task to retry and
+    mark the envelope SKIPPED so the next tick can reclaim it under a fresh lease.
+    """
+    release = transition_task(
+        task_id,
+        'retry',
+        actor,
+        f'{source} detected stale claim before running; force-release for fresh claim',
+        evidence=[f'command:agent_team_controller {source} stale_claim_release'],
+        force=True,
+    )
+    update_status(eid, 'SKIPPED', error='stale_claim_running_transition_skipped')
+    return {
+        'task_id': task_id,
+        'envelope_id': eid,
+        'reason': 'stale_claim_running_transition_released',
+        'detail': running,
+        'release_transition': release,
+        'envelope_status': 'SKIPPED',
+        'to_status': 'retry' if release.get('ok') else 'claimed',
+    }
+
+
 def list_task_rows(include_done=False):
     cmd = ['python3', str(ORCHESTRATOR), 'list']
     if include_done:
@@ -376,7 +430,7 @@ def page_batch_siblings_for(row, rows=None, limit=8):
     """
     boundary = str(row.get('parallel_boundary') or '').strip()
     project = str(row.get('project') or '').strip()
-    task_id = str(row.get('id') or '')
+    task_id = str(row.get('id') or '').strip()
     if not boundary or not project:
         return []
     rows = rows if rows is not None else list_task_rows(include_done=False)
@@ -418,7 +472,7 @@ def ensure_uvisa_lark_contract(task):
             return json.loads(Path(existing).expanduser().read_text())
         except Exception:
             pass
-    task_id = str(task.get('id', '') or '')
+    task_id = str(task.get('id', '') or '').strip()
     title = str(task.get('title', '') or task_id)
     body = str(task.get('body', '') or task.get('description', '') or '')
     lark_guid = str(task.get('lark_task_guid', '') or '')
@@ -1842,7 +1896,7 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
             break
         eid = envelope['id']
         payload = json.loads(envelope.get('payload') or '{}') if isinstance(envelope.get('payload'), str) else (envelope.get('payload') or {})
-        task_id = str(payload.get('brain_id') or '')
+        task_id = str(payload.get('brain_id') or '').strip()
         if not task_id:
             # Stale/malformed queued envelopes are audit noise, not worker failures.
             # Mark them SKIPPED so a recovery cycle does not trip human_escape while
@@ -1868,8 +1922,17 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
         actor = row_actor or payload_actor or 'agent-team-controller'
         running = transition_task(task_id, 'running', actor, 'execute-cycle worker trigger after queued claim')
         if not running.get('ok'):
-            update_status(eid, 'FAILED', error=str(running)[:200])
-            skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
+            if _is_stale_claim_transition_error(running):
+                skipped.append(_release_stale_claim_after_running_failure(
+                    task_id,
+                    actor,
+                    eid,
+                    running,
+                    source='execute-cycle',
+                ))
+            else:
+                update_status(eid, 'FAILED', error=str(running)[:200])
+                skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
             continue
         update_status(eid, 'RUNNING')
         group = payload.get('conflict_group') or row.get('parallel_group') or row.get('conflict_group') or row.get('parallel_boundary') or row.get('project') or 'default'
@@ -1969,7 +2032,7 @@ def consume_claimed_batch(claimed_items, max_agents=3):
     # escape cleanup paths.  Truncating here leaves overflow items stuck in
     # claimed with no worker or controller ownership.
     claimed_items = list(claimed_items)
-    ids = [str(item.get('task_id') or item.get('id') or '') for item in claimed_items if isinstance(item, dict)]
+    ids = [str(item.get('task_id') or item.get('id') or '').strip() for item in claimed_items if isinstance(item, dict)]
     ids = [x for x in ids if x]
     row_map = rows_by_id(ids)
     consumed = []
@@ -1977,7 +2040,7 @@ def consume_claimed_batch(claimed_items, max_agents=3):
     launch_records = []
 
     for item in claimed_items:
-        task_id = str(item.get('task_id') or item.get('id') or '') if isinstance(item, dict) else ''
+        task_id = str(item.get('task_id') or item.get('id') or '').strip() if isinstance(item, dict) else ''
         if not task_id:
             skipped.append({'task_id': '', 'reason': 'missing_task_id'})
             continue
@@ -2008,8 +2071,17 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         append_trace(eid, {'event': 'event_driven_claim_consumed', 'task_id': task_id, 'actor': actor})
         running = transition_task(task_id, 'running', actor, 'event-driven worker trigger after parallel claim/handoff')
         if not running.get('ok'):
-            update_status(eid, 'FAILED', error=str(running)[:200])
-            skipped.append({'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
+            if _is_stale_claim_transition_error(running):
+                skipped.append(_release_stale_claim_after_running_failure(
+                    task_id,
+                    actor,
+                    eid,
+                    running,
+                    source='consume-claimed',
+                ))
+            else:
+                update_status(eid, 'FAILED', error=str(running)[:200])
+                skipped.append({'task_id': task_id, 'reason': 'running_transition_failed', 'detail': running})
             continue
         launch_records.append({'task_id': task_id, 'row': row, 'actor': actor, 'group': str(group), 'eid': eid})
 

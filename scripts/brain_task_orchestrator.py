@@ -1077,6 +1077,9 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         "auto_subtask_parent", "auto_subtask_kind", "auto_subtask_axis", "auto_subtask_trigger",
         "auto_subtask_issue_ids", "auto_subtask_parent_artifact", "auto_subtask_children",
         "auto_subtask_open_children", "auto_subtask_ready_for_parent", "auto_subtask_taxonomy_axes", "auto_subtask_axis_rationale",
+        "review_gap_parent", "review_gap_type", "review_gap_trigger", "review_gap_required_evidence",
+        "review_gap_children", "review_gap_last_scanned_at", "review_gap_last_types", "review_gap_repair_created_at",
+        "source_weighting_policy_ref",
         "blocked_resolve_last_checked_at", "blocked_resolve_multimodel_required", "blocked_resolve_reasons",
         "blocked_resolve_taxonomy_axes", "blocked_resolve_axis_rationale", "blocked_resolve_last_action", "blocked_resolve_reason",
         "claimed_by", "claim_expires_at", "run_id", "retry_count", "next_attempt_at", "workspace", "parallel_boundary",
@@ -1306,7 +1309,7 @@ def mission_envelope_missing(fm: dict[str, Any]) -> list[str]:
     certification = str(fm.get("certification_status") or "").strip()
     if certification and certification not in MISSION_CERTIFICATION_STATUSES:
         missing.append("certification_status:known_status")
-    if certification == "certified" and not ratification.startswith(("file:", "artifact:", "url:", "proof:")):
+    if certification == "certified" and not evidence_is_structured(ratification):
         missing.append("certified_requires_ratification_artifact")
     return sorted(set(missing))
 
@@ -4216,6 +4219,7 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
             os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = previous_hook_disabled
     impl_task = find_task(impl_result["id"])
     impl_task.fm["work_closeout_phase"] = "implementation"
+    impl_task.fm["source_weighting_policy_ref"] = str(impl_task.fm.get("source_weighting_policy_ref") or f"profile:{args.project}:lark_evidence_policy")
     impl_task.fm["depends_on_task"] = []
     impl_task.fm["manual_dispatch_gate"] = ""
     impl_task.fm["manual_dispatch_released"] = ""
@@ -4240,6 +4244,7 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
             os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = previous_hook_disabled
     retest_task = find_task(retest_result["id"])
     retest_task.fm["work_closeout_phase"] = "online_ui_retest"
+    retest_task.fm["source_weighting_policy_ref"] = str(retest_task.fm.get("source_weighting_policy_ref") or f"profile:{args.project}:lark_evidence_policy")
     retest_task.fm["depends_on_task"] = [impl_task.id]
     retest_task.fm["manual_dispatch_gate"] = MANUAL_UI_RETEST_GATE
     retest_task.fm["manual_dispatch_released"] = "false"
@@ -4761,6 +4766,271 @@ def auto_close_review_evidence(task: Task) -> list[str]:
     return _dedupe_evidence(evidence)
 
 
+
+def review_gap_types_for_failures(task: Task, failures: list[str]) -> list[str]:
+    """Classify why a review task cannot legally close to done.
+
+    The taxonomy is intentionally operational: every repairable type maps to a
+    bounded follow-up task that gathers missing evidence or reruns certification.
+    It does not weaken lifecycle_gate; it explains its failures.
+    """
+    joined = "\n".join(str(f) for f in failures).lower()
+    gap_types: list[str] = []
+
+    def add(kind: str) -> None:
+        if kind not in gap_types:
+            gap_types.append(kind)
+
+    if "certification_task_mismatch" in joined:
+        add("certification_task_mismatch")
+    if "multimodel_certification_required_before_done" in joined or "multimodel_certification_required" in joined:
+        add("missing_multimodel_certification")
+    if "project-evidence-review-done requires" in joined or "project-evidence-real-api-review-done requires" in joined:
+        add("missing_project_verification")
+    if "ratification-or-selfcheck-review-done requires" in joined:
+        add("missing_ratification_or_selfcheck")
+    if "advisory-evidence-review-done requires" in joined:
+        add("missing_advisory_artifact")
+    if "manual_review_final_landed=false requires" in joined or "final landed evidence" in joined:
+        add("missing_final_landed_evidence")
+    if "completion_gate:missing" in joined:
+        add("missing_completion_gate")
+    if "completion_gate:unknown" in joined:
+        add("unknown_completion_gate")
+    if "invalid evidence shape" in joined:
+        add("invalid_evidence_shape")
+    if not gap_types:
+        gate = str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "").strip()
+        if gate in {"project-evidence-review-done", "project-evidence-real-api-review-done"}:
+            add("missing_project_verification")
+        elif gate == "ratification-or-selfcheck-review-done":
+            add("missing_ratification_or_selfcheck")
+        elif gate == "advisory-evidence-review-done":
+            add("missing_advisory_artifact")
+        else:
+            add("unclassified_done_gate_failure")
+    return gap_types
+
+
+def review_gap_required_evidence(gap_types: list[str]) -> list[str]:
+    mapping = {
+        "certification_task_mismatch": "targeted multimodel certification bound to the parent task_id and frozen objective",
+        "missing_multimodel_certification": "PASS + LOOP_DONE multimodel ratification artifact for the parent task",
+        "missing_project_verification": "real project verification evidence: tests/build/lint/browser/curl/commit or equivalent command/file/proof artifact",
+        "missing_ratification_or_selfcheck": "ratification artifact or deterministic selfcheck/proof-check/p10-health evidence",
+        "missing_advisory_artifact": "deposited advisory report/evidence artifact with artifact:/file:/url: reference",
+        "missing_final_landed_evidence": "final landed implementation artifact plus feature-specific verification evidence",
+        "missing_completion_gate": "backfilled permission/completion gate derived from lane/project contract",
+        "unknown_completion_gate": "operator-reviewed valid completion gate or task contract correction",
+        "invalid_evidence_shape": "normalized structured evidence using accepted command:/file:/artifact:/url:/proof: prefixes",
+        "unclassified_done_gate_failure": "focused diagnosis and repair evidence for the lifecycle_gate failure",
+    }
+    out: list[str] = []
+    for kind in gap_types:
+        value = mapping.get(kind, f"repair evidence for {kind}")
+        if value not in out:
+            out.append(value)
+    return out
+
+
+def existing_review_gap_child(parent: Task, gap_types: list[str]) -> Task | None:
+    active_statuses = {"pending", "claimed", "running", "retry", "blocked", "review"}
+    wanted = set(gap_types)
+    children = list_value(parent.fm.get("review_gap_children"))
+    for task in sorted_tasks(include_done=True):
+        if task.status not in active_statuses:
+            continue
+        if str(task.fm.get("review_gap_parent") or "") != parent.id and task.id not in children:
+            continue
+        child_types = set(list_value(task.fm.get("review_gap_type")))
+        if not child_types:
+            continue
+        if child_types & wanted:
+            return task
+    return None
+
+
+def build_review_gap_packet(task: Task, *, authority: str = "") -> dict[str, Any] | None:
+    if task.status != "review":
+        return None
+    reason = "review gap scan probe; do not close without repair evidence"
+    evidence = auto_close_review_evidence(task)
+    failures, warnings = lifecycle_gate(task, "done", "hermes-review-gap-scan", evidence, reason, False, authority)
+    if not failures:
+        return None
+    gap_types = review_gap_types_for_failures(task, failures)
+    child = existing_review_gap_child(task, gap_types)
+    hard_human = any(kind in {"unknown_completion_gate"} for kind in gap_types)
+    return {
+        "task_id": task.id,
+        "title": task.title,
+        "lane": task.lane,
+        "project": task.project,
+        "status": task.status,
+        "gap_types": gap_types,
+        "repairable": not hard_human,
+        "required_evidence": review_gap_required_evidence(gap_types),
+        "failures": failures,
+        "warnings": warnings,
+        "base_evidence": evidence,
+        "existing_child_task": child.id if child else "",
+        "existing_child_status": child.status if child else "",
+        "safety": "classification only; done gate remains fail-closed and parent is not mutated unless --write creates a bounded repair task",
+    }
+
+
+def create_review_gap_repair_child(parent: Task, gap: dict[str, Any], *, actor: str) -> dict[str, Any]:
+    existing_id = str(gap.get("existing_child_task") or "")
+    if existing_id:
+        return {"action": "already_exists", "task_id": existing_id, "status": gap.get("existing_child_status") or ""}
+    gap_types = [str(x) for x in gap.get("gap_types", [])]
+    if not gap_types:
+        raise SystemExit(f"review gap for {parent.id} has no gap_types")
+    primary_gap = gap_types[0]
+    title = f"补证闭环｜{parent.title}｜{primary_gap}"
+    required_evidence = [str(x) for x in gap.get("required_evidence", [])]
+    required_text = "; ".join(required_evidence) or primary_gap
+    lane = parent.lane if parent.lane in VALID_LANES else "work"
+    project = parent.project or "hermes"
+    priority = parent.priority or "P1"
+    objective = (
+        f"For parent review task `{parent.id}`, repair the done-gate gap `{primary_gap}` without marking the parent done. "
+        f"Collect and attach the required evidence, then leave the parent for auto-close-review."
+    )
+    accept = (
+        f"Parent `{parent.id}` has structured evidence for: {required_text}. "
+        "The repair child records command/file/artifact/proof evidence and does not directly transition the parent to done."
+    )
+    add_kwargs = dict(
+        title=title,
+        priority=priority,
+        project=project,
+        status="pending",
+        expires_at="",
+        expires_days=14,
+        concepts="task,review-gap-repair,evidence-refresh,self-healing",
+        lane=lane,
+        architecture_target="taskpool" if lane == "evolution" else "",
+        capability_delta=f"review gap repair for {primary_gap}" if lane == "evolution" else "",
+        anti_drift_check="done gate remains enforced; repair child cannot auto-done parent" if lane == "evolution" else "",
+        acceptance_evidence=required_text,
+        priority_layer=str(parent.fm.get("priority_layer") or priority),
+        dependency_order=f"review-gap-repair,{primary_gap}",
+        multimodel_triage_result=f"{priority}:review-gap-repair:{primary_gap}",
+        requires_multimodel=False,
+        multimodel_reason="",
+        expected_participants="",
+        truth_gate="parent_done_gate_rechecked_after_repair_evidence",
+        evidence_bundle=f"parent:{parent.id};gap:{primary_gap};required:{required_text}",
+        layer=str(parent.fm.get("layer") or "L3"),
+        workflow_contract=str(parent.fm.get("workflow_contract") or DEFAULT_WORKFLOW),
+        workspace="",
+        parallel_boundary=str(parent.fm.get("parallel_boundary") or parent.project or parent.id),
+        objective=objective,
+        accept=accept,
+        red_line=["no direct done permission", "do not weaken lifecycle_gate", "do not fabricate implementation evidence"],
+        non_goal=["bypass review", "mark parent done without evidence"],
+        evidence_ref=[f"task:{parent.id}"],
+        json=True,
+    )
+    previous_hook_disabled = os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED")
+    os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+    try:
+        created = command_add(argparse.Namespace(**add_kwargs))
+    finally:
+        if previous_hook_disabled is None:
+            os.environ.pop("HERMES_TASKPOOL_EVENT_HOOK_DISABLED", None)
+        else:
+            os.environ["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = previous_hook_disabled
+    child = find_task(created["id"])
+    child.fm["review_gap_parent"] = parent.id
+    child.fm["review_gap_type"] = gap_types
+    child.fm["review_gap_trigger"] = "auto_close_review_skipped"
+    child.fm["review_gap_required_evidence"] = required_evidence
+    child.fm["requires_multimodel"] = ""
+    if lane == "work" and project:
+        child.fm["source_weighting_policy_ref"] = str(parent.fm.get("source_weighting_policy_ref") or f"profile:{project}:lark_evidence_policy")
+    stamp = iso()
+    child.fm["review_gap_repair_created_at"] = stamp
+    child.body += (
+        f"\n## Review Gap Repair Contract\n\n"
+        f"- Parent task: `{parent.id}`\n"
+        f"- Gap types: {', '.join(gap_types)}\n"
+        f"- Required evidence: {required_text}\n"
+        "- Boundary: no direct done permission; only gather/bind evidence and let `auto-close-review` re-run the normal gate.\n"
+        "- Safety: do not weaken lifecycle_gate, do not fabricate proof, and do not close the parent without structured evidence.\n"
+    )
+    save_task(child)
+
+    parent_children = list_value(parent.fm.get("review_gap_children"))
+    if child.id not in parent_children:
+        parent_children.append(child.id)
+    parent.fm["review_gap_children"] = parent_children
+    parent.fm["review_gap_last_scanned_at"] = stamp
+    parent.fm["review_gap_last_types"] = gap_types
+    parent.body += f"\n- {stamp}: Review gap repair child `{child.id}` created by `{actor}` for `{', '.join(gap_types)}`.\n"
+    save_task(parent)
+    event_hook = maybe_fire_taskpool_event_hook("task_added", task_id=child.id, reason="review_gap_repair_child_created")
+    return {
+        "action": "created",
+        "task_id": child.id,
+        "path": str(child.path),
+        "parent_task_id": parent.id,
+        "gap_types": gap_types,
+        "event_hook": event_hook,
+    }
+
+
+def command_review_gap_scan(args: argparse.Namespace) -> dict[str, Any]:
+    max_tasks = max(1, int(getattr(args, "max_tasks", 50) or 50))
+    candidates = [find_task(args.task)] if getattr(args, "task", "") else [t for t in sorted_tasks(include_done=False) if t.status == "review"]
+    gaps: list[dict[str, Any]] = []
+    created: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    actor = str(getattr(args, "actor", "") or "hermes-review-gap-scan")
+    for task in candidates[:max_tasks]:
+        if task.status != "review":
+            continue
+        try:
+            gap = build_review_gap_packet(task, authority=str(getattr(args, "authority", "") or ""))
+            if not gap:
+                continue
+            if getattr(args, "write", False):
+                # Refresh the task immediately before write to avoid using stale frontmatter.
+                refreshed = find_task(task.id) or task
+                refreshed_gap = build_review_gap_packet(refreshed, authority=str(getattr(args, "authority", "") or "")) or gap
+                if refreshed_gap.get("repairable"):
+                    action = create_review_gap_repair_child(refreshed, refreshed_gap, actor=actor)
+                    if action.get("action") == "created":
+                        created.append(action)
+                        refreshed_gap["existing_child_task"] = action.get("task_id", "")
+                        refreshed_gap["existing_child_status"] = "pending"
+                    else:
+                        refreshed_gap["existing_child_task"] = action.get("task_id", "")
+                        refreshed_gap["existing_child_status"] = action.get("status", "")
+                else:
+                    refreshed_gap["write_skipped_reason"] = "gap_requires_human_or_contract_correction"
+                gap = refreshed_gap
+            gaps.append(gap)
+        except Exception as exc:
+            errors.append({"task_id": task.id, "error": str(exc)})
+    derived_refresh = refresh_derived_task_views("review-gap-scan") if created else None
+    return {
+        "status": "OK" if not errors else "ERROR",
+        "schema": "local_brain_review_gap_scan_v1",
+        "generated_at": iso(),
+        "write": bool(getattr(args, "write", False)),
+        "gap_count": len(gaps),
+        "created_count": len(created),
+        "error_count": len(errors),
+        "gaps": gaps,
+        "created": created,
+        "errors": errors,
+        "derived_refresh": derived_refresh,
+        "safety": "review gaps produce bounded repair/evidence tasks; done remains exclusively authorized by lifecycle_gate/auto-close-review",
+    }
+
+
 def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
     """Automatically close review tasks only when normal done gates pass.
 
@@ -4896,7 +5166,7 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
                 })
                 continue
 
-            certification = command_multimodel_intervention_step(argparse.Namespace(json=True))
+            certification = command_multimodel_intervention_step(argparse.Namespace(task=task.id, background=False, json=True))
             refreshed = find_task(task.id) or task
             if certification.get("status") == "OK" and certification.get("task_id") == task.id and task_multimodel_passed(refreshed):
                 refreshed.fm["multimodel_auto_uncertain_count"] = 0
@@ -9292,6 +9562,14 @@ def build_parser() -> argparse.ArgumentParser:
     acrp.add_argument("--authority", default="autonomous-execution", choices=["", *taxonomy.AUTHORITY_TIERS])
     acrp.add_argument("--json", action="store_true")
 
+    rgsp = sub.add_parser("review-gap-scan")
+    rgsp.add_argument("--task", default="")
+    rgsp.add_argument("--actor", default="hermes-review-gap-scan")
+    rgsp.add_argument("--max-tasks", type=int, default=50)
+    rgsp.add_argument("--authority", default="autonomous-execution", choices=["", *taxonomy.AUTHORITY_TIERS])
+    rgsp.add_argument("--write", action="store_true", help="Create bounded repair/evidence child tasks for repairable review gaps")
+    rgsp.add_argument("--json", action="store_true")
+
     brp = sub.add_parser("blocked-resolve-step")
     brp.add_argument("--task", default="")
     brp.add_argument("--actor", default="hermes-blocked-resolver")
@@ -9480,6 +9758,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_done(args), args.json)
     if args.cmd == "auto-close-review":
         return print_result(command_auto_close_review(args), args.json)
+    if args.cmd == "review-gap-scan":
+        return print_result(command_review_gap_scan(args), args.json)
     if args.cmd == "blocked-resolve-step":
         return print_result(command_blocked_resolve_step(args), args.json)
     if args.cmd == "auto-split-non-convergence":

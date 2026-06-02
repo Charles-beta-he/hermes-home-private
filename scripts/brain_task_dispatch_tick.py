@@ -1537,6 +1537,7 @@ def main() -> int:
 
     errors = []
     warnings = []
+    nonblocking_steps: set[str] = set()
     errored_steps: set[str] = set()
     allowed_statuses = {"OK", "PASS", "SKIP"}  # SKIP for multimodel_step when env var not set
     evidence_spine = event.get("evidence_spine") or {}
@@ -1560,13 +1561,16 @@ def main() -> int:
     elif evidence_spine_gate == "WARN":
         # Evidence-spine WARN is governance/observability debt. It must remain visible,
         # but it must not block a bounded dispatch tick for otherwise safe work.
+        # Do not add it to errored_steps: that set drives the top-level ERROR status.
+        # Do skip the generic status checker below, because the raw subcommand may
+        # still say status=ERROR while the lifecycle gate has downgraded it to WARN.
+        nonblocking_steps.add("evidence_spine")
         warnings.append({
             "step": "evidence_spine",
             "status": evidence_spine_status,
             "gate_status": evidence_spine_gate,
             "summary": evidence_spine.get("summary", {}),
         })
-        errored_steps.add("evidence_spine")
 
     # D2: expensive multi-model auto-step is double-gated: explicit CLI flag + env var.
     # Ambient HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 must not turn safe summary
@@ -1633,7 +1637,7 @@ def main() -> int:
         errored_steps.add("batch_executor")
 
     for key in ["ingest", "reconcile", "dashboard", "task_list", "proof_check", "evidence_spine", "railway_published_retests", "multimodel_intervention", "multimodel_step", "dispatch", "parallel_dispatch"]:
-        if key in errored_steps:
+        if key in errored_steps or key in nonblocking_steps:
             continue
         item = event.get(key, {})
         if item and item.get("status") not in allowed_statuses:

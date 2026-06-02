@@ -142,6 +142,22 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertTrue(any(call.args[0] == "env-1" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
         self.assertTrue(any(call.args[0] == "env-2" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
 
+    def test_consume_claimed_batch_strips_task_id_before_lookup(self):
+        row = {"id": "t-strip", "status": "claimed", "title": "strip", "project": "proj", "parallel_boundary": "b", "claimed_by": "hermes-parallel"}
+        with patch.object(self.ctrl, "is_disabled", return_value=False), \
+             patch.object(self.ctrl, "human_escape_check", return_value=(False, {})), \
+             patch.object(self.ctrl, "rows_by_id", return_value={"t-strip": row}) as rows_by_id, \
+             patch.object(self.ctrl, "create", return_value="env-strip"), \
+             patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "delegate_to_worker", return_value={"status": "blocked", "blockers": ["synthetic"]}), \
+             patch.object(self.ctrl, "update_status"), \
+             patch.object(self.ctrl, "append_trace"):
+            result = self.ctrl.consume_claimed_batch([{"task_id": "t-strip\n"}], max_agents=1)
+
+        rows_by_id.assert_called_with(["t-strip"])
+        self.assertEqual(result["launched_count"], 1)
+        self.assertTrue(any(call.args[:2] == ("t-strip", "running") for call in transition.call_args_list))
+
     def test_process_worker_result_failed_requeues_brain_task_not_false_running(self):
         row = {"id": "t-failed", "status": "running", "title": "failed", "project": "proj"}
         with patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
@@ -194,6 +210,39 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertEqual(len(running), 1)
         self.assertEqual(len(retry), 0)
         self.assertTrue(any(call.args[0] == "env-late" and call.args[1] == "SKIPPED" and "worker_result_ignored_current_status_review" in str(call.kwargs.get("error", "")) for call in update_status.call_args_list))
+
+    def test_consume_claimed_batch_stale_claim_transition_is_skipped_not_failed(self):
+        row = {"id": "t-stale", "status": "claimed", "title": "stale", "project": "proj", "parallel_boundary": "b", "claimed_by": "agent-team-controller"}
+        running_error = {
+            "ok": False,
+            "error": "claim-bound status requires claimed_by, run_id, and a valid non-expired claim_expires_at before transition; task claim is stale",
+        }
+
+        def fake_transition(task_id, to_status, actor, reason, evidence=None, ttl=60, force=False):
+            if to_status == "running":
+                return running_error
+            if to_status == "retry" and force:
+                return {"ok": True, "data": {"status": "OK"}}
+            return {"ok": False, "error": "unexpected"}
+
+        with patch.object(self.ctrl, "is_disabled", return_value=False), \
+             patch.object(self.ctrl, "human_escape_check", return_value=(False, {})), \
+             patch.object(self.ctrl, "rows_by_id", return_value={"t-stale": row}), \
+             patch.object(self.ctrl, "create", return_value="env-stale"), \
+             patch.object(self.ctrl, "transition_task", side_effect=fake_transition) as transition, \
+             patch.object(self.ctrl, "delegate_to_worker") as delegate, \
+             patch.object(self.ctrl, "update_status") as update_status, \
+             patch.object(self.ctrl, "append_trace"):
+            result = self.ctrl.consume_claimed_batch([{"task_id": "t-stale"}], max_agents=1)
+
+        self.assertEqual(result["launched_count"], 0)
+        self.assertEqual(result["skipped"][0]["reason"], "stale_claim_running_transition_released")
+        delegate.assert_not_called()
+        retry_calls = [call for call in transition.call_args_list if call.args[:2] == ("t-stale", "retry")]
+        self.assertEqual(len(retry_calls), 1)
+        self.assertTrue(retry_calls[0].kwargs.get("force"))
+        self.assertTrue(any(call.args[0] == "env-stale" and call.args[1] == "SKIPPED" and call.kwargs.get("error") == "stale_claim_running_transition_skipped" for call in update_status.call_args_list))
+        self.assertFalse(any(call.args[0] == "env-stale" and call.args[1] == "FAILED" for call in update_status.call_args_list))
 
     def test_detect_infra_failure_recognizes_generic_provider_429(self):
         is_infra, category = self.ctrl._detect_infra_failure(

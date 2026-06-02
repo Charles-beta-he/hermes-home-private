@@ -204,7 +204,15 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
     )
     created = json.loads(r.stdout)
     assert created["status"] == "OK"
-    return created["id"], Path(created["created"])
+    created_path = Path(created["created"])
+    # Work-lane tasks are intentionally fail-closed without an evidence/source
+    # policy. Most unit-test fixtures use add_task() to create dispatchable work,
+    # so seed a deterministic test source policy unless a specific test edits it.
+    text = created_path.read_text(encoding="utf-8")
+    if "lane: work" in text and "source_weighting_policy_ref:" not in text:
+        text = text.replace("workflow_contract:", f"source_weighting_policy_ref: project-profile:{project}:test\nworkflow_contract:", 1)
+        created_path.write_text(text, encoding="utf-8")
+    return created["id"], created_path
 
 
 def add_work_closeout_pair(env, title="Lark 修复闭环"):
@@ -226,6 +234,12 @@ def add_work_closeout_pair(env, title="Lark 修复闭环"):
     )
     result = json.loads(r.stdout)
     assert result["status"] == "OK", result
+    for task_key in ("implementation_task", "ui_retest_task"):
+        task_path = Path(result[task_key]["path"])
+        text = task_path.read_text(encoding="utf-8")
+        if "lane: work" in text and "source_weighting_policy_ref:" not in text:
+            text = text.replace("workflow_contract:", f"source_weighting_policy_ref: project-profile:{result[task_key].get('project') or 'work'}:test\nworkflow_contract:", 1)
+            task_path.write_text(text, encoding="utf-8")
     return result
 
 
@@ -315,7 +329,11 @@ certification_status: advisory
 ratification_artifact: artifact:mission-incident-mm-advisory
 """.lstrip()
     if not valid:
+        # add_evolution_task may synthesize a default mission_id before this
+        # helper overlays test-specific mission fields. Remove all mission_id
+        # lines so the fail-closed missing-field assertion remains meaningful.
         fields = fields.replace("mission_id: mission-test-envelope\n", "", 1)
+        text = "\n".join(line for line in text.splitlines() if not line.startswith("mission_id:")) + "\n"
     text = text.replace("concepts: [\"task\"]", "concepts: [\"missions\", \"mission-envelope\", \"proof-gate\"]", 1)
     text = text.replace(marker, fields + marker, 1)
     task_path.write_text(text, encoding="utf-8")
@@ -412,6 +430,45 @@ def test_mission_envelope_create_boundary_synthesizes_complete_envelope():
             os.environ.clear()
             os.environ.update(old_env)
 
+
+
+def test_mission_envelope_certified_accepts_existing_absolute_ratification_artifact():
+    td, vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            artifact = vault / "certification.json"
+            artifact.write_text('{"status":"certified"}', encoding="utf-8")
+            fm = {
+                "concepts": ["task", "mission-envelope"],
+                "mission_schema_version": "mission_envelope_v1",
+                "mission_id": "mission-absolute-ratification",
+                "mission_title": "absolute ratification fixture",
+                "mission_objective": "prove absolute path compatibility",
+                "mission_constraints": ["constraint"],
+                "architecture_target": "taskpool",
+                "capability_delta": "compatibility",
+                "anti_drift_check": "fail closed",
+                "red_lines": ["safe"],
+                "non_goals": ["none"],
+                "evidence_refs": [f"artifact:{artifact}"],
+                "acceptance_criteria": ["accepted"],
+                "dag_nodes": ["node:absolute"],
+                "checkpoint_states": ["checkpoint:created"],
+                "permission_gates": ["authority:budget-handoff"],
+                "handoff_artifacts": [f"artifact:{artifact}"],
+                "proof_artifacts": [f"artifact:{artifact}"],
+                "rollback_signal": "revert fixture",
+                "certification_status": "certified",
+                "ratification_artifact": str(artifact),
+            }
+            assert mod.evidence_is_structured(str(artifact)) is True
+            assert mod.mission_envelope_missing(fm) == []
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
 
 
 def test_multimodel_writeback_completes_partial_mission_envelope_without_certifying_failure():
@@ -582,7 +639,10 @@ def test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_g
         seed_project_profile(env, aliases=["self-improvement", "client-work"])
         mission_id, mission_path = add_evolution_task(env, title="Mission envelope valid", priority="P0")
         add_mission_envelope_fields(mission_path, valid=True)
-        work_id, _ = add_task(env, title="客户 work P0 不能被 mission 抢占", priority="P0", project="client-work")
+        work_id, work_path = add_task(env, title="客户 work P0 不能被 mission 抢占", priority="P0", project="client-work")
+        work_text = work_path.read_text(encoding="utf-8")
+        work_text = work_text.replace("workflow_contract:", "source_weighting_policy_ref: project-profile:client-work:test\nworkflow_contract:", 1)
+        work_path.write_text(work_text, encoding="utf-8")
 
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         mission_row = next(r for r in rows if r["id"] == mission_id)
@@ -952,7 +1012,7 @@ def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
                     "task_id": impl_id,
                     "disabled": "1",
                     "phase": "generic",
-                    "dispatchable": True,
+                    "dispatchable": False,
                     "blockers": [],
                 },
                 {
@@ -960,7 +1020,7 @@ def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
                     "task_id": retest_id,
                     "disabled": "1",
                     "phase": "generic",
-                    "dispatchable": True,
+                    "dispatchable": False,
                     "blockers": [],
                 },
                 {
@@ -2728,6 +2788,65 @@ expires_at: 2099-01-01
         assert boundary["debt_invalid"][0]["task"] == "historical-mission-debt", boundary
 
 
+def test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_task():
+    td, vault, env = make_env_and_vault()
+    try:
+        task_id, task_path = add_review_evolution_task(env, title="验证 review 缺自愈分类")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("ratification-or-selfcheck-review-done", "project-evidence-review-done")
+        text = text.replace("lane: evolution", "lane: work")
+        text = text.replace("project: self-improvement", "project: hermes")
+        if "source_weighting_policy_ref:" not in text:
+            text = text.replace("project: hermes\n", "project: hermes\nsource_weighting_policy_ref: profile:hermes:lark_evidence_policy\n", 1)
+        task_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "review-gap-scan", "--task", task_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["gap_count"] == 1, result
+        gap = result["gaps"][0]
+        assert gap["task_id"] == task_id, gap
+        assert gap["gap_types"] == ["missing_project_verification"], gap
+        assert gap["repairable"] is True, gap
+        assert "project-evidence-review-done requires" in gap["failures"][0], gap
+        assert find_task_status(task_path) == "review"
+    finally:
+        td.cleanup()
+
+
+def test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task():
+    td, vault, env = make_env_and_vault()
+    try:
+        task_id, task_path = add_review_evolution_task(env, title="验证 review 自动补证任务")
+        annotate_manual_review(task_path, final_landed=False)
+
+        first = json.loads(run(env, "review-gap-scan", "--task", task_id, "--write", "--json").stdout)
+        assert first["created_count"] == 1, first
+        created = first["created"][0]
+        child = Path(created["path"])
+        child_text = child.read_text(encoding="utf-8")
+        assert any(f"status: {status}" in child_text for status in ("pending", "claimed", "running")), child_text
+        assert f"review_gap_parent: {task_id}" in child_text
+        assert "review_gap_type:" in child_text and "missing_final_landed_evidence" in child_text
+        assert "no direct done permission" in child_text
+        assert "requires_multimodel: " in child_text
+        parent_text = task_path.read_text(encoding="utf-8")
+        assert "review_gap_children:" in parent_text
+        assert created["task_id"] in parent_text
+
+        second = json.loads(run(env, "review-gap-scan", "--task", task_id, "--write", "--json").stdout)
+        assert second["created_count"] == 0, second
+        assert second["gaps"][0]["existing_child_task"] == created["task_id"], second
+    finally:
+        td.cleanup()
+
+
+def find_task_status(task_path: Path) -> str:
+    for line in task_path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("status:"):
+            return line.split(":", 1)[1].strip()
+    raise AssertionError(f"missing status in {task_path}")
+
+
 def main():
     test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
     test_railway_deploy_gate_evaluate_uses_ancestor_relation()
@@ -2765,6 +2884,8 @@ def main():
     test_multimodel_step_background_spawns_durable_job_without_waiting_for_models()
     test_ratification_policy_is_loaded_from_quorum_config_not_code_literals()
     test_terminal_boundary_debt_does_not_block_active_dispatch_boundary()
+    test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_task()
+    test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task()
     print("PASS")
 
 
