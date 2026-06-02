@@ -215,8 +215,16 @@ def test_main_parses_large_summary_and_invokes_multimodel_probe_without_silent_n
         m.STATE = state
         m.LOG = log
         m.LOCK = lock
-        with contextlib.redirect_stdout(io.StringIO()):
-            rc = m.main()
+        old_dispatch_mode = m.load_taskpool_dispatch_mode
+        old_escape = m.human_escape_status
+        try:
+            m.load_taskpool_dispatch_mode = lambda: "single"
+            m.human_escape_status = lambda: {"status": "OK", "triggered": False, "info": {}}
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = m.main()
+        finally:
+            m.load_taskpool_dispatch_mode = old_dispatch_mode
+            m.human_escape_status = old_escape
         assert rc == 0
         saved = json.loads(state.read_text(encoding="utf-8"))
         assert saved["last_summary"]["status"] == "OK"
