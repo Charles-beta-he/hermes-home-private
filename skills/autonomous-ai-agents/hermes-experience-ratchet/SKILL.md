@@ -92,12 +92,13 @@ python3 ~/.hermes/scripts/experience-ratchet-maze.py relate <atom_a> contradicts
 ## Workflow
 
 1. Capture as `captured`; do not generalize immediately.
-2. Normalize claim, tags, landing zone, applicability conditions, anti-conditions, and falsifiers.
-3. Challenge with dissent or counterexamples before validation.
-4. Validate with command/file/session/task evidence.
-5. Emit proposal-only artifact for skill/profile/memory/taskpool/project_doc/public_consensus.
-6. Apply the proposal using the relevant skill/tool only after reviewing blast radius.
-7. If later contradicted, mark `rolled_back`, `deprecated`, or `revoked`; add relation `falsified_by` or `supersedes`.
+2. For abstraction-heavy claims, load `abstraction-governance` and run scope tagging, entity stripping, pattern extraction, anti-condition/falsifier review, and landing-zone selection before promotion.
+3. Normalize claim, tags, landing zone, applicability conditions, anti-conditions, and falsifiers.
+4. Challenge with dissent or counterexamples before validation.
+5. Validate with command/file/session/task evidence.
+6. Emit proposal-only artifact for skill/profile/memory/taskpool/project_doc/public_consensus.
+7. Apply the proposal using the relevant skill/tool only after reviewing blast radius.
+8. If later contradicted, mark `rolled_back`, `deprecated`, or `revoked`; add relation `falsified_by` or `supersedes`.
 
 ## Verification
 
@@ -108,6 +109,11 @@ python3 -m py_compile ~/.hermes/scripts/experience-ratchet-maze.py
 python3 ~/.hermes/scripts/experience-ratchet-maze.py init
 python3 ~/.hermes/scripts/experience-ratchet-maze.py validate
 ```
+
+## References
+
+- `references/problem-pattern-registry.md` — cross-session knowledge transfer via symptom→fix registries (detect-and-report, phased implementation)
+- `references/skillopt-reflact-pipeline.md` — Microsoft SkillOpt research (arXiv:2605.23904): ReflACT 6-stage pipeline for iterative skill document optimization, minibatch reflection, autonomous learning rate, meta-skill memory, slow update regions. Direct research reference for improving experience-ratchet with formal optimization loop.
 
 ## Pitfalls
 
