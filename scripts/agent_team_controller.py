@@ -1660,7 +1660,17 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             if 'PROOF_JSON' in output:
                 proof = collect_proof(task_id, output)
                 if not proof:
-                    return {'status': 'failed', 'reason': 'invalid_proof', 'output': output[-300:]}
+                    append_trace(eid, {
+                        'event': 'proof_contract_fallback',
+                        'chain_idx': chain_idx,
+                        'model': model,
+                        'provider': provider,
+                        'proof_reason': 'invalid_proof',
+                        'output_tail': output[-300:],
+                    })
+                    if chain_idx < len(model_chain) - 1:
+                        continue
+                    return {'status': 'failed', 'reason': 'invalid_proof', 'output': output[-300:], 'model_used': model}
                 proof_check = validate_worker_proof_against_task(task, proof)
                 if proof_check.get('proof_status') == 'blocked':
                     return {'status': 'blocked', 'proof': proof, 'proof_check': proof_check, 'output': output[:500]}
@@ -1670,7 +1680,16 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             elif 'BLOCKED' in output:
                 return {'status': 'blocked', 'output': output[:200], 'model_used': model}
             else:
-                # Missing proof but not infra failure — task-level issue, don't fallback
+                append_trace(eid, {
+                    'event': 'proof_contract_fallback',
+                    'chain_idx': chain_idx,
+                    'model': model,
+                    'provider': provider,
+                    'proof_reason': 'missing_proof',
+                    'output_tail': output[-300:],
+                })
+                if chain_idx < len(model_chain) - 1:
+                    continue
                 return {'status': 'failed', 'reason': 'missing_proof', 'output': output[-300:], 'model_used': model}
 
         except _sp.TimeoutExpired:

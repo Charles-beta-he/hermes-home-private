@@ -20,9 +20,9 @@ def load_module():
 
 
 class FakeCompleted:
-    def __init__(self, stdout="", returncode=0):
+    def __init__(self, stdout="", returncode=0, stderr=""):
         self.stdout = stdout
-        self.stderr = ""
+        self.stderr = stderr
         self.returncode = returncode
 
 
@@ -60,20 +60,39 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertTrue(any("XIAOMI_API_KEY missing" in e for e in result.get("model_errors", [])))
         self.assertTrue(any("DEEPSEEK_API_KEY missing" in e for e in result.get("model_errors", [])))
 
-    def test_delegate_worker_invalid_proof_is_not_done(self):
+    def test_delegate_worker_invalid_proof_falls_back_before_failing_closed(self):
         bad_output = "work happened\nPROOF_JSON: {not json}\n"
-        with patch.object(self.ctrl, "can_continue", return_value=(False, 0)):
-            with patch("subprocess.run", return_value=FakeCompleted(bad_output)):
-                result = self.ctrl.delegate_to_worker(
-                    {"title": "task", "id": "task-1", "project": "p", "parallel_boundary": "b"},
-                    "group",
-                    "envelope-id",
-                )
+        good_output = 'done\nPROOF_JSON: {"status":"done","summary":"ok","files_changed":[],"tests_passed":0,"proof_sha":"sha256:test","acceptance_criteria_covered":[],"red_lines_status":{},"no_red_line_violations":true,"blockers":[],"evidence":["artifact:/tmp/proof.md"]}'
+        with patch.object(self.ctrl, "can_continue", return_value=(False, 0)), \
+             patch.object(self.ctrl, "append_trace") as append_trace, \
+             patch("subprocess.run", side_effect=[FakeCompleted(bad_output), FakeCompleted(good_output)]) as run:
+            result = self.ctrl.delegate_to_worker(
+                {"title": "task", "id": "task-1", "project": "p", "parallel_boundary": "b"},
+                "group",
+                "envelope-id",
+            )
 
-        self.assertEqual(result["status"], "failed")
-        self.assertEqual(result["reason"], "invalid_proof")
+        self.assertEqual(result["status"], "done")
+        self.assertEqual(run.call_count, 2)
+        self.assertTrue(any(call.args[1].get("event") == "proof_contract_fallback" and call.args[1].get("proof_reason") == "invalid_proof" for call in append_trace.call_args_list))
 
-    def test_delegate_worker_without_proof_is_not_done_no_proof(self):
+    def test_delegate_worker_missing_proof_falls_back_before_failing_closed(self):
+        output = "I think this is complete but forgot the required proof."
+        good_output = 'done\nPROOF_JSON: {"status":"done","summary":"ok","files_changed":[],"tests_passed":0,"proof_sha":"sha256:test","acceptance_criteria_covered":[],"red_lines_status":{},"no_red_line_violations":true,"blockers":[],"evidence":["artifact:/tmp/proof.md"]}'
+        with patch.object(self.ctrl, "can_continue", return_value=(False, 0)), \
+             patch.object(self.ctrl, "append_trace") as append_trace, \
+             patch("subprocess.run", side_effect=[FakeCompleted(output), FakeCompleted(good_output)]) as run:
+            result = self.ctrl.delegate_to_worker(
+                {"title": "task", "id": "task-1", "project": "p", "parallel_boundary": "b"},
+                "group",
+                "envelope-id",
+            )
+
+        self.assertEqual(result["status"], "done")
+        self.assertEqual(run.call_count, 2)
+        self.assertTrue(any(call.args[1].get("event") == "proof_contract_fallback" and call.args[1].get("proof_reason") == "missing_proof" for call in append_trace.call_args_list))
+
+    def test_delegate_worker_missing_proof_still_fails_closed_after_chain_exhausted(self):
         output = "I think this is complete but forgot the required proof."
         with patch.object(self.ctrl, "can_continue", return_value=(False, 0)):
             with patch("subprocess.run", return_value=FakeCompleted(output)):
