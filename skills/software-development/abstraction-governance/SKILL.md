@@ -239,12 +239,22 @@ Hermes core now includes a deterministic hot-path memory gate in `agent/abstract
 Default behavior:
 
 - enabled unless `HERMES_ABSTRACTION_GOVERNANCE_GATE=0`;
-- blocks high-confidence task/session progress from durable memory;
-- blocks procedure/checklist/workflow content from always-on `memory` and redirects it to skill or experience-ratchet landing zones;
+- routes deterministic durable-write review through `review_durable_write(kind=..., target=..., content=...)`;
+- memory writes: blocks high-confidence task/session progress, and redirects procedure/checklist/workflow content from always-on `memory` to skill or experience-ratchet landing zones;
+- skill mutations: allows reusable procedures, but blocks task/session progress and project-specific entities that lack explicit scope/applicability/anti-condition markers;
 - allows compact declarative user preferences and scoped project facts;
 - returns a structured `abstraction_governance` payload naming reason, recommended landing zone, and required skill.
 
-The runtime gate is intentionally deterministic and conservative. It is not a substitute for full abstraction review; it catches obvious boundary violations before they enter persistent prompt context.
+Current hot-path wiring:
+
+- `tools/memory_tool.py` for `memory(action=add|replace)`;
+- `tools/skill_manager_tool.py` for `skill_manage(action=create|edit|patch|write_file)`;
+- `tools/file_tools.py` for `write_file` / `patch` when the path targets narrow Hermes governance surfaces:
+  - `~/.hermes/project-profiles/*.json` → `project_profile`;
+  - `~/.hermes/docs/adr/**` or `~/.hermes/docs/adrs/**` → `adr`;
+  - `~/.hermes/experience-ratchet/**` → `experience`.
+
+The runtime gate is intentionally deterministic and conservative. It is not a substitute for full abstraction review; it catches obvious boundary violations before they enter persistent prompt context. Ordinary project file writes are not classified by this gate; they continue through normal file/write guards.
 
 ## Verification Checklist
 
