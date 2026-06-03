@@ -167,10 +167,18 @@ def _download_native_attachments(token: str, task_guid: str, items: list[dict[st
             if local_path.exists() and local_path.stat().st_size > 0:
                 records.append({"source": "task_native_attachment", "status": "cached", "name": name, "file_token": file_token, "local_path": str(local_path), "size_bytes": local_path.stat().st_size, "is_image_name": is_image_name, "error": ""})
                 continue
-            if file_token:
+            # Task native attachments expose both a Drive-like file_token and a
+            # short-lived authcode URL. In the Lark Task attachment surface,
+            # file_token can require broader Drive scopes (99991679) even though
+            # /task/v2/attachments already authorizes the caller to see the file.
+            # Prefer the signed URL when present, and fall back to Drive media for
+            # tenants/payloads that do not include url/download_url.
+            if url:
+                raw, headers = _download_url(url, token)
+            elif file_token:
                 raw, headers = client.get_binary(f"/drive/v1/medias/{urllib.parse.quote(file_token, safe='')}/download", token)
             else:
-                raw, headers = _download_url(url, token)
+                raise RuntimeError("attachment has no downloadable url or file_token")
             content_type = headers.get("content-type", "")
             if not Path(local_path).suffix or local_path.suffix == ".bin":
                 local_path = out_dir / _safe_name("attachment:" + seed, _guess_attachment_ext(item, content_type))
