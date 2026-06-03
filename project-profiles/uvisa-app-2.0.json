@@ -200,7 +200,8 @@
     "前端原型地址是 https://napp.denatrust.com；仅用于 UI/交互原型对照，不是真实后端/联调/生产状态证据。",
     "Lark 任务 closeout 必须追溯真实任务正文/评论/PM截图/原型；本地 taskpool 生成的 description 占位不能单独当需求。",
     "如果任务/评论/原型/PRD 冲突，显式记录冲突与本次验收采用的来源，不能静默选择。",
-    "发布同步策略：前端发布分支 feat/uvisa-2.0，后端发布分支 main；用户明确要求同步/closeout 时先 rebase 再按证据 push。",
+    "发布同步策略：用户端远端目标分支 main，后端发布分支 main；用户明确要求同步/closeout 时先 rebase 再按证据 push。",
+    "Git 分支管理策略：项目画像负责声明各 repo 的远程目标分支与分支角色；普通任务必须先按 repo 解析 remote target，再从该 target 派生/同步任务分支，PR 方向为 task-branch → resolved-target-branch。跨环境、发布同步、hotfix、backport 属于独立动作类型，必须显式请求并符合画像允许的角色流转。",
     "Auth/OTP/password verification flows should preserve already-entered password/code values during submit/loading states; prefer button-local loading over clearing or resetting form inputs.",
     "Frontend version/build metadata uses a single-source pipeline: package.json.version -> VITE_APP_VERSION, git short SHA + UTC date -> VITE_BUILD_NUMBER; About screen surfaces both and compares against /app/version.",
     "数据库 schema 变更必须主动提示：当修改 JPA/Hibernate Entity 类（新增/重命名/删除字段）时，必须检查对应的 Flyway migration SQL 是否存在；如果 migration 缺失则阻断并提示用户创建。同时提醒用户确认 Railway prod 是否已执行该 migration，避免 Unknown column 生产事故。",
@@ -679,11 +680,11 @@
     ]
   },
   "release_branch_policy": {
-    "frontend_release_branch": "feat/uvisa-2.0",
+    "frontend_release_branch": "main",
     "backend_release_branch": "main",
     "default_push_policy": "Only push project repos when the user explicitly requests Lark closeout/release sync or the task policy requires frontend remote build monitoring.",
     "explicit_release_sync_steps": [
-      "Frontend: git fetch/rebase against origin/feat/uvisa-2.0, run relevant frontend tests/build, push feat/uvisa-2.0.",
+      "Frontend: git fetch/rebase against origin/main, run relevant frontend tests/build, push main only when explicitly requested/approved.",
       "Backend: git fetch/rebase against origin/main, run targeted backend tests/compile with openjdk@21 for changed scope, push main when backend changes or user requested backend sync.",
       "Keep frontend and backend commits scoped per repo; do not mix unrelated untracked files.",
       "After frontend push, monitor remote frontend Railway/package/build status to success/healthy or record an explicit blocker.",
@@ -15864,5 +15865,104 @@
     ],
     "intentional_sidebar_rule": "KYC复核不直接放Sidebar；由Dashboard卡片或直接URL进入，避免敏感PII审核入口泛化暴露。",
     "known_current_gap": "当前 /Users/charles/Desktop/folder/work/uvisa-admin Dashboard 顶部 pendingKyc KPI 接后端 summary；但下方待复核 KYC quick-list 使用空数组占位，未接真实KYC case列表时不能当作完整闭环。"
+  },
+  "mobile_counterpart": {
+    "repo": "~/Desktop/folder/work/u_card",
+    "remote": "git@gitlab.uaec.net:uaec/cross-platform/u_card.git",
+    "tech_stack": "Flutter 3.10+ / Dart",
+    "package_name_android": "com.uaec.dubai",
+    "bundle_id_ios": "com.uu.uaeccard",
+    "code_reuse_with_web": "none — completely independent codebase",
+    "overlapping_modules": [
+      "home/assets",
+      "cards",
+      "earn/wealth",
+      "usercenter",
+      "referral"
+    ],
+    "h5_embedding": "WebView for KYC (SumSub), customer service, help center; has WebKit bridge",
+    "branches": "main, test",
+    "implication": "uvisa-app-2.0 has NO android/ios/Capacitor files. If native packaging is needed for the React app, Capacitor must be set up from scratch. The Flutter app u_card is a separate product with separate release cycle."
+  },
+  "domain_aliases": {
+    "exchange": [
+      "兑换",
+      "汇率",
+      "换汇"
+    ],
+    "notification": [
+      "通知",
+      "消息",
+      "站内信",
+      "横幅",
+      "全部已读"
+    ],
+    "remit": [
+      "汇款",
+      "收款人",
+      "跨境汇款"
+    ],
+    "topup": [
+      "转入",
+      "充值",
+      "境内转账"
+    ],
+    "payout": [
+      "转出",
+      "提现",
+      "网络费"
+    ],
+    "wealth": [
+      "财富",
+      "理财",
+      "赎回",
+      "持仓",
+      "申购",
+      "收益"
+    ],
+    "auth": [
+      "登录",
+      "注册",
+      "验证码",
+      "密码",
+      "PWA",
+      "安全区"
+    ],
+    "wallet": [
+      "资产",
+      "钱包",
+      "余额",
+      "币种",
+      "交易记录"
+    ],
+    "card": [
+      "卡",
+      "debit",
+      "Debit"
+    ],
+    "kyc": [
+      "KYC",
+      "身份核验",
+      "认证"
+    ],
+    "mfa": [
+      "GA",
+      "二次验证",
+      "MFA"
+    ],
+    "admin": [
+      "admin",
+      "管理后台",
+      "后台"
+    ],
+    "cs": [
+      "客服",
+      "在线客服"
+    ],
+    "me": [
+      "我的",
+      "个人中心",
+      "设置"
+    ]
   }
 }
