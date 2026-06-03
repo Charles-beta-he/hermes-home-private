@@ -1688,12 +1688,26 @@ def task_multimodel_status(task: "Task") -> str:
 
 
 def task_multimodel_artifact(task: "Task") -> str:
-    return str(
-        task.fm.get("multimodel_ratification_artifact")
-        or task.fm.get("ratification_artifact")
-        or task.fm.get("discussion_result")
-        or ""
-    ).strip()
+    candidates = [
+        task.fm.get("multimodel_ratification_artifact"),
+        task.fm.get("ratification_artifact"),
+        task.fm.get("discussion_result"),
+        # Legacy multimodel writeback stored the certifying discussion here.
+        # Treat it as a read-compatible artifact source so already-certified
+        # blocked parents can be resolved instead of looping forever.
+        task.fm.get("multimodel_last_discussion_artifact"),
+    ]
+    first = ""
+    for candidate in candidates:
+        text = str(candidate or "").strip()
+        if not text:
+            continue
+        if not first:
+            first = text
+        path = resolve_local_artifact_path(text)
+        if path and path.exists() and path.suffix == ".json":
+            return text
+    return first
 
 
 def task_has_explicit_negative_multimodel_contract(task: "Task") -> bool:
@@ -1742,10 +1756,77 @@ def resolve_local_artifact_path(ref: str) -> Path | None:
     return p
 
 
+def legacy_multimodel_certification_packet_passed(
+    discussion: dict[str, Any],
+    task: "Task",
+    *,
+    accepted_target_ids: list[str] | None = None,
+) -> bool:
+    """Read-compatible PASS for older bound certification packet schemas.
+
+    Older repair children wrote already-ratified certification packets with
+    `status: PASS` + `decision/loop_status: LOOP_DONE` and structured truth
+    coverage, but not the newer `ratification_votes` / `final_design` shape
+    required by `ratification_gate_result()`. Treat only task-bound, truth-
+    certified packets as PASS so historical blocked parents can be resolved
+    without weakening the current strict gate for new artifacts.
+    """
+    schema = str(discussion.get("schema") or "").strip()
+    if schema not in {"multimodel_certification_packet_v1", "brain_task_multimodel_certification_evidence_v1"}:
+        return False
+    status = str(discussion.get("status") or "").strip().upper()
+    decision = str(discussion.get("decision") or discussion.get("loop_status") or "").strip().upper()
+    if status != "PASS" or decision != "LOOP_DONE":
+        return False
+    context = discussion.get("context") if isinstance(discussion.get("context"), dict) else {}
+    context_task_id = context.get("task_id") if isinstance(context, dict) else ""
+    target = str(
+        discussion.get("target_task_id")
+        or discussion.get("parent_task")
+        or context_task_id
+        or ""
+    ).strip()
+    accepted = {task.id}
+    for accepted_id in accepted_target_ids or []:
+        text = str(accepted_id or "").strip()
+        if text:
+            accepted.add(text)
+    if target not in accepted:
+        return False
+    truth_gate = discussion.get("truth_gate") if isinstance(discussion.get("truth_gate"), dict) else {}
+    certification = discussion.get("certification") if isinstance(discussion.get("certification"), dict) else {}
+    if truth_gate.get("can_certify_truth") is True:
+        return True
+    if certification.get("can_certify_truth") is True and certification.get("multi_model_certified") is True:
+        return True
+    return False
+
+
+def review_gap_parent_multimodel_artifact_allowed(task: "Task") -> bool:
+    """Return True for repair children whose acceptance evidence is the parent PASS packet.
+
+    `missing_multimodel_certification` repair children are created to attach a
+    PASS+LOOP_DONE multimodel packet to the parent review task. Their artifact is
+    intentionally parent-bound; requiring a second child-bound ratification causes
+    recursive retry/block churn. Limit the exception to this explicit repair-gap
+    shape so ordinary tasks still require task-bound certification.
+    """
+    gap_types = set(list_value(task.fm.get("review_gap_type")))
+    parent_id = str(task.fm.get("review_gap_parent") or "").strip()
+    required = " ".join(list_value(task.fm.get("review_gap_required_evidence"))).lower()
+    return (
+        "missing_multimodel_certification" in gap_types
+        and bool(parent_id)
+        and "pass" in required
+        and "loop_done" in required
+        and "parent task" in required
+    )
+
+
 def task_multimodel_passed(task: "Task") -> bool:
     status = task_multimodel_status(task)
     artifact = task_multimodel_artifact(task)
-    if status not in MULTIMODEL_PASS_STATUSES or not artifact:
+    if not artifact:
         return False
     artifact_path = resolve_local_artifact_path(artifact)
     if not artifact_path or not artifact_path.exists() or artifact_path.suffix != ".json":
@@ -1754,8 +1835,19 @@ def task_multimodel_passed(task: "Task") -> bool:
         discussion = json.loads(artifact_path.read_text(encoding="utf-8"))
     except Exception:
         return False
-    gate = ratification_gate_result(discussion, expected_task=task)
-    return gate.get("status") == "PASS" and gate.get("decision") == "LOOP_DONE"
+    if status in MULTIMODEL_PASS_STATUSES:
+        gate = ratification_gate_result(discussion, expected_task=task)
+        if gate.get("status") == "PASS" and gate.get("decision") == "LOOP_DONE":
+            return True
+        if legacy_multimodel_certification_packet_passed(discussion, task):
+            return True
+    if review_gap_parent_multimodel_artifact_allowed(task):
+        return legacy_multimodel_certification_packet_passed(
+            discussion,
+            task,
+            accepted_target_ids=[str(task.fm.get("review_gap_parent") or "")],
+        )
+    return False
 
 
 def _frontmatter_bool(value: Any) -> bool:
