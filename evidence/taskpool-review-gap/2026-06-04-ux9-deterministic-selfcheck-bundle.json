@@ -1,0 +1,33 @@
+{
+  "schema": "deterministic_selfcheck_bundle_v1",
+  "created_at": "2026-06-04T19:16:00+08:00",
+  "parent_task": "2026-05-31-hermes-ux-9-devicetwin-diagnose-taskpool-multimodel-verifier-first-implementatio",
+  "repair_task": "2026-06-04-补证闭环task---hermes-ux-9-devicetwin-diagnose-taskpool-multimodel-verifier-first-im",
+  "results": {
+    "selfcheck": {
+      "exit_code": 0,
+      "status": "PASS",
+      "failures": [],
+      "warnings_summary": [
+        "edge heartbeat stale warning",
+        "standalone node warning",
+        "dangerous capability warning requires explicit lease policy"
+      ]
+    },
+    "proof_check": {
+      "exit_code": 0,
+      "status": "PASS",
+      "failures": [],
+      "warnings_summary": "historical terminal proof/envelope debt warnings only; no required failures"
+    },
+    "p10_health": {
+      "exit_code": 0,
+      "grade": "A",
+      "warnings_summary": [
+        "memory size warning"
+      ]
+    }
+  },
+  "decision": "selfcheck bundle collected; parent auto-close-review still owns final done gate",
+  "redaction_note": "Long warning strings were summarized to avoid durable storage of unrelated historical task titles."
+}

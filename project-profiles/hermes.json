@@ -10,6 +10,24 @@
     "hermes_home": "/Users/charles/.hermes",
     "brain_vault": "/Users/charles/Documents/brain"
   },
+  "source_weighting_policy": {
+    "applies_to": "Hermes/taskpool lane=work tasks, including project aliases hermes and hermes-agent.",
+    "preflight": "Load project profile, repo AGENTS.md/CLAUDE.md when a repo is touched, and relevant Workpad/handoff context before planning or implementation.",
+    "weights": [
+      {"source": "runtime selfcheck/proof/evidence-spine output", "weight": 1.0, "rule": "Highest authority for current taskpool health and closeout gates."},
+      {"source": "task note mission envelope and acceptance evidence", "weight": 0.9, "rule": "Defines the specific task boundary and completion criteria."},
+      {"source": "Hermes codebase/tests/scripts", "weight": 0.85, "rule": "Authoritative for implementation feasibility and regression proof."},
+      {"source": "external repo or trend artifact", "weight": 0.55, "rule": "Reference only until mapped to Hermes primitives with reproducible evidence."}
+    ],
+    "conflict_rule": "When runtime gates, task note, external claims, or repo evidence disagree, record the conflict and keep lifecycle advancement fail-closed unless current runtime evidence resolves it.",
+    "taskpool_required_fields": [
+      "project_profile_ref",
+      "source_weighting_policy_ref",
+      "mission_id",
+      "acceptance_evidence",
+      "evidence_refs"
+    ]
+  },
   "conventions": [
     "Markdown task notes are canonical; dashboards are derived",
     "Fail closed on missing evidence, stale claims, invalid lifecycle transitions, or missing project profile",
