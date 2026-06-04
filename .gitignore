@@ -26,7 +26,17 @@ task_ledger.db
 cache/
 tmp/
 *.log
+*.log.*
 *.pid
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Cron/generated runtime output
+cron/output/
 
 # Checkpoints, ticks, snapshots, generated proof/runtime dirs
 checkpoints/

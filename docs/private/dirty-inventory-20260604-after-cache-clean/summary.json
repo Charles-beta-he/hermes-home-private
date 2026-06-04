@@ -1,0 +1,37 @@
+{
+  "schema": "hermes_dirty_inventory_v1",
+  "ts": "2026-06-04T04:33:58Z",
+  "repo": "/Users/charles/.hermes",
+  "total": 3004,
+  "counts_by_bucket": {
+    "profiles/cross-profile": 993,
+    "skills/active": 620,
+    "media/generated": 338,
+    "brain/workpad": 312,
+    "scripts/local-control-plane": 239,
+    "other": 227,
+    "notes/generated-reports": 107,
+    "runtime/state": 48,
+    "runtime/db-lock": 38,
+    "runtime/logs": 35,
+    "backups": 18,
+    "docs/private": 12,
+    "profile/config-cache": 9,
+    "profile/memory": 4,
+    "submodule/hermes-agent": 2,
+    "skills/archive": 2
+  },
+  "counts_by_risk": {
+    "high": 2213,
+    "medium": 414,
+    "low": 373,
+    "critical": 4
+  },
+  "counts_by_status": {
+    "??": 2507,
+    " M": 288,
+    " D": 209
+  },
+  "manual_gate_count": 2217,
+  "low_risk_count": 373
+}
