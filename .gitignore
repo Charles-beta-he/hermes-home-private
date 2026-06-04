@@ -35,8 +35,38 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Generated media/cache artifacts
+# Approved 2026-06-04 after reference-check gate:
+# docs/private/dirty-reference-check-20260604/manual-gate-packet.md
+# Do not delete existing artifacts implicitly; this only keeps generated cache output untracked.
+media/generated/
+
 # Cron/generated runtime output
 cron/output/
+
+# Disposable runtime logs only (audit/evidence logs stay visible/manual-gated).
+# Approved 2026-06-04 after runtime log classification.
+logs/curator/
+logs/diagnostics-fixes.jsonl
+logs/hermes-failure-taxonomy.jsonl
+logs/integration-test-integration-test-*.json
+logs/iteration_budget_triage.jsonl
+logs/local_brain_html_refresh.jsonl
+logs/model-quota.jsonl
+logs/model-routing.jsonl
+logs/multi-brain-nightly-safe.jsonl
+logs/multi-model-smoke-daily-full-wrapper.jsonl
+logs/multi-model-smoke-every4h-wrapper.jsonl
+logs/multi-model-smoke.jsonl
+logs/multimodel_intervention_dynamic_step.jsonl
+logs/observed_worker.jsonl
+logs/observer_hook.jsonl
+logs/planner-failure-triage.jsonl
+logs/route_outcome_hook.jsonl
+logs/synthetic-trace-ratio-guard.jsonl
+logs/taskpool-multimodel/
+logs/taskpool-workers/
+logs/upstream-ratchet-review-timeouts.jsonl
 
 # Checkpoints, ticks, snapshots, generated proof/runtime dirs
 checkpoints/
