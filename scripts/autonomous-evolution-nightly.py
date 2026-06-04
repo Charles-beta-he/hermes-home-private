@@ -7,10 +7,17 @@ Autonomous Evolution — Nightly Self-Audit
 
 import os, json, datetime, shutil, re
 
+from hermes_evolution_store import default_store, resolved_to_dict
+
 SKILLS_DIR = os.path.expanduser("~/.hermes/skills")
-RESULTS_PATH = os.path.join(SKILLS_DIR, "darwin-skill", "results.tsv")
-DB_PATH = os.path.join(SKILLS_DIR, "bayesian-agent", "confidence-db.json")
 LOG_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/autonomous-evolution-log.jsonl")
+STORE = default_store()
+DB_RESOLUTION = STORE.resolve_artifact(os.path.join("bayesian-agent", "confidence-db.json"), intent="write")
+RESULTS_RESOLUTION = STORE.resolve_artifact(os.path.join("darwin-skill", "results.tsv"), intent="write")
+DB_PATH = str(DB_RESOLUTION.path)
+RESULTS_PATH = str(RESULTS_RESOLUTION.path)
+DB_SOURCE = DB_RESOLUTION.source
+RESULTS_SOURCE = RESULTS_RESOLUTION.source
 
 def log_event(event_type, details):
     os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
@@ -144,12 +151,22 @@ def recalculate_darwin_score(skill_dir):
     return min(score, 100)
 
 def select_skill_to_audit():
-    """选择一个待审计的 skill（优先低分且无近期审计的）"""
+    """选择一个待审计的 active skill（优先低分且无近期审计的）。"""
+    if not os.path.exists(DB_PATH):
+        print(f"⚠️ confidence DB missing: {DB_PATH}")
+        log_event("autonomous_evolution_degraded", {"reason": "confidence_db_missing", "path": DB_PATH})
+        return None
+
     with open(DB_PATH, "r") as f:
         db = json.load(f)
     
     candidates = []
-    for name, data in db["skills"].items():
+    for name, data in db.get("skills", {}).items():
+        skill_dir = os.path.join(SKILLS_DIR, name)
+        if not os.path.exists(os.path.join(skill_dir, "SKILL.md")):
+            # The DB may be loaded from archived historical data; never mutate archived-only skills.
+            continue
+
         score = data.get("darwin_score", 0) or 0
         last_audit = data.get("last_audit", "")
         
@@ -167,17 +184,35 @@ def select_skill_to_audit():
         candidates.append((name, priority, score, days_since_audit))
     
     candidates.sort(key=lambda x: x[1], reverse=True)
+    if not candidates:
+        log_event("autonomous_evolution_degraded", {
+            "reason": "no_active_skill_candidates",
+            "db_path": DB_PATH,
+            "db_source": DB_SOURCE,
+        })
     return candidates[0] if candidates else None
 
 def main():
     print("=" * 60)
     print("Autonomous Evolution — Nightly Self-Audit")
     print("=" * 60)
+    print(f"confidence_db: {DB_PATH} ({DB_SOURCE})")
+    print(f"darwin_results: {RESULTS_PATH} ({RESULTS_SOURCE})")
     
     # 选择一个 skill 审计
     selected = select_skill_to_audit()
     if not selected:
         print("无 skill 需要审计")
+        STORE.append_dream_run({
+            "run_id": datetime.datetime.now(datetime.timezone.utc).strftime("nightly-%Y%m%dT%H%M%SZ"),
+            "status": "WARN",
+            "effective_audit": False,
+            "state_advanced": False,
+            "degraded": True,
+            "reason": "no_skill_selected",
+            "confidence_db": resolved_to_dict(DB_RESOLUTION),
+            "darwin_results": resolved_to_dict(RESULTS_RESOLUTION),
+        })
         return
     
     skill_name, priority, old_score, days = selected
@@ -224,11 +259,19 @@ def main():
             db["skills"][skill_name]["darwin_grade"] = grade
             db["skills"][skill_name]["last_audit"] = datetime.datetime.now().isoformat()
         
-        with open(DB_PATH, "w") as f:
-            json.dump(db, f, indent=2)
+        if DB_RESOLUTION.writable:
+            with open(DB_PATH, "w") as f:
+                json.dump(db, f, indent=2)
+        else:
+            print("⚠️ confidence DB is not writable; effective state advancement blocked")
+            log_event("autonomous_evolution_degraded", {"reason": "confidence_db_unwritable", "db_path": DB_PATH})
         
-        with open(RESULTS_PATH, "a") as f:
-            f.write(f"{datetime.datetime.now().isoformat()}\tauto-audit\t{skill_name}\t{old_score}\t{new_score}\taccepted\t{','.join(fixes)}\tauto\n")
+        if RESULTS_RESOLUTION.writable:
+            with open(RESULTS_PATH, "a") as f:
+                f.write(f"{datetime.datetime.now().isoformat()}\tauto-audit\t{skill_name}\t{old_score}\t{new_score}\taccepted\t{','.join(fixes)}\tauto\n")
+        else:
+            print("⚠️ darwin results.tsv is not writable; effective state advancement blocked")
+            log_event("autonomous_evolution_degraded", {"reason": "darwin_results_unwritable", "results_path": RESULTS_PATH})
         
         # 清理备份
         shutil.rmtree(backup)

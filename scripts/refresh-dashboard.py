@@ -6,24 +6,50 @@ Refresh Dashboard — 自动刷新进化仪表盘
 
 import os, json, datetime
 
-SKILLS_DIR = os.path.expanduser("~/.hermes/skills")
+from hermes_evolution_store import default_store
+
+STORE = default_store()
 HEALTH_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/health-history.jsonl")
-DB_PATH = os.path.join(SKILLS_DIR, "bayesian-agent", "confidence-db.json")
-RESULTS_PATH = os.path.join(SKILLS_DIR, "darwin-skill", "results.tsv")
 DASHBOARD_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/evolution-dashboard.md")
+DB_RESOLUTION = STORE.resolve_artifact(os.path.join("bayesian-agent", "confidence-db.json"), intent="read")
+RESULTS_RESOLUTION = STORE.resolve_artifact(os.path.join("darwin-skill", "results.tsv"), intent="read")
+DB_PATH = str(DB_RESOLUTION.path)
+RESULTS_PATH = str(RESULTS_RESOLUTION.path)
+DB_SOURCE = DB_RESOLUTION.source
+RESULTS_SOURCE = RESULTS_RESOLUTION.source
 
 def get_vdot(record):
     """Return V̇ across historical schema aliases (Vdot and V_dot)."""
     return record.get('Vdot', record.get('V_dot', 0))
 
+
+def load_latest_dream_run():
+    if not STORE.runs_path.exists():
+        return None
+    latest = None
+    with STORE.runs_path.open("r", encoding="utf-8") as f:
+        for line in f:
+            try:
+                latest = json.loads(line)
+            except Exception:
+                pass
+    return latest
+
 def refresh():
-    with open(DB_PATH, "r") as f:
-        conf_db = json.load(f)
+    data_warnings = []
+    if os.path.exists(DB_PATH):
+        with open(DB_PATH, "r") as f:
+            conf_db = json.load(f)
+        if DB_SOURCE != "active":
+            data_warnings.append(f"active confidence-db 缺失；降级读取 {DB_PATH}")
+    else:
+        conf_db = {"skills": {}}
+        data_warnings.append(f"confidence-db 缺失: {DB_PATH}")
     
-    total = len(conf_db["skills"])
-    with_d = sum(1 for s in conf_db["skills"].values() if s.get("darwin_score"))
+    total = len(conf_db.get("skills", {}))
+    with_d = sum(1 for s in conf_db.get("skills", {}).values() if s.get("darwin_score"))
     grades = {"A": 0, "B": 0, "C": 0, "D": 0, "pending": 0}
-    for s in conf_db["skills"].values():
+    for s in conf_db.get("skills", {}).values():
         grades[s.get("darwin_grade", "pending")] = grades.get(s.get("darwin_grade", "pending"), 0) + 1
     
     health_records = []
@@ -34,15 +60,30 @@ def refresh():
                     health_records.append(json.loads(line))
                 except:
                     pass
+    latest_dream_run = load_latest_dream_run()
     
-    with open(RESULTS_PATH, "r") as f:
-        results_lines = f.readlines()
+    if os.path.exists(RESULTS_PATH):
+        with open(RESULTS_PATH, "r") as f:
+            results_lines = f.readlines()
+        if RESULTS_SOURCE != "active":
+            data_warnings.append(f"active results.tsv 缺失；降级读取 {RESULTS_PATH}")
+    else:
+        results_lines = []
+        data_warnings.append(f"results.tsv 缺失: {RESULTS_PATH}")
     
     lines = []
     lines.append("═══════════════════════════════════════════════════════════════════════════════")
     lines.append("                    Agent 控制论进化仪表盘")
     lines.append("═══════════════════════════════════════════════════════════════════════════════")
     lines.append(f"Timestamp: {datetime.datetime.now().isoformat()}")
+    if data_warnings:
+        lines.append("Status: ⚠️ DEGRADED — 数据源降级但 dashboard 可刷新")
+        lines.append("")
+        lines.append("【数据源告警】")
+        for warning in data_warnings:
+            lines.append(f"  ⚠️ {warning}")
+    else:
+        lines.append("Status: ✅ OK")
     lines.append("")
     
     lines.append("【健康度】")
@@ -64,6 +105,22 @@ def refresh():
         lines.append("  V̇ = 0.0000")
     lines.append("")
     
+    lines.append("【Dreaming / Nightly 有效健康】")
+    if latest_dream_run:
+        lines.append(f"  最近状态: {latest_dream_run.get('status', 'UNKNOWN')}")
+        lines.append(f"  有效审计: {latest_dream_run.get('effective_audit')}")
+        lines.append(f"  状态推进: {latest_dream_run.get('state_advanced')}")
+        lines.append(f"  降级/阻写: degraded={latest_dream_run.get('degraded')} write_blocked={latest_dream_run.get('write_blocked')}")
+        reasons = latest_dream_run.get('reasons') or []
+        if reasons:
+            lines.append(f"  原因: {', '.join(str(r) for r in reasons)}")
+        proof = latest_dream_run.get('proof_hash') or latest_dream_run.get('dream_run_proof_hash')
+        if proof:
+            lines.append(f"  proof: {str(proof)[:16]}")
+    else:
+        lines.append("  尚无 canonical dream run ledger")
+    lines.append("")
+
     lines.append("【Skill 生态】")
     lines.append(f"  总数: {total}")
     lines.append(f"  已评估: {with_d}")
