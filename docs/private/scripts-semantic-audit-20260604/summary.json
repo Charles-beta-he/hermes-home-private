@@ -1,0 +1,5010 @@
+{
+  "schema": "scripts_semantic_audit_v1",
+  "created_at": "2026-06-04T05:34:23.077725Z",
+  "source_inventory": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv",
+  "count": 239,
+  "status_counts": {
+    " M": 38,
+    "??": 201
+  },
+  "risk_counts": {
+    "high": 239
+  },
+  "action_counts": {
+    "cluster_and_review": 239
+  },
+  "extension_counts": {
+    ".py": 208,
+    ".sh": 11,
+    "<none>": 6,
+    ".cpp": 2,
+    ".dsym": 2,
+    ".md": 5,
+    ".json": 2,
+    ".bak": 3
+  },
+  "family_counts": {
+    "other-scripts": 108,
+    "multimodel": 18,
+    "dashboard-observability": 17,
+    "cron-runtime": 6,
+    "taskpool": 41,
+    "utilities": 6,
+    "tests": 29,
+    "provider-routing": 5,
+    "evolution-dreaming": 9
+  },
+  "tracked_diff_complexity": {
+    "small_delta": 9,
+    "no_text_delta": 8,
+    "large_delta": 8,
+    "medium_delta": 13
+  },
+  "family_summary": [
+    {
+      "family": "other-scripts",
+      "count": 108,
+      "status_counts": {
+        " M": 18,
+        "??": 90
+      },
+      "risk_counts": {
+        "high": 108
+      },
+      "sample_paths": [
+        "scripts/agent_protocol.py",
+        "scripts/auth_blocked_notifier.py",
+        "scripts/brainctl.py",
+        "scripts/code-intel.py",
+        "scripts/consensus-check.py",
+        "scripts/eval-harness.py",
+        "scripts/gitnexus_fusion_selfcheck.py",
+        "scripts/iteration_budget_doctor.py",
+        "scripts/iteration_budget_triage.py",
+        "scripts/live_notes_accumulator.py",
+        "scripts/post-session-autopsy.py",
+        "scripts/post-update-check.py",
+        "scripts/pricing.py",
+        "scripts/rowboat_bridge.py",
+        "scripts/self-improvement-pipeline.py",
+        "scripts/self-scan-4h.py",
+        "scripts/session-close.sh",
+        "scripts/skill-steward.py",
+        "scripts/adapters/",
+        "scripts/adk_contract_verifier.py",
+        "scripts/agent_memory_architecture_selfcheck.py",
+        "scripts/apply-codex-transport-hardening-patch.py",
+        "scripts/apply-mcp-timeout-patch.py",
+        "scripts/bambu_3mf_patch_single_material.py",
+        "scripts/bambu_3mf_preprint_guard.py",
+        "scripts/bambu_credentials.py",
+        "scripts/bambu_ft_tunnel.py",
+        "scripts/bambu_ft_upload",
+        "scripts/bambu_ft_upload.cpp",
+        "scripts/bambu_ft_upload.dSYM/"
+      ]
+    },
+    {
+      "family": "taskpool",
+      "count": 41,
+      "status_counts": {
+        " M": 4,
+        "??": 37
+      },
+      "risk_counts": {
+        "high": 41
+      },
+      "sample_paths": [
+        "scripts/lark_task_reader.py",
+        "scripts/task_pool_guardian_run.py",
+        "scripts/taskpool_watch_report.py",
+        "scripts/test_taskpool_watch_report.py",
+        "scripts/agent_team_controller_cycle.py",
+        "scripts/brain_task_autorun_step.py",
+        "scripts/brain_task_orchestrator_selfcheck.py",
+        "scripts/demo_task_observer.sh",
+        "scripts/edge_worker.py",
+        "scripts/hermes_background_task_worker.py",
+        "scripts/hermes_task.py",
+        "scripts/kanban_bridge.py",
+        "scripts/kanban_coverage.py",
+        "scripts/lark_docx_reader.py",
+        "scripts/link_brain_kanban_refs.py",
+        "scripts/observed_worker.py",
+        "scripts/task_adapter.py",
+        "scripts/task_adapter.py.bak",
+        "scripts/task_classifier.py",
+        "scripts/task_continuation.py",
+        "scripts/task_observer.py",
+        "scripts/task_observer.py.bak",
+        "scripts/task_pipeline.py",
+        "scripts/task_pipeline.py.bak",
+        "scripts/task_pool_guardian.py",
+        "scripts/task_preflight.py",
+        "scripts/task_progress.py",
+        "scripts/task_query.py",
+        "scripts/task_registry.py",
+        "scripts/taskpool_backfill_tenants.py"
+      ]
+    },
+    {
+      "family": "tests",
+      "count": 29,
+      "status_counts": {
+        " M": 2,
+        "??": 27
+      },
+      "risk_counts": {
+        "high": 29
+      },
+      "sample_paths": [
+        "scripts/test_brainctl.py",
+        "scripts/test_personal_hermes_brain_export.py",
+        "scripts/test_adapter_integration.py",
+        "scripts/test_brainctl_export_app_data.py",
+        "scripts/test_dynamic_workflow.py",
+        "scripts/test_evidence_manifest.py",
+        "scripts/test_external_control_gate.py",
+        "scripts/test_hermes_ux9_verifier_contracts.py",
+        "scripts/test_hook_registry_selfcheck.py",
+        "scripts/test_integration.py",
+        "scripts/test_manufacturing_calibration_cube.py",
+        "scripts/test_manufacturing_lamp_base.py",
+        "scripts/test_manufacturing_lamp_shade.py",
+        "scripts/test_manufacturing_mesh_qa.py",
+        "scripts/test_manufacturing_orientation_search.py",
+        "scripts/test_manufacturing_preflight.py",
+        "scripts/test_manufacturing_slice.py",
+        "scripts/test_manufacturing_trick_research.py",
+        "scripts/test_manufacturing_visual_qa.py",
+        "scripts/test_photo_to_print_e2e.py",
+        "scripts/test_photo_to_print_job.py",
+        "scripts/test_photo_to_print_runner.py",
+        "scripts/test_rowboat_bridge.py",
+        "scripts/test_self_proving_executor.py",
+        "scripts/test_skill_telemetry_report.py",
+        "scripts/test_slicer_preview_parse.py",
+        "scripts/test_theoretical_improvements.py",
+        "scripts/test_x2d_ams_helper.py",
+        "scripts/tests/"
+      ]
+    },
+    {
+      "family": "multimodel",
+      "count": 18,
+      "status_counts": {
+        " M": 9,
+        "??": 9
+      },
+      "risk_counts": {
+        "high": 18
+      },
+      "sample_paths": [
+        "scripts/consult_models.py",
+        "scripts/cross-patch.py",
+        "scripts/cybernetic_multimodel_selfcheck.py",
+        "scripts/ensemble-vote.py",
+        "scripts/multimodel_intervention_dynamic_step.py",
+        "scripts/multimodel_intervention_parallel_step.py",
+        "scripts/multimodel_keypoint_coverage_ratchet.py",
+        "scripts/test_multimodel_intervention_dynamic_step.py",
+        "scripts/test_multimodel_keypoint_coverage_ratchet.py",
+        "scripts/ensemble-real.py",
+        "scripts/live6_multimodel_loop_once.py",
+        "scripts/multi-model-smoke-safe.py",
+        "scripts/multimodel_daily_governance_audit.py",
+        "scripts/multimodel_daily_governance_audit_noagent.py",
+        "scripts/round3_vote_mimo.json",
+        "scripts/test_cross_patch_real_execution.py",
+        "scripts/test_cybernetic_multimodel_selfcheck.py",
+        "scripts/test_multi_model_smoke_safe.py"
+      ]
+    },
+    {
+      "family": "dashboard-observability",
+      "count": 17,
+      "status_counts": {
+        " M": 1,
+        "??": 16
+      },
+      "risk_counts": {
+        "high": 17
+      },
+      "sample_paths": [
+        "scripts/cron-health-quarantine.py",
+        "scripts/bambu_status_prompt.sh",
+        "scripts/bambu_status_to_file.sh",
+        "scripts/dashboard-data.py",
+        "scripts/hermes-eval-trace-audit.py",
+        "scripts/local_brain_html_refresh.py",
+        "scripts/manufacturing_dog_keychain_v23_trace.py",
+        "scripts/manufacturing_dog_keychain_v24_clean_trace.py",
+        "scripts/monitor_rokid_agent_status.py",
+        "scripts/observer_engine.py",
+        "scripts/observer_hook.py",
+        "scripts/openclaw_trace_ingest.py",
+        "scripts/p10-health-safe.py",
+        "scripts/start_observer.sh",
+        "scripts/synthetic-trace-ratio-guard.py",
+        "scripts/test_p10_health_safe.py",
+        "scripts/update_rokid_manufacturing_status_cache.py"
+      ]
+    },
+    {
+      "family": "evolution-dreaming",
+      "count": 9,
+      "status_counts": {
+        "??": 9
+      },
+      "risk_counts": {
+        "high": 9
+      },
+      "sample_paths": [
+        "scripts/governance_ratchet.py",
+        "scripts/meta_evolution.py",
+        "scripts/multi-brain-nightly-safe.py",
+        "scripts/pa_evolution_daily_noagent.py",
+        "scripts/pua-loop-self-optimization-architecture.md",
+        "scripts/pua_loop_self_optimize.py",
+        "scripts/skill-learning-ralph-loop-pua-boundary.md",
+        "scripts/test_pua_loop_self_optimize.py",
+        "scripts/verify-evolution-event.py"
+      ]
+    },
+    {
+      "family": "cron-runtime",
+      "count": 6,
+      "status_counts": {
+        " M": 2,
+        "??": 4
+      },
+      "risk_counts": {
+        "high": 6
+      },
+      "sample_paths": [
+        "scripts/cron-missed-run-guard.py",
+        "scripts/pa-daily-report.py",
+        "scripts/gittins_scheduler.py",
+        "scripts/skill_steward_daily_audit_noagent.py",
+        "scripts/test_pa_daily_report.py",
+        "scripts/update_rokid_daily_brief_cache.py"
+      ]
+    },
+    {
+      "family": "utilities",
+      "count": 6,
+      "status_counts": {
+        " M": 2,
+        "??": 4
+      },
+      "risk_counts": {
+        "high": 6
+      },
+      "sample_paths": [
+        "scripts/personal_hermes_brain_export.py",
+        "scripts/sync-brain.py",
+        "scripts/brain_cloud_sync_guard.py",
+        "scripts/hermes-cleanup.py",
+        "scripts/manufacturing_dog_keychain_v25_local_leftfix.py",
+        "scripts/x2d_ams_helper.py"
+      ]
+    },
+    {
+      "family": "provider-routing",
+      "count": 5,
+      "status_counts": {
+        "??": 5
+      },
+      "risk_counts": {
+        "high": 5
+      },
+      "sample_paths": [
+        "scripts/csp_pipeline_model.py",
+        "scripts/model_candidate_search.py",
+        "scripts/openai-cli-eval-2026-05-11.md",
+        "scripts/openai_admin_quota.sh",
+        "scripts/test_model_candidate_search.py"
+      ]
+    }
+  ],
+  "candidate_batches": [
+    {
+      "family": "tests",
+      "count": 29,
+      "gate": "low_risk_test_artifact_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/test_brainctl.py",
+        "scripts/test_personal_hermes_brain_export.py",
+        "scripts/test_adapter_integration.py",
+        "scripts/test_brainctl_export_app_data.py",
+        "scripts/test_dynamic_workflow.py",
+        "scripts/test_evidence_manifest.py",
+        "scripts/test_external_control_gate.py",
+        "scripts/test_hermes_ux9_verifier_contracts.py",
+        "scripts/test_hook_registry_selfcheck.py",
+        "scripts/test_integration.py",
+        "scripts/test_manufacturing_calibration_cube.py",
+        "scripts/test_manufacturing_lamp_base.py",
+        "scripts/test_manufacturing_lamp_shade.py",
+        "scripts/test_manufacturing_mesh_qa.py",
+        "scripts/test_manufacturing_orientation_search.py",
+        "scripts/test_manufacturing_preflight.py",
+        "scripts/test_manufacturing_slice.py",
+        "scripts/test_manufacturing_trick_research.py",
+        "scripts/test_manufacturing_visual_qa.py",
+        "scripts/test_photo_to_print_e2e.py"
+      ]
+    },
+    {
+      "family": "utilities",
+      "count": 6,
+      "gate": "scripted_with_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/personal_hermes_brain_export.py",
+        "scripts/sync-brain.py",
+        "scripts/brain_cloud_sync_guard.py",
+        "scripts/hermes-cleanup.py",
+        "scripts/manufacturing_dog_keychain_v25_local_leftfix.py",
+        "scripts/x2d_ams_helper.py"
+      ]
+    },
+    {
+      "family": "dashboard-observability",
+      "count": 17,
+      "gate": "scripted_with_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/cron-health-quarantine.py",
+        "scripts/bambu_status_prompt.sh",
+        "scripts/bambu_status_to_file.sh",
+        "scripts/dashboard-data.py",
+        "scripts/hermes-eval-trace-audit.py",
+        "scripts/local_brain_html_refresh.py",
+        "scripts/manufacturing_dog_keychain_v23_trace.py",
+        "scripts/manufacturing_dog_keychain_v24_clean_trace.py",
+        "scripts/monitor_rokid_agent_status.py",
+        "scripts/observer_engine.py",
+        "scripts/observer_hook.py",
+        "scripts/openclaw_trace_ingest.py",
+        "scripts/p10-health-safe.py",
+        "scripts/start_observer.sh",
+        "scripts/synthetic-trace-ratio-guard.py",
+        "scripts/test_p10_health_safe.py",
+        "scripts/update_rokid_manufacturing_status_cache.py"
+      ]
+    },
+    {
+      "family": "provider-routing",
+      "count": 5,
+      "gate": "manual_high_context_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/csp_pipeline_model.py",
+        "scripts/model_candidate_search.py",
+        "scripts/openai-cli-eval-2026-05-11.md",
+        "scripts/openai_admin_quota.sh",
+        "scripts/test_model_candidate_search.py"
+      ]
+    },
+    {
+      "family": "cron-runtime",
+      "count": 6,
+      "gate": "manual_semantic_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/cron-missed-run-guard.py",
+        "scripts/pa-daily-report.py",
+        "scripts/gittins_scheduler.py",
+        "scripts/skill_steward_daily_audit_noagent.py",
+        "scripts/test_pa_daily_report.py",
+        "scripts/update_rokid_daily_brief_cache.py"
+      ]
+    },
+    {
+      "family": "evolution-dreaming",
+      "count": 9,
+      "gate": "manual_high_context_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/governance_ratchet.py",
+        "scripts/meta_evolution.py",
+        "scripts/multi-brain-nightly-safe.py",
+        "scripts/pa_evolution_daily_noagent.py",
+        "scripts/pua-loop-self-optimization-architecture.md",
+        "scripts/pua_loop_self_optimize.py",
+        "scripts/skill-learning-ralph-loop-pua-boundary.md",
+        "scripts/test_pua_loop_self_optimize.py",
+        "scripts/verify-evolution-event.py"
+      ]
+    },
+    {
+      "family": "multimodel",
+      "count": 18,
+      "gate": "manual_high_context_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/consult_models.py",
+        "scripts/cross-patch.py",
+        "scripts/cybernetic_multimodel_selfcheck.py",
+        "scripts/ensemble-vote.py",
+        "scripts/multimodel_intervention_dynamic_step.py",
+        "scripts/multimodel_intervention_parallel_step.py",
+        "scripts/multimodel_keypoint_coverage_ratchet.py",
+        "scripts/test_multimodel_intervention_dynamic_step.py",
+        "scripts/test_multimodel_keypoint_coverage_ratchet.py",
+        "scripts/ensemble-real.py",
+        "scripts/live6_multimodel_loop_once.py",
+        "scripts/multi-model-smoke-safe.py",
+        "scripts/multimodel_daily_governance_audit.py",
+        "scripts/multimodel_daily_governance_audit_noagent.py",
+        "scripts/round3_vote_mimo.json",
+        "scripts/test_cross_patch_real_execution.py",
+        "scripts/test_cybernetic_multimodel_selfcheck.py",
+        "scripts/test_multi_model_smoke_safe.py"
+      ]
+    },
+    {
+      "family": "taskpool",
+      "count": 41,
+      "gate": "manual_high_context_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/lark_task_reader.py",
+        "scripts/task_pool_guardian_run.py",
+        "scripts/taskpool_watch_report.py",
+        "scripts/test_taskpool_watch_report.py",
+        "scripts/agent_team_controller_cycle.py",
+        "scripts/brain_task_autorun_step.py",
+        "scripts/brain_task_orchestrator_selfcheck.py",
+        "scripts/demo_task_observer.sh",
+        "scripts/edge_worker.py",
+        "scripts/hermes_background_task_worker.py",
+        "scripts/hermes_task.py",
+        "scripts/kanban_bridge.py",
+        "scripts/kanban_coverage.py",
+        "scripts/lark_docx_reader.py",
+        "scripts/link_brain_kanban_refs.py",
+        "scripts/observed_worker.py",
+        "scripts/task_adapter.py",
+        "scripts/task_adapter.py.bak",
+        "scripts/task_classifier.py",
+        "scripts/task_continuation.py"
+      ]
+    },
+    {
+      "family": "other-scripts",
+      "count": 108,
+      "gate": "manual_semantic_review",
+      "reason": "Review coherent family; do not mix unrelated script clusters in one commit.",
+      "paths_sample": [
+        "scripts/agent_protocol.py",
+        "scripts/auth_blocked_notifier.py",
+        "scripts/brainctl.py",
+        "scripts/code-intel.py",
+        "scripts/consensus-check.py",
+        "scripts/eval-harness.py",
+        "scripts/gitnexus_fusion_selfcheck.py",
+        "scripts/iteration_budget_doctor.py",
+        "scripts/iteration_budget_triage.py",
+        "scripts/live_notes_accumulator.py",
+        "scripts/post-session-autopsy.py",
+        "scripts/post-update-check.py",
+        "scripts/pricing.py",
+        "scripts/rowboat_bridge.py",
+        "scripts/self-improvement-pipeline.py",
+        "scripts/self-scan-4h.py",
+        "scripts/session-close.sh",
+        "scripts/skill-steward.py",
+        "scripts/adapters/",
+        "scripts/adk_contract_verifier.py"
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "scripts/agent_protocol.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 24913,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-28T01:50:05.043972",
+      "head_noncomment": [
+        "\"\"\"",
+        "agent_protocol.py — 多Agent 结构化通信协议 v2.0.0 (L2)",
+        "OpenTelemetry-compatible correlation (chain_id/span_id/parent_span_id),",
+        "typed substructures, envelope metadata, version negotiation, SQLite persistence.",
+        "用法:"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/auth_blocked_notifier.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5551,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-27T10:46:26.070473",
+      "head_noncomment": [
+        "\"\"\"Auth-Blocked Telegram Notifier — Scan credential-missing tasks and notify.",
+        "When tasks are blocked due to missing credentials/auth, this script:",
+        "1. Scans kanban for auth-blocked and credential-missing tasks",
+        "2. Deduplicates against recent notifications (avoid spam)",
+        "3. Outputs notification text for Telegram delivery"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/brainctl.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 78568,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-26T01:57:54.196355",
+      "head_noncomment": [
+        "\"\"\"brainctl.py — local-first Hermes/Obsidian evidence memory control plane.",
+        "Canonical truth source: ~/Documents/brain (or HERMES_BRAIN_VAULT).",
+        "Derived state: ~/.hermes/memory/index.sqlite and ~/.hermes/memory/wal.jsonl.",
+        "This script deliberately keeps Obsidian CLI optional. Filesystem + SQLite FTS5",
+        "must work even when Obsidian is not installed/running."
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/code-intel.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 11670,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-27T11:50:57.626247",
+      "head_noncomment": [
+        "\"\"\"",
+        "code-intel.py — Hermes 原生代码智能引擎 v2 (支持 TypeScript/JavaScript)",
+        "轻量级替代 GitNexus: 不装 npm, 不用 tree-sitter, Python 标准库",
+        "支持语言: Python (.py), TypeScript (.ts/.tsx), JavaScript (.js/.jsx), Shell (.sh)",
+        "目标: gomoku-react (34K TS文件) 等已有项目的 1→N 维护"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/consensus-check.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7902,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-27T20:15:47.749731",
+      "head_noncomment": [
+        "\"\"\"",
+        "consensus-check.py — 多模型输出一致性检测器 (L4)",
+        "判断 N 个模型的输出是否一致，用于 T2/T3 verification 的 short-circuit 决策",
+        "检测策略:",
+        "- Python 代码: AST parse → 归一化 → hash"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/consult_models.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 220497,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-31T14:41:43.525216",
+      "head_noncomment": [
+        "\"\"\"",
+        "consult_models.py — 多脑 fan-out 编排器 v3 (替代 consult-models.sh)",
+        "Phase 0 shadow → Phase 3 steady: 读取 quorum.yaml, 选择 planner, fan-out 调用,",
+        "运行 consensus, emit protocol 消息, 清理工作目录。",
+        "用法:"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/cron-health-quarantine.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4013,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Report failing Hermes cron jobs; safe report-only by default.",
+        "Old transient cron errors can remain in jobs.json until the job's next scheduled",
+        "run. Mark those as stale instead of counting them as live bad jobs; the stale",
+        "line remains auditable in cron-quarantine.jsonl.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/cron-missed-run-guard.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3874,
+      "family": "cron-runtime",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Detect enabled cron jobs whose last_run_at is older than their cadence.",
+        "Observation-only guard: writes logs/cron-missed-runs.jsonl and improvement",
+        "signals, but never triggers jobs or edits jobs.json.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/cross-patch.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 38710,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-18T13:30:23.064818",
+      "head_noncomment": [
+        "\"\"\"",
+        "cross-patch.py — 双模型交叉审查编排器 (L4 T2)",
+        "Producer A 执行任务 → Reviewer B 审查并生成结构化补丁 → Merger 自动化合并",
+        "工作流:",
+        "A (producer) → 生成 artifact"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/cybernetic_multimodel_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9412,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-12T00:10:47.429690",
+      "head_noncomment": [
+        "\"\"\"Local-first verifier for cybernetic multi-model intervention landing.",
+        "Checks first-order/second-order cybernetics × multi-model thinking artifacts in",
+        "~/Documents/brain. No network, no LLM calls, no destructive actions.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/ensemble-vote.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 17901,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-18T13:46:08.568652",
+      "head_noncomment": [
+        "\"\"\"",
+        "ensemble-vote.py — 多模型投票/仲裁 (L3)",
+        "基于 delegate_task batch 模式实现的多模型并行执行与结果聚合",
+        "策略:",
+        "- majority: 多数投票"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/eval-harness.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 22602,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-28T10:33:10.916994",
+      "head_noncomment": [
+        "\"\"\"",
+        "eval-harness — L4 准入门",
+        "评估 skills/prompts 改动是否退化。",
+        "用法:",
+        "python3 ~/.hermes/scripts/eval-harness.py --init-baseline"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/gitnexus_fusion_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7114,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-06T21:26:29.430286",
+      "head_noncomment": [
+        "\"\"\"Hermes GitNexus-inspired code-evidence fusion self-check.",
+        "Local-first checker for the long-term project that folds GitNexus MCP/code-graph",
+        "patterns into Hermes multi-model thinking. It does not invoke GitNexus and does",
+        "not require network access. It verifies that the governance artifacts and core",
+        "patterns remain present in skills + canonical local brain."
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/iteration_budget_doctor.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14161,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-12T16:13:05.206912",
+      "head_noncomment": [
+        "\"\"\"Hermes iteration-budget doctor.",
+        "Read-only diagnostic for automation runs that may hit:",
+        "`Iteration budget reached (N/N) — response may be incomplete`.",
+        "It emits compact JSON and never prints secret values. `.env` is inspected only for",
+        "selected key presence."
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/iteration_budget_triage.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8677,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-27T10:45:58.143442",
+      "head_noncomment": [
+        "\"\"\"Iteration Budget Triage — Multi-model analysis for budget-exhausted tasks.",
+        "When tasks hit iteration budget (60/60), this script:",
+        "1. Scans all iteration-budget-exhausted blocked tasks",
+        "2. Categorizes by domain/complexity/retry count",
+        "3. Outputs structured JSON for multi-model decision: 续费/拆分/降级/放弃"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/lark_task_reader.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 37557,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-06-03T16:42:34.367937",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "\"\"\"Hermes-native read-only Lark Task Center reader.",
+        "Source-derived from the matured arc-dispatch/github-dispatch collectors, but",
+        "safe as a standalone helper: it only reads tasks/comments/docs and prints JSON;",
+        "it never enqueues, writes back to Lark, or mutates project repos."
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/live_notes_accumulator.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10238,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-24T23:01:04.663188",
+      "head_noncomment": [
+        "\"\"\"",
+        "Live Notes Accumulator — Session Working Memory",
+        "Inspired by Rowboat's \"Live Notes\" pattern.",
+        "Accumulates observations, facts, and context during a session.",
+        "Provides ephemeral working memory between \"current conversation\" and"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_intervention_dynamic_step.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13047,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-19T21:20:17.968351",
+      "head_noncomment": [
+        "\"\"\"Dynamic starter for long-running multi-model taskpool intervention.",
+        "The cron-facing invocation is intentionally short: it checks whether a new",
+        "intervention state exists and starts a detached worker if needed. The detached",
+        "worker can exceed cron/LLM response time without blocking the scheduler.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_intervention_parallel_step.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1363,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Cron-safe wrapper for local-brain multimodel intervention.",
+        "Hermes cron script fields are argument-free and do not source interactive shell",
+        "rc files. This wrapper makes the intended autorun gate explicit while keeping",
+        "the scheduler containment model: no shell, no arbitrary argv parsing.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_keypoint_coverage_ratchet.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 21563,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Fail-closed ratchet for multi-model keypoint coverage in the local brain.",
+        "This verifier turns the previously prose-only \"22/22 covered\" review into a",
+        "machine-checkable gate. It is local-first: no network, no LLM calls, no writes",
+        "unless --write-report is explicitly provided.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/pa-daily-report.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 11376,
+      "family": "cron-runtime",
+      "exists": true,
+      "mtime": "2026-05-19T11:16:28.416309",
+      "head_noncomment": [
+        "\"\"\"",
+        "PA Daily Report — 个人助理日报",
+        "每日 23:00 自动发送给用户，并产出受治理的 taskpool 候选 sidecar。",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/personal_hermes_brain_export.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 24470,
+      "family": "utilities",
+      "exists": true,
+      "mtime": "2026-05-15T04:38:53.688864",
+      "head_noncomment": [
+        "\"\"\"Export a sanitized portable Hermes personal-brain repo.",
+        "This never copies raw ~/.hermes runtime state, raw memory, auth, logs, caches,",
+        "sessions, checkpoints, DBs, or .env. It does export reviewed project-profile JSON",
+        "and deterministic control-plane scripts so another machine can restore project",
+        "routing and taskpool profile context. The output tree is intended for the private"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/post-session-autopsy.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 26712,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"",
+        "Post-Session Autopsy — 自进化传感器层",
+        "从 session JSON 对话中挖掘改进信号",
+        "用法:",
+        "python3 ~/.hermes/scripts/post-session-autopsy.py --file <path>"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/post-update-check.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 45976,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-18T21:33:46.184424",
+      "head_noncomment": [
+        "\"\"\"",
+        "Hermes post-update self-check: detect if vendor-code patches have been",
+        "overwritten by `hermes update`, re-apply if needed, report fixed-by-upstream.",
+        "Usage:",
+        "python3 ~/.hermes/scripts/post-update-check.py [--fix]"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/pricing.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10184,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-27T23:25:59.474802",
+      "head_noncomment": [
+        "\"\"\"",
+        "pricing.py — 多模型成本感知引擎",
+        "从 config.yaml pricing 块加载定价元数据, 提供时间感知的成本估算",
+        "核心函数:",
+        "load_pricing(config_path)     → PricingTable"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/rowboat_bridge.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 19283,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-24T23:01:54.572716",
+      "head_noncomment": [
+        "\"\"\"",
+        "Rowboat Bridge — Integration layer for Rowboat-inspired Hermes improvements.",
+        "Ties together the three Rowboat-inspired scripts:",
+        "- kg_entity_extractor.py  (knowledge graph)",
+        "- live_notes_accumulator.py  (session working memory)"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/self-improvement-pipeline.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 46603,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-30T00:40:21.272089",
+      "head_noncomment": [
+        "\"\"\"",
+        "Self-Improvement Pipeline — 自进化优先调度层",
+        "统一信号聚合 → 优先级排序 → 自主执行",
+        "用法:",
+        "python3 ~/.hermes/scripts/self-improvement-pipeline.py"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/self-scan-4h.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4056,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-06-04T10:50:22.811446",
+      "head_noncomment": [
+        "\"\"\"",
+        "4-Hour Self-Scan — 自动化健康检查",
+        "每 4 小时运行一次，检查系统健康状态",
+        "\"\"\"",
+        "import os, json, datetime"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/session-close.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1300,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-19T11:14:11.633295",
+      "head_noncomment": [
+        "set -e",
+        "echo \"═══════════════════════════════════════════════════\"",
+        "echo \"  Session Close — 自动化收尾\"",
+        "echo \"═══════════════════════════════════════════════════\"",
+        "TASK_TYPE=\"${1:-general}\""
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/skill-steward.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 33818,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-09T15:18:59.119710",
+      "head_noncomment": [
+        "\"\"\"",
+        "skill-steward.py — 技能生态管家",
+        "基于 11 理论的实战审计脚本。",
+        "覆盖 Ashby + Ostrom + Prigogine + Parnas + Conway + Havel + 三角约束 + Dreyfus + 2nd-Order + Nudge + Memetics.",
+        "用法:"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/sync-brain.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4334,
+      "family": "utilities",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"",
+        "sync-brain.py — 双向同步 Hermes notes ↔ Obsidian vault (brain)",
+        "方向:",
+        "Push: ~/.hermes/notes/  →  ~/Documents/brain/99-hermes-notes/",
+        "Pull: ~/Documents/brain/  →  ~/.hermes/notes/brain/"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/task_pool_guardian_run.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 328,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Cron wrapper generated to keep Hermes cron script field argument-free.\"\"\"",
+        "from pathlib import Path",
+        "import os",
+        "import sys",
+        "scripts = Path(__file__).resolve().parent"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/taskpool_watch_report.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8805,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Local brain taskpool watcher: emit occasional human report, stay silent otherwise.",
+        "No-agent cron semantics: non-empty stdout is delivered; empty stdout is silent.",
+        "\"\"\"",
+        "from __future__ import annotations",
+        "import hashlib"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_brainctl.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 22712,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-19T01:38:56.518529",
+      "head_noncomment": [
+        "\"\"\"Tests for brainctl.py local-brain evidence index.\"\"\"",
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import sqlite3"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_multimodel_intervention_dynamic_step.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7823,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-19T21:21:35.015466",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import contextlib",
+        "import io",
+        "import json"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_multimodel_keypoint_coverage_ratchet.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10043,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Tests for multimodel_keypoint_coverage_ratchet.py.\"\"\"",
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import json",
+        "import os"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_personal_hermes_brain_export.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6955,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-15T04:34:02.934378",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import subprocess"
+      ]
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_taskpool_watch_report.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2485,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-12T14:56:28.242878",
+      "head_noncomment": [
+        "\"\"\"Regression tests for taskpool_watch_report.py high-score anti-stall classification.\"\"\"",
+        "from __future__ import annotations",
+        "import importlib.util",
+        "from pathlib import Path",
+        "SCRIPT = Path.home() / \".hermes\" / \"scripts\" / \"taskpool_watch_report.py\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/adapters/",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 192,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-06-04T12:23:32.389894",
+      "read_error": "[Errno 21] Is a directory: '/Users/charles/.hermes/scripts/adapters'"
+    },
+    {
+      "status": "??",
+      "path": "scripts/adk_contract_verifier.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5445,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-11T07:06:28.499180",
+      "head_noncomment": [
+        "\"\"\"ADK Contract Verifier — Check Hermes against Agent Development Kit five-folder contract.",
+        "Reports each ADK component as: existing | gap | duplicate | intentionally_unsupported.",
+        "Usage:",
+        "python3 ~/.hermes/scripts/adk_contract_verifier.py [--json]",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/agent_memory_architecture_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12036,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-10T22:15:03.875251",
+      "head_noncomment": [
+        "\"\"\"Agent Memory Architecture Selfcheck Script v3.0.0",
+        "Performs runtime and structural verification of the ~/.hermes/memory/ architecture.",
+        "Run after any file operation to validate the system.",
+        "\"\"\"",
+        "import os, sys, json, fcntl, re, time"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/agent_team_controller_cycle.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 333,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-11T10:25:39.527937",
+      "head_noncomment": [
+        "\"\"\"Cron wrapper generated to keep Hermes cron script field argument-free.\"\"\"",
+        "from pathlib import Path",
+        "import os",
+        "import sys",
+        "scripts = Path(__file__).resolve().parent"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-codex-transport-hardening-patch.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4461,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-12T12:55:30.821816",
+      "head_noncomment": [
+        "\"\"\"Apply the private Codex transport hardening patch after Hermes updates.",
+        "This script is intentionally outside ~/.hermes/hermes-agent so it survives",
+        "`hermes update`. It uses a git binary patch generated from the scoped private",
+        "commit and applies it with --3way so future upstream movement can merge when",
+        "context still matches. If upstream has already implemented equivalent markers,"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-mcp-timeout-patch.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3538,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-12T10:29:39.658187",
+      "head_noncomment": [
+        "\"\"\"Apply MCP RPC timeout guard patch to mcp_tool.py.",
+        "Centralizes lock+timeout pattern into _mcp_rpc_call helper for all 5 MCP operations.",
+        "\"\"\"",
+        "import re",
+        "import sys"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_3mf_patch_single_material.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4586,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T14:22:23.469423",
+      "head_noncomment": [
+        "\"\"\"Patch a single-material Bambu 3MF metadata color/profile for verified local AMS mapping.",
+        "This is a narrow recovery tool for BambuStudio CLI exports that incorrectly keep the",
+        "stock green PLA Basic metadata even when a different PLA profile was loaded. It does",
+        "not alter geometry; it updates metadata/G-code comments used by Hermes preprint guard.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_3mf_preprint_guard.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12318,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T11:55:48.892201",
+      "head_noncomment": [
+        "\"\"\"Pre-print guard for Bambu/X2D 3MF artifacts.",
+        "Classifies artifacts into:",
+        "- gui_reslice_project: project-only 3MF, safe to open in GUI and slice with live printer/AMS state.",
+        "- direct_print_candidate: sliced 3MF, but only printable after live AMS/material/nozzle verification.",
+        "- direct_print_ready: sliced 3MF whose metadata matches supplied live status assumptions."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_credentials.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4354,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T12:50:00.021796",
+      "head_noncomment": [
+        "\"\"\"Bambu credential helper for Hermes.",
+        "Stores/retrieves the LAN access code from macOS Keychain, never plaintext brain files.",
+        "The module function returns the code to the caller process; CLI never prints the secret.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_tunnel.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7414,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T12:52:22.306307",
+      "head_noncomment": [
+        "\"\"\"Bambu Lab LAN FileTransferTunnel wrapper using Bambu Studio's official libbambu_networking.dylib.",
+        "This uses the same X2D/H2D local port 6000 tunnel path that Bambu Studio uses in SendToPrinter.cpp.",
+        "Access code is read from BAMBU_ACCESS_CODE; do not print it.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 96512,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T23:54:44.604439",
+      "head_noncomment": [
+        "\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0012\u0000\u0000\u0000\u0004\u0000\u0000!\u0000\u0000\u0000\u0000\u0000\u0019\u0000\u0000\u0000H\u0000\u0000\u0000__PAGEZERO\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0019\u0000\u0000\u0000\u0001\u0000\u0000__TEXT\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0005\u0000\u0000\u0000\u0005\u0000\u0000\u0000\u0005\u0000\u0000",
+        "\u0000\u00003\u0000\u0000\u0010\u0000\u0000\u0000(\u0000\u0000\u0002\u0000\u0000\u0002\u0000\u0000\u0000\u0018\u0000\u0000\u0000`\u0000\u0000\u0002\u0000\u0000\u0000\u0000x2\u0000\u0000\u000b\u0000\u0000\u0000P\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0002\u0000\u0000\u0010\u0000\u0000\u0000\u0002\u0000\u0000-\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000g\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000e\u0000\u0000\u0000 \u0000\u0000\u0000\f\u0000\u0000\u0000/usr/lib/dyld\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u001b\u0000\u0000\u0000\u0018\u0000\u0000\u0000eiUDVs\u000eJ",
+        "s2\u0000\u0000\u0000 \u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u001a\u0000\u0000\u0004\u001a\u0000\u0001\u0000\u0000\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0004*\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000(\u0000\u0000\u0018\u0000\u0000\u0000\f\u0017\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\f\u0000\u0000\u00008\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000L\u0005\u0000\u0000\u0001\u0000/usr/lib/libSystem.B.dylib\u0000\u0000\u0000\u0000\u0000\u0000\f\u0000\u0000\u00000\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000+4\b\u0000\u0000\u0001\u0000/usr/lib/",
+        "\u0001\u0000)\u0001\u0001\t9\u0000\u0003\bI\u0000\u0000)",
+        "@!!\u0000\u0002!\u0000\b\u0000\u0001\u0000\u0000\u0014\u0003@I\u0000\u0000)\t@*a\u0000"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload.cpp",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10675,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T23:54:35.458150",
+      "head_noncomment": [
+        "// Minimal Bambu Studio FileTransferTunnel wrapper.",
+        "// Builds a native C++ executable and dlopen's Bambu Studio libbambu_networking.dylib.",
+        "struct ft_job_result {",
+        "int ec;",
+        "int resp_ec;"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload.dSYM/",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 96,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T23:50:22.224964",
+      "read_error": "[Errno 21] Is a directory: '/Users/charles/.hermes/scripts/bambu_ft_upload.dSYM'"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_local_print",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 78016,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T11:58:15.718977",
+      "head_noncomment": [
+        "\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0012\u0000\u0000\u0000@\u0005\u0000\u0000!\u0000\u0000\u0000\u0000\u0000\u0019\u0000\u0000\u0000H\u0000\u0000\u0000__PAGEZERO\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0019\u0000\u0000\u0000(\u0002\u0000\u0000__TEXT\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0005\u0000\u0000\u0000\u0005\u0000\u0000\u0000\u0006",
+        "E93,Ɏ\u00182\u0000\u0000\u0000 \u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0000\u001a\u0000\u0000\u0004\u001a\u0000\u0001\u0000\u0000\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0004*\u0000\u0000\u0000\u0010\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000(\u0000\u0000\u0018\u0000\u0000\u0000\u0005\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\f\u0000\u0000\u00008\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000\u0000L\u0005\u0000\u0000\u0001\u0000/usr/lib/libSystem.B.dylib\u0000\u0000\u0000\u0000\u0000\u0000\f\u0000\u0000\u00000\u0000\u0000\u0000\u0018\u0000\u0000\u0000\u0002\u0000\u0000\u0000\u0000+4\b\u0000\u0000\u0001\u0000/usr/",
+        "\u0000qj\u0001\u0000T\u0001\u0000\u0000\u0014@\u0000\u0000\u0000`@!\u0000\u0000!p\t\u0003\u0000\u0001\u0000\u0000\u0014H\u0000R\u000b\u0003\u0000\u0014 \u0000\u0000\u0000<",
+        "\u0012\u0000\u0013\u0001\u0001\u0000\u0000\u0014\u0013A\u0005E\u0000\u0000\u0001\u0000\u0000\u0014E\b\u0001@9h\u0001\u00005\u0001\u0000\u0000\u0014@\u0000\u0000\u0000`@!\u0000\u0000!",
+        "\u0003\u0000\u0001\u0000\u0000\u0014H\u0000R\u000b\u0003\u0000\u0014 \u0000\u0000\u0000"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_local_print.cpp",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6301,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T11:58:06.990493",
+      "head_noncomment": [
+        "// Call Bambu Studio official libbambu_networking.dylib to start a LAN local print.",
+        "// Uses BBL::PrintParams ABI from BambuStudio source.",
+        "using namespace BBL;",
+        "typedef void* (*fn_create_agent)(std::string);",
+        "typedef int (*fn_destroy_agent)(void*);"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_local_print.dSYM/",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 96,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T00:29:16.775451",
+      "read_error": "[Errno 21] Is a directory: '/Users/charles/.hermes/scripts/bambu_local_print.dSYM'"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_status_prompt.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 218,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-21T14:12:00.860549",
+      "head_noncomment": [
+        "set -euo pipefail",
+        "read -rsp \"Bambu access code (input hidden): \" BAMBU_ACCESS_CODE",
+        "printf '\\n'",
+        "export BAMBU_ACCESS_CODE",
+        "exec python3 \"$HOME/.hermes/scripts/bambu_x2d.py\" status --timeout \"${1:-10}\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_status_to_file.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1466,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-21T16:14:14.270629",
+      "head_noncomment": [
+        "set -euo pipefail",
+        "OUT=\"$HOME/.hermes/runs/x2d-status/$(date +%Y%m%d-%H%M%S)\"",
+        "mkdir -p \"$OUT\"",
+        "printf '%s\\n' \"$OUT\" > /tmp/hermes_x2d_last_out",
+        "read -rsp \"Bambu access code (hidden): \" BAMBU_ACCESS_CODE"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_studio_slice.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10317,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T15:33:50.222380",
+      "head_noncomment": [
+        "\"\"\"Bambu Studio CLI slicing helper for Hermes manufacturing workflows.",
+        "This captures field-tested BambuStudio CLI quirks:",
+        "- Pass explicit machine/process/filament JSON files instead of editing GUI/vendor preset indexes.",
+        "- Use basename for --export-3mf plus absolute --outputdir; absolute --export-3mf can create doubled paths.",
+        "- Do not combine --export-png and --export-3mf in one invocation."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_x2d.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 17921,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T12:51:10.758970",
+      "head_noncomment": [
+        "\"\"\"Bambu X2D local adapter for Hermes manufacturing brain.",
+        "Read-only commands (status/watch/capabilities) work without confirmation.",
+        "Mutating commands (upload/start/pause/stop) require BAMBU_ACCESS_CODE env var",
+        "and go through external-control confirmation + audit gate.",
+        "Credential source: BAMBU_ACCESS_CODE env var or macOS Keychain via bambu_credentials.py. Never persist it in this file."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_x2d_probe.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3484,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T00:25:22.470788",
+      "head_noncomment": [
+        "import socket, ssl, struct, time, json, random, sys, argparse",
+        "HOST='192.168.31.252'",
+        "PORT=8883",
+        "SERIAL='20P6BJ651301231'",
+        "USER='bblp'"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/behavioral-benchmark-runner.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9468,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-30T00:28:32.377084",
+      "head_noncomment": [
+        "\"\"\"Behavioral Benchmark Runner — Phase 1: Replace existence checks with runtime behavior tests.",
+        "Tests actual script execution, output validity, and side effects.",
+        "Each benchmark: run script → check exit code → validate output schema → report pass/fail.",
+        "\"\"\"",
+        "import json"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/bft_consensus.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9865,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T18:20:18.598547",
+      "head_noncomment": [
+        "\"\"\"Byzantine Fault Tolerant consensus for multi-model certification.",
+        "Implements a simplified PBFT-style voting protocol for certifying task",
+        "outputs across multiple models. Each model casts a vote (approve, amend,",
+        "or reject); consensus requires a quorum of agreeing votes.",
+        "Theory:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_api.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10508,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T22:08:26.071149",
+      "head_noncomment": [
+        "\"\"\"",
+        "Hermes Brain API — 本地 Cloud 先导版",
+        "在本地启动一个 HTTP 服务，作为\"大脑\"。",
+        "Edge Worker 通过 HTTP 连接执行指令。",
+        "Usage:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_cloud_sync_guard.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4174,
+      "family": "utilities",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Dynamic no-agent cloud sync guard for the personal Hermes brain repo.",
+        "This script is designed for Hermes cron no_agent mode: it stays quiet when there",
+        "is no actionable change, and emits compact JSON only on push/change/error.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_task_autorun_step.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14112,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-19T02:13:22.462488",
+      "head_noncomment": [
+        "\"\"\"Bounded local-brain autorun step.",
+        "This is a safer self-execution bridge for the local-brain task pool. It combines",
+        "hint/summary scheduling with bounded execution, but it is deliberately *not* a",
+        "Markdown executor:",
+        "- it never parses task-note bodies for commands;"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_task_orchestrator_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 339,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-11T10:25:39.527604",
+      "head_noncomment": [
+        "\"\"\"Cron wrapper generated to keep Hermes cron script field argument-free.\"\"\"",
+        "from pathlib import Path",
+        "import os",
+        "import sys",
+        "scripts = Path(__file__).resolve().parent"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/capability_registry.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 21015,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T20:54:12.510763",
+      "head_noncomment": [
+        "\"\"\"",
+        "Hermes Capability Registry — 架构级热插拔",
+        "能力（Capability）是可热插拔的执行单元。每个能力：",
+        "- 声明自己在什么条件下激活",
+        "- 声明自己提供什么功能"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/checkpoint_manager.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 19789,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T20:30:45.717378",
+      "head_noncomment": [
+        "\"\"\"",
+        "Checkpoint Manager — Persistence layer for long-running task state.",
+        "Provides checkpoint/resume for tasks that span hours or days.",
+        "Uses atomic writes and versioned history for crash safety.",
+        "Key concepts:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/csp_pipeline_model.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14906,
+      "family": "provider-routing",
+      "exists": true,
+      "mtime": "2026-05-29T18:19:34.643444",
+      "head_noncomment": [
+        "\"\"\"CSP model of TaskPipeline stages.",
+        "Formalizes the Hermes task pipeline as a Communicating Sequential Processes",
+        "(CSP) system per Hoare 1978. Each pipeline stage is a CSP process; channels",
+        "connect stages in a linear chain. The model supports deadlock-freedom and",
+        "liveness verification."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/dashboard-data.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9661,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-29T17:12:44.794676",
+      "head_noncomment": [
+        "\"\"\"",
+        "Dashboard Data Generator — produces JSON for the task monitoring dashboard.",
+        "Reads from observer, progress, preflight, and adapter sources to produce",
+        "a unified dashboard data file at ~/.hermes/diagnostics/dashboard-tasks.json.",
+        "Includes:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/demo_task_observer.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14828,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T16:37:33.623291",
+      "head_noncomment": [
+        "set -euo pipefail",
+        "RED='\\033[0;31m'; GREEN='\\033[0;32m'; YELLOW='\\033[1;33m'",
+        "BLUE='\\033[0;34m'; CYAN='\\033[0;36m'; BOLD='\\033[1m'",
+        "DIM='\\033[2m'; RESET='\\033[0m'",
+        "header()  { echo -e \"\\n${BOLD}${CYAN}━━━ $1 ━━━${RESET}\"; }"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/dempster_shafer.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2824,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T18:19:02.856426",
+      "head_noncomment": [
+        "\"\"\"Dempster-Shafer theory for combining sub-task evidence.",
+        "Theory: Shafer 1976 - A Mathematical Theory of Evidence",
+        "\"\"\"",
+        "from typing import Dict, FrozenSet",
+        "class MassFunction:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/dynamic_n.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3225,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-10T23:54:06.896902",
+      "head_noncomment": [
+        "\"\"\"Dynamic N Calculator — Determine optimal parallel agent count.",
+        "Formula: N = min(ceil(dispatchable/7), conflict_groups, MAX_CAP)",
+        "Floor: 1, Max cap: 3 (configurable)",
+        "Smoothing: N only changes if sustained for 2 consecutive cycles.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/edge_worker.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9230,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T22:10:10.483233",
+      "head_noncomment": [
+        "\"\"\"",
+        "Hermes Edge Worker — 本地执行代理",
+        "接收 Brain API 的指令，在本地执行，返回结果。",
+        "Usage:",
+        "python3 edge_worker.py                         # 启动在 localhost:9000"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/ensemble-real.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4082,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-04-29T00:43:04.733283",
+      "head_noncomment": [
+        "\"\"\"Minimal real ensemble wrapper for actual-usage corpus.\"\"\"",
+        "from __future__ import annotations",
+        "import argparse, json, subprocess, time, uuid, urllib.request, os",
+        "from datetime import datetime, timezone",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/entropy_ambiguity.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1620,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T18:19:02.863594",
+      "head_noncomment": [
+        "\"\"\"Information-theoretic ambiguity detection.",
+        "Theory: Shannon 1948 - A Mathematical Theory of Communication",
+        "\"\"\"",
+        "import math",
+        "from collections import Counter"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/evidence_manifest.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 20069,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-19T21:14:52.413693",
+      "head_noncomment": [
+        "\"\"\"Evidence manifest utilities for Hermes mission sidecars and typed local recall.",
+        "Two compatible modes live in one stdlib-only script:",
+        "1. Mission sidecar mode (`create`/`verify`/`list`/`hash`) for existing workflows.",
+        "2. Typed evidence indexing mode (`scan`/`query`/`report`) for proof JSON and task",
+        "markdown retrieval inspired by the RAG-Anything taskpool prototype."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/external_control_gate.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9117,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T23:40:03.720457",
+      "head_noncomment": [
+        "\"\"\"External-control confirmation/idempotency/audit gate.",
+        "Default-safe: dry-run is implemented; real physical execution is refused until a",
+        "separate, audited executor is deliberately enabled. This gate validates action",
+        "packets emitted by manufacturing and records idempotent audit evidence.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/fill-baseline-parallel.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6295,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-28T10:50:03.277224",
+      "head_noncomment": [
+        "\"\"\"快速填充 eval-harness baseline — 用 DeepSeek API 调用\"\"\"",
+        "import os, json, datetime, sys, concurrent.futures, requests",
+        "BASELINE_PATH = os.path.expanduser(\"~/.hermes/eval/eval-baseline.json\")",
+        "def get_deepseek_config():",
+        "\"\"\"从 hermes .env 加载 DeepSeek API key\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/gittins_scheduler.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2394,
+      "family": "cron-runtime",
+      "exists": true,
+      "mtime": "2026-05-29T23:36:55.213045",
+      "head_noncomment": [
+        "from typing import Optional, Dict",
+        "\"\"\"Gittins index for adaptive task scheduling.",
+        "Theory: Gittins & Jones 1974 - A Dynamic Allocation Index for the Sequential Design of Experiments",
+        "\"\"\"",
+        "import math"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/governance_ratchet.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8275,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-05-12T16:37:52.010530",
+      "head_noncomment": [
+        "\"\"\"Governance ratchet for trigger timing auto-tuning.",
+        "Reads recent trigger signals, autopsy signals, and convergence stats.",
+        "Computes trigger effectiveness metrics and recommends threshold adjustments.",
+        "Output: trigger_effectiveness_v1 JSON.",
+        "Read-only: never mutates task notes or config files."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-cleanup.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9877,
+      "family": "utilities",
+      "exists": true,
+      "mtime": "2026-05-13T18:37:44.617578",
+      "head_noncomment": [
+        "\"\"\"",
+        "hermes-cleanup.py — Hermes 存储空间治理",
+        "清理 state.db 膨胀、旧快照、旧会话、旧 checkpoint。",
+        "安全: 只删超过 TTL 的数据, 不触碰活跃会话。",
+        "用法:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-eval-trace-audit.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1453,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-04-29T00:56:28.858976",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json, sqlite3, datetime",
+        "from pathlib import Path",
+        "H = Path.home()/'.hermes'",
+        "DB = H/'route_outcomes.db'"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-failure-taxonomy.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1452,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-29T00:56:28.858868",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json, sqlite3, datetime",
+        "from pathlib import Path",
+        "H = Path.home()/'.hermes'",
+        "DB = H/'route_outcomes.db'"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-pre-update-verify.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2394,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-17T02:10:39.520408",
+      "head_noncomment": [
+        "set -eu",
+        "REPO=\"${HERMES_REPO:-$HOME/.hermes/hermes-agent}\"",
+        "CHECKER=\"$HOME/.hermes/scripts/post-update-check.py\"",
+        "if [ -x \"$REPO/venv/bin/python\" ]; then",
+        "PY=\"$REPO/venv/bin/python\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_background_task_worker.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5859,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-18T14:01:21.171272",
+      "head_noncomment": [
+        "\"\"\"Durable background task worker for Hermes conductor runtime.",
+        "Runs a task from the TaskLedger in an isolated session.  Supports:",
+        "- periodic checkpoint summaries",
+        "- reading interrupt/directive updates from the ledger",
+        "- pause / cancel / append_context from the ledger"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_conductor_runtime.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4388,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-18T15:07:41.776885",
+      "head_noncomment": [
+        "\"\"\"CLI smoke helper for Hermes conductor runtime.\"\"\"",
+        "from __future__ import annotations",
+        "import argparse",
+        "import json",
+        "import sys"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_hook_registry_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6411,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T23:58:53.521587",
+      "head_noncomment": [
+        "\"\"\"Validate Hermes lifecycle hook registry governance and trust boundaries.\"\"\"",
+        "from __future__ import annotations",
+        "import argparse",
+        "import json",
+        "import os"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_lan.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10394,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T22:27:29.885384",
+      "head_noncomment": [
+        "\"\"\"",
+        "Hermes LAN Auto-Connect — 局域网自动发现与连接",
+        "Brain 启动后自动广播自己的位置。",
+        "Edge Worker 启动后自动发现 Brain 并连接。",
+        "无需手动配置 IP 地址。"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_openclaw_control_plane.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 291,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-14T12:58:57.781543",
+      "head_noncomment": [
+        "\"\"\"CLI wrapper for Hermes OpenClaw-informed control-plane helpers.\"\"\"",
+        "from pathlib import Path",
+        "import runpy",
+        "import sys",
+        "repo = Path.home() / \".hermes\" / \"hermes-agent\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_task.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8628,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T17:24:34.582199",
+      "head_noncomment": [
+        "\"\"\"",
+        "Hermes Task System — 统一入口",
+        "所有任务操作都通过这个脚本。不再直接调用子脚本。",
+        "新会话只需知道这一个入口。",
+        "Usage:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_ux9_verifier_contracts.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 18584,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-31T22:29:45.102228",
+      "head_noncomment": [
+        "\"\"\"Verifier-first UX 9 contract catalog for Hermes.",
+        "This module turns the UX 9 SSOT into machine-readable contracts before broader",
+        "runtime rewrites land. It intentionally focuses on bounded, read-mostly",
+        "interfaces and governance semantics rather than implementation details.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/install-edge-remote.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 11061,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T22:46:54.702837",
+      "head_noncomment": [
+        "set -e",
+        "INSTALL_DIR=\"$HOME/.hermes/edge-worker\"",
+        "LINK_DIR=\"$HOME/.local/bin\"",
+        "BRAIN_URL=\"${1:-}\"",
+        "while [[ $# -gt 0 ]]; do"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/install-edge.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10023,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T22:43:53.938309",
+      "head_noncomment": [
+        "set -e",
+        "INSTALL_DIR=\"$HOME/.hermes/edge-worker\"",
+        "SCRIPT_NAME=\"hermes-edge\"",
+        "BRAIN_API_URL=\"https://raw.githubusercontent.com/nicholaschenai/hermes-edge-worker/main/brain_api.py\"",
+        "EDGE_WORKER_URL=\"https://raw.githubusercontent.com/nicholaschenai/hermes-edge-worker/main/edge_worker.py\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/kanban_bridge.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5381,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-10T23:13:46.028572",
+      "head_noncomment": [
+        "\"\"\"Brain → Kanban One-Way Bridge (Observability Only)",
+        "Mirrors selected brain tasks to Hermes Kanban for watch observability.",
+        "One-way: brain is source-of-truth, Kanban is mirror only.",
+        "Kill switch: set env KANBAN_BRIDGE_DISABLED=1 or touch ~/.hermes/state/kanban_bridge_disabled",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/kanban_coverage.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10199,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-20T20:03:30.719933",
+      "head_noncomment": [
+        "\"\"\"Kanban coverage diagnostics for the Hermes local-brain control plane.",
+        "The report intentionally separates three meanings of \"coverage\":",
+        "1. local-brain dispatchable tasks mirrored into Kanban (projection coverage),",
+        "2. brain Markdown notes that retain Kanban/run provenance (traceability), and",
+        "3. Kanban ready tasks that are actually spawnable (flow constraint visibility)."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/kg_entity_extractor.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 15757,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-24T23:00:40.381007",
+      "head_noncomment": [
+        "\"\"\"",
+        "Knowledge Graph Entity Extractor",
+        "Inspired by Rowboat's knowledge graph pattern.",
+        "Extracts entities and relations from text, stores in SQLite graph tables.",
+        "Enables structured queries like \"Who worked on project X?\" without full-text scan."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/kg_extract.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8638,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-13T04:26:35.891957",
+      "head_noncomment": [
+        "\"\"\"",
+        "Knowledge Graph Extractor for Hermes Sessions",
+        "Inspired by rowboatlabs/rowboat's knowledge graph pipeline.",
+        "Extracts entities (people, projects, tools, concepts) from session",
+        "transcripts and builds an interconnected markdown knowledge base"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/lark_docx_reader.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13623,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-09T12:59:19.074814",
+      "head_noncomment": [
+        "\"\"\"Read Lark/Larksuite Docx documents via OpenAPI.",
+        "Auth modes:",
+        "tenant (default): app/tenant identity via LARK_APP_ID + LARK_APP_SECRET",
+        "user: user identity via either:",
+        "- LARK_USER_ACCESS_TOKEN"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/link_brain_kanban_refs.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2838,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T11:20:48.378936",
+      "head_noncomment": [
+        "\"\"\"",
+        "Link brain tasks to their kanban counterparts by adding kanban_ref to evidence_refs.",
+        "Run periodically to keep brain-kanban provenance up to date.",
+        "\"\"\"",
+        "import json"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/live6_multimodel_loop_once.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3206,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-09T14:31:21.733307",
+      "head_noncomment": [
+        "import json",
+        "import pathlib",
+        "import subprocess",
+        "import sys",
+        "import time"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/local_brain_html_refresh.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2387,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-18T18:46:36.799926",
+      "head_noncomment": [
+        "\"\"\"Quiet refresh loop for derived local-brain HTML sidecars.",
+        "Canonical sources remain Markdown/JSON/kanban.db. This script only invokes",
+        "`brainctl.py --json html refresh`, records a bounded JSONL log, and stays silent",
+        "when refresh succeeds so it is safe for no-agent cron/watchdog execution.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/log-route-outcome.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 828,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-17T21:53:45.616029",
+      "head_noncomment": [
+        "set -uo pipefail",
+        "log_dir=\"${HERMES_HOME:-$HOME/.hermes}/logs\"",
+        "mkdir -p \"$log_dir\" 2>/dev/null || exit 0",
+        "payload=\"$(cat 2>/dev/null || true)\"",
+        "python3 - \"$log_dir/route_outcome_hook.jsonl\" \"$payload\" <<'PY' 2>/dev/null || true"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_calibration_cube.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4108,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T10:19:53.097234",
+      "head_noncomment": [
+        "\"\"\"Generate a tiny calibration cube STL for safe Photo-to-Print pilot packages.",
+        "This script only writes local artifacts. It does not upload, start, heat, move,",
+        "or otherwise control a printer.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_cigarette_box.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9386,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T21:14:40.622600",
+      "head_noncomment": [
+        "\"\"\"Parametric cigarette box generator with 3 functional fixes:",
+        "1. Reduced dispensing ramp angle (was ~60°, target 20-25°) so cigarettes don't jam",
+        "2. Built-in spring limiter so only 1 cigarette comes out per press",
+        "3. Sliding lid with rail track instead of loose cap",
+        "Dimensions derived from original MakerWorld model analysis:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v2.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13480,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T15:47:17.849649",
+      "head_noncomment": [
+        "\"\"\"Generate a more faithful 2.5D white-dog leather-keychain relief.",
+        "This V2 deliberately preserves the source photo composition:",
+        "- leather backing silhouette with stitch border",
+        "- top rectangular strap (not a hole through the dog's head)",
+        "- seated long-body fluffy white dog"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v21.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12185,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T16:01:25.038998",
+      "head_noncomment": [
+        "\"\"\"V2.1 faithful multi-color-capable white dog keychain generator.",
+        "Outputs visual preview, sidecar color STLs with common origin, and a combined STL.",
+        "No slicing or printer action.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v22.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12224,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T16:20:47.379143",
+      "head_noncomment": [
+        "\"\"\"V2.2 Codex-image-model refined multi-color white dog keychain generator.",
+        "Outputs visual preview, sidecar color STLs with common origin, and a combined STL.",
+        "No slicing or printer action.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v23_trace.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13532,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-22T16:35:35.904704",
+      "head_noncomment": [
+        "\"\"\"Photo-traced V2.3 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v24_clean_trace.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 17567,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-22T16:55:18.845524",
+      "head_noncomment": [
+        "\"\"\"Cleaned photo-traced V2.4 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v25_local_leftfix.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 17034,
+      "family": "utilities",
+      "exists": true,
+      "mtime": "2026-05-22T17:01:25.535994",
+      "head_noncomment": [
+        "\"\"\"Local-left-detail V2.5 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v26_curated_blacklines.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 20599,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T17:04:44.909432",
+      "head_noncomment": [
+        "\"\"\"Curated photo-blackline V2.6 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v27_photo_ink_clean.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 18341,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T17:10:30.021741",
+      "head_noncomment": [
+        "\"\"\"Photo ink cleanup V2.7 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v28_outline_vector_restore.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 21846,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T17:18:32.284827",
+      "head_noncomment": [
+        "\"\"\"Outline/vector restore V2.8 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v29_balanced_photo_vectors.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 21158,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T17:21:00.511055",
+      "head_noncomment": [
+        "\"\"\"Balanced photo vectors V2.9 dog keychain generator.",
+        "This is a semi-automatic tracing path: it uses the original photo to extract",
+        "printable color layers instead of inventing a parametric dog.",
+        "Outputs:",
+        "- traced masks / SVG / preview PNG"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_pendant.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8059,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T14:17:53.251192",
+      "head_noncomment": [
+        "\"\"\"Generate a stylized 2.5D dog pendant/keychain STL from the user's reference image.",
+        "The model is intentionally support-light: flat back, layered relief on the front,",
+        "and an integrated top loop. It is a printable approximation rather than a photogrammetry mesh.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_lamp_base.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14710,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T13:37:23.491155",
+      "head_noncomment": [
+        "\"\"\"Generate a safe printable desktop-lamp base shell.",
+        "This creates only the printed mechanical enclosure/base. Electrical parts are",
+        "specified as certified low-voltage modules; mains AC and hot modules fail closed.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_lamp_shade.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10431,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T10:39:21.938840",
+      "head_noncomment": [
+        "\"\"\"Generate a printable wavy mushroom desktop-lamp diffuser shade.",
+        "This creates only a passive printed diffuser/shell. It is not an electrical part.",
+        "\"\"\"",
+        "from __future__ import annotations",
+        "import argparse"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_mesh_qa.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 15804,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T18:02:10.945479",
+      "head_noncomment": [
+        "\"\"\"Manufacturing mesh manufacturability analyzer.",
+        "Reads an STL mesh and emits structured issue IDs for common FDM cosmetic/functional",
+        "risks: shallow dome stair-stepping, small embossed text, tiny protrusions, large flat",
+        "wall ringing/banding, support scars, and material/profile mismatch.",
+        "This is a read-only QA gate. It never uploads, slices, or controls a printer."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_orientation_search.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6852,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T18:15:00.882683",
+      "head_noncomment": [
+        "\"\"\"Manufacturing orientation search: enumerate 6 principal build orientations and",
+        "rank them by overhang area, support-contact risk, and visible-face exposure.",
+        "Reads an STL mesh, rotates it into 6 orientations (+Z/-Z/+X/-X/+Y/-Y as up),",
+        "computes per-orientation overhang triangle area, and recommends the orientation",
+        "with the least overhang (and thus least support scarring risk)."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_popup_cigarette_box_v3.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9928,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T01:35:12.487534",
+      "head_noncomment": [
+        "\"\"\"Surgical v3 deltas for the original popup cigarette box.",
+        "This script intentionally preserves the original three STL parts and adds only",
+        "small local deltas:",
+        "- shallower anti-jam ramp/contact liner on the original base channel",
+        "- passive one-cigarette limiter ribs near the outlet throat"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_popup_cigarette_box_v4.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 11666,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-22T10:09:42.534816",
+      "head_noncomment": [
+        "\"\"\"V4 surgical deltas for the popup cigarette box after first print QA.",
+        "Fixes addressed from physical print feedback:",
+        "1. Avoid huge hard-to-remove internal supports by removing broad shallow internal filler and using local support-light guide ribs.",
+        "2. Reduce curved/arched support bonding by keeping new contact surfaces flat/chamfered and support-free where possible.",
+        "3. Make the sliding cover an assembly, not just a modified cap: cover rails + matching receiver grooves on the upper part."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_preflight.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 22808,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T18:14:07.565688",
+      "head_noncomment": [
+        "\"\"\"Manufacturing preflight checks for model artifacts.",
+        "This is a conservative verifier/report generator. It does not slice by default and",
+        "never controls a printer. It detects local slicer capability when present so the",
+        "next pipeline stage can choose a real slicer command.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_slice.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5992,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T18:05:15.773778",
+      "head_noncomment": [
+        "\"\"\"Hermes manufacturing slicing bridge.",
+        "Creates a real 3MF project artifact from a model using local OrcaSlicer/BambuStudio CLI.",
+        "It never uploads to a printer and never executes physical actions.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_trick_research.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12407,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T11:50:33.624295",
+      "head_noncomment": [
+        "\"\"\"Bounded web-research and memory gate for 3D-printing \"邪修\" fixes.",
+        "The tool separates three things:",
+        "1. risk -> search plan (safe, no web side effects),",
+        "2. candidate acceptance policy (do not auto-apply hacks),",
+        "3. proven-success casebook promotion (only after evidence + actual outcome)."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_visual_qa.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10029,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T16:42:21.665962",
+      "head_noncomment": [
+        "\"\"\"Glasses/Rokid visual manufacturing QA packet builder.",
+        "This script is intentionally deterministic and read-only. It records photo/question",
+        "intake and optional observed findings into a durable QA packet/report. The actual",
+        "image understanding is performed by Hermes vision at conversation time; this CLI",
+        "stores the evidence boundary, checklists, and fail-closed verdict envelope."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/meta_evolution.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5737,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-05-30T00:39:20.263957",
+      "head_noncomment": [
+        "\"\"\"Meta-Evolution — Pipeline parameter self-tuning.",
+        "Reads pipeline outcomes from evolve.log and adjusts parameters to maintain",
+        "evolution momentum. Inspired by second-order cybernetics: the controller",
+        "controls itself.",
+        "Parameters tuned:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/model_candidate_search.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 24633,
+      "family": "provider-routing",
+      "exists": true,
+      "mtime": "2026-05-21T12:02:14.882513",
+      "head_noncomment": [
+        "\"\"\"Retrieval-first 3D model candidate evidence and selection evaluator.",
+        "This tool creates safe candidate/search evidence packets for photo-to-print.",
+        "It does not download models, does not open browsers, and never performs printer",
+        "or other physical actions.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/monitor_rokid_agent_status.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2995,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-20T13:59:17.254036",
+      "head_noncomment": [
+        "import json",
+        "import os",
+        "import sys",
+        "import warnings",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/multi-brain-nightly-safe.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3471,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-04-29T01:03:30.517603",
+      "head_noncomment": [
+        "\"\"\"Bounded nightly multi-brain tick.",
+        "Runs consult_models.py state + bounded run, records timeout explicitly, then",
+        "always refreshes usage-score. Designed for cron: no silent empty failure.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/multi-model-smoke-safe.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6275,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-04-29T23:45:00.217794",
+      "head_noncomment": [
+        "\"\"\"Bounded wrapper for multi-model-smoke.py cron jobs.",
+        "The raw smoke script may take several minutes across models and exits non-zero on",
+        "partial failures. For cron observability we want bounded execution, JSON output,",
+        "JSONL audit evidence, and exit code 0 even when the underlying smoke is partial.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/multimodel_daily_governance_audit.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 19294,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-18T17:06:35.976111",
+      "head_noncomment": [
+        "\"\"\"Daily deterministic audit for Hermes multi-model and bg-review promotion governance.",
+        "This script is intentionally no-agent/no-model-call safe. It aggregates existing",
+        "selfchecks, logs, routing metadata, and bg-review suggest-mode evidence, then",
+        "reports whether it is safe to keep observing, consider enqueue promotion, or",
+        "block promotion. It never edits ~/.hermes/config.yaml and never enqueues tasks."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/multimodel_daily_governance_audit_noagent.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2169,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-18T17:07:00.078157",
+      "head_noncomment": [
+        "\"\"\"No-agent cron wrapper for multimodel_daily_governance_audit.py.",
+        "Silent on PASS unless bg-review enqueue promotion becomes eligible. Emits a compact",
+        "alert on WARN/FAIL so cron delivery stays useful and bounded.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/novelty_search.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 24933,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-30T00:36:54.731467",
+      "head_noncomment": [
+        "\"\"\"",
+        "Novelty Search — Phase 3b of the self-improvement pipeline.",
+        "Inspired by Lehman & Stanley (2011) \"Abandoning Objectives\":",
+        "When the pipeline has no actionable items from existing signals,",
+        "generate novelty targets by scanning for under-explored dimensions."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/observed_worker.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13117,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T16:37:12.687018",
+      "head_noncomment": [
+        "\"\"\"",
+        "Observed Worker — integrates preflight, observer, and dispatch for a single task.",
+        "Wraps the full lifecycle:",
+        "preflight check → human approval → observer start → task execute → observer finish",
+        "Designed to be called by brain_task_dispatch_tick or manually."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/observer_engine.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 19276,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-29T16:39:16.494227",
+      "head_noncomment": [
+        "\"\"\"",
+        "Observer Engine — Background monitoring daemon for task execution.",
+        "Watches the workspace for file changes and command output patterns,",
+        "then emits structured events to the task observer system.",
+        "Key principle: The main model does NOT call the observer."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/observer_hook.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10183,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-29T16:38:01.443680",
+      "head_noncomment": [
+        "\"\"\"",
+        "Observer Hook — background file-change and event monitor for a running task.",
+        "Polls file mtimes in watched directories and reports changes to task_observer.py.",
+        "Runs as a daemon during task execution.",
+        "Usage:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/openai-cli-eval-2026-05-11.md",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3337,
+      "family": "provider-routing",
+      "exists": true,
+      "mtime": "2026-05-11T15:14:26.684504",
+      "head_noncomment": [
+        "================================================================",
+        "OpenAI CLI Sandbox Evaluation & Hermes Integration Decision",
+        "Date: 2026-05-11",
+        "================================================================",
+        "TOOLS EVALUATED"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/openai_admin_quota.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1366,
+      "family": "provider-routing",
+      "exists": true,
+      "mtime": "2026-05-11T13:39:48.655539",
+      "head_noncomment": [
+        "set -euo pipefail",
+        "OPENAI_CLI=\"${OPENAI_CLI:-$HOME/.hermes/tools/openai-cli/openai}\"",
+        "SUBCMD=\"${1:-costs}\"",
+        "shift 2>/dev/null || true",
+        "if [[ -z \"${OPENAI_ADMIN_KEY:-}\" ]]; then"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/openclaw_to_hermes_gap.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 17791,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-17T02:05:48.108091",
+      "head_noncomment": [
+        "\"\"\"OpenClaw-informed Hermes capability gap landing.",
+        "This does NOT connect to a live OpenClaw service. It uses the OpenClaw OSS repo",
+        "as a reference architecture and materializes missing Hermes-side control-plane",
+        "capabilities as local, auditable artifacts:",
+        "- plugin/extension manifest index (manifest-first, no runtime import)"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/openclaw_trace_ingest.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 16039,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-14T12:17:28.125970",
+      "head_noncomment": [
+        "\"\"\"Hermes-hosted OpenClaw production trace integration MVP.",
+        "OpenClaw is treated as a trace producer; Hermes is the evolution control plane.",
+        "This script implements the production-trace side of the Hermes-hosted OpenClaw",
+        "SE-AOS MVP:",
+        "- ingest OpenClaw JSONL traces"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/p10-health-safe.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5942,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-04-29T23:40:16.241004",
+      "head_noncomment": [
+        "\"\"\"Bounded wrapper for p10-health.sh.",
+        "Runs the existing health script with an explicit timeout and always emits a",
+        "non-empty JSON object. This prevents cron/gateway health checks from hanging or",
+        "returning an empty agent response when p10-health.sh stalls.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/pa_evolution_daily_noagent.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1535,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-06-04T10:52:30.810217",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys",
+        "from datetime import datetime, timezone"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/patches/",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 96,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-12T12:54:18.271756",
+      "read_error": "[Errno 21] Is a directory: '/Users/charles/.hermes/scripts/patches'"
+    },
+    {
+      "status": "??",
+      "path": "scripts/photo_to_print_job.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14634,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T02:13:09.709986",
+      "head_noncomment": [
+        "\"\"\"Photo-to-print job state machine for Hermes Manufacturing Brain.",
+        "Default-safe orchestration only. This tool records intent/evidence and can emit",
+        "external-control action packets, but it never talks to the printer and never",
+        "executes physical actions.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/photo_to_print_runner.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7921,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T02:27:50.162155",
+      "head_noncomment": [
+        "\"\"\"One-command safe Photo-to-Print runner.",
+        "This is an operator convenience wrapper around the durable state-machine scripts.",
+        "It only supports a safe dry-run path for an already selected existing model:",
+        "photo + model -> candidate evidence -> preflight -> local 3MF -> action packet -> external-control dry-run gate.",
+        "It never uploads, starts, pauses, heats, moves, or otherwise controls the printer."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/pipeline_tick.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4135,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-10T23:14:58.257421",
+      "head_noncomment": [
+        "\"\"\"Pipeline Tick — Connects brain_task_orchestrator with envelope_bus.",
+        "Reads brain tasks, creates envelopes, manages lifecycle.",
+        "Run via cron or manually.",
+        "\"\"\"",
+        "import json, subprocess, sys, time, os"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/planner-failure-triage.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1488,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-29T00:56:28.859104",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json, sqlite3, datetime",
+        "from pathlib import Path",
+        "H = Path.home()/'.hermes'",
+        "DB = H/'route_outcomes.db'"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/process_rokid_l2_queue.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 578,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-20T17:37:33.862067",
+      "head_noncomment": [
+        "\"\"\"Run Rokid L2 queue worker from Hermes cron.",
+        "Silent when no work. Prints a compact JSON result only when something was",
+        "processed or failed, so no_agent cron stays quiet most ticks.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/proof_gate_verifier.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5572,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-11T07:49:10.554665",
+      "head_noncomment": [
+        "\"\"\"ADK P0 Proof Gate Verifier — Validates taskpool task transitions.",
+        "Checks:",
+        "1. Task file exists and has valid frontmatter",
+        "2. Status transition is legal (pending->claimed->running->review->done)",
+        "3. Done transition requires proof artifacts"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/pua-loop-self-optimization-architecture.md",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7811,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-05-14T11:32:30.805578",
+      "head_noncomment": [
+        "> PUA 在这里重新定义为非操控闭环：Positive signal（正向强化有效行为）+ Useful action（把失败转成可执行补丁）+ Accountability verification（证据与回归问责）。禁止话术化、操控化、自嗨式强化。",
+        "把 Hermes/OpenClaw 类 Agent 的自身优化从“复盘建议”落地为一条可执行流水线：",
+        "生产任务 / 现网 bad case",
+        "→ 结构化归因",
+        "→ 生成 memory / skill / harness / tool / benchmark 提案"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/pua_loop_self_optimize.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 40891,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-05-17T15:43:04.413144",
+      "head_noncomment": [
+        "\"\"\"",
+        "PUA-loop self-optimization MVP for Hermes/OpenClaw-like agents.",
+        "PUA here is deliberately non-manipulative:",
+        "P = Positive signal: identify what worked and should be reinforced.",
+        "U = Useful action: convert a case into memory/skill/harness/benchmark proposals."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/reliability-update.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8738,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-28T01:30:36.685441",
+      "head_noncomment": [
+        "\"\"\"",
+        "reliability-update.py — Compute rolling hallucination rates and update",
+        "provider reliability scores in ModelHealthMonitor.",
+        "Reads cross-check.jsonl history, computes rolling hallucination rate",
+        "per provider (last N checks), and calls update_reliability_from_data()"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/repo_to_tool_adapter.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6103,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-19T22:08:50.660857",
+      "head_noncomment": [
+        "\"\"\"Generate a governed dry-run adapter spec for a local repository.",
+        "This is intentionally a *spec generator*, not a shell passthrough.  It reads",
+        "repository metadata and emits a JSON contract that a later Hermes tool wrapper",
+        "can review or implement under explicit permissions.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/round3_vote_mimo.json",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2056,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-13T04:02:51.153749",
+      "head_noncomment": [
+        "{",
+        "\"round\": 3,",
+        "\"model\": \"mimo-v2.5-pro\",",
+        "\"vote\": \"amend\",",
+        "\"best_within_constraints\": false,"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/rtk",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 287,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-13T16:58:33.597667",
+      "head_noncomment": [
+        "TMP=$(mktemp)",
+        "\"$@\" > \"$TMP\" 2>&1",
+        "EXIT_CODE=$?",
+        "python3 ~/.hermes/scripts/rtk-compress.py < \"$TMP\"",
+        "rm -f \"$TMP\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/rtk-compress.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4488,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-13T16:57:49.308654",
+      "head_noncomment": [
+        "\"\"\"",
+        "RTK: Runtime Terminal Kompressor",
+        "压缩 terminal 命令输出，保留关键信息，丢弃噪音。",
+        "用法: command 2>&1 | python3 rtk-compress.py [--max N] [--errors-only]",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/runtime_issue_capture.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 7320,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-31T14:43:50.834163",
+      "head_noncomment": [
+        "\"\"\"Capture Hermes runtime friction as deduped taskpool candidates.",
+        "Default mode is safe: append a redacted JSONL candidate under",
+        "~/.hermes/state/runtime-issue-candidates.jsonl. Use --enqueue only when the",
+        "caller explicitly wants to create a governed taskpool item.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/self_optimizing_verifier.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6584,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-11T10:33:28.930574",
+      "head_noncomment": [
+        "\"\"\"Self-Optimizing Verifier — Rejection-driven task improvement loop.",
+        "When verify_with_models rejects a task:",
+        "1. Analyze rejection issues",
+        "2. Generate improved task description with specific evidence requirements",
+        "3. Re-dispatch with enhanced acceptance criteria"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/self_proving_executor.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6655,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-19T13:41:18.770417",
+      "head_noncomment": [
+        "\"\"\"Hermes self-proving executor.",
+        "Runs a bounded verification command bundle and emits a machine-readable proof",
+        "artifact. It is intentionally conservative: no commit/push/reset happens unless",
+        "an explicit future mode is added and separately authorized.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/semantic_retrieval.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13641,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-11T07:43:39.983308",
+      "head_noncomment": [
+        "\"\"\"",
+        "Semantic Retrieval — TF-IDF based semantic search over the brain vault.",
+        "Inspired by Rowboat's vector embedding search pattern.",
+        "Provides conceptual similarity search beyond keyword FTS.",
+        "Stepping stone to full embedding-based retrieval (nomic-embed)."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill-learning-path-multi-agent-code-review.md",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6767,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-11T18:13:03.294141",
+      "head_noncomment": [
+        "---",
+        "- 名称: multi-agent-code-review",
+        "- 路径: ~/.hermes/skills/software-development/multi-agent-code-review/",
+        "- 文件: SKILL.md + 3 references (架构、校准、Hermes实现)",
+        "- 核心能力: 将代码审查分解为正交关注域，多Agent并行审查，置信度加权聚合过滤噪声"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill-learning-path-planning-with-files.md",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 22518,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-13T03:12:00.045962",
+      "head_noncomment": [
+        "---",
+        "本版基于实际源码验证了初版中的关键技术断言，修正了以下错误：",
+        "| 断言 | 初版说法 | 源码实际 | 修正 |",
+        "|------|---------|---------|------|",
+        "| 压缩阈值 | threshold: 0.50 (50%) | threshold: 0.6 (60%) | **已修正** |"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill-learning-ralph-loop-pua-boundary.md",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10314,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-05-12T07:16:08.097382",
+      "head_noncomment": [
+        "> Boundary: evolution:skill-learning:ralph-loop",
+        "> Generated: 2026-05-12",
+        "> Source evidence: pua/SKILL.md, loop/SKILL.md, setup-pua-loop.sh, evolution-protocol.md, cybernetics-principles.md",
+        "Ralph Loop 源自 Anthropic 的 ralph-wiggum 插件（MIT 协议）。PUA Loop 独立实现，借鉴核心机制但增加了质量压力层。",
+        "**核心文件**: `setup-pua-loop.sh` 创建 `.claude/pua-loop.local.md`，该文件是 Stop Hook 的状态锚点。"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill_steward_daily_audit_noagent.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1286,
+      "family": "cron-runtime",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys",
+        "from datetime import datetime, timezone"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill_telemetry_report.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8568,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-19T21:11:48.974826",
+      "head_noncomment": [
+        "\"\"\"Report local append-only Hermes skill telemetry.",
+        "Baseline P1-B slice:",
+        "- consumes ~/.hermes/state/skill_telemetry.jsonl",
+        "- tolerates empty/missing ledgers",
+        "- correlates skill_load events with task_outcome events"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/slicer_preview_parse.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6042,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T18:17:50.400965",
+      "head_noncomment": [
+        "\"\"\"Parse BambuStudio/OrcaSlicer project_settings.config from a 3MF file.",
+        "Extracts key slicer settings (support, seam, speed, infill, layer height, etc.)",
+        "so they can be included in preflight/slice reports for quality review.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/spl-benchmark-results.json",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10291,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-28T01:35:32.349868",
+      "head_noncomment": [
+        "{",
+        "\"timestamp\": \"2026-04-27T17:34:53.039923+00:00\",",
+        "\"model\": \"deepseek-chat\",",
+        "\"prompts\": [",
+        "{"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/spl-benchmark.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 15781,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-04-28T01:34:33.126586",
+      "head_noncomment": [
+        "\"\"\"",
+        "spl-benchmark.py — SPL实战验证: Measure actual token savings with real API calls.",
+        "Sends both Natural Language and SPL-encoded versions of the same prompts",
+        "to DeepSeek, compares character counts, estimated tokens, latency, and",
+        "response quality."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/start_observer.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3439,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-29T16:37:33.617799",
+      "head_noncomment": [
+        "set -euo pipefail",
+        "SCRIPT_DIR=\"$(cd \"$(dirname \"$0\")\" && pwd)\"",
+        "ENGINE_SCRIPT=\"${SCRIPT_DIR}/observer_engine.py\"",
+        "PID_DIR=\"$HOME/.hermes/observer-pids\"",
+        "LOG_DIR=\"$HOME/.hermes/logs\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/strategy_bandit.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8095,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-30T00:33:13.998208",
+      "head_noncomment": [
+        "\"\"\"",
+        "Strategy Bandit — Multi-Armed Bandit (UCB1) for self-improvement pipeline",
+        "strategy selection.",
+        "Selects which improvement strategy to emphasize each pipeline tick based on",
+        "historical reward. Persists state to ~/.hermes/state/strategy-bandit.json."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/synthetic-trace-ratio-guard.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1385,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-04-29T00:56:28.859040",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json, sqlite3, datetime",
+        "from pathlib import Path",
+        "H = Path.home()/'.hermes'",
+        "DB = H/'route_outcomes.db'"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_adapter.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 14408,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T20:31:15.922083",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Adapter — Abstract interface and data models for the task adapter system.",
+        "Every task source (Lark, Brain, Direct, etc.) implements TaskAdapter.",
+        "The adapter is responsible for fetching, enriching, classifying, and",
+        "defining completion criteria for tasks from its source."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_adapter.py.bak",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13594,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T20:31:04.412003",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Adapter — Abstract interface and data models for the task adapter system.",
+        "Every task source (Lark, Brain, Direct, etc.) implements TaskAdapter.",
+        "The adapter is responsible for fetching, enriching, classifying, and",
+        "defining completion criteria for tasks from its source."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_classifier.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 24408,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-30T10:42:25.382488",
+      "head_noncomment": [
+        "\"\"\"Task Classifier — Classify tasks into conflict groups for parallel scheduling.",
+        "Two-phase classification:",
+        "1. Deterministic: task metadata, boundary, project, file patterns",
+        "2. Multi-model: ambiguous tasks only (optional, for precision)",
+        "Conflict group = tasks that modify same files/modules → must be serial."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_continuation.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8747,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-11T00:07:41.008912",
+      "head_noncomment": [
+        "\"\"\"Task Continuation Manager — Handle iteration budget exhaustion with resume.",
+        "Detects \"Iteration budget reached\" in worker output, saves checkpoint,",
+        "and enables resume from last checkpoint instead of restart from scratch.",
+        "Max continuations: 3 (configurable via MAX_CONTINUATIONS env)",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_observer.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 17093,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T20:31:28.814294",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Observer — Source-agnostic task monitor",
+        "Monitors task execution and generates structured progress logs.",
+        "Observer only uses TaskSpec fields, never source-specific fields.",
+        "Architecture:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_observer.py.bak",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13743,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T20:30:49.381856",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Observer — Source-agnostic task monitor",
+        "Monitors task execution and generates structured progress logs.",
+        "Observer only uses TaskSpec fields, never source-specific fields.",
+        "Architecture:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_pipeline.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 28454,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T20:32:08.094458",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Pipeline — Single entry point that wires adapters, observer, preflight.",
+        "Orchestrates the full task lifecycle:",
+        "add_tasks  → fetch → enrich → classify → preflight → ready",
+        "execute    → start observer → template steps → (external execution)"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_pipeline.py.bak",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12176,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T20:31:04.413857",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Pipeline — Single entry point that wires adapters, observer, preflight.",
+        "Orchestrates the full task lifecycle:",
+        "add_tasks  → fetch → enrich → classify → preflight → ready",
+        "execute    → start observer → template steps → (external execution)"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_pool_guardian.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5234,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-15T04:16:39",
+      "head_noncomment": [
+        "\"\"\"Task Pool Guardian — Monitors and fixes task flow issues.",
+        "Detects and auto-fixes:",
+        "- Stale claims (claimed but TTL expired)",
+        "- Stuck envelopes (RUNNING beyond appetite)",
+        "- Deadlock (claimed > 5min with no envelope activity)"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_preflight.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 37136,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T18:05:55.779349",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Preflight — Adapter-aware preflight check",
+        "Task description -> parse -> plan -> ambiguity detection -> confirmation -> execute",
+        "Architecture:",
+        "TaskAdapter.preflight(spec) -> PreflightResult"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_progress.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8912,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T16:03:31.296721",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Progress Tracker — 步骤级别的任务执行可见性",
+        "每个任务执行时，记录它在做什么、做到哪一步、每步的输入输出。",
+        "数据存储在 ~/.hermes/task-progress/<task_id>.jsonl",
+        "Usage:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_query.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 12256,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T17:12:02.688415",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Progress Query — 统一查询接口",
+        "任何入口（CLI/Telegram/Cron/Brain）都通过这个脚本查询任务进度。",
+        "Usage:",
+        "python3 task_query.py show <task_id>"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_registry.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3542,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-29T17:10:31.492913",
+      "head_noncomment": [
+        "\"\"\"",
+        "Task Registry — Adapter registry and unified fetch",
+        "Holds all registered task adapters and provides unified access.",
+        "Used by preflight, observer, and dashboard to access tasks from any source.",
+        "Usage:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_backfill_tenants.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2551,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-17T16:33:14.695226",
+      "head_noncomment": [
+        "import argparse",
+        "import json",
+        "import sqlite3",
+        "from pathlib import Path",
+        "DB_PATH = Path.home() / '.hermes' / 'kanban.db'"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_create_standard_task.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1616,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-17T16:58:55.438824",
+      "head_noncomment": [
+        "import argparse",
+        "import json",
+        "import subprocess",
+        "def main():",
+        "ap = argparse.ArgumentParser("
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_done_closeout_audit.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6483,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-19T11:07:01.651435",
+      "head_noncomment": [
+        "\"\"\"Audit taskpool done tasks against task-type-specific closeout requirements.",
+        "This is a deterministic scanner: it does not change task status. It classifies",
+        "likely false-positive done tasks so humans/agents can reopen in priority order.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_proof_gate.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 9545,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-11T16:47:01.804994",
+      "head_noncomment": [
+        "\"\"\"Taskpool Proof Gate — Verify structured proof before allowing done transition.",
+        "This script enforces the fail-closed proof requirement:",
+        "- done transitions MUST have at least one proof artifact",
+        "- proof artifacts MUST exist on disk",
+        "- no Markdown body execution allowed"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_run_validation_suite.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3469,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-17T17:43:01.461279",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import argparse",
+        "import json",
+        "import subprocess",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_adapter_integration.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5118,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-29T17:16:35.167957",
+      "head_noncomment": [
+        "\"\"\"Integration test for the TaskAdapter framework.\"\"\"",
+        "import sys",
+        "import os",
+        "sys.path.insert(0, os.path.dirname(__file__))",
+        "from task_adapter import TaskSource, TaskSpec, CompletionGate, StepTemplate, PreflightResult"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_agent_team_controller_split.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5897,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-26T16:28:27.655610",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import sys",
+        "import tempfile",
+        "import unittest"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_brainctl_export_app_data.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5479,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-18T23:06:00.852771",
+      "head_noncomment": [
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import sys",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_budget_handoff_check.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2569,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-14T18:12:48.196785",
+      "head_noncomment": [
+        "\"\"\"Deterministic tests for brain_task_orchestrator budget-handoff-check helper.\"\"\"",
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import sys",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_cross_patch_real_execution.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6139,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-04-28T01:50:45.150509",
+      "head_noncomment": [
+        "\"\"\"Regression tests for cross-patch.py real producer/reviewer execution mode.\"\"\"",
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_cybernetic_multimodel_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2295,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-05-12T00:10:59.295863",
+      "head_noncomment": [
+        "\"\"\"Tests for cybernetic_multimodel_selfcheck.py.\"\"\"",
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import tempfile",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_dynamic_workflow.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8072,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-29T20:35:00.200008",
+      "head_noncomment": [
+        "\"\"\"Tests for Claude Code dynamic workflow migration features.\"\"\"",
+        "import sys",
+        "import os",
+        "import json",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_evidence_manifest.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4693,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-19T21:11:35.274709",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import json",
+        "import sys",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_external_control_gate.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 8522,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T11:48:54.189286",
+      "head_noncomment": [
+        "\"\"\"Tests for external_control_gate.py.",
+        "Run with: python3 ~/.hermes/scripts/test_external_control_gate.py",
+        "\"\"\"",
+        "from __future__ import annotations",
+        "import json"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_hermes_ux9_verifier_contracts.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3463,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-31T22:33:03.089030",
+      "head_noncomment": [
+        "import unittest",
+        "from hermes_ux9_verifier_contracts import (",
+        "build_contract_catalog,",
+        "validate_contract_catalog,",
+        ")"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_hook_registry_selfcheck.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2481,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-17T15:54:31.506832",
+      "head_noncomment": [
+        "\"\"\"Tests for hermes_hook_registry_selfcheck.py.\"\"\"",
+        "import importlib.util",
+        "import tempfile",
+        "import unittest",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_integration.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 16913,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-29T16:41:16.864799",
+      "head_noncomment": [
+        "\"\"\"",
+        "Integration test for the observer → dispatch integration layer.",
+        "Tests the full pipeline:",
+        "preflight → approve → observer start → observe events → finish → dashboard data",
+        "Verifies:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_kanban_coverage.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3194,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-20T20:04:06.474558",
+      "head_noncomment": [
+        "import unittest",
+        "import kanban_coverage as kc",
+        "class KanbanCoverageTests(unittest.TestCase):",
+        "def test_ready_nonspawnable_tasks_prevent_false_green_when_no_dispatchable_brain_tasks(self):",
+        "report = kc.compute_coverage("
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_calibration_cube.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2205,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T10:19:07.952528",
+      "head_noncomment": [
+        "\"\"\"Tests for manufacturing_calibration_cube.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_lamp_base.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6636,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T13:36:34.938511",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_lamp_shade.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6413,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T13:36:34.938786",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_mesh_qa.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4747,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T18:00:31.383919",
+      "head_noncomment": [
+        "\"\"\"Tests for manufacturing_mesh_qa.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import math",
+        "import subprocess"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_orientation_search.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3309,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T18:15:31.192080",
+      "head_noncomment": [
+        "\"\"\"Tests for manufacturing_orientation_search.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import math",
+        "import subprocess"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_preflight.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5595,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T11:48:54.189091",
+      "head_noncomment": [
+        "\"\"\"Tests for manufacturing_preflight.py.",
+        "Run with: python3 ~/.hermes/scripts/test_manufacturing_preflight.py",
+        "\"\"\"",
+        "from __future__ import annotations",
+        "import json"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_slice.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2605,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T02:12:04.959482",
+      "head_noncomment": [
+        "\"\"\"Tests for manufacturing_slice.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_trick_research.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6685,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T11:48:54.189471",
+      "head_noncomment": [
+        "\"\"\"Tests for manufacturing_trick_research.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_visual_qa.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2541,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T16:42:41.227413",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_model_candidate_search.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 16472,
+      "family": "provider-routing",
+      "exists": true,
+      "mtime": "2026-05-21T12:01:24.870158",
+      "head_noncomment": [
+        "\"\"\"Tests for model_candidate_search.py.",
+        "Run with: python3 ~/.hermes/scripts/test_model_candidate_search.py",
+        "\"\"\"",
+        "from __future__ import annotations",
+        "import json"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_multi_model_smoke_safe.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3671,
+      "family": "multimodel",
+      "exists": true,
+      "mtime": "2026-04-29T23:44:14.808025",
+      "head_noncomment": [
+        "\"\"\"Tests for multi-model-smoke-safe.py bounded cron wrapper.\"\"\"",
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import stat"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_p10_health_safe.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4083,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-04-29T23:39:04.346941",
+      "head_noncomment": [
+        "\"\"\"Tests for p10-health-safe.py bounded health wrapper.\"\"\"",
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import stat"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_pa_daily_report.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2500,
+      "family": "cron-runtime",
+      "exists": true,
+      "mtime": "2026-05-19T11:15:22.860378",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import json",
+        "import tempfile",
+        "from pathlib import Path"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_photo_to_print_e2e.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5022,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T02:12:49.354702",
+      "head_noncomment": [
+        "\"\"\"End-to-end dry-run smoke for Hermes photo-to-print pipeline.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import os",
+        "import subprocess"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_photo_to_print_job.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5294,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T01:22:12.481608",
+      "head_noncomment": [
+        "\"\"\"Tests for photo_to_print_job.py.",
+        "Run with: python3 ~/.hermes/scripts/test_photo_to_print_job.py",
+        "\"\"\"",
+        "from __future__ import annotations",
+        "import json"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_photo_to_print_runner.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4154,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T02:26:58.937374",
+      "head_noncomment": [
+        "\"\"\"Tests for photo_to_print_runner.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import os",
+        "import subprocess"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_pua_loop_self_optimize.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4195,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-05-17T15:47:21.528874",
+      "head_noncomment": [
+        "\"\"\"Regression tests for final-gate freshness and binding guardrails.\"\"\"",
+        "import importlib.util",
+        "import json",
+        "import os",
+        "import tempfile"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_rowboat_bridge.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 13511,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-24T23:03:39.543623",
+      "head_noncomment": [
+        "\"\"\"",
+        "Tests for Rowboat-inspired Hermes improvements.",
+        "Tests:",
+        "1. kg_entity_extractor — memory decay scoring, graph traversal, ranked entities",
+        "2. live_notes_accumulator — add, search, consolidate"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_self_proving_executor.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2509,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-19T13:44:22.863807",
+      "head_noncomment": [
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "from pathlib import Path",
+        "SCRIPT = Path.home() / \".hermes\" / \"scripts\" / \"self_proving_executor.py\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_skill_telemetry_report.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5463,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-19T21:10:12.671462",
+      "head_noncomment": [
+        "\"\"\"Regression tests for skill_telemetry_report.py baseline reporting.\"\"\"",
+        "from __future__ import annotations",
+        "import importlib.util",
+        "import json",
+        "import subprocess"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_slicer_preview_parse.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3523,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T18:18:06.280561",
+      "head_noncomment": [
+        "\"\"\"Tests for slicer_preview_parse.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_task_boundary_parallel.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 31754,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-11T18:50:44.886472",
+      "head_noncomment": [
+        "\"\"\"Tests for task boundary alignment and multi-Agent parallel processing.",
+        "Tests cover:",
+        "1. compute_boundary_key() aligns with orchestrator's resolution order",
+        "2. classify_deterministic() v2 boundary-aligned classification",
+        "3. validate_boundary_consistency() cross-validation"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_theoretical_improvements.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 20319,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-29T18:24:15.336266",
+      "head_noncomment": [
+        "\"\"\"Test suite for all theoretical improvements to the Hermes task system.",
+        "Covers:",
+        "1. CSP pipeline model (Hoare 1978)",
+        "2. BFT consensus (Castro & Liskov 1999)",
+        "3. Gittins scheduler (Gittins & Jones 1974)"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_v_state_kanban_coverage.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 1169,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-20T20:04:30.383887",
+      "head_noncomment": [
+        "import unittest",
+        "from unittest.mock import patch",
+        "import v_state",
+        "class VStateKanbanCoverageTests(unittest.TestCase):",
+        "def test_f_kanban_uses_spawnability_aware_coverage_score(self):"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_x2d_ams_helper.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3843,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-05-21T18:13:40.504336",
+      "head_noncomment": [
+        "\"\"\"Tests for x2d_ams_helper.py.\"\"\"",
+        "from __future__ import annotations",
+        "import json",
+        "import subprocess",
+        "import sys"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/tests/",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 160,
+      "family": "tests",
+      "exists": true,
+      "mtime": "2026-06-04T12:23:32.388362",
+      "read_error": "[Errno 21] Is a directory: '/Users/charles/.hermes/scripts/tests'"
+    },
+    {
+      "status": "??",
+      "path": "scripts/update_rokid_brain_stats_cache.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 2432,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-20T17:36:52.663974",
+      "head_noncomment": [
+        "\"\"\"Refresh read-only local-brain stats cache for Rokid glasses bridge.",
+        "The launchd bridge may not have macOS TCC permission to read ~/Documents, so it",
+        "reads this cache under ~/.hermes instead. This script is safe: read-only scan of",
+        "brain files + atomic JSON write.",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/update_rokid_daily_brief_cache.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 3017,
+      "family": "cron-runtime",
+      "exists": true,
+      "mtime": "2026-05-20T19:08:26.581670",
+      "head_noncomment": [
+        "\"\"\"Refresh Rokid L0 daily-brief cache.",
+        "Designed for launchd/cron: quiet on success, non-zero on real failure.",
+        "The bridge reads the generated JSON synchronously, so glasses daily queries avoid",
+        "model/network calls and do not trigger Rokid \"AI assistant abnormal\".",
+        "\"\"\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/update_rokid_manufacturing_status_cache.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 5998,
+      "family": "dashboard-observability",
+      "exists": true,
+      "mtime": "2026-05-21T10:40:13.661952",
+      "head_noncomment": [
+        "\"\"\"Refresh Rokid glasses read-only manufacturing/Bambu status cache.",
+        "Safe by default:",
+        "- Reads Bambu credentials only from process env or ~/.hermes/.env.",
+        "- Never writes credential values to cache, stdout, or stderr.",
+        "- Writes a small cache for Rokid L0 voice playback; request path remains cache-only."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/upload_and_start.sh",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 797,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-21T22:36:58.913588",
+      "head_noncomment": [
+        "set -euo pipefail",
+        "LOCAL=\"$1\"",
+        "REMOTE=\"$2\"",
+        "CODE=\"${BAMBU_ACCESS_CODE:?Missing BAMBU_ACCESS_CODE}\"",
+        "HOST=\"${BAMBU_HOST:-192.168.31.252}\""
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/v_state.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6889,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-20T20:05:10.059139",
+      "head_noncomment": [
+        "\"\"\"V(x) System State Function — Complex Giant Systems health monitor.",
+        "V(x) = Σ wᵢ · fᵢ(xᵢ) ∈ [0, 1]",
+        "Components:",
+        "- orchestrator_health: selfcheck PASS=1, else 0",
+        "- dynamic_n_efficiency: applied_n / max(1, raw_n)"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/v_state_json.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 320,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-11T10:25:39.528166",
+      "head_noncomment": [
+        "\"\"\"Cron wrapper generated to keep Hermes cron script field argument-free.\"\"\"",
+        "from pathlib import Path",
+        "import os",
+        "import sys",
+        "scripts = Path(__file__).resolve().parent"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/verify-evolution-event.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 6291,
+      "family": "evolution-dreaming",
+      "exists": true,
+      "mtime": "2026-04-29T22:32:28.557681",
+      "head_noncomment": [
+        "\"\"\"",
+        "verify-evolution-event.py — Hermes Private Evolution Compliance Checker",
+        "Verifies that a Hermes evolution event meets minimum compliance criteria",
+        "defined in ~/.hermes/notes/hermes-private-evolution-manifesto.md.",
+        "Usage:"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/workflow_patterns.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 19413,
+      "family": "other-scripts",
+      "exists": true,
+      "mtime": "2026-05-29T18:03:28.342586",
+      "head_noncomment": [
+        "\"\"\"",
+        "Workflow Pattern Library - Based on van der Aalst's Workflow Patterns",
+        "References:",
+        "- van der Aalst et al., \"Workflow Patterns\", 2003",
+        "- Russell et al., \"Workflow Control-Flow Patterns: A Revised View\", 2006"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/x2d_ams_helper.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 4615,
+      "family": "utilities",
+      "exists": true,
+      "mtime": "2026-05-21T18:13:21.237189",
+      "head_noncomment": [
+        "\"\"\"Lightweight helper to extract loaded AMS materials from a cached X2D status JSON.",
+        "This script reads from a status JSON (from bambu_x2d.py or the summary script) and",
+        "returns a structured list of loaded materials. It never contacts the printer directly.",
+        "\"\"\"",
+        "from __future__ import annotations"
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/x2d_dispatch_print.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 10216,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-22T13:10:03.459965",
+      "head_noncomment": [
+        "\"\"\"Audited Bambu X2D dispatch helper.",
+        "Prompts for BAMBU_ACCESS_CODE if not provided, fetches fresh read-only status,",
+        "validates a sliced 3MF with bambu_3mf_preprint_guard, records an external-control",
+        "dry-run packet, then optionally executes official Bambu local print.",
+        "This wrapper never persists the access code and refuses project-only 3MF files."
+      ]
+    },
+    {
+      "status": "??",
+      "path": "scripts/x2d_print_intent_worker.py",
+      "bucket": "scripts/local-control-plane",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": 11693,
+      "family": "taskpool",
+      "exists": true,
+      "mtime": "2026-05-22T13:11:14.638346",
+      "head_noncomment": [
+        "\"\"\"Rokid/glasses-friendly X2D print intent worker.",
+        "This is the policy/orchestration layer above x2d_dispatch_print.py.",
+        "It accepts a print intent, classifies it as P0/P1/P2, runs the audited dry-run",
+        "path, and only invokes real start when all of these are true:",
+        "- credential source is available (env or Keychain),"
+      ]
+    }
+  ],
+  "tracked_numstat_by_file": {
+    "scripts/agent_protocol.py": {
+      "add": "15",
+      "delete": "2",
+      "total": 17,
+      "complexity": "small_delta"
+    },
+    "scripts/auth_blocked_notifier.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/brainctl.py": {
+      "add": "949",
+      "delete": "0",
+      "total": 949,
+      "complexity": "large_delta"
+    },
+    "scripts/code-intel.py": {
+      "add": "251",
+      "delete": "276",
+      "total": 527,
+      "complexity": "large_delta"
+    },
+    "scripts/consensus-check.py": {
+      "add": "2",
+      "delete": "2",
+      "total": 4,
+      "complexity": "small_delta"
+    },
+    "scripts/consult_models.py": {
+      "add": "25",
+      "delete": "4",
+      "total": 29,
+      "complexity": "medium_delta"
+    },
+    "scripts/cron-health-quarantine.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/cron-missed-run-guard.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/cross-patch.py": {
+      "add": "643",
+      "delete": "5",
+      "total": 648,
+      "complexity": "large_delta"
+    },
+    "scripts/cybernetic_multimodel_selfcheck.py": {
+      "add": "27",
+      "delete": "16",
+      "total": 43,
+      "complexity": "medium_delta"
+    },
+    "scripts/ensemble-vote.py": {
+      "add": "24",
+      "delete": "5",
+      "total": 29,
+      "complexity": "medium_delta"
+    },
+    "scripts/eval-harness.py": {
+      "add": "235",
+      "delete": "80",
+      "total": 315,
+      "complexity": "large_delta"
+    },
+    "scripts/gitnexus_fusion_selfcheck.py": {
+      "add": "5",
+      "delete": "5",
+      "total": 10,
+      "complexity": "small_delta"
+    },
+    "scripts/iteration_budget_doctor.py": {
+      "add": "34",
+      "delete": "1",
+      "total": 35,
+      "complexity": "medium_delta"
+    },
+    "scripts/iteration_budget_triage.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/lark_task_reader.py": {
+      "add": "14",
+      "delete": "0",
+      "total": 14,
+      "complexity": "small_delta"
+    },
+    "scripts/live_notes_accumulator.py": {
+      "add": "17",
+      "delete": "3",
+      "total": 20,
+      "complexity": "small_delta"
+    },
+    "scripts/multimodel_intervention_dynamic_step.py": {
+      "add": "58",
+      "delete": "3",
+      "total": 61,
+      "complexity": "medium_delta"
+    },
+    "scripts/multimodel_intervention_parallel_step.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/multimodel_keypoint_coverage_ratchet.py": {
+      "add": "41",
+      "delete": "0",
+      "total": 41,
+      "complexity": "medium_delta"
+    },
+    "scripts/pa-daily-report.py": {
+      "add": "191",
+      "delete": "61",
+      "total": 252,
+      "complexity": "large_delta"
+    },
+    "scripts/personal_hermes_brain_export.py": {
+      "add": "223",
+      "delete": "18",
+      "total": 241,
+      "complexity": "large_delta"
+    },
+    "scripts/post-session-autopsy.py": {
+      "add": "56",
+      "delete": "0",
+      "total": 56,
+      "complexity": "medium_delta"
+    },
+    "scripts/post-update-check.py": {
+      "add": "536",
+      "delete": "5",
+      "total": 541,
+      "complexity": "large_delta"
+    },
+    "scripts/pricing.py": {
+      "add": "10",
+      "delete": "0",
+      "total": 10,
+      "complexity": "small_delta"
+    },
+    "scripts/rowboat_bridge.py": {
+      "add": "34",
+      "delete": "3",
+      "total": 37,
+      "complexity": "medium_delta"
+    },
+    "scripts/self-improvement-pipeline.py": {
+      "add": "387",
+      "delete": "4",
+      "total": 391,
+      "complexity": "large_delta"
+    },
+    "scripts/self-scan-4h.py": {
+      "add": "32",
+      "delete": "10",
+      "total": 42,
+      "complexity": "medium_delta"
+    },
+    "scripts/session-close.sh": {
+      "add": "7",
+      "delete": "5",
+      "total": 12,
+      "complexity": "small_delta"
+    },
+    "scripts/skill-steward.py": {
+      "add": "1",
+      "delete": "1",
+      "total": 2,
+      "complexity": "small_delta"
+    },
+    "scripts/sync-brain.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/task_pool_guardian_run.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/taskpool_watch_report.py": {
+      "add": "0",
+      "delete": "0",
+      "total": 0,
+      "complexity": "no_text_delta"
+    },
+    "scripts/test_brainctl.py": {
+      "add": "183",
+      "delete": "0",
+      "total": 183,
+      "complexity": "medium_delta"
+    },
+    "scripts/test_multimodel_intervention_dynamic_step.py": {
+      "add": "38",
+      "delete": "0",
+      "total": 38,
+      "complexity": "medium_delta"
+    },
+    "scripts/test_multimodel_keypoint_coverage_ratchet.py": {
+      "add": "26",
+      "delete": "0",
+      "total": 26,
+      "complexity": "medium_delta"
+    },
+    "scripts/test_personal_hermes_brain_export.py": {
+      "add": "131",
+      "delete": "0",
+      "total": 131,
+      "complexity": "medium_delta"
+    },
+    "scripts/test_taskpool_watch_report.py": {
+      "add": "1",
+      "delete": "1",
+      "total": 2,
+      "complexity": "small_delta"
+    }
+  },
+  "updated_at": "2026-06-04T05:34:45.818595Z"
+}
