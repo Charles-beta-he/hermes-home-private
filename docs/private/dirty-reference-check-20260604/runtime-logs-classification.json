@@ -1,0 +1,782 @@
+{
+  "schema": "runtime_logs_classification_v1",
+  "created_at": "2026-06-04T05:29:15.087755Z",
+  "source_inventory": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv",
+  "count": 35,
+  "status_counts": {
+    " M": 3,
+    " D": 3,
+    "??": 29
+  },
+  "extension_counts": {
+    ".jsonl": 30,
+    "<none>": 3,
+    ".json": 2
+  },
+  "class_counts": {
+    "audit_or_evidence_log_manual_review": 10,
+    "tracked_deleted_manual_review": 3,
+    "disposable_runtime_candidate": 22
+  },
+  "entries": [
+    {
+      "path": "logs/cron-missed-runs.jsonl",
+      "status": " M",
+      "risk": "low",
+      "size": "9520",
+      "exists": true,
+      "line_count": 120,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"missed\": [], \"missed_count\": 0, \"status\": \"ok\", \"ts\": \"2026-05-05T15:05:40Z\"}\n{\"missed\": [], \"missed_count\": 0, \"status\": \"ok\", \"ts\": \"2026-05-05T15:09:26Z\"}\n{\"missed\": [], \"missed_count\": 0, \"status\": \"ok\", \"ts\": \"2026-05-05T15:10:05Z\"}\n{\"missed\": [], \"missed_count\": 0, \"status\": \"ok\", \"ts\": \"2026-05-05T15:12:33Z\"}\n{\"missed\": [], \"missed_count\": 0, \"status\": \"ok\", \"ts\": \"2026-05-05T16:42:27Z\"}",
+      "refs": [
+        {
+          "file": "scripts/cron-missed-run-guard.py",
+          "match": "full_path"
+        }
+      ]
+    },
+    {
+      "path": "logs/cron-quarantine.jsonl",
+      "status": " M",
+      "risk": "low",
+      "size": "4645678",
+      "exists": true,
+      "line_count": 188,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"ts\": \"2026-04-28T16:28:19Z\", \"mode\": \"report\", \"bad_count\": 6, \"bad_lines\": [\"Last run:  2026-04-28T02:15:57.500719+08:00  error: Agent completed but produced empty response (model error, timeout, or misconfiguration)\", \"Last run:  2026-04-28T03:00:18.919829+08:00  error: Agent completed but produ\n{\"ts\": \"2026-04-28T16:45:19Z\", \"mode\": \"report\", \"bad_count\": 6, \"bad_lines\": [\"Last run:  2026-04-28T02:15:57.500719+08:00  error: Agent completed but produced empty response (model error, timeout, or misconfiguration)\", \"Last run:  2026-04-28T03:00:18.919829+08:00  error: Agent completed but produ\n{\"ts\": \"2026-04-28T16:48:08Z\", \"mode\": \"report\", \"bad_count\": 6, \"bad_lines\": [\"Last run:  2026-04-28T02:15:57.500719+08:00  error: Agent completed but produced empty response (model error, timeout, or misconfiguration)\", \"Last run:  2026-04-28T03:00:18.919829+08:00  error: Agent completed but produ\n{\"ts\": \"2026-04-28T16:54:08Z\", \"mode\": \"report\", \"bad_count\": 6, \"bad_lines\": [\"Last run:  2026-04-28T02:15:57.500719+08:00  error: Agent completed but produced empty response (model error, timeout, or misconfiguration)\", \"Last run:  2026-04-28T03:00:18.919829+08:00  error: Agent completed but produ\n{\"ts\": \"2026-04-28T16:59:41Z\", \"mode\": \"report\", \"bad_count\": 0, \"bad_lines\": []}",
+      "refs": [
+        {
+          "file": "scripts/cron-health-quarantine.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/cross-patch.jsonl",
+      "status": " D",
+      "risk": "low",
+      "size": "",
+      "exists": false,
+      "line_count": null,
+      "class": "tracked_deleted_manual_review",
+      "sample_head": "",
+      "refs": [
+        {
+          "file": "notes/dual-model-architecture-score-2026-04-27.md",
+          "match": "full_path"
+        },
+        {
+          "file": "notes/brain/99-hermes-notes/dual-model-architecture-score-2026-04-27.md",
+          "match": "full_path"
+        },
+        {
+          "file": "scripts/test_cross_patch_safety.py",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-06_14-22-14.md",
+          "match": "full_path"
+        },
+        {
+          "file": "scripts/test_cross_patch_real_execution.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/cross-patch.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/usage-score.py",
+          "match": "basename"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-06_01-24-41.md",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/ensemble-votes.jsonl",
+      "status": " D",
+      "risk": "low",
+      "size": "",
+      "exists": false,
+      "line_count": null,
+      "class": "tracked_deleted_manual_review",
+      "sample_head": "",
+      "refs": [
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-20_08-23-41.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-06_04-23-02.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-19_19-22-47.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-06_18-23-07.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-06_12-23-02.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-17_05-22-25.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-17_16-24-46.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-17_15-28-16.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-19_00-23-40.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/7a5f725ed3fd/2026-05-17_17-23-52.md",
+          "match": "full_path"
+        }
+      ]
+    },
+    {
+      "path": "logs/health-history.jsonl",
+      "status": " M",
+      "risk": "low",
+      "size": "150789",
+      "exists": true,
+      "line_count": 2857,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"ts\":\"2026-04-26T11:54:44Z\",\"V\":0.7848,\"grade\":\"B\"}\n{\"ts\":\"2026-04-26T11:57:41Z\",\"V\":0.7825,\"grade\":\"B\"}\n{\"ts\":\"2026-04-26T11:58:27Z\",\"V\":0.8157,\"grade\":\"B\"}\n{\"ts\":\"2026-04-26T11:58:44Z\",\"V\":0.8157,\"grade\":\"B\"}\n{\"ts\":\"2026-04-26T14:54:29Z\",\"V\":0.8218,\"grade\":\"B\"}",
+      "refs": [
+        {
+          "file": "scripts/p10-health.sh",
+          "match": "full_path"
+        },
+        {
+          "file": "notes/brain/99-hermes-notes/engineering-cybernetics/AGENT-EVOLUTION-HANDBOOK.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/99-hermes-notes/engineering-cybernetics/daily-health-reports/2026-04-29.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/99-hermes-notes/engineering-cybernetics/daily-health-reports/2026-04-27.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/99-hermes-notes/reports/blind-spot-analysis.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/99-hermes-notes/reports/cross-session-learning.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/engineering-cybernetics/AGENT-EVOLUTION-HANDBOOK.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/engineering-cybernetics/daily-health-reports/2026-05-17.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/engineering-cybernetics/daily-health-reports/2026-05-13.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/engineering-cybernetics/daily-health-reports/2026-05-27.md",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/model-router.jsonl",
+      "status": " D",
+      "risk": "low",
+      "size": "",
+      "exists": false,
+      "line_count": null,
+      "class": "tracked_deleted_manual_review",
+      "sample_head": "",
+      "refs": []
+    },
+    {
+      "path": "logs/brain_task_dispatch_tick.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "485159720",
+      "exists": true,
+      "line_count": 1035,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"batch_executor\": {\"active_count\": 0, \"claimed_count\": 0, \"dry_run\": false, \"enabled\": false, \"reason\": \"disabled\", \"require_approval\": false, \"require_headroom\": true, \"resource_ceiling\": 5, \"safety\": \"thin coordinator only; per-task worker/proof/acceptance gates remain authoritative; no done tran\n{\"batch_executor\": {\"active_count\": 0, \"claimed_count\": 0, \"dry_run\": false, \"enabled\": true, \"reason\": \"regular_parallel_dispatch_has_selected_tasks\", \"regular_selected_count\": 1, \"require_approval\": false, \"require_headroom\": true, \"resource_ceiling\": 5, \"safety\": \"thin coordinator only; per-task \n{\"batch_executor\": {\"active_count\": 0, \"claimed_count\": 0, \"dry_run\": false, \"enabled\": false, \"reason\": \"disabled\", \"require_approval\": false, \"require_headroom\": true, \"resource_ceiling\": 5, \"safety\": \"thin coordinator only; per-task worker/proof/acceptance gates remain authoritative; no done tran\n{\"batch_executor\": {\"active_count\": 0, \"claimed_count\": 0, \"dry_run\": false, \"enabled\": false, \"reason\": \"disabled\", \"require_approval\": false, \"require_headroom\": true, \"resource_ceiling\": 3, \"safety\": \"thin coordinator only; per-task worker/proof/acceptance gates remain authoritative; no done tran\n{\"batch_executor\": {\"active_count\": 0, \"claimed_count\": 0, \"dry_run\": false, \"enabled\": false, \"reason\": \"disabled\", \"require_approval\": false, \"require_headroom\": true, \"resource_ceiling\": 3, \"safety\": \"thin coordinator only; per-task worker/proof/acceptance gates remain authoritative; no done tran",
+      "refs": [
+        {
+          "file": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-吸收-awesome-design-md-的-designmd-代理设计规范机制到-hermes-设计-项目画像工作流-细化-quot.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/jobs.json",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-17_22-03-18.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-12_18-53-38.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-23_10-33-41.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-20_17-43-43.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-20_00-47-57.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-21_02-47-22.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-13_10-57-48.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-19_19-05-28.md",
+          "match": "full_path"
+        }
+      ]
+    },
+    {
+      "path": "logs/curator/",
+      "status": "??",
+      "risk": "low",
+      "size": "17434",
+      "exists": true,
+      "line_count": null,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "<read_error [Errno 21] Is a directory: '/Users/charles/.hermes/logs/curator'>",
+      "refs": [
+        {
+          "file": "docs/private/external-learning-done-task-audit-20260527.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/05-实践与项目/tasks/2026-05-17-建设-hermes-长期可维护的-execution-quality-评估反馈基座以承接-evoagentx-演化闭环建议.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/05-实践与项目/tasks/2026-05-17-建设-hermes-长期可维护的自动-skill-演化与-prompt-治理闭环以落地-evoagentx-agent-evolver-建议.md",
+          "match": "basename"
+        },
+        {
+          "file": "notes/brain/06-治理与评审/reviews/2026-05-11-hermes-github-personal-assistant-sync-plan.md",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/diagnostics-fixes.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "673",
+      "exists": true,
+      "line_count": 1,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-05-29T04:44:44.555882+00:00\", \"check_id\": \"log-file-bloat\", \"fix_applied\": true, \"fix_command\": \"ts=$(date -u +%Y%m%dT%H%M%SZ); [ -f /Users/charles/.hermes/agent.log ] && mv /Users/charles/.hermes/agent.log /Users/charles/.hermes/agent.log.rotated-$ts && touch /Users/charles/.hermes/age\n\n\n\n",
+      "refs": []
+    },
+    {
+      "path": "logs/diagnostics-history.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "5562",
+      "exists": true,
+      "line_count": 41,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"ts\": \"2026-05-29T04:44:44.556101+00:00\", \"score\": 40, \"check_statuses\": {\"cron-job-health\": \"FAIL\", \"kanban-db-integrity\": \"PASS\", \"log-file-bloat\": \"PASS\", \"priority-mode\": \"PASS\", \"skill-integrity\": \"FAIL\", \"task-file-bloat\": \"PASS\", \"git-repo-cleanliness\": \"FAIL\", \"codex-credentials\": \"FAIL\", \"\n{\"ts\": \"2026-05-29T04:44:57.403415+00:00\", \"score\": 40, \"check_statuses\": {\"cron-job-health\": \"FAIL\", \"kanban-db-integrity\": \"PASS\", \"log-file-bloat\": \"PASS\", \"priority-mode\": \"PASS\", \"skill-integrity\": \"FAIL\", \"task-file-bloat\": \"PASS\", \"codex-credentials\": \"FAIL\", \"git-repo-cleanliness\": \"FAIL\", \"\n{\"ts\": \"2026-05-29T04:45:06.018056+00:00\", \"score\": 40, \"check_statuses\": {\"cron-job-health\": \"FAIL\", \"kanban-db-integrity\": \"PASS\", \"log-file-bloat\": \"PASS\", \"priority-mode\": \"PASS\", \"skill-integrity\": \"FAIL\", \"task-file-bloat\": \"PASS\", \"git-repo-cleanliness\": \"FAIL\", \"codex-credentials\": \"FAIL\", \"\n{\"ts\": \"2026-05-29T04:45:12.131083+00:00\", \"score\": 40, \"check_statuses\": {\"kanban-db-integrity\": \"PASS\", \"codex-credentials\": \"FAIL\"}, \"passed\": 1, \"failed\": 1, \"timeouts\": 0, \"errors\": 0, \"skipped\": 0}\n{\"ts\": \"2026-05-29T04:46:06.970709+00:00\", \"score\": 40, \"check_statuses\": {\"cron-job-health\": \"FAIL\", \"kanban-db-integrity\": \"PASS\", \"log-file-bloat\": \"PASS\", \"priority-mode\": \"PASS\", \"skill-integrity\": \"FAIL\", \"task-file-bloat\": \"PASS\", \"codex-credentials\": \"FAIL\", \"git-repo-cleanliness\": \"FAIL\", \"",
+      "refs": []
+    },
+    {
+      "path": "logs/health-check.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "1313",
+      "exists": true,
+      "line_count": 9,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"action\": \"DETECTED\", \"pattern_id\": \"codex-credentials\", \"severity\": \"CRITICAL\", \"detail\": \"ISSUE\", \"ts\": \"2026-05-29T04:07:19.154243+00:00\"}\n{\"action\": \"DETECTED\", \"pattern_id\": \"task-file-bloat\", \"severity\": \"MEDIUM\", \"detail\": \"ISSUE: 1 files bloated\", \"ts\": \"2026-05-29T04:07:19.186133+00:00\"}\n{\"action\": \"DETECTED\", \"pattern_id\": \"codex-credentials\", \"severity\": \"CRITICAL\", \"detail\": \"ISSUE\", \"ts\": \"2026-05-29T04:07:19.472299+00:00\"}\n{\"action\": \"DETECTED\", \"pattern_id\": \"task-file-bloat\", \"severity\": \"MEDIUM\", \"detail\": \"ISSUE: 1 files bloated\", \"ts\": \"2026-05-29T04:07:19.501347+00:00\"}\n{\"action\": \"DETECTED\", \"pattern_id\": \"codex-credentials\", \"severity\": \"CRITICAL\", \"detail\": \"ISSUE\", \"ts\": \"2026-05-29T04:07:46.957513+00:00\"}",
+      "refs": [
+        {
+          "file": "scripts/health-check.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/hermes-eval-trace-audit.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "5502",
+      "exists": true,
+      "line_count": 32,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"ok\": true, \"kind\": \"eval_trace_audit\", \"window\": \"24h\", \"total24\": 1973, \"real24\": 1973, \"synthetic24\": 0, \"threshold\": 20, \"status\": \"ok\", \"ts\": \"2026-04-28T16:56:43Z\"}\n{\"ok\": true, \"kind\": \"eval_trace_audit\", \"window\": \"24h\", \"total24\": 1974, \"real24\": 1974, \"synthetic24\": 0, \"threshold\": 20, \"status\": \"ok\", \"ts\": \"2026-04-28T16:59:06Z\"}\n{\"ok\": true, \"kind\": \"eval_trace_audit\", \"window\": \"24h\", \"total24\": 2146, \"real24\": 2146, \"synthetic24\": 0, \"threshold\": 20, \"status\": \"ok\", \"ts\": \"2026-04-28T20:30:22Z\"}\n{\"ok\": true, \"kind\": \"eval_trace_audit\", \"window\": \"24h\", \"total24\": 1035, \"real24\": 1035, \"synthetic24\": 0, \"threshold\": 20, \"status\": \"ok\", \"ts\": \"2026-04-29T20:30:21Z\"}\n{\"ok\": true, \"kind\": \"eval_trace_audit\", \"window\": \"24h\", \"total24\": 466, \"real24\": 466, \"synthetic24\": 0, \"threshold\": 20, \"status\": \"ok\", \"ts\": \"2026-04-30T21:06:54Z\"}",
+      "refs": []
+    },
+    {
+      "path": "logs/hermes-failure-taxonomy.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "109925",
+      "exists": true,
+      "line_count": 32,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ok\": true, \"kind\": \"failure_taxonomy\", \"window\": \"7d\", \"cluster_count\": 20, \"clusters\": [{\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"gpt-5.5\\\"]\", \"error\": \"exit_code=1\", \"n\": 28, \"avg_duration_s\": 0.0}, {\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"mimo-v2.5-pro\\\"]\", \"error\": \"exit_code=1\", \"n\":\n{\"ok\": true, \"kind\": \"failure_taxonomy\", \"window\": \"7d\", \"cluster_count\": 20, \"clusters\": [{\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"gpt-5.5\\\"]\", \"error\": \"exit_code=1\", \"n\": 28, \"avg_duration_s\": 0.0}, {\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"mimo-v2.5-pro\\\"]\", \"error\": \"exit_code=1\", \"n\":\n{\"ok\": true, \"kind\": \"failure_taxonomy\", \"window\": \"7d\", \"cluster_count\": 20, \"clusters\": [{\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"gpt-5.5\\\"]\", \"error\": \"exit_code=1\", \"n\": 28, \"avg_duration_s\": 0.0}, {\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"deepseek-v4-pro\\\"]\", \"error\": \"exit_code=1\", \"n\n{\"ok\": true, \"kind\": \"failure_taxonomy\", \"window\": \"7d\", \"cluster_count\": 20, \"clusters\": [{\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"gpt-5.5\\\"]\", \"error\": \"exit_code=1\", \"n\": 30, \"avg_duration_s\": 0.0}, {\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"deepseek-v4-pro\\\"]\", \"error\": \"exit_code=1\", \"n\n{\"ok\": true, \"kind\": \"failure_taxonomy\", \"window\": \"7d\", \"cluster_count\": 20, \"clusters\": [{\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"gpt-5.5\\\"]\", \"error\": \"exit_code=1\", \"n\": 33, \"avg_duration_s\": 0.0}, {\"route\": \"hook:terminal\", \"model_chain\": \"[\\\"deepseek-v4-pro\\\"]\", \"error\": \"exit_code=1\", \"n",
+      "refs": []
+    },
+    {
+      "path": "logs/integration-test-integration-test-1780044082.json",
+      "status": "??",
+      "risk": "low",
+      "size": "4262",
+      "exists": true,
+      "line_count": 232,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\n  \"test_id\": \"integration-test-1780044082\",\n  \"timestamp\": \"2026-05-29T08:41:38.555115+00:00\",\n  \"passed\": 56,\n  \"failed\": 0,",
+      "refs": []
+    },
+    {
+      "path": "logs/integration-test-integration-test-1780044133.json",
+      "status": "??",
+      "risk": "low",
+      "size": "4262",
+      "exists": true,
+      "line_count": 232,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\n  \"test_id\": \"integration-test-1780044133\",\n  \"timestamp\": \"2026-05-29T08:42:27.933561+00:00\",\n  \"passed\": 56,\n  \"failed\": 0,",
+      "refs": []
+    },
+    {
+      "path": "logs/iteration_budget_triage.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "981",
+      "exists": true,
+      "line_count": 9,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-05-27T02:46:33Z\", \"total\": 59, \"续费\": 3, \"拆分\": 4, \"降级\": 11, \"放弃\": 0, \"review\": 41}\n{\"ts\": \"2026-05-27T04:47:23Z\", \"total\": 41, \"续费\": 0, \"拆分\": 0, \"降级\": 0, \"放弃\": 0, \"review\": 41}\n{\"ts\": \"2026-05-28T02:02:26Z\", \"total\": 41, \"续费\": 0, \"拆分\": 0, \"降级\": 0, \"放弃\": 0, \"review\": 41}\n{\"ts\": \"2026-05-29T02:02:50Z\", \"total\": 39, \"续费\": 0, \"拆分\": 0, \"降级\": 0, \"放弃\": 0, \"review\": 39}\n{\"ts\": \"2026-06-01T02:00:52Z\", \"total\": 0, \"续费\": 0, \"拆分\": 0, \"降级\": 0, \"放弃\": 0, \"review\": 0}",
+      "refs": [
+        {
+          "file": "scripts/iteration_budget_triage.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/local_brain_html_refresh.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "3369188",
+      "exists": true,
+      "line_count": 3276,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"result\": {\"schema\": \"local_brain_html_build_v1\", \"written\": [{\"sidecar\": \"05-实践与项目/projects/00-projects索引.html\", \"source\": \"05-实践与项目/projects/00-projects索引.md\"}, {\"sidecar\": \"05-实践与项目/projects/agent-cognitive-operating-system/P10 - Long-term Strategy.html\", \"source\": \"05-实践与项目/projects/agent-cogni\n{\"result\": {\"schema\": \"local_brain_html_build_v1\", \"written\": [], \"written_count\": 0}, \"returncode\": 0, \"schema\": \"local_brain_html_refresh_v1\", \"ts\": \"2026-05-18T10:26:00Z\"}\n{\"result\": {\"schema\": \"local_brain_html_build_v1\", \"written\": [], \"written_count\": 0}, \"returncode\": 0, \"schema\": \"local_brain_html_refresh_v1\", \"ts\": \"2026-05-18T10:26:29Z\"}\n{\"result\": {\"schema\": \"local_brain_html_build_v1\", \"written\": [{\"sidecar\": \"05-实践与项目/projects/00-projects索引.html\", \"source\": \"05-实践与项目/projects/00-projects索引.md\"}, {\"sidecar\": \"05-实践与项目/projects/hermes-local-brain/Project - Hermes Local Brain.html\", \"source\": \"05-实践与项目/projects/hermes-local-brain/Pr\n{\"result\": {\"schema\": \"local_brain_html_build_v1\", \"written\": [], \"written_count\": 0}, \"returncode\": 0, \"schema\": \"local_brain_html_refresh_v1\", \"ts\": \"2026-05-18T10:37:52Z\"}",
+      "refs": [
+        {
+          "file": "scripts/local_brain_html_refresh.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/model-quota.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "2014218",
+      "exists": true,
+      "line_count": 2901,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"event\": \"quota_snapshot\", \"key\": \"claude-code::claude-opus-4-7\", \"snapshot\": {\"confidence\": 0.2, \"last_updated\": \"2026-05-31T13:43:01.128704Z\", \"model\": \"claude-opus-4-7\", \"observability\": \"unobservable\", \"provider\": \"claude-code\", \"quota_type\": \"subscription_cap\", \"remaining_requests\": null, \"rem\n{\"event\": \"quota_snapshot\", \"key\": \"openai-codex::gpt-5.5\", \"snapshot\": {\"confidence\": 0.2, \"last_updated\": \"2026-05-31T13:44:52.336970Z\", \"model\": \"gpt-5.5\", \"observability\": \"unobservable\", \"provider\": \"openai-codex\", \"quota_type\": \"subscription_cap\", \"remaining_requests\": null, \"remaining_tokens\"\n{\"event\": \"quota_snapshot\", \"key\": \"xiaomi::mimo-v2.5-pro\", \"snapshot\": {\"confidence\": 0.2, \"error_class\": \"unknown\", \"last_updated\": \"2026-05-31T13:47:52.358479Z\", \"model\": \"mimo-v2.5-pro\", \"observability\": \"unknown\", \"provider\": \"xiaomi\", \"quota_type\": \"unknown\", \"remaining_requests\": null, \"remai\n{\"event\": \"quota_snapshot\", \"key\": \"deepseek::deepseek-v4-pro\", \"snapshot\": {\"confidence\": 0.1, \"last_updated\": \"2026-05-31T13:48:01.200032Z\", \"model\": \"deepseek-v4-pro\", \"observability\": \"unknown\", \"provider\": \"deepseek\", \"quota_type\": \"unknown\", \"remaining_requests\": null, \"remaining_tokens\": null\n{\"event\": \"quota_snapshot\", \"key\": \"claude-code::claude-opus-4-7\", \"snapshot\": {\"confidence\": 0.2, \"last_updated\": \"2026-05-31T13:48:32.139801Z\", \"model\": \"claude-opus-4-7\", \"observability\": \"unobservable\", \"provider\": \"claude-code\", \"quota_type\": \"subscription_cap\", \"remaining_requests\": null, \"rem",
+      "refs": [
+        {
+          "file": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列.md",
+          "match": "full_path"
+        },
+        {
+          "file": "scripts/test_model_quota.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/model_quota.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/model-routing.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "119592",
+      "exists": true,
+      "line_count": 33,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"candidate_models\": [\"claude-sonnet-4-6\", \"deepseek-v4-flash\", \"deepseek-v4-pro\", \"gpt-5.4\", \"gpt-5.5\", \"gemini-3.1-pro-preview\", \"gemini-3-flash-preview\", \"mimo-v2.5-pro\"], \"capability_skipped_candidates\": [\"deepseek-v4-flash-thinking\"], \"eff_cost_est\": 0.004, \"epsilon_used\": 0.1, \"event\": \"routin\n{\"candidate_models\": [\"claude-sonnet-4-6\", \"deepseek-v4-flash\", \"deepseek-v4-pro\", \"gpt-5.4\", \"gpt-5.5\", \"gemini-3.1-pro-preview\", \"gemini-3-flash-preview\", \"mimo-v2.5-pro\"], \"capability_skipped_candidates\": [\"deepseek-v4-flash-thinking\"], \"eff_cost_est\": 0.004, \"epsilon_used\": 0.1, \"event\": \"routin\n{\"candidate_models\": [\"claude-sonnet-4-6\", \"deepseek-v4-flash\", \"deepseek-v4-pro\", \"gpt-5.4\", \"gpt-5.5\", \"gemini-3.1-pro-preview\", \"gemini-3-flash-preview\", \"mimo-v2.5-pro\"], \"capability_skipped_candidates\": [\"deepseek-v4-flash-thinking\"], \"eff_cost_est\": 0.004, \"epsilon_used\": 0.1, \"event\": \"routin\n{\"candidate_models\": [\"claude-sonnet-4-6\", \"deepseek-v4-flash\", \"deepseek-v4-pro\", \"gpt-5.4\", \"gpt-5.5\", \"gemini-3.1-pro-preview\", \"gemini-3-flash-preview\", \"mimo-v2.5-pro\"], \"capability_skipped_candidates\": [\"deepseek-v4-flash-thinking\"], \"eff_cost_est\": 0.004, \"epsilon_used\": 0.1, \"event\": \"routin\n{\"candidate_models\": [\"claude-sonnet-4-6\", \"deepseek-v4-flash\", \"deepseek-v4-pro\", \"gpt-5.4\", \"gpt-5.5\", \"gemini-3.1-pro-preview\", \"gemini-3-flash-preview\", \"mimo-v2.5-pro\"], \"capability_skipped_candidates\": [\"deepseek-v4-flash-thinking\"], \"eff_cost_est\": 0.004, \"epsilon_used\": 0.1, \"event\": \"routin",
+      "refs": [
+        {
+          "file": "scripts/test_model_router_quota.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/model-router.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multi-brain-nightly-safe.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "16914",
+      "exists": true,
+      "line_count": 31,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-04-28T17:03:54Z\", \"ok\": true, \"status\": \"timeout_recorded\", \"state\": {\"ok\": true, \"returncode\": 0, \"output_tail\": \"/Users/charles/.hermes/state/multi-brain-nightly-state.json\\n\"}, \"consult\": {\"ok\": false, \"timeout\": true, \"returncode\": 124, \"output_tail\": \"\"}, \"usage\": {\"ok\": true, \"sco\n{\"ts\": \"2026-04-29T17:01:52Z\", \"ok\": true, \"status\": \"timeout_recorded\", \"state\": {\"ok\": true, \"returncode\": 0, \"output_tail\": \"/Users/charles/.hermes/state/multi-brain-nightly-state.json\\n\"}, \"consult\": {\"ok\": false, \"timeout\": true, \"returncode\": 124, \"output_tail\": \"\"}, \"usage\": {\"ok\": true, \"sco\n{\"ts\": \"2026-04-30T17:02:40Z\", \"ok\": true, \"status\": \"timeout_recorded\", \"state\": {\"ok\": true, \"returncode\": 0, \"output_tail\": \"/Users/charles/.hermes/state/multi-brain-nightly-state.json\\n\"}, \"consult\": {\"ok\": false, \"timeout\": true, \"returncode\": 124, \"output_tail\": \"\"}, \"usage\": {\"ok\": false, \"sc\n{\"ts\": \"2026-05-01T04:02:56Z\", \"ok\": true, \"status\": \"timeout_recorded\", \"state\": {\"ok\": true, \"returncode\": 0, \"output_tail\": \"/Users/charles/.hermes/state/multi-brain-nightly-state.json\\n\"}, \"consult\": {\"ok\": false, \"timeout\": true, \"returncode\": 124, \"output_tail\": \"\"}, \"usage\": {\"ok\": true, \"sco\n{\"ts\": \"2026-05-01T04:30:53Z\", \"ok\": true, \"status\": \"timeout_recorded\", \"state\": {\"ok\": true, \"returncode\": 0, \"output_tail\": \"/Users/charles/.hermes/state/multi-brain-nightly-state.json\\n\"}, \"consult\": {\"ok\": false, \"timeout\": true, \"returncode\": 124, \"output_tail\": \"\"}, \"usage\": {\"ok\": true, \"sco",
+      "refs": [
+        {
+          "file": "scripts/multimodel_daily_governance_audit.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/multi-brain-nightly-safe.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multi-model-smoke-daily-full-wrapper.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "56114",
+      "exists": true,
+      "line_count": 26,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"duration_ms\": 71281, \"failed_models\": [], \"model_records\": 4, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 32.5, \"error\": \"session_id: 20260501_120429_a243d3\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"16ed0793\", \"tokens_in\": 16, \"\n{\"duration_ms\": 66681, \"failed_models\": [], \"model_records\": 4, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 26.536, \"error\": \"session_id: 20260506_083519_2f2542\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"821687af\", \"tokens_in\": 16,\n{\"duration_ms\": 65402, \"failed_models\": [\"claude-opus-4-7\"], \"model_records\": 4, \"ok\": false, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 27.07, \"error\": \"session_id: 20260507_083552_73b1bc\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"86b9485b\",\n{\"duration_ms\": 69407, \"failed_models\": [], \"model_records\": 4, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 27.7, \"error\": \"session_id: 20260508_083549_c63650\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"f5026bfe\", \"tokens_in\": 16, \"\n{\"duration_ms\": 68678, \"failed_models\": [], \"model_records\": 4, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 29.366, \"error\": \"session_id: 20260509_083602_3ea639\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"4e12e35a\", \"tokens_in\": 16,",
+      "refs": [
+        {
+          "file": "scripts/multimodel_daily_governance_audit.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/multi-model-smoke-daily-full-wrapper.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multi-model-smoke-every4h-wrapper.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "279204",
+      "exists": true,
+      "line_count": 150,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"duration_ms\": 61309, \"failed_models\": [], \"model_records\": 3, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 30.743, \"error\": \"session_id: 20260501_120435_bf4647\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"fe83f529\", \"tokens_in\": 16,\n{\"duration_ms\": 53908, \"failed_models\": [], \"model_records\": 3, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 26.707, \"error\": \"session_id: 20260501_121755_85c334\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"592e4e32\", \"tokens_in\": 16,\n{\"duration_ms\": 4345476, \"failed_models\": [\"gpt-5.5\", \"mimo-v2.5-pro\", \"deepseek-v4-pro\"], \"model_records\": 3, \"ok\": false, \"records\": [{\"cost_usd\": 0.0, \"duration_s\": 45.013, \"error\": \"TimeoutExpired(['hermes', 'chat', '-q', 'Hermes actual-usage smoke fe1b3a74 gpt-5.5: reply exactly ACK.', '--provi\n{\"duration_ms\": 4664434, \"failed_models\": [\"gpt-5.5\", \"mimo-v2.5-pro\", \"deepseek-v4-pro\"], \"model_records\": 3, \"ok\": false, \"records\": [{\"cost_usd\": 0.0, \"duration_s\": 45.02, \"error\": \"TimeoutExpired(['hermes', 'chat', '-q', 'Hermes actual-usage smoke bcc889e5 gpt-5.5: reply exactly ACK.', '--provid\n{\"duration_ms\": 53872, \"failed_models\": [], \"model_records\": 3, \"ok\": true, \"records\": [{\"cost_usd\": 1e-08, \"duration_s\": 27.182, \"error\": \"session_id: 20260505_230739_2b6124\", \"model\": \"gpt-5.5\", \"ok\": true, \"output_preview\": \"ACK\", \"provider\": \"openai-codex\", \"run_id\": \"20afcd34\", \"tokens_in\": 16,",
+      "refs": [
+        {
+          "file": "scripts/multi-model-smoke-every4h-wrapper.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multi-model-smoke.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "409486",
+      "exists": true,
+      "line_count": 865,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-04-28T16:28:49Z\", \"run_id\": \"6e09519d\", \"model\": \"gpt-5.5\", \"provider\": \"openai-codex\", \"ok\": true, \"duration_s\": 20.83, \"tokens_in\": 16, \"tokens_out\": 1, \"cost_usd\": 1e-08, \"error\": \"session_id: 20260429_002844_88706e\", \"output_preview\": \"ACK\"}\n{\"ts\": \"2026-04-28T16:29:08Z\", \"run_id\": \"6e09519d\", \"model\": \"mimo-v2.5-pro\", \"provider\": \"xiaomi\", \"ok\": true, \"duration_s\": 19.184, \"tokens_in\": 18, \"tokens_out\": 1, \"cost_usd\": 5.28e-05, \"error\": \"session_id: 20260429_002903_3e29d6\", \"output_preview\": \"ACK\"}\n{\"ts\": \"2026-04-28T16:29:20Z\", \"run_id\": \"6e09519d\", \"model\": \"claude-opus-4-7\", \"provider\": \"anthropic\", \"ok\": true, \"duration_s\": 11.69, \"tokens_in\": 18, \"tokens_out\": 1, \"cost_usd\": 0.000345, \"error\": \"\", \"output_preview\": \"ACK\"}\n{\"ts\": \"2026-04-28T16:29:21Z\", \"run_id\": \"6e09519d\", \"model\": \"deepseek-v4-pro\", \"provider\": \"deepseek\", \"ok\": true, \"duration_s\": 0.986, \"tokens_in\": 27, \"tokens_out\": 2, \"cost_usd\": 6.6e-06, \"error\": \"\", \"output_preview\": \"{\\\"content\\\": \\\"ACK.\\\", \\\"usage\\\": {\\\"prompt_tokens\\\": 27, \\\"completion_tok\n{\"ts\": \"2026-04-28T16:46:11Z\", \"run_id\": \"c21b2e52\", \"model\": \"gpt-5.5\", \"provider\": \"openai-codex\", \"ok\": true, \"duration_s\": 21.155, \"tokens_in\": 16, \"tokens_out\": 1, \"cost_usd\": 1e-08, \"error\": \"session_id: 20260429_004605_cb9aa8\", \"output_preview\": \"ACK\"}",
+      "refs": [
+        {
+          "file": "scripts/multi-model-smoke.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multimodel-autonomy-certification.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "6025",
+      "exists": true,
+      "line_count": 33,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"event\": \"certificate\", \"hard_failures\": [], \"provider_passes\": [\"claude-code\", \"deepseek\", \"google-gemini-cli\", \"openai-codex\", \"xiaomi\"], \"status\": \"PASS\", \"ts\": \"2026-05-31T14:03:03Z\"}\n{\"event\": \"certificate\", \"hard_failures\": [], \"provider_passes\": [\"claude-code\", \"deepseek\", \"google-gemini-cli\", \"openai-codex\", \"xiaomi\"], \"status\": \"PASS\", \"ts\": \"2026-05-31T14:03:55Z\"}\n{\"event\": \"certificate\", \"hard_failures\": [], \"provider_passes\": [\"claude-code\", \"deepseek\", \"google-gemini-cli\", \"openai-codex\", \"xiaomi\"], \"status\": \"PASS\", \"ts\": \"2026-05-31T17:02:34Z\"}\n{\"event\": \"certificate\", \"hard_failures\": [], \"provider_passes\": [\"claude-code\", \"deepseek\", \"google-gemini-cli\", \"openai-codex\", \"xiaomi\"], \"status\": \"PASS\", \"ts\": \"2026-06-01T06:51:42Z\"}\n{\"event\": \"certificate\", \"hard_failures\": [], \"provider_passes\": [\"claude-code\", \"deepseek\", \"google-gemini-cli\", \"openai-codex\", \"xiaomi\"], \"status\": \"PASS\", \"ts\": \"2026-06-01T08:30:34Z\"}",
+      "refs": [
+        {
+          "file": "scripts/multimodel_autonomy_certify.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multimodel-daily-governance-audit.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "171500",
+      "exists": true,
+      "line_count": 17,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"checks\": {\"bg_review_promotion\": {\"can_promote_to_enqueue\": true, \"candidate_count\": 0, \"candidate_quality\": [], \"errors\": [], \"good_candidate_count\": 0, \"raw_state\": {\"actions\": [], \"failures\": [], \"html_report_path\": \"/Users/charles/.hermes/reports/background_review_status.html\", \"review_memory\"\n{\"checks\": {\"bg_review_promotion\": {\"can_promote_to_enqueue\": true, \"candidate_count\": 0, \"candidate_quality\": [], \"errors\": [], \"good_candidate_count\": 0, \"raw_state\": {\"actions\": [], \"failures\": [], \"html_report_path\": \"/Users/charles/.hermes/reports/background_review_status.html\", \"review_memory\"\n{\"checks\": {\"bg_review_promotion\": {\"can_promote_to_enqueue\": true, \"candidate_count\": 0, \"candidate_quality\": [], \"errors\": [], \"good_candidate_count\": 0, \"raw_state\": {\"actions\": [], \"failures\": [], \"html_report_path\": \"/Users/charles/.hermes/reports/background_review_status.html\", \"review_memory\"\n{\"checks\": {\"bg_review_promotion\": {\"can_promote_to_enqueue\": true, \"candidate_count\": 0, \"candidate_quality\": [], \"errors\": [], \"good_candidate_count\": 0, \"raw_state\": {\"actions\": [], \"failures\": [], \"html_report_path\": \"/Users/charles/.hermes/reports/background_review_status.html\", \"review_memory\"\n{\"checks\": {\"bg_review_promotion\": {\"can_promote_to_enqueue\": true, \"candidate_count\": 0, \"candidate_quality\": [], \"errors\": [], \"good_candidate_count\": 0, \"raw_state\": {\"actions\": [], \"failures\": [], \"html_report_path\": \"/Users/charles/.hermes/reports/background_review_status.html\", \"review_memory\"",
+      "refs": [
+        {
+          "file": "scripts/multimodel_daily_governance_audit.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/multimodel_intervention_dynamic_step.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "13625872",
+      "exists": true,
+      "line_count": 1249,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"action\": \"no_intervention_needed\", \"dry_run\": {\"returncode\": 0, \"stderr\": \"\"}, \"intervention_required\": false, \"queued_count\": 0, \"schema\": \"multimodel_intervention_dynamic_step_v1\", \"selected_task_id\": \"\", \"status\": \"OK\", \"ts\": \"2026-05-12T04:51:39Z\"}\n{\"action\": \"no_intervention_needed\", \"dry_run\": {\"returncode\": 0, \"stderr\": \"\"}, \"intervention_required\": false, \"queued_count\": 0, \"schema\": \"multimodel_intervention_dynamic_step_v1\", \"selected_task_id\": \"\", \"status\": \"OK\", \"ts\": \"2026-05-12T04:52:18Z\"}\n{\"action\": \"no_intervention_needed\", \"dry_run\": {\"returncode\": 0, \"stderr\": \"\"}, \"intervention_required\": false, \"queued_count\": 0, \"schema\": \"multimodel_intervention_dynamic_step_v1\", \"selected_task_id\": \"\", \"status\": \"OK\", \"ts\": \"2026-05-12T05:02:50Z\"}\n{\"action\": \"started_worker\", \"changed\": true, \"cooldown_ok\": true, \"dry_run\": {\"returncode\": 0, \"stderr\": \"\", \"stdout_bytes\": 58747}, \"intervention_required\": true, \"max_workers\": 1, \"pid\": 4581, \"queued_count\": 15, \"schema\": \"multimodel_intervention_dynamic_step_v1\", \"selected_task_id\": \"2026-05-10\n{\"action\": \"worker_already_running\", \"pid\": 4581, \"schema\": \"multimodel_intervention_dynamic_step_v1\", \"status\": \"OK\", \"ts\": \"2026-05-12T05:39:27Z\"}",
+      "refs": [
+        {
+          "file": "scripts/multimodel_intervention_dynamic_step.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/observed_worker.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "1980",
+      "exists": true,
+      "line_count": 15,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-05-29T08:40:39.608193+00:00\", \"task_id\": \"integration-test-1780044034-pipeline\", \"event\": \"preflight_started\", \"title\": \"Pipeline test\"}\n{\"ts\": \"2026-05-29T08:40:39.630514+00:00\", \"task_id\": \"integration-test-1780044034-pipeline\", \"event\": \"preflight_done\", \"confidence\": \"MED\"}\n{\"ts\": \"2026-05-29T08:40:39.662655+00:00\", \"task_id\": \"integration-test-1780044034-pipeline\", \"event\": \"approving\"}\n{\"ts\": \"2026-05-29T08:40:39.684945+00:00\", \"task_id\": \"integration-test-1780044034-pipeline\", \"event\": \"approved\"}\n{\"ts\": \"2026-05-29T08:40:39.716835+00:00\", \"task_id\": \"integration-test-1780044034-pipeline\", \"event\": \"finishing\", \"result\": \"success\"}",
+      "refs": [
+        {
+          "file": "scripts/observed_worker.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/observer_hook.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "2079",
+      "exists": true,
+      "line_count": 12,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-05-29T08:40:34.464265+00:00\", \"task_id\": \"integration-test-1780044034-hook\", \"event\": \"hook_started\", \"dirs\": [\"/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbue79u3j\"], \"interval\": 1.0, \"pid\": 74362}\n{\"ts\": \"2026-05-29T08:40:34.464687+00:00\", \"task_id\": \"integration-test-1780044034-hook\", \"event\": \"initial_scan\", \"files_tracked\": 1}\n{\"ts\": \"2026-05-29T08:40:36.521049+00:00\", \"task_id\": \"integration-test-1780044034-hook\", \"event\": \"files_changed\", \"count\": 1, \"files\": [\"/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbue79u3j/test.py\"]}\n{\"ts\": \"2026-05-29T08:40:39.559118+00:00\", \"task_id\": \"integration-test-1780044034-hook\", \"event\": \"hook_stopped\", \"polls\": 5}\n{\"ts\": \"2026-05-29T08:41:33.226382+00:00\", \"task_id\": \"integration-test-1780044082-hook\", \"event\": \"hook_started\", \"dirs\": [\"/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmppn9uhsh4\"], \"interval\": 1.0, \"pid\": 75244}",
+      "refs": [
+        {
+          "file": "scripts/test_integration.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/observer_hook.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/planner-failure-triage.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "4800",
+      "exists": true,
+      "line_count": 32,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ok\": true, \"kind\": \"planner_failure_triage\", \"window\": \"24h\", \"failure_group_count\": 0, \"groups\": [], \"status\": \"ok\", \"ts\": \"2026-04-28T16:56:46Z\"}\n{\"ok\": true, \"kind\": \"planner_failure_triage\", \"window\": \"24h\", \"failure_group_count\": 0, \"groups\": [], \"status\": \"ok\", \"ts\": \"2026-04-28T16:59:06Z\"}\n{\"ok\": true, \"kind\": \"planner_failure_triage\", \"window\": \"24h\", \"failure_group_count\": 0, \"groups\": [], \"status\": \"ok\", \"ts\": \"2026-04-28T20:00:18Z\"}\n{\"ok\": true, \"kind\": \"planner_failure_triage\", \"window\": \"24h\", \"failure_group_count\": 0, \"groups\": [], \"status\": \"ok\", \"ts\": \"2026-04-29T20:00:46Z\"}\n{\"ok\": true, \"kind\": \"planner_failure_triage\", \"window\": \"24h\", \"failure_group_count\": 0, \"groups\": [], \"status\": \"ok\", \"ts\": \"2026-04-30T21:06:54Z\"}",
+      "refs": []
+    },
+    {
+      "path": "logs/route_outcome_hook.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "15261966",
+      "exists": true,
+      "line_count": 118622,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"hook\": \"log-route-outcome\", \"note\": \"observability_only_no_state_mutation\", \"payload_len\": 1418, \"ts\": \"2026-05-12T04:50:02Z\"}\n{\"hook\": \"log-route-outcome\", \"note\": \"observability_only_no_state_mutation\", \"payload_len\": 8507, \"ts\": \"2026-05-12T04:50:09Z\"}\n{\"hook\": \"log-route-outcome\", \"note\": \"observability_only_no_state_mutation\", \"payload_len\": 1085, \"ts\": \"2026-05-12T04:50:11Z\"}\n{\"hook\": \"log-route-outcome\", \"note\": \"observability_only_no_state_mutation\", \"payload_len\": 2174, \"ts\": \"2026-05-12T04:50:11Z\"}\n{\"hook\": \"log-route-outcome\", \"note\": \"observability_only_no_state_mutation\", \"payload_len\": 1082, \"ts\": \"2026-05-12T04:50:19Z\"}",
+      "refs": [
+        {
+          "file": "scripts/log-route-outcome.sh",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/synthetic-trace-ratio-guard.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "5702",
+      "exists": true,
+      "line_count": 32,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ok\": true, \"kind\": \"synthetic_trace_ratio_guard\", \"window\": \"7d\", \"total\": 2285, \"synthetic\": 59, \"ratio\": 0.0258, \"threshold\": 0.6, \"status\": \"ok\", \"ts\": \"2026-04-28T16:56:45Z\"}\n{\"ok\": true, \"kind\": \"synthetic_trace_ratio_guard\", \"window\": \"7d\", \"total\": 2285, \"synthetic\": 59, \"ratio\": 0.0258, \"threshold\": 0.6, \"status\": \"ok\", \"ts\": \"2026-04-28T16:59:06Z\"}\n{\"ok\": true, \"kind\": \"synthetic_trace_ratio_guard\", \"window\": \"7d\", \"total\": 2458, \"synthetic\": 59, \"ratio\": 0.024, \"threshold\": 0.6, \"status\": \"ok\", \"ts\": \"2026-04-28T21:07:51Z\"}\n{\"ok\": true, \"kind\": \"synthetic_trace_ratio_guard\", \"window\": \"7d\", \"total\": 2720, \"synthetic\": 59, \"ratio\": 0.0217, \"threshold\": 0.6, \"status\": \"ok\", \"ts\": \"2026-04-29T21:07:53Z\"}\n{\"ok\": true, \"kind\": \"synthetic_trace_ratio_guard\", \"window\": \"7d\", \"total\": 2948, \"synthetic\": 59, \"ratio\": 0.02, \"threshold\": 0.6, \"status\": \"ok\", \"ts\": \"2026-04-30T21:38:28Z\"}",
+      "refs": []
+    },
+    {
+      "path": "logs/taskpool-multimodel/",
+      "status": "??",
+      "risk": "low",
+      "size": "376391",
+      "exists": true,
+      "line_count": null,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "<read_error [Errno 21] Is a directory: '/Users/charles/.hermes/logs/taskpool-multimodel'>",
+      "refs": [
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-05-29_11-40-42.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-02_22-58-39.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-03_11-09-02.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-01_16-33-34.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-03_20-18-26.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-04_05-22-45.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-05-28_16-40-04.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-04_11-26-28.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-03_14-12-31.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-03_17-16-58.md",
+          "match": "full_path"
+        }
+      ]
+    },
+    {
+      "path": "logs/taskpool-workers/",
+      "status": "??",
+      "risk": "low",
+      "size": "208845",
+      "exists": true,
+      "line_count": null,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "<read_error [Errno 21] Is a directory: '/Users/charles/.hermes/logs/taskpool-workers'>",
+      "refs": [
+        {
+          "file": "cron/output/aa8f66ecbe10/2026-06-02_13-48-39.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-03_01-55-59.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-02_23-05-37.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-05-28_20-50-30.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-02_22-03-43.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-01_18-52-42.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-03_11-51-32.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-04_00-50-54.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-02_21-41-44.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/861b14d4d887/2026-06-02_13-23-00.md",
+          "match": "full_path"
+        }
+      ]
+    },
+    {
+      "path": "logs/taskpool_dynamic_runner.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "26930918",
+      "exists": true,
+      "line_count": 2180,
+      "class": "audit_or_evidence_log_manual_review",
+      "sample_head": "{\"autorun\": {}, \"changed\": true, \"schema\": \"taskpool_dynamic_runner_v1\", \"signature\": \"8e16023f0284c8c29ea954a6b19a7e7a2df88f49d8a411e422e992fa54983323\", \"summary\": {\"dispatchable\": null, \"error_count\": null, \"ingested_count\": null, \"next_task_id\": null, \"reconcile_action_count\": null, \"status\": nul\n{\"autorun\": {}, \"changed\": false, \"schema\": \"taskpool_dynamic_runner_v1\", \"signature\": \"8e16023f0284c8c29ea954a6b19a7e7a2df88f49d8a411e422e992fa54983323\", \"summary\": {\"dispatchable\": null, \"error_count\": null, \"ingested_count\": null, \"next_task_id\": null, \"reconcile_action_count\": null, \"status\": nu\n{\"autorun\": {}, \"changed\": false, \"schema\": \"taskpool_dynamic_runner_v1\", \"signature\": \"8e16023f0284c8c29ea954a6b19a7e7a2df88f49d8a411e422e992fa54983323\", \"summary\": {\"dispatchable\": null, \"error_count\": null, \"ingested_count\": null, \"next_task_id\": null, \"reconcile_action_count\": null, \"status\": nu\n{\"autorun\": {\"advanced\": false, \"claim_expires_at\": \"\", \"claimed\": false, \"eligible\": true, \"handoff\": \"\", \"present\": true, \"proof_hash\": \"\", \"reasons\": [\"policy_missing\"], \"requested\": true, \"safety\": \"fail-closed; policy required before claim\", \"status\": \"PASS\", \"step_mode\": \"bounded_step\", \"task_\n{\"autorun\": {\"advanced\": false, \"claim_expires_at\": \"\", \"claimed\": false, \"eligible\": true, \"handoff\": \"\", \"present\": true, \"proof_hash\": \"\", \"reasons\": [\"policy_missing\"], \"requested\": true, \"safety\": \"fail-closed; policy required before claim\", \"status\": \"PASS\", \"step_mode\": \"bounded_step\", \"task_",
+      "refs": [
+        {
+          "file": "scripts/taskpool_dynamic_runner.py",
+          "match": "basename"
+        }
+      ]
+    },
+    {
+      "path": "logs/upstream-ratchet-review-timeouts.jsonl",
+      "status": "??",
+      "risk": "low",
+      "size": "3243",
+      "exists": true,
+      "line_count": 9,
+      "class": "disposable_runtime_candidate",
+      "sample_head": "{\"ts\": \"2026-05-31T11:28:05.503208+00:00\", \"status\": \"timeout_skip\", \"timeout_seconds\": 110, \"cmd\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"/Users/charles/.hermes/scripts/upstream-ratchet-review.py\", \"--timeout\", \"90\", \"--only-if-needed\", \"--quiet-no-needed\"], \"safety\": \"no_agent watchdog \n{\"ts\": \"2026-05-31T11:42:20.942541+00:00\", \"status\": \"timeout_skip\", \"timeout_seconds\": 110, \"cmd\": [\"/Users/charles/.hermes/hermes-agent/venv/bin/python3\", \"/Users/charles/.hermes/scripts/upstream-ratchet-review.py\", \"--timeout\", \"90\", \"--only-if-needed\", \"--quiet-no-needed\"], \"safety\": \"no_agent w\n{\"ts\": \"2026-05-31T16:02:13.412879+00:00\", \"status\": \"timeout_skip\", \"timeout_seconds\": 110, \"cmd\": [\"/Users/charles/.hermes/hermes-agent/venv/bin/python\", \"/Users/charles/.hermes/scripts/upstream-ratchet-review.py\", \"--timeout\", \"90\", \"--only-if-needed\", \"--quiet-no-needed\"], \"safety\": \"no_agent wa\n{\"ts\": \"2026-05-31T22:02:31.890666+00:00\", \"status\": \"timeout_skip\", \"timeout_seconds\": 110, \"cmd\": [\"/Users/charles/.hermes/hermes-agent/venv/bin/python\", \"/Users/charles/.hermes/scripts/upstream-ratchet-review.py\", \"--timeout\", \"90\", \"--only-if-needed\", \"--quiet-no-needed\"], \"safety\": \"no_agent wa\n{\"ts\": \"2026-06-01T04:02:35.496915+00:00\", \"status\": \"timeout_skip\", \"timeout_seconds\": 110, \"cmd\": [\"/Users/charles/.hermes/hermes-agent/venv/bin/python\", \"/Users/charles/.hermes/scripts/upstream-ratchet-review.py\", \"--timeout\", \"90\", \"--only-if-needed\", \"--quiet-no-needed\"], \"safety\": \"no_agent wa",
+      "refs": [
+        {
+          "file": "scripts/upstream_ratchet_review_noagent.py",
+          "match": "basename"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3481 @@
+{
+  "schema": "media_generated_reference_check_v1",
+  "created_at": "2026-06-04T05:29:15.087598Z",
+  "source_inventory": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv",
+  "count": 338,
+  "status_counts": {
+    "??": 338
+  },
+  "extension_counts": {
+    "<none>": 1,
+    ".png": 302,
+    ".txt": 35
+  },
+  "signature_counts": {
+    "other": 1,
+    "png": 302,
+    "text": 35
+  },
+  "reference_counts": {
+    "referenced": 7,
+    "unreferenced": 331
+  },
+  "search_scope": {
+    "roots": [
+      "docs",
+      "notes",
+      "scripts",
+      "cron",
+      "config",
+      "memories"
+    ],
+    "text_file_count": 28566,
+    "excluded_prefixes": [
+      "docs/private/dirty-",
+      "docs/private/scripts-diff-cluster-",
+      "docs/private/hermes-dirty-state-governance-20260604.md"
+    ],
+    "large_file_limit": "1MB"
+  },
+  "entries": [
+    {
+      "path": "image_cache/",
+      "status": "??",
+      "risk": "low",
+      "size": "435330",
+      "ext": "<none>",
+      "signature": "other",
+      "refs": [
+        {
+          "file": "notes/brain/06-治理与评审/reviews/2026-05-11-hermes-github-personal-assistant-sync-plan.md",
+          "match": "full_path"
+        },
+        {
+          "file": "scripts/hermes_dirty_inventory.py",
+          "match": "full_path"
+        },
+        {
+          "file": "scripts/lark_task_reader.py",
+          "match": "basename"
+        },
+        {
+          "file": "scripts/test_lark_task_reader.py",
+          "match": "basename"
+        }
+      ],
+      "ref_count_capped": 4
+    },
+    {
+      "path": "images/clip_20260427_224000_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "556454",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260427_224345_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "121569",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260427_224835_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "121569",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260427_231911_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "366491",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260428_102337_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "371121",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260428_102355_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "371121",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260428_102913_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "366953",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260506_003620_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "2556012",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260506_004327_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "2556012",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260506_141651_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "31166",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260506_151539_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "41177",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260506_154652_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "313345",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260506_155344_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "10930",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260509_143229_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1310314",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260509_143231_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1310314",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260509_201725_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "66254",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260509_201725_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "66254",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260509_202650_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "641318",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260509_232411_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "440763",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260510_102711_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "108403",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260510_104846_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "347135",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260510_114905_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "18210",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [
+        {
+          "file": "notes/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md",
+          "match": "full_path"
+        }
+      ],
+      "ref_count_capped": 1
+    },
+    {
+      "path": "images/clip_20260510_135202_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "887999",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [
+        {
+          "file": "notes/brain/05-实践与项目/tasks/2026-05-10-多模型分析-agent-development-kit-图片并将-hermes-优化方案落地.md",
+          "match": "full_path"
+        }
+      ],
+      "ref_count_capped": 1
+    },
+    {
+      "path": "images/clip_20260510_170708_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "2358020",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [
+        {
+          "file": "notes/brain/05-实践与项目/projects/agent-skill-learning/webapp-testing-playwright-evaluation-2026-05-13.md",
+          "match": "full_path"
+        }
+      ],
+      "ref_count_capped": 1
+    },
+    {
+      "path": "images/clip_20260511_105459_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "86822",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260511_105532_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "92380",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260511_133422_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "134028",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260511_133432_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "134028",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260511_133507_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "134028",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260511_183754_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "318209",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260511_231508_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "362537",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260518_124854_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "189551",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260518_125521_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "85181",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260518_130029_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "69884",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260518_190336_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "110169",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260518_221729_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "39970",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_004420_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "417699",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_110308_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "124413",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_132905_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "161254",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_143246_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "675535",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_143330_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "609645",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_143408_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "571162",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_201845_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "675535",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_211504_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "145374",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_215006_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "727947",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260519_232050_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "928250",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_000342_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1135459",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_000349_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "348517",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_004546_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "581761",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_011753_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "569067",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_095527_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "888258",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_173754_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "192634",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_173947_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "152591",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260520_174001_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "152591",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_005118_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "313002",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_101116_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "447837",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_101812_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "617387",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_105952_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "447837",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_171427_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "125686",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_171620_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "81604",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_204026_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "54442",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_204153_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "123544",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_204309_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "123544",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_204856_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "317870",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_205329_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "376073",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260521_210847_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "207021",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_005846_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "218372",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_011540_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "117846",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_011558_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "122225",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_011628_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "72372",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_011822_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "635935",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_013834_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "833832",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_013858_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "886601",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_014512_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "314395",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_015245_9.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1132005",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_104422_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "321569",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_105035_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "169632",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_152859_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "229493",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_153430_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "99233",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_163115_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "929276",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_164908_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "104025",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_165952_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "149476",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_171251_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "174402",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260522_173103_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "138300",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_013451_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "139562",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_020507_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "101143",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_021152_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "412542",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_021550_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "60616",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_021759_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "236199",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_022054_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "255922",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_022709_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "146131",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_123458_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "753854",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_125344_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "227699",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_125433_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "217618",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_131240_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "226965",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_131411_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "102419",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_131602_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "172430",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_154659_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "207213",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_200107_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "345992",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_200343_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "600904",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_201249_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "41617",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_201954_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "252944",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_202139_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "727947",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_204804_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234900",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_212238_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "199178",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_212342_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "247181",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_213118_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "364309",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_213241_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "140129",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_215329_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1030001",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_220255_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "410225",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_223432_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "440003",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260523_225249_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "208446",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_083253_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "343935",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_092122_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "25421",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_110644_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "116421",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_111353_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "386488",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_113529_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "206865",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_113648_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "121301",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_122403_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "529210",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_125613_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "253528",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_131030_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "306934",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_144040_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "395362",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_150055_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "540145",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_150359_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "713976",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_150826_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "713976",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_154956_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "219109",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_160620_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "855246",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_161534_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "797511",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [
+        {
+          "file": "cron/output/e8c87fd3eed7/2026-05-25_08-11-24.md",
+          "match": "full_path"
+        }
+      ],
+      "ref_count_capped": 1
+    },
+    {
+      "path": "images/clip_20260524_161744_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "445428",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_162106_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "455744",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_162124_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "432031",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_162313_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "47540",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_162813_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "390904",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_162834_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "445522",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_163130_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "753863",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [
+        {
+          "file": "cron/output/c58ce8a4d370/2026-05-25_00-51-38.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/e8c87fd3eed7/2026-05-25_18-11-37.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/e8c87fd3eed7/2026-05-25_02-34-28.md",
+          "match": "full_path"
+        }
+      ],
+      "ref_count_capped": 3
+    },
+    {
+      "path": "images/clip_20260524_231151_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "342898",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260524_234214_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "434652",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [
+        {
+          "file": "cron/output/e8c87fd3eed7/2026-05-25_02-34-28.md",
+          "match": "full_path"
+        },
+        {
+          "file": "cron/output/e8c87fd3eed7/2026-05-25_14-11-44.md",
+          "match": "full_path"
+        }
+      ],
+      "ref_count_capped": 2
+    },
+    {
+      "path": "images/clip_20260525_104228_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "201491",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_113423_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "228581",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_134112_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "287444",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_135305_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "343636",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_165521_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "895715",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_172837_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "67878",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_175551_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "67878",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_182422_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "732392",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_183133_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "256988",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260525_185152_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "123666",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_103838_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "47372",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_104230_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "84809",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_111842_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "933094",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_112143_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "52615",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_114337_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "139895",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_120737_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "45526",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_144307_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "55364",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_145845_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "402485",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_151503_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "139216",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_151512_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "336443",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_151823_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "117832",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_154822_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "273010",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_162107_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "696448",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_221234_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "185380",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_221550_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "847463",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_221848_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "411471",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_222038_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "74880",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_222156_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "195030",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260526_222531_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "21698",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_004335_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "106239",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_004340_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "71947",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_004556_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "83660",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_020648_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "167525",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_100443_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "77733",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_100654_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "92495",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_100738_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "92495",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_113110_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "181796",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_113141_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "120052",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260527_122321_9.png",
+      "status": "??",
+      "risk": "low",
+      "size": "122520",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_130846_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "63918",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_153933_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "126038",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_155755_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "213659",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_161822_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "220413",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_161902_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "220413",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_161909_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "220413",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_163603_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234619",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_163708_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "330623",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_163735_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "330623",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_163746_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234619",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_165904_9.png",
+      "status": "??",
+      "risk": "low",
+      "size": "593353",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_171146_10.png",
+      "status": "??",
+      "risk": "low",
+      "size": "210898",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_171656_11.png",
+      "status": "??",
+      "risk": "low",
+      "size": "830496",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_173326_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "175556",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_173541_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "165334",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_174831_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "248293",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260528_191318_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "144975",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_130846_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "184591",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_134557_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "129058",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_143923_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "406922",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_151503_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "173931",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_151637_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234500",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_151716_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234500",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_163326_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "105239",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_170100_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "521061",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_175847_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234500",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_214141_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "450071",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_232620_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "220795",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_233114_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "47768",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260529_234248_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "85901",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_102444_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "201382",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_102852_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "23238",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_143523_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "71957",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_151931_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "24458",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_152104_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "35793",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_153435_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "33505",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_154109_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "107457",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_161846_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "3353",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_170158_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "93471",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_170210_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "93471",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_170214_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "93471",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_170355_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "337817",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_170642_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "318920",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_171756_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "264142",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_174813_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "281515",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_175739_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "293339",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_175922_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "238586",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_175948_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "238586",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_180940_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "259340",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_182627_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "285709",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_183229_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "76304",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_183642_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "190305",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_184237_9.png",
+      "status": "??",
+      "risk": "low",
+      "size": "756099",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_190917_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "140737",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_190920_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "140737",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_191821_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "45340",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_205057_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "110235",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260530_221048_10.png",
+      "status": "??",
+      "risk": "low",
+      "size": "315998",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260531_111310_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "93508",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260531_183055_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "543953",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260531_183240_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "218318",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260531_183339_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "237179",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_011625_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "237524",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_011802_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "237524",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_111817_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "232660",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_121550_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "561486",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_123810_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "332186",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_123832_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "271697",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_154346_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "220346",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_154356_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "232983",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_170522_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "317349",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_171502_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "467584",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_175002_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "481726",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_221936_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "154481",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_221943_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "138303",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_223337_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "125512",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_231229_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "62211",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260601_231237_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "207128",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_010638_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "88641",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_105206_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "452229",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_105218_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "41667",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_105359_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "467372",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_114538_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "992283",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_114546_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "365814",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_142736_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "539438",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_143750_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "711964",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_143804_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "711964",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_143833_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "472622",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_153429_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "224309",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_162043_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "224309",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_165313_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "700802",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_173813_9.png",
+      "status": "??",
+      "risk": "low",
+      "size": "155821",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_181412_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "64568",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_181444_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "64568",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_182236_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "81432",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_182811_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "66032",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_205442_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "323927",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260602_214610_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "4534019",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_154912_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "217362",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_162354_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "384739",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_162417_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1023905",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_162625_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "236083",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_162739_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "236083",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_163332_3.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1158742",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_163517_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234392",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_163526_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "234392",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_165035_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "985187",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_165832_4.png",
+      "status": "??",
+      "risk": "low",
+      "size": "2775646",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_170020_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "211538",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_171751_5.png",
+      "status": "??",
+      "risk": "low",
+      "size": "2232471",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_173821_6.png",
+      "status": "??",
+      "risk": "low",
+      "size": "4625421",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_180138_7.png",
+      "status": "??",
+      "risk": "low",
+      "size": "4817810",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_183114_8.png",
+      "status": "??",
+      "risk": "low",
+      "size": "3799879",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_185043_9.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1840141",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_200806_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "366357",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_210029_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "3320505",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_230303_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "322322",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_232757_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "108270",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260603_233016_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "83055",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260604_104614_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "339491",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260604_114105_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "396230",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260604_120207_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "91086",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260604_120644_2.png",
+      "status": "??",
+      "risk": "low",
+      "size": "762725",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/clip_20260604_121603_1.png",
+      "status": "??",
+      "risk": "low",
+      "size": "1933877",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/lark_t104021_20260528-232037.png",
+      "status": "??",
+      "risk": "low",
+      "size": "722553",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "images/lark_t104029_20260529-111321.png",
+      "status": "??",
+      "risk": "low",
+      "size": "201660",
+      "ext": ".png",
+      "signature": "png",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_000751.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "614",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_011313.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "616",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_022836.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "570",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_091214.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "2396",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_102315.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "618",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_105623.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "393",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_105718.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "2348",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_105719.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "2271",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_111322.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "1583",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_131538.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "828",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_132532.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "848",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_141731.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "1073",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_150638.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "404",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_155403.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "292",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_161936.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "2244",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_162252.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "2633",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_162700.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "871",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_163347.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "3066",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_163855.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "555",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_171053.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "634",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_173340.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "832",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_174521.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "791",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_183944.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "11351",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_194351.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "868",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_194659.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "547",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_203206.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "11206",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_1_233450.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "719",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_2_000802.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "431",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_2_141819.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "841",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_2_194402.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "1551",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_3_000842.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "1191",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_3_141834.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "2005",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_3_194428.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "1315",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_4_000855.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "868",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    },
+    {
+      "path": "pastes/paste_5_001054.txt",
+      "status": "??",
+      "risk": "low",
+      "size": "858",
+      "ext": ".txt",
+      "signature": "text",
+      "refs": [],
+      "ref_count_capped": 0
+    }
+  ]
+}
