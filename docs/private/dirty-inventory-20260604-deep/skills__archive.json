@@ -1,0 +1,52 @@
+{
+  "count": 2,
+  "risk": {
+    "medium": 2
+  },
+  "status": {
+    "??": 2
+  },
+  "actions": {
+    "inventory_then_possible_ignore": 2
+  },
+  "extensions": {
+    "<none>": 2
+  },
+  "total_size": 80419821,
+  "samples": [
+    {
+      "status": "??",
+      "path": "skills-archived/",
+      "risk": "medium",
+      "action": "inventory_then_possible_ignore",
+      "size": "80199896",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/.archive/",
+      "risk": "medium",
+      "action": "inventory_then_possible_ignore",
+      "size": "219925",
+      "extension": "<none>"
+    }
+  ],
+  "entries": [
+    {
+      "status": "??",
+      "path": "skills-archived/",
+      "risk": "medium",
+      "action": "inventory_then_possible_ignore",
+      "size": "80199896",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/.archive/",
+      "risk": "medium",
+      "action": "inventory_then_possible_ignore",
+      "size": "219925",
+      "extension": "<none>"
+    }
+  ]
+}

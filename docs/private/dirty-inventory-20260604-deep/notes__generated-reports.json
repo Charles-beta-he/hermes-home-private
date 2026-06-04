@@ -1,0 +1,1279 @@
+{
+  "count": 107,
+  "risk": {
+    "medium": 107
+  },
+  "status": {
+    " M": 7,
+    "??": 100
+  },
+  "actions": {
+    "archive_or_ignore_after_review": 107
+  },
+  "extensions": {
+    ".md": 77,
+    ".jsonl": 5,
+    ".json": 25
+  },
+  "total_size": 358133,
+  "samples": [
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/AGENT-EVOLUTION-PLAN.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "15293",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/autonomous-evolution-log.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "13088",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/evolution-dashboard.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1820",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/health-history.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "15004",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/pa-health-history.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "9251",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/pa-trigger-log.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "458",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/self-scan-log.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5688",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-04-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5819",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-04-30.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2238",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-07.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2263",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-08.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3246",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-09.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2918",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-10.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1695",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-11.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1308",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-12.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2330",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-13.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2609",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-14.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1800",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-15.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1957",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-17.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2994",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-18.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2661",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-19.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2012",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-20.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2043",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1432",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-22.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2139",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-23.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1469",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-24.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3489",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-25.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1542",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-26.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1870",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-27.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2677",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-28.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1864",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3037",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-30.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3661",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-01.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1974",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-02.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1817",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-03.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1439",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-04.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1571",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W19.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W20.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W22.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-20.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "6088",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-20.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3525",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7518",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-21.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5457",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-22.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7278",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-22.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5842",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-23.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5953",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-23.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "8121",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-24.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "6578",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-24.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5510",
+      "extension": ".json"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/AGENT-EVOLUTION-PLAN.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "15293",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/autonomous-evolution-log.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "13088",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/evolution-dashboard.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1820",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/health-history.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "15004",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/pa-health-history.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "9251",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/pa-trigger-log.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "458",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/engineering-cybernetics/self-scan-log.jsonl",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5688",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-04-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5819",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-04-30.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2238",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-07.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2263",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-08.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3246",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-09.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2918",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-10.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1695",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-11.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1308",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-12.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2330",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-13.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2609",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-14.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1800",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-15.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1957",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-17.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2994",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-18.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2661",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-19.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2012",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-20.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2043",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1432",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-22.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2139",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-23.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1469",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-24.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3489",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-25.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1542",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-26.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1870",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-27.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2677",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-28.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1864",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3037",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-30.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3661",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-01.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1974",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-02.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1817",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-03.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1439",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/daily-health-reports/2026-06-04.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1571",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W19.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W20.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/engineering-cybernetics/weekly-reports/2026-W22.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-20.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "6088",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-20.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3525",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7518",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-21.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5457",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-22.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7278",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-22.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5842",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-23.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5953",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-23.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "8121",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-24.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "6578",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-24.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5510",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-27.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "6981",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-27.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "8575",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-28.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7483",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-28.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "5657",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7569",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-29.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "6338",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-30.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7282",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-05-30.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2088",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-01.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "12637",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-01.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "7126",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-02.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "11674",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-02.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "3541",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-03.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "8484",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-03.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "4227",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-04.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "11047",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/aihot-daily-2026-06-04.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "2265",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-04-27.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1001",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-04-28.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1001",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-04-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1001",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-04-30.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1001",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-05.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1001",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-06.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-07.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-08.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-09.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-10.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-11.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-12.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-13.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-14.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-16.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-17.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-18.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-19.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-19.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-21.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-21.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-24.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-24.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-25.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-25.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-26.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-26.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-27.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-27.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-28.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-28.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-29.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-29.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-31.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-05-31.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-06-01.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-06-01.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-06-02.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-06-02.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-06-04.md",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/reports/pa-daily-2026-06-04.tasks.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_review",
+      "size": "1994",
+      "extension": ".json"
+    }
+  ]
+}

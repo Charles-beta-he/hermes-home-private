@@ -1,0 +1,584 @@
+{
+  "count": 35,
+  "risk": {
+    "low": 35
+  },
+  "status": {
+    " M": 3,
+    " D": 3,
+    "??": 29
+  },
+  "actions": {
+    "ignore_or_rotate": 35
+  },
+  "extensions": {
+    ".jsonl": 30,
+    "<none>": 3,
+    ".json": 2
+  },
+  "total_size": 552979658,
+  "samples": [
+    {
+      "status": " M",
+      "path": "logs/cron-missed-runs.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "9520",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "logs/cron-quarantine.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4645678",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " D",
+      "path": "logs/cross-patch.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " D",
+      "path": "logs/ensemble-votes.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "logs/health-history.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "150789",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " D",
+      "path": "logs/model-router.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/brain_task_dispatch_tick.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "485159720",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/curator/",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "17434",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "logs/diagnostics-fixes.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "673",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/diagnostics-history.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "5562",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/health-check.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "1313",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/hermes-eval-trace-audit.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "5502",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/hermes-failure-taxonomy.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "109925",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/integration-test-integration-test-1780044082.json",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4262",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "logs/integration-test-integration-test-1780044133.json",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4262",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "logs/iteration_budget_triage.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "981",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/local_brain_html_refresh.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "3369188",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/model-quota.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "2014218",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/model-routing.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "119592",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-brain-nightly-safe.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "16914",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-model-smoke-daily-full-wrapper.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "56114",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-model-smoke-every4h-wrapper.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "279204",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-model-smoke.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "409486",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multimodel-autonomy-certification.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "6025",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multimodel-daily-governance-audit.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "171500",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multimodel_intervention_dynamic_step.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "13625872",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/observed_worker.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "1980",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/observer_hook.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "2079",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/planner-failure-triage.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4800",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/route_outcome_hook.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "15261966",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/synthetic-trace-ratio-guard.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "5702",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/taskpool-multimodel/",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "376391",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "logs/taskpool-workers/",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "208845",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "logs/taskpool_dynamic_runner.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "26930918",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/upstream-ratchet-review-timeouts.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "3243",
+      "extension": ".jsonl"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "logs/cron-missed-runs.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "9520",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "logs/cron-quarantine.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4645678",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " D",
+      "path": "logs/cross-patch.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " D",
+      "path": "logs/ensemble-votes.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "logs/health-history.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "150789",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " D",
+      "path": "logs/model-router.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/brain_task_dispatch_tick.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "485159720",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/curator/",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "17434",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "logs/diagnostics-fixes.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "673",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/diagnostics-history.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "5562",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/health-check.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "1313",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/hermes-eval-trace-audit.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "5502",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/hermes-failure-taxonomy.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "109925",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/integration-test-integration-test-1780044082.json",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4262",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "logs/integration-test-integration-test-1780044133.json",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4262",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "logs/iteration_budget_triage.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "981",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/local_brain_html_refresh.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "3369188",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/model-quota.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "2014218",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/model-routing.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "119592",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-brain-nightly-safe.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "16914",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-model-smoke-daily-full-wrapper.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "56114",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-model-smoke-every4h-wrapper.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "279204",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multi-model-smoke.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "409486",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multimodel-autonomy-certification.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "6025",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multimodel-daily-governance-audit.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "171500",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/multimodel_intervention_dynamic_step.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "13625872",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/observed_worker.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "1980",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/observer_hook.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "2079",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/planner-failure-triage.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "4800",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/route_outcome_hook.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "15261966",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/synthetic-trace-ratio-guard.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "5702",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/taskpool-multimodel/",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "376391",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "logs/taskpool-workers/",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "208845",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "logs/taskpool_dynamic_runner.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "26930918",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "logs/upstream-ratchet-review-timeouts.jsonl",
+      "risk": "low",
+      "action": "ignore_or_rotate",
+      "size": "3243",
+      "extension": ".jsonl"
+    }
+  ]
+}

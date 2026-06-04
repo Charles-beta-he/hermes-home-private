@@ -1,0 +1,2340 @@
+{
+  "count": 239,
+  "risk": {
+    "high": 239
+  },
+  "status": {
+    " M": 38,
+    "??": 201
+  },
+  "actions": {
+    "cluster_and_review": 239
+  },
+  "extensions": {
+    ".py": 208,
+    ".sh": 11,
+    "<none>": 6,
+    ".cpp": 2,
+    ".dsym": 2,
+    ".md": 5,
+    ".json": 2,
+    ".bak": 3
+  },
+  "total_size": 3121584,
+  "samples": [
+    {
+      "status": " M",
+      "path": "scripts/agent_protocol.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24913",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/auth_blocked_notifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5551",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/brainctl.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "78568",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/code-intel.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11670",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/consensus-check.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7902",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/consult_models.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "220497",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cron-health-quarantine.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4013",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cron-missed-run-guard.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3874",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cross-patch.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "38710",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cybernetic_multimodel_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9412",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/ensemble-vote.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17901",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/eval-harness.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "22602",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/gitnexus_fusion_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7114",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/iteration_budget_doctor.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14161",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/iteration_budget_triage.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8677",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/lark_task_reader.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "37557",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/live_notes_accumulator.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10238",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_intervention_dynamic_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13047",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_intervention_parallel_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1363",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_keypoint_coverage_ratchet.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "21563",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/pa-daily-report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11376",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/personal_hermes_brain_export.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24470",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/post-session-autopsy.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "26712",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/post-update-check.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "45976",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/pricing.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10184",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/rowboat_bridge.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "19283",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/self-improvement-pipeline.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "46603",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/self-scan-4h.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4056",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/session-close.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1300",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "scripts/skill-steward.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "33818",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/sync-brain.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4334",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/task_pool_guardian_run.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "328",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/taskpool_watch_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8805",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_brainctl.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "22712",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_multimodel_intervention_dynamic_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7823",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_multimodel_keypoint_coverage_ratchet.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10043",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_personal_hermes_brain_export.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6955",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_taskpool_watch_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2485",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/adapters/",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "16394",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/adk_contract_verifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5445",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/agent_memory_architecture_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12036",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/agent_team_controller_cycle.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "333",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-codex-transport-hardening-patch.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4461",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-mcp-timeout-patch.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3538",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_3mf_patch_single_material.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4586",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_3mf_preprint_guard.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12318",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_credentials.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4354",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_tunnel.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7414",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "96512",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload.cpp",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10675",
+      "extension": ".cpp"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "scripts/agent_protocol.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24913",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/auth_blocked_notifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5551",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/brainctl.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "78568",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/code-intel.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11670",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/consensus-check.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7902",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/consult_models.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "220497",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cron-health-quarantine.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4013",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cron-missed-run-guard.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3874",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cross-patch.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "38710",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/cybernetic_multimodel_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9412",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/ensemble-vote.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17901",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/eval-harness.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "22602",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/gitnexus_fusion_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7114",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/iteration_budget_doctor.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14161",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/iteration_budget_triage.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8677",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/lark_task_reader.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "37557",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/live_notes_accumulator.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10238",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_intervention_dynamic_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13047",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_intervention_parallel_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1363",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/multimodel_keypoint_coverage_ratchet.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "21563",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/pa-daily-report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11376",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/personal_hermes_brain_export.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24470",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/post-session-autopsy.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "26712",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/post-update-check.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "45976",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/pricing.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10184",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/rowboat_bridge.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "19283",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/self-improvement-pipeline.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "46603",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/self-scan-4h.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4056",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/session-close.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1300",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "scripts/skill-steward.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "33818",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/sync-brain.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4334",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/task_pool_guardian_run.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "328",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/taskpool_watch_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8805",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_brainctl.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "22712",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_multimodel_intervention_dynamic_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7823",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_multimodel_keypoint_coverage_ratchet.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10043",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_personal_hermes_brain_export.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6955",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "scripts/test_taskpool_watch_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2485",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/adapters/",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "16394",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/adk_contract_verifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5445",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/agent_memory_architecture_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12036",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/agent_team_controller_cycle.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "333",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-codex-transport-hardening-patch.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4461",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-mcp-timeout-patch.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3538",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_3mf_patch_single_material.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4586",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_3mf_preprint_guard.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12318",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_credentials.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4354",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_tunnel.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7414",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "96512",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload.cpp",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10675",
+      "extension": ".cpp"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_ft_upload.dSYM/",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "155380",
+      "extension": ".dsym"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_local_print",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "78016",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_local_print.cpp",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6301",
+      "extension": ".cpp"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_local_print.dSYM/",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "184912",
+      "extension": ".dsym"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_status_prompt.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "218",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_status_to_file.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1466",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_studio_slice.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10317",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_x2d.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17921",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bambu_x2d_probe.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3484",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/behavioral-benchmark-runner.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9468",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/bft_consensus.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9865",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_api.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10508",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_cloud_sync_guard.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4174",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_task_autorun_step.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14112",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/brain_task_orchestrator_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "339",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/capability_registry.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "21015",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/checkpoint_manager.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "19789",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/csp_pipeline_model.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14906",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/dashboard-data.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9661",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/demo_task_observer.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14828",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/dempster_shafer.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2824",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/dynamic_n.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3225",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/edge_worker.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9230",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ensemble-real.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4082",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/entropy_ambiguity.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1620",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/evidence_manifest.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "20069",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/external_control_gate.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9117",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/fill-baseline-parallel.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6295",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/gittins_scheduler.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2394",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/governance_ratchet.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8275",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-cleanup.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9877",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-eval-trace-audit.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1453",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-failure-taxonomy.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1452",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes-pre-update-verify.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2394",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_background_task_worker.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5859",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_conductor_runtime.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4388",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_hook_registry_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6411",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_lan.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10394",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_openclaw_control_plane.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "291",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_task.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8628",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes_ux9_verifier_contracts.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "18584",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/install-edge-remote.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11061",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/install-edge.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10023",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/kanban_bridge.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5381",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/kanban_coverage.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10199",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/kg_entity_extractor.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "15757",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/kg_extract.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8638",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/lark_docx_reader.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13623",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/link_brain_kanban_refs.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2838",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/live6_multimodel_loop_once.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3206",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/local_brain_html_refresh.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2387",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/log-route-outcome.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "828",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_calibration_cube.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4108",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_cigarette_box.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9386",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v2.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13480",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v21.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12185",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v22.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12224",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v23_trace.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13532",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v24_clean_trace.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17567",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v25_local_leftfix.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17034",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v26_curated_blacklines.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "20599",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v27_photo_ink_clean.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "18341",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v28_outline_vector_restore.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "21846",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_keychain_v29_balanced_photo_vectors.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "21158",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_dog_pendant.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8059",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_lamp_base.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14710",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_lamp_shade.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10431",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_mesh_qa.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "15804",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_orientation_search.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6852",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_popup_cigarette_box_v3.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9928",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_popup_cigarette_box_v4.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11666",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_preflight.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "22808",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_slice.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5992",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_trick_research.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12407",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/manufacturing_visual_qa.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10029",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/meta_evolution.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5737",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/model_candidate_search.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24633",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/monitor_rokid_agent_status.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2995",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/multi-brain-nightly-safe.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3471",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/multi-model-smoke-safe.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6275",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/multimodel_daily_governance_audit.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "19294",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/multimodel_daily_governance_audit_noagent.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2169",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/novelty_search.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24933",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/observed_worker.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13117",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/observer_engine.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "19276",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/observer_hook.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10183",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/openai-cli-eval-2026-05-11.md",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3337",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/openai_admin_quota.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1366",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/openclaw_to_hermes_gap.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17791",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/openclaw_trace_ingest.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "16039",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/p10-health-safe.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5942",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pa_evolution_daily_noagent.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1535",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/patches/",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "21547",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/photo_to_print_job.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14634",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/photo_to_print_runner.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7921",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pipeline_tick.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4135",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/planner-failure-triage.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1488",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/process_rokid_l2_queue.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "578",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/proof_gate_verifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5572",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pua-loop-self-optimization-architecture.md",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7811",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pua_loop_self_optimize.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "40891",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/reliability-update.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8738",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/repo_to_tool_adapter.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6103",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/round3_vote_mimo.json",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2056",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "scripts/rtk",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "287",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/rtk-compress.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4488",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/runtime_issue_capture.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "7320",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/self_optimizing_verifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6584",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/self_proving_executor.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6655",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/semantic_retrieval.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13641",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill-learning-path-multi-agent-code-review.md",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6767",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill-learning-path-planning-with-files.md",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "22518",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill-learning-ralph-loop-pua-boundary.md",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10314",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill_steward_daily_audit_noagent.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1286",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/skill_telemetry_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8568",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/slicer_preview_parse.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6042",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/spl-benchmark-results.json",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10291",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "scripts/spl-benchmark.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "15781",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/start_observer.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3439",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/strategy_bandit.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8095",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/synthetic-trace-ratio-guard.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1385",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_adapter.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "14408",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_adapter.py.bak",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13594",
+      "extension": ".bak"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_classifier.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "24408",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_continuation.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8747",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_observer.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "17093",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_observer.py.bak",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13743",
+      "extension": ".bak"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_pipeline.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "28454",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_pipeline.py.bak",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12176",
+      "extension": ".bak"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_pool_guardian.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5234",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_preflight.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "37136",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_progress.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8912",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_query.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "12256",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/task_registry.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3542",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_backfill_tenants.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2551",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_create_standard_task.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1616",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_done_closeout_audit.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6483",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_proof_gate.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "9545",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool_run_validation_suite.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3469",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_adapter_integration.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5118",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_agent_team_controller_split.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5897",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_brainctl_export_app_data.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5479",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_budget_handoff_check.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2569",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_cross_patch_real_execution.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6139",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_cybernetic_multimodel_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2295",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_dynamic_workflow.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8072",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_evidence_manifest.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4693",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_external_control_gate.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8522",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_hermes_ux9_verifier_contracts.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3463",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_hook_registry_selfcheck.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2481",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_integration.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "16913",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_kanban_coverage.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3194",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_calibration_cube.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2205",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_lamp_base.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6636",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_lamp_shade.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6413",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_mesh_qa.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4747",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_orientation_search.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3309",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_preflight.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5595",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_slice.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2605",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_trick_research.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6685",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_manufacturing_visual_qa.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2541",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_model_candidate_search.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "16472",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_multi_model_smoke_safe.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3671",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_p10_health_safe.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4083",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_pa_daily_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2500",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_photo_to_print_e2e.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5022",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_photo_to_print_job.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5294",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_photo_to_print_runner.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4154",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_pua_loop_self_optimize.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4195",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_rowboat_bridge.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "13511",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_self_proving_executor.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2509",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_skill_telemetry_report.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5463",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_slicer_preview_parse.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3523",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_task_boundary_parallel.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "31754",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_theoretical_improvements.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "20319",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_v_state_kanban_coverage.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "1169",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/test_x2d_ams_helper.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3843",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/tests/",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "8164",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "scripts/update_rokid_brain_stats_cache.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "2432",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/update_rokid_daily_brief_cache.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "3017",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/update_rokid_manufacturing_status_cache.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "5998",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/upload_and_start.sh",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "797",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "scripts/v_state.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6889",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/v_state_json.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "320",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/verify-evolution-event.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "6291",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/workflow_patterns.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "19413",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/x2d_ams_helper.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "4615",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/x2d_dispatch_print.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "10216",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/x2d_print_intent_worker.py",
+      "risk": "high",
+      "action": "cluster_and_review",
+      "size": "11693",
+      "extension": ".py"
+    }
+  ]
+}

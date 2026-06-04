@@ -1,0 +1,168 @@
+{
+  "count": 9,
+  "risk": {
+    "high": 9
+  },
+  "status": {
+    " M": 5,
+    "??": 4
+  },
+  "actions": {
+    "manual_gate_diff_each": 9
+  },
+  "extensions": {
+    ".yaml": 4,
+    ".json": 3,
+    ".security-telegram-20260531215528": 1,
+    ".bak-20260428": 1
+  },
+  "total_size": 2260905,
+  "samples": [
+    {
+      "status": " M",
+      "path": "config.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "26159",
+      "extension": ".yaml"
+    },
+    {
+      "status": " M",
+      "path": "config/quorum.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "2581",
+      "extension": ".yaml"
+    },
+    {
+      "status": " M",
+      "path": "context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "919",
+      "extension": ".yaml"
+    },
+    {
+      "status": " M",
+      "path": "models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "2201702",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "ollama_cloud_models_cache.json",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "686",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "config.yaml.bak.security-telegram-20260531215528",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "25666",
+      "extension": ".security-telegram-20260531215528"
+    },
+    {
+      "status": "??",
+      "path": "config/autonomy-write-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "30",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "config/model_profiles.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "1047",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "config/quorum.yaml.bak-20260428",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "2115",
+      "extension": ".bak-20260428"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "config.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "26159",
+      "extension": ".yaml"
+    },
+    {
+      "status": " M",
+      "path": "config/quorum.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "2581",
+      "extension": ".yaml"
+    },
+    {
+      "status": " M",
+      "path": "context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "919",
+      "extension": ".yaml"
+    },
+    {
+      "status": " M",
+      "path": "models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "2201702",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "ollama_cloud_models_cache.json",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "686",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "config.yaml.bak.security-telegram-20260531215528",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "25666",
+      "extension": ".security-telegram-20260531215528"
+    },
+    {
+      "status": "??",
+      "path": "config/autonomy-write-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "30",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "config/model_profiles.yaml",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "1047",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "config/quorum.yaml.bak-20260428",
+      "risk": "high",
+      "action": "manual_gate_diff_each",
+      "size": "2115",
+      "extension": ".bak-20260428"
+    }
+  ]
+}

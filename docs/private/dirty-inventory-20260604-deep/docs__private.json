@@ -1,0 +1,214 @@
+{
+  "count": 12,
+  "risk": {
+    "medium": 12
+  },
+  "status": {
+    " M": 1,
+    "??": 11
+  },
+  "actions": {
+    "review_and_commit_if_durable": 12
+  },
+  "extensions": {
+    ".md": 11,
+    "<none>": 1
+  },
+  "total_size": 120194,
+  "samples": [
+    {
+      "status": " M",
+      "path": "docs/private/overmind-reference-self-optimization-20260526.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "14919",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/agentic-video-media-skill-boundary-20260526.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "8115",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/claude-code-dynamic-workflows-review.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "10620",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/hermes-ux-9-stable-optimization-20260531.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "10130",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/label-studio-mlops-workflow-absorption-20260526.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "8514",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/pilotdeck-gap-analysis-20260530.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "6986",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/pilotdeck-gap-analysis.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "4447",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/reading-notes/",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "8097",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/scrapling-reference-intake-20260604.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "19336",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skillopt-batch-reflect-prototype-design.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "6965",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skillopt-reflact-transferability-gap-analysis.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "7546",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/tree-boundary-design.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "14519",
+      "extension": ".md"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "docs/private/overmind-reference-self-optimization-20260526.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "14919",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/agentic-video-media-skill-boundary-20260526.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "8115",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/claude-code-dynamic-workflows-review.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "10620",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/hermes-ux-9-stable-optimization-20260531.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "10130",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/label-studio-mlops-workflow-absorption-20260526.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "8514",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/pilotdeck-gap-analysis-20260530.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "6986",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/pilotdeck-gap-analysis.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "4447",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/reading-notes/",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "8097",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/scrapling-reference-intake-20260604.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "19336",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skillopt-batch-reflect-prototype-design.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "6965",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skillopt-reflact-transferability-gap-analysis.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "7546",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/tree-boundary-design.md",
+      "risk": "medium",
+      "action": "review_and_commit_if_durable",
+      "size": "14519",
+      "extension": ".md"
+    }
+  ]
+}

@@ -1,0 +1,2918 @@
+{
+  "count": 312,
+  "risk": {
+    "high": 312
+  },
+  "status": {
+    " M": 50,
+    "??": 262
+  },
+  "actions": {
+    "manual_gate_ssot": 312
+  },
+  "extensions": {
+    ".md": 308,
+    "<none>": 4
+  },
+  "total_size": 3146916,
+  "samples": [
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/元认知/01-置信度校准与证据等级.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1841",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/元认知/02-错误分类与复盘循环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1303",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/系统理论/Ashby-必要多样性定律.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2273",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/系统理论/Dreyfus-技能获取5级模型.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2802",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/projects/hermes-local-brain/Project - Hermes Local Brain.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3565",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/projects/resumable-multimodel-certification/P9 - Implementation Backlog.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7078",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "73587",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/00-tasks索引.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2725",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-06-local-brain-backlog-zero-loop-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4024",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-07-agent-cos-landing-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9175",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-07-resumable-multimodel-certification-landing-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3742",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-local-brain-taskflow-closure-proof.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5295",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5707",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-本地大脑迁移残留闭环清理与-repair-plan-apply-验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4041",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-落地-iteration-budget-pua-loop-有界执行与-handoff-闭环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6601",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-openai-openai-cli-沙箱评估与-hermes-api-自动化集成决策.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9356",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skillclaw-沙箱评估与-hermes-技能进化集成决策.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "29371",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线code-review-多-agent-并行审查与置信度过滤评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "13839",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线code-simplifier-重复逻辑合并与安全重构评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5683",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线mcp-builder-四阶段-mcp-server-引导与-hermes-mcp-skill-补强评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6018",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线planning-with-files-文件化规划与上下文压缩抗丢失评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9829",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线pptx-直接生成-pptx-文件与-hermes-productivity-流程评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5261",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线ralph-loop-hook-防提前收工与-hermes-pua-loop-边界评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5901",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线skill-creator-官方元技能与-eval-测试框架适配评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6032",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线superpowers-可组合开发流程与-tdd-brainstorming-适配评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7387",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线ui-ux-pro-max-风格-配色库与-hermes-ui-审美基线评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5528",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线webapp-testing-playwright-自动化与截图证据流水线评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8043",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-修复-uvisa-通知时间后端业务事件时间源lark-6906ef6e-d0655d71-打回.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "28481",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-0cd14898-客服缓存真实会话刷新.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9203",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-57da3f4f-大金额适配真实余额验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11523",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-82f47f18-电子钱包收款账号格式校验-fe-be.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11349",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-b9d0fcf8-交易记录统一真实接口聚合.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11680",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-c1bb88b4-sw更新缓存非强制更新.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10095",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-ce96f98c-cny转入绑定银行真实接口.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11072",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-ed1cb905-单点登录真实多设备踢出.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10512",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/任务池-排序.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2254",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/实践方案/07-关键点多模型介入路由矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7272",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-07-resumable-multimodel-certification-multimodel-selfcheck.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7921",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-09-pua-loop-agent-frameworks-and-idle-runner-round1.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11407",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/技能生态/skill-steward角色定义.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2337",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/技能生态/熵债淘汰机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2039",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/进化日志/2026-05-07-可恢复多模型认证系统长期目标落地.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5508",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/00-仪表盘索引.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1389",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/Agent技能树路由矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6431",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/Agent认知操作系统互补矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11805",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/待完成任务控制台.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7097",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/待完成任务运行态.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6620",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/技能生态健康度.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1574",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/本地大脑治理健康度.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "837",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/理论覆盖矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4412",
+      "extension": ".md"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/元认知/01-置信度校准与证据等级.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1841",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/元认知/02-错误分类与复盘循环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1303",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/系统理论/Ashby-必要多样性定律.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2273",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/03-理论与元认知/系统理论/Dreyfus-技能获取5级模型.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2802",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/projects/hermes-local-brain/Project - Hermes Local Brain.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3565",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/projects/resumable-multimodel-certification/P9 - Implementation Backlog.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7078",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "73587",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/00-tasks索引.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2725",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-06-local-brain-backlog-zero-loop-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4024",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-07-agent-cos-landing-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9175",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-07-resumable-multimodel-certification-landing-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3742",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-local-brain-taskflow-closure-proof.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5295",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5707",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-本地大脑迁移残留闭环清理与-repair-plan-apply-验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4041",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-落地-iteration-budget-pua-loop-有界执行与-handoff-闭环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6601",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-openai-openai-cli-沙箱评估与-hermes-api-自动化集成决策.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9356",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skillclaw-沙箱评估与-hermes-技能进化集成决策.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "29371",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线code-review-多-agent-并行审查与置信度过滤评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "13839",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线code-simplifier-重复逻辑合并与安全重构评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5683",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线mcp-builder-四阶段-mcp-server-引导与-hermes-mcp-skill-补强评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6018",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线planning-with-files-文件化规划与上下文压缩抗丢失评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9829",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线pptx-直接生成-pptx-文件与-hermes-productivity-流程评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5261",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线ralph-loop-hook-防提前收工与-hermes-pua-loop-边界评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5901",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线skill-creator-官方元技能与-eval-测试框架适配评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6032",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线superpowers-可组合开发流程与-tdd-brainstorming-适配评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7387",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线ui-ux-pro-max-风格-配色库与-hermes-ui-审美基线评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5528",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线webapp-testing-playwright-自动化与截图证据流水线评估.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8043",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-修复-uvisa-通知时间后端业务事件时间源lark-6906ef6e-d0655d71-打回.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "28481",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-0cd14898-客服缓存真实会话刷新.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9203",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-57da3f4f-大金额适配真实余额验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11523",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-82f47f18-电子钱包收款账号格式校验-fe-be.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11349",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-b9d0fcf8-交易记录统一真实接口聚合.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11680",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-c1bb88b4-sw更新缓存非强制更新.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10095",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-ce96f98c-cny转入绑定银行真实接口.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11072",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-lark-reopened-uvisa-real-api-ed1cb905-单点登录真实多设备踢出.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10512",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/tasks/任务池-排序.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2254",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/05-实践与项目/实践方案/07-关键点多模型介入路由矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7272",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-07-resumable-multimodel-certification-multimodel-selfcheck.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7921",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-09-pua-loop-agent-frameworks-and-idle-runner-round1.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11407",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/技能生态/skill-steward角色定义.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2337",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/技能生态/熵债淘汰机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2039",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/06-治理与评审/进化日志/2026-05-07-可恢复多模型认证系统长期目标落地.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5508",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/00-仪表盘索引.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1389",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/Agent技能树路由矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6431",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/Agent认知操作系统互补矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11805",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/待完成任务控制台.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7097",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/待完成任务运行态.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6620",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/技能生态健康度.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1574",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/本地大脑治理健康度.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "837",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "notes/brain/07-仪表盘/理论覆盖矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4412",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/01-系统与偏好/prefs/用户画像-贺程-2026-05-08.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5445",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/03-理论与元认知/复杂巨系统理论与Hermes优化方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6526",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/04-知识原子/atoms/theory-impact-propagation.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3943",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/missions/",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8606",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/projects/agent-skill-learning/",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "85318",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/projects/hermes-local-brain/P10 - React Three Long-term HTML Rewrite.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11041",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/projects/hermes-self-improvement/",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "14088",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/projects/uvisa-app-2.0/PROJECT-PROFILE-sanitized-reference.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "38681",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-为空闲时间自动推进增加-idle-runner-检测与风险路由.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10374",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-多模型分析-panniantong-agent-reach-并给出-hermes-优化方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9684",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-08-多模型分析-simular-ai-agent-s-并完善-hermes-技能树.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "12135",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-mission方法论p0任务池-mission-envelope-schema--selfcheck-fail-closed.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11611",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-mission方法论p1local-first-mission-artifacts-与知识图谱沉淀.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9128",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-mission方法论p1mission-dag-分解路由与-dashboard-进度视图.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7533",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-mission方法论p2proof-gated-auto-claim-and-handoff-mission-runner-集成.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7439",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-task---p0-mission-envelope-opord-任务规划-schema-与自检门.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5117",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-task---p1-mission-dag-分解路由与任务池-dashboard-可视化.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4680",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-task---p2-mission-proof-gated-autorun-handoff-与权限暂停状态.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4668",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-从-hermes-hudui-提炼-hermes-native-replay-证据闭环与-hud-安全门.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10702",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-修复-uvisa-app-20-我的-个人信息卡片-id-为空但复制按钮仍显示的问题.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "17296",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-增强本地任务池任务边界与多agent并行处理.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "26812",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-多模型分析-agent-development-kit-图片并将-hermes-优化方案落地.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "15178",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-多模型分析-rowboatlabs-rowboat-并完善-hermes-自身.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "12693",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-10-恢复-uvisa-app-20-u-visa-页面原有-ui-样式并暂用硬编码假数据.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11594",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-11-advisory---tokenusage-clean-room-provider-quota-observability-upgrade.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "19003",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-11-iron-plate-铁板架构-consolidation-32到5-jobs.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4272",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-11-采纳-genericagent-三大模式-5层记忆+结晶+文件ipc.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3973",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-uvisa-online-ui-regression-batch-closed-lark.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "18166",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-理财师管理详情重置密码点击底部-已复制并通知本人-没有把密码复制到粘贴板.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1991",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-u-visa板块卡片页面中的虚拟卡修改为physical-cardu-visa没有虚拟卡功能只有实体卡功能.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3957",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内下拉到最近交易板块申购类型的应该显示的是理财申购申购是花费了资金变相的是购买了产品资金流应该是减去购买理财产品的资金当前是加了.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4706",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内下拉到最近交易板块申购类型的记录点击进入后到申购交易详情页面该页面内容和原型图中的不一致认购资金流水是减去资金这里是增加资金逻.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5032",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内法币钱包列表下的人民币修改为cny.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3433",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击u-visa-卡可用额度板块跳转到u-visa页面该页面文案和显示内容需要修改当没有任何u-visa卡片时候顶部的待激活应.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3843",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击兑换支付货币和收到的目标货币之间的转换金额应根据参考汇率进行兑换参考汇率是通过admin管理后台进行配置admin管理后台.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3753",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击兑换输入支付金额和选择收到币种后点击下一步点击确认兑换输入支付密码后继续输入邮箱验证码后顶部弹出验证失败请重试.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5609",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击财富持仓跳转到我的持仓页面理财申购的记录点击后跳转到对应的申购理财产品的详情页持有天数和起息日参数应该从admin管理后台.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4213",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击转入选择境内转账输入金额点击下一步收款信息页面点击下一步去app转账后到达挂单页面底部显示挂单已创建的时间未按照当前挂单创.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3582",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击转入选择境内转账输入金额点击下一步该页面显示的收款信息在接口处理中需进行加密处理.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5167",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第一个资产菜单内点击转出选择跨境汇款选择汇款内支持的货币到汇款金额页面选择收款人新建收款人选择电子钱包到电子钱包收款人信息页面该页面内的昵称板.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3485",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第三个财富菜单页面顶部的蓝色区域显示的内容和原型图不一致应显示我的持仓今日收益累计收益当数据为0时板块样式布局ui位置字体色值等元素都应该和原.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4259",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-底部导航栏第四个我的菜单内点击交易记录进入到交易记录页面该页面和原型图中的页面不一致相差较大请根据评论区内的原型截图进行1-1复刻交易记录的页面数据显示.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3752",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击底部导航栏财富点击顶部的查看详情然后任选一款产品进入详情页点击提前赎回赎回确认弹框内显示的提前赎回金额减去管理费后的预估到账金额和实际到账金额数值不.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3979",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击底部导航栏资产点击转入输入金额后点击下一步进入转入须知页面不勾选相关协议时点击查看收款信息需给出协议区域高亮标红提示.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3403",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击底部导航资产中的转入进入选择转入币种页面后查看币种选择页各选项副标题与原型中的不一致请查看评论区中原型图的文案进行1-1复刻.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3946",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击安全中心在手机号这一行右侧缺少-未绑定-的初始化状态标识请设计一个未绑定的初始化标识.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3179",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击安全中心在邮箱这一行右侧缺少-未绑定-的初始化状态标识请设计一个未绑定的初始化标识.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2800",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击安全中心点击登录密码在原密码输入框中输入任意密码然后在新密码和确认新密码输入框中输入相同密码后点击完成系统未校验原登录密码的正确性直接判定修.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3162",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击安全中心点击登录设备管理后在该页面中对应原型图登录设备管理的页面文案和原型图中的不一致请查看评论区中原型图的文案进行1-1复刻.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3761",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击安全中心点击登录设备管理点击未信任设备顶部右上角齿轮后再点击设为信任设备然后刷新当前页面或退出账号重新登录后再次进入登录设备管理页面该设备仍.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3534",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击安全中心点击登录设备管理点击未信任设备顶部右上角齿轮后的页面在该页面中对应原型图的页面文案和原型图中的不一致请查看评论区中原型图的文案进行1.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3625",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击客服后与原型图中的不一致请查看评论区中原型图的文案进行1-1复刻其中红框中在没有联系客服之前的状态文案显示的是联系顾问开始对话已经联系过客服.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4070",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击收款人管理点击新增收款人选择swift国际电汇汇款方式在收款人信息页面中国际银行帐号iban的输入框内未进行特殊字符的校验已经查过相关国际规.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2555",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的点击退出登录时缺少确认退出登录弹框的功能请设计一个确认退出登录弹框.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3109",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击我的然后将了解我们修改为关于我们然后点击了解我们后的页面与原型图的图形和页面文案不一致请查看评论区中原型图的文案进行1-1复刻去掉该页面中的版本历史.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3849",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击资产页面中的转出然后输入支付密码后等待倒计时结束然后连续点击重新发送触发-邮箱验证码发送太频繁请-60-秒后再试-的提示后系统依然成功发送了邮箱验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4162",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击资产页面的兑换在支付币种输入框中输入几十位数字后文本直接超出输入框边界输入框未设置合理的金额长度-位数限制输入框中需设置合理的最大金额位数-数值限制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4257",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-点击资产页面的兑换输入支付金额后显示汇率有效期倒计时等待倒计时结束后系统未自动重新调用接口刷新汇率页面始终显示-0-秒后刷新汇率数据不再更新当汇率有效期.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5325",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-登录时输入账号后使用密码登录连续输入错误密码超5次后的提示请求次数过多请稍后再试应改为密码错误次数过多账户已锁定-30-分钟.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3245",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-登录时输入账号和输入邮箱验证码点击登录后跳转至请输入支付密码页面输入错误支付密码后提示语为英文未跟随当前-app-的系统语言设置进行适配输入错误支付密码.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4742",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-登录时输入账号然后输入邮箱验证码后进行设置登录密码设置登录密码时输入7位数或8位以上纯数字或8位以上纯字母或纯文字或8位以上特殊符号的登录密码时点击完成.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3197",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-登陆帐号页面-点击底部联系平台客服按钮未跳转到客服中心.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3452",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-资产内点击转入选择国际银行电汇内的货币跳转到汇款输入金额的页面输入金额点击下一步跳转到转入须知的页面勾选后点击查看收款信息跳转到收款信息页面后该页面金额.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3704",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-资产页面法币钱包内的cny接口是跟随admin后台管理内的用户端运营配置选项页面的境内-cny-转账入口启用这个按钮的勾选来决定展示或者不展示勾选就是正.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3764",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-12-用户端-资产页面点击转入或者直接点击法币钱包内除了cny之外的其他货币跳转到国际电汇转入页面输入金额下一步转入须知确认再到下一步到收款信息页面该页面上的信息显示.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3470",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-uvisa-exchange-fullstack-gap-landing.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "14393",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-事件式-hook-验证任务创建后立即触发任务池流转.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4787",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-事件式-hook-验证项目级策略无需预置任务-id.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4643",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "109069",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-claude-mem-并优化-hermes-自身记忆-上下文机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8303",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-gbrain-仓库并优化-hermes-自身认知控制面与知识系统.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "13907",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-hindsight-仓库并优化-hermes-自身回溯记忆与知识工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5431",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-orca-仓库并优化-hermes-自身代理编排与执行工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5238",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-peekaboo-仓库并优化-hermes-自身能力与工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "14233",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-perplexity-agent-skills-文章并优化-hermes-自身技能体系与维护机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9314",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-rowboat-仓库并优化-hermes-自身协作与自动化工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5383",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-分析-spec-kit-仓库并优化-hermes-自身规范驱动开发与工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "14342",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-13-多模型自动-done-验证事件-hook-先认证再自动关闭.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4938",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-budget-exhaustion-auto-handoff-final-design.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9409",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-budget-exhaustion-auto-handoff-ratification.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1473",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-budget-handoff-check-helper-proof.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2756",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-fallback-threshold-policy-brief.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6838",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-quota-observability-policy-brief.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9308",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-relay-ordering-policy-brief.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5606",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-fallbac.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8306",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-quota-o.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9865",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-relay-o.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10069",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5275",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5299",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-relay-ordering-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7250",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-14-分析-evoagentx-仓库并优化-hermes-自身进化式代理与自动改进机制-细化-fallback-threshold-收敛前置.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7229",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-14-分析-evoagentx-仓库并优化-hermes-自身进化式代理与自动改进机制-细化-quota-observability-收敛前.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8209",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-2026-05-14-分析-evoagentx-仓库并优化-hermes-自身进化式代理与自动改进机制-细化-relay-ordering-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6637",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-hermes-设计-grace-call-输出结构化-continuation-packet-机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11567",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-hermes-设计-new-接-continuation-prefill-的会话恢复协议.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7620",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "72988",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "45798",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-为预算耗尽自动接力设计-non-convergence-auto-narrowing-unblock-shim.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7951",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-分析-cua-仓库并优化-hermes-自身计算机使用与代理执行能力.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5409",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-分析-evoagentx-仓库并优化-hermes-自身进化式代理与自动改进机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "34870",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-分析-jcode-仓库并优化-hermes-自身多会话代理编排与边界闭环能力.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9518",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-分析-keycompute-仓库并优化-hermes-自身模型路由-算力治理与观测能力.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7515",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-分析-paseo-仓库并优化-hermes-自身代理运行时与工程化工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6304",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-基于-agent-harness-九大组件总结审计并优化-hermes-自身架构.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5601",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-上下文管理并优化压缩保真与连贯性.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5034",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-会话持久化并优化崩溃恢复与审计追踪.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4979",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-内置技能体系并优化开箱即用基础能力.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4839",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-动态提示组装并优化实时注入与缓存命中.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4910",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-子智能体管理并优化并行调度与验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5009",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-工具注册中心并优化能力显式化与权限边界-2.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2299",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-工具注册中心并优化能力显式化与权限边界.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6580",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-循环执行引擎并优化-ask-execute-observe-闭环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5004",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-权限与安全分层并优化高风险操作确认机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5523",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-审计-hermes-生命周期钩子并优化关键节点治理与安全护栏.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5624",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-对预算耗尽后的-grace-call-continuation-new-session-resume-机制做多模型分析并完善方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8369",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-测试-blocked-resolver-evidence-闭环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2996",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-测试-event-hook-智能路由-advisory-不跑多模型.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1721",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-测试-task-added-event-hook-不再-returncode-2.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1902",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-14-补齐-brain-task-orchestrator-add-流程并在创建时强制写入优先级分层依赖顺序与多模型-triage-结果.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11118",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-15-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8716",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-15-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6666",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-15-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-relay-ordering-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5203",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-15-分析-memos-memos-local-plugin-源码与-hermes-本地插件文档并优化-hermes-本地记忆-任务总结-技能进化集成.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5600",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-16-evoagentx-分析-Hermes优化建议.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9155",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-16-evolution-lane-认证死循环-根因分析与预防方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5640",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-16-预算接力策略-实施设计.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3530",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-fallbac.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8233",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-patch-n.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8946",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-quota-o.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9778",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-relay-o.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10364",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7586",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-framing-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8270",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-patch-normalization-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9370",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8160",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-为-2026-05-14-为-hermes-设计预算耗尽后的自动接力与回退策略-细化-relay-ordering-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7363",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-修正-taskpool-默认任务模板对-smallest-slice-framing-的系统性偏置并对齐长期可维护主链治理.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5953",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-agentmemory-仓库并提炼-hermes-在-hybrid-retrieval-shared-memory-server-与-hook-drive.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7187",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-cocoindex-仓库并提炼-hermes-在增量索引多源实时同步与-fresh-context-数据面上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6728",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-dramadirector-仓库并提炼-hermes-在-schema-first-媒体编排stateful-cli-与-drop-in-skill-集成.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6894",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-hermes-agent-idea-workflow-仓库并提炼-hermes-在-ideaspechandoff-前置工作流与-skillpack-分发.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8086",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-hermesd-仓库并提炼-hermes-在只读-tui-监控面板全局状态聚合与-observability-dashboard-上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8099",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-meta-meta-prompting-文章并提炼-hermes-可吸收的-skillify-eval-retrieval-架构增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7724",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-openhuman-仓库并提炼-hermes-在-memory-tree-autofetch-token-compression-上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7608",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-openswarm-仓库并提炼-hermes-在-specialist-orchestration-deliverable-closure-与-grace.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6004",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-paperclip-仓库并提炼-hermes-在公司级多智能体控制面预算治理与-heartbeat-编排上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6933",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-plur-仓库并提炼-hermes-在共享-engram-记忆层跨实例注入与-local-first-mcp-记忆上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7867",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-public-apis-仓库并提炼-hermes-在公共数据源发现免密-api-选路与外部实时信息接入上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7988",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-rtk-hermes-仓库并提炼-hermes-在-pre-tool-command-rewritertk-过滤输出与插件化-token-降耗上的可吸收增.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8171",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析-tencentdb-agent-memory-仓库并提炼-hermes-在-symbolic-short-term-memory4-tier-progre.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10954",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析外部仓库-galaxy-s10-billd-desk-的任务池价值与落地优先级.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "20222",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-分析并沉淀-claude-code-使用-html-artifacts-作为高密度任务载体.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8545",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-建设-hermes-长期可维护的-execution-quality-评估反馈基座以承接-evoagentx-演化闭环建议.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7877",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-建设-hermes-长期可维护的-workflow-generator-与-orchestration-plan-编译框架以吸收-evoagentx-启发.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "12369",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-建设-hermes-长期可维护的自动-skill-演化与-prompt-治理闭环以落地-evoagentx-agent-evolver-建议.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "18565",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-沉淀系统提示词五大核心规则并治理-hermes-prompt-模块化与-truthfulness-约束.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9042",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-17-精读-perplexitydesigning-refining-and-maintaining-agent-skills-at-perplexity并把-pro.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6699",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-hermes-长期一次性落地-sakana-fugu-conductor-异步多模型方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "25180",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-local-brain-react-three-html-app-long-term-landing.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6720",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-second-pass-分析-openai-symphony-仓库并提炼-hermes-在工单监听隔离工作区工作证明链与安全落-pr-闭环上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8474",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-fallbac.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11528",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-framing.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8813",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-patch-n.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "37592",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-quota-o.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7844",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列漂移-细化-relay-o.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "11412",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为每日日报建立自动生成任务的受治理入池机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "31740",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-为每日日报补充-github-官方-trending-排名数据源并纳入证据化汇总.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "36765",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-codex-plugin-cc-仓库并提炼-hermes-在-claude-codecodex-委派评审桥接background-job-生命周期控制面与.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7934",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-context7-平台并提炼-hermes-在最新代码文档检索版本化上下文注入与编码提示去幻觉上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8240",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-fireworks-tech-graph-仓库并提炼-hermes-在自然语言技术图表生成svgpng导出与-ai-工作流图模板上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7300",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-minimind-仓库并提炼-hermes-在轻量-llm-教学链路可解释训练实验与入门型模型实践上的参考价值.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4898",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-mirofish-仓库并提炼-hermes-在群体模拟预测长时记忆数字沙盒与-what-if-rehearsal-上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8185",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-openharness-仓库并提炼-hermes-在开放-agent-harness个人代理运行时与聊天前门代码闭环上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8261",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-promptschat-仓库并提炼-hermes-在开放-prompt-资产注册表mcp-claude-code-插件分发与自托管私有-prompt-li.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7808",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-sakana-ai-多模型指挥官理念并提炼-hermes-conductor-融入方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10055",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-vibe-coding-cn-教程中的产品开发组并提炼-hermes-在技能创造技能检索前端生成界面优化与自动化测试上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7985",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-vibe-coding-cn-教程中的内容创作组并提炼-hermes-在-ai-文案润色与人类化输出上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "12175",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-vibe-coding-cn-教程中的效率工具组并提炼-hermes-在跨平台检索终端笔记分析与自动网页操作上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8312",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-voice-pro-仓库并提炼-hermes-在本地免费语音转写配音翻译人声分离与-youtube-音视频处理上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8237",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-分析-web-access-仓库并提炼-hermes-在跨平台信息检索浏览器自动化与联网策略编排上的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6908",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-吸收-awesome-design-md-的-designmd-代理设计规范机制到-hermes-设计-项目画像工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "43172",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-将-dreaming-长期经验沉淀与-outcomes-裁判分离机制映射为-hermes-技能复盘-独立质检闭环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "17088",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-用-12factor-agents-生产化范式审计-hermes-agent-控制平面与任务池架构缺口.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5635",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-18-验证-omnivoicestudio-本地语音克隆-视频配音项目真实性并评估是否纳入-hermes-媒体工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9976",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p1-a-autoresearch式自证执行闭环测试达标才-checkpoint失败自动证据化回退.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8065",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p1-b-openspace式-skill-自动追踪与-token质量遥测路由.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4662",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p1-rag-anything式多模态证据索引taskpool-proof-markdown-typed-manifest-与安全检索.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9660",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p1-research到dev从定性到定量任务生成契约.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8094",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p1-钱学森综合集成研讨厅协议沉淀为-hermes-workflow-skill.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6271",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p2-c-cli-anything式-repo-to-tool-adapter-工厂安全骨架.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6301",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p2-d-google-workspace-cli式连接器安全边界与注入防护.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3578",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p2-openhands工程执行闭环能力吸收repo读写命令执行沙箱部署模式与hermes差距映射.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9061",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p2-大成智慧知识原子碰撞与涌现候选机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5728",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p2-工程控制论全局观测总线与dispatch前馈门设计.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7139",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-p3-e-agent-workflow-os-配套层-heartbeat预算硬停approval-rollback-dashboard-eval.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8745",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-second-pass-榨干既往外源分析任务质量缺口并反向灌注多脑.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "21302",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7853",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-framing-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4214",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-patch-normalization-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9587",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4447",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10632",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报建立自动生成任务的受治理入池机制-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7443",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报建立自动生成任务的受治理入池机制-细化-framing-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "6946",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报建立自动生成任务的受治理入池机制-细化-patch-normalization-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7267",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报建立自动生成任务的受治理入池机制-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7824",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报补充-github-官方-trending-排名数据源并纳入证据化汇总-细化-fallback-threshold-收敛前置.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7559",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报补充-github-官方-trending-排名数据源并纳入证据化汇总-细化-framing-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7074",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报补充-github-官方-trending-排名数据源并纳入证据化汇总-细化-patch-normalization-收敛前.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7377",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-为每日日报补充-github-官方-trending-排名数据源并纳入证据化汇总-细化-quota-observability-收敛前.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7934",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-吸收-awesome-design-md-的-designmd-代理设计规范机制到-hermes-设计-项目画像工作流-细化-fall.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "26005",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-吸收-awesome-design-md-的-designmd-代理设计规范机制到-hermes-设计-项目画像工作流-细化-fram.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "13251",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-吸收-awesome-design-md-的-designmd-代理设计规范机制到-hermes-设计-项目画像工作流-细化-patc.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "12407",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-18-吸收-awesome-design-md-的-designmd-代理设计规范机制到-hermes-设计-项目画像工作流-细化-quot.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "15329",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-19-second-pass-榨干既往外源分析任务质量缺口并反向灌注多脑-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8750",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-19-second-pass-榨干既往外源分析任务质量缺口并反向灌注多脑-细化-framing-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7967",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-19-second-pass-榨干既往外源分析任务质量缺口并反向灌注多脑-细化-patch-normalization-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8542",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-19-second-pass-榨干既往外源分析任务质量缺口并反向灌注多脑-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9196",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-为-2026-05-19-second-pass-榨干既往外源分析任务质量缺口并反向灌注多脑-细化-relay-ordering-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8606",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-二次吸收-gbrain-第6层认识论记忆引擎到-hermes-local-brain.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7491",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-吸收视频经验grep友好代码库与局部配置治理替代过期rag索引.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7976",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-19-完善-last30days-社交信号研究脑与-hermes-调用闭环.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7726",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p1-吸收-ai-编码后置-ci-cd-向内嵌连续验证与预合并层迁移的架构范式.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5501",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-为每日日报补充-trendradar-多平台热点-rss-mcp-源质量评估与接入边界.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3294",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-二次吸收-anything-to-notebooklm-的多源内容处理-skill-机制到-hermes-研究-日报工作流.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3401",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-二次吸收-cli-anything-cli-hub-的工具注册表与软件-agent-native-适配机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3359",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-吸收-anthropic-founders-playbook-的-ai-原生组织阶段框架到-hermes-单人公司-多agent运营画像.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5371",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-对比-praisonai-自我反思多agent框架与-hermes-子agent-裁判闭环的架构差距.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5027",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-将-agent-任务视界从分钟级延展到小时级的预算-心跳-恢复治理机制.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5045",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-评估-semble-mcp-代码搜索对-hermes-token-节流与代码定位链路的可吸收增量-2.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2545",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p2-评估-semble-mcp-代码搜索对-hermes-token-节流与代码定位链路的可吸收增量.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4970",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-p3-评估-animejs-v4-对-hermes-前端动效-ui-skill-的轻量吸收边界.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3591",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-standardize-browser-automation-replay-evidence-for-hermes-tasks.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "25368",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-fallback-threshold-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4771",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-framing-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7830",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-patch-normalization-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4529",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-quota-observability-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9940",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-14-为-taskpool-设计前置固定多模型优先级分析与入池分层机制-细化-relay-ordering-收敛前置任务.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10439",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-18-p1-patch-normalization-child-补齐-fallback-threshold-与-noop-vs-change.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "8511",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-20-为-2026-05-18-为-2026-05-13-优化-agent-多模型-子-agent-调度的缓存命中率固定全局前缀分层上下文避免-prompt-工具序列.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10078",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-21-rokid-intent-board-只读仪表草稿-后台队列-提交回执一问即答.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3131",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-21-rokid-入口脑-l0-设备状态自报电量-网络-上下文只读短答.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3251",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-21-rokid-入口脑高影响动作策略表device-action-policy--后置拦截验证.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3197",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/2026-05-21-rokid-拍照对话可靠视觉路线图片只占位显式后台分析证据回执.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "3293",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/tasks/_temporarily_removed_lark_tasks/",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "267361",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/05-实践与项目/实践方案/08-理论到影响全架构传播矩阵.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7702",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-09-local-brain-autorun-bridge-certification.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "5416",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-11-hermes-github-personal-assistant-sync-plan.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "12551",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-11-personal-hermes-brain-round1-landing.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "2745",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-12-keypoint-coverage-ratchet-engineering-review.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "10404",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-12-multimodel-keypoint-ratchet-coverage.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1503",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-12-theory-impact-propagation-ratchet.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "856",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-13-uvisa-interconnection-theory-multimodel-review.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "15773",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-18-local-brain-html-app-uimax-browser-qa-report.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4462",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-18-local-brain-html-product-redesign-multimodel-review.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9880",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-18-local-brain-html-replaceable-content-audit.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "22403",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-19-external-repo-absorption-multibrain-second-pass.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "14559",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-19-prior-external-analysis-quality-audit.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9872",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/reviews/2026-05-19-taskpool-done-closeout-audit.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "17677",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/06-治理与评审/技能生态/Agent-S框架审计与Hermes技能树增补-2026-05-10.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "7567",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/07-仪表盘/Agent Team并行任务池方案.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "9218",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/07-仪表盘/本地大脑HTML入口.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1518",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/07-仪表盘/本地大脑HTML跳转测试.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "1813",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/brain/08-模板/mission-artifact-template.md",
+      "risk": "high",
+      "action": "manual_gate_ssot",
+      "size": "4692",
+      "extension": ".md"
+    }
+  ]
+}

@@ -1,0 +1,631 @@
+{
+  "count": 38,
+  "risk": {
+    "high": 38
+  },
+  "status": {
+    " M": 4,
+    "??": 34
+  },
+  "actions": {
+    "manual_gate_do_not_reset": 38
+  },
+  "extensions": {
+    ".lock": 22,
+    ".json": 1,
+    ".db": 15
+  },
+  "total_size": 883299001,
+  "samples": [
+    {
+      "status": " M",
+      "path": "gateway.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "159",
+      "extension": ".lock"
+    },
+    {
+      "status": " M",
+      "path": "gateway_state.json",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "538",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "route_outcomes.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "35917824",
+      "extension": ".db"
+    },
+    {
+      "status": " M",
+      "path": "state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "63787008",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "envelope_bus.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "22110208",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "729653248",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "2732032",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "15101952",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "3977216",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "1847296",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "1867776",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "6303744",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "scripts/envelope_bus.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "scripts/envelope_state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "sessions.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "gateway.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "159",
+      "extension": ".lock"
+    },
+    {
+      "status": " M",
+      "path": "gateway_state.json",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "538",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "route_outcomes.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "35917824",
+      "extension": ".db"
+    },
+    {
+      "status": " M",
+      "path": "state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "63787008",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "envelope_bus.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "22110208",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "729653248",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "2732032",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "15101952",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "3977216",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/media/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "1847296",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/mlops/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "1867776",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/auth.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/shell-hooks-allowlist.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/skills/.usage.json.lock",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".lock"
+    },
+    {
+      "status": "??",
+      "path": "profiles/workflow/state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "6303744",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "scripts/envelope_bus.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "scripts/envelope_state.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "scripts/taskpool.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "sessions.db",
+      "risk": "high",
+      "action": "manual_gate_do_not_reset",
+      "size": "0",
+      "extension": ".db"
+    }
+  ]
+}

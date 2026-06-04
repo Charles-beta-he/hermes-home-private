@@ -1,0 +1,30 @@
+{
+  "schema": "scripts_diff_cluster_v1",
+  "created_at": "2026-06-04T05:01:53.948403Z",
+  "source_inventory": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv",
+  "count": 239,
+  "status_counts": {
+    " M": 38,
+    "??": 201
+  },
+  "extension_counts": {
+    ".py": 208,
+    ".sh": 11,
+    "<none>": 6,
+    ".cpp": 2,
+    ".dsym": 2,
+    ".md": 5,
+    ".json": 2,
+    ".bak": 3
+  },
+  "risk_counts": {
+    "high": 239
+  },
+  "action_counts": {
+    "cluster_and_review": 239
+  },
+  "notes": [
+    "Read-only diff/stat clustering only; no scripts were modified.",
+    "Diff contents are not embedded to avoid leaking sensitive content; only name/status/numstat/stat are stored."
+  ]
+}

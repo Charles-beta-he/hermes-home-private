@@ -1,0 +1,4423 @@
+{
+  "count": 993,
+  "risk": {
+    "high": 993
+  },
+  "status": {
+    "??": 993
+  },
+  "actions": {
+    "manual_gate_cross_profile": 993
+  },
+  "extensions": {
+    ".md": 21,
+    "<none>": 916,
+    ".yaml": 20,
+    ".json": 36
+  },
+  "total_size": 6657144618,
+  "samples": [
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/SOUL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "537",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/bin/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10368352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/browser_replay_evidence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2400629",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/config.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "21983",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4202303172",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/logs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "41934577",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/lsp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "80199710",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/memories/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5231",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2200921",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/notes/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2916",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/processes.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "598",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/reports/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2557",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/shell-hooks-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "696",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4396",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.curator_backups/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88537176",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.curator_state",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "576",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.hub/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1268893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.usage.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "34222",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/api-and-interface-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5025",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/apple/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "44117",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/autonomous-ai-agents/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "296268",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/banner-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/baseline-ui/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4848",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/bayesian-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28536",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/brand/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88353",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/chinese-platforms/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4076",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/code-simplification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/codebase-intelligence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7615",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/cognitive-load-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11446",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/creative/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2246931",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/darwin-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9143084",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/data-science/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9725",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/deprecation-and-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2591",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/design-system/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "177443",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243310",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/devops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "117613",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/diagramming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3456",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/documentation-and-adrs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2515",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/dogfood/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13409",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/domain/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4122",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/email/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17962",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/feeds/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12208",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/fixing-accessibility/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5619",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/fixing-metadata/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5276",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/fixing-motion-performance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6888",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/framework-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "61805",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/gaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11475",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/gifs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/github/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "101181",
+      "extension": "<none>"
+    }
+  ],
+  "entries": [
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/SOUL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "537",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/bin/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10368352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/browser_replay_evidence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2400629",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/config.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "21983",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4202303172",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/logs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "41934577",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/lsp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "80199710",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/memories/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5231",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2200921",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/notes/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2916",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/processes.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "598",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/reports/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2557",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/shell-hooks-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "696",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4396",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.curator_backups/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88537176",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.curator_state",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "576",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.hub/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1268893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/.usage.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "34222",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/api-and-interface-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5025",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/apple/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "44117",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/autonomous-ai-agents/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "296268",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/banner-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/baseline-ui/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4848",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/bayesian-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28536",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/brand/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88353",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/chinese-platforms/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4076",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/code-simplification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/codebase-intelligence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7615",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/cognitive-load-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11446",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/creative/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2246931",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/darwin-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9143084",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/data-science/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9725",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/deprecation-and-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2591",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/design-system/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "177443",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243310",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/devops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "117613",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/diagramming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3456",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/documentation-and-adrs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2515",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/dogfood/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13409",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/domain/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4122",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/email/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17962",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/feeds/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12208",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/fixing-accessibility/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5619",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/fixing-metadata/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5276",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/fixing-motion-performance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6888",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/framework-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "61805",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/gaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11475",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/gifs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/github/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "101181",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/gsd-bridge/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7150",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/idea-refine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2861",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/impeccable-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "680584",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/impeccable/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "57047336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1826",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/incremental-implementation/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2663",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/inference-sh/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4053",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/leisure/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3064",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27608",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/mcp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "36252",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27665",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/memory/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1355",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/mlops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3462033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/note-taking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "114207",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/ooda-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12143",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/p10-architecture-self-check/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27450",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/p10/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27829",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/p7/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8108",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/p9/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8850",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4196",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/pro/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8719",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/productivity/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1259195",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/pua-en/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/pua-ja/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2747",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/pua/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13535384",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/red-teaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7277",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/research/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1477662",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/skill-search-index.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13922",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/slides/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20244",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/smart-home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6952",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/social-media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "26253",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "140",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9509",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/agent-team-parallel/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14348",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/arc-dispatch-executor/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23156",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/architecture-optimization-loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4149",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/auto-optimize-loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "19828",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/browser-harness-integration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "53709",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/code-simplifier/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7082",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/color-contrast-checker/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6819",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/debugging-hermes-tui-commands/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8580",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/git-state-aware-debugging/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4014",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/hermes-agent-skill-authoring/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "32214",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/hermes-overlay-ratchet-upgrades/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15919",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/hermes-s6-container-supervision/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11474",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/hermes-warning-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18146",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/hermes-workflow-orchestrator/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "66844",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4334",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/mcp-server-from-scratch/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9598",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/multi-agent-code-review/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "41804",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/multi-model-agent-orchestration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8031",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/multi-model-architecture/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "45352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/multi-model-certification-round/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1987",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/multi-model-thinking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "415889",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/node-inspect-debugger/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10899",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/plan/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9106",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/planning-with-files/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27201",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/post-update-patch-healing/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/private-fork-evolution-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15167",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/python-debugpy/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13151",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/python-multiline-grep-engine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11791",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/react-architecture-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "60419",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/real-engineering-workflows/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15149",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/references/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8332",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/requesting-code-review/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28251",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/requirement-clarification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4838",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/router/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4394",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/self-evolve-via-claude/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15761",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/self-improvement-pipeline/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38463",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/skill-ecosystem-diagnosis/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20600",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/skill-ecosystem-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23304",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/skill-eval/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "16920",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/spike/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9627",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/stuck-diagnosis/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3993",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/subagent-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10693",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/systematic-debugging/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38698",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/task-framing-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4330",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/taskpool-control-plane/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "80366",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/taskpool-ingest-triage/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "40196",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/test-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14972",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "111",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/theory-driven-evolution/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20834",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/uimax-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18428",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/visual-regression/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11253",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/workflow-ecosystem-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6676",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/software-development/writing-plans/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9555",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/source-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6674",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/steward/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "131836",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/taste-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "16913",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/ui-skills/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "779998",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/ui-styling/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5751510",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/ui-ux-pro-max-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1763454",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/ui-ux-pro-max/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18164907",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/yes/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7355",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/brain-mirror/skills/yuanbao/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5093",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/SOUL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "537",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/bin/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10368352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/config.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "24847",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "130",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "72537",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/logs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "89834",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/memories/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5494",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2081838",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/profile.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "132",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/shell-hooks-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "464",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.archive/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "59606",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.curator_backups/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "192440039",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.curator_state",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1061",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.hub/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1268893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/.usage.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "36141",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/api-and-interface-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5025",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/apple/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "44117",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/autonomous-ai-agents/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "391323",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/banner-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/baseline-ui/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4386",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/bayesian-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28607",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/brand/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88353",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/chinese-platforms/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4076",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/code-simplification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/codebase-intelligence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12433",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/cognitive-load-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11446",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/creative/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2238078",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/darwin-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9143335",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/data-science/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9725",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/deprecation-and-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2591",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/design-system/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "177443",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243310",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/devops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "117287",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/diagramming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3456",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/documentation-and-adrs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4835",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/dogfood/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13409",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/domain/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5651",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/email/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17962",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/feeds/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12208",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/fixing-accessibility/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5619",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/fixing-metadata/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5276",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/fixing-motion-performance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6888",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/framework-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "61805",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/gaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11475",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/gifs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/github/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "113133",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/gsd-bridge/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7150",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/idea-refine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2861",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/impeccable-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "680584",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/impeccable/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "57047336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1826",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/incremental-implementation/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12933",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/inference-sh/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4053",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/leisure/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3064",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27608",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/mcp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "36252",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "24370",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/memory/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1355",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/mlops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3462033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/note-taking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "86987",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/ooda-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12143",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/p10-architecture-self-check/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27450",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/p10/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27829",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/p7/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8108",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/p9/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8850",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4196",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/pro/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8719",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/productivity/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1259195",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/pua-en/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/pua-ja/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2747",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/pua/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13535384",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/red-teaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7277",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/research/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17062048",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/skill-search-index.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13922",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/slides/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20244",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/smart-home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6952",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/social-media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "26253",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "140",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9988",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/arc-dispatch-executor/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23156",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/architecture-optimization-loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4149",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/auto-optimize-loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "19828",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/browser-harness-integration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "60893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/code-simplifier/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7082",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/color-contrast-checker/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6819",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/debugging-hermes-tui-commands/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8580",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/development-closure-consensus/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27990",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/hermes-agent-skill-authoring/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "32214",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/hermes-overlay-ratchet-upgrades/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "30147",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/hermes-s6-container-supervision/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11474",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/hermes-warning-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18146",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/hermes-workflow-orchestrator/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "71091",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4334",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/mcp-server-from-scratch/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9598",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/multi-agent-code-review/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "41804",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/multi-model-agent-orchestration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8031",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/multi-model-architecture/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "45352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/multi-model-certification-round/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7960",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/multi-model-thinking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "415889",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/node-inspect-debugger/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10899",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/plan/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3742",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/planning-with-files/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23174",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/post-update-patch-healing/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/private-fork-evolution-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15167",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/project-evidence-grounding/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "22820",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/python-debugpy/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13151",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/python-multiline-grep-engine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11791",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/react-architecture-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "60419",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/references/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8332",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/requesting-code-review/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28251",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/requirement-clarification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4838",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/router/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4394",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/self-evolve-via-claude/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15761",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/self-improvement-pipeline/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38463",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/skill-ecosystem-diagnosis/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20600",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/skill-ecosystem-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23304",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/skill-eval/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18638",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/spike/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9627",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/stuck-diagnosis/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3993",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/subagent-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10693",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/systematic-debugging/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "42854",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/taskpool-control-plane/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "210733",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/test-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15368",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "111",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/theory-driven-evolution/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20834",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/uimax-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18428",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/visual-regression/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11253",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/workflow-ecosystem-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8270",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/software-development/writing-plans/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8831",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/source-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6674",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/steward/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "131807",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/taste-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "16913",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/ui-skills/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "779536",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/ui-styling/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5751510",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/ui-ux-pro-max-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1763454",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/ui-ux-pro-max/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18164907",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/workflow/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4901",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/yes/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7426",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/dev/skills/yuanbao/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5093",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/SOUL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "537",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/bin/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10368352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/config.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "24847",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "130",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "220946",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/logs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "484163",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/lsp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "19150059",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/memories/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5494",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2081838",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/profile.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "144",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/shell-hooks-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "464",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.archive/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "59606",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.curator_backups/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "192440039",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.curator_state",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1061",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.hub/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1268893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/.usage.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "35768",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/api-and-interface-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5025",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/apple/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "44117",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/autonomous-ai-agents/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "391323",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/banner-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/baseline-ui/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4386",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/bayesian-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28607",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/brand/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88353",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/chinese-platforms/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4076",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/code-simplification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/codebase-intelligence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12433",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/cognitive-load-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11446",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/creative/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2238078",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/darwin-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9143335",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/data-science/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9725",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/deprecation-and-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2591",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/design-system/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "177443",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243310",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/devops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "117287",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/diagramming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3456",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/documentation-and-adrs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4835",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/dogfood/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13409",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/domain/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5651",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/email/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17962",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/feeds/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12208",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/fixing-accessibility/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5619",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/fixing-metadata/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5276",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/fixing-motion-performance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6888",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/framework-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "61805",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/gaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11475",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/gifs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/github/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "113133",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/gsd-bridge/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7150",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/idea-refine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2861",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/impeccable-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "680584",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/impeccable/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "57047336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1826",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/incremental-implementation/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12933",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/inference-sh/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4053",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/leisure/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3064",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27608",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/mcp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "36252",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "24370",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/memory/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1355",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/mlops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3462033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/note-taking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "86987",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/ooda-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12143",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/p10-architecture-self-check/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27450",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/p10/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27829",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/p7/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8108",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/p9/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8850",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4196",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/pro/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8719",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/productivity/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1259195",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/pua-en/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/pua-ja/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2747",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/pua/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13535384",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/red-teaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7277",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/research/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17041368",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/skill-search-index.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13922",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/slides/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20244",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/smart-home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6952",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/social-media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "26253",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "140",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9988",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/arc-dispatch-executor/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23156",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/architecture-optimization-loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4149",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/auto-optimize-loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "19828",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/browser-harness-integration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "60893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/code-simplifier/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7082",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/color-contrast-checker/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6819",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/debugging-hermes-tui-commands/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8580",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/development-closure-consensus/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27990",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/hermes-agent-skill-authoring/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "32214",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/hermes-overlay-ratchet-upgrades/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "30147",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/hermes-s6-container-supervision/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11474",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/hermes-warning-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18146",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/hermes-workflow-orchestrator/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "71091",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4334",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/mcp-server-from-scratch/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9598",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/multi-agent-code-review/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "41804",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/multi-model-agent-orchestration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8031",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/multi-model-architecture/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "45352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/multi-model-certification-round/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7960",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/multi-model-thinking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "415889",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/node-inspect-debugger/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10899",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/plan/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3742",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/planning-with-files/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23174",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/post-update-patch-healing/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/private-fork-evolution-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15167",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/project-evidence-grounding/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "22820",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/python-debugpy/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13151",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/python-multiline-grep-engine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11791",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/react-architecture-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "60419",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/references/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8332",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/requesting-code-review/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28251",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/requirement-clarification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4838",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/router/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4394",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/self-evolve-via-claude/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15761",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/self-improvement-pipeline/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "38463",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/skill-ecosystem-diagnosis/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20600",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/skill-ecosystem-governance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "23304",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/skill-eval/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18638",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/spike/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9627",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/stuck-diagnosis/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3993",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/subagent-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10693",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/systematic-debugging/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "42854",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/taskpool-control-plane/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "210733",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/test-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "15368",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "111",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/theory-driven-evolution/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "20834",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/uimax-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18428",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/visual-regression/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11253",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/workflow-ecosystem-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8270",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/software-development/writing-plans/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8831",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/source-driven-development/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6674",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/steward/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "131807",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/taste-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "16913",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/ui-skills/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "779536",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/ui-styling/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5751510",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/ui-ux-pro-max-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1763454",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/ui-ux-pro-max/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "18164907",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/workflow/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4901",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/yes/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7426",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-agent/skills/yuanbao/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5093",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/SOUL.md",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "537",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/bin/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "10368352",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/config.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "24847",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/context_length_cache.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "130",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/home/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "242",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/logs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "96850",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/memories/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5494",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/models_dev_cache.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2081838",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/profile.yaml",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "160",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/shell-hooks-allowlist.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "464",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.archive/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "59606",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.curator_backups/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "192440039",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.curator_state",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1061",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.hub/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1268893",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/.usage.json",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "35770",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/api-and-interface-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5025",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/apple/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "44117",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/autonomous-ai-agents/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "391323",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/banner-design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "14033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/baseline-ui/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4386",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/bayesian-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "28607",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/brand/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "88353",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/chinese-platforms/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4076",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/code-simplification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2837",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/codebase-intelligence/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12433",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/cognitive-load-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11446",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/creative/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2238078",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/darwin-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9143335",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/data-science/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "9725",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/deprecation-and-migration/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2591",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/design-system/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "177443",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/design/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "243310",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/devops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "117287",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/diagramming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3456",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/documentation-and-adrs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4835",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/dogfood/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "13409",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/domain/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5651",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/email/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "17962",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/feeds/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12208",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/fixing-accessibility/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5619",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/fixing-metadata/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "5276",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/fixing-motion-performance/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "6888",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/framework-audit/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "61805",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/gaming/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "11475",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/gifs/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/github/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "113133",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/gsd-bridge/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "7150",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/idea-refine/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2861",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/impeccable-skill/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "680584",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/impeccable/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "57047336",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/incident-response/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1826",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/incremental-implementation/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12933",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/inference-sh/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4053",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/leisure/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3064",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/loop/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27608",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/mcp/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "36252",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/media/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "24370",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/memory/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1355",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/mlops/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "3462033",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/note-taking/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "86987",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/ooda-agent/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "12143",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/p10-architecture-self-check/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27450",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/p10/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "27829",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/p7/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8108",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/p9/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8850",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/post-deploy-verification/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "4196",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/pro/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "8719",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/productivity/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1259195",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/pua-en/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "1784",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "profiles/hermes-core/skills/pua-ja/",
+      "risk": "high",
+      "action": "manual_gate_cross_profile",
+      "size": "2747",
+      "extension": "<none>"
+    }
+  ]
+}

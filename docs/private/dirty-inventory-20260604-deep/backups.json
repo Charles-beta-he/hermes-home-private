@@ -1,0 +1,313 @@
+{
+  "count": 18,
+  "risk": {
+    "medium": 18
+  },
+  "status": {
+    " M": 2,
+    "??": 16
+  },
+  "actions": {
+    "archive_external_or_ignore": 18
+  },
+  "extensions": {
+    "<none>": 13,
+    ".patch": 1,
+    ".py": 1,
+    ".zip": 2,
+    ".yaml": 1
+  },
+  "total_size": 9130716080,
+  "samples": [
+    {
+      "status": " M",
+      "path": "backups/20260423-224844/skills/darwin-skill",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "9119100",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "backups/20260423-224844/skills/pua",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "13863864",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-local-tracked-before-update-20260512-123850.patch",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "11186",
+      "extension": ".patch"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-repo-copy-20260518-203325/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "812916804",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-untracked-before-update-20260512-123850/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "4915",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-upgrade-20260505-232505/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "6315866",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-upgrade-20260509-115033/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "70161036",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-governance/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "393939",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/kanban-corrupt-20260529/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "1966813184",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/local-brain-main-hierarchy-migration-20260506-192936/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "251611",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/multibrain-rollout-20260518-2130/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "815795",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/multimodel-fix-2026-04-28/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "568640",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/post-merge-before-update-20260512-123850",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "417",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/post-update-check-before-update-20260512-123850.py",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "24746",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "backups/pre-update-2026-05-16-210747.zip",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "1092043006",
+      "extension": ".zip"
+    },
+    {
+      "status": "??",
+      "path": "backups/pre-update-2026-05-25-121602.zip",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "5157365187",
+      "extension": ".zip"
+    },
+    {
+      "status": "??",
+      "path": "backups/pre-update-attention-20260429-014143/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "44652",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/quorum.pre-p1-minquorum-20260429-223736.yaml",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "2132",
+      "extension": ".yaml"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "backups/20260423-224844/skills/darwin-skill",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "9119100",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "backups/20260423-224844/skills/pua",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "13863864",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-local-tracked-before-update-20260512-123850.patch",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "11186",
+      "extension": ".patch"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-repo-copy-20260518-203325/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "812916804",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-untracked-before-update-20260512-123850/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "4915",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-upgrade-20260505-232505/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "6315866",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-agent-upgrade-20260509-115033/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "70161036",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/hermes-governance/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "393939",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/kanban-corrupt-20260529/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "1966813184",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/local-brain-main-hierarchy-migration-20260506-192936/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "251611",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/multibrain-rollout-20260518-2130/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "815795",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/multimodel-fix-2026-04-28/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "568640",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/post-merge-before-update-20260512-123850",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "417",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/post-update-check-before-update-20260512-123850.py",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "24746",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "backups/pre-update-2026-05-16-210747.zip",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "1092043006",
+      "extension": ".zip"
+    },
+    {
+      "status": "??",
+      "path": "backups/pre-update-2026-05-25-121602.zip",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "5157365187",
+      "extension": ".zip"
+    },
+    {
+      "status": "??",
+      "path": "backups/pre-update-attention-20260429-014143/",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "44652",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "backups/quorum.pre-p1-minquorum-20260429-223736.yaml",
+      "risk": "medium",
+      "action": "archive_external_or_ignore",
+      "size": "2132",
+      "extension": ".yaml"
+    }
+  ]
+}

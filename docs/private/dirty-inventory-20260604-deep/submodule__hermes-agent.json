@@ -1,0 +1,54 @@
+{
+  "count": 2,
+  "risk": {
+    "high": 2
+  },
+  "status": {
+    " M": 1,
+    "??": 1
+  },
+  "actions": {
+    "handle_inner_repo_separately": 2
+  },
+  "extensions": {
+    "<none>": 1,
+    ".md": 1
+  },
+  "total_size": 1741967199,
+  "samples": [
+    {
+      "status": " M",
+      "path": "hermes-agent",
+      "risk": "high",
+      "action": "handle_inner_repo_separately",
+      "size": "1741966146",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "hermes-agent-persona.md",
+      "risk": "high",
+      "action": "handle_inner_repo_separately",
+      "size": "1053",
+      "extension": ".md"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "hermes-agent",
+      "risk": "high",
+      "action": "handle_inner_repo_separately",
+      "size": "1741966146",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "hermes-agent-persona.md",
+      "risk": "high",
+      "action": "handle_inner_repo_separately",
+      "size": "1053",
+      "extension": ".md"
+    }
+  ]
+}

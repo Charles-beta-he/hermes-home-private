@@ -1,0 +1,86 @@
+{
+  "count": 4,
+  "risk": {
+    "critical": 4
+  },
+  "status": {
+    " M": 2,
+    "??": 2
+  },
+  "actions": {
+    "manual_gate_do_not_commit_bulk": 4
+  },
+  "extensions": {
+    ".md": 2,
+    ".20260529": 2
+  },
+  "total_size": 10777,
+  "samples": [
+    {
+      "status": " M",
+      "path": "memories/MEMORY.md",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2752",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "memories/USER.md",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2604",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "memories/MEMORY.md.bak.20260529",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2678",
+      "extension": ".20260529"
+    },
+    {
+      "status": "??",
+      "path": "memories/USER.md.bak.20260529",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2743",
+      "extension": ".20260529"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "memories/MEMORY.md",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2752",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "memories/USER.md",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2604",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "memories/MEMORY.md.bak.20260529",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2678",
+      "extension": ".20260529"
+    },
+    {
+      "status": "??",
+      "path": "memories/USER.md.bak.20260529",
+      "risk": "critical",
+      "action": "manual_gate_do_not_commit_bulk",
+      "size": "2743",
+      "extension": ".20260529"
+    }
+  ]
+}

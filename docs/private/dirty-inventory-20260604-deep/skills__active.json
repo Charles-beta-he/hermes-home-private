@@ -1,0 +1,4427 @@
+{
+  "count": 620,
+  "risk": {
+    "high": 620
+  },
+  "status": {
+    " M": 168,
+    " D": 159,
+    "??": 293
+  },
+  "actions": {
+    "manual_gate_skill_semantics": 620
+  },
+  "extensions": {
+    "<none>": 70,
+    ".json": 46,
+    ".md": 484,
+    ".sh": 6,
+    ".py": 11,
+    ".yaml": 3
+  },
+  "total_size": 38757463,
+  "samples": [
+    {
+      "status": " M",
+      "path": "skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4396",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "skills/.hub/index-cache/hermes-index.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1016552",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/api-and-interface-design/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8821",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3824",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/apple-notes/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3403",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/apple-reminders/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3791",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/findmy/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4803",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/imessage/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3657",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2921",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/claude-code/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "37367",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/codex/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5083",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "25837",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/local-brain-dynamic-cron.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9584",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/p10-iteration-budget-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6974",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-auto-completer-semantics.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9556",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/tool-budget-and-permission-gates.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6776",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-pipeline/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "24524",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/opencode/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7952",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/confidence-db.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/confidence-driven-selection.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/kalman-self-estimation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/reinforcement-learning.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/chinese-platforms/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4076",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/references/chunk-success-rate.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4969",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/architecture-diagram/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6819",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-art/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-art/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-art/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/architecture.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/composition.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/effects.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/inputs.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/optimization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/scenes.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/shaders.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/baoyu-comic/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15427",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/baoyu-infographic/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10924",
+      "extension": ".md"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "skills/.bundled_manifest",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4396",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "skills/.hub/index-cache/hermes-index.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1016552",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/api-and-interface-design/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8821",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3824",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/apple-notes/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3403",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/apple-reminders/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3791",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/findmy/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4803",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/apple/imessage/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3657",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2921",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/claude-code/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "37367",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/codex/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5083",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "25837",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/local-brain-dynamic-cron.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9584",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/p10-iteration-budget-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6974",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-auto-completer-semantics.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9556",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/tool-budget-and-permission-gates.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6776",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/hermes-pipeline/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "24524",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/autonomous-ai-agents/opencode/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7952",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/confidence-db.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/confidence-driven-selection.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/kalman-self-estimation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/references/reinforcement-learning.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/bayesian-agent/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/chinese-platforms/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4076",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/references/chunk-success-rate.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/cognitive-load-agent/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4969",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/architecture-diagram/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6819",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-art/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-art/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-art/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/architecture.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/composition.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/effects.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/inputs.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/optimization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/scenes.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/shaders.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/ascii-video/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/baoyu-comic/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15427",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/baoyu-infographic/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10924",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/creative-ideation/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7283",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/design-md/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7639",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/excalidraw/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7988",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/manim-video/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "13048",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/manim-video/scripts/setup.sh",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "921",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/p5js/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "27994",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/p5js/scripts/render.sh",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2911",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/p5js/scripts/serve.sh",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "833",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/p5js/scripts/setup.sh",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2475",
+      "extension": ".sh"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/ATTRIBUTION.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/references/palettes.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/scripts/__init__.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/scripts/palettes.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/scripts/pixel_art.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/scripts/pixel_art_video.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/creative/pixel-art/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/popular-web-designs/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10413",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/sketch/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10181",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/songwriting-and-ai-music/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11429",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/web-animation-optimization/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9623",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/creative/web-animation-patterns/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5181",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/darwin-skill",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "skills/data-science/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2234",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/data-science/jupyter-live-kernel/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6090",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/devops/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3505",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/devops/cloudflare-pages-pnpm/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7521",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/devops/kanban-worker/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "13021",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/devops/semantic-release-monorepo/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6413",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/devops/webhook-subscriptions/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8045",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/diagramming/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2398",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/dogfood/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7945",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/domain/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2382",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/email/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2116",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/email/himalaya/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6717",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/feeds/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8490",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/framework-audit/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "23186",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/gaming/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2199",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/gaming/minecraft-modpack-server/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/gaming/minecraft-modpack-server/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/gaming/minecraft-modpack-server/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/gaming/pokemon-player/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/gaming/pokemon-player/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/gaming/pokemon-player/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/gifs/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "322",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/gifs/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5187",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/gifs/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1478",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6977",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/codebase-inspection/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4658",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/github-auth/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8429",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/github-auth/scripts/gh-env.sh",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2574",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/github-code-review/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15623",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/github-issues/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11133",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/github-pr-workflow/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "24298",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/github/github-repo-management/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "14541",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/gsd-bridge/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4518",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/impeccable",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": "<none>"
+    },
+    {
+      "status": " D",
+      "path": "skills/impeccable-skill",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "skills/inference-sh/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2444",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/find-nearby/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/find-nearby/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/find-nearby/scripts/find_nearby.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/find-nearby/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/references/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/references/skill-overview.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/leisure/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/loop/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "14991",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mcp/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4983",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mcp/mcporter/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4168",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mcp/native-mcp/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "13205",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/media/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2489",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/media/gif-search/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3459",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/media/heartmula/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/media/heartmula/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/media/heartmula/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/media/songsee/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/media/songsee/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/media/songsee/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/media/spotify/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7128",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/media/youtube-content/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4095",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3323",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/cloud/modal/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9488",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/references/api-evaluation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/references/benchmark-guide.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/references/custom-tasks.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/references/distributed-eval.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/evaluation/lm-evaluation-harness/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/evaluation/weights-and-biases/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "13510",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/huggingface-hub/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4809",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/inference/gguf/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11219",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/inference/guidance/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15595",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/inference/llama-cpp/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9732",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/references/analysis-modules.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/references/methods-guide.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/templates/abliteration-config.yaml",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/templates/analysis-study.yaml",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/templates/batch-abliteration.yaml",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/obliteratus/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/inference/outlines/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "17075",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/references/optimization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/references/quantization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/references/server-deployment.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/inference/vllm/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/audiocraft/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/audiocraft/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/audiocraft/references/advanced-usage.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/audiocraft/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/audiocraft/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/models/clip/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7603",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/segment-anything/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/segment-anything/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/segment-anything/references/advanced-usage.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/segment-anything/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/segment-anything/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/stable-diffusion/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/stable-diffusion/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/stable-diffusion/references/advanced-usage.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/stable-diffusion/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/models/stable-diffusion/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/models/whisper/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8164",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/research/dspy/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "16331",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/training/axolotl/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5687",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/training/grpo-rl-training/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "18109",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/peft/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/peft/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/peft/references/advanced-usage.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/peft/references/troubleshooting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/peft/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/training/pytorch-fsdp/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "161070",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/references/dpo-variants.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/references/grpo-training.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/references/online-rl.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/references/reward-modeling.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/references/sft-training.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/templates/basic_grpo_training.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/mlops/training/trl-fine-tuning/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/mlops/training/unsloth/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3172",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/note-taking/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2619",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/note-taking/obsidian/env.sh",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "51",
+      "extension": ".sh"
+    },
+    {
+      "status": " M",
+      "path": "skills/note-taking/obsidian/references/local-brain-exhaustive-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11913",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/note-taking/obsidian/references/local-brain-task-orchestration.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "17835",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/ooda-agent/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/ooda-agent/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/ooda-agent/references/ooda-timer.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/ooda-agent/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/p10-architecture-self-check/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "27450",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/p10/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5424",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/p7/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5323",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/p9/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5484",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/post-deploy-verification/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1754",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/pro/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7577",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3530",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/google-workspace/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11481",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/google-workspace/scripts/gws_bridge.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3483",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/linear/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12107",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/maps/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7655",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/nano-pdf/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2320",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/notion/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6154",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/ocr-and-documents/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6116",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/productivity/powerpoint/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11218",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": "<none>"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-en/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-en/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-en/references/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-en/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-ja/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-ja/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-ja/references/skill-overview.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/pua-ja/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/red-teaming/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3520",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/references/jailbreak-templates.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/references/refusal-detection.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/scripts/auto_jailbreak.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/scripts/godmode_race.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/scripts/load_godmode.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/scripts/parseltongue.py",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".py"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/templates/prefill-subtle.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/templates/prefill.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/red-teaming/godmode/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/research/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2819",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/research/arxiv/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11391",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/research/blogwatcher/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6242",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/research/llm-wiki/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "21257",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/research/polymarket/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4107",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/research/research-paper-writing/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "104783",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/smart-home/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2177",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/smart-home/manufacturing-brain/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "41442",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/smart-home/openhue/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/smart-home/openhue/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/smart-home/openhue/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/smart-home/rokid-rizon-platform/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/smart-home/rokid-rizon-platform/references/rokid-api-and-pitfalls.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/social-media/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2328",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/social-media/xitter/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7132",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/social-media/xurl/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15161",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10721",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/abstraction-governance/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12635",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/agent-boundary-audit/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7164",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/animation-system-optimization/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/animation-system-optimization/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/arc-dispatch-executor/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15746",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/architecture-optimization-loop/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4025",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/auto-optimize-loop/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "19712",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/browser-harness-integration/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "29056",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/cloud-edge-architecture/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/color-contrast-checker/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6442",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/development-closure-consensus/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "14855",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/goal-calibration/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12921",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/hermes-agent-skill-authoring/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "24815",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/hermes-workflow-orchestrator/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "25180",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/incident-response/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3972",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/lark-task-reading/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "69347",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/mcp-server-from-scratch/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9598",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/multi-agent-code-review/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15308",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/multi-model-architecture/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "45352",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/multi-model-thinking/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "84041",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/node-inspect-debugger/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10899",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/parallel-worktree-delegate/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/parallel-worktree-delegate/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/plan/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3615",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/post-deploy-verification/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3401",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/post-update-patch-healing/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "35773",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/python-debugpy/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "13151",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/python-multiline-grep-engine/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11791",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/requesting-code-review/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "27266",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/router/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4394",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/save-workflow-as-skill/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/software-development/save-workflow-as-skill/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/self-evolve-via-claude/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15761",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/self-improvement-pipeline/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "35762",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/skill-ecosystem-diagnosis/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "20214",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/skill-ecosystem-governance/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "20383",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/skill-eval/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "14992",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/spike/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9627",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/stuck-diagnosis/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4012",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/subagent-driven-development/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12934",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/systematic-debugging/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "32219",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/taskpool-control-plane/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "70204",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/taskpool-control-plane/references/external-repo-doc-intake.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7487",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/taskpool-control-plane/references/full-pool-advance-bounded-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6795",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/test-driven-development/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "20646",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/theory-driven-evolution/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12385",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/uimax-audit/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "18310",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/visual-regression/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8227",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/workflow-ecosystem-audit/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7887",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/software-development/writing-plans/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8725",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/steward/audit-report.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "37359",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/steward/skill-graph-report.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7373",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "skills/steward/state.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8188",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/_meta.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/references/commands.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/references/onboarding.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/references/skill-guide.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/templates/post.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/taste-skill/templates/publish-from-link.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " M",
+      "path": "skills/ui-skills",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "803383",
+      "extension": "<none>"
+    },
+    {
+      "status": " M",
+      "path": "skills/ui-ux-pro-max",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "16446458",
+      "extension": "<none>"
+    },
+    {
+      "status": " D",
+      "path": "skills/yes/CHANGELOG.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/yes/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/yes/references/README.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/yes/references/skill-overview.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".md"
+    },
+    {
+      "status": " D",
+      "path": "skills/yes/test-prompts.json",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "skills/api-and-interface-design/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2368",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/apple/macos-computer-use/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10263",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/apple/references/desktop-safe-organization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7610",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/apple/references/icloud-documents-safe-organization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4505",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/claude-code/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6757",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/agent-harness-nine-components.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "658",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/auto-relay-continuation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4464",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/auxiliary-compression-provider-fallback.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5844",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/background-review-async-debugging.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8607",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/background-review-taskpool-suggest-mode.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2764",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/background-watch-notifications.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5954",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/budget-handoff-automation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2950",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/budget-relay-debugging.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2238",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/budget-relay-delegation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1862",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/continuation-control-plane.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6986",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/cron-taskpool-script-args-and-human-escape.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3121",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/dreaming-outcomes-skill-review-and-evaluator.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4445",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/evolution-lane-cert-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4297",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/external-skill-to-brain-overlay.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3379",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/gateway-fd-exhaustion.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5290",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/git-snapshot-drift-debugging.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1462",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/hermes-conductor-runtime-scaffold.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "10925",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/hermes-hosted-seaos-pua-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3535",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/hermes-rokid-lingzhu-bridge.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6392",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/hermes-self-check-update.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1480",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/layered-prompt-cache-implementation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2693",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/memory-cap-selfcheck.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1747",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/openclaw-inspired-hermes-control-plane.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5645",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/openclaw-productization-and-taskpool-budget-handoff.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5295",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/openclaw-seaos-hermes-fusion.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4258",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/pa-evolution-daily-reporting.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1976",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/private-repo-personal-assistant-sync.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8150",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/prompt-assembly-cache.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1711",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/prompt-builder-cache-layers.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4957",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/prompt-builder-test-fixing.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2094",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/provider-version-drift-and-codex-breaker.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2387",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/pua-loop-p10-self-check.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3113",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/pua-loop-self-optimization.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4090",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/ratchet-upgrades.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4940",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/rokid-lingzhu-bridge.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6396",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/rokid-lingzhu-sse-bridge.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "25080",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/sakana-conductor-pattern.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7558",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/self-evolution-pua-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5174",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/self-evolving-agent-architecture.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7487",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-add-evolution-tasks.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2746",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-blocked-resolution.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1824",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hook-debugging.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4056",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hook-smart-routing.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2980",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hooks-and-certified-auto-done.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3533",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hooks-and-multimodel-autodone.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3607",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hooks.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3444",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-pre-ingest-triage.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2285",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-priority-mode.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3072",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-experience-ratchet/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7304",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-personal-assistant-flow/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "6271",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/hermes-pipeline/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "35804",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/autonomous-ai-agents/kanban-codex-lane/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "14982",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/code-simplification/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5490",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/codebase-intelligence/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "64598",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/creative/baoyu-article-illustrator/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "109303",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/creative/claude-design/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "20567",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/creative/comfyui/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "274865",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/creative/humanizer/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "31880",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/creative/pretext/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "81330",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/creative/touchdesigner-mcp/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "256147",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/deprecation-and-migration/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2591",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/gateway-telegram-setup/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "19080",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/hermes-storage-governance/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11057",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/kanban-orchestrator/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "48509",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/kanban-worker/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5647",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/local-devops-tooling/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "16237",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/token-saver-frontend-rtk/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2744",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/devops/token-saver-rtk/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11961",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/documentation-and-adrs/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4835",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/domain/references/personal-infrastructure-domain-selection.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1307",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/feeds/references/aihot-daily-browser-cron.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1285",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/agent-proxy-quota-router-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4210",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/agent-reach-hermes-selective-adoption.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3125",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/ai-memory-repo-benchmark-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3163",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/gui-computer-use-agent-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4576",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/local-brain-memory-repo-adoption.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3540",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/official-api-cli-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2725",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/framework-audit/references/provider-usage-telemetry-repo-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5100",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/git-repo-operations/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "20920",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/github-pr-workflow/references/dual-repo-fresh-branch-closeout.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2546",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/github-pr-workflow/references/dual-repo-rebase-push.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3334",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/github-pr-workflow/references/junk-file-cleanup.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1683",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/github-pr-workflow/references/pr-closeout-consensus.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2547",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/github-pr-workflow/references/surgical-file-revert.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2712",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/github/references/rebase-conflict-resolution.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3125",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/incremental-implementation/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12933",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/loop/references/hermes-pua-loop-double-gating.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2925",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/loop/references/taskpool-closeout-recovery.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5799",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/mcp/references/code-intelligence-mcp-patterns.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1572",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/mcp/references/mcp-builder-learning-path.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5535",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/mcp/references/mcp-skill-enhancement-assessment.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4989",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/mlops/rag-knowledge-management/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8087",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/external-memory-system-landing.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3775",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/icloud-documents-local-brain-recovery.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4192",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/local-brain-category-landing.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2536",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/local-brain-hierarchy-overlay-routing.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3870",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/local-brain-icloud-documents-recovery.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1949",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/local-brain-keypoint-coverage-audit.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4436",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/local-brain-sync-and-cli.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3905",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/local-brain-theory-folder-governance.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1303",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/obsidian/references/project-workpad-handoff-bootstrap.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3694",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/references/project-profile-refresh-from-transcript-and-prototype-repo.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3084",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/note-taking/references/session-transcript-to-project-profile.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1966",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/productivity/airtable/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "12116",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/productivity/lark-docx-reading/SKILL.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15817",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/productivity/lark-docx-reading/references/lark-user-oauth-docx.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3477",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/productivity/lark-docx-reading/scripts/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "14814",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/productivity/teams-meeting-pipeline/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7681",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/red-teaming/references/client-controlled-trust.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2922",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/research/last30days/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15563706",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/smart-home/electrical-brain/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4991",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/smart-home/external-control-brain/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "15261",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/smart-home/manufacturing-brain/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5663",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/architecture-governance-evaluation/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "47087",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/browser-harness-integration/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "41035",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/browser-harness-integration/templates/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1924",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/code-simplifier/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7082",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/debugging-hermes-tui-commands/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8580",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/development-closure-consensus/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11327",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/development-closure-consensus/templates/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2719",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/experience-ratchet/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2445",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/frontend-state-domain-correctness/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "29554",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-agent-skill-authoring/references/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7399",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-overlay-ratchet-upgrades/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "30147",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-s6-container-supervision/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11474",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-self-audit/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "56067",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-warning-governance/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "18146",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/agent-team-controller-timeout-pattern.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4945",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/local-brain-idle-runner-risk-router.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3009",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/local-brain-task-boundary-parallel-agents.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4748",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/multimodel-certified-auto-close.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3018",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-bounded-advancement-pass.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2734",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-certified-auto-done-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3345",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-event-hook-rc2-certification.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1953",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-event-hooks.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2861",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-evolution-add-notes.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1260",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-flow-tolerance.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3745",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-multimodel-auto-done.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2382",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-pre-ingest-multimodel-triage.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1647",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/taskpool-review-closeout-evidence-shape.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2369",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/lark-task-reading/references/lark-direct-task-fetch-by-guid.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3185",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/lark-task-reading/references/lark-task-detail-lookup-patterns.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3151",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/lark-task-reading/references/railway-ts-build-pitfalls.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1926",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-c端-iceberg-classifier.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "5065",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-unified-iceberg-multimodel-consensus.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4653",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/mobile-frontend-delivery/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "51576",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-certification-round/",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "11464",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/4-model-execution-patterns.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2874",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/autonomous-certification-scope-and-provider-evidence.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4547",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/autonomy-write-guard-caller-integration.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4057",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/claims-injection-for-taskpool-intervention.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1823",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/claude-code-wrapper-runtime-errors.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4378",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/code-evidence-long-term-landing.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "7435",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/communication-budget-protocol.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3245",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/current-code-certification-after-amend.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3467",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/deepseek-reasoning-budget.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "1934",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/direct-multi-model-ratification.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4521",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/event-driven-trigger-timing-and-loop-economy.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8004",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/evidence-request-fulfillment-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "9707",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/external-repo-to-evolution-taskpool-advisory.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4253",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/fanout-advisory-closeout.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4333",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/fanout-certification-fail-closed.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "8645",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/grounded-not-certified-amend-loop.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4935",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/hook-automation-verifier-gates.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4015",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/image-to-taskpool-optimization-advisory.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "3202",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/iron-plate-consolidation-pattern.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "2655",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/long-running-discussion-and-resume.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4397",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "skills/software-development/multi-model-thinking/references/long-term-taskpool-autorun-activation.md",
+      "risk": "high",
+      "action": "manual_gate_skill_semantics",
+      "size": "4082",
+      "extension": ".md"
+    }
+  ]
+}

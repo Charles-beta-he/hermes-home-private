@@ -1,0 +1,542 @@
+{
+  "schema": "dirty_deep_inventory_v1",
+  "created_at": "2026-06-04T05:01:53.438037Z",
+  "source": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv",
+  "buckets": [
+    {
+      "bucket": "profiles/cross-profile",
+      "file": "profiles__cross-profile.json",
+      "count": 993,
+      "risk": {
+        "high": 993
+      },
+      "status": {
+        "??": 993
+      },
+      "actions": {
+        "manual_gate_cross_profile": 993
+      },
+      "top_extensions": [
+        [
+          "<none>",
+          916
+        ],
+        [
+          ".json",
+          36
+        ],
+        [
+          ".md",
+          21
+        ],
+        [
+          ".yaml",
+          20
+        ]
+      ],
+      "total_size": 6657144618
+    },
+    {
+      "bucket": "skills/active",
+      "file": "skills__active.json",
+      "count": 620,
+      "risk": {
+        "high": 620
+      },
+      "status": {
+        " M": 168,
+        " D": 159,
+        "??": 293
+      },
+      "actions": {
+        "manual_gate_skill_semantics": 620
+      },
+      "top_extensions": [
+        [
+          ".md",
+          484
+        ],
+        [
+          "<none>",
+          70
+        ],
+        [
+          ".json",
+          46
+        ],
+        [
+          ".py",
+          11
+        ],
+        [
+          ".sh",
+          6
+        ],
+        [
+          ".yaml",
+          3
+        ]
+      ],
+      "total_size": 38757463
+    },
+    {
+      "bucket": "media/generated",
+      "file": "media__generated.json",
+      "count": 338,
+      "risk": {
+        "low": 338
+      },
+      "status": {
+        "??": 338
+      },
+      "actions": {
+        "ignore_generated": 338
+      },
+      "top_extensions": [
+        [
+          ".png",
+          302
+        ],
+        [
+          ".txt",
+          35
+        ],
+        [
+          "<none>",
+          1
+        ]
+      ],
+      "total_size": 127681747
+    },
+    {
+      "bucket": "brain/workpad",
+      "file": "brain__workpad.json",
+      "count": 312,
+      "risk": {
+        "high": 312
+      },
+      "status": {
+        " M": 50,
+        "??": 262
+      },
+      "actions": {
+        "manual_gate_ssot": 312
+      },
+      "top_extensions": [
+        [
+          ".md",
+          308
+        ],
+        [
+          "<none>",
+          4
+        ]
+      ],
+      "total_size": 3146916
+    },
+    {
+      "bucket": "scripts/local-control-plane",
+      "file": "scripts__local-control-plane.json",
+      "count": 239,
+      "risk": {
+        "high": 239
+      },
+      "status": {
+        " M": 38,
+        "??": 201
+      },
+      "actions": {
+        "cluster_and_review": 239
+      },
+      "top_extensions": [
+        [
+          ".py",
+          208
+        ],
+        [
+          ".sh",
+          11
+        ],
+        [
+          "<none>",
+          6
+        ],
+        [
+          ".md",
+          5
+        ],
+        [
+          ".bak",
+          3
+        ],
+        [
+          ".cpp",
+          2
+        ],
+        [
+          ".dsym",
+          2
+        ],
+        [
+          ".json",
+          2
+        ]
+      ],
+      "total_size": 3121584
+    },
+    {
+      "bucket": "other",
+      "file": "other.json",
+      "count": 227,
+      "risk": {
+        "medium": 227
+      },
+      "status": {
+        " M": 7,
+        "??": 220
+      },
+      "actions": {
+        "review": 227
+      },
+      "top_extensions": [
+        [
+          ".md",
+          66
+        ],
+        [
+          "<none>",
+          58
+        ],
+        [
+          ".py",
+          41
+        ],
+        [
+          ".json",
+          28
+        ],
+        [
+          ".sh",
+          12
+        ],
+        [
+          ".txt",
+          6
+        ],
+        [
+          ".jsonl",
+          2
+        ],
+        [
+          ".corrupt",
+          2
+        ],
+        [
+          ".bak-shm",
+          2
+        ],
+        [
+          ".bak-wal",
+          2
+        ]
+      ],
+      "total_size": 8917798918
+    },
+    {
+      "bucket": "notes/generated-reports",
+      "file": "notes__generated-reports.json",
+      "count": 107,
+      "risk": {
+        "medium": 107
+      },
+      "status": {
+        " M": 7,
+        "??": 100
+      },
+      "actions": {
+        "archive_or_ignore_after_review": 107
+      },
+      "top_extensions": [
+        [
+          ".md",
+          77
+        ],
+        [
+          ".json",
+          25
+        ],
+        [
+          ".jsonl",
+          5
+        ]
+      ],
+      "total_size": 358133
+    },
+    {
+      "bucket": "runtime/state",
+      "file": "runtime__state.json",
+      "count": 48,
+      "risk": {
+        "medium": 48
+      },
+      "status": {
+        " D": 47,
+        "??": 1
+      },
+      "actions": {
+        "archive_or_ignore_after_owner_review": 48
+      },
+      "top_extensions": [
+        [
+          ".json",
+          29
+        ],
+        [
+          ".yaml",
+          9
+        ],
+        [
+          ".db",
+          9
+        ],
+        [
+          "<none>",
+          1
+        ]
+      ],
+      "total_size": 10756
+    },
+    {
+      "bucket": "runtime/db-lock",
+      "file": "runtime__db-lock.json",
+      "count": 38,
+      "risk": {
+        "high": 38
+      },
+      "status": {
+        " M": 4,
+        "??": 34
+      },
+      "actions": {
+        "manual_gate_do_not_reset": 38
+      },
+      "top_extensions": [
+        [
+          ".lock",
+          22
+        ],
+        [
+          ".db",
+          15
+        ],
+        [
+          ".json",
+          1
+        ]
+      ],
+      "total_size": 883299001
+    },
+    {
+      "bucket": "runtime/logs",
+      "file": "runtime__logs.json",
+      "count": 35,
+      "risk": {
+        "low": 35
+      },
+      "status": {
+        " M": 3,
+        " D": 3,
+        "??": 29
+      },
+      "actions": {
+        "ignore_or_rotate": 35
+      },
+      "top_extensions": [
+        [
+          ".jsonl",
+          30
+        ],
+        [
+          "<none>",
+          3
+        ],
+        [
+          ".json",
+          2
+        ]
+      ],
+      "total_size": 552979658
+    },
+    {
+      "bucket": "backups",
+      "file": "backups.json",
+      "count": 18,
+      "risk": {
+        "medium": 18
+      },
+      "status": {
+        " M": 2,
+        "??": 16
+      },
+      "actions": {
+        "archive_external_or_ignore": 18
+      },
+      "top_extensions": [
+        [
+          "<none>",
+          13
+        ],
+        [
+          ".zip",
+          2
+        ],
+        [
+          ".patch",
+          1
+        ],
+        [
+          ".py",
+          1
+        ],
+        [
+          ".yaml",
+          1
+        ]
+      ],
+      "total_size": 9130716080
+    },
+    {
+      "bucket": "docs/private",
+      "file": "docs__private.json",
+      "count": 12,
+      "risk": {
+        "medium": 12
+      },
+      "status": {
+        " M": 1,
+        "??": 11
+      },
+      "actions": {
+        "review_and_commit_if_durable": 12
+      },
+      "top_extensions": [
+        [
+          ".md",
+          11
+        ],
+        [
+          "<none>",
+          1
+        ]
+      ],
+      "total_size": 120194
+    },
+    {
+      "bucket": "profile/config-cache",
+      "file": "profile__config-cache.json",
+      "count": 9,
+      "risk": {
+        "high": 9
+      },
+      "status": {
+        " M": 5,
+        "??": 4
+      },
+      "actions": {
+        "manual_gate_diff_each": 9
+      },
+      "top_extensions": [
+        [
+          ".yaml",
+          4
+        ],
+        [
+          ".json",
+          3
+        ],
+        [
+          ".security-telegram-20260531215528",
+          1
+        ],
+        [
+          ".bak-20260428",
+          1
+        ]
+      ],
+      "total_size": 2260905
+    },
+    {
+      "bucket": "profile/memory",
+      "file": "profile__memory.json",
+      "count": 4,
+      "risk": {
+        "critical": 4
+      },
+      "status": {
+        " M": 2,
+        "??": 2
+      },
+      "actions": {
+        "manual_gate_do_not_commit_bulk": 4
+      },
+      "top_extensions": [
+        [
+          ".md",
+          2
+        ],
+        [
+          ".20260529",
+          2
+        ]
+      ],
+      "total_size": 10777
+    },
+    {
+      "bucket": "skills/archive",
+      "file": "skills__archive.json",
+      "count": 2,
+      "risk": {
+        "medium": 2
+      },
+      "status": {
+        "??": 2
+      },
+      "actions": {
+        "inventory_then_possible_ignore": 2
+      },
+      "top_extensions": [
+        [
+          "<none>",
+          2
+        ]
+      ],
+      "total_size": 80419821
+    },
+    {
+      "bucket": "submodule/hermes-agent",
+      "file": "submodule__hermes-agent.json",
+      "count": 2,
+      "risk": {
+        "high": 2
+      },
+      "status": {
+        " M": 1,
+        "??": 1
+      },
+      "actions": {
+        "handle_inner_repo_separately": 2
+      },
+      "top_extensions": [
+        [
+          "<none>",
+          1
+        ],
+        [
+          ".md",
+          1
+        ]
+      ],
+      "total_size": 1741967199
+    }
+  ]
+}

@@ -1,0 +1,2254 @@
+{
+  "count": 227,
+  "risk": {
+    "medium": 227
+  },
+  "status": {
+    " M": 7,
+    "??": 220
+  },
+  "actions": {
+    "review": 227
+  },
+  "extensions": {
+    ".json": 28,
+    ".py": 41,
+    ".jsonl": 2,
+    "<none>": 58,
+    ".md": 66,
+    ".sh": 12,
+    ".corrupt": 2,
+    ".bak-aihot-nvm": 1,
+    ".html": 1,
+    ".yaml": 1,
+    ".backup": 1,
+    ".gz": 1,
+    ".txt": 6,
+    ".env": 1,
+    ".bak": 1,
+    ".bak-shm": 2,
+    ".bak-wal": 2,
+    ".20260529": 1
+  },
+  "total_size": 8917798918,
+  "samples": [
+    {
+      "status": " M",
+      "path": "cron/jobs.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "186409",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "edge-worker/edge_worker.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "9230",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "eval/eval-baseline.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "48068",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "notes/improvement-action-plan.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "1141",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "notes/improvement-signals.jsonl",
+      "risk": "medium",
+      "action": "review",
+      "size": "24742",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/user-routine-patterns.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "155",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "shell-hooks-allowlist.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "671",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": ".codex_breaker.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "250",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": ".scratch_tip_shown",
+      "risk": "medium",
+      "action": "review",
+      "size": "0",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "HERMES.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "134",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "KNOWN_ISSUES.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1899",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "agent-hooks/pua-loop-hook-ingest.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "855",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "artifacts/",
+      "risk": "medium",
+      "action": "review",
+      "size": "66221752",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "auth.json.corrupt",
+      "risk": "medium",
+      "action": "review",
+      "size": "9144",
+      "extension": ".corrupt"
+    },
+    {
+      "status": "??",
+      "path": "auth/",
+      "risk": "medium",
+      "action": "review",
+      "size": "484",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/base/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2451",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/design/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2337",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/electrical/",
+      "risk": "medium",
+      "action": "review",
+      "size": "3334",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/external-control/",
+      "risk": "medium",
+      "action": "review",
+      "size": "5549",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/hermes-core/",
+      "risk": "medium",
+      "action": "review",
+      "size": "7460",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/last30days/",
+      "risk": "medium",
+      "action": "review",
+      "size": "3802",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/main/",
+      "risk": "medium",
+      "action": "review",
+      "size": "4426",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/constitution.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "869",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/devices/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1202",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/evidence-packet.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "789",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/evolution-protocol.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "612",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/jobs/",
+      "risk": "medium",
+      "action": "review",
+      "size": "221116",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/memory-policy.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "482",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/pilots/",
+      "risk": "medium",
+      "action": "review",
+      "size": "32513",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/profiles/",
+      "risk": "medium",
+      "action": "review",
+      "size": "11661",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/protocols/external-control-boundary.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "2134",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/protocols/glasses-visual-qa.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3285",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/protocols/x2d-glasses-autoprint-pipeline.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3246",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-05-21_desktop-lamp-web-best-practices.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3171",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-05-21_x2d-photo-to-print-multimodel-review.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7408",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-05-22_bambu-x2d-preprint-guard-ams-mismatch.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3566",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-06-03_blender-mcp-reference-review.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6084",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-06-03_solidworks-automation-skill-screenshot-intake.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5829",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-06-03_solidworks-automation-skill-source-verification.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6047",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/tool-policy.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "483",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/media/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1899",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/mlops/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2053",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/research/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2277",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/rokid-glasses/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1771504",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/workflow/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1867",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "browser_replay_evidence/",
+      "risk": "medium",
+      "action": "review",
+      "size": "6420486",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "cerebrum.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "767",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "cron/jobs.json.bak-aihot-nvm",
+      "risk": "medium",
+      "action": "review",
+      "size": "65262",
+      "extension": ".bak-aihot-nvm"
+    },
+    {
+      "status": "??",
+      "path": "data/",
+      "risk": "medium",
+      "action": "review",
+      "size": "23240",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/DYNAMIC-WORKFLOW-MIGRATION.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7229",
+      "extension": ".md"
+    }
+  ],
+  "entries": [
+    {
+      "status": " M",
+      "path": "cron/jobs.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "186409",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "edge-worker/edge_worker.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "9230",
+      "extension": ".py"
+    },
+    {
+      "status": " M",
+      "path": "eval/eval-baseline.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "48068",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "notes/improvement-action-plan.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "1141",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "notes/improvement-signals.jsonl",
+      "risk": "medium",
+      "action": "review",
+      "size": "24742",
+      "extension": ".jsonl"
+    },
+    {
+      "status": " M",
+      "path": "notes/user-routine-patterns.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "155",
+      "extension": ".json"
+    },
+    {
+      "status": " M",
+      "path": "shell-hooks-allowlist.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "671",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": ".codex_breaker.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "250",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": ".scratch_tip_shown",
+      "risk": "medium",
+      "action": "review",
+      "size": "0",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "HERMES.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "134",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "KNOWN_ISSUES.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1899",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "agent-hooks/pua-loop-hook-ingest.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "855",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "artifacts/",
+      "risk": "medium",
+      "action": "review",
+      "size": "66221752",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "auth.json.corrupt",
+      "risk": "medium",
+      "action": "review",
+      "size": "9144",
+      "extension": ".corrupt"
+    },
+    {
+      "status": "??",
+      "path": "auth/",
+      "risk": "medium",
+      "action": "review",
+      "size": "484",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/base/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2451",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/design/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2337",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/electrical/",
+      "risk": "medium",
+      "action": "review",
+      "size": "3334",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/external-control/",
+      "risk": "medium",
+      "action": "review",
+      "size": "5549",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/hermes-core/",
+      "risk": "medium",
+      "action": "review",
+      "size": "7460",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/last30days/",
+      "risk": "medium",
+      "action": "review",
+      "size": "3802",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/main/",
+      "risk": "medium",
+      "action": "review",
+      "size": "4426",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/constitution.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "869",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/devices/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1202",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/evidence-packet.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "789",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/evolution-protocol.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "612",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/jobs/",
+      "risk": "medium",
+      "action": "review",
+      "size": "221116",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/memory-policy.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "482",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/pilots/",
+      "risk": "medium",
+      "action": "review",
+      "size": "32513",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/profiles/",
+      "risk": "medium",
+      "action": "review",
+      "size": "11661",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/protocols/external-control-boundary.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "2134",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/protocols/glasses-visual-qa.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3285",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/protocols/x2d-glasses-autoprint-pipeline.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3246",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-05-21_desktop-lamp-web-best-practices.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3171",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-05-21_x2d-photo-to-print-multimodel-review.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7408",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-05-22_bambu-x2d-preprint-guard-ams-mismatch.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3566",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-06-03_blender-mcp-reference-review.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6084",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-06-03_solidworks-automation-skill-screenshot-intake.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5829",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/reviews/2026-06-03_solidworks-automation-skill-source-verification.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6047",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/manufacturing/tool-policy.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "483",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "brains/media/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1899",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/mlops/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2053",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/research/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2277",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/rokid-glasses/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1771504",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "brains/workflow/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1867",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "browser_replay_evidence/",
+      "risk": "medium",
+      "action": "review",
+      "size": "6420486",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "cerebrum.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "767",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "cron/jobs.json.bak-aihot-nvm",
+      "risk": "medium",
+      "action": "review",
+      "size": "65262",
+      "extension": ".bak-aihot-nvm"
+    },
+    {
+      "status": "??",
+      "path": "data/",
+      "risk": "medium",
+      "action": "review",
+      "size": "23240",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/DYNAMIC-WORKFLOW-MIGRATION.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7229",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/OBSERVER-ARCHITECTURE.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "22047",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/check-registry.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "10342",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/check_base.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "1800",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/disk-space.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "448",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/kanban-integrity.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "544",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/kanban-sync.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "505",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/log-file-size.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "545",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/memory-usage.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "522",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/priority-mode.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "417",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/task-file-bloat.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "510",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/checks/taskpool-schema.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "638",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/dashboard-data.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3522",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/dashboard-data.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "13690",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/dashboard.html",
+      "risk": "medium",
+      "action": "review",
+      "size": "15736",
+      "extension": ".html"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/design-spec.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "27053",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/fix_base.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "2260",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/fixes/",
+      "risk": "medium",
+      "action": "review",
+      "size": "1633",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/runner.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "10937",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "diagnostics/trend.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "6320",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "docs/trigger_timing_policy_v1.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7605",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/DEPLOYMENT-GUIDE.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6816",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/FINAL-DEPLOYMENT.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5019",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/FINAL-SOLUTION-GITHUB.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "2537",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/FINAL-SOLUTION.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5456",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/LONG-TERM-STABLE-SOLUTION.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "4016",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/README-LONG-TERM.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6000",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/auto-update.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "1017",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/backups/",
+      "risk": "medium",
+      "action": "review",
+      "size": "280262",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/bin/",
+      "risk": "medium",
+      "action": "review",
+      "size": "27727",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/config-multi-source.yaml",
+      "risk": "medium",
+      "action": "review",
+      "size": "1152",
+      "extension": ".yaml"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/config.yaml.backup",
+      "risk": "medium",
+      "action": "review",
+      "size": "541",
+      "extension": ".backup"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/deploy-package.tar.gz",
+      "risk": "medium",
+      "action": "review",
+      "size": "6955",
+      "extension": ".gz"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/deploy-package/",
+      "risk": "medium",
+      "action": "review",
+      "size": "23781",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/deploy-worker.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "13731",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/hermes-edge",
+      "risk": "medium",
+      "action": "review",
+      "size": "302",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/hermes_edge_cli.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "21206",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/hermes_lan.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "10394",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/install-edge-pro.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "11299",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/src/",
+      "risk": "medium",
+      "action": "review",
+      "size": "27727",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/update-local.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "4582",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/version-manager.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "3934",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "edge-worker/version.txt",
+      "risk": "medium",
+      "action": "review",
+      "size": "15",
+      "extension": ".txt"
+    },
+    {
+      "status": "??",
+      "path": "evals/",
+      "risk": "medium",
+      "action": "review",
+      "size": "6044",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "evidence/",
+      "risk": "medium",
+      "action": "review",
+      "size": "38917679",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "feishu_seen_message_ids.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "19",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/access_brain.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "2708",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/brain_cache.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "2653",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/brain_stats.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "1582",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/current_public_endpoint.env",
+      "risk": "medium",
+      "action": "review",
+      "size": "427",
+      "extension": ".env"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/daily_brief.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "1410",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/docs/",
+      "risk": "medium",
+      "action": "review",
+      "size": "4532",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/l0_routes.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "5472",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/replay_verifier.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "9958",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/replay_verify.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "6890",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/rokid_bridge/",
+      "risk": "medium",
+      "action": "review",
+      "size": "28478",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/rokid_dev_review.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "16188",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/rokid_l2_worker.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "9682",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/route_dispatch.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "1415",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/route_runtime.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "5081",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/run.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "296",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/run_service.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "186",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/run_tunnel.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "101",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/run_tunnel_named.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "151",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/run_tunnel_service.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "196",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/test_payload.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "197",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_action_confirmation_guard.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "1955",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_background_task_control.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "4051",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_brain_stats.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "4286",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_dev_review.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "6241",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_intent_ledger_queue.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "4088",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_lingzhu_plugin_routes.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "4498",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_progressive_landing.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "6026",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_replay_verifier.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "8874",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_rokid_kanban_view.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "2281",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_route_dispatch.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "2328",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_sensor_context.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "4409",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_sensor_worker.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "4715",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_sse_resilience.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "3387",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/tests/test_task_dialogue.py",
+      "risk": "medium",
+      "action": "review",
+      "size": "5105",
+      "extension": ".py"
+    },
+    {
+      "status": "??",
+      "path": "hermes-rokid-bridge/update_current_endpoint.sh",
+      "risk": "medium",
+      "action": "review",
+      "size": "729",
+      "extension": ".sh"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db.bak",
+      "risk": "medium",
+      "action": "review",
+      "size": "20484096",
+      "extension": ".bak"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db.bak-shm",
+      "risk": "medium",
+      "action": "review",
+      "size": "32768",
+      "extension": ".bak-shm"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db.bak-wal",
+      "risk": "medium",
+      "action": "review",
+      "size": "0",
+      "extension": ".bak-wal"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db.corrupt",
+      "risk": "medium",
+      "action": "review",
+      "size": "20484096",
+      "extension": ".corrupt"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db.corrupt.20260529_112209.bak-shm",
+      "risk": "medium",
+      "action": "review",
+      "size": "32768",
+      "extension": ".bak-shm"
+    },
+    {
+      "status": "??",
+      "path": "kanban.db.corrupt.20260529_112209.bak-wal",
+      "risk": "medium",
+      "action": "review",
+      "size": "0",
+      "extension": ".bak-wal"
+    },
+    {
+      "status": "??",
+      "path": "kanban/",
+      "risk": "medium",
+      "action": "review",
+      "size": "4563187409",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "knowledge/",
+      "risk": "medium",
+      "action": "review",
+      "size": "583",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "lsp/",
+      "risk": "medium",
+      "action": "review",
+      "size": "80199710",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "memory/",
+      "risk": "medium",
+      "action": "review",
+      "size": "10270429",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "multimodel/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2285",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "notes/cross-patch-script-actual-run-2026-04-27.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "4094",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/deepseek-availability-diagnosis.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1795",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/dual-model-architecture-score-2026-04-27.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "9060",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/hermes-multibrain-architecture.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "4146",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/hermes-private-evolution-manifesto.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "4313",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/improvement-execution-log.jsonl",
+      "risk": "medium",
+      "action": "review",
+      "size": "238",
+      "extension": ".jsonl"
+    },
+    {
+      "status": "??",
+      "path": "notes/multimodel-thinking-landing-2026-04-27.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5327",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/p10-multimodel-selfcheck-2026-04-27.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5358",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/pipeline-stuck-counter.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "36",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/private-branch-upgrade-strategy.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3767",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/pua-loop-multimodel-score-91-2026-04-27.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "2379",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/rowboat-analysis-2026-05-11.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "4596",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/selective-adoption-methodology.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1010",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "notes/tool-failure-diagnostics/tool-failure-diagnostic-2026-05-06T163757Z.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3616",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/tool-failure-diagnostics/tool-failure-diagnostic-2026-05-06T164204Z.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3719",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/tool-failure-diagnostics/tool-failure-diagnostic-2026-05-06T172327Z.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3719",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/tool-failure-diagnostics/tool-failure-diagnostic-2026-05-06T173655Z.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3719",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/tool-failure-diagnostics/tool-failure-diagnostic-2026-05-06T174251Z.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3719",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "notes/trigger_timing_policy_v1.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7605",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "openclaw-gap/",
+      "risk": "medium",
+      "action": "review",
+      "size": "41475",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "openclaw-traces/",
+      "risk": "medium",
+      "action": "review",
+      "size": "14824",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "overlays/",
+      "risk": "medium",
+      "action": "review",
+      "size": "5396",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-11_202800-planning-with-files-context-compression-eval.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7985",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-13_skill-learning-planning-with-files-evaluation.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "12565",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-15-agent-health-report.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1051",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-17-taskpool-audit-agentmemory-reframe.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1316",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-17_0011-self-scan-4h.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1150",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-18-full-pool-advance.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "928",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-18-taskpool-complex-auto-convergence.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1388",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-18_180619-local-brain-html-realtime.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1854",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-18_213051-multibrain-full-rollout.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3123",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-18_2315-dev-brain-fill.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1508",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21-uvisa-full-coverage.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1323",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_004138-manufacturing-brain.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3266",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_0205-rokid-manufacturing-status-bridge.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1548",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1140-rokid-access-brain-taxonomy.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "2775",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1153-access-brain-core-extraction.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "4400",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1223-rokid-l0-route-registry-and-manufacturing-formatter.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7340",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1250-rokid-daily-brief-boundary.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7813",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1257-rokid-brain-stats-formatter-boundary.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6194",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1309-rokid-route-runtime-contract-final-boundary.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6092",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1319-rokid-runtime-route-runner-migration.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "5220",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_1338-rokid-multimodel-maintainability-dispatch-executor.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "7316",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-21_photo-to-print-full-push.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "6100",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-26-graph-lite-provenance-manifest-plan.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "782",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-05-31-ux9-verifier-first-pack.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "1433",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-06-03_114410-hermes-control-console.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3147",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/2026-06-03_115832-hermes-console-live-readonly.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "3770",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/hermes-stale-watch-notification-repair-plan-2026-05-08.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "11873",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "plans/recovered-20260529/",
+      "risk": "medium",
+      "action": "review",
+      "size": "15257",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "project-profiles/evidence/",
+      "risk": "medium",
+      "action": "review",
+      "size": "45043",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "project-profiles/hermes-skill-learning.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3054",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "project-profiles/lark.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3915",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "pua-loop/",
+      "risk": "medium",
+      "action": "review",
+      "size": "328463",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "rate_limits/",
+      "risk": "medium",
+      "action": "review",
+      "size": "3144",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "reports/",
+      "risk": "medium",
+      "action": "review",
+      "size": "5174716",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "research/",
+      "risk": "medium",
+      "action": "review",
+      "size": "220354887",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "runs/",
+      "risk": "medium",
+      "action": "review",
+      "size": "3023277169",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "schemas/fanout-certification.schema.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "2134",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "scratch/",
+      "risk": "medium",
+      "action": "review",
+      "size": "19701",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "state.db.bak.20260529",
+      "risk": "medium",
+      "action": "review",
+      "size": "132419584",
+      "extension": ".20260529"
+    },
+    {
+      "status": "??",
+      "path": "task-observer/",
+      "risk": "medium",
+      "action": "review",
+      "size": "19945",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "task-preflight/",
+      "risk": "medium",
+      "action": "review",
+      "size": "23767",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "task-progress/",
+      "risk": "medium",
+      "action": "review",
+      "size": "22251",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "task-worker/",
+      "risk": "medium",
+      "action": "review",
+      "size": "419",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "taskpool-followthrough/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2315",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "taskpool_evidence/",
+      "risk": "medium",
+      "action": "review",
+      "size": "6389",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "taskpool_repair_evidence/",
+      "risk": "medium",
+      "action": "review",
+      "size": "303562",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "tasks/",
+      "risk": "medium",
+      "action": "review",
+      "size": "4392",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "tmp-arxiv-queries.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "396",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-claude-resident-state.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "2800",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-dream-literature-multimodel-prompt.txt",
+      "risk": "medium",
+      "action": "review",
+      "size": "3256",
+      "extension": ".txt"
+    },
+    {
+      "status": "??",
+      "path": "tmp-dream-literature-state.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3733",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-dream-rootcause-multimodel-prompt.txt",
+      "risk": "medium",
+      "action": "review",
+      "size": "2972",
+      "extension": ".txt"
+    },
+    {
+      "status": "??",
+      "path": "tmp-dream-rootcause-state.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3630",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-dream-source-queries.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "1916",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-security-hardening-plan-prompt.md",
+      "risk": "medium",
+      "action": "review",
+      "size": "2525",
+      "extension": ".md"
+    },
+    {
+      "status": "??",
+      "path": "tmp-security-hardening-plan-state.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3347",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-taskpool-chat-ssot-plan.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3626",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-taskpool-no-hardcode-policy-prompt.txt",
+      "risk": "medium",
+      "action": "review",
+      "size": "2395",
+      "extension": ".txt"
+    },
+    {
+      "status": "??",
+      "path": "tmp-taskpool-no-hardcode-policy-state.json",
+      "risk": "medium",
+      "action": "review",
+      "size": "3656",
+      "extension": ".json"
+    },
+    {
+      "status": "??",
+      "path": "tmp-taskpool-ssot-final-review-prompt.txt",
+      "risk": "medium",
+      "action": "review",
+      "size": "1132",
+      "extension": ".txt"
+    },
+    {
+      "status": "??",
+      "path": "tmp-taskpool-ssot-review-prompt.txt",
+      "risk": "medium",
+      "action": "review",
+      "size": "1419",
+      "extension": ".txt"
+    },
+    {
+      "status": "??",
+      "path": "tools/",
+      "risk": "medium",
+      "action": "review",
+      "size": "34583266",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "vendor/",
+      "risk": "medium",
+      "action": "review",
+      "size": "688460151",
+      "extension": "<none>"
+    },
+    {
+      "status": "??",
+      "path": "worktrees/",
+      "risk": "medium",
+      "action": "review",
+      "size": "2930041",
+      "extension": "<none>"
+    }
+  ]
+}

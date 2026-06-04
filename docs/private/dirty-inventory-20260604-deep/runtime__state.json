@@ -1,0 +1,792 @@
+{
+  "count": 48,
+  "risk": {
+    "medium": 48
+  },
+  "status": {
+    " D": 47,
+    "??": 1
+  },
+  "actions": {
+    "archive_or_ignore_after_owner_review": 48
+  },
+  "extensions": {
+    ".yaml": 9,
+    ".json": 29,
+    ".db": 9,
+    "<none>": 1
+  },
+  "total_size": 10756,
+  "samples": [
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/gateway_state.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/gateway_state.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "taskpool/",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "10756",
+      "extension": "<none>"
+    }
+  ],
+  "entries": [
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042944/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-042948/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043004/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043039/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-043850/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-045506/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-071848/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/gateway_state.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-101356/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/config.yaml",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".yaml"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/cron/jobs.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/gateway_state.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/manifest.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/processes.json",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".json"
+    },
+    {
+      "status": " D",
+      "path": "state-snapshots/20260426-190142/state.db",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "",
+      "extension": ".db"
+    },
+    {
+      "status": "??",
+      "path": "taskpool/",
+      "risk": "medium",
+      "action": "archive_or_ignore_after_owner_review",
+      "size": "10756",
+      "extension": "<none>"
+    }
+  ]
+}

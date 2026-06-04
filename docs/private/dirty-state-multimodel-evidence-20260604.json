@@ -1,0 +1,1971 @@
+{
+  "schema": "dirty_state_multimodel_evidence_v1",
+  "repo": "/Users/charles/.hermes",
+  "summary_file": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/summary.json",
+  "inventory_file": "/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv",
+  "summary": {
+    "schema": "hermes_dirty_inventory_v1",
+    "ts": "2026-06-04T04:33:58Z",
+    "repo": "/Users/charles/.hermes",
+    "total": 3004,
+    "counts_by_bucket": {
+      "profiles/cross-profile": 993,
+      "skills/active": 620,
+      "media/generated": 338,
+      "brain/workpad": 312,
+      "scripts/local-control-plane": 239,
+      "other": 227,
+      "notes/generated-reports": 107,
+      "runtime/state": 48,
+      "runtime/db-lock": 38,
+      "runtime/logs": 35,
+      "backups": 18,
+      "docs/private": 12,
+      "profile/config-cache": 9,
+      "profile/memory": 4,
+      "submodule/hermes-agent": 2,
+      "skills/archive": 2
+    },
+    "counts_by_risk": {
+      "high": 2213,
+      "medium": 414,
+      "low": 373,
+      "critical": 4
+    },
+    "counts_by_status": {
+      "??": 2507,
+      " M": 288,
+      " D": 209
+    },
+    "manual_gate_count": 2217,
+    "low_risk_count": 373
+  },
+  "live_git_status_porcelain_count_output": "3007\n{' M': 288, ' D': 209, '??': 2510}",
+  "cluster_summaries": {
+    "profiles/cross-profile": {
+      "count": 993,
+      "risk": {
+        "high": 993
+      },
+      "status": {
+        "??": 993
+      },
+      "sample": [
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/SOUL.md",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "537"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/bin/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "10368352"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/browser_replay_evidence/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "2400629"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/config.yaml",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "21983"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/context_length_cache.yaml",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "243"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/home/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "4202303172"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/logs/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "41934577"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/lsp/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "80199710"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/memories/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "5231"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/models_dev_cache.json",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "2200921"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/notes/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "2916"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/processes.json",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "598"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/reports/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "2557"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/shell-hooks-allowlist.json",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "696"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/.bundled_manifest",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "4396"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/.curator_backups/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "88537176"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/.curator_state",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "576"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/.hub/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "1268893"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/.usage.json",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "34222"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/api-and-interface-design/",
+          "risk": "high",
+          "action": "manual_gate_cross_profile",
+          "size": "5025"
+        }
+      ]
+    },
+    "skills/active": {
+      "count": 620,
+      "risk": {
+        "high": 620
+      },
+      "status": {
+        " M": 168,
+        " D": 159,
+        "??": 293
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "skills/.bundled_manifest",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "4396"
+        },
+        {
+          "status": " M",
+          "path": "skills/.hub/index-cache/hermes-index.json",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "1016552"
+        },
+        {
+          "status": " M",
+          "path": "skills/api-and-interface-design/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "8821"
+        },
+        {
+          "status": " M",
+          "path": "skills/apple/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "3824"
+        },
+        {
+          "status": " M",
+          "path": "skills/apple/apple-notes/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "3403"
+        },
+        {
+          "status": " M",
+          "path": "skills/apple/apple-reminders/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "3791"
+        },
+        {
+          "status": " M",
+          "path": "skills/apple/findmy/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "4803"
+        },
+        {
+          "status": " M",
+          "path": "skills/apple/imessage/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "3657"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "2921"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/claude-code/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "37367"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/codex/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "5083"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "25837"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/references/local-brain-dynamic-cron.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "9584"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/references/p10-iteration-budget-loop.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "6974"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/references/taskpool-auto-completer-semantics.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "9556"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/references/tool-budget-and-permission-gates.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "6776"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-pipeline/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "24524"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/opencode/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": "7952"
+        },
+        {
+          "status": " D",
+          "path": "skills/bayesian-agent/CHANGELOG.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "skills/bayesian-agent/SKILL.md",
+          "risk": "high",
+          "action": "manual_gate_skill_semantics",
+          "size": ""
+        }
+      ]
+    },
+    "media/generated": {
+      "count": 338,
+      "risk": {
+        "low": 338
+      },
+      "status": {
+        "??": 338
+      },
+      "sample": [
+        {
+          "status": "??",
+          "path": "image_cache/",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "435330"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260427_224000_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "556454"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260427_224345_2.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "121569"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260427_224835_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "121569"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260427_231911_3.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "366491"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260428_102337_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "371121"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260428_102355_2.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "371121"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260428_102913_3.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "366953"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260506_003620_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "2556012"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260506_004327_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "2556012"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260506_141651_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "31166"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260506_151539_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "41177"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260506_154652_2.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "313345"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260506_155344_3.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "10930"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260509_143229_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "1310314"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260509_143231_2.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "1310314"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260509_201725_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "66254"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260509_201725_2.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "66254"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260509_202650_3.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "641318"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260509_232411_1.png",
+          "risk": "low",
+          "action": "ignore_generated",
+          "size": "440763"
+        }
+      ]
+    },
+    "brain/workpad": {
+      "count": 312,
+      "risk": {
+        "high": 312
+      },
+      "status": {
+        " M": 50,
+        "??": 262
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "notes/brain/03-理论与元认知/元认知/01-置信度校准与证据等级.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "1841"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/03-理论与元认知/元认知/02-错误分类与复盘循环.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "1303"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/03-理论与元认知/系统理论/Ashby-必要多样性定律.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "2273"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/03-理论与元认知/系统理论/Dreyfus-技能获取5级模型.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "2802"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/projects/hermes-local-brain/Project - Hermes Local Brain.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "3565"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/projects/resumable-multimodel-certification/P9 - Implementation Backlog.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "7078"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "73587"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/00-tasks索引.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "2725"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-06-local-brain-backlog-zero-loop-log.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "4024"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-07-agent-cos-landing-log.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "9175"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-07-resumable-multimodel-certification-landing-log.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "3742"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-08-local-brain-taskflow-closure-proof.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "5295"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "5707"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-08-本地大脑迁移残留闭环清理与-repair-plan-apply-验证.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "4041"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-08-落地-iteration-budget-pua-loop-有界执行与-handoff-闭环.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "6601"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-10-openai-openai-cli-沙箱评估与-hermes-api-自动化集成决策.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "9356"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skillclaw-沙箱评估与-hermes-技能进化集成决策.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "29371"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线code-review-多-agent-并行审查与置信度过滤评估.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "13839"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线code-simplifier-重复逻辑合并与安全重构评估.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "5683"
+        },
+        {
+          "status": " M",
+          "path": "notes/brain/05-实践与项目/tasks/2026-05-10-skill学习路线mcp-builder-四阶段-mcp-server-引导与-hermes-mcp-skill-补强评估.md",
+          "risk": "high",
+          "action": "manual_gate_ssot",
+          "size": "6018"
+        }
+      ]
+    },
+    "scripts/local-control-plane": {
+      "count": 239,
+      "risk": {
+        "high": 239
+      },
+      "status": {
+        " M": 38,
+        "??": 201
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "scripts/agent_protocol.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "24913"
+        },
+        {
+          "status": " M",
+          "path": "scripts/auth_blocked_notifier.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "5551"
+        },
+        {
+          "status": " M",
+          "path": "scripts/brainctl.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "78568"
+        },
+        {
+          "status": " M",
+          "path": "scripts/code-intel.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "11670"
+        },
+        {
+          "status": " M",
+          "path": "scripts/consensus-check.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "7902"
+        },
+        {
+          "status": " M",
+          "path": "scripts/consult_models.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "220497"
+        },
+        {
+          "status": " M",
+          "path": "scripts/cron-health-quarantine.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "4013"
+        },
+        {
+          "status": " M",
+          "path": "scripts/cron-missed-run-guard.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "3874"
+        },
+        {
+          "status": " M",
+          "path": "scripts/cross-patch.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "38710"
+        },
+        {
+          "status": " M",
+          "path": "scripts/cybernetic_multimodel_selfcheck.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "9412"
+        },
+        {
+          "status": " M",
+          "path": "scripts/ensemble-vote.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "17901"
+        },
+        {
+          "status": " M",
+          "path": "scripts/eval-harness.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "22602"
+        },
+        {
+          "status": " M",
+          "path": "scripts/gitnexus_fusion_selfcheck.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "7114"
+        },
+        {
+          "status": " M",
+          "path": "scripts/iteration_budget_doctor.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "14161"
+        },
+        {
+          "status": " M",
+          "path": "scripts/iteration_budget_triage.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "8677"
+        },
+        {
+          "status": " M",
+          "path": "scripts/lark_task_reader.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "37557"
+        },
+        {
+          "status": " M",
+          "path": "scripts/live_notes_accumulator.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "10238"
+        },
+        {
+          "status": " M",
+          "path": "scripts/multimodel_intervention_dynamic_step.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "13047"
+        },
+        {
+          "status": " M",
+          "path": "scripts/multimodel_intervention_parallel_step.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "1363"
+        },
+        {
+          "status": " M",
+          "path": "scripts/multimodel_keypoint_coverage_ratchet.py",
+          "risk": "high",
+          "action": "cluster_and_review",
+          "size": "21563"
+        }
+      ]
+    },
+    "other": {
+      "count": 227,
+      "risk": {
+        "medium": 227
+      },
+      "status": {
+        " M": 7,
+        "??": 220
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "cron/jobs.json",
+          "risk": "medium",
+          "action": "review",
+          "size": "186409"
+        },
+        {
+          "status": " M",
+          "path": "edge-worker/edge_worker.py",
+          "risk": "medium",
+          "action": "review",
+          "size": "9230"
+        },
+        {
+          "status": " M",
+          "path": "eval/eval-baseline.json",
+          "risk": "medium",
+          "action": "review",
+          "size": "48068"
+        },
+        {
+          "status": " M",
+          "path": "notes/improvement-action-plan.json",
+          "risk": "medium",
+          "action": "review",
+          "size": "1141"
+        },
+        {
+          "status": " M",
+          "path": "notes/improvement-signals.jsonl",
+          "risk": "medium",
+          "action": "review",
+          "size": "24742"
+        },
+        {
+          "status": " M",
+          "path": "notes/user-routine-patterns.json",
+          "risk": "medium",
+          "action": "review",
+          "size": "155"
+        },
+        {
+          "status": " M",
+          "path": "shell-hooks-allowlist.json",
+          "risk": "medium",
+          "action": "review",
+          "size": "671"
+        },
+        {
+          "status": "??",
+          "path": ".codex_breaker.json",
+          "risk": "medium",
+          "action": "review",
+          "size": "250"
+        },
+        {
+          "status": "??",
+          "path": ".scratch_tip_shown",
+          "risk": "medium",
+          "action": "review",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "HERMES.md",
+          "risk": "medium",
+          "action": "review",
+          "size": "134"
+        },
+        {
+          "status": "??",
+          "path": "KNOWN_ISSUES.md",
+          "risk": "medium",
+          "action": "review",
+          "size": "1899"
+        },
+        {
+          "status": "??",
+          "path": "agent-hooks/pua-loop-hook-ingest.sh",
+          "risk": "medium",
+          "action": "review",
+          "size": "855"
+        },
+        {
+          "status": "??",
+          "path": "artifacts/",
+          "risk": "medium",
+          "action": "review",
+          "size": "66221752"
+        },
+        {
+          "status": "??",
+          "path": "auth.json.corrupt",
+          "risk": "medium",
+          "action": "review",
+          "size": "9144"
+        },
+        {
+          "status": "??",
+          "path": "auth/",
+          "risk": "medium",
+          "action": "review",
+          "size": "484"
+        },
+        {
+          "status": "??",
+          "path": "brains/base/",
+          "risk": "medium",
+          "action": "review",
+          "size": "2451"
+        },
+        {
+          "status": "??",
+          "path": "brains/design/",
+          "risk": "medium",
+          "action": "review",
+          "size": "2337"
+        },
+        {
+          "status": "??",
+          "path": "brains/electrical/",
+          "risk": "medium",
+          "action": "review",
+          "size": "3334"
+        },
+        {
+          "status": "??",
+          "path": "brains/external-control/",
+          "risk": "medium",
+          "action": "review",
+          "size": "5549"
+        },
+        {
+          "status": "??",
+          "path": "brains/hermes-core/",
+          "risk": "medium",
+          "action": "review",
+          "size": "7460"
+        }
+      ]
+    },
+    "notes/generated-reports": {
+      "count": 107,
+      "risk": {
+        "medium": 107
+      },
+      "status": {
+        " M": 7,
+        "??": 100
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/AGENT-EVOLUTION-PLAN.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "15293"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/autonomous-evolution-log.jsonl",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "13088"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/evolution-dashboard.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "1820"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/health-history.jsonl",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "15004"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/pa-health-history.jsonl",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "9251"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/pa-trigger-log.jsonl",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "458"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/self-scan-log.jsonl",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "5688"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-04-29.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "5819"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-04-30.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2238"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-07.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2263"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-08.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "3246"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-09.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2918"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-10.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "1695"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-11.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "1308"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-12.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2330"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-13.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2609"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-14.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "1800"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-15.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "1957"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-17.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2994"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-05-18.md",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_review",
+          "size": "2661"
+        }
+      ]
+    },
+    "runtime/state": {
+      "count": 48,
+      "risk": {
+        "medium": 48
+      },
+      "status": {
+        " D": 47,
+        "??": 1
+      },
+      "sample": [
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042944/config.yaml",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042944/cron/jobs.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042944/manifest.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042944/processes.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042944/state.db",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042948/config.yaml",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042948/cron/jobs.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042948/manifest.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042948/processes.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-042948/state.db",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043004/config.yaml",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043004/cron/jobs.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043004/manifest.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043004/processes.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043004/state.db",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043039/config.yaml",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043039/cron/jobs.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043039/manifest.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043039/processes.json",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "state-snapshots/20260426-043039/state.db",
+          "risk": "medium",
+          "action": "archive_or_ignore_after_owner_review",
+          "size": ""
+        }
+      ]
+    },
+    "runtime/db-lock": {
+      "count": 38,
+      "risk": {
+        "high": 38
+      },
+      "status": {
+        " M": 4,
+        "??": 34
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "gateway.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "159"
+        },
+        {
+          "status": " M",
+          "path": "gateway_state.json",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "538"
+        },
+        {
+          "status": " M",
+          "path": "route_outcomes.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "35917824"
+        },
+        {
+          "status": " M",
+          "path": "state.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "63787008"
+        },
+        {
+          "status": "??",
+          "path": "envelope_bus.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "kanban.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "22110208"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/auth.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/shell-hooks-allowlist.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/skills/.usage.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/state.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "729653248"
+        },
+        {
+          "status": "??",
+          "path": "profiles/dev/auth.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/dev/shell-hooks-allowlist.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/dev/skills/.usage.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/dev/state.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "2732032"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-agent/auth.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-agent/shell-hooks-allowlist.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-agent/skills/.usage.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-agent/state.db",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "15101952"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-core/auth.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-core/shell-hooks-allowlist.json.lock",
+          "risk": "high",
+          "action": "manual_gate_do_not_reset",
+          "size": "0"
+        }
+      ]
+    },
+    "runtime/logs": {
+      "count": 35,
+      "risk": {
+        "low": 35
+      },
+      "status": {
+        " M": 3,
+        " D": 3,
+        "??": 29
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "logs/cron-missed-runs.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "9520"
+        },
+        {
+          "status": " M",
+          "path": "logs/cron-quarantine.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "4645678"
+        },
+        {
+          "status": " D",
+          "path": "logs/cross-patch.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": ""
+        },
+        {
+          "status": " D",
+          "path": "logs/ensemble-votes.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": ""
+        },
+        {
+          "status": " M",
+          "path": "logs/health-history.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "150789"
+        },
+        {
+          "status": " D",
+          "path": "logs/model-router.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": ""
+        },
+        {
+          "status": "??",
+          "path": "logs/brain_task_dispatch_tick.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "485159720"
+        },
+        {
+          "status": "??",
+          "path": "logs/curator/",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "17434"
+        },
+        {
+          "status": "??",
+          "path": "logs/diagnostics-fixes.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "673"
+        },
+        {
+          "status": "??",
+          "path": "logs/diagnostics-history.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "5562"
+        },
+        {
+          "status": "??",
+          "path": "logs/health-check.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "1313"
+        },
+        {
+          "status": "??",
+          "path": "logs/hermes-eval-trace-audit.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "5502"
+        },
+        {
+          "status": "??",
+          "path": "logs/hermes-failure-taxonomy.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "109925"
+        },
+        {
+          "status": "??",
+          "path": "logs/integration-test-integration-test-1780044082.json",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "4262"
+        },
+        {
+          "status": "??",
+          "path": "logs/integration-test-integration-test-1780044133.json",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "4262"
+        },
+        {
+          "status": "??",
+          "path": "logs/iteration_budget_triage.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "981"
+        },
+        {
+          "status": "??",
+          "path": "logs/local_brain_html_refresh.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "3369188"
+        },
+        {
+          "status": "??",
+          "path": "logs/model-quota.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "2014218"
+        },
+        {
+          "status": "??",
+          "path": "logs/model-routing.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "119592"
+        },
+        {
+          "status": "??",
+          "path": "logs/multi-brain-nightly-safe.jsonl",
+          "risk": "low",
+          "action": "ignore_or_rotate",
+          "size": "16914"
+        }
+      ]
+    },
+    "backups": {
+      "count": 18,
+      "risk": {
+        "medium": 18
+      },
+      "status": {
+        " M": 2,
+        "??": 16
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "backups/20260423-224844/skills/darwin-skill",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "9119100"
+        },
+        {
+          "status": " M",
+          "path": "backups/20260423-224844/skills/pua",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "13863864"
+        },
+        {
+          "status": "??",
+          "path": "backups/hermes-agent-local-tracked-before-update-20260512-123850.patch",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "11186"
+        },
+        {
+          "status": "??",
+          "path": "backups/hermes-agent-repo-copy-20260518-203325/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "812916804"
+        },
+        {
+          "status": "??",
+          "path": "backups/hermes-agent-untracked-before-update-20260512-123850/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "4915"
+        },
+        {
+          "status": "??",
+          "path": "backups/hermes-agent-upgrade-20260505-232505/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "6315866"
+        },
+        {
+          "status": "??",
+          "path": "backups/hermes-agent-upgrade-20260509-115033/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "70161036"
+        },
+        {
+          "status": "??",
+          "path": "backups/hermes-governance/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "393939"
+        },
+        {
+          "status": "??",
+          "path": "backups/kanban-corrupt-20260529/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "1966813184"
+        },
+        {
+          "status": "??",
+          "path": "backups/local-brain-main-hierarchy-migration-20260506-192936/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "251611"
+        },
+        {
+          "status": "??",
+          "path": "backups/multibrain-rollout-20260518-2130/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "815795"
+        },
+        {
+          "status": "??",
+          "path": "backups/multimodel-fix-2026-04-28/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "568640"
+        },
+        {
+          "status": "??",
+          "path": "backups/post-merge-before-update-20260512-123850",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "417"
+        },
+        {
+          "status": "??",
+          "path": "backups/post-update-check-before-update-20260512-123850.py",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "24746"
+        },
+        {
+          "status": "??",
+          "path": "backups/pre-update-2026-05-16-210747.zip",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "1092043006"
+        },
+        {
+          "status": "??",
+          "path": "backups/pre-update-2026-05-25-121602.zip",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "5157365187"
+        },
+        {
+          "status": "??",
+          "path": "backups/pre-update-attention-20260429-014143/",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "44652"
+        },
+        {
+          "status": "??",
+          "path": "backups/quorum.pre-p1-minquorum-20260429-223736.yaml",
+          "risk": "medium",
+          "action": "archive_external_or_ignore",
+          "size": "2132"
+        }
+      ]
+    },
+    "docs/private": {
+      "count": 12,
+      "risk": {
+        "medium": 12
+      },
+      "status": {
+        " M": 1,
+        "??": 11
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "docs/private/overmind-reference-self-optimization-20260526.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "14919"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/agentic-video-media-skill-boundary-20260526.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "8115"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/claude-code-dynamic-workflows-review.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "10620"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/hermes-ux-9-stable-optimization-20260531.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "10130"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/label-studio-mlops-workflow-absorption-20260526.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "8514"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/pilotdeck-gap-analysis-20260530.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "6986"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/pilotdeck-gap-analysis.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "4447"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/reading-notes/",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "8097"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/scrapling-reference-intake-20260604.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "19336"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/skillopt-batch-reflect-prototype-design.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "6965"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/skillopt-reflact-transferability-gap-analysis.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "7546"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/tree-boundary-design.md",
+          "risk": "medium",
+          "action": "review_and_commit_if_durable",
+          "size": "14519"
+        }
+      ]
+    },
+    "profile/config-cache": {
+      "count": 9,
+      "risk": {
+        "high": 9
+      },
+      "status": {
+        " M": 5,
+        "??": 4
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "config.yaml",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "26159"
+        },
+        {
+          "status": " M",
+          "path": "config/quorum.yaml",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "2581"
+        },
+        {
+          "status": " M",
+          "path": "context_length_cache.yaml",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "919"
+        },
+        {
+          "status": " M",
+          "path": "models_dev_cache.json",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "2201702"
+        },
+        {
+          "status": " M",
+          "path": "ollama_cloud_models_cache.json",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "686"
+        },
+        {
+          "status": "??",
+          "path": "config.yaml.bak.security-telegram-20260531215528",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "25666"
+        },
+        {
+          "status": "??",
+          "path": "config/autonomy-write-allowlist.json",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "30"
+        },
+        {
+          "status": "??",
+          "path": "config/model_profiles.yaml",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "1047"
+        },
+        {
+          "status": "??",
+          "path": "config/quorum.yaml.bak-20260428",
+          "risk": "high",
+          "action": "manual_gate_diff_each",
+          "size": "2115"
+        }
+      ]
+    },
+    "profile/memory": {
+      "count": 4,
+      "risk": {
+        "critical": 4
+      },
+      "status": {
+        " M": 2,
+        "??": 2
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "memories/MEMORY.md",
+          "risk": "critical",
+          "action": "manual_gate_do_not_commit_bulk",
+          "size": "2752"
+        },
+        {
+          "status": " M",
+          "path": "memories/USER.md",
+          "risk": "critical",
+          "action": "manual_gate_do_not_commit_bulk",
+          "size": "2604"
+        },
+        {
+          "status": "??",
+          "path": "memories/MEMORY.md.bak.20260529",
+          "risk": "critical",
+          "action": "manual_gate_do_not_commit_bulk",
+          "size": "2678"
+        },
+        {
+          "status": "??",
+          "path": "memories/USER.md.bak.20260529",
+          "risk": "critical",
+          "action": "manual_gate_do_not_commit_bulk",
+          "size": "2743"
+        }
+      ]
+    },
+    "submodule/hermes-agent": {
+      "count": 2,
+      "risk": {
+        "high": 2
+      },
+      "status": {
+        " M": 1,
+        "??": 1
+      },
+      "sample": [
+        {
+          "status": " M",
+          "path": "hermes-agent",
+          "risk": "high",
+          "action": "handle_inner_repo_separately",
+          "size": "1741966146"
+        },
+        {
+          "status": "??",
+          "path": "hermes-agent-persona.md",
+          "risk": "high",
+          "action": "handle_inner_repo_separately",
+          "size": "1053"
+        }
+      ]
+    },
+    "skills/archive": {
+      "count": 2,
+      "risk": {
+        "medium": 2
+      },
+      "status": {
+        "??": 2
+      },
+      "sample": [
+        {
+          "status": "??",
+          "path": "skills-archived/",
+          "risk": "medium",
+          "action": "inventory_then_possible_ignore",
+          "size": "80199896"
+        },
+        {
+          "status": "??",
+          "path": "skills/.archive/",
+          "risk": "medium",
+          "action": "inventory_then_possible_ignore",
+          "size": "219925"
+        }
+      ]
+    }
+  },
+  "decision_constraints": [
+    "no blanket reset/clean/ignore/commit",
+    "manual gates for config/db/memory/profiles/skills/brain/hermes-agent",
+    "read-only cluster inventory before semantic side effects"
+  ]
+}

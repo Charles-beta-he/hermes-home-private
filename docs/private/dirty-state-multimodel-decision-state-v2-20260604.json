@@ -1,0 +1,48 @@
+{
+  "schema": "multi_model_state_v1",
+  "created_at": "2026-06-04T04:55:13.214708+00:00",
+  "question": "# Multi-model decision request v2: Hermes dirty-state governance after evidence fulfillment\n\nWe need make a practical governance decision for `/Users/charles/.hermes` dirty/untracked state.\n\nThis is a decision round, not an implementation authorization round. Concrete writes must still be separately scoped and verified.\n\nVerified evidence:\n\n- Evidence artifact: `/Users/charles/.hermes/docs/private/dirty-state-multimodel-evidence-20260604.json`\n- Inventory summary artifact: `/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/summary.json`\n- Inventory CSV: `/Users/charles/.hermes/docs/private/dirty-inventory-20260604-after-cache-clean/inventory.csv`\n- Latest committed governance baseline: `bfefab0` originally, amended final dirty-governance commit is `bfefab0`/later local history; verify with git log if needed.\n- The committed inventory snapshot after cleanup says: total 3004; high 2213; critical 4; untracked 2507; modified 288; deleted 209.\n- A live `git status --porcelain=v1` after creating this decision evidence artifact shows 3007 entries (`{' M': 288, ' D': 209, '??': 2510}`), explained by newly created decision prompt/evidence artifacts. The delta is local decision artifacts, not a substantive governance change.\n- Major buckets from committed inventory:\n  - profiles/cross-profile: 993\n  - skills/active: 620\n  - media/generated: 338\n  - brain/workpad: 312\n  - scripts/local-control-plane: 239\n  - other: 227\n  - notes/generated-reports: 107\n  - runtime/state: 48\n  - runtime/db-lock: 38\n  - runtime/logs: 35\n  - profile/config-cache: 9\n  - profile/memory: 4\n\nPrevious T1 multi-model run:\n\n- Models consulted: claude-opus-4-7, gpt-5.5, mimo-v2.5-pro, deepseek-v4-pro.\n- It was not certified because the factual count claim was not linked to evidence in the state packet, and because models split between noop/advisory and concrete read-only artifacts.\n- Despite non-certification, the substantive trend was: do not proceed with destructive cleanup; prefer read-only deeper cluster inventories and ranked plan; scripts first is plausible after evidence; skills/profiles/brain/config/db/memory remain manual gates.\n\nHard constraints:\n\n1. No blanket reset, clean, ignore, or commit of remaining dirty state.\n2. No cross-profile modifications without explicit user direction.\n3. No config/db/memory/cron/jobs/protected runtime writes without explicit manual approval.\n4. No active skill semantic bulk change without skill-level review.\n5. No brain/workpad SSOT reset/commit without source-of-truth review.\n6. Scoped commits only, with verification.\n7. User wants a decision and continued progress until manual intervention is truly required.\n\nDecision options:\n\nA. Stop now and ask the user to pick a batch.\nB. Proceed read-only by generating deeper cluster inventories and a ranked execution plan, then commit only the decision artifacts.\nC. Add broad .gitignore rules for generated-looking dirs such as media/generated, browser_replay_evidence, logs/*.jsonl, profiles/**.\nD. Start semantic audit of scripts/** first, but with read-only diff clustering before any script commit.\nE. Start skills/** reconciliation first.\n\nQuestion:\n\nWhat is the best next action under the constraints? Return a decisive recommendation with:\n- vote: approve/amend/reject for option B+D hybrid if appropriate.\n- exact next scope.\n- stop conditions.\n- what is allowed to be committed now, if anything.\n- what must remain behind manual gates.",
+  "context": {},
+  "constraints": [
+    "No destructive git clean/reset/checkout of unrelated dirty state",
+    "No cross-profile modifications without explicit user direction",
+    "Only scoped commits with verification"
+  ],
+  "acceptance_criteria": [
+    "Produce decisive next action, exact scope, stop conditions, and manual gates"
+  ],
+  "non_goals": [],
+  "risk_level": "medium",
+  "budget": {},
+  "claims": [
+    {
+      "id": "C-001",
+      "text": "Committed inventory snapshot reports total 3004, high 2213, critical 4, untracked 2507, modified 288, deleted 209",
+      "severity": 3
+    },
+    {
+      "id": "C-002",
+      "text": "Live git status after adding decision artifacts is 3007 entries with 288 modified, 209 deleted, and 2510 untracked",
+      "severity": 3
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-artifact",
+      "supports": [
+        "C-001",
+        "C-002"
+      ],
+      "path": "/Users/charles/.hermes/docs/private/dirty-state-multimodel-evidence-20260604.json",
+      "type": "note",
+      "summary": "Contains committed inventory summary and live git status count output."
+    }
+  ],
+  "implementation_target": {
+    "files": [],
+    "verify_commands": [],
+    "forbidden_changes": []
+  },
+  "is_candidate_solution": false,
+  "state_owner": "main_orchestrator"
+}

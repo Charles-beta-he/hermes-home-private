@@ -1,0 +1,239 @@
+ M scripts/agent_protocol.py
+ M scripts/auth_blocked_notifier.py
+ M scripts/brainctl.py
+ M scripts/code-intel.py
+ M scripts/consensus-check.py
+ M scripts/consult_models.py
+ M scripts/cron-health-quarantine.py
+ M scripts/cron-missed-run-guard.py
+ M scripts/cross-patch.py
+ M scripts/cybernetic_multimodel_selfcheck.py
+ M scripts/ensemble-vote.py
+ M scripts/eval-harness.py
+ M scripts/gitnexus_fusion_selfcheck.py
+ M scripts/iteration_budget_doctor.py
+ M scripts/iteration_budget_triage.py
+ M scripts/lark_task_reader.py
+ M scripts/live_notes_accumulator.py
+ M scripts/multimodel_intervention_dynamic_step.py
+ M scripts/multimodel_intervention_parallel_step.py
+ M scripts/multimodel_keypoint_coverage_ratchet.py
+ M scripts/pa-daily-report.py
+ M scripts/personal_hermes_brain_export.py
+ M scripts/post-session-autopsy.py
+ M scripts/post-update-check.py
+ M scripts/pricing.py
+ M scripts/rowboat_bridge.py
+ M scripts/self-improvement-pipeline.py
+ M scripts/self-scan-4h.py
+ M scripts/session-close.sh
+ M scripts/skill-steward.py
+ M scripts/sync-brain.py
+ M scripts/task_pool_guardian_run.py
+ M scripts/taskpool_watch_report.py
+ M scripts/test_brainctl.py
+ M scripts/test_multimodel_intervention_dynamic_step.py
+ M scripts/test_multimodel_keypoint_coverage_ratchet.py
+ M scripts/test_personal_hermes_brain_export.py
+ M scripts/test_taskpool_watch_report.py
+?? scripts/adapters/
+?? scripts/adk_contract_verifier.py
+?? scripts/agent_memory_architecture_selfcheck.py
+?? scripts/agent_team_controller_cycle.py
+?? scripts/apply-codex-transport-hardening-patch.py
+?? scripts/apply-mcp-timeout-patch.py
+?? scripts/bambu_3mf_patch_single_material.py
+?? scripts/bambu_3mf_preprint_guard.py
+?? scripts/bambu_credentials.py
+?? scripts/bambu_ft_tunnel.py
+?? scripts/bambu_ft_upload
+?? scripts/bambu_ft_upload.cpp
+?? scripts/bambu_ft_upload.dSYM/
+?? scripts/bambu_local_print
+?? scripts/bambu_local_print.cpp
+?? scripts/bambu_local_print.dSYM/
+?? scripts/bambu_status_prompt.sh
+?? scripts/bambu_status_to_file.sh
+?? scripts/bambu_studio_slice.py
+?? scripts/bambu_x2d.py
+?? scripts/bambu_x2d_probe.py
+?? scripts/behavioral-benchmark-runner.py
+?? scripts/bft_consensus.py
+?? scripts/brain_api.py
+?? scripts/brain_cloud_sync_guard.py
+?? scripts/brain_task_autorun_step.py
+?? scripts/brain_task_orchestrator_selfcheck.py
+?? scripts/capability_registry.py
+?? scripts/checkpoint_manager.py
+?? scripts/csp_pipeline_model.py
+?? scripts/dashboard-data.py
+?? scripts/demo_task_observer.sh
+?? scripts/dempster_shafer.py
+?? scripts/dynamic_n.py
+?? scripts/edge_worker.py
+?? scripts/ensemble-real.py
+?? scripts/entropy_ambiguity.py
+?? scripts/evidence_manifest.py
+?? scripts/external_control_gate.py
+?? scripts/fill-baseline-parallel.py
+?? scripts/gittins_scheduler.py
+?? scripts/governance_ratchet.py
+?? scripts/hermes-cleanup.py
+?? scripts/hermes-eval-trace-audit.py
+?? scripts/hermes-failure-taxonomy.py
+?? scripts/hermes-pre-update-verify.sh
+?? scripts/hermes_background_task_worker.py
+?? scripts/hermes_conductor_runtime.py
+?? scripts/hermes_hook_registry_selfcheck.py
+?? scripts/hermes_lan.py
+?? scripts/hermes_openclaw_control_plane.py
+?? scripts/hermes_task.py
+?? scripts/hermes_ux9_verifier_contracts.py
+?? scripts/install-edge-remote.sh
+?? scripts/install-edge.sh
+?? scripts/kanban_bridge.py
+?? scripts/kanban_coverage.py
+?? scripts/kg_entity_extractor.py
+?? scripts/kg_extract.py
+?? scripts/lark_docx_reader.py
+?? scripts/link_brain_kanban_refs.py
+?? scripts/live6_multimodel_loop_once.py
+?? scripts/local_brain_html_refresh.py
+?? scripts/log-route-outcome.sh
+?? scripts/manufacturing_calibration_cube.py
+?? scripts/manufacturing_cigarette_box.py
+?? scripts/manufacturing_dog_keychain_v2.py
+?? scripts/manufacturing_dog_keychain_v21.py
+?? scripts/manufacturing_dog_keychain_v22.py
+?? scripts/manufacturing_dog_keychain_v23_trace.py
+?? scripts/manufacturing_dog_keychain_v24_clean_trace.py
+?? scripts/manufacturing_dog_keychain_v25_local_leftfix.py
+?? scripts/manufacturing_dog_keychain_v26_curated_blacklines.py
+?? scripts/manufacturing_dog_keychain_v27_photo_ink_clean.py
+?? scripts/manufacturing_dog_keychain_v28_outline_vector_restore.py
+?? scripts/manufacturing_dog_keychain_v29_balanced_photo_vectors.py
+?? scripts/manufacturing_dog_pendant.py
+?? scripts/manufacturing_lamp_base.py
+?? scripts/manufacturing_lamp_shade.py
+?? scripts/manufacturing_mesh_qa.py
+?? scripts/manufacturing_orientation_search.py
+?? scripts/manufacturing_popup_cigarette_box_v3.py
+?? scripts/manufacturing_popup_cigarette_box_v4.py
+?? scripts/manufacturing_preflight.py
+?? scripts/manufacturing_slice.py
+?? scripts/manufacturing_trick_research.py
+?? scripts/manufacturing_visual_qa.py
+?? scripts/meta_evolution.py
+?? scripts/model_candidate_search.py
+?? scripts/monitor_rokid_agent_status.py
+?? scripts/multi-brain-nightly-safe.py
+?? scripts/multi-model-smoke-safe.py
+?? scripts/multimodel_daily_governance_audit.py
+?? scripts/multimodel_daily_governance_audit_noagent.py
+?? scripts/novelty_search.py
+?? scripts/observed_worker.py
+?? scripts/observer_engine.py
+?? scripts/observer_hook.py
+?? scripts/openai-cli-eval-2026-05-11.md
+?? scripts/openai_admin_quota.sh
+?? scripts/openclaw_to_hermes_gap.py
+?? scripts/openclaw_trace_ingest.py
+?? scripts/p10-health-safe.py
+?? scripts/pa_evolution_daily_noagent.py
+?? scripts/patches/
+?? scripts/photo_to_print_job.py
+?? scripts/photo_to_print_runner.py
+?? scripts/pipeline_tick.py
+?? scripts/planner-failure-triage.py
+?? scripts/process_rokid_l2_queue.py
+?? scripts/proof_gate_verifier.py
+?? scripts/pua-loop-self-optimization-architecture.md
+?? scripts/pua_loop_self_optimize.py
+?? scripts/reliability-update.py
+?? scripts/repo_to_tool_adapter.py
+?? scripts/round3_vote_mimo.json
+?? scripts/rtk
+?? scripts/rtk-compress.py
+?? scripts/runtime_issue_capture.py
+?? scripts/self_optimizing_verifier.py
+?? scripts/self_proving_executor.py
+?? scripts/semantic_retrieval.py
+?? scripts/skill-learning-path-multi-agent-code-review.md
+?? scripts/skill-learning-path-planning-with-files.md
+?? scripts/skill-learning-ralph-loop-pua-boundary.md
+?? scripts/skill_steward_daily_audit_noagent.py
+?? scripts/skill_telemetry_report.py
+?? scripts/slicer_preview_parse.py
+?? scripts/spl-benchmark-results.json
+?? scripts/spl-benchmark.py
+?? scripts/start_observer.sh
+?? scripts/strategy_bandit.py
+?? scripts/synthetic-trace-ratio-guard.py
+?? scripts/task_adapter.py
+?? scripts/task_adapter.py.bak
+?? scripts/task_classifier.py
+?? scripts/task_continuation.py
+?? scripts/task_observer.py
+?? scripts/task_observer.py.bak
+?? scripts/task_pipeline.py
+?? scripts/task_pipeline.py.bak
+?? scripts/task_pool_guardian.py
+?? scripts/task_preflight.py
+?? scripts/task_progress.py
+?? scripts/task_query.py
+?? scripts/task_registry.py
+?? scripts/taskpool_backfill_tenants.py
+?? scripts/taskpool_create_standard_task.py
+?? scripts/taskpool_done_closeout_audit.py
+?? scripts/taskpool_proof_gate.py
+?? scripts/taskpool_run_validation_suite.py
+?? scripts/test_adapter_integration.py
+?? scripts/test_agent_team_controller_split.py
+?? scripts/test_brainctl_export_app_data.py
+?? scripts/test_budget_handoff_check.py
+?? scripts/test_cross_patch_real_execution.py
+?? scripts/test_cybernetic_multimodel_selfcheck.py
+?? scripts/test_dynamic_workflow.py
+?? scripts/test_evidence_manifest.py
+?? scripts/test_external_control_gate.py
+?? scripts/test_hermes_ux9_verifier_contracts.py
+?? scripts/test_hook_registry_selfcheck.py
+?? scripts/test_integration.py
+?? scripts/test_kanban_coverage.py
+?? scripts/test_manufacturing_calibration_cube.py
+?? scripts/test_manufacturing_lamp_base.py
+?? scripts/test_manufacturing_lamp_shade.py
+?? scripts/test_manufacturing_mesh_qa.py
+?? scripts/test_manufacturing_orientation_search.py
+?? scripts/test_manufacturing_preflight.py
+?? scripts/test_manufacturing_slice.py
+?? scripts/test_manufacturing_trick_research.py
+?? scripts/test_manufacturing_visual_qa.py
+?? scripts/test_model_candidate_search.py
+?? scripts/test_multi_model_smoke_safe.py
+?? scripts/test_p10_health_safe.py
+?? scripts/test_pa_daily_report.py
+?? scripts/test_photo_to_print_e2e.py
+?? scripts/test_photo_to_print_job.py
+?? scripts/test_photo_to_print_runner.py
+?? scripts/test_pua_loop_self_optimize.py
+?? scripts/test_rowboat_bridge.py
+?? scripts/test_self_proving_executor.py
+?? scripts/test_skill_telemetry_report.py
+?? scripts/test_slicer_preview_parse.py
+?? scripts/test_task_boundary_parallel.py
+?? scripts/test_theoretical_improvements.py
+?? scripts/test_v_state_kanban_coverage.py
+?? scripts/test_x2d_ams_helper.py
+?? scripts/tests/
+?? scripts/update_rokid_brain_stats_cache.py
+?? scripts/update_rokid_daily_brief_cache.py
+?? scripts/update_rokid_manufacturing_status_cache.py
+?? scripts/upload_and_start.sh
+?? scripts/v_state.py
+?? scripts/v_state_json.py
+?? scripts/verify-evolution-event.py
+?? scripts/workflow_patterns.py
+?? scripts/x2d_ams_helper.py
+?? scripts/x2d_dispatch_print.py
+?? scripts/x2d_print_intent_worker.py
