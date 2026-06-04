@@ -1,0 +1,515 @@
+{
+  "schema": "scripts_tests_batch_audit_v1",
+  "created_at": "2026-06-04T05:59:19.310109Z",
+  "selected_count": 31,
+  "tracked_selected": 2,
+  "untracked_selected": 29,
+  "compile_status": "PASS: python3 -m py_compile scripts/test_*.py",
+  "pytest_status": "FAIL: 167 passed, 3 failed, 1 error, 48 warnings, 8 subtests passed",
+  "pytest_failures": [
+    "scripts/test_adapter_integration.py::test_pipeline: TaskPipeline.preflight is TaskPreflight object, not callable",
+    "scripts/test_adapter_integration.py::test_task_spec_serialization: TaskSpec.to_dict source returns TaskSource enum, expected string",
+    "scripts/test_dynamic_workflow.py::test: helper function named test collected as pytest test",
+    "scripts/tests/test_bambu_x2d_safety.py::test_status_refuses_without_access_code_before_network: status attempts network before empty access-code refusal"
+  ],
+  "safe_auto_commit_decision": "NO_GO for adding all tests as a single batch; tests depend on untracked/modified non-test scripts and current batch is not green.",
+  "recommended_next_batches": [
+    {
+      "batch": "tests-tracked-existing",
+      "paths": [
+        "scripts/test_brainctl.py",
+        "scripts/test_personal_hermes_brain_export.py"
+      ],
+      "gate": "requires paired review with modified source scripts/brainctl.py and scripts/personal_hermes_brain_export.py; do not commit tests alone"
+    },
+    {
+      "batch": "tests-task-adapter",
+      "paths": [
+        "scripts/test_adapter_integration.py",
+        "scripts/test_dynamic_workflow.py"
+      ],
+      "gate": "requires taskpool source batch and fixes or explicit stale-test decision"
+    },
+    {
+      "batch": "tests-bambu-x2d",
+      "paths": [
+        "scripts/tests/test_bambu_*.py"
+      ],
+      "gate": "requires bambu source batch and safety behavior decision"
+    },
+    {
+      "batch": "tests-manufacturing-photo",
+      "paths": [
+        "scripts/test_manufacturing_*.py",
+        "scripts/test_photo_to_print_*.py",
+        "scripts/test_slicer_preview_parse.py",
+        "scripts/test_x2d_ams_helper.py"
+      ],
+      "gate": "requires paired source inventory; many dynamic/subprocess dependencies"
+    }
+  ],
+  "entries": [
+    {
+      "path": "scripts/test_brainctl.py",
+      "tracked": true,
+      "status": "M ",
+      "size": 22712,
+      "lines": 420,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "brainctl",
+          "path": "scripts/brainctl.py",
+          "tracked": true,
+          "status": "M "
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_personal_hermes_brain_export.py",
+      "tracked": true,
+      "status": "M ",
+      "size": 6955,
+      "lines": 178,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "brainctl",
+          "path": "scripts/brainctl.py",
+          "tracked": true,
+          "status": "M "
+        },
+        {
+          "module": "personal_hermes_brain_export",
+          "path": "scripts/personal_hermes_brain_export.py",
+          "tracked": true,
+          "status": "M "
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_adapter_integration.py",
+      "tracked": false,
+      "status": "??",
+      "size": 5118,
+      "lines": 165,
+      "local_imports": [
+        {
+          "module": "task_adapter",
+          "path": "scripts/task_adapter.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "task_pipeline",
+          "path": "scripts/task_pipeline.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "task_registry",
+          "path": "scripts/task_registry.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_brainctl_export_app_data.py",
+      "tracked": false,
+      "status": "??",
+      "size": 5479,
+      "lines": 120,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "brainctl",
+          "path": "scripts/brainctl.py",
+          "tracked": true,
+          "status": "M "
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_dynamic_workflow.py",
+      "tracked": false,
+      "status": "??",
+      "size": 8072,
+      "lines": 228,
+      "local_imports": [
+        {
+          "module": "checkpoint_manager",
+          "path": "scripts/checkpoint_manager.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "task_adapter",
+          "path": "scripts/task_adapter.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "task_pipeline",
+          "path": "scripts/task_pipeline.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_evidence_manifest.py",
+      "tracked": false,
+      "status": "??",
+      "size": 4693,
+      "lines": 109,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_external_control_gate.py",
+      "tracked": false,
+      "status": "??",
+      "size": 8522,
+      "lines": 182,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "bambu_x2d",
+          "path": "scripts/bambu_x2d.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_hermes_ux9_verifier_contracts.py",
+      "tracked": false,
+      "status": "??",
+      "size": 3463,
+      "lines": 75,
+      "local_imports": [
+        {
+          "module": "hermes_ux9_verifier_contracts",
+          "path": "scripts/hermes_ux9_verifier_contracts.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_hook_registry_selfcheck.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2481,
+      "lines": 80,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_integration.py",
+      "tracked": false,
+      "status": "??",
+      "size": 16913,
+      "lines": 500,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_calibration_cube.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2205,
+      "lines": 56,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_lamp_base.py",
+      "tracked": false,
+      "status": "??",
+      "size": 6636,
+      "lines": 170,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_lamp_shade.py",
+      "tracked": false,
+      "status": "??",
+      "size": 6413,
+      "lines": 167,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_mesh_qa.py",
+      "tracked": false,
+      "status": "??",
+      "size": 4747,
+      "lines": 123,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_orientation_search.py",
+      "tracked": false,
+      "status": "??",
+      "size": 3309,
+      "lines": 86,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_preflight.py",
+      "tracked": false,
+      "status": "??",
+      "size": 5595,
+      "lines": 132,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_slice.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2605,
+      "lines": 73,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_trick_research.py",
+      "tracked": false,
+      "status": "??",
+      "size": 6685,
+      "lines": 146,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_manufacturing_visual_qa.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2541,
+      "lines": 72,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_photo_to_print_e2e.py",
+      "tracked": false,
+      "status": "??",
+      "size": 5022,
+      "lines": 93,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "bambu_x2d",
+          "path": "scripts/bambu_x2d.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_photo_to_print_job.py",
+      "tracked": false,
+      "status": "??",
+      "size": 5294,
+      "lines": 117,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "bambu_x2d",
+          "path": "scripts/bambu_x2d.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_photo_to_print_runner.py",
+      "tracked": false,
+      "status": "??",
+      "size": 4154,
+      "lines": 111,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "bambu_x2d",
+          "path": "scripts/bambu_x2d.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ]
+    },
+    {
+      "path": "scripts/test_rowboat_bridge.py",
+      "tracked": false,
+      "status": "??",
+      "size": 13511,
+      "lines": 318,
+      "local_imports": [
+        {
+          "module": "kg_entity_extractor",
+          "path": "scripts/kg_entity_extractor.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "live_notes_accumulator",
+          "path": "scripts/live_notes_accumulator.py",
+          "tracked": true,
+          "status": "M "
+        },
+        {
+          "module": "rowboat_bridge",
+          "path": "scripts/rowboat_bridge.py",
+          "tracked": true,
+          "status": "M "
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_self_proving_executor.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2509,
+      "lines": 65,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_skill_telemetry_report.py",
+      "tracked": false,
+      "status": "??",
+      "size": 5463,
+      "lines": 151,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_slicer_preview_parse.py",
+      "tracked": false,
+      "status": "??",
+      "size": 3523,
+      "lines": 103,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_theoretical_improvements.py",
+      "tracked": false,
+      "status": "??",
+      "size": 20319,
+      "lines": 539,
+      "local_imports": [
+        {
+          "module": "bft_consensus",
+          "path": "scripts/bft_consensus.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "csp_pipeline_model",
+          "path": "scripts/csp_pipeline_model.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "dempster_shafer",
+          "path": "scripts/dempster_shafer.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "entropy_ambiguity",
+          "path": "scripts/entropy_ambiguity.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "gittins_scheduler",
+          "path": "scripts/gittins_scheduler.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "task_preflight",
+          "path": "scripts/task_preflight.py",
+          "tracked": false,
+          "status": "??"
+        },
+        {
+          "module": "workflow_patterns",
+          "path": "scripts/workflow_patterns.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/test_x2d_ams_helper.py",
+      "tracked": false,
+      "status": "??",
+      "size": 3843,
+      "lines": 104,
+      "local_imports": [],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/tests/test_bambu_3mf_preprint_guard.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2876,
+      "lines": 66,
+      "local_imports": [
+        {
+          "module": "bambu_3mf_preprint_guard",
+          "path": "scripts/bambu_3mf_preprint_guard.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/tests/test_bambu_studio_slice.py",
+      "tracked": false,
+      "status": "??",
+      "size": 2268,
+      "lines": 65,
+      "local_imports": [
+        {
+          "module": "bambu_studio_slice",
+          "path": "scripts/bambu_studio_slice.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ],
+      "dynamic_refs": []
+    },
+    {
+      "path": "scripts/tests/test_bambu_x2d_safety.py",
+      "tracked": false,
+      "status": "??",
+      "size": 3020,
+      "lines": 91,
+      "local_imports": [],
+      "dynamic_refs": [
+        {
+          "module": "bambu_x2d",
+          "path": "scripts/bambu_x2d.py",
+          "tracked": false,
+          "status": "??"
+        }
+      ]
+    }
+  ]
+}
