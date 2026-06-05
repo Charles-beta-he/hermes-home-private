@@ -160,6 +160,9 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertEqual(len(blocked), 2)
         self.assertTrue(any(call.args[0] == "env-1" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
         self.assertTrue(any(call.args[0] == "env-2" and call.args[1] == "RUNNING" for call in update_status.call_args_list))
+        self.assertTrue(any(call.args[0] == "env-1" and call.args[1] == "SKIPPED" and call.kwargs.get("error") == "task_blocked_released" for call in update_status.call_args_list))
+        self.assertTrue(any(call.args[0] == "env-2" and call.args[1] == "SKIPPED" and call.kwargs.get("error") == "task_blocked_released" for call in update_status.call_args_list))
+        self.assertFalse(any(call.args[1] == "BLOCKED" for call in update_status.call_args_list))
 
     def test_consume_claimed_batch_strips_task_id_before_lookup(self):
         row = {"id": "t-strip", "status": "claimed", "title": "strip", "project": "proj", "parallel_boundary": "b", "claimed_by": "hermes-parallel"}
@@ -205,9 +208,11 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
             )
 
         self.assertEqual(result["to_status"], "blocked")
+        self.assertEqual(result["envelope_status"], "SKIPPED")
         transition.assert_called_once()
         self.assertEqual(transition.call_args.args[:2], ("t-blocked", "blocked"))
-        self.assertTrue(any(call.args[0] == "env-blocked" and call.args[1] == "BLOCKED" for call in update_status.call_args_list))
+        self.assertTrue(any(call.args[0] == "env-blocked" and call.args[1] == "SKIPPED" and call.kwargs.get("error") == "task_blocked_released" for call in update_status.call_args_list))
+        self.assertFalse(any(call.args[0] == "env-blocked" and call.args[1] == "BLOCKED" for call in update_status.call_args_list))
 
     def test_consume_claimed_batch_late_timeout_does_not_demote_review(self):
         claimed_row = {"id": "t-late", "status": "claimed", "title": "late", "project": "proj", "parallel_boundary": "b", "claimed_by": "hermes-parallel"}

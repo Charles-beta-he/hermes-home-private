@@ -1905,7 +1905,13 @@ def _process_worker_result(row, actor, eid, worker_result):
         )
         record['blocked_transition'] = blocked
         if blocked.get('ok'):
-            update_status(eid, 'BLOCKED')
+            # A worker-reported blocker is now represented on the canonical brain task.
+            # The envelope successfully performed its handoff/release duty, so do not
+            # count this as a global envelope-bus BLOCKED incident that can freeze
+            # unrelated tasks via human_escape. Missing/invalid proof paths remain
+            # FAILED and still trip the safety breaker.
+            update_status(eid, 'SKIPPED', error='task_blocked_released')
+            record['envelope_status'] = 'SKIPPED'
             record['to_status'] = 'blocked'
         else:
             update_status(eid, 'FAILED', error=str(blocked)[:200])
@@ -2218,7 +2224,11 @@ def consume_claimed_batch(claimed_items, max_agents=3):
             )
             out['blocked_transition'] = blocked
             if blocked.get('ok'):
-                update_status(eid, 'BLOCKED')
+                # Task-level blockers are now captured on the brain task; the
+                # envelope release itself succeeded and should not trip global
+                # human_escape for unrelated work.
+                update_status(eid, 'SKIPPED', error='task_blocked_released')
+                out['envelope_status'] = 'SKIPPED'
                 out['to_status'] = 'blocked'
             else:
                 update_status(eid, 'FAILED', error=str(blocked)[:200])
