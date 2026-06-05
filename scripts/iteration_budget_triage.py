@@ -159,7 +159,7 @@ def build_triage_recommendation(task: dict, cat: dict) -> dict[str, Any]:
 def format_report(triages: list[dict]) -> str:
     """Format triage report for human consumption."""
     if not triages:
-        return "无迭代预算耗尽任务需要分析。"
+        return ""
     
     # Group by recommendation
     groups: dict[str, list] = {}
@@ -227,7 +227,9 @@ def main():
     if "--json" in sys.argv:
         print(json.dumps({"triages": triages, "total": len(triages)}, ensure_ascii=False, indent=2))
     else:
-        print(format_report(triages))
+        report = format_report(triages)
+        if report:
+            print(report)
 
 
 if __name__ == "__main__":

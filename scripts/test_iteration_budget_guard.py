@@ -24,6 +24,7 @@ def load_module(name: str, path: Path):
 
 doctor = load_module("iteration_budget_doctor", ROOT / "iteration_budget_doctor.py")
 budget_tick = load_module("brain_task_budget_tick", ROOT / "brain_task_budget_tick.py")
+triage = load_module("iteration_budget_triage", ROOT / "iteration_budget_triage.py")
 
 
 class IterationBudgetGuardTestCase(unittest.TestCase):
@@ -84,6 +85,9 @@ class IterationBudgetGuardTestCase(unittest.TestCase):
         self.assertEqual(cls["risk"], "low")
         self.assertTrue(cls["allowed_for_auto_claim"])
         self.assertEqual(b["action"], "proceed_bounded")
+
+    def test_triage_is_silent_when_no_budget_exhausted_tasks(self):
+        self.assertEqual(triage.format_report([]), "")
 
 
 if __name__ == "__main__":
