@@ -1,0 +1,20 @@
+{
+  "task_id": "2026-06-05-评估-openjarvis-本地优先-agent-原语对-hermes-local-brain-taskpool-的可迁移治理模式",
+  "artifact": "/Users/charles/.hermes/docs/private/openjarvis-hermes-transfer-matrix-20260606.md",
+  "source_repo": "https://github.com/open-jarvis/OpenJarvis",
+  "validated_at": "2026-06-05T19:59:34.335183+00:00",
+  "sha256": "94b870ff5cabc3aa92717cc39815cf2af975fa478a5c95a9484bf2582ddb451b",
+  "status": "PASS",
+  "checks": {
+    "repo_identity": true,
+    "transfer_matrix": true,
+    "hermes_path_mappings_at_least_3": true,
+    "negative_examples_at_least_2": true,
+    "fail_closed_validation_language": true
+  },
+  "counts": {
+    "modes": 4,
+    "negative_examples": 3,
+    "mapped_paths": 7
+  }
+}
