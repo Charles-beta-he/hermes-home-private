@@ -8348,6 +8348,7 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
 def render_autorun_handoff(task: Task, claim: dict[str, Any], proof_hash: str, actor: str) -> str:
     profile_context = format_project_profile_context(task.project)
     brain_context = format_brain_overlay_contract(task)
+    role_boundary_contract = render_handoff_role_boundary_contract(task)
     return f"""# Auto-Claim Handoff — {task.title}
 
 - task_id: `{task.id}`
@@ -8364,6 +8365,8 @@ def render_autorun_handoff(task: Task, claim: dict[str, Any], proof_hash: str, a
 - Do not mark the task done from this handoff.
 - Runner must perform bounded execution, write concrete evidence, transition `running -> review`, and only then use proof-gated `review -> done`.
 - If any gate fails, release/retry/block; never force close.
+
+{role_boundary_contract}
 
 ## Suggested Runner Prompt
 
@@ -8389,6 +8392,33 @@ Claim has already been acquired. Work only within the task's stated workspace/co
 """
 
 
+def render_handoff_role_boundary_contract(task: Task) -> str:
+    """Render the SSOT/controller/proof boundary every worker handoff must preserve.
+
+    The contract is intentionally textual and deterministic so handoff artifacts
+    can be read back by humans, workers, and tests without treating the handoff
+    itself as implementation evidence. It mirrors the Ruflo-style split between
+    orchestration ledger state and executor-owned proof while preserving Hermes'
+    canonical taskpool SSOT.
+    """
+    acceptance = list_value(task.fm.get("acceptance_criteria"))
+    acceptance_line = json.dumps(acceptance, ensure_ascii=False) if acceptance else "use task note Acceptance Criteria / acceptance_evidence"
+    parallel_boundary = str(task.fm.get("parallel_boundary") or "").strip()
+    workspace = str(task.fm.get("workspace") or "").strip()
+    workspace_isolation = str(task.fm.get("workspace_isolation") or "").strip()
+    return f"""## Role-Boundary Evidence Contract
+
+- ssot: `brain_task_orchestrator.py + kanban.db + task note {task.id}` remain the canonical taskpool ledger; this handoff is only a derived execution packet.
+- controller_not_proof: claim state, batch metadata, proof hashes, selfcheck, and proof-check prove control-plane integrity only; they do not prove the feature/task is delivered.
+- executor_proof_required: the worker must produce feature-specific implementation evidence tied to acceptance criteria, such as code/config/script diffs plus focused tests, dry-run, read-back, browser/curl, benchmark, or real API regression evidence as applicable.
+- acceptance_source: {acceptance_line}
+- parallel_boundary: `{parallel_boundary or '(task metadata / boundary classifier)'}`
+- workspace: `{workspace or '(not specified)'}`
+- workspace_isolation: `{workspace_isolation or 'none'}`
+- stop_conditions: missing acceptance-specific proof, boundary/workspace uncertainty, permission/auth/quota blocker, failing deterministic verification, or need to weaken lifecycle/proof/permission gates => stop and transition to retry/blocked/review gap; never force done.
+"""
+
+
 def render_parallel_handoff(task: Task, claim: dict[str, Any], boundary_info: dict[str, Any], actor: str, run_id: str, batch_id: str, batch_index: int) -> str:
     """Render a per-task handoff artifact for parallel dispatch.
 
@@ -8406,6 +8436,7 @@ def render_parallel_handoff(task: Task, claim: dict[str, Any], boundary_info: di
     workspace = str(task.fm.get("workspace") or "").strip()
     profile_context = format_project_profile_context(task.project)
     brain_context = format_brain_overlay_contract(task)
+    role_boundary_contract = render_handoff_role_boundary_contract(task)
     return f"""# Parallel Handoff — {task.title}
 
 - task_id: `{task.id}`
@@ -8452,6 +8483,8 @@ def render_parallel_handoff(task: Task, claim: dict[str, Any], boundary_info: di
   then use proof-gated `review -> done`.
 - If any gate fails, release/retry/block; never force close.
 - This handoff is part of batch `{batch_id}` with {boundary_info.get('batch_size', '?')} task(s).
+
+{role_boundary_contract}
 
 ## Claim Result
 
