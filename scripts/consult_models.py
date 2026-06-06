@@ -29,6 +29,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 from datetime import datetime, timezone
@@ -94,6 +95,16 @@ try:
     import model_quota
 except Exception:  # quota must be best-effort, never break legacy fan-out import
     model_quota = None
+
+_MODEL_QUOTA_LOCK = threading.Lock()
+
+
+def record_model_quota_call(**kwargs: Any) -> None:
+    """Serialize best-effort quota state writes during concurrent planner fan-out."""
+    if not model_quota:
+        return
+    with _MODEL_QUOTA_LOCK:
+        model_quota.record_call(**kwargs)
 
 
 def load_quorum() -> dict:
@@ -3480,11 +3491,11 @@ def call_deepseek_api(prompt: str, model: str, timeout: int = DEFAULT_TIMEOUT) -
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             body = resp.read().decode("utf-8")
             if model_quota:
-                model_quota.record_call(model=model, provider="deepseek", ok=True, headers=dict(resp.headers), usage={})
+                record_model_quota_call(model=model, provider="deepseek", ok=True, headers=dict(resp.headers), usage={})
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")[:500]
         if model_quota:
-            model_quota.record_call(model=model, provider="deepseek", ok=False, headers=dict(e.headers or {}), error=detail)
+            record_model_quota_call(model=model, provider="deepseek", ok=False, headers=dict(e.headers or {}), error=detail)
         raise RuntimeError(f"DeepSeek API HTTP {e.code}: {detail}") from e
     data = json.loads(body)
     return data["choices"][0]["message"]["content"]
@@ -3603,21 +3614,21 @@ def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = 
         except subprocess.TimeoutExpired as e:
             message = f"Claude Code CLI timed out after {timeout}s"
             if model_quota:
-                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+                record_model_quota_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
             raise ModelRuntimeError(message, raw_response=_truncate_runtime_error_text(getattr(e, "stdout", "") or getattr(e, "stderr", ""), 2000), status="timeout") from e
         except OSError as e:
             message = f"Claude Code CLI invocation failed: {_truncate_runtime_error_text(str(e), 500)}"
             if model_quota:
-                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+                record_model_quota_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
             raise ModelRuntimeError(message, status="oserror") from e
         decoded = _decode_claude_code_output(r.stdout)
         if r.returncode != 0 or decoded.get("is_error"):
             message = _claude_code_failure_message(r.stdout, r.stderr, r.returncode)
             if model_quota:
-                model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+                record_model_quota_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
             raise ModelRuntimeError(message, raw_response=_truncate_runtime_error_text(r.stdout or r.stderr or message, 2000), status=decoded.get("api_error_status"))
         if model_quota:
-            model_quota.record_call(model=model, provider="claude-code", ok=True, headers={}, usage={})
+            record_model_quota_call(model=model, provider="claude-code", ok=True, headers={}, usage={})
         return decoded.get("result_text") or r.stdout
     hermes_bin = shutil.which("hermes") or "hermes"
     cmd = [hermes_bin, "chat", "-q", prompt, "--model", model, "--quiet", "--max-turns", "1", "--source", "multi-brain-discussion", "--ignore-rules"]
@@ -3626,10 +3637,10 @@ def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = 
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     if r.returncode != 0:
         if model_quota:
-            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
+            record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
         raise RuntimeError((r.stderr or r.stdout)[:500])
     if model_quota:
-        model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
+        record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
     return r.stdout
 
 
@@ -3764,7 +3775,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
             if r.returncode != 0 or decoded.get("is_error"):
                 message = _claude_code_failure_message(r.stdout, r.stderr, r.returncode)
                 if model_quota:
-                    model_quota.record_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
+                    record_model_quota_call(model=model, provider="claude-code", ok=False, headers={}, error=message[:500])
                 plan = generate_shadow_plan(model, state_hash, tier, chain_id)
                 plan["meta"]["confidence"] = 0.2
                 plan["diagnosis"]["summary"] = f"{model} Claude Code runtime failed: {message[:240]}"
@@ -3781,7 +3792,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         else:
             if r.returncode != 0:
                 if model_quota:
-                    model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
+                    record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=(r.stderr or r.stdout)[:500])
                 plan = generate_shadow_plan(model, state_hash, tier, chain_id)
                 plan["meta"]["confidence"] = 0.2
                 plan["diagnosis"]["summary"] = f"{model} adapter {adapter} failed: {_truncate_runtime_error_text(r.stderr or r.stdout, 240)}"
@@ -3790,11 +3801,11 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         parsed = extract_plan_json(raw_stdout)
         plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
         if model_quota:
-            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
+            record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
         return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
     except subprocess.TimeoutExpired:
         if model_quota:
-            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=f"timeout after {timeout}s")
+            record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=f"timeout after {timeout}s")
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} timed out after {timeout}s via adapter"
@@ -3802,14 +3813,14 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
     except ModelRuntimeError as e:
         message = _truncate_runtime_error_text(str(e), 500)
         if model_quota:
-            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=message[:500])
+            record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=message[:500])
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} runtime failed: {message[:240]}"
         return plan, {"ok": False, "adapter": adapter, "provider": provider, "api_error_status": getattr(e, "status", None), "error": message[:500]}
     except (json.JSONDecodeError, ValueError, OSError) as e:
         if model_quota:
-            model_quota.record_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=str(e)[:500])
+            record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=False, headers={}, error=str(e)[:500])
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} output parse/invoke failed: {e}"
@@ -3947,57 +3958,148 @@ def run_fanout(
 
     # ── 6. Fan-out: 为每个 planner 生成计划 ──
     plan_files = []
-    success_count = 0
-    fail_count = 0
-
+    planner_jobs = []
+    seen_safe_names = set()
     for model in planners:
-        safe_name = model.replace("/", "_").replace(" ", "_")
+        safe_base = model.replace("/", "_").replace(" ", "_") or "planner"
+        safe_name = safe_base
+        suffix = 2
+        while safe_name in seen_safe_names:
+            safe_name = f"{safe_base}-{suffix}"
+            suffix += 1
+        seen_safe_names.add(safe_name)
         plan_file = os.path.join(plans_dir, f"{safe_name}.json")
         plan_files.append(plan_file)
+        planner_jobs.append((model, safe_name, plan_file))
 
+    def _planner_failure_plan(model: str, error_kind: str, detail: str) -> dict:
+        return {
+            "meta": {
+                "planner_model": model,
+                "planner_role": "architect",
+                "state_hash": state_hash,
+                "tier_target": tier,
+                "confidence": 0.0,
+                "cost_usd": 0.0,
+                "latency_ms": 0,
+                "chain_id": chain_id,
+            },
+            "diagnosis": {
+                "root_cause_class": "planner_failure",
+                "evidence_field_ids": [],
+                "summary": f"{error_kind}: {detail[:240]}",
+            },
+            "patches": [],
+            "verification": {
+                "expected_metric_delta": {"main_pass_rate": 0.0},
+                "guard_metrics": ["main_pass_rate"],
+                "tier_eval_plan": "T0_only",
+            },
+            "evidence_requests": [],
+            "rollback_signal": {"auto_rollback_if": "planner_failure", "kill_switch_inc": False},
+            "error": error_kind,
+            "detail": detail,
+        }
+
+    def _planner_failure_result(model: str, safe_name: str, plan_file: str, exc: Exception) -> dict:
+        error_plan = _planner_failure_plan(model, "planner_worker_exception", str(exc))
+        try:
+            with open(plan_file, "w") as f:
+                json.dump(error_plan, f, indent=2, ensure_ascii=False)
+        except OSError:
+            pass
+        return {
+            "model": model,
+            "safe_name": safe_name,
+            "plan_file": plan_file,
+            "adapter_info": {"ok": False, "adapter": "planner_worker", "error": str(exc)},
+        }
+
+    def _planner_worker(model: str, safe_name: str, plan_file: str) -> dict:
         print(f"[consult_models] → {model} planning...", file=sys.stderr)
-
         if shadow:
-            # Phase 0: 生成影子模板
             plan = generate_shadow_plan(model, state_hash, tier, chain_id)
-            with open(plan_file, "w") as f:
-                json.dump(plan, f, indent=2, ensure_ascii=False)
-            success_count += 1
-            emit_phase_event(
-                "planner_done", chain_id, f"planner-{safe_name}",
-                "pass", f"Shadow plan generated for {model}",
-                {"model": model, "shadow": True}
-            )
+            adapter_info = {"ok": True, "adapter": "shadow"}
         else:
-            # Phase 1+: 通过模型专属 adapter 实际调用，不再用 Claude 冒充所有 planner。
-            prompt = build_planner_prompt(state, state_hash, model, tier)
-            plan, adapter_info = call_planner_model(
-                model=model,
-                prompt=prompt,
-                state_hash=state_hash,
-                tier=tier,
-                chain_id=chain_id,
-                config=config,
-                timeout=timeout,
-            )
-            with open(plan_file, "w") as f:
-                json.dump(plan, f, indent=2, ensure_ascii=False)
+            try:
+                prompt = build_planner_prompt(state, state_hash, model, tier)
+                plan, adapter_info = call_planner_model(
+                    model=model,
+                    prompt=prompt,
+                    state_hash=state_hash,
+                    tier=tier,
+                    chain_id=chain_id,
+                    config=config,
+                    timeout=timeout,
+                )
+            except Exception as exc:
+                plan = _planner_failure_plan(model, "planner_exception", str(exc))
+                adapter_info = {"ok": False, "adapter": "planner_exception", "error": str(exc)}
+        with open(plan_file, "w") as f:
+            json.dump(plan, f, indent=2, ensure_ascii=False)
+        return {"model": model, "safe_name": safe_name, "plan_file": plan_file, "adapter_info": adapter_info}
 
-            ok = bool(adapter_info.get("ok"))
-            if ok:
-                success_count += 1
-            else:
-                fail_count += 1
+    multimodel_config = config.get("multimodel", {}) if isinstance(config, dict) else {}
+    if not isinstance(multimodel_config, dict):
+        multimodel_config = {}
+    model_workers_raw = multimodel_config.get(
+        "max_model_workers_per_task",
+        config.get("max_model_workers_per_task", 3) if isinstance(config, dict) else 3,
+    )
+    try:
+        max_model_workers = int(model_workers_raw)
+    except (TypeError, ValueError):
+        max_model_workers = 3
+    max_model_workers = max(1, min(len(planner_jobs), max_model_workers))
 
-            verdict = "pass" if ok else (
-                "timeout" if "timeout_s" in adapter_info else "fail"
-            )
-            emit_phase_event(
-                "planner_done", chain_id, f"planner-{safe_name}",
-                verdict,
-                f"{model} plan {'completed' if ok else 'failed'} via {adapter_info.get('adapter')}",
-                {"model": model, "shadow": False, "adapter": adapter_info}
-            )
+    success_count = 0
+    fail_count = 0
+    completed_by_plan_file = {}
+    if max_model_workers <= 1 or len(planner_jobs) <= 1:
+        for model, safe_name, plan_file in planner_jobs:
+            try:
+                completed_by_plan_file[plan_file] = _planner_worker(model, safe_name, plan_file)
+            except Exception as exc:
+                completed_by_plan_file[plan_file] = _planner_failure_result(model, safe_name, plan_file, exc)
+    else:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        with ThreadPoolExecutor(max_workers=max_model_workers) as executor:
+            futures = {
+                executor.submit(_planner_worker, model, safe_name, plan_file): (model, safe_name, plan_file)
+                for model, safe_name, plan_file in planner_jobs
+            }
+            for future in as_completed(futures):
+                model, safe_name, plan_file = futures[future]
+                try:
+                    completed_by_plan_file[plan_file] = future.result()
+                except Exception as exc:
+                    completed_by_plan_file[plan_file] = _planner_failure_result(model, safe_name, plan_file, exc)
+
+    completed_jobs = [completed_by_plan_file[plan_file] for _, _, plan_file in planner_jobs]
+
+    for completed in completed_jobs:
+        model = completed["model"]
+        safe_name = completed["safe_name"]
+        adapter_info = completed["adapter_info"]
+        ok = bool(adapter_info.get("ok"))
+        if ok:
+            success_count += 1
+        else:
+            fail_count += 1
+        verdict = "pass" if ok else (
+            "timeout" if "timeout_s" in adapter_info else "fail"
+        )
+        if shadow:
+            summary = f"Shadow plan generated for {model}"
+            extensions = {"model": model, "shadow": True, "adapter": adapter_info}
+        else:
+            summary = f"{model} plan {'completed' if ok else 'failed'} via {adapter_info.get('adapter')}"
+            extensions = {"model": model, "shadow": False, "adapter": adapter_info}
+        emit_phase_event(
+            "planner_done", chain_id, f"planner-{safe_name}",
+            verdict, summary, extensions
+        )
 
     # ── 7. 降级检查 ──
     degradation = quorum.get("degradation", {})
