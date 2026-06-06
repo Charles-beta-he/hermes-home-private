@@ -11,12 +11,20 @@ from hermes_evolution_store import default_store
 STORE = default_store()
 HEALTH_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/health-history.jsonl")
 DASHBOARD_PATH = os.path.expanduser("~/.hermes/notes/engineering-cybernetics/evolution-dashboard.md")
-DB_RESOLUTION = STORE.resolve_artifact(os.path.join("bayesian-agent", "confidence-db.json"), intent="read")
-RESULTS_RESOLUTION = STORE.resolve_artifact(os.path.join("darwin-skill", "results.tsv"), intent="read")
-DB_PATH = str(DB_RESOLUTION.path)
-RESULTS_PATH = str(RESULTS_RESOLUTION.path)
-DB_SOURCE = DB_RESOLUTION.source
-RESULTS_SOURCE = RESULTS_RESOLUTION.source
+
+
+def configure_sources():
+    """Resolve runtime evolution sources after tests or callers configure STORE."""
+    global DB_RESOLUTION, RESULTS_RESOLUTION, DB_PATH, RESULTS_PATH, DB_SOURCE, RESULTS_SOURCE
+    DB_RESOLUTION = STORE.resolve_artifact(os.path.join("bayesian-agent", "confidence-db.json"), intent="read")
+    RESULTS_RESOLUTION = STORE.resolve_artifact(os.path.join("darwin-skill", "results.tsv"), intent="read")
+    DB_PATH = str(DB_RESOLUTION.path)
+    RESULTS_PATH = str(RESULTS_RESOLUTION.path)
+    DB_SOURCE = DB_RESOLUTION.source
+    RESULTS_SOURCE = RESULTS_RESOLUTION.source
+
+
+configure_sources()
 
 def get_vdot(record):
     """Return V̇ across historical schema aliases (Vdot and V_dot)."""
@@ -40,7 +48,7 @@ def refresh():
     if os.path.exists(DB_PATH):
         with open(DB_PATH, "r") as f:
             conf_db = json.load(f)
-        if DB_SOURCE != "active":
+        if DB_SOURCE not in {"active", "canonical"}:
             data_warnings.append(f"active confidence-db 缺失；降级读取 {DB_PATH}")
     else:
         conf_db = {"skills": {}}
@@ -65,7 +73,7 @@ def refresh():
     if os.path.exists(RESULTS_PATH):
         with open(RESULTS_PATH, "r") as f:
             results_lines = f.readlines()
-        if RESULTS_SOURCE != "active":
+        if RESULTS_SOURCE not in {"active", "canonical"}:
             data_warnings.append(f"active results.tsv 缺失；降级读取 {RESULTS_PATH}")
     else:
         results_lines = []

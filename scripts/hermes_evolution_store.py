@@ -192,7 +192,7 @@ def classify_nightly_result(returncode: int, stdout: str, stderr: str) -> dict[s
     elif state_advanced:
         status = "OK"
     elif effective_audit:
-        status = "WARN"
+        status = "OK"
     else:
         status = "WARN"
 
@@ -205,7 +205,7 @@ def classify_nightly_result(returncode: int, stdout: str, stderr: str) -> dict[s
     if returncode != 0:
         reasons.append("script_returncode_nonzero")
     if effective_audit and not state_advanced:
-        reasons.append("audit_without_state_advancement")
+        reasons.append("audit_without_state_advancement" if degraded or returncode != 0 else "no_state_change")
     if not effective_audit:
         reasons.append("no_effective_audit_detected")
 
