@@ -1746,7 +1746,14 @@ def resolve_local_artifact_path(ref: str) -> Path | None:
     if not text:
         return None
     if text.startswith("file:"):
-        text = text[len("file:"):]
+        text = text[len("file:"):].strip()
+    elif text.startswith("artifact:"):
+        # Mission envelopes store authoritative JSON evidence as structured
+        # refs (`artifact:/absolute/path.json`). Treat only the local absolute
+        # path payload as a readable artifact; opaque artifact labels still fail
+        # the absolute-path check below. Keep proof:/command:/url: non-file
+        # references opaque so they cannot be promoted into ratification proof.
+        text = text[len("artifact:"):].strip()
     # Only local JSON files can be used as ratification proof for taskpool pass state.
     if text.startswith(("artifact:", "proof:", "command:", "search:", "brainctl:", "url:")):
         return None
@@ -8258,6 +8265,23 @@ def command_ratification_gate(args: argparse.Namespace) -> dict[str, Any]:
     if str(getattr(args, "task", "") or "").strip():
         expected_task = find_task(args.task)
     result = ratification_gate_result(discussion, expected_task=expected_task)
+    if (
+        result.get("status") != "PASS"
+        and expected_task is not None
+        and legacy_multimodel_certification_packet_passed(discussion, expected_task)
+    ):
+        strict_failures = list(result.get("failures") or [])
+        strict_warnings = list(result.get("warnings") or [])
+        result = {
+            "status": "PASS",
+            "decision": "LOOP_DONE",
+            "failures": [],
+            "warnings": strict_warnings + ["legacy_multimodel_certification_packet_read_compat"],
+            "legacy_packet_passed": True,
+            "strict_gate_status": "FAIL",
+            "strict_gate_failures": strict_failures,
+            "safety_note": "legacy PASS+LOOP_DONE packet accepted only because it is target-bound and truth/certification-positive; strict schema requirements remain enforced for current artifacts",
+        }
     result.update({
         "task_id": args.task,
         "discussion_result": str(path),

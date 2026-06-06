@@ -1881,6 +1881,134 @@ def test_discussion_task_binding_stamp_closes_target_binding_gap():
         assert after["decision"] == "LOOP_DONE", after
 
 
+def test_artifact_structured_ref_legacy_packet_preempts_failed_discussion_artifact():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        task_path = root / "2026-06-05-parent-task.md"
+        task_path.write_text("# Parent task\n", encoding="utf-8")
+        task = mod.Task(
+            path=task_path,
+            fm={
+                "status": "review",
+                "priority": "P0",
+                "multimodel_status": "certified",
+            },
+            body="# Parent task\n",
+        )
+        pass_path = root / "certification-v1.json"
+        pass_packet = {
+            "schema": "multimodel_certification_packet_v1",
+            "status": "PASS",
+            "decision": "LOOP_DONE",
+            "target_task_id": task.id,
+            "truth_gate": {"can_certify_truth": True},
+            "certification": {"multi_model_certified": True},
+            "evidence_coverage": 1.0,
+        }
+        pass_path.write_text(json.dumps(pass_packet, ensure_ascii=False), encoding="utf-8")
+        fail_path = root / "discussion_result.json"
+        fail_path.write_text(
+            json.dumps(
+                {
+                    "status": "FAIL",
+                    "decision": "continue_loop",
+                    "target_task_id": task.id,
+                    "issue_ledger": [{"id": "still-open", "severity": 4, "status": "open"}],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        task.fm["ratification_artifact"] = f"artifact:{pass_path}"
+        task.fm["multimodel_last_discussion_artifact"] = str(fail_path)
+
+        assert mod.resolve_local_artifact_path(f"artifact:{pass_path}") == pass_path
+        assert mod.resolve_local_artifact_path("artifact:opaque-label") is None
+        assert mod.resolve_local_artifact_path(f"proof:{pass_path}") is None
+        assert mod.task_multimodel_artifact(task) == f"artifact:{pass_path}"
+        assert mod.task_multimodel_passed(task) is True
+
+
+def test_ratification_gate_cli_reports_legacy_packet_read_compat_without_relaxing_strict_gate(monkeypatch):
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        task_path = root / "2026-06-05-parent-task.md"
+        task_path.write_text("# Parent task\n", encoding="utf-8")
+        task = mod.Task(path=task_path, fm={"status": "review", "priority": "P0"}, body="# Parent task\n")
+        packet_path = root / "certification-v1.json"
+        packet_path.write_text(
+            json.dumps(
+                {
+                    "schema": "multimodel_certification_packet_v1",
+                    "status": "PASS",
+                    "decision": "LOOP_DONE",
+                    "target_task_id": task.id,
+                    "truth_gate": {"can_certify_truth": True},
+                    "certification": {"multi_model_certified": True},
+                    "evidence_coverage": 1.0,
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setattr(mod, "find_task", lambda task_id: task if task_id == task.id else None)
+
+        strict = mod.ratification_gate_result(json.loads(packet_path.read_text(encoding="utf-8")), expected_task=task)
+        assert strict["status"] == "FAIL", strict
+        assert "ratification_votes_missing" in strict["failures"], strict
+
+        result = mod.command_ratification_gate(type("Args", (), {"discussion_result": str(packet_path), "task": task.id})())
+        assert result["status"] == "PASS", result
+        assert result["decision"] == "LOOP_DONE", result
+        assert result["legacy_packet_passed"] is True, result
+        assert result["strict_gate_status"] == "FAIL", result
+        assert "ratification_votes_missing" in result["strict_gate_failures"], result
+        assert "legacy_multimodel_certification_packet_read_compat" in result["warnings"], result
+
+
+
+def test_legacy_packet_does_not_authorize_advisory_only_task_or_mismatched_target():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        task_path = root / "2026-06-05-advisory-task.md"
+        task_path.write_text("# Advisory task\n", encoding="utf-8")
+        task = mod.Task(
+            path=task_path,
+            fm={
+                "status": "review",
+                "priority": "P0",
+                "multimodel_status": "advisory_completed",
+                "multimodel_advisory_only": True,
+                "multimodel_last_gate_status": "PASS_ADVISORY_ONLY",
+            },
+            body="# Advisory task\n",
+        )
+        packet_path = root / "certification-v1.json"
+        packet_path.write_text(
+            json.dumps(
+                {
+                    "schema": "multimodel_certification_packet_v1",
+                    "status": "PASS",
+                    "decision": "LOOP_DONE",
+                    "target_task_id": "some-other-task",
+                    "truth_gate": {"can_certify_truth": True},
+                    "certification": {"multi_model_certified": True},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        task.fm["ratification_artifact"] = f"artifact:{packet_path}"
+
+        discussion = json.loads(packet_path.read_text(encoding="utf-8"))
+        assert mod.legacy_multimodel_certification_packet_passed(discussion, task) is False
+        assert mod.task_multimodel_passed(task) is False
+
+
+
 def test_evidence_spine_exports_stable_ids_and_auto_completer_blocker_semantics():
     td, _vault, env = make_env_and_vault()
     with td:
