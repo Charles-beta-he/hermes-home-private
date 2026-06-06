@@ -51,3 +51,27 @@
 - Landing zone: `local-brain` retrieval/memory index evaluation, not UVISA.
 - First slice: benchmark/evaluate against Hermes local-brain retrieval needs with a redacted/synthetic corpus; no private notes indexing during intake.
 - Red line: do not install/run third-party code on private brain data without explicit approval and redaction boundary.
+
+## Source C: WeChat video — Horizon/Trending self-evolving knowledge pipeline
+
+- User source: `https://weixin.qq.com/sph/Ahn8Q05Lc1`
+- Browser-resolved page: `https://channels.weixin.qq.com/finder-preview/pages/sph?id=Ahn8Q05Lc1`
+- Visible title/body: `Horizon/Trending 每天自动获取最新知识，ai每天蒸馏方法论,每天基于方法论输出我们需要的数字资产 #知识库 #自进化 #自成长 #ai工具`
+- Author visible: `AI樟榆树`
+- Date visible: `2026年6月6日`
+- Cover OCR: `让知识库自进化`, `Horizon/Trending`, `每天自动抓取`, `知识库每天蒸馏方法论`, `每天基于方法论输出数字资产`
+- Repo/source status: no canonical public GitHub repo identified from exact title/search at intake time; treat as a workflow/pattern signal, not a verified open-source project.
+
+### Transferable mechanisms for Hermes local-brain / taskpool
+
+1. Daily source acquisition: curated trending/news/repo inputs become governed candidate signals, not raw feed dumps.
+2. Methodology distillation: repeated source patterns are converted into reusable methods/skills/templates/checklists.
+3. Asset generation: distilled methods produce durable digital assets such as skills, taskpool tasks, reference notes, eval fixtures, scripts, or report templates.
+4. Feedback loop: assets are validated by selfcheck/proof gates and later task outcomes, then promoted/archived.
+5. Boundary: this is a class-level pipeline design signal, not evidence that the named Horizon/Trending implementation is available or safe.
+
+### Hermes landing boundary
+
+- Landing zone: `local-brain` + `feeds` + `taskpool` + `skill-graph` pipeline governance.
+- First slice: design a governed `source signal -> method atom -> generated asset -> verification -> promotion` pipeline using existing Hermes primitives.
+- Red line: do not auto-install unknown Horizon/Trending code, do not indiscriminately ingest all trending items, and do not let generated assets bypass evidence/proof gates.
