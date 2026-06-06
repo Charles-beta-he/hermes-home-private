@@ -51,7 +51,13 @@ def run(env, *args, check=True):
         if injected:
             args[insert_at:insert_at] = injected
     cmd = [sys.executable, str(SCRIPT), *args]
-    r = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    proc_env = env.copy()
+    # Unit tests exercise orchestrator behavior inside isolated temporary vaults.
+    # Disable real taskpool event hooks for subprocess-based CLI calls so tests
+    # cannot race against background multimodel/autorun side effects; direct
+    # hook-specific tests monkeypatch maybe_fire_taskpool_event_hook in-process.
+    proc_env.setdefault("HERMES_TASKPOOL_EVENT_HOOK_DISABLED", "1")
+    r = subprocess.run(cmd, capture_output=True, text=True, env=proc_env)
     if check and r.returncode != 0:
         raise AssertionError(f"command failed {cmd}\nstdout={r.stdout}\nstderr={r.stderr}")
     return r
@@ -356,7 +362,7 @@ auto_subtask_ready_for_parent: false
 
 def add_mission_node_fields(task_path, *, mission_id="mission-alpha", node_id="node-a", depends_on=None, gates=None):
     depends_on = depends_on or []
-    gates = gates or []
+    gates = gates if gates is not None else ["fixture-mission-node-gate"]
     text = task_path.read_text(encoding="utf-8")
     marker = "evidence: []"
     fields = (
@@ -432,7 +438,7 @@ def test_mission_envelope_create_boundary_synthesizes_complete_envelope():
 
 
 
-def test_mission_envelope_certified_accepts_existing_absolute_ratification_artifact():
+def test_mission_envelope_certified_requires_structured_ratification_ref():
     td, vault, env = make_env_and_vault()
     old_env = os.environ.copy()
     with td:
@@ -462,10 +468,35 @@ def test_mission_envelope_certified_accepts_existing_absolute_ratification_artif
                 "proof_artifacts": [f"artifact:{artifact}"],
                 "rollback_signal": "revert fixture",
                 "certification_status": "certified",
-                "ratification_artifact": str(artifact),
+                "ratification_artifact": f"artifact:{artifact}",
             }
-            assert mod.evidence_is_structured(str(artifact)) is True
+            assert mod.evidence_is_structured(str(artifact)) is False
+            assert mod.evidence_is_structured(f"artifact:{artifact}") is True
             assert mod.mission_envelope_missing(fm) == []
+
+            fm["ratification_artifact"] = str(artifact)
+            assert "ratification_artifact:structured_ref" in mod.mission_envelope_missing(fm)
+            assert "certified_requires_ratification_artifact" in mod.mission_envelope_missing(fm)
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+
+
+def test_mission_structured_ref_canonicalizes_absolute_paths_even_when_present():
+    td, vault, env = make_env_and_vault()
+    old_env = os.environ.copy()
+    with td:
+        try:
+            os.environ.update(env)
+            mod = load_orchestrator_module()
+            artifact = vault / "present.json"
+            artifact.write_text("{}", encoding="utf-8")
+            missing_artifact = vault / "missing.json"
+
+            assert mod._mission_structured_ref(str(artifact)) == f"artifact:{artifact}"
+            assert mod._mission_structured_ref(str(missing_artifact)) == f"artifact:{missing_artifact}"
+            assert mod._mission_structured_ref("https://web-check.xyz/") == "url:https://web-check.xyz/"
+            assert mod._mission_structured_ref(f"artifact:{artifact}") == f"artifact:{artifact}"
         finally:
             os.environ.clear()
             os.environ.update(old_env)
@@ -1254,6 +1285,11 @@ def test_lane_architecture_alignment_and_work_priority_gate():
             "2099-01-01",
             "--json",
         ).stdout)
+
+        work_path = Path(work["created"])
+        work_text = work_path.read_text(encoding="utf-8")
+        work_text = work_text.replace("workflow_contract:", "source_weighting_policy_ref: project-profile:uvisa-app-2.0-work:test\nworkflow_contract:", 1)
+        work_path.write_text(work_text, encoding="utf-8")
 
         rows = json.loads(run(env, "list", "--json").stdout)["rows"]
         evo_row = next(r for r in rows if r["id"] == evo["id"])
@@ -2640,6 +2676,8 @@ def test_multimodel_step_marks_task_running_while_external_process_is_inflight_t
     td, _vault, env = make_env_and_vault()
     with td:
         old_env = os.environ.copy()
+        original_subprocess_run = None
+        mod = None
         try:
             os.environ.update(env)
             os.environ["HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"] = "1"
@@ -2702,6 +2740,7 @@ def test_multimodel_step_marks_task_running_while_external_process_is_inflight_t
 
             setattr(mod, "command_multimodel_intervention_dry_run", fake_dry_run)
             setattr(mod, "ratification_gate_result", lambda _discussion, expected_task=None: {"status": "PASS", "decision": "LOOP_DONE", "failures": []})
+            original_subprocess_run = mod.subprocess.run
             mod.subprocess.run = fake_run
 
             result = mod.command_multimodel_intervention_step(type("Args", (), {"task": task_id, "json": True})())
@@ -2712,6 +2751,8 @@ def test_multimodel_step_marks_task_running_while_external_process_is_inflight_t
             assert not final_task.fm.get("claimed_by"), final_task.fm
             assert any(str(e).startswith("command: multimodel-intervention-step") for e in final_task.fm.get("evidence", [])), final_task.fm
         finally:
+            if original_subprocess_run is not None and mod is not None:
+                mod.subprocess.run = original_subprocess_run
             os.environ.clear()
             os.environ.update(old_env)
 
@@ -2720,6 +2761,9 @@ def test_multimodel_step_background_spawns_durable_job_without_waiting_for_model
     td, _vault, env = make_env_and_vault()
     with td:
         old_env = os.environ.copy()
+        original_subprocess_run = None
+        original_subprocess_popen = None
+        mod = None
         try:
             os.environ.clear()
             os.environ.update(env)
@@ -2773,6 +2817,8 @@ def test_multimodel_step_background_spawns_durable_job_without_waiting_for_model
             def fake_run(*_args, **_kwargs):
                 calls["run"] += 1
                 raise AssertionError("background start must not run consult_models synchronously")
+            original_subprocess_popen = mod.subprocess.Popen
+            original_subprocess_run = mod.subprocess.run
             mod.subprocess.Popen = fake_popen
             mod.subprocess.run = fake_run
 
@@ -2784,6 +2830,10 @@ def test_multimodel_step_background_spawns_durable_job_without_waiting_for_model
             assert list(mod.MULTIMODEL_ASYNC_JOB_DIR.glob("*.json")), result
             assert mod.find_task(task.id).status == "running"
         finally:
+            if original_subprocess_popen is not None and mod is not None:
+                mod.subprocess.Popen = original_subprocess_popen
+            if original_subprocess_run is not None and mod is not None:
+                mod.subprocess.run = original_subprocess_run
             os.environ.clear()
             os.environ.update(old_env)
 

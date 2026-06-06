@@ -1327,13 +1327,13 @@ def _mission_structured_ref(value: Any) -> str:
     text = str(value or "").strip()
     if not text:
         return ""
-    if evidence_is_structured(text):
-        return text
     if text.startswith(("http://", "https://")):
         return f"url:{text}"
     expanded = Path(os.path.expanduser(text))
     if expanded.is_absolute():
         return f"artifact:{expanded}"
+    if evidence_is_structured(text):
+        return text
     return f"proof:{text}"
 
 
@@ -3660,8 +3660,7 @@ def evidence_is_structured(e: str) -> bool:
     )
     if e.startswith(prefixes):
         return True
-    p = Path(os.path.expanduser(e))
-    return p.is_absolute() and p.exists()
+    return False
 
 
 def _evidence_blob(evidence: list[str]) -> str:
@@ -3767,11 +3766,12 @@ def _final_landed_evidence_classes(evidence: list[str]) -> tuple[bool, bool]:
             if any(token in payload for token in FINAL_LANDED_VERIFICATION_TOKENS):
                 has_verification = True
             continue
-        # Backward-compatible structured evidence that points at an existing
-        # absolute path can be an implementation artifact only when the path is
-        # inside a known code/config surface; docs/private review reports should
-        # not accidentally count as final landing.
-        if text.startswith("/") and any(marker in text for marker in FINAL_LANDED_CODE_PATH_MARKERS):
+        # Explicit artifact refs can count as implementation evidence only when
+        # they point inside known code/config surfaces; docs/private review
+        # reports should not accidentally count as final landing. Bare absolute
+        # paths are rejected by evidence_is_structured and must be artifact:/...
+        # refs before they reach lifecycle closeout.
+        if prefix == "artifact" and any(marker in payload for marker in FINAL_LANDED_CODE_PATH_MARKERS):
             has_implementation = True
         if any(token in text for token in FINAL_LANDED_VERIFICATION_TOKENS):
             has_verification = True
@@ -4092,7 +4092,7 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
         failures.append(f"transition to {to_status} requires structured --evidence")
     invalid_evidence = [e for e in evidence if not evidence_is_structured(str(e))]
     if invalid_evidence:
-        failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url:/proof: prefixes or an existing absolute path")
+        failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url:/proof: prefixes; bare absolute paths must be artifact:/... refs")
     if to_status == "done" and evidence:
         failures.extend(completion_gate_failures(task, evidence))
     if to_status == "done" and task_multimodel_certification_reasons(task) and not task_multimodel_passed(task):
