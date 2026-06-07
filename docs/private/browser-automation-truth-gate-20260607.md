@@ -11,6 +11,7 @@ This is a low-risk mainline hardening step for Hermes browser automation. It doe
 
 Code:
 - `/Users/charles/.hermes/hermes-agent/tools/browser_tool.py`
+- `/Users/charles/.hermes/hermes-agent/tools/browser_camofox.py`
 
 Tests:
 - `/Users/charles/.hermes/hermes-agent/tests/tools/test_browser_snapshot_truth_gate.py`
@@ -28,6 +29,9 @@ Tests:
    - `BROWSER_SNAPSHOT_AGENT_MAX_CHARS = 6000`
    - metadata includes before/after/cap/truncated under `token_prefilter`.
 6. `browser_navigate` auto-snapshot path is also wrapped and classified, including anti-bot title warnings.
+7. Camofox navigate/snapshot paths use the same truth-gate framing and failure classification.
+8. `browser_snapshot(user_task=...)` prefilters/caps page text before auxiliary task-aware extraction.
+9. Conservative metadata merge preserves degraded status and `prompt_injection_detected=true` across multi-pass extraction.
 
 ## Acceptance fixture coverage
 
@@ -39,21 +43,26 @@ The new fixture covers:
 - needs_auth and unreachable failure classification
 - oversized snapshot token cap and truncation metadata
 - browser_navigate anti-bot title path
+- anti-bot title not downgraded by benign auto-snapshot
+- `browser_snapshot(user_task=...)` auxiliary extraction receives bounded untrusted text
+- Camofox snapshot truth gate path
+- Camofox oversized no-user-task snapshot detects injection beyond legacy truncation window
+- Camofox navigate preserves anti-bot degraded status with benign snapshot
 
 ## Verification
 
 Commands run from `/Users/charles/.hermes/hermes-agent` unless noted:
 
-- `./venv/bin/python -m py_compile tools/browser_tool.py tests/tools/test_browser_snapshot_truth_gate.py`
+- `./venv/bin/python -m py_compile tools/browser_tool.py tools/browser_camofox.py tests/tools/test_browser_snapshot_truth_gate.py`
   - PASS
-- `./venv/bin/python -m pytest -o addopts='' tests/tools/test_browser_snapshot_truth_gate.py tests/tools/test_browser_content_none_guard.py tests/tools/test_browser_cloud_fallback.py -q`
-  - PASS: `21 passed in 0.20s`
+- `./venv/bin/python -m pytest -o addopts='' tests/tools/test_browser_snapshot_truth_gate.py tests/tools/test_browser_content_none_guard.py tests/tools/test_browser_cloud_fallback.py tests/tools/test_browser_camofox_persistence.py -q`
+  - PASS: `53 passed in 5.42s`
 - `python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json`
   - PASS with unrelated edge-node WARN entries only
 - `python3 ~/.hermes/scripts/local_brain_memory_replay_gate.py --json`
   - PASS
 - `python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --json`
-  - status OK, active_count 10
+  - status OK, active_count 9
 - scoped diff secret scan
   - `SECRET_SCAN_PASS findings=0`
 
@@ -73,6 +82,7 @@ Deferred, larger-scope items that should stay separate:
 Revert the scoped Hermes Agent commit touching:
 
 - `tools/browser_tool.py`
+- `tools/browser_camofox.py`
 - `tests/tools/test_browser_snapshot_truth_gate.py`
 
 The change is additive and does not migrate data or alter config.
