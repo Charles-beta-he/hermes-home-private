@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the software-development skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when you need guidance on meta-skill for software development workflows.,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by software-development: Use when you need guidance on meta-skill for software development workflows.,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,"Use the abstraction-governance skill instead: Use when turning incidents, project experience, user corrections, or agent self-critiques into the right abstraction layer without coupling local context to global rules.","Should route to neighboring skill software-development/abstraction-governance, not this skill."
+neighbor-02,neighbor,false,"This request belongs to software-development/agent-boundary-audit: Use when a user asks for self-optimization, multi-model reflection, experience landing, or '落地到边界'; classify conclusions into memory, skill, experience-ratchet proposal, taskpool candidate, and prohibited action before claiming completion.",Second neighbor-control case for software-development/agent-boundary-audit.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

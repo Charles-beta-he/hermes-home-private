@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the last30days skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,"Research what people actually say about any topic in the last 30 days. Pulls posts and engagement from Reddit, X, YouTube, TikTok, Hacker News, Polymarket, GitHub, and the web.",Natural-language trigger derived from the skill description.
+pos-03,positive,true,"I need help with the workflow documented by research/last30days: Research what people actually say about any topic in the last 30 days. Pulls posts and engagement from Reddit, X, YouTube, TikTok, Hacker News, Polymarket, GitHub, and the web.",Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the research skill instead: Use when you need the Research workflow umbrella. See references/ for,"Should route to neighboring skill research, not this skill."
+neighbor-02,neighbor,false,This request belongs to research/arxiv: Use when you need to search and retrieve academic papers from arXiv using their free REST API.,Second neighbor-control case for research/arxiv.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

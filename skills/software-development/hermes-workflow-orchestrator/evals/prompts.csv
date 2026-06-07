@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the hermes-workflow-orchestrator skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when the task falls under Hermes Workflow Orchestrator.,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by software-development/hermes-workflow-orchestrator: Use when the task falls under Hermes Workflow Orchestrator.,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the software-development skill instead: Use when you need guidance on meta-skill for software development workflows.,"Should route to neighboring skill software-development, not this skill."
+neighbor-02,neighbor,false,"This request belongs to software-development/abstraction-governance: Use when turning incidents, project experience, user corrections, or agent self-critiques into the right abstraction layer without coupling local context to global rules.",Second neighbor-control case for software-development/abstraction-governance.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

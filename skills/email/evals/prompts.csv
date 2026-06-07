@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the email skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when you need the Email workflow umbrella. See references/ for detailed,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by email: Use when you need the Email workflow umbrella. See references/ for detailed,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the himalaya skill instead: Use when you need guidance on cLI to manage emails via IMAP/SMTP.,"Should route to neighboring skill email/himalaya, not this skill."
+neighbor-02,neighbor,false,This request belongs to .archive/agent-team-parallel: Use when the task falls under Agent Team Parallel — 并行任务执行控制器.,Second neighbor-control case for .archive/agent-team-parallel.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

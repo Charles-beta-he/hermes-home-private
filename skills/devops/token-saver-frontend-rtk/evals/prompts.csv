@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the token-saver-frontend-rtk skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Layer 1-2 token optimization for React/Vue frontend: CASI + RTK state machine + index-first file reading + backend-verified assertions. 40-60% token reduction vs unoptimized. Use when working in uvisa-app-2.0 or similar React/Vue projects.,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by devops/token-saver-frontend-rtk: Layer 1-2 token optimization for React/Vue frontend: CASI + RTK state machine + index-first file reading + backend-verified assertions. 40-60% token reduction vs unoptimized. Use when working in uvisa-app-2.0 or similar React/Vue projects.,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the devops skill instead: Use when you need the Devops workflow umbrella. See references/ for detailed,"Should route to neighboring skill devops, not this skill."
+neighbor-02,neighbor,false,This request belongs to devops/cloudflare-pages-pnpm: Use when you need to deploy pnpm monorepo to Cloudflare Pages via GitHub Actions.,Second neighbor-control case for devops/cloudflare-pages-pnpm.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

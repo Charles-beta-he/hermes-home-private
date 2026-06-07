@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the long-video-course-essence skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,"Use when extracting reusable study notes, timestamped evidence, searchable summaries, or RAG/semantic QA from long local course videos, meeting recordings, screencasts, or lecture videos. Prefer local ASR/OCR/timeline evidence before any LLM reduce.",Natural-language trigger derived from the skill description.
+pos-03,positive,true,"I need help with the workflow documented by media/long-video-course-essence: Use when extracting reusable study notes, timestamped evidence, searchable summaries, or RAG/semantic QA from long local course videos, meeting recordings, screencasts, or lecture videos. Prefer local ASR/OCR/timeline evidence before any LLM reduce.",Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the media skill instead: Use when you need the Media workflow umbrella. See references/ for detailed,"Should route to neighboring skill media, not this skill."
+neighbor-02,neighbor,false,This request belongs to media/gif-search: Use when you need to search and download GIFs from Tenor using curl.,Second neighbor-control case for media/gif-search.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the mcp skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when you need the Mcp workflow umbrella. See references/ for detailed,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by mcp: Use when you need the Mcp workflow umbrella. See references/ for detailed,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,"Use the mcporter skill instead: Use when you need to use the mcporter CLI to list, configure, auth, and call MCP servers/tools directly (HTTP or stdio), including ad-hoc servers, config edits, and CLI/type generation.","Should route to neighboring skill mcp/mcporter, not this skill."
+neighbor-02,neighbor,false,"This request belongs to mcp/native-mcp: Use when you need guidance on built-in MCP (Model Context Protocol) client that connects to external MCP servers, discovers their tools, and registers them as native Hermes Agent tools.",Second neighbor-control case for mcp/native-mcp.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

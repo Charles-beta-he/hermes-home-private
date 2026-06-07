@@ -410,6 +410,42 @@ When using an adjacent mode, still apply routing, context budget, artifact contr
 - [ ] Routing eval prompts include positive, neighbor, forbidden, and no-load cases.
 - [ ] The final skill was read back after changes.
 
+## Skill Library Coverage Audit
+
+When the task is to inspect existing skills, coverage, or ecosystem health, prefer a non-mutating audit before any rewrite:
+
+1. Run the scanner instead of editing skills from intuition:
+
+   ```bash
+   python3 scripts/scan_skill_pattern_coverage.py \
+     --skills-root ~/.hermes/skills \
+     --out-dir ~/.hermes/docs/private/skill-pattern-coverage-$(date +%Y%m%d)
+   ```
+
+2. Treat the output as telemetry, not authority.
+   - Heuristic `primary_pattern` labels are candidates until reviewed.
+   - Section presence does not prove section quality.
+   - Eval file presence does not prove runtime routing passed.
+3. Separate active skills from archived skills before prioritizing fixes.
+4. Fix concrete broken linked-file references before cosmetic reshaping.
+5. Do not batch-edit `description` fields automatically; they are routing logic.
+6. Do not batch-write heuristic `primary_pattern` metadata without owner review.
+7. If the owner explicitly asks for full-library eval coverage, use the contract-layer generator before semantic rewrites:
+
+   ```bash
+   python3 scripts/generate_skill_routing_evals.py \
+     --skills-root ~/.hermes/skills \
+     --manifest ~/.hermes/docs/private/skill-routing-eval-coverage-$(date +%Y%m%d).json
+   ```
+
+   This creates canonical `evals/prompts.csv` files without changing `description` or SKILL.md body semantics.
+8. Prioritize pilot rehabilitation over full-library churn:
+   - start with high-value Wrapper/Pipeline/Reviewer skills;
+   - add `evals/prompts.csv` whenever changing a routing trigger;
+   - read back the skill and support files before reporting completion.
+
+Boundary: stop for human/owner decision before deleting, merging, archiving, changing descriptions, or bulk rewriting skill bodies. Adding missing canonical `evals/prompts.csv` files is allowed after explicit full-library coverage authorization because it adds regression coverage without changing routing semantics.
+
 ## References
 
 - Private SSOT: `docs/private/agent-skill-design-patterns-ssot-20260607.md`.
@@ -417,3 +453,4 @@ When using an adjacent mode, still apply routing, context budget, artifact contr
 - `evals/prompts.csv` — canonical routing eval prompt set for skill-eval.
 - `references/pattern-routing-evals.csv` — readable reference copy of the starter routing eval prompts.
 - `scripts/scan_skill_pattern_coverage.py` — non-mutating coverage scanner for existing skill libraries.
+- `scripts/generate_skill_routing_evals.py` — contract-layer bulk helper that creates canonical `evals/prompts.csv` matrices without rewriting skill descriptions or bodies.

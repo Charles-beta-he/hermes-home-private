@@ -1,0 +1,4747 @@
+{
+  "generated_at": "2026-06-07T17:33:22",
+  "skills_root": "/Users/charles/.hermes/skills",
+  "skill_count": 237,
+  "changed_count": 236,
+  "preserved_count": 1,
+  "required_buckets": {
+    "positive": 3,
+    "neighbor": 2,
+    "forbidden": 2,
+    "no-load": 1
+  },
+  "changed": [
+    {
+      "rel": ".archive/agent-team-parallel",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/agent-team-parallel/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/devops/cli-tool-installation",
+        ".archive/devops/hermes-observability"
+      ]
+    },
+    {
+      "rel": ".archive/devops/cli-tool-installation",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/devops/cli-tool-installation/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/hermes-observability"
+      ]
+    },
+    {
+      "rel": ".archive/devops/hermes-observability",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/devops/hermes-observability/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/devops/icon-asset-pipeline",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/devops/icon-asset-pipeline/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/devops/macos-network-admin",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/devops/macos-network-admin/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/devops/multi-repo-branch-orchestration",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/devops/multi-repo-branch-orchestration/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/git-state-aware-debugging",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/git-state-aware-debugging/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/github/git-conflict-resolution",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/github/git-conflict-resolution/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/product-prototype-code-audit",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/product-prototype-code-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/project-profile-maintenance",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/project-profile-maintenance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/architecture-theory-audit",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/architecture-theory-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/cloud-edge-architecture",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/cloud-edge-architecture/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/concurrent-async-guard",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/concurrent-async-guard/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/external-framework-evaluation",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/external-framework-evaluation/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/financial-ledger-frontend-patterns",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/financial-ledger-frontend-patterns/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/hermes-self-improvement-pipeline",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/hermes-self-improvement-pipeline/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/hybrid-app-packaging",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/hybrid-app-packaging/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/pwa-cache-invalidation",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/pwa-cache-invalidation/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/pwa-install-prompt",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/pwa-install-prompt/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/pwa-safe-area-handling",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/pwa-safe-area-handling/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/software-development/task-depth-analysis",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/software-development/task-depth-analysis/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/task-framing-governance",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/task-framing-governance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/taskpool-ingest-triage",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/taskpool-ingest-triage/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": ".archive/testing/playwright-authenticated-screenshots",
+      "eval_path": "/Users/charles/.hermes/skills/.archive/testing/playwright-authenticated-screenshots/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "api-and-interface-design",
+      "eval_path": "/Users/charles/.hermes/skills/api-and-interface-design/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "apple",
+      "eval_path": "/Users/charles/.hermes/skills/apple/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "apple/apple-notes",
+        "apple/apple-reminders"
+      ]
+    },
+    {
+      "rel": "apple/apple-notes",
+      "eval_path": "/Users/charles/.hermes/skills/apple/apple-notes/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "apple",
+        "apple/apple-reminders"
+      ]
+    },
+    {
+      "rel": "apple/apple-reminders",
+      "eval_path": "/Users/charles/.hermes/skills/apple/apple-reminders/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "apple",
+        "apple/apple-notes"
+      ]
+    },
+    {
+      "rel": "apple/findmy",
+      "eval_path": "/Users/charles/.hermes/skills/apple/findmy/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "apple",
+        "apple/apple-notes"
+      ]
+    },
+    {
+      "rel": "apple/imessage",
+      "eval_path": "/Users/charles/.hermes/skills/apple/imessage/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "apple",
+        "apple/apple-notes"
+      ]
+    },
+    {
+      "rel": "apple/macos-computer-use",
+      "eval_path": "/Users/charles/.hermes/skills/apple/macos-computer-use/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "apple",
+        "apple/apple-notes"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents/claude-code",
+        "autonomous-ai-agents/codex"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/claude-code",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/claude-code/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/codex"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/codex",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/codex/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/hermes-agent",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/hermes-agent/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/hermes-experience-ratchet",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/hermes-experience-ratchet/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/hermes-personal-assistant-flow",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/hermes-personal-assistant-flow/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/hermes-pipeline",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/hermes-pipeline/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/kanban-codex-lane",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/kanban-codex-lane/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/opencode",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/opencode/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "autonomous-ai-agents/tradingagents-reference-patterns",
+      "eval_path": "/Users/charles/.hermes/skills/autonomous-ai-agents/tradingagents-reference-patterns/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "autonomous-ai-agents",
+        "autonomous-ai-agents/claude-code"
+      ]
+    },
+    {
+      "rel": "chinese-platforms",
+      "eval_path": "/Users/charles/.hermes/skills/chinese-platforms/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "code-simplification",
+      "eval_path": "/Users/charles/.hermes/skills/code-simplification/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "codebase-intelligence",
+      "eval_path": "/Users/charles/.hermes/skills/codebase-intelligence/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "creative",
+      "eval_path": "/Users/charles/.hermes/skills/creative/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative/architecture-diagram",
+        "creative/baoyu-article-illustrator"
+      ]
+    },
+    {
+      "rel": "creative/architecture-diagram",
+      "eval_path": "/Users/charles/.hermes/skills/creative/architecture-diagram/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/baoyu-article-illustrator"
+      ]
+    },
+    {
+      "rel": "creative/baoyu-article-illustrator",
+      "eval_path": "/Users/charles/.hermes/skills/creative/baoyu-article-illustrator/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/baoyu-comic",
+      "eval_path": "/Users/charles/.hermes/skills/creative/baoyu-comic/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/baoyu-infographic",
+      "eval_path": "/Users/charles/.hermes/skills/creative/baoyu-infographic/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/claude-design",
+      "eval_path": "/Users/charles/.hermes/skills/creative/claude-design/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/comfyui",
+      "eval_path": "/Users/charles/.hermes/skills/creative/comfyui/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/creative-ideation",
+      "eval_path": "/Users/charles/.hermes/skills/creative/creative-ideation/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/design-md",
+      "eval_path": "/Users/charles/.hermes/skills/creative/design-md/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/excalidraw",
+      "eval_path": "/Users/charles/.hermes/skills/creative/excalidraw/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/humanizer",
+      "eval_path": "/Users/charles/.hermes/skills/creative/humanizer/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/manim-video",
+      "eval_path": "/Users/charles/.hermes/skills/creative/manim-video/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/p5js",
+      "eval_path": "/Users/charles/.hermes/skills/creative/p5js/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/popular-web-designs",
+      "eval_path": "/Users/charles/.hermes/skills/creative/popular-web-designs/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/pretext",
+      "eval_path": "/Users/charles/.hermes/skills/creative/pretext/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/sketch",
+      "eval_path": "/Users/charles/.hermes/skills/creative/sketch/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/songwriting-and-ai-music",
+      "eval_path": "/Users/charles/.hermes/skills/creative/songwriting-and-ai-music/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/touchdesigner-mcp",
+      "eval_path": "/Users/charles/.hermes/skills/creative/touchdesigner-mcp/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/web-animation-optimization",
+      "eval_path": "/Users/charles/.hermes/skills/creative/web-animation-optimization/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "creative/web-animation-patterns",
+      "eval_path": "/Users/charles/.hermes/skills/creative/web-animation-patterns/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "creative",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "rel": "data-science",
+      "eval_path": "/Users/charles/.hermes/skills/data-science/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "data-science/jupyter-live-kernel",
+        ".archive/agent-team-parallel"
+      ]
+    },
+    {
+      "rel": "data-science/jupyter-live-kernel",
+      "eval_path": "/Users/charles/.hermes/skills/data-science/jupyter-live-kernel/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "data-science",
+        ".archive/agent-team-parallel"
+      ]
+    },
+    {
+      "rel": "deprecation-and-migration",
+      "eval_path": "/Users/charles/.hermes/skills/deprecation-and-migration/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "devops",
+      "eval_path": "/Users/charles/.hermes/skills/devops/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops/cloudflare-pages-pnpm",
+        "devops/gateway-telegram-setup"
+      ]
+    },
+    {
+      "rel": "devops/cloudflare-pages-pnpm",
+      "eval_path": "/Users/charles/.hermes/skills/devops/cloudflare-pages-pnpm/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/gateway-telegram-setup"
+      ]
+    },
+    {
+      "rel": "devops/gateway-telegram-setup",
+      "eval_path": "/Users/charles/.hermes/skills/devops/gateway-telegram-setup/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/hermes-storage-governance",
+      "eval_path": "/Users/charles/.hermes/skills/devops/hermes-storage-governance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/kanban-orchestrator",
+      "eval_path": "/Users/charles/.hermes/skills/devops/kanban-orchestrator/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/kanban-worker",
+      "eval_path": "/Users/charles/.hermes/skills/devops/kanban-worker/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/local-devops-tooling",
+      "eval_path": "/Users/charles/.hermes/skills/devops/local-devops-tooling/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/semantic-release-monorepo",
+      "eval_path": "/Users/charles/.hermes/skills/devops/semantic-release-monorepo/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/token-saver-frontend-rtk",
+      "eval_path": "/Users/charles/.hermes/skills/devops/token-saver-frontend-rtk/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/token-saver-rtk",
+      "eval_path": "/Users/charles/.hermes/skills/devops/token-saver-rtk/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "devops/webhook-subscriptions",
+      "eval_path": "/Users/charles/.hermes/skills/devops/webhook-subscriptions/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "devops",
+        "devops/cloudflare-pages-pnpm"
+      ]
+    },
+    {
+      "rel": "diagramming",
+      "eval_path": "/Users/charles/.hermes/skills/diagramming/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "documentation-and-adrs",
+      "eval_path": "/Users/charles/.hermes/skills/documentation-and-adrs/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "dogfood",
+      "eval_path": "/Users/charles/.hermes/skills/dogfood/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "domain",
+      "eval_path": "/Users/charles/.hermes/skills/domain/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "email",
+      "eval_path": "/Users/charles/.hermes/skills/email/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "email/himalaya",
+        ".archive/agent-team-parallel"
+      ]
+    },
+    {
+      "rel": "email/himalaya",
+      "eval_path": "/Users/charles/.hermes/skills/email/himalaya/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "email",
+        ".archive/agent-team-parallel"
+      ]
+    },
+    {
+      "rel": "feeds",
+      "eval_path": "/Users/charles/.hermes/skills/feeds/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "framework-audit",
+      "eval_path": "/Users/charles/.hermes/skills/framework-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "gaming",
+      "eval_path": "/Users/charles/.hermes/skills/gaming/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "gifs",
+      "eval_path": "/Users/charles/.hermes/skills/gifs/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "github",
+      "eval_path": "/Users/charles/.hermes/skills/github/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github/codebase-inspection",
+        "github/git-repo-operations"
+      ]
+    },
+    {
+      "rel": "github/codebase-inspection",
+      "eval_path": "/Users/charles/.hermes/skills/github/codebase-inspection/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/git-repo-operations"
+      ]
+    },
+    {
+      "rel": "github/git-repo-operations",
+      "eval_path": "/Users/charles/.hermes/skills/github/git-repo-operations/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/codebase-inspection"
+      ]
+    },
+    {
+      "rel": "github/github-auth",
+      "eval_path": "/Users/charles/.hermes/skills/github/github-auth/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/codebase-inspection"
+      ]
+    },
+    {
+      "rel": "github/github-code-review",
+      "eval_path": "/Users/charles/.hermes/skills/github/github-code-review/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/codebase-inspection"
+      ]
+    },
+    {
+      "rel": "github/github-issues",
+      "eval_path": "/Users/charles/.hermes/skills/github/github-issues/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/codebase-inspection"
+      ]
+    },
+    {
+      "rel": "github/github-pr-workflow",
+      "eval_path": "/Users/charles/.hermes/skills/github/github-pr-workflow/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/codebase-inspection"
+      ]
+    },
+    {
+      "rel": "github/github-repo-management",
+      "eval_path": "/Users/charles/.hermes/skills/github/github-repo-management/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "github",
+        "github/codebase-inspection"
+      ]
+    },
+    {
+      "rel": "gsd-bridge",
+      "eval_path": "/Users/charles/.hermes/skills/gsd-bridge/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "incremental-implementation",
+      "eval_path": "/Users/charles/.hermes/skills/incremental-implementation/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "inference-sh",
+      "eval_path": "/Users/charles/.hermes/skills/inference-sh/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "loop",
+      "eval_path": "/Users/charles/.hermes/skills/loop/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "mcp",
+      "eval_path": "/Users/charles/.hermes/skills/mcp/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mcp/mcporter",
+        "mcp/native-mcp"
+      ]
+    },
+    {
+      "rel": "mcp/mcporter",
+      "eval_path": "/Users/charles/.hermes/skills/mcp/mcporter/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mcp",
+        "mcp/native-mcp"
+      ]
+    },
+    {
+      "rel": "mcp/native-mcp",
+      "eval_path": "/Users/charles/.hermes/skills/mcp/native-mcp/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mcp",
+        "mcp/mcporter"
+      ]
+    },
+    {
+      "rel": "media",
+      "eval_path": "/Users/charles/.hermes/skills/media/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "media/gif-search",
+        "media/long-video-course-essence"
+      ]
+    },
+    {
+      "rel": "media/gif-search",
+      "eval_path": "/Users/charles/.hermes/skills/media/gif-search/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "media",
+        "media/long-video-course-essence"
+      ]
+    },
+    {
+      "rel": "media/long-video-course-essence",
+      "eval_path": "/Users/charles/.hermes/skills/media/long-video-course-essence/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "media",
+        "media/gif-search"
+      ]
+    },
+    {
+      "rel": "media/spotify",
+      "eval_path": "/Users/charles/.hermes/skills/media/spotify/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "media",
+        "media/gif-search"
+      ]
+    },
+    {
+      "rel": "media/youtube-content",
+      "eval_path": "/Users/charles/.hermes/skills/media/youtube-content/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "media",
+        "media/gif-search"
+      ]
+    },
+    {
+      "rel": "mlops",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops/cloud/modal",
+        "mlops/evaluation/weights-and-biases"
+      ]
+    },
+    {
+      "rel": "mlops/cloud/modal",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/cloud/modal/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/evaluation/weights-and-biases"
+      ]
+    },
+    {
+      "rel": "mlops/evaluation/weights-and-biases",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/evaluation/weights-and-biases/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/huggingface-hub",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/huggingface-hub/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/inference/gguf",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/inference/gguf/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/inference/guidance",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/inference/guidance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/inference/llama-cpp",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/inference/llama-cpp/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/inference/outlines",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/inference/outlines/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/models/clip",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/models/clip/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/models/whisper",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/models/whisper/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/rag-knowledge-management",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/rag-knowledge-management/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/research/dspy",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/research/dspy/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/training/axolotl",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/training/axolotl/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/training/grpo-rl-training",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/training/grpo-rl-training/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/training/pytorch-fsdp",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/training/pytorch-fsdp/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "mlops/training/unsloth",
+      "eval_path": "/Users/charles/.hermes/skills/mlops/training/unsloth/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "mlops",
+        "mlops/cloud/modal"
+      ]
+    },
+    {
+      "rel": "note-taking",
+      "eval_path": "/Users/charles/.hermes/skills/note-taking/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "note-taking/obsidian",
+        ".archive/agent-team-parallel"
+      ]
+    },
+    {
+      "rel": "note-taking/obsidian",
+      "eval_path": "/Users/charles/.hermes/skills/note-taking/obsidian/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "note-taking",
+        ".archive/agent-team-parallel"
+      ]
+    },
+    {
+      "rel": "p10",
+      "eval_path": "/Users/charles/.hermes/skills/p10/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "p10-architecture-self-check",
+      "eval_path": "/Users/charles/.hermes/skills/p10-architecture-self-check/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "p7",
+      "eval_path": "/Users/charles/.hermes/skills/p7/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "p9",
+      "eval_path": "/Users/charles/.hermes/skills/p9/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "personal-productivity/career-ops",
+      "eval_path": "/Users/charles/.hermes/skills/personal-productivity/career-ops/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "post-deploy-verification",
+      "eval_path": "/Users/charles/.hermes/skills/post-deploy-verification/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "pro",
+      "eval_path": "/Users/charles/.hermes/skills/pro/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "productivity",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity/airtable",
+        "productivity/google-workspace"
+      ]
+    },
+    {
+      "rel": "productivity/airtable",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/airtable/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/google-workspace"
+      ]
+    },
+    {
+      "rel": "productivity/google-workspace",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/google-workspace/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/lark-docx-reading",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/lark-docx-reading/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/linear",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/linear/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/maps",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/maps/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/nano-pdf",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/nano-pdf/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/notion",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/notion/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/ocr-and-documents",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/ocr-and-documents/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/powerpoint",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/powerpoint/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "productivity/teams-meeting-pipeline",
+      "eval_path": "/Users/charles/.hermes/skills/productivity/teams-meeting-pipeline/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "productivity",
+        "productivity/airtable"
+      ]
+    },
+    {
+      "rel": "red-teaming",
+      "eval_path": "/Users/charles/.hermes/skills/red-teaming/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "research",
+      "eval_path": "/Users/charles/.hermes/skills/research/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research/arxiv",
+        "research/blogwatcher"
+      ]
+    },
+    {
+      "rel": "research/arxiv",
+      "eval_path": "/Users/charles/.hermes/skills/research/arxiv/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research",
+        "research/blogwatcher"
+      ]
+    },
+    {
+      "rel": "research/blogwatcher",
+      "eval_path": "/Users/charles/.hermes/skills/research/blogwatcher/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research",
+        "research/arxiv"
+      ]
+    },
+    {
+      "rel": "research/last30days",
+      "eval_path": "/Users/charles/.hermes/skills/research/last30days/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research",
+        "research/arxiv"
+      ]
+    },
+    {
+      "rel": "research/llm-wiki",
+      "eval_path": "/Users/charles/.hermes/skills/research/llm-wiki/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research",
+        "research/arxiv"
+      ]
+    },
+    {
+      "rel": "research/polymarket",
+      "eval_path": "/Users/charles/.hermes/skills/research/polymarket/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research",
+        "research/arxiv"
+      ]
+    },
+    {
+      "rel": "research/research-paper-writing",
+      "eval_path": "/Users/charles/.hermes/skills/research/research-paper-writing/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "research",
+        "research/arxiv"
+      ]
+    },
+    {
+      "rel": "smart-home",
+      "eval_path": "/Users/charles/.hermes/skills/smart-home/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "smart-home/assembly-assistance-workflow",
+        "smart-home/electrical-brain"
+      ]
+    },
+    {
+      "rel": "smart-home/assembly-assistance-workflow",
+      "eval_path": "/Users/charles/.hermes/skills/smart-home/assembly-assistance-workflow/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "smart-home",
+        "smart-home/electrical-brain"
+      ]
+    },
+    {
+      "rel": "smart-home/electrical-brain",
+      "eval_path": "/Users/charles/.hermes/skills/smart-home/electrical-brain/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "smart-home",
+        "smart-home/assembly-assistance-workflow"
+      ]
+    },
+    {
+      "rel": "smart-home/external-control-brain",
+      "eval_path": "/Users/charles/.hermes/skills/smart-home/external-control-brain/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "smart-home",
+        "smart-home/assembly-assistance-workflow"
+      ]
+    },
+    {
+      "rel": "smart-home/manufacturing-brain",
+      "eval_path": "/Users/charles/.hermes/skills/smart-home/manufacturing-brain/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "smart-home",
+        "smart-home/assembly-assistance-workflow"
+      ]
+    },
+    {
+      "rel": "social-media",
+      "eval_path": "/Users/charles/.hermes/skills/social-media/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "social-media/xitter",
+        "social-media/xurl"
+      ]
+    },
+    {
+      "rel": "social-media/xitter",
+      "eval_path": "/Users/charles/.hermes/skills/social-media/xitter/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "social-media",
+        "social-media/xurl"
+      ]
+    },
+    {
+      "rel": "social-media/xurl",
+      "eval_path": "/Users/charles/.hermes/skills/social-media/xurl/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "social-media",
+        "social-media/xitter"
+      ]
+    },
+    {
+      "rel": "software-development",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development/abstraction-governance",
+        "software-development/agent-boundary-audit"
+      ]
+    },
+    {
+      "rel": "software-development/abstraction-governance",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/abstraction-governance/evals/prompts.csv",
+      "before": {
+        "positive": 5,
+        "neighbor": 0,
+        "forbidden": 6,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/agent-boundary-audit"
+      ]
+    },
+    {
+      "rel": "software-development/agent-boundary-audit",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/agent-boundary-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/arc-dispatch-executor",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/arc-dispatch-executor/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/architecture-governance-evaluation",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/architecture-governance-evaluation/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/architecture-optimization-loop",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/architecture-optimization-loop/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/auto-optimize-loop",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/auto-optimize-loop/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/browser-harness-integration",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/browser-harness-integration/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/code-simplifier",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/code-simplifier/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/color-contrast-checker",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/color-contrast-checker/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/debugging-hermes-tui-commands",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/debugging-hermes-tui-commands/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/development-closure-consensus",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/development-closure-consensus/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/experience-ratchet",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/experience-ratchet/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/frontend-state-domain-correctness",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/frontend-state-domain-correctness/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/goal-calibration",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/goal-calibration/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/hermes-agent-skill-authoring",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/hermes-agent-skill-authoring/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/hermes-overlay-ratchet-upgrades",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/hermes-overlay-ratchet-upgrades/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/hermes-s6-container-supervision",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/hermes-s6-container-supervision/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/hermes-self-audit",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/hermes-self-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/hermes-warning-governance",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/hermes-warning-governance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/hermes-workflow-orchestrator",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/hermes-workflow-orchestrator/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/incident-response",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/incident-response/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/lark-task-reading",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/lark-task-reading/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/mcp-server-from-scratch",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/mcp-server-from-scratch/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/mobile-frontend-delivery",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/mobile-frontend-delivery/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/multi-agent-code-review",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/multi-agent-code-review/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/multi-model-agent-orchestration",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/multi-model-agent-orchestration/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/multi-model-architecture",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/multi-model-architecture/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/multi-model-certification-round",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/multi-model-certification-round/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/multi-model-thinking",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/multi-model-thinking/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/node-inspect-debugger",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/node-inspect-debugger/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/plan",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/plan/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/planning-with-files",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/planning-with-files/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/post-deploy-verification",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/post-deploy-verification/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/post-update-patch-healing",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/post-update-patch-healing/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/private-fork-evolution-governance",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/private-fork-evolution-governance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/process-lifecycle-control-plane",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/process-lifecycle-control-plane/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/project-evidence-grounding",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/project-evidence-grounding/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/python-debugpy",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/python-debugpy/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/python-multiline-grep-engine",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/python-multiline-grep-engine/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/react-architecture-migration",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/react-architecture-migration/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/real-engineering-workflows",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/real-engineering-workflows/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/requesting-code-review",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/requesting-code-review/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/requirement-clarification",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/requirement-clarification/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/router",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/router/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/self-evolve-via-claude",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/self-evolve-via-claude/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/self-improvement-pipeline",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/self-improvement-pipeline/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/skill-ecosystem-diagnosis",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/skill-ecosystem-diagnosis/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/skill-ecosystem-governance",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/skill-ecosystem-governance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/skill-eval",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/skill-eval/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/spec-stateful-sdd-workflow",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/spec-stateful-sdd-workflow/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/spike",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/spike/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/stuck-diagnosis",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/stuck-diagnosis/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/subagent-driven-development",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/subagent-driven-development/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/systematic-debugging",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/systematic-debugging/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/taskpool-control-plane",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/taskpool-control-plane/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/test-driven-development",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/test-driven-development/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/theory-driven-evolution",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/theory-driven-evolution/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/uimax-audit",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/uimax-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/visual-conversation-core",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/visual-conversation-core/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/visual-regression",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/visual-regression/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/workflow-ecosystem-audit",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/workflow-ecosystem-audit/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "software-development/writing-plans",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/writing-plans/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "software-development",
+        "software-development/abstraction-governance"
+      ]
+    },
+    {
+      "rel": "source-driven-development",
+      "eval_path": "/Users/charles/.hermes/skills/source-driven-development/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    },
+    {
+      "rel": "ui-skills/skills/baseline-ui",
+      "eval_path": "/Users/charles/.hermes/skills/ui-skills/skills/baseline-ui/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-skills/skills/fixing-accessibility",
+        "ui-skills/skills/fixing-metadata"
+      ]
+    },
+    {
+      "rel": "ui-skills/skills/fixing-accessibility",
+      "eval_path": "/Users/charles/.hermes/skills/ui-skills/skills/fixing-accessibility/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-skills/skills/baseline-ui",
+        "ui-skills/skills/fixing-metadata"
+      ]
+    },
+    {
+      "rel": "ui-skills/skills/fixing-metadata",
+      "eval_path": "/Users/charles/.hermes/skills/ui-skills/skills/fixing-metadata/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-skills/skills/baseline-ui",
+        "ui-skills/skills/fixing-accessibility"
+      ]
+    },
+    {
+      "rel": "ui-skills/skills/fixing-motion-performance",
+      "eval_path": "/Users/charles/.hermes/skills/ui-skills/skills/fixing-motion-performance/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-skills/skills/baseline-ui",
+        "ui-skills/skills/fixing-accessibility"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/banner-design",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/banner-design/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/brand",
+        "ui-ux-pro-max/.claude/skills/design"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/brand",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/brand/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/banner-design",
+        "ui-ux-pro-max/.claude/skills/design"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/design",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/design/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/banner-design",
+        "ui-ux-pro-max/.claude/skills/brand"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/design-system",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/design-system/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/banner-design",
+        "ui-ux-pro-max/.claude/skills/brand"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/slides",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/slides/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/banner-design",
+        "ui-ux-pro-max/.claude/skills/brand"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/ui-styling",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/ui-styling/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/banner-design",
+        "ui-ux-pro-max/.claude/skills/brand"
+      ]
+    },
+    {
+      "rel": "ui-ux-pro-max/.claude/skills/ui-ux-pro-max",
+      "eval_path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/ui-ux-pro-max/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        "ui-ux-pro-max/.claude/skills/banner-design",
+        "ui-ux-pro-max/.claude/skills/brand"
+      ]
+    },
+    {
+      "rel": "workflow/qian-meta-synthesis",
+      "eval_path": "/Users/charles/.hermes/skills/workflow/qian-meta-synthesis/evals/prompts.csv",
+      "before": {
+        "positive": 0,
+        "neighbor": 0,
+        "forbidden": 0,
+        "no-load": 0
+      },
+      "after": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      },
+      "neighbors": [
+        ".archive/agent-team-parallel",
+        ".archive/devops/cli-tool-installation"
+      ]
+    }
+  ],
+  "preserved": [
+    {
+      "rel": "software-development/agent-skill-design-patterns",
+      "eval_path": "/Users/charles/.hermes/skills/software-development/agent-skill-design-patterns/evals/prompts.csv",
+      "before": {
+        "positive": 3,
+        "neighbor": 2,
+        "forbidden": 2,
+        "no-load": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the social-media skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when you need the Social Media workflow umbrella. See references/,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by social-media: Use when you need the Social Media workflow umbrella. See references/,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the xitter skill instead: Use when you need guidance on interact with X/Twitter via the x-cli terminal client using official X API credentials.,"Should route to neighboring skill social-media/xitter, not this skill."
+neighbor-02,neighbor,false,"This request belongs to social-media/xurl: Use when you need guidance on interact with X/Twitter via xurl, the official X API CLI.",Second neighbor-control case for social-media/xurl.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

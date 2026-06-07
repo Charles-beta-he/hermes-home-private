@@ -1,12 +1,9 @@
-id,should_trigger,prompt,notes
-positive-explicit,true,"使用 abstraction-governance，把这次事故沉淀成正确层级的规范",Explicit skill request
-positive-context-coupling,true,"你这次把项目上下文和抽象原则耦合太严重了，帮我重新沉淀",Core trigger: context-coupled abstraction
-positive-project-experience,true,"这个项目经验应该放 memory、skill、profile 还是 ADR？",Landing-zone decision
-positive-agent-psychology,true,"用 agent 心理学检查一下这个经验为什么被错误泛化",Agent psychology trigger
-positive-git-incident,true,"Git 分支合并事故后如何抽象成可迁移规范，不要硬编码分支名",Scenario incident to rule
-neighbor-git-conflict,false,"我现在有一个 rebase conflict，帮我解决冲突",Neighbor: git-conflict-resolution
-neighbor-documentation-adr,false,"帮我写一篇 ADR，记录项目采用 trunk-based 的决策",Neighbor: documentation-and-adrs unless abstraction governance is specifically requested
-neighbor-skill-authoring,false,"帮我新建一个 Hermes skill 并验证 frontmatter",Neighbor: hermes-agent-skill-authoring
-forbidden-progress-memory,false,"记住这个 PR 已经修完了，下次别再做",Forbidden: stale task progress
-forbidden-simple-answer,false,"解释一下什么是抽象",No durable governance implication
-no-load,false,"把这段中文翻译成英文",General no-load
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the abstraction-governance skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,"Use when turning incidents, project experience, user corrections, or agent self-critiques into the right abstraction layer without coupling local context to global rules.",Natural-language trigger derived from the skill description.
+pos-03,positive,true,"I need help with the workflow documented by software-development/abstraction-governance: Use when turning incidents, project experience, user corrections, or agent self-critiques into the right abstraction layer without coupling local context to global rules.",Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the software-development skill instead: Use when you need guidance on meta-skill for software development workflows.,"Should route to neighboring skill software-development, not this skill."
+neighbor-02,neighbor,false,"This request belongs to software-development/agent-boundary-audit: Use when a user asks for self-optimization, multi-model reflection, experience landing, or '落地到边界'; classify conclusions into memory, skill, experience-ratchet proposal, taskpool candidate, and prohibited action before claiming completion.",Second neighbor-control case for software-development/agent-boundary-audit.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

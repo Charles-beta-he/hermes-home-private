@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the hermes-pipeline skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when you need to build automated task pipelines using hermes chat -q as execution engine.,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by autonomous-ai-agents/hermes-pipeline: Use when you need to build automated task pipelines using hermes chat -q as execution engine.,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the autonomous-ai-agents skill instead: Use when you need the Autonomous Ai Agents workflow umbrella. See references/,"Should route to neighboring skill autonomous-ai-agents, not this skill."
+neighbor-02,neighbor,false,This request belongs to autonomous-ai-agents/claude-code: Use when you need to delegate coding tasks to Claude Code (Anthropic's CLI agent).,Second neighbor-control case for autonomous-ai-agents/claude-code.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

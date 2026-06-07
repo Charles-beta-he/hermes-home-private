@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the clip skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,Use when you need guidance on openAI's model connecting vision and language.,Natural-language trigger derived from the skill description.
+pos-03,positive,true,I need help with the workflow documented by mlops/models/clip: Use when you need guidance on openAI's model connecting vision and language.,Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the mlops skill instead: Use when you need the Mlops workflow umbrella. See references/ for detailed,"Should route to neighboring skill mlops, not this skill."
+neighbor-02,neighbor,false,"This request belongs to mlops/cloud/modal: Use when you need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling.",Second neighbor-control case for mlops/cloud/modal.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.

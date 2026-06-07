@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,Use the project-profile-maintenance skill for this task.,Explicit skill invocation should load this skill.
+pos-02,positive,true,"Maintain canonical project profiles by recovering historical context, mining prototype/source repos, and writing durable code-grounded navigation maps back into the profile. See references/prototype-source-grounded-admin-correction.md for the correction pat...",Natural-language trigger derived from the skill description.
+pos-03,positive,true,"I need help with the workflow documented by .archive/project-profile-maintenance: Maintain canonical project profiles by recovering historical context, mining prototype/source repos, and writing durable code-grounded navigation maps back into the profile. See references/prototype-source-grounded-admin-correction.md for the correction pat...",Contextual positive prompt with skill path and trigger language.
+neighbor-01,neighbor,false,Use the agent-team-parallel skill instead: Use when the task falls under Agent Team Parallel — 并行任务执行控制器.,"Should route to neighboring skill .archive/agent-team-parallel, not this skill."
+neighbor-02,neighbor,false,"This request belongs to .archive/devops/cli-tool-installation: Use when creating install scripts for CLI tools, handling upgrades, version management, configuration preservation, and rollback mechanisms. Covers bash install scripts that need to work on both fresh installs and existing installations.",Second neighbor-control case for .archive/devops/cli-tool-installation.
+forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."
+forbidden-02,forbidden,false,Calculate 17 times 23 and show only the number.,"Arithmetic requests must use calculation tooling, not this skill."
+no-load-01,no-load,false,Say hello in one short sentence.,Generic conversational prompt should not load any specialist skill.
