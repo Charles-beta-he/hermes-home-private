@@ -1650,6 +1650,47 @@ def review_record(title: str, slug: str | None = None, evidence_requests: list[s
     return result
 
 
+def memory_replay_gate(*, fixtures: str | None = None, out: str | None = None, top_k: int = 5, json_mode: bool = False) -> dict:
+    """Run the deterministic local-brain/memory retrieval replay gate."""
+    script = Path(__file__).with_name("local_brain_memory_replay_gate.py")
+    cmd = [sys.executable, str(script), "--json", "--top-k", str(top_k)]
+    if fixtures:
+        cmd.extend(["--fixtures", fixtures])
+    if out:
+        cmd.extend(["--out", out])
+    proc = subprocess.run(cmd, text=True, capture_output=True, timeout=60)
+    try:
+        result = json.loads(proc.stdout)
+    except Exception:
+        result = {
+            "schema": "local_brain_memory_replay_gate_v1",
+            "status": "FAIL",
+            "gate_effective": False,
+            "error": "memory_replay_gate_output_not_json",
+            "stdout": proc.stdout[:2000],
+            "stderr": proc.stderr[:2000],
+        }
+    result.setdefault("command", cmd)
+    result.setdefault("exit_code", proc.returncode)
+    if proc.returncode != 0 and result.get("status") == "PASS":
+        result["status"] = "FAIL"
+        result["gate_effective"] = False
+        result.setdefault("errors", []).append(f"subprocess_exit_{proc.returncode}")
+    append_wal(
+        "memory_replay_gate",
+        {
+            "status": result.get("status"),
+            "gate_effective": result.get("gate_effective"),
+            "fixture_count": result.get("fixture_count"),
+            "fixture_classes": result.get("fixture_classes"),
+        },
+        paths=resolve_paths(),
+    )
+    if not json_mode:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    return result
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Hermes local brain control plane")
     parser.add_argument("--json", action="store_true", help="emit JSON")
@@ -1668,6 +1709,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_wal = sub.add_parser("wal", help="show WAL tail")
     p_wal.add_argument("--tail", type=int, default=20)
+
+    p_memory_gate = sub.add_parser("memory-replay-gate", help="run replayable memory/local-brain retrieval proof gate")
+    p_memory_gate.add_argument("--fixtures", default=None, help="optional JSON fixture file")
+    p_memory_gate.add_argument("--out", default=None, help="optional JSON report path")
+    p_memory_gate.add_argument("--top-k", type=int, default=5)
 
     sub.add_parser("sync", help="run existing sync-brain.py")
 
@@ -1738,6 +1784,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         emit_cli(evidence(args.query, limit=args.limit, json_mode=True), args.json)
     elif args.cmd == "wal":
         emit_cli(wal_tail(limit=args.tail, json_mode=True), args.json)
+    elif args.cmd == "memory-replay-gate":
+        result = memory_replay_gate(fixtures=args.fixtures, out=args.out, top_k=args.top_k, json_mode=True)
+        emit_cli(result, args.json)
+        return 0 if result.get("status") == "PASS" and result.get("fixture_class_gate") == "PASS" else 2
     elif args.cmd == "sync":
         result = sync(json_mode=True)
         emit_cli(result, args.json)
