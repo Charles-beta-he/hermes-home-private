@@ -95,3 +95,19 @@ Don't use for:
 - [ ] Taskpool candidates include target, artifact, risk, dependencies, and verification.
 - [ ] No external repo, release, credential, or destructive action was performed without explicit authorization.
 - [ ] Changed Hermes artifacts were read back and committed with a scoped pathspec when git-managed.
+
+## Timeout Escalation Ladder
+
+Inspired by overmind's graceful-timeout-then-kill signal handling (command_go).
+Multi-model reflections, boundary audits, and experience-ratchet proposals can
+stall when models disagree or delegate chains recurse. Apply these guards:
+
+| Threshold | Action | Rationale |
+|---|---|---|
+| Soft (120s) | Log a warning. Land whatever partial results exist as a taskpool candidate with `status: blocked` and `blocker_summary: "soft timeout — partial results landed"`. | Prevents silent drift; preserves work for human review. |
+| Hard (300s) | Abort the operation. Commit any already-landed artifacts. Do not retry in this session. Emit `rollback_signal` if main_pass_rate degraded. | Mirrors overmind's graceful→force escalation; avoids indefinite hangs. |
+
+When implementing timeout guards in scripts, prefer `signal.alarm` (Unix) or
+`asyncio.wait_for` over polling loops. Always land partial results before
+aborting — overmind's `command_go` temp-cleanup pattern (E-003) shows that
+cleanup without landing loses observability.

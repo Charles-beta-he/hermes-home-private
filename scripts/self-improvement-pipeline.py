@@ -17,7 +17,27 @@ Self-Improvement Pipeline — 自进化优先调度层
   python3 ~/.hermes/scripts/self-improvement-pipeline.py --preview
 """
 
-import os, sys, json, datetime, math
+import os, sys, json, datetime, math, subprocess
+
+# Phase 3a: Multi-Armed Bandit for strategy selection
+sys.path.insert(0, os.path.expanduser("~/.hermes/scripts"))
+try:
+    from strategy_bandit import StrategyBandit, format_stats as bandit_format_stats
+    _BANDIT_AVAILABLE = True
+except ImportError:
+    _BANDIT_AVAILABLE = False
+# Phase 3b: Novelty Search for exploration targets
+try:
+    from novelty_search import generate_novelty_targets, novelty_targets_as_action_items
+    _NOVELTY_AVAILABLE = True
+except ImportError:
+    _NOVELTY_AVAILABLE = False
+# Phase 3c: Meta-Evolution for parameter self-tuning
+try:
+    from meta_evolution import meta_evolve, get_current_params as get_meta_params
+    _META_EVOLUTION_AVAILABLE = True
+except ImportError:
+    _META_EVOLUTION_AVAILABLE = False
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -35,6 +55,15 @@ EVOLVE_LOG_PATH = os.path.expanduser("~/.hermes/logs/evolve.log")
 DIAGNOSTICS_DIR = os.path.join(NOTES_DIR, "tool-failure-diagnostics")
 ACTIONABLE_ROI_MIN = 2.0
 ACTIONABLE_IMPACT_MIN = 4
+# Phase 0 fix: cumulative ROI for recurring failures
+# When a signal shows N occurrences, ROI = impact * min(N, 20) / effort
+# This prevents high-frequency low-ROI items from being perpetually skipped.
+CUMULATIVE_OCCURRENCE_CAP = 20
+# Stuck-counter: auto-lower ROI threshold after N consecutive skips of same type
+STUCK_COUNTER_THRESHOLD = 5
+STUCK_COUNTER_ROI_DELTA = 0.3  # lower ROI by 0.3 per stuck cycle
+# Proposal expiry: days before a "proposed" item generates a signal
+PROPOSAL_EXPIRY_DAYS = 7
 
 os.makedirs(NOTES_DIR, exist_ok=True)
 
@@ -55,8 +84,36 @@ def signal_age_hours(sig):
     return (datetime.datetime.now() - t).total_seconds() / 3600
 
 
+def current_live_cron_health():
+    """Return live cron-health-quarantine data when available.
+
+    usage-score.json is a cached scorecard. The self-improvement queue should not
+    keep emitting cron_degraded from that cache when the live quarantine check is
+    already green; otherwise a repaired cron incident becomes a ghost action.
+    """
+    script = Path.home() / ".hermes" / "scripts" / "cron-health-quarantine.py"
+    if not script.exists():
+        return None
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(script)],
+            text=True,
+            capture_output=True,
+            timeout=20,
+            check=False,
+        )
+        if proc.returncode != 0 or not proc.stdout.strip():
+            return None
+        return json.loads(proc.stdout)
+    except Exception:
+        return None
+
+
 def current_ops_healthy():
     """Return True when current operational checks show the old transient errors are closed."""
+    live_cron = current_live_cron_health()
+    if live_cron is not None:
+        return int(live_cron.get("bad_count") or 0) == 0 and int(live_cron.get("stale_count") or 0) == 0
     try:
         data = json.loads(Path(USAGE_SCORE_PATH).read_text())
         cron = data.get("components", {}).get("cron_green", {})
@@ -158,6 +215,209 @@ def load_darwin_results(max_count=None):
             except (IndexError, ValueError):
                 continue
     return records[-max_count:] if max_count else records
+
+
+# ─── Phase 0: New Signal Sources ───
+
+PROPOSALS_PATH = os.path.expanduser("~/.hermes/pua-loop/proposals.jsonl")
+BEHAVIORAL_RUNS_PATH = os.path.expanduser("~/.hermes/pua-loop/benchmark_runs.jsonl")
+STUCK_COUNTER_PATH = os.path.join(NOTES_DIR, "pipeline-stuck-counter.json")
+
+
+def load_operational_health_signals():
+    """Generate signals from usage-score.json operational health degradation."""
+    signals = []
+    try:
+        data = json.loads(Path(USAGE_SCORE_PATH).read_text())
+    except Exception:
+        return signals
+
+    # Cron health degradation. Prefer the live quarantine check over the cached
+    # usage-score component so repaired cron incidents do not remain queued as
+    # stale medium-priority work.
+    live_cron = current_live_cron_health()
+    if live_cron is not None:
+        bad_cron = int(live_cron.get("bad_count") or 0)
+        stale_cron = int(live_cron.get("stale_count") or 0)
+        if bad_cron > 0 or stale_cron > 0:
+            count = bad_cron + stale_cron
+            signals.append({
+                "type": "operational_health",
+                "subtype": "cron_degraded",
+                "count": count,
+                "impact": min(count + 3, 8),
+                "detail": f"{bad_cron} cron jobs in bad state, {stale_cron} stale cron errors",
+                "timestamp": datetime.datetime.now().isoformat(),
+            })
+    else:
+        cron = data.get("components", {}).get("cron_green", {})
+        bad_cron = int(cron.get("bad") or 0)
+        if bad_cron > 0:
+            signals.append({
+                "type": "operational_health",
+                "subtype": "cron_degraded",
+                "count": bad_cron,
+                "impact": min(bad_cron + 3, 8),  # 1 bad = impact 4, 5 bad = impact 8
+                "detail": f"{bad_cron} cron jobs in bad state",
+                "timestamp": datetime.datetime.now().isoformat(),
+            })
+
+    # Grade degradation
+    grade = data.get("grade", "A")
+    score = float(data.get("score") or 100)
+    if grade not in ("A",) or score < 85:
+        signals.append({
+            "type": "operational_health",
+            "subtype": "grade_degraded",
+            "count": 1,
+            "impact": 6,
+            "detail": f"Health grade={grade}, score={score:.1f}",
+            "timestamp": datetime.datetime.now().isoformat(),
+        })
+
+    return signals
+
+
+def load_benchmark_regression_signals():
+    """Generate signals when behavioral benchmarks show regressions."""
+    signals = []
+    if not os.path.exists(BEHAVIORAL_RUNS_PATH):
+        return signals
+
+    # Read last 3 runs
+    runs = []
+    with open(BEHAVIORAL_RUNS_PATH, "r") as f:
+        for line in f:
+            try:
+                runs.append(json.loads(line.strip()))
+            except json.JSONDecodeError:
+                continue
+
+    if len(runs) < 2:
+        return signals
+
+    latest = runs[-1]
+    prev = runs[-2]
+
+    # Check for pass rate regression
+    latest_rate = latest.get("pass_rate", 1.0)
+    prev_rate = prev.get("pass_rate", 1.0)
+    if latest_rate < prev_rate:
+        failed_names = [
+            r["name"] for r in latest.get("results", [])
+            if not r.get("passed")
+        ]
+        signals.append({
+            "type": "benchmark_regression",
+            "count": 1,
+            "impact": 7,
+            "detail": f"Benchmark pass rate regressed: {prev_rate:.0%} → {latest_rate:.0%}. Failed: {', '.join(failed_names[:3])}",
+            "timestamp": datetime.datetime.now().isoformat(),
+        })
+
+    # Check for new failures
+    prev_failed = {r["benchmark_id"] for r in prev.get("results", []) if not r.get("passed")}
+    new_failures = [
+        r for r in latest.get("results", [])
+        if not r.get("passed") and r.get("benchmark_id") not in prev_failed
+    ]
+    if new_failures:
+        signals.append({
+            "type": "benchmark_new_failure",
+            "count": len(new_failures),
+            "impact": 6,
+            "detail": f"{len(new_failures)} new benchmark failure(s): {', '.join(r['name'] for r in new_failures[:3])}",
+            "timestamp": datetime.datetime.now().isoformat(),
+        })
+
+    return signals
+
+
+def load_proposal_expiry_signals():
+    """Generate signals for proposals stuck in 'proposed' status."""
+    signals = []
+    if not os.path.exists(PROPOSALS_PATH):
+        return signals
+
+    now = datetime.datetime.now()
+    stuck_count = 0
+    oldest_age_days = 0
+
+    with open(PROPOSALS_PATH, "r") as f:
+        for line in f:
+            try:
+                proposal = json.loads(line.strip())
+                if proposal.get("status") != "proposed":
+                    continue
+                created = parse_iso(proposal.get("created_at"))
+                if not created:
+                    continue
+                age_days = (now - created).days
+                if age_days >= PROPOSAL_EXPIRY_DAYS:
+                    stuck_count += 1
+                    oldest_age_days = max(oldest_age_days, age_days)
+            except (json.JSONDecodeError, ValueError):
+                continue
+
+    if stuck_count > 0:
+        signals.append({
+            "type": "stalled_proposals",
+            "count": stuck_count,
+            "impact": min(stuck_count + 4, 8),
+            "detail": f"{stuck_count} proposals stuck in 'proposed' for up to {oldest_age_days} days",
+            "timestamp": datetime.datetime.now().isoformat(),
+        })
+
+    return signals
+
+
+def load_stuck_counter_state():
+    """Load the stuck-counter state tracking consecutive skips per item type."""
+    if not os.path.exists(STUCK_COUNTER_PATH):
+        return {}
+    try:
+        return json.loads(Path(STUCK_COUNTER_PATH).read_text())
+    except Exception:
+        return {}
+
+
+def save_stuck_counter_state(state):
+    """Persist stuck-counter state."""
+    os.makedirs(os.path.dirname(STUCK_COUNTER_PATH), exist_ok=True)
+    Path(STUCK_COUNTER_PATH).write_text(json.dumps(state, indent=2, ensure_ascii=False))
+
+
+def compute_effective_roi(item, stuck_state):
+    """Compute effective ROI with cumulative occurrence boost and stuck-counter discount.
+
+    Phase 0 fixes:
+    1. Cumulative ROI: recurring failures get ROI * min(count, cap) multiplier
+    2. Stuck-counter: items skipped N times get threshold lowered by delta * N
+    """
+    base_roi = item.roi
+
+    # Cumulative boost from signal occurrence count
+    occurrence_count = 1
+    if hasattr(item, 'detail') and item.detail:
+        try:
+            detail = json.loads(item.detail)
+            groups = detail.get("failure_groups", [])
+            if groups:
+                occurrence_count = sum(g.get("count", 1) for g in groups)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    cumulative_factor = min(occurrence_count, CUMULATIVE_OCCURRENCE_CAP)
+    boosted_roi = base_roi * max(cumulative_factor, 1)
+
+    # Stuck-counter discount
+    item_key = item.act_type
+    skip_count = stuck_state.get(item_key, 0)
+    effective_threshold = max(
+        ACTIONABLE_ROI_MIN - (skip_count * STUCK_COUNTER_ROI_DELTA),
+        0.5  # floor
+    )
+
+    return boosted_roi, effective_threshold
 
 
 # ─── Prioritization Engine ───
@@ -362,6 +622,58 @@ def aggregate_items(signals, health_records, patterns, darwin_records):
 
     # 按 ROI 排序
     items.sort(key=lambda x: x.roi, reverse=True)
+
+    # Phase 0: Process new signal types from operational_health and proposal_expiry
+    ops_health_sigs = type_signals.get("operational_health", [])
+    for sig in ops_health_sigs:
+        subtype = sig.get("subtype", "unknown")
+        count = sig.get("count", 1)
+        impact = sig.get("impact", 4)
+        detail = sig.get("detail", "")
+        if subtype == "cron_degraded":
+            items.append(ActionItem(
+                "fix_cron_health", f"Cron 健康度下降: {detail}",
+                "high" if count >= 3 else "medium", "small",
+                detail=detail,
+                suggestion="运行 cron-health-quarantine.py 诊断失败 cron jobs",
+                source="operational_health", category="system_health"
+            ))
+        elif subtype == "grade_degraded":
+            items.append(ActionItem(
+                "escalate_health", f"系统健康度下降: {detail}",
+                "high", "medium",
+                detail=detail,
+                suggestion="运行 agent-health-monitor.py 诊断",
+                source="operational_health", category="system_health"
+            ))
+
+    stalled_sigs = type_signals.get("stalled_proposals", [])
+    for sig in stalled_sigs:
+        count = sig.get("count", 0)
+        detail = sig.get("detail", "")
+        items.append(ActionItem(
+            "execute_stalled_proposals", f"提案积压: {detail}",
+            "high", "medium",
+            detail=detail,
+            suggestion="审查 proposals.jsonl 中 'proposed' 状态的条目，决定是否执行或过期",
+            source="proposal_expiry", category="evolution_momentum"
+        ))
+
+    # Phase 1: Benchmark regression signals
+    benchmark_sigs = type_signals.get("benchmark_regression", []) + type_signals.get("benchmark_new_failure", [])
+    for sig in benchmark_sigs:
+        detail = sig.get("detail", "")
+        impact = sig.get("impact", 6)
+        items.append(ActionItem(
+            "fix_benchmark_regression", f"基准回归: {detail}",
+            "high" if impact >= 7 else "medium", "medium",
+            detail=detail,
+            suggestion="运行 behavioral-benchmark-runner.py 定位失败项并修复",
+            source="behavioral_benchmark", category="system_health"
+        ))
+
+    # Re-sort after new items
+    items.sort(key=lambda x: x.roi, reverse=True)
     return items
 
 
@@ -515,7 +827,13 @@ def write_tool_failure_diagnostic(item, status="pending_review", reason="not_aut
 def _action_state_summary(items, executed_actions=None, diagnostic_paths=None):
     executed_actions = executed_actions or []
     diagnostic_paths = diagnostic_paths or []
-    actionable = [it for it in items if it.roi >= ACTIONABLE_ROI_MIN and it.impact >= ACTIONABLE_IMPACT_MIN]
+    # Phase 0: Use effective ROI/threshold
+    actionable = []
+    for it in items:
+        effective_roi = getattr(it, '_effective_roi', it.roi)
+        effective_threshold = getattr(it, '_effective_threshold', ACTIONABLE_ROI_MIN)
+        if effective_roi >= effective_threshold and it.impact >= ACTIONABLE_IMPACT_MIN:
+            actionable.append(it)
     skipped_below = [it for it in items if it not in actionable]
     pending_review_count = sum(1 for a in executed_actions if a.get("status") in {"pending_review", "manual", "needs_data"})
     executed_diagnostic_paths = {a.get("diagnostic_path") for a in executed_actions if a.get("diagnostic_path")}
@@ -626,13 +944,23 @@ def auto_execute(items):
 
     Returns an action-state summary. Read-only diagnostics are allowed; runtime
     config edits are not performed from vague `fix_tool_config` aggregates.
+
+    Phase 0: Uses effective ROI with cumulative boost and stuck-counter discount.
     """
     print(f"\n{'=' * 60}")
-    print(f"  Auto-Execute Mode")
+    print(f"  Auto-Execute Mode (Phase 0: cumulative ROI + stuck-counter)")
     print(f"{'=' * 60}")
 
-    actionable = [it for it in items if it.roi >= ACTIONABLE_ROI_MIN and it.impact >= ACTIONABLE_IMPACT_MIN]
-    skipped_below = [it for it in items if it not in actionable]
+    # Phase 0: Use effective ROI/threshold from compute_effective_roi
+    actionable = []
+    skipped_below = []
+    for it in items:
+        effective_roi = getattr(it, '_effective_roi', it.roi)
+        effective_threshold = getattr(it, '_effective_threshold', ACTIONABLE_ROI_MIN)
+        if effective_roi >= effective_threshold and it.impact >= ACTIONABLE_IMPACT_MIN:
+            actionable.append(it)
+        else:
+            skipped_below.append(it)
     executed = []
     diagnostic_paths = []
 
@@ -664,15 +992,36 @@ def auto_execute(items):
             print(f"  → Could dispatch to Darwin skill optimizer")
             executed.append({"action": it.act_type, "status": "can_auto_optimize", "detail": it.detail})
 
+        elif it.act_type == "fix_cron_health":
+            print(f"  → Cron health degraded, scheduling diagnostic")
+            executed.append({"action": it.act_type, "status": "diagnostic_queued", "detail": it.detail})
+
+        elif it.act_type == "execute_stalled_proposals":
+            print(f"  → Stale proposals detected, escalating for review")
+            executed.append({"action": it.act_type, "status": "escalated", "detail": it.detail})
+
         else:
             print(f"  → Requires manual review")
             executed.append({"action": it.act_type, "status": "manual", "detail": it.detail})
+
+    # Phase 0: Update stuck-counter state
+    # Increment counter for skipped items, reset for executed items
+    new_stuck_state = load_stuck_counter_state()
+    for it in skipped_below:
+        key = it.act_type
+        new_stuck_state[key] = new_stuck_state.get(key, 0) + 1
+    for a in executed:
+        key = a.get("action")
+        if key and key in new_stuck_state:
+            del new_stuck_state[key]
+    save_stuck_counter_state(new_stuck_state)
 
     # 记录执行日志
     exec_log = {
         "timestamp": datetime.datetime.now().isoformat(),
         "actions": executed,
         "diagnostic_paths": diagnostic_paths,
+        "stuck_counter_state": new_stuck_state,
     }
     exec_path = os.path.join(NOTES_DIR, "improvement-execution-log.jsonl")
     with open(exec_path, "a") as f:
@@ -730,15 +1079,78 @@ def main():
     # 初始化基线（如果不存在）
     created = ensure_evolution_baseline()
 
+    # Phase 3a: Multi-Armed Bandit strategy selection
+    bandit = None
+    selected_strategy = "signal_exploitation"  # default fallback
+    if _BANDIT_AVAILABLE:
+        bandit = StrategyBandit()
+        selected_strategy = bandit.select_strategy()
+        print(f"\n  Phase 3a: Bandit selected strategy: {selected_strategy}")
+        stats = bandit.get_stats()
+        print(bandit_format_stats(stats))
+        bandit.save()  # persist the selection increment
+
+    # Phase 3c: Meta-Evolution — adjust pipeline parameters before running
+    if _META_EVOLUTION_AVAILABLE:
+        meta_result = meta_evolve()
+        if meta_result.get("applied"):
+            print(f"\n  Meta-evolution adjusted {len(meta_result['applied'])} parameter(s)")
+            for p, v in meta_result["applied"].items():
+                print(f"    {p}: {v['old']} → {v['new']}")
+
     # 加载信号
     signals = load_signals()
     health_records = load_health_records()
     patterns = load_patterns()
     darwin_records = load_darwin_results()
 
+    # Phase 0: New signal sources
+    ops_health_signals = load_operational_health_signals()
+    proposal_expiry_signals = load_proposal_expiry_signals()
+    benchmark_regression_signals = load_benchmark_regression_signals()
+    stuck_state = load_stuck_counter_state()
+
+    # Inject new signals as synthetic signal entries
+    for sig in ops_health_signals + proposal_expiry_signals + benchmark_regression_signals:
+        signals.append({"signals": [sig], "timestamp": sig.get("timestamp")})
+
     # 聚合
     items = aggregate_items(signals, health_records, patterns, darwin_records)
     items = deduplicate_items(items)
+
+    # Phase 0: Apply cumulative ROI and stuck-counter discount
+    for item in items:
+        boosted_roi, effective_threshold = compute_effective_roi(item, stuck_state)
+        item._effective_roi = boosted_roi
+        item._effective_threshold = effective_threshold
+
+    # Phase 3b: Novelty Search — inject exploration targets when pipeline is idle
+    # When no actionable items exist from reactive signals, novelty search
+    # generates exploration targets from under-explored dimensions (Lehman & Stanley 2011).
+    actionable_count = sum(
+        1 for it in items
+        if getattr(it, '_effective_roi', it.roi) >= ACTIONABLE_ROI_MIN
+        and it.impact >= ACTIONABLE_IMPACT_MIN
+    )
+    if actionable_count == 0 and _NOVELTY_AVAILABLE:
+        novelty_targets = generate_novelty_targets()
+        if novelty_targets:
+            print(f"\n  Phase 3b: Novelty search found {len(novelty_targets)} exploration target(s)")
+            novelty_items = novelty_targets_as_action_items()
+            for ni in novelty_items:
+                items.append(ActionItem(
+                    ni["act_type"], ni["summary"],
+                    ni["impact"], ni["effort"],
+                    detail=ni["detail"], suggestion=ni["suggestion"],
+                    source=ni["source"], category=ni["category"],
+                ))
+            # Re-apply ROI for novelty items
+            for item in items:
+                if not hasattr(item, '_effective_roi'):
+                    boosted_roi, effective_threshold = compute_effective_roi(item, stuck_state)
+                    item._effective_roi = boosted_roi
+                    item._effective_threshold = effective_threshold
+            items.sort(key=lambda x: x.roi, reverse=True)
 
     if args.preview or args.write or args.auto_exec or not any([args.write, args.auto_exec]):
         # 默认或 --preview: 打印报告
@@ -750,6 +1162,22 @@ def main():
 
         if args.auto_exec:
             execution_summary = auto_execute(items)
+
+    # Phase 3a: Update bandit reward based on pipeline outcome
+    if bandit is not None and not args.preview:
+        exec_sum = locals().get("execution_summary")
+        actionable_count = exec_sum.get("actionable_count", 0) if exec_sum else 0
+        executed_count = exec_sum.get("executed_count", 0) if exec_sum else 0
+        # Reward heuristic: 1.0 if executed, 0.5 if actionable but not executed, 0.1 if nothing actionable
+        if executed_count > 0:
+            reward = 1.0
+        elif actionable_count > 0:
+            reward = 0.5
+        else:
+            reward = 0.1
+        bandit.update_reward(selected_strategy, reward)
+        bandit.save()
+        print(f"\n  Phase 3a: Bandit reward updated: {selected_strategy} -> {reward:.1f}")
 
     if not args.preview:
         event = append_evolution_closure(items, mode="auto_exec" if args.auto_exec else "write" if args.write else "run", execution_summary=locals().get("execution_summary"))
