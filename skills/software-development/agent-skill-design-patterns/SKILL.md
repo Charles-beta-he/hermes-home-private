@@ -349,7 +349,7 @@ When creating a new skill or changing `description`, define at least:
 - 2 forbidden prompts: must not load this skill.
 - 1 no-load prompt: should remain general reasoning.
 
-Use `references/pattern-routing-evals.csv` as a starting template.
+Use `evals/prompts.csv` as the canonical skill-eval prompt set. `references/pattern-routing-evals.csv` is kept as a readable reference copy.
 
 ## Skill Rehabilitation Procedure
 
@@ -414,4 +414,5 @@ When using an adjacent mode, still apply routing, context budget, artifact contr
 
 - Private SSOT: `docs/private/agent-skill-design-patterns-ssot-20260607.md`.
 - `references/pattern-matrix.md` — compact comparison matrix and body-shape guide.
-- `references/pattern-routing-evals.csv` — starter routing eval prompt set.
+- `evals/prompts.csv` — canonical routing eval prompt set for skill-eval.
+- `references/pattern-routing-evals.csv` — readable reference copy of the starter routing eval prompts.
