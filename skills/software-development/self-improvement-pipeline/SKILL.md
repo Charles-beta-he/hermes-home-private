@@ -1,13 +1,39 @@
 ---
 name: self-improvement-pipeline
-description: "自进化管线 — L0-L5 完整架构。自动挖取需求、按 bandit score 选最优路线、eval harness 准入、灰度放量。全部基于 Hermes 原生能力构建。触发词：'自进化', '自进化管线', '自优化 pipeline', 'self-improvement pipeline', '改进信号', 'autopsy', 'evolution baseline', 'l0-l5', '自进化架构'。"
+description: Use when the task falls under Self-Improvement Pipeline — 自进化优先调度层 (L0-L5).
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - software
+    - development
+    - self
+    - improvement
+    - pipeline
+    related_skills:
+    - darwin-skill
+    - design
+    - devops
+    - loop
+    - mcp
+    - p10
+    - p7
+    - p9
 ---
 
 # Self-Improvement Pipeline — 自进化优先调度层 (L0-L5)
 
+## Overview
+
+
 > 自动挖取改进需求、按 bandit score 选最优路线、eval 准入门。
 > 核心原则: **不重造轮子 — 用 Hermes 原生能力 (hooks/cron/sqlite/skills/config) 填补缺口。**
+
+## When to Use
+
+- The task falls under Self-Improvement Pipeline — 自进化优先调度层 (L0-L5)
 
 ## Architecture
 
@@ -20,6 +46,19 @@ L3 中环层:  离线分析: 路线全灭检测 + 工具模式挖掘 + skill 退
 L4 准入门:  eval-harness — 85条基线, 三维比较(pass_rate/cost/duration), 5%阈值
 L5 灰度层:  config.yaml canary_ratio + skills-staging/ 目录
 ```
+
+### Architecture Alignment Gate — 自进化必须跟随总体架构方向
+
+自进化不是随机堆功能或看到外部框架就照搬；每个 evolution 版本/任务必须声明它提升了总体架构的哪一层或哪条控制面。默认 north star 是：L0-L5+LX 多模型架构、local-brain taskpool、evidence-first、bounded autonomy、work/evolution 分道、fail-closed closeout。
+
+每个自进化任务进入执行前必须回答并记录：
+- `lane`: `work` / `evolution` / `advisory`；work 交付优先，不被 evolution 占用。
+- `architecture_target`: L0/L1/L2/L3/L4/L5/LX/local-brain/skill-graph/provider-quota/taskpool 等。
+- `capability_delta`: 具体能力提升，例如更准的路由、更低误报、更强证据门、更稳的 cron、更少 ghost signal。
+- `anti_drift_check`: 是否违背现有总体方向；是否重复造轮子；是否绕过 evidence gate 或 fail-closed gate。
+- `acceptance_evidence`: 测试/自检/usage-score/graph-check/ratification artifact，而不是“模型觉得更好”。
+
+如果无法映射到总体架构方向，默认降级为 `advisory`，不得自动落地为 runtime 改动。
 
 ## Double-Brain 模式 (Hermes ↔ Claude Code)
 
@@ -227,7 +266,7 @@ cat ~/.hermes/mcp/proposals/mcp-proposal-*.md
 - 真正需要 MCP 的是**结构性操作**(git commit 带多个参数, 状态检查)而非自动化无关的 shell 单行
 - 实施前必须确认提案的 suggestion 是否合理
 
-## Verification
+## Verification Checklist
 
 ```bash
 # 全组件自测
@@ -247,6 +286,115 @@ python3 ~/.hermes/scripts/route_store.py summary
 python3 ~/.hermes/scripts/post-session-autopsy.py --recent 10 --write
 python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec
 ```
+
+### Manual trigger runbook (gateway/Telegram request)
+
+Use when the user says “触发自进化 loop”, “run self-evolution now”, or asks to prove a self-improvement tick happened now rather than waiting for the nightly cron.
+
+1. Locate the existing job and scripts before triggering:
+   ```bash
+   hermes cron list
+   test -f ~/.hermes/scripts/self-improvement-pipeline.py
+   test -f ~/.hermes/scripts/post-session-autopsy.py
+   tail -5 ~/.hermes/logs/evolve.log
+   ```
+2. Trigger the scheduled self-evolution job by job id (usually the job named `双脑自进化 (Hermes→ClaudeCode→落地→Eval)`):
+   ```bash
+   hermes cron run <job_id>
+   ```
+   If using the Hermes cronjob tool, `run` may only move `next_run_at` to “now”. Wait for the scheduler, then re-list until `last_run_at` changes and `last_status=ok`; do not treat `next_run_at` movement alone as proof of execution.
+3. Run the deterministic local pipeline as additional evidence and to force fresh signals/action-plan artifacts:
+   ```bash
+   python3 ~/.hermes/scripts/post-session-autopsy.py --recent 10 --write
+   python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec
+   python3 ~/.hermes/scripts/self-improvement-pipeline.py --preview
+   ```
+   `--auto-exec` can legitimately record a `kept` evolution closure while saying `No high-ROI actions to execute`; that means the loop generated/updated the queue but did not apply a risky patch.
+4. Verify operational health after the tick:
+   ```bash
+   python3 ~/.hermes/scripts/usage-score.py
+   python3 ~/.hermes/scripts/cron-health-quarantine.py
+   python3 ~/.hermes/scripts/cron-missed-run-guard.py
+   python3 ~/.hermes/scripts/self-test.py
+   ```
+   Healthy closure target: cron bad_count=0, missed_count=0, self-test all pass. Usage grade can be B if known non-blocking components such as ensemble/ratification corpus are intentionally empty; report the components rather than inflating the grade.
+5. If the loop wrote auditable artifacts, commit only scoped evidence files (no push unless explicitly asked):
+   ```bash
+   cd ~/.hermes
+   git add -- logs/evolve.log notes/improvement-action-plan.json notes/improvement-signals.jsonl
+   git diff --cached --check
+   git diff --cached --unified=0 -- logs/evolve.log notes/improvement-action-plan.json notes/improvement-signals.jsonl  # scan added lines for secrets
+   git commit -m "chore(evolve): trigger self-improvement loop"
+   git status --short -- logs/evolve.log notes/improvement-action-plan.json notes/improvement-signals.jsonl
+   ```
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side-effects were verified by read-back or direct inspection.
+- [ ] The final result still matches the trigger and acceptance shape of this skill.
+## Post-trigger audit: distinguish “ran” from “evolved”
+
+Use this when a user asks to analyze a just-triggered self-evolution loop, especially after manual `hermes cron run <self-evolve-job>` or `self-improvement-pipeline.py --write --auto-exec`.
+
+Core class of issue: a self-evolution tick can execute successfully and still fail to produce useful evolution. Treat scheduler success, queue generation, action execution, and performance improvement as separate facts.
+
+Audit checklist:
+
+```bash
+# 1. Prove scheduler/script completion only
+hermes cron list | grep -A12 -B2 'self-improvement\|自进化\|双脑'
+
+# 2. Prove local queue/action-plan generation
+python3 ~/.hermes/scripts/post-session-autopsy.py --recent 10 --write
+python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec
+cat ~/.hermes/notes/improvement-action-plan.json
+
+tail -5 ~/.hermes/logs/evolve.log
+
+# 3. Prove operational health separately
+python3 ~/.hermes/scripts/usage-score.py
+python3 ~/.hermes/scripts/cron-health-quarantine.py
+python3 ~/.hermes/scripts/cron-missed-run-guard.py
+python3 ~/.hermes/scripts/self-test.py
+```
+
+Interpretation rules:
+- `last_status=ok` means the cron script completed; it is not proof that a useful improvement happened.
+- `eval_result=kept` in `evolve.log` may only mean the priority queue had items. Check whether any item was actionable/executed.
+- If `baseline/new/delta` are constant zeros, do not claim measured improvement. Report this as an observability/verifier gap.
+- A HIGH item can be skipped if `roi < actionable_threshold` (currently `roi >= 2.0 and impact >= 4`). This is a triage/gating design issue, not automatically a runtime failure.
+- `fix_tool_config` should not auto-edit config based on vague failure aggregates. First generate read-only diagnostics: exact tool, error signature, count, first/last seen, stale status, and current operational health.
+- Usage grade can be B even when runtime is green if ensemble/ratification corpus components are missing. Separate `operational_health_grade` from `evidence_readiness_grade` in reports.
+
+Recommended low-risk next implementation slice after this audit:
+1. Add action-state ledger fields to closure events: `generated_count`, `actionable_count`, `executed_count`, `pending_review_count`, `skipped_below_threshold_count`, `top_item_roi`, `top_item_impact`, `skipped_reason`, `useful_evolution`.
+2. Add read-only `tool-failure-diagnostic-<ts>.json` generation for `fix_tool_config` rather than changing config or thresholds first.
+3. Improve autopsy aggregation from detail strings to structured `tool_name`, `error_signature`, `exit_code`, `count`, `first_seen`, `last_seen`, `stale_status`, `suppression_reason`.
+
+When landing this slice, treat it as a governance-code change and close the loop with TDD + evidence-first ratification:
+1. Add/extend regression tests before or alongside implementation:
+   - `scripts/test_self_improvement_pipeline.py` for action-state ledger and read-only diagnostic schema.
+   - `scripts/test_post_session_autopsy.py` for structured `tool_name + error_signature + exit_code` aggregation.
+   - `scripts/test_usage_score.py` for `semantic_grades.operational_health` vs `evidence_readiness`, and for certified `tick-*/discussion_result.json` artifacts counting as ratification corpus when `status` is certified, truth gate allows certification, and 2+ models participated.
+   - `scripts/test_consult_models_integration.py` for grounding aliases such as `claims_supported` / `supported_claim_ids` and raw unlinked evidence -> `needs_link_review`.
+   - `scripts/test_ensemble_vote_integration.py` for executed ensemble votes persisting `execute=true`; without this log field, `usage-score.py` will continue reporting `ensemble_executed` missing even after real model calls.
+2. Run deterministic gates before multi-model ratification:
+   ```bash
+   cd ~/.hermes
+   python3 -m py_compile scripts/self-improvement-pipeline.py scripts/post-session-autopsy.py scripts/consult_models.py scripts/usage-score.py scripts/self-test.py
+   python3 -m unittest scripts/test_self_improvement_pipeline.py scripts/test_post_session_autopsy.py scripts/test_consult_models_integration.py scripts/test_usage_score.py -v
+   python3 scripts/usage-score.py
+   python3 scripts/self-improvement-pipeline.py --write --auto-exec
+   python3 scripts/cron-health-quarantine.py
+   python3 scripts/cron-missed-run-guard.py
+   python3 scripts/self-test.py
+   ```
+   Run `usage-score.py` before `self-improvement-pipeline.py --write --auto-exec` so the diagnostic can include fresh `semantic_grades` health context.
+3. Build a `consult_models.py` evidence-first state for acceptance, not just a prose summary. Put each acceptance assertion in `state.claims` and deterministic outputs/diff summaries in `state.evidence` using explicit `claims_supported` links. Locally verify `build_evidence_bundle(state)` and `evaluate_truth_gate(bundle)` report `verified_claim_count == claim_count`, `truth_status=grounded`, and no `unsupported` / `needs_link_review` high-severity claims before running T3.
+4. Full multi-model acceptance requires the ratification artifact, not just truth-gate precheck:
+   ```bash
+   python3 scripts/consult_models.py run /tmp/<state>.json --tier T3 --quorum 4 --discussion --max-rounds 5 --keep --timeout 180
+   ```
+   If the command times out after planner fan-out or lacks `discussion_result.json`, report weak consensus / not fully ratified and inspect the tick directory rather than claiming certification.
+5. Before committing, stage only scoped scripts/tests/runtime evidence, run `git diff --cached --check`, scan staged added lines for secret-like patterns, verify `git diff --cached --name-only`, then local commit only; do not push unless explicitly asked.
 
 ## Pitfalls (实战发现)
 
@@ -338,7 +486,23 @@ python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec
       4. p10-health 的 self-test 必须用 exit-code + bounded subprocess，不要 `grep -q ALL PASS` 管道；`set -euo pipefail` 下 grep -q 早退可能 SIGPIPE 上游，制造 false negative。
       5. 旧 cron `last_status=error` 如果是 >24h 的 transient wrapper/interpreter shutdown 且已有 future retry，可标记 stale 而非 live bad；真正清除仍要手动或定时重跑该 job。
     - 验证目标: `bash ~/.hermes/scripts/p10-health.sh --json` Grade A 且 warnings=[]；`python3 ~/.hermes/scripts/usage-score.py` Grade A/B（fallback_used 可审计）；`python3 ~/.hermes/scripts/cron-health-quarantine.py` bad_count=0；`python3 ~/.hermes/scripts/cron-missed-run-guard.py` missed_count=0。
-17. **Skill Graphs 2.0 应作为审计门，而不是先改运行时 loader**:
+17. **usage/self-improvement evidence readiness 修复要同时检查“证据存在”和“日志语义可被计分器识别”**:
+    - 症状: 已有真实 multi-model/ensemble 调用，`usage-score.py` 仍输出 `semantic_grades.evidence_readiness.missing=['ensemble_executed']` 或 `ratification_corpus` 缺失。
+    - 根因常见有两类：
+      1. `consult_models.py` 已写 `tick-*/discussion_result.json`，但 usage-score 只读 `logs/ratify.jsonl` / `cross-patch.jsonl`，未把 certified discussion artifacts 视为 ratification corpus。
+      2. `ensemble-vote.py --execute` 真实调用了模型，但日志没有持久化 `execute: true`，导致 usage-score 过滤条件不命中。
+    - 修复模式：
+      1. 对 certified `tick-*/discussion_result.json` 建一等 evidence reader：要求 `status in {certified, certified_with_minor_risks}`、truth gate 不为 `can_certify_truth=false`、2+ models participated、mtime 在 7d 窗口内；component 输出 `sources` 便于诊断来自 `discussion_result` 还是 jsonl bridge。
+      2. `ensemble-vote.py` 的 executed path 必须在 result/log entry 中写 `execute: true`，并用回归测试 mock `_call_model()` 验证 log 文件实际落字段。
+      3. 刷新真实 ensemble evidence 时可用最小 smoke，但要预期部分 provider 可能失败；只要 log schema 可计数，usage-score 应如实展示 `count_7d` 与 missing 状态。
+    - 验证目标: `python3 ~/.hermes/scripts/usage-score.py` 输出 Grade A，`semantic_grades.evidence_readiness.missing=[]`，`components.ensemble_executed.count_7d>=1`，`components.ratification_corpus.sources` 非空。
+
+18. **独立 code review 对治理脚本特别容易发现“计数语义”与“分类顺序”漏洞，必须按 fail-closed 修复后复审**:
+    - 典型 blocker：`pending_review_count` 把同一 `fix_tool_config` diagnostic 同时按 executed action 与 diagnostic path 双计数；或 `_error_signature()` 先匹配 generic `not_found`，导致更具体的 `module_not_found` 分支不可达。
+    - 修复模式：先加 failing regression test（例如 actionable `fix_tool_config` 只计 1 个 pending review；`ModuleNotFoundError: No module named ...` 分类为 `module_not_found`），再改最小逻辑，再重新跑目标 tests + self-test + 独立 reviewer。
+    - commit 前顺序：显式 pathspec stage → `git diff --cached --check` → added-lines secret scan → independent reviewer JSON verdict → reviewer 如 fail 则修复+复审 → `[verified]` scoped local commit。
+
+19. **Skill Graphs 2.0 应作为审计门，而不是先改运行时 loader**:
     - 症状: skill 数量增长后，related_skills 形成深链或循环；agent 运行时不稳定地跳过依赖。
     - 正确分层:
       - atom: 单一原语，0 skill 依赖；
@@ -350,7 +514,20 @@ python3 ~/.hermes/scripts/self-improvement-pipeline.py --write --auto-exec
       3. 本轮只做审计和迁移建议，不直接清理旧 skill，不改 runtime loader
       4. self-test 必须含 valid fixture 与 invalid fixture，证明 fail-closed 行为
     - 验证目标: `self-test.py` 全绿；`skill-graph-audit.schema.json` parseable；steward full report 含 `audits.skill_graph`。
+
+20. **Advisory-only multimodel PASS 要“消费弱触发”，但不能变成认证权威**:
+    - 症状: taskpool multimodel 对弱触发（如 `P0_priority`/`closeout_ratification`/`architecture_target`/`accuracy_keyword`）跑出 advisory-only PASS 后，任务仍以 `not_certified` 反复进入队列，浪费模型预算并遮挡真正需要认证的任务。
+    - 修复模式: advisory-only plan 若 gate 返回 `PASS + LOOP_DONE`，持久化为 `PASS_ADVISORY_ONLY` + `decision=continue_loop`，写 `multimodel_status: advisory_completed`、`multimodel_round_status: advisory_passed`、`multimodel_advisory_only: true`、`multimodel_certification_authority: false`。
+    - 关键边界: 不写 `multimodel_ratification_artifact`，`task_multimodel_passed()` 仍必须为 false；只消费弱 advisory trigger，不得屏蔽 `stale_claim`、`p0_evolution_blast_radius`、`loop_non_convergence` 等强认证触发。
+    - 回归测试: 构造 weak-only P1 evolution task，写入 `PASS_ADVISORY_ONLY` 后验证不再重复触发；再设置 `retry_count >= 2` 验证强触发仍恢复。
+    - 详细 runbook: `references/advisory-only-multimodel-pass-consumption.md`。
 - `pro` — PUA Pro 自进化追踪 (依赖 evolution.md)
 - `darwin-skill` — 单个 skill 优化
 - `skill-ecosystem-governance` — 生态治理
 - `loop` — 迭代执行
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.

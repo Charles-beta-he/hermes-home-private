@@ -1,10 +1,27 @@
 ---
 name: multi-model-thinking
-description: "真正多模型思考协议 — Claude Code + Codex/gpt-5.5 + DeepSeek + MiMo 独立方案、交叉质疑、来回讨论、补充红队、最终多方认证最佳方案。含任务池自动介入 pipeline（并行 step、T2/T3 tier 选择、convergence 追踪）。触发词: 多模型思考, 真多模型, 多模型讨论, 双脑, 四脑, multi-model thinking, debate, ratification, parallel step, taskpool intervention"
+description: Use when a task needs true multi-model deliberation, cross-critique, evidence-linked ratification, or high-risk final certification rather than a single-model answer or a simple cross-check.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - multi-model
+    - ratification
+    - evidence-first
+    - certification
+    - debate
+    related_skills:
+    - framework-audit
+    - requesting-code-review
+    - self-improvement-pipeline
 ---
 
 # True Multi-Model Thinking Protocol — 真多模型思考协议
+
+## Overview
+
 
 > 正确性 > 完整性 > 速度。先做对，再做全，最后做快。
 >
@@ -45,7 +62,7 @@ Implementation-closeout pitfall: a state built only from a broad task prompt, ta
 
 For code changes, MCP/tool changes, and cross-repo/API decisions, add a code-evidence gate before ratification. Use `references/gitnexus-code-evidence-mcp-pattern.md` for the GitNexus-inspired Hermes-native pattern: impact-before-edit, stale-index checks, detect-changes-before-commit, tool/shape contract checks, canonical contract IDs, and RRF only for evidence ranking (not truth certification). Do not import GitNexus runtime or copy code without license/supply-chain review.
 
-When executing Lark/product work through a project profile, load `references/project-profile-injection-pattern.md` and enforce any `backend_contract_policy` / `regression_coverage_policy` fields from the profile. Frontend unit/build/mock regression is not enough for tasks whose acceptance depends on backend source-of-truth semantics; require backend source inspection, backend TDD when the backend is the correct fix point, and separate evidence labels for frontend, mock, real-backend, and remote-build gates.
+When executing Lark/product work through a project profile, load `references/project-profile-injection-pattern.md` and enforce any `backend_contract_policy` / `regression_coverage_policy` fields from the profile. Frontend unit/build/mock regression is not enough for tasks whose acceptance depends on backend source-of-truth semantics; require backend source inspection, backend TDD when the backend is the correct fix point, and separate evidence labels for frontend, mock, real-backend, and remote-build gates. If the user provides a rich team PROJECT-PROFILE or similar document, do not merely analyze it: use the rich external project-profile import pattern in that reference to create a sanitized reference artifact plus compact structured navigation fields in the canonical profile, with redaction and evidence-tier gates.
 
 For product/PRD/Lark task closeout, add a product-document evidence gate before ratification: automatically read the task body plus current PRD/product-doc evidence, UI test ledger, product-user-logic ledger, ADRs, and relevant backend/frontend source before declaring done. Package claims separately for (a) task-specific acceptance and (b) product-document consistency. If the task and product doc conflict, follow the explicit task for the current delivery, but record the conflict, the reason for task precedence, and any product-doc/backlog update needed. Never certify a product task from frontend compatibility alone when backend source-of-truth semantics (money, status, notification time, risk, KYC) remain unchecked.
 
@@ -62,6 +79,8 @@ When the user asks to make such an idea a long-term project, land a project Work
 When the input is an image, infographic, or social-post screenshot and the user asks for multi-model analysis plus adding an optimization plan to the local task pool, use `references/image-to-taskpool-optimization-advisory.md`: extract visible claims with vision/OCR, build claim-linked evidence, run fan-out/discussion as risk requires, and add a task note that honestly distinguishes `truth-grounded advisory` from `implementation-certified`. A not-certified discussion can seed a task, but the task must carry the unresolved issue/evidence-request caveat and must not imply patch-level certification.
 
 When applying control theory, systems theory, metacognition, or skill-governance keypoints to multi-model thinking, do not default to “four brains for every keypoint”. Route by complexity, uncertainty, reflexivity, and blast radius: T0 for deterministic tool checks, T1 for lightweight reviewer, T2 for seed fanout + local gates, T3 for P10/canonical/self-evolution/high-risk rules. If this routing is landed into the local brain, prefer a keypoint-to-multimodel route matrix as a semantic/control-plane overlay rather than rewriting the Obsidian main hierarchy; use the Obsidian reference `references/local-brain-hierarchy-overlay-routing.md`.
+
+When the user asks for systemic “互相关联不足”, theory/core works, long-term maintainable project governance, or balanced multi-direction improvements across profile/taskpool/dispatch/proof/ratification/learning, use `references/systemic-interconnection-control-plane.md`: diagnose skeleton links vs missing semantic control-plane linkage, map canonical theory families to executable mechanisms, split stable invariant kernel from project overlay, and land weak-consensus fanout as advisory strategy rather than fail-closed runtime enforcement.
 
 For user work/product delivery, do not let multi-model discussion slow down an already evidence-clear fix. This does not mean skipping multi-model review; it means sequence it correctly: deterministic source/docs/tests first, implement the smallest safe fix when the defect and acceptance path are clear, then use T1/T2 reviewer or T3 ratification only for unresolved semantic/API/money/security ambiguity or final high-risk closeout. Avoid “multi-brain ceremony” where models restate known facts while code/tests wait. For task-pool scheduling, classify `work/product delivery` separately from `evolution/self-improvement`; P0/P1 returned work blockers should not be starved by open-ended Hermes self-improvement research.
 
@@ -295,7 +314,7 @@ python3 ~/.hermes/scripts/anti_drift_guard.py --root /path/to/repo consult-state
 - `references/current-code-certification-after-amend.md` — post-ratification amendments or AMEND/not_certified current-code runs invalidate certification claims until blockers are converted into deterministic evidence and a fresh target-bound `discussion_result.json` plus `final/certification_manifest.json` pass with the exact 4-model set.
 - `references/grounded-not-certified-amend-loop.md` — when truth evidence is grounded but T3 ratification is `not_certified`, inspect issue ledger/manifest, convert severity>=3 AMENDs into deterministic tests/evidence, commit, update state to current commits, and rerun fresh T3.
 - `references/taskpool-artifact-verification-regression.md` — taskpool pass-state hardening: frontmatter `multimodel_status: certified` is only a hint; load the local `discussion_result.json`, bind it to the exact task, require canonical 4/4 votes for closeout, and repair stale/mismatched task notes to `not_certified` with proof-log caveats.
-- `references/taskpool-multimodel-autorun-pitfalls.md` — **11 大 pitfalls**: build_state claims 注入、tick errors 初始化顺序、autonomy-write-allowlist、state_path 清理、1200s timeout、关键词误报爆炸、gate 双形态、convergence 统计解读、allowlist 配置、safe summary 双门控、evidence-spine auto-completer 语义分类。
+- `references/taskpool-multimodel-autorun-pitfalls.md` — **12 大 pitfalls**: build_state claims 注入、tick errors 初始化顺序、autonomy-write-allowlist、state_path 清理、1200s timeout、关键词误报爆炸、gate 双形态、convergence 统计解读、allowlist 配置、safe summary 双门控、evidence-spine auto-completer 语义分类、parallel consult tick 秒级目录碰撞/target-binding 污染治理。
 - `references/taskpool-dispatch-tick-multimodel-ratchet.md` — safe-summary dispatch tick ratchet: expensive multimodel work requires explicit `--multimodel-step` plus env gate, timeout cleanup kills the whole process group, timeout output stays structured JSON, and static command checks use exact `shlex` flag parsing.
 - `references/theory-impact-propagation.md` — theory-to-impact propagation: after a single slice is optimized under a theory/principle, bind a Theory Point ID, scan same-theory targets, build a Layer Impact Map across L0-L5/LX/skills/cron, add smoothing gates, and run `architecture_theory_impact_ratchet.py` so local patches do not become unsynchronized global rules.
 - `references/taskpool-autonomy-readiness-and-evidence-spine.md` — taskpool autonomy readiness certification pattern: evidence-spine heartbeat, autonomy-readiness artifact, exact claim-linked T3 evidence, hollow-shell ratification selftests, proof-audit false-positive handling, timeout handoff, and 4/4 certification closeout discipline.
@@ -428,8 +447,7 @@ When repeated timeouts or recurring governance needs make this a long-term infra
 - `delegate_task`/子代理审查可以作为补充 reviewer，但不是完整 `consult_models.py --discussion` 的替代品；如果任何 reviewer 超时、被截断或未完成，最终状态必须降级为 `certified_with_minor_risks` 或 `not_certified`，并在 provenance 中写明缺席/超时模型和由主编排器补充的证据。
 - 对本地任务池/cron/autorun 这类状态机自动化，区分“事实诊断已 grounded”和“实现方案已 certified”：truth gate 证明缺口存在，不等于 patch plan 可以落地。若 `discussion_result` 里 severity>=3 issue 未解决、`final_design.patches=[]` 但 planner patch summary 显示 `implementation_required`，最终保持 `not_certified` 或 `amend`。尤其不要把“自动执行 Markdown task body 并自动 done”当成认证方案；正确方向是 fail-closed 的 `auto-claim-and-handoff` + 外部 bounded runner + proof-gated `review -> done`。具体实现/验收模式见 `references/local-brain-taskpool-autorun-certification.md`：默认关闭、allowlist 默认拒绝、safe tick 默认 hint-only、autorun done 必须 proof hash-chain、`proof-check` 要审计 persisted autorun closure、提交时必须 scoped add 避免带入 Hermes runtime 脏文件。
 
-## 何时使用
-
+## When to Use
 使用：
 - 架构设计、新系统/模块、影响 >3 文件的关键决策。
 - 高风险：安全、可靠性、成本、数据迁移、不可逆操作。
@@ -503,6 +521,11 @@ For UVISA specifically: `src/lib/validators.ts` is the shared validation infrast
 31. discussion timeout 经验值: 4 模型 × 5 rounds 每轮 ~2-3 分钟 = 10-15 分钟。DEFAULT_TIMEOUT=120s 是单模型超时，总进程 timeout 需 1200s。mimo-v2.5-pro 总是最后执行（串行模式），需要最多等待时间。round_001 的 mimo parse_status 通常是 "retried"（JSON 解析重试），这是正常的。
 32. PUA-loop convergence 追踪: multimodel_convergence_stats() 输出 total_active/multimodel_passed/multimodel_triggered/pass_rate/trigger_rate。pass_rate=0 且 trigger_rate>0.8 意味着所有触发的任务都未通过认证。首次 pass_rate>0 需要选择证据充分、模型共识度高的简单任务。复杂修复/评估任务天然分歧高（agreement<0.7）。
 33. Economy-paused 任务不能进入 executable plans[]：`build_multimodel_intervention_plan()` 对 5 轮失败/暂停任务会返回 `intervention_required=false`、空 build/run command。`multimodel-intervention-dry-run` 必须先 build 全部候选并分区为 actionable `plans[]` 与 diagnostic `paused_plans[]`，再选择 `selected`；否则最高分 paused 任务会被选中，step 看到空 command 后写入伪 `no_discussion_result`，导致 PUA-loop 静默空转。
+34. noop-vs-change split 不能靠重跑解决：如果多数 planner 输出 noop/no_action，但少数 planner 输出 concrete/tune_threshold patch，且 `intersection_first` 合并后 `current_best.patches=[]`，不得把 `planner_patch_summary.concrete_patch_count>0` 直接变成 `implementation_required` 又不给 patch。正确做法是把少数 patch 放进显式 unresolved issue/evidence-request resolver，确定性验证其 file/line/metric 证据后 accept/reject/downgrade 为 advisory；否则 discussion 会稳定产出 `patches=[] contradicts implementation_required`、agreement=0.65、全员 AMEND/REJECT。
+35. economy throttle / advisory-only 必须改变实际 run command 和 gate 语义：`recommended_tier=T1/T2_advisory` 或 `economy_gate.allowed_tier=T2_advisory` 不能只出现在 dry-run JSON；`run_discussion_command` 仍硬编码 `--tier T3 --quorum 4` 会把 advisory 任务误送入 closeout certification，造成重复失败。advisory-only 只能生成 advisory/proceed evidence，不能要求 LOOP_DONE。
+   - 关键修正：T1/T2 advisory artifact 不要再送入 canonical T3 `ratification_gate_result()`；否则即使 run command 已降级，gate 仍会报 `model_count_below_required:3/4`、`missing_required_model_consulted:claude-opus-4-7`，导致弱 advisory trigger 永久重跑。
+   - 正确模式：advisory-only plan → `consult_models.py run --tier T1/T2 --discussion` → parseable artifact with participants/votes → `advisory_round_gate_result()` returns `PASS_ADVISORY_ONLY`, `decision=continue_loop`, `certification_authority=false` → write task frontmatter `multimodel_status=advisory_completed`, `multimodel_round_status=advisory_passed`, no `multimodel_ratification_artifact`.
+   - 强触发仍走 T3：`p0_evolution_blast_radius` / `loop_non_convergence` / `stale_claim` 等 certification reasons must still require canonical 4-model closeout gate. Advisory consumption only suppresses repeated weak structural triggers; it never closes/done a task.
 
 ## Taskpool 自动多模型介入 (2026-05-11)
 
@@ -626,34 +649,6 @@ HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 python3 ~/.hermes/scripts/brain_task_orc
 12. taskpool 派生视图必须在 canonical task-note 突变后同进程刷新: `add`、`ingest-inbox --write`、`claim`、`release`、`transition`、`retry`、`done`、`reconcile --write`、`permission-migrate --apply` 等写入 Markdown 后，应立即重建 dashboard / sorted pool / control center，并在 JSON 返回中暴露 `derived_refresh`。不要只依赖下一次 cron/dashboard 手动刷新，否则任务池流转和 human/cron control loop 会看到 stale state。
 13. PUA-loop 多模型 step 必须“每轮写回”，不只 PASS 写回: PASS/LOOP_DONE 才写 `multimodel_ratification_artifact`；FAIL/SKIP/no_discussion_result 也要写 `multimodel_status: not_certified`、`multimodel_round_status`、`multimodel_last_gate_status`、`multimodel_last_decision`、`multimodel_last_discussion_artifact/state_path`、`multimodel_last_failures`，并刷新派生视图。这样下一轮 loop 能 fail-closed 继续，而不是静默无状态。注意 `certification_status` 是 mission-envelope 语义，不能写入普通任务或作为普通任务认证状态；普通任务多模型写回应使用 `multimodel_status`，并清理遗留 `certification_status`，否则 selfcheck/lifecycle/proof 可能把普通任务误判为缺字段的 mission envelope。PASS 判定必须先规范化 gate status/decision（如 lowercase `pass`/`loop_done`），再判断是否通过；非 PASS 必须清除 stale `multimodel_ratification_artifact`，dashboard 对非 passed 最新轮显示 latest discussion artifact，不显示旧 PASS artifact。
 14. autorun/任务池测试夹具要同时 allowlist `taskpool` 和 `kanban-worker`: `auto-claim-and-handoff` 的 mutation surface 是 `taskpool`，只写 `kanban-worker` 会导致 `surface_allowlisted` FAIL_CLOSED。测试或临时环境设置 `HERMES_AUTONOMY_WRITE_ALLOWLIST` 时用 `["taskpool", "kanban-worker"]`，除非测试目标正是验证 taskpool allowlist 缺失。
-6. build_state_command 必须含 --claim: 否则 truth_status=no_claims，gate 必然 FAIL
-7. tick errors 变量: errors = [] 必须在 step 引用前初始化，否则 UnboundLocalError
-8. autonomy-write-allowlist: 缺失时 auto-claim 返回 FAIL_CLOSED (autonomy_write_guard_failed)
-9. Gate 模型数策略: advisory/routing tiers may be tier-specific, but final Lark/taskpool closeout for this user requires the canonical four-model set. Do not lower requirements from `models_consulted`; 3/4 is `not_certified` for closeout.
-
-## 关联 Skill
-8. autonomy-write-allowlist: 缺失时 auto-claim 返回 FAIL_CLOSED (autonomy_write_guard_failed)
-9. Gate 模型数策略: advisory/routing tiers may be tier-specific, but final Lark/taskpool closeout for this user requires the canonical four-model set. Do not lower requirements from `models_consulted`; 3/4 is `not_certified` for closeout.
-6. 首次 not_certified 是正常行为: 复杂任务（如外部工具评估）通常不会第一次就通过 gate。gate 的 7 项检查（status/votes/agreement/issues/truth/criteria/design）会正确识别未收敛的讨论。not_certified 不等于失败，而是"模型有分歧，需要更多证据或方案修订"
-
-### 实跑基准
-
-见 `references/real-run-benchmark-2026-05-11.md`：5 rounds × 4 models ≈ 17min，mimo 始终 retried 但成功，首次 not_certified 是预期行为。
-
-### 实跑基准 (2026-05-11)
-
-task: openai-cli 沙箱评估 (P1 evolution)
-- 5 rounds × 4 models = 20 model calls
-- 总耗时: ~17 分钟 (1200s timeout 内完成)
-- mimo: 每轮 retried 但 parse ok
-- 结果: not_certified, agreement=0.65, 10 unresolved issues
-- gate failures: 23 (status/votes/agreement/truth/issues 全部正确识别)
-5. mimo-v2.5-pro: provider=xiaomi，最后执行，retry status 常见
-6. build_state 无 --claim → truth_status=no_claims，gate 必然 FAIL。必须在 build_state_command 中注入显式 `--claim 'C-001:...'` 标志，与 gate 的 criteria_satisfied 三轴对齐
-7. evidence linking: claims 存在但未链接 → truth_status=unsupported。consult_models.py 讨论阶段自动处理 evidence linking，但首轮 state 不含 --evidence-json 时 claims 不被验证
-8. 评估类任务（evaluation/audit/review）天然产生 noop votes — 模型倾向"无需改动"。选择实跑验证任务时优先选有明确实现工作的任务
-9. 4 模型 5 轮 discussion 耗时 ~15-20min（每轮 ~3-4min）。1200s timeout 刚好够 5 轮，如需更多轮次需增加 timeout
-10. subprocess shell=True: build/run 命令含 && 链式（如 mkdir -p && python3 consult_models.py），必须 shell=True。shlex.split 不能处理 &&。实跑 findings、keyword noise 分析、gate fail patterns 见 `references/taskpool-multimodel-intervention-pitfalls.md`。
 
 ## 关联 Skill
 
@@ -661,3 +656,15 @@ task: openai-cli 沙箱评估 (P1 evolution)
 - p10-architecture-self-check: P10 架构自检。
 - incremental-implementation: 增量实施策略。
 - post-update-patch-healing: 升级后 patch 恢复。
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

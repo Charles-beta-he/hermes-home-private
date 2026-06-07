@@ -1,9 +1,6 @@
 ---
 name: requesting-code-review
-description: >
-  Pre-commit verification pipeline — static security scan, baseline-aware
-  quality gates, independent reviewer subagent, and auto-fix loop. Use after
-  code changes and before committing, pushing, or opening a PR.
+description: "Use when running pre-commit verification pipeline: static security scan, baseline-aware quality gates, independent reviewer subagent, and auto-fix loop after code changes and before committing, pushing, or opening a PR."
 version: 2.0.0
 author: Hermes Agent (adapted from obra/superpowers + MorAlekss)
 license: MIT
@@ -14,6 +11,10 @@ metadata:
 ---
 
 # Pre-Commit Code Verification
+
+## Overview
+
+Pre-commit verification pipeline — static security scan, baseline-aware quality gates, independent reviewer subagent, and auto-fix loop. Use after code changes and before committing, pushing, or opening a PR. This skill is maintained as a `reviewer`-shaped contract: it should guide evidence-grounded review, audit, critique, certification, or quality-gate work without stealing adjacent workflows or relying on unstated assumptions.
 
 Automated verification pipeline before code lands. Static scans, baseline-aware
 quality gates, an independent reviewer subagent, and an auto-fix loop.
@@ -135,6 +136,21 @@ Before dispatching review or committing, every changed hunk or changed-line grou
 - a test or deterministic check for the requested change
 
 If a hunk does not map cleanly, revert it or ask for explicit scope expansion. Do not keep opportunistic refactors, formatting churn, unrelated cleanup, or drive-by edits just because tests pass.
+
+### Task-boundary enforcement
+
+When the work is driven by a task tracker (Lark, Jira, GitHub Issues, taskpool), the commit scope must map to **exactly one task reference**. If the diff includes changes that belong to a different task:
+
+1. **Split the commit.** Stage only the files/hunks that belong to the current task.
+2. **Move the rest** to a separate commit referencing the correct task ID.
+3. **Never bundle** unrelated task fixes as "while I'm here" additions — even if the code is adjacent and the tests pass.
+
+Signs of task-boundary violation:
+- Commit message references one Lark/Jira ID but the diff touches files unrelated to that task's scope
+- A feature addition (new route, new component behavior) is hidden inside a bug-fix commit
+- Layout/refactor changes have no corresponding task in the tracker
+
+This matters because: bundled commits make surgical reverts impossible (conflicts with unrelated changes), break traceability (git blame shows wrong task), and mask scope creep from code review.
 
 For UI "对齐/保持一致" work, reject a diff that only touches PRD/data/mock/copy while leaving the actual component, popup/listbox/portal, or styling layer unchanged, unless read-back proves that data path is the renderer.
 
@@ -290,7 +306,7 @@ tests exist, tests pass, no regressions.
 - [ ] **Process**: Static security scan run, baseline tests compared, independent reviewer subagent dispatched, results evaluated
 - [ ] **Style**: Verdict includes security_concerns + logic_errors + suggestions as separate lists, commit message has [verified] prefix
 - [ ] **Efficiency**: Auto-fix loop max 2 cycles, no self-review (fresh context reviewer), lint skips silent on missing tools
-
+- [ ] Reviewer calibration: findings include a severity or rubric boundary and cite evidence.
 ## Pitfalls
 
 - **Empty diff** — check `git status`, tell user nothing to verify

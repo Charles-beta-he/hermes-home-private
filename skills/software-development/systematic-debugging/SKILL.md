@@ -1,16 +1,29 @@
 ---
 name: systematic-debugging
 description: Use when encountering any bug, test failure, or unexpected behavior. 4-phase root cause investigation — NO fixes without understanding the problem first.
-version: 1.1.0
+version: 1.2.0
 author: Hermes Agent (adapted from obra/superpowers)
 license: MIT
 metadata:
   hermes:
-    tags: [debugging, troubleshooting, problem-solving, root-cause, investigation]
-    related_skills: [writing-plans, test-driven-development]
+    tags:
+    - debugging
+    - troubleshooting
+    - problem-solving
+    - root-cause
+    - investigation
+    related_skills:
+    - writing-plans
+    - test-driven-development
 ---
 
 # Systematic Debugging
+
+Reference: `references/hermes-cli-regression-proofing.md` — notes on debugging CLI regressions caused by evolving optional argparse fields, plus a pattern for collapsing wrapper scripts to direct native CLI calls with `--dry-run` verification.
+
+## Hermes taskpool/control-plane stalls
+
+When debugging Hermes/local-brain taskpool stalls, first separate active-task blockers from historical governance debt. If Lark tasks need to be removed temporarily, quarantine them with a manifest instead of deleting. If `dispatchable: true` exists but autorun does not claim, check the narrow autorun policy before changing lifecycle state. Historical `done task missing evidence` proof debt may be tolerated at the dispatch tick layer only when selfcheck and boundary checks still pass; keep the debt visible as tolerated errors and keep active-task proof failures fail-closed. See `references/taskpool-flow-tolerance.md`.
 
 ## Overview
 
@@ -49,7 +62,7 @@ Use for ANY technical issue:
 - Issue seems simple (simple bugs have root causes too)
 - You're in a hurry (rushing guarantees rework)
 - Someone wants it fixed NOW (systematic is faster than thrashing)
-
+- Don't use for: requests that do not need encountering any bug, test failure, or unexpected behavior. 4-phase root cause investigation — NO fixes without understanding the problem first; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## The Four Phases
 
 You MUST complete each phase before proceeding to the next.
@@ -86,11 +99,24 @@ pytest tests/test_module.py::test_name -v
 pytest tests/test_module.py -v --tb=long
 ```
 
+**Java/Spring Boot startup pitfalls:**
+- After deleting or renaming controller/classes, `mvn package` may leave old `.class` files under `target/classes` and the repackaged jar can still fail with the same ambiguous mapping or bean conflict even though source search shows zero references. If a Spring Boot app still reports a deleted controller/mapping after source cleanup, verify with `jar tf ... | grep DeletedClass` and run `mvn clean package` before concluding the fix failed.
+- In multi-module Maven repos, `mvn -pl app/<module> spring-boot:run` can fail because sibling reactor artifacts are not installed. Run `mvn -pl app/<module> -am -DskipTests install` first, then start the app module.
+- Do not exclude an infrastructure auto-configuration just to get a local backend up if production beans constructor-require it (for example excluding RocketMQ auto-config while a controller requires `RocketMQTemplate`). That converts real-backend verification into a partial harness; either start/provide the real dependency or make the bean conditional in a proper test profile.
+- In React/Vitest suites, many unrelated text/label failures can come from a shared i18next singleton, not from the components themselves. Symptom: expected English labels but rendered DOM is Chinese (or another prior test language). Reproduce one failure and inspect the DOM language first. Fix the test harness by adding the required resource bundle in `beforeEach` with overwrite/deep merge and `await i18next.changeLanguage('<lang>')`; do not rely on `if (!i18next.isInitialized) init(...)` alone, because earlier tests may already have initialized the singleton.
+- Spring `Ambiguous mapping` errors are backend startup-contract bugs. If a legacy compatibility controller duplicates a canonical controller endpoint, keep the canonical route, remove/rename the duplicate compatibility mapping, and add a startup/contract test.
+- If Flyway/MySQL reports `UndeclaredThrowableException` or fails around `performance_schema.user_variables_by_thread`, inspect any JDBC `DataSource`/`Connection`/`Statement` dynamic-proxy instrumentation. `Method.invoke(...)` wraps thrown `SQLException` in `InvocationTargetException`; an `InvocationHandler` must unwrap and rethrow the original cause, otherwise Flyway cannot catch `SQLException` and degrade capability probes correctly. Add a unit regression that a proxied `PreparedStatement.executeQuery()` rethrows the original `SQLException`, not `UndeclaredThrowableException`.
+- A `Tomcat started on port ...` log line is not a Spring Boot readiness proof. The app can still fail during `ApplicationReadyEvent` listeners or seeders and immediately shut down. Treat startup as ready only after `Started <Application>` appears, the process remains alive, and `/actuator/health` (plus target smoke endpoints) returns 200/UP. If a post-ready seeder reports `Table '<schema>.<table>' doesn't exist`, check Flyway enablement/profile/schema before debugging controllers.
+- Conversely, `mvn spring-boot:run` for a long-lived server reports Maven `BUILD FAILURE` when the tracked process is intentionally stopped by SIGTERM (`exit code 143`). Do not classify that as app startup failure if logs show `Started <Application>`, the app stayed alive, smoke endpoints were hit while alive, and shutdown appears under `ShutdownHook`. Record it as a manual/test-harness termination, not a failed boot.
+
+See `references/spring-boot-real-backend-startup.md` for a concrete real-backend startup debugging checklist and error examples.
+
 ### 3. Check Recent Changes
 
 - What changed that could cause this?
 - Git diff, recent commits
 - New dependencies, config changes
+- **Deployment staleness**: If the code looks correct locally but the user reports a bug, check whether the deployed version matches local HEAD. A correct local fix that isn't deployed produces symptoms identical to a code bug. Check build timestamps, Railway/Vercel deployment logs, or `git log` vs production version before deep-diving backend types or data flow.
 
 **Action:**
 
@@ -162,13 +188,13 @@ At EACH boundary, verify:
 
 **Action:** Read EVERY file in the pipeline chain, following each function call. Focus on:
 
-1. **`getattr(obj, field, None)` vs `hasattr(obj, field)`**  
+1. **`getattr(obj, field, None)` vs `hasattr(obj, field)`**
    - `hasattr` returns `True` for `@property` definitions even when the underlying data is missing
    - `getattr` returns the property's return value (which may be `None`)
 
-2. **`if value:` vs `if value is not None:`**  
+2. **`if value:` vs `if value is not None:`**
    - `if value:` uses truthiness: empty string `""`, `0`, `[]`, `False` all fail the check
-   - `if value is not None:` preserves the value even when it's falsy  
+   - `if value is not None:` preserves the value even when it's falsy
    - This is the #1 cause of silent field loss at normalization boundaries
 
 3. **Deep copy vs shallow copy** — `msg.copy()` (shallow) vs `copy.deepcopy(messages)` (deep). Nested dicts/lists in shallow copies share references with the original, so modifications to one affect the other — or vice versa when the same mutable object is reused.
@@ -329,7 +355,29 @@ Past-tense entries in persistent memory survive context compression and get re-i
 - Keep only architecturally durable facts (project structure, tool conventions, user preferences)
 - Duplicates → merge into single entry
 
-### 10. Multi-Loop Convergence — Iterate Until No Issues Remain
+### 10. Automation Escalation Audit — Run Local Gates Before Spawning Broader Workers
+
+**WHEN debugging multi-stage automation (review auto-close, blocked resolvers, ratification loops, retry daemons, certification workers):**
+
+A common failure mode is to escalate too early. The orchestrator sees a broad signal like `multimodel_required`, `intervention_required`, or `needs_review`, immediately spawns a heavier worker, and accidentally bypasses the task's own deterministic gate. That creates false outcomes such as task-mismatch skips, unnecessary retries, or global workers certifying the wrong task.
+
+**Audit order:**
+1. Compute the task-local evidence first.
+2. Probe the normal gate for the exact transition being attempted.
+3. Only escalate if the local gate still fails **and** the failures are in the escalation domain.
+4. Narrow escalation by lane/domain instead of using a global boolean alone.
+
+**Heuristic:**
+- If the failure is ordinary lane proof debt (`missing build/test/browser/curl/project evidence`), keep it in the normal gate path and return `skip` / `blocked` / `retry` there.
+- If the failure is specifically about ratification or multimodel certification, then spawn the broader worker.
+- For taskpool orchestration, treat `review -> done` as the base path and PUA-loop/certification as the fallback path, not the default.
+
+**Real pattern (Hermes taskpool, May 2026):**
+- Symptom: `auto-close-review` marked a normal work-lane review task as `certification_triggered_skip` with `certification_task_mismatch`.
+- Root cause: the command triggered multimodel certification before checking whether the normal `done` gate was simply failing for missing project evidence.
+- Durable fix: run `lifecycle_gate(..., "done", ...)` first, then trigger certification only when the remaining failures are actually ratification/multimodel-related or the lane is explicitly evolution/advisory/mission-envelope.
+
+### 11. Multi-Loop Convergence — Iterate Until No Issues Remain
 
 **WHEN fixing multiple bugs in a single session:**
 
@@ -368,7 +416,7 @@ def audit_claim(claim, source_code):
 ```
 | Claim: "MCP stdio lacks chunking → deadlock"
 | Reading: mcp_tool.py:1053 async with stdio_client(...)
-| Finding: ⚠️ PARTIAL — asyncio streams don't block, but large payloads 
+| Finding: ⚠️ PARTIAL — asyncio streams don't block, but large payloads
 |           can time out. 300s read timeout mitigates permanent deadlock.
 | Verdict: Theory risk exists, but has timeout guardrails.
 ```
@@ -616,3 +664,29 @@ From debugging sessions:
 - New bugs introduced: Near zero vs common
 
 **No shortcuts. No guessing. Systematic always wins.**
+
+## Related references
+
+- `references/text-assertion-mismatch.md` — diagnosing and fixing `assert "X" in CONSTANT` failures (substring, singular/plural, synonym patterns)
+- `references/react-aria-role-migration.md` — cascading test selector failures when swapping interactive components (Link→Button, a→button); role grep checklist
+- `references/pytest-override-flags.md` — clearing xdist `addopts` from pyproject.toml when running serially (`-o "addopts="`)
+- `references/runtime-overlay-sensitive-test-fix.md` — fix pattern for tests that depend on runtime overlay/OAuth/provider discovery and need deterministic seeding
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. When a Hermes script/unit test asserts behavior for an 'unknown provider' or similar runtime-integration hook, remove runtime overlay discovery from the test boundary first: randomize the missing name, seed the mapping explicitly, and assert the deterministic outcome instead of branching on whether the local environment already recognized the synthetic entity.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. **Python `in` is substring, not word-boundary**: `"dependency" in "dependencies"` → `False`. Source text must contain the exact literal sequence the test asserts. See `references/text-assertion-mismatch.md`.
+5. **pytest xdist `-p no:xdist` doesn't clear `-n auto`**: Use `-o "addopts="` to override config-level addopts. See `references/pytest-override-flags.md`.
+6. **macOS `sed -i` requires empty string extension**: `sed -i 's/old/new/'` fails on macOS with "extra characters at end of h command". Use `sed -i '' 's/old/new/'` or, better, use the `patch` tool which handles both platforms correctly. Prefer `patch(mode='replace')` over terminal sed for file edits.
+7. **React component swap breaks `getByRole` selectors**: When replacing `<Link>` with `<CtaBtn>` (or any interactive component migration), `getByRole('link')` silently fails because Testing Library resolves by rendered HTML element, not React component name. Grep tests for the old role before committing. See `references/react-aria-role-migration.md`.
+8. **Chinese regex `[\u4e00-\u9fff]+` produces single-token groups**: `re.findall(r'[\u4e00-\u9fff]+', text)` treats contiguous Chinese as one token ("测试知识" → `['测试知识']`). For search/vectorization, use character-level `[\u4e00-\u9fff]` (→ `['测', '试', '知', '识']`). Mismatched tokenization between store and query silently returns zero results. See `references/chinese-text-tokenization-pitfalls.md`.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+- [ ] Reviewer calibration: findings include a severity or rubric boundary and cite evidence.

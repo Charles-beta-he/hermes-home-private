@@ -1,10 +1,29 @@
 ---
 name: powerpoint
-description: "Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions \"deck,\" \"slides,\" \"presentation,\" or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill."
+description: Use when you need to use this skill any time a .pptx file is involved in any way — as input, output, or both.
+version: 1.0.0
+author: Hermes Agent
 license: Proprietary. LICENSE.txt has complete terms
+metadata:
+  hermes:
+    tags:
+    - productivity
+    - powerpoint
+    related_skills:
+    - email
+    - plan
+    - slides
 ---
 
 # Powerpoint Skill
+
+## Overview
+
+Use this skill any time a .pptx file is involved in any way — as input, output, or both.
+
+## When to Use
+
+- You need to use this skill any time a .pptx file is involved in any way — as input, output, or both
 
 ## Quick Reference
 
@@ -12,7 +31,8 @@ license: Proprietary. LICENSE.txt has complete terms
 |------|-------|
 | Read/analyze content | `python -m markitdown presentation.pptx` |
 | Edit or create from template | Read [editing.md](editing.md) |
-| Create from scratch | Read [pptxgenjs.md](pptxgenjs.md) |
+| Create from scratch (Node.js) | Read [pptxgenjs.md](pptxgenjs.md) |
+| Create from scratch (Python) | Use `python-pptx` (see below) |
 
 ---
 
@@ -42,9 +62,54 @@ python scripts/office/unpack.py presentation.pptx unpacked/
 
 ## Creating from Scratch
 
+**Two paths available:**
+
+| Path | Runtime | Best For |
+|------|---------|----------|
+| [pptxgenjs.md](pptxgenjs.md) | Node.js | Rich design, icons via react-icons, chart styling |
+| python-pptx | Python | Agent-generated decks, no Node.js dependency |
+
+### python-pptx (Python-native)
+
+Use when: generating decks from the Hermes agent terminal without Node.js. Preferred for automated/agent-generated presentations.
+
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
+
+prs = Presentation()
+prs.slide_width = Inches(13.333)
+prs.slide_height = Inches(7.5)
+
+slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank layout
+txBox = slide.shapes.add_textbox(Inches(1), Inches(2), Inches(11), Inches(2))
+tf = txBox.text_frame
+tf.word_wrap = True
+p = tf.paragraphs[0]
+p.text = "Title"
+p.font.size = Pt(44)
+p.font.bold = True
+prs.save("output.pptx")
+```
+
+**Key capabilities:** slides, shapes, text, tables, images, charts, placeholders, master/layout manipulation.
+
+**Install:** `pip install python-pptx` (zero system dependencies)
+
+**Verify generated file:**
+```python
+import zipfile
+with zipfile.ZipFile("output.pptx", "r") as z:
+    assert "[Content_Types].xml" in z.namelist()
+```
+
+### pptxgenjs (Node.js)
+
 **Read [pptxgenjs.md](pptxgenjs.md) for full details.**
 
-Use when no template or reference presentation is available.
+Use when: you need richer design features (react-icons, advanced chart styling) and Node.js is available.
 
 ---
 
@@ -227,6 +292,19 @@ pdftoppm -jpeg -r 150 -f N -l N output.pdf slide-fixed
 
 - `pip install "markitdown[pptx]"` - text extraction
 - `pip install Pillow` - thumbnail grids
-- `npm install -g pptxgenjs` - creating from scratch
+- `pip install python-pptx` - creating from scratch (Python, no Node.js needed)
+- `npm install -g pptxgenjs` - creating from scratch (Node.js)
 - LibreOffice (`soffice`) - PDF conversion (auto-configured for sandboxed environments via `scripts/office/soffice.py`)
 - Poppler (`pdftoppm`) - PDF to images
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

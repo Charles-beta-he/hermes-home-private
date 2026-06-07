@@ -1,0 +1,516 @@
+{
+  "skills_root": "/Users/charles/.hermes/skills",
+  "apply": true,
+  "changed_count": 58,
+  "changes": [
+    {
+      "skill": "devops/token-saver-rtk/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/devops/token-saver-rtk/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/rtk_layer12_fewshot.md"
+      ]
+    },
+    {
+      "skill": "github/git-repo-operations/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/github/git-repo-operations/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "gsd-bridge/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/gsd-bridge/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "incremental-implementation/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/incremental-implementation/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "loop/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/loop/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/event-driven-trigger-timing-and-loop-economy.md"
+      ]
+    },
+    {
+      "skill": "media/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/media/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "note-taking/obsidian/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/note-taking/obsidian/SKILL.md",
+      "pattern": "generator",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/local-brain-memory-repo-adoption.md",
+        "references/local-brain-theory-foundation-fill.md"
+      ]
+    },
+    {
+      "skill": "p7/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/p7/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "p9/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/p9/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "personal-productivity/career-ops/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/personal-productivity/career-ops/SKILL.md",
+      "pattern": "generator",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "post-deploy-verification/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/post-deploy-verification/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "pro/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/pro/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": [
+        "references/evolution-protocol.md",
+        "references/platform.md"
+      ]
+    },
+    {
+      "skill": "productivity/lark-docx-reading/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/productivity/lark-docx-reading/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "productivity/powerpoint/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/productivity/powerpoint/SKILL.md",
+      "pattern": "generator",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "scripts/office/soffice.py"
+      ]
+    },
+    {
+      "skill": "productivity/teams-meeting-pipeline/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/productivity/teams-meeting-pipeline/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "red-teaming/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/red-teaming/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "research/last30days/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/research/last30days/SKILL.md",
+      "pattern": "generator",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "smart-home/assembly-assistance-workflow/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/smart-home/assembly-assistance-workflow/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "smart-home/electrical-brain/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/smart-home/electrical-brain/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "smart-home/external-control-brain/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/smart-home/external-control-brain/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "smart-home/manufacturing-brain/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/smart-home/manufacturing-brain/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/architecture-optimization-loop/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/architecture-optimization-loop/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/auto-optimize-loop/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/auto-optimize-loop/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/mobile-h5-loop-gates.md",
+        "templates/mobile-h5-issue-ledger.json"
+      ]
+    },
+    {
+      "skill": "software-development/code-simplifier/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/code-simplifier/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/color-contrast-checker/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/color-contrast-checker/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/debugging-hermes-tui-commands/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/debugging-hermes-tui-commands/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "scripts/run_tests.sh"
+      ]
+    },
+    {
+      "skill": "software-development/development-closure-consensus/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/development-closure-consensus/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/pr-closeout-consensus.md"
+      ]
+    },
+    {
+      "skill": "software-development/experience-ratchet/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/experience-ratchet/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/frontend-state-domain-correctness/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/frontend-state-domain-correctness/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/hermes-overlay-ratchet-upgrades/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/hermes-overlay-ratchet-upgrades/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/hermes-s6-container-supervision/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/hermes-s6-container-supervision/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/hermes-self-audit/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/hermes-self-audit/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/hermes-warning-governance/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/hermes-warning-governance/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/hermes-workflow-orchestrator/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/hermes-workflow-orchestrator/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/project-profile-injection-pattern.md",
+        "references/workflow-patterns.md"
+      ]
+    },
+    {
+      "skill": "software-development/mobile-frontend-delivery/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/mobile-frontend-delivery/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/multi-model-certification-round/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/multi-model-certification-round/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/multi-model-thinking/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/multi-model-thinking/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/external-memory-system-landing.md",
+        "references/local-brain-hierarchy-overlay-routing.md",
+        "scripts/architecture_theory_impact_ratchet.py",
+        "scripts/multimodel_keypoint_coverage_ratchet.py"
+      ]
+    },
+    {
+      "skill": "software-development/plan/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/plan/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/post-update-patch-healing/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/post-update-patch-healing/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/python-debugpy/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/python-debugpy/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": [
+        "scripts/run_tests.sh"
+      ]
+    },
+    {
+      "skill": "software-development/python-multiline-grep-engine/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/python-multiline-grep-engine/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/real-engineering-workflows/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/real-engineering-workflows/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/requesting-code-review/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/requesting-code-review/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/requirement-clarification/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/requirement-clarification/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/router/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/router/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/self-improvement-pipeline/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/self-improvement-pipeline/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "scripts/test_consult_models_integration.py",
+        "scripts/test_ensemble_vote_integration.py",
+        "scripts/test_post_session_autopsy.py",
+        "scripts/test_self_improvement_pipeline.py",
+        "scripts/test_usage_score.py"
+      ]
+    },
+    {
+      "skill": "software-development/skill-ecosystem-governance/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/skill-ecosystem-governance/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/stuck-diagnosis/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/stuck-diagnosis/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "references/agent-team-controller-timeout-pattern.md",
+        "references/infrastructure-cascade-diagnosis.md"
+      ]
+    },
+    {
+      "skill": "software-development/systematic-debugging/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/systematic-debugging/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/taskpool-control-plane/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/taskpool-control-plane/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/test-driven-development/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/test-driven-development/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "software-development/workflow-ecosystem-audit/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/software-development/workflow-ecosystem-audit/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "source-driven-development/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/source-driven-development/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "ui-skills/skills/baseline-ui/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/ui-skills/skills/baseline-ui/SKILL.md",
+      "pattern": "generator",
+      "body_changed": true,
+      "description_changed": true,
+      "created_links": []
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/brand/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/brand/SKILL.md",
+      "pattern": "wrapper",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "assets/design-tokens.css",
+        "assets/design-tokens.json"
+      ]
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/design-system/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/design-system/SKILL.md",
+      "pattern": "generator",
+      "body_changed": false,
+      "description_changed": false,
+      "created_links": [
+        "assets/css/slide-animations.css",
+        "assets/design-tokens.css",
+        "assets/design-tokens.json"
+      ]
+    },
+    {
+      "skill": "ui-ux-pro-max/.claude/skills/ui-styling/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/ui-ux-pro-max/.claude/skills/ui-styling/SKILL.md",
+      "pattern": "reviewer",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    },
+    {
+      "skill": "workflow/qian-meta-synthesis/SKILL.md",
+      "path": "/Users/charles/.hermes/skills/workflow/qian-meta-synthesis/SKILL.md",
+      "pattern": "pipeline",
+      "body_changed": true,
+      "description_changed": false,
+      "created_links": []
+    }
+  ]
+}

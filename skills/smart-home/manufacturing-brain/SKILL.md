@@ -5,6 +5,19 @@ description: Use when handling manufacturing/3D-printing workflows, Bambu/X2D pr
 
 # Manufacturing Brain
 
+## Overview
+
+Use when handling manufacturing/3D-printing workflows, Bambu/X2D printer status, slicer/G-code/material/AMS reasoning, print failure diagnosis, or deciding whether a print situation warrants action. Manufacturing is an independent domain brain even with one capable printer; physical actuation still routes through external-control. This skill is maintained as a `wrapper`-shaped contract: it should guide external tools, APIs, CLIs, platforms, or other side-effecting capability surfaces without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `manufacturing-brain` and requires external tools, APIs, CLIs, platforms, or other side-effecting capability surfaces.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
+
 Use this skill when the user asks about:
 - Bambu / X2D / 拓竹 printer state
 - 3D printing, slicing, STL/3MF/G-code, AMS, filament/material, nozzle/bed/layer issues
@@ -195,6 +208,40 @@ Rules:
 - Display/demo metrics such as triangle count, texture count, and `Demo-ready` verdict can triage candidates but cannot authorize preflight, slicing, upload, or start_print.
 - Generated/imported GLB must have local hash, explicit scale/intended use, visual preview, and human approval for non-retrieved assets before entering the normal manufacturing preflight.
 - Existing gates remain authoritative: retrieval-first, similarity/visual-fidelity, mesh QA, watertight/wall/scale/bed/material checks, slicer success, and external-control packet approval.
+
+## Blender / MCP studio bridge
+
+Reference review: `~/.hermes/brains/manufacturing/reviews/2026-06-03_blender-mcp-reference-review.md`.
+
+Use this pattern when the workflow involves Blender, Blender MCP, MCP-exposed 3D studio tooling, viewport screenshots, scene/object inspection, asset import, or AI-assisted scene/model editing before print.
+
+Default stance:
+- Treat Blender/MCP as an optional **studio evidence bridge**, not as manufacturing approval and not as a printer control plane.
+- Blender viewport screenshots, scene info, object info, material assignments, and world bounding boxes are useful review evidence; they do not prove mesh manufacturability or print readiness.
+- Imported/generated assets from Sketchfab, PolyHaven, Hyper3D/Rodin, Hunyuan3D, or similar providers remain `draft_only` until provenance/license, scale, visual fidelity, mesh QA, preflight, slicer preview, and external-control gates pass.
+- Keep retrieval-before-generation: exact/near-identical trusted sources first; generated meshes only after retrieval is exhausted and the user approves generation.
+
+Permission tiers for Blender-like MCP tools:
+- `read_only`: scene info, object info, viewport screenshot, provider/status checks, search results, preview thumbnails.
+- `studio_mutation`: create/modify/delete objects, transform assets, set textures/materials, lighting/camera changes, import downloaded/generated assets. Requires scope-bounded user intent and local artifact/provenance recording.
+- `external_fetch`: download/import from asset libraries or model generators. Requires source URL, license/provenance status, local path, sha256, and provider metadata before entering manufacturing candidates.
+- `arbitrary_code`: tools like `execute_blender_code` that call arbitrary Python inside Blender. Treat as full local process execution; require explicit approval, bounded code, no secrets, no printer/device control, and no credential persistence.
+- `physical_action`: never owned by Blender/MCP. Any upload/start/pause/resume/stop/robot motion routes through External-Control.
+
+Blender/MCP intake requirements before `model_ready`:
+- record source repo/tool/provider and whether telemetry is disabled or explicitly approved;
+- record local exported mesh path and sha256;
+- record unit/scale assumption and world bounding box;
+- capture at least one viewport screenshot or equivalent preview for human/vision review;
+- label generated/imported assets as `draft_only`, `studio_preview`, `candidate_model`, or `model_ready` explicitly;
+- redact API keys, tokens, cloud credentials, and built-in demo/free-trial keys as `[REDACTED]` in all notes and task artifacts.
+
+Hard vetoes:
+- telemetry enabled without explicit consent for prompts/code/screenshots/scene metadata;
+- copying bundled third-party API keys into Hermes config, docs, memories, skills, or tasks;
+- remote Blender socket exposure without separate network/security review;
+- using arbitrary Blender Python to access files, network, credentials, printers, robot devices, or other external actuators;
+- claiming a viewport render or successful import means the part is printable or safe to start.
 
 ## Model similarity policy
 
@@ -597,3 +644,16 @@ domain_safety_verdict:
 - `~/.hermes/brains/manufacturing/protocols/photo-to-print-pipeline.md`
 - `~/.hermes/brains/manufacturing/protocols/glasses-visual-qa.md`
 - `~/.hermes/brains/external-control/brain.yaml`
+
+## Common Pitfalls
+
+1. Reporting a tool/API mutation as complete without reading back target state.
+2. Skipping prerequisite checks and assuming the environment already matches the workflow.
+3. Reporting success before reading back the actual outputs, files, or external side effects.
+
+## Verification Checklist
+
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side effects were verified by read-back or direct inspection.
+- [ ] Any remaining uncertainty, blocker, or human handoff was stated explicitly.
+- [ ] For mutations or external-system actions, command success was paired with target-state read-back.

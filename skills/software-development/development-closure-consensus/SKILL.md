@@ -93,6 +93,8 @@ Compact rule:
 
 14. **Prototype field parity needs a contract, not display forgery.** When a prototype/PRD requires canonical IDs, sensitive identifiers, finance/card/wallet fields, or admin drawer/detail semantics that current list APIs do not expose, close the gap at the strongest available contract boundary: add or extend a detail endpoint/domain mapper, make unavailable sensitive data explicit with a typed placeholder flag, and let the UI render the contract state. Do not fabricate full identifiers, card numbers, balances, limits, or audit/security state in the frontend just to satisfy visual parity. Validation must prove both the backend contract and the real browser path that consumes it.
 
+15. **Queries start from an entry point, not a boundary.** For project/code/product/document queries, the named file, page, route, field, status, action, API, metric, or bug symptom is only the first handle. Before answering or closing, expand to the associated system surfaces that can change the truth of the answer: canonical doc/profile/prototype, producers/writers, transformers/adapters/fallbacks, display consumers, action consumers, routes/menus/dashboard/deep links, permissions/guards, KPI/badge/count/report/export口径, tests/fixtures, and runtime evidence. A narrow answer is valid only when the user explicitly requests a narrow lookup or when uncovered associated surfaces are named as unverified.
+
 ## Runtime Protocol
 
 ### Phase 0 — Detect closure mode
@@ -179,6 +181,7 @@ PR work is the delivery tail of closure, not the start. For the PR-specific port
 - [ ] A project-specific closure consensus was compiled from public rules plus project facts before execution.
 - [ ] The actual repository boundary was classified and the best fix point was chosen within that boundary, not from the nearest visible symptom.
 - [ ] Prototype/PRD field parity that depends on identifiers, money, cards, wallets, limits, audit, or security state is backed by an explicit backend/detail contract or typed unavailable-state flag, not frontend fabrication.
+- [ ] Query answers treated the named object as an entry point and either covered associated producers/consumers/routes/permissions/KPIs/tests or explicitly listed unverified associated surfaces.
 - [ ] Main chain, best fix point, red lines, and evidence gates were named before claiming closure.
 - [ ] Validation evidence was rerun after any baseline change.
 - [ ] Delivery metadata, PR/base/head/dependencies/merge order were handled when delivery closeout was in scope.

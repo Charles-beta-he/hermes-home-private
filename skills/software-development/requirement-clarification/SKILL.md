@@ -1,11 +1,24 @@
 ---
 name: requirement-clarification
-description: "需求澄清与验收定义 — 接任务时的标准流程。确保理解正确、验收标准明确、边界清晰后再动手。Use when receiving a new task, feature request, or bug report."
+description: "Use when 需求澄清与验收定义 — 接任务时的标准流程。确保理解正确、验收标准明确、边界清晰后再动手。Use when receiving a new task, feature request, or bug report."
 license: MIT
 tags: [requirements, planning, clarification, acceptance-criteria]
 ---
 
 # Requirement Clarification — 需求澄清与验收定义
+
+## Overview
+
+需求澄清与验收定义 — 接任务时的标准流程。确保理解正确、验收标准明确、边界清晰后再动手。Use when receiving a new task, feature request, or bug report. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `requirement-clarification` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
 
 > 接任务时先对齐再动手。理解错了就做错了——先对齐再动手。
 
@@ -144,3 +157,16 @@ tags: [requirements, planning, clarification, acceptance-criteria]
 - ❌ 假设用户想要的是 X，实际用户想要的是 Y
 - ❌ 验收标准模糊，做完后用户说"不是我要的"
 - ❌ 范围蔓延——做着做着加了新功能
+
+## Common Pitfalls
+
+1. Advancing stages without a gate, evidence artifact, or closure-state check.
+2. Skipping prerequisite checks and assuming the environment already matches the workflow.
+3. Reporting success before reading back the actual outputs, files, or external side effects.
+
+## Verification Checklist
+
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side effects were verified by read-back or direct inspection.
+- [ ] Any remaining uncertainty, blocker, or human handoff was stated explicitly.
+- [ ] Every stage passed its gate before the next stage advanced, with evidence recorded.

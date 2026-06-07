@@ -5,6 +5,19 @@ description: Use when capturing, validating, promoting, or reusing cross-project
 
 # Hermes Experience Ratchet
 
+## Overview
+
+Use when capturing, validating, promoting, or reusing cross-project experience in Hermes without mutating Hermes core. Implements the dev-brain external overlay for ExperienceAtom / MemoryMaze / RatchetConsensus. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `hermes-experience-ratchet` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
+
 External dev-brain overlay for cross-project experience reuse.
 
 ## Trigger
@@ -88,6 +101,10 @@ Add maze relation:
 ```bash
 python3 ~/.hermes/scripts/experience-ratchet-maze.py relate <atom_a> contradicts <atom_b> --reason 'different auth model'
 ```
+
+## Progress inspection
+
+When the user asks to inspect existing evolution direction/progress (进化方向进度、自进化进度、经验棘轮进度), do not stop at atom/proposal counts. Use `references/evolution-progress-inspection.md` to produce a cross-plane status: ExperienceAtom validation/query, proposal backlog, PA/autonomous evolution outputs, self-improvement queue, cron/runtime health, behavioral benchmarks, and taskpool dispatchability/safety pauses. Separate “system healthy”, “experience captured”, “proposal landed”, and “taskpool actively executing”; green health checks do not by themselves prove delivered evolution.
 
 ## Workflow
 

@@ -1,6 +1,6 @@
 ---
 name: kanban-worker
-description: Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios.
+description: "Use when pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios."
 version: 2.0.0
 platforms: [linux, macos, windows]
 metadata:
@@ -10,6 +10,19 @@ metadata:
 ---
 
 # Kanban Worker — Pitfalls and Examples
+
+## Overview
+
+Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios. This skill is maintained as a `reviewer`-shaped contract: it should guide evidence-grounded review, audit, critique, certification, or quality-gate work without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `kanban-worker` and requires evidence-grounded review, audit, critique, certification, or quality-gate work.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
 
 > You're seeing this skill because the Hermes Kanban dispatcher spawned you as a worker with `--skills kanban-worker` — it's loaded automatically for every dispatched worker. The **lifecycle** (6 steps: orient → work → heartbeat → block/complete) also lives in the `KANBAN_GUIDANCE` block that's auto-injected into your system prompt. This skill is the deeper detail: good handoff shapes, retry diagnostics, edge cases.
 
@@ -174,6 +187,10 @@ If you open the task and `kanban_show` returns `runs: [...]` with one or more cl
 
 **Don't rely on the CLI when the guidance is available.** The `kanban_*` tools work across all terminal backends (Docker, Modal, SSH). `hermes kanban <verb>` from your terminal tool will fail in containerized backends because the CLI isn't installed there. When in doubt, use the tool.
 
+**Infrastructure cascade failure masquerading as task timeout.** When ALL workers in a dispatch window timeout (e.g. 5/5 retry), the root cause is almost always infrastructure — not the task being too hard. Check `~/.hermes/logs/errors.log` for the dispatch time window. Common patterns: Codex SDK null response crashes (150+ per window), MCP git server connection failures (7s wasted per worker), worktree path race conditions (parallel workers can't see sibling directories). If infra overhead consumes >80% of the 600s timeout, the task never actually executed. Fix: disable MCP git in workers, add SDK circuit breaker, serialize worktree creation. Full diagnostic methodology: see `references/infrastructure-cascade-diagnosis.md`.
+
+**MCP server path resolution pitfall.** When MCP servers are configured in `config.yaml` with `~/.hermes/scripts/...` as the command path, the MCP server process may resolve `~` relative to its own working directory (e.g., `/Users/charles/.hermes/hermes-agent/`), producing broken paths like `/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/mcp-git-server.py`. Symptom: MCP tools return empty results or connection errors, workers waste seconds per tool call on retries. Fix: always use absolute paths in MCP server command configuration (`/Users/charles/.hermes/scripts/...` not `~/.hermes/scripts/...`). Verify with `grep "can't open file" ~/.hermes/logs/mcp-stderr.log`. This is a common cause of the infrastructure cascade pattern above.
+
 **Task-local extra skills can be a bootstrap blocker.** If a task repeatedly crashes before any real work and `hermes kanban log <task>` shows `Error: Unknown skill(s): ...`, inspect `tasks.skills` in `~/.hermes/kanban.db`. The worker receives task-local skills in addition to built-in `kanban-worker`; if those names are not resolvable in the worker profile/bootstrap context, the process exits before execution. For an urgent retry, add a comment explaining the cleanup, clear only that task's `skills` JSON (do not edit the body/spec), reset consecutive failure fields if needed, then `hermes kanban unblock <task>` and verify `hermes kanban dispatch --dry-run --json` selects it.
 
 ## CLI fallback (for scripting)
@@ -186,3 +203,10 @@ Every tool has a CLI equivalent for human operators and scripts:
 - etc.
 
 Use the tools from inside an agent; the CLI exists for the human at the terminal.
+
+## Verification Checklist
+
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side effects were verified by read-back or direct inspection.
+- [ ] Any remaining uncertainty, blocker, or human handoff was stated explicitly.
+- [ ] Findings include evidence, severity/rubric calibration, and false-positive controls.

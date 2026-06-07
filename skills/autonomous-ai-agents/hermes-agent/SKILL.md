@@ -3,6 +3,8 @@ name: hermes-agent
 description: Use when extending or operating Hermes Agent including CLI/setup, skills, tools, profiles, gateway, taskpool hooks, certified auto-done, blocked-task closure, memory-cap selfcheck, and self-evolution / PUA-loop workflows. See references/ for taskpool hook debugging, evolution-task add rules, pre-ingest triage, memory compaction, bad-case to proposal to benchmark self-optimization, `references/budget-handoff-automation.md` for default-safe budget/context exhaustion behavior, `references/budget-relay-debugging.md` for delegated continuation / relay pitfalls, and other Hermes-specific deep dives.
 ---
 
+Reference addendum: `references/agent-team-failfast-model-fallback.md` captures multi-model fallback chain (GPT-5.5→Claude→MiMo), infrastructure error detection (SDK crash, MCP loop, client closed, auth/quota), workspace sync barrier, and trace events for `agent_team_controller.py` parallel workers.
+
 Reference addendum: `references/provider-version-drift-and-codex-breaker.md` captures the workflow for separating Hermes runtime package skew from local source drift when provider/version mismatch or `agent.codex_circuit_breaker` incidents appear.
 
 Reference addendum: `references/dreaming-outcomes-skill-review-and-evaluator.md` maps Dreaming-style post-run procedure distillation and Outcomes-style independent evaluator gates into Hermes skill review, memory hygiene, taskpool proof logs, and fail-closed lifecycle advancement.
@@ -16,6 +18,19 @@ Reference addendum: `/Users/charles/.hermes/docs/private/vercel-reference-self-o
 Reference addendum: `/Users/charles/.hermes/docs/private/hermes-self-optimization-ssot-20260526.md` is the canonical multi-entry SSOT rule for Hermes self-optimization. Before changing Hermes itself through chat, taskpool, cron/bg-review, multi-model certification, skill patches, or code edits, identify/create exactly one SSOT artifact and make all derived entrypoints reference it rather than copying parallel facts.
 
 # Hermes Agent
+
+## Overview
+
+Use when extending or operating Hermes Agent including CLI/setup, skills, tools, profiles, gateway, taskpool hooks, certified auto-done, blocked-task closure, memory-cap selfcheck, and self-evolution / PUA-loop workflows. See references/ for taskpool hook debugging, evolution-task add rules, pre-ingest triage, memory compaction, bad-case to proposal to benchmark self-optimization, `references/budget-handoff-automation.md` for default-safe budget/context exhaustion behavior, `references/budget-relay-debugging.md` for delegated continuation / relay pitfalls, and other Hermes-specific deep dives. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `hermes-agent` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
 
 Use this skill when operating or extending Hermes Agent itself: CLI behavior, setup, update/upgrade workflows, built-in tools, memory system, gateway/taskpool hooks, self-evolution loops, certified auto-done, and related local-control-plane hardening.
 
@@ -103,7 +118,9 @@ When a user asks to analyze an external repository to improve Hermes itself, fir
 - For "conversation ended but async/background work did not happen" incidents, split the mechanism first: background process notification, main-task continuation/relay, or background memory/skill review. Do not infer continuation from config names alone; verify code paths and logs. For bg-review specifically, look for `thread=bg-review`, the review prompt turn, successful/failed `skill_manage`/`memory` tool calls, and missing `Turn ended`/`agent_close` before concluding. See `references/background-review-async-debugging.md`.
 - For bg-review taskpool integration, distinguish safe candidate extraction from side effects: `background_review.taskpool.mode: suggest` only records candidates in status/HTML, while `mode: enqueue` mutates the taskpool. See `references/background-review-taskpool-suggest-mode.md`.
 - For bg-review summary regressions, remember the review agent inherits the parent conversation snapshot. Both successful action summaries and failed tool-result summaries must skip tool messages already present in `messages_snapshot` by `tool_call_id`/content; otherwise resolved main-turn tool failures can be re-announced as false `Self-improvement review failed` notifications.
-- Gateway config smoke tests should use the real `GatewayConfig` shape: `config.platforms` is keyed by `Platform` enum values (e.g. `Platform.TELEGRAM`), and `TELEGRAM_BOT_TOKEN` env override populates `PlatformConfig.token`, not a string-keyed `platforms['telegram']` entry or `.bot_token`. When adding profile-level secret scanners, avoid internal variable names like `secret assignment` in staged code because the existing `uvisa_lark_git_guard.py` may flag secret-like assignments even when values are computed/redacted.
+- MCP server `args` containing `~` (tilde) are NOT expanded by the MCP launcher. The path `~/.hermes/scripts/foo.py` resolves relative to the hermes-agent venv directory (e.g. `/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/foo.py`) instead of the user home. Always use absolute paths in MCP server `args` (e.g. `/Users/charles/.hermes/scripts/foo.py`). The error manifests as repeated `can't open file ... No such file or directory` in `~/.hermes/logs/mcp-stderr.log`, causing every worker that loads MCP to waste 7s × 3 retries on connection failure. Check with `grep '~' ~/.hermes/config.yaml` in the `mcp_servers` section.
+- Gateway config smoke tests should use the real `GatewayConfig` shape: `config.platforms` is keyed by `Platform` enum values (e.g. `Platform.TELEGRAM`), and `TELEGRAM_BOT_TOKEN` env override populates `PlatformConfig.token`, not a string-keyed `platforms['telegram']` entry or `.bot_token`. When adding profile-level secret scanners, avoid internal variable names like `secret = ...` in staged code because the existing `uvisa_lark_git_guard.py` may flag secret-like assignments even when values are computed/redacted.
+- Agent team controller (`agent_team_controller.py`) multi-model fallback: for codegen tasks, the fallback chain is GPT-5.5(openai-codex) → Claude Sonnet(anthropic) → MiMo(xiaomi). Each attempt must detect infrastructure failures (SDK null response crash, MCP connection loops, OpenAI client closed, auth/quota errors) and fail-fast to the next model instead of burning the 600s timeout. See `references/agent-team-failfast-model-fallback.md` for detection patterns and trace events.
 
 ## Gemini CLI / OAuth provider wiring
 
@@ -154,6 +171,15 @@ If Gemini should participate in Hermes multi-model orchestration (not just direc
 - `google-gemini-cli` and `gemini` are different Hermes providers; do not describe the OAuth path as AI Studio API-key setup.
 - `anthropic` and `claude-code` are different Claude entitlement paths. For Claude Max / Claude Code OAuth users, canonical Claude models should resolve to runtime provider `claude-code` when the `claude` CLI is available; do not treat `hermes chat --provider anthropic ...` extra-usage errors as proof that Claude Code / Claude Max is offline or exhausted.
 
+## Runtime friction capture and consult_models prompt files
+
+When a Hermes runtime/CLI problem is encountered while operating Hermes itself (unsupported flag, hook parse failure, provider/router friction, taskpool event-hook error), do not save it as memory or leave it only in chat. Capture it as evidence-backed work:
+
+1. For long multi-model prompts, use `python3 ~/.hermes/scripts/consult_models.py state --prompt-file <utf8-prompt.txt> --out <state.json>` instead of shell-substituting `$(cat file)`.
+2. If the runtime issue is a candidate for future repair, record it with `python3 ~/.hermes/scripts/runtime_issue_capture.py --mode suggest --source-command ... --error-excerpt ... --impact ... --expected-behavior ...`.
+3. Use `--mode enqueue` only when the issue is deduped, redacted, has reproduction/evidence, and should become a governed taskpool item. Default `suggest` is safe and append-only.
+4. Never auto-close runtime issue candidates; they need normal implementation evidence and verification.
+
 ## Verification
 
 - Confirm the Hermes version again after update.
@@ -177,6 +203,7 @@ If Gemini should participate in Hermes multi-model orchestration (not just direc
 - `references/continuation-control-plane.md` — global durable packet architecture for unfinished work across conversation, delegation, taskpool, bg-review, cron, and gateway; includes `agent/continuation.py` contracts and verification commands
 - `references/auto-relay-continuation.md` — budget/tool-iteration exhaustion auto-relay with relay packets; includes the `max_iterations_reached(...)` exit-reason pitfall and verification checklist
 - `references/taskpool-parallel-dispatch-and-handoff-governance.md` — taskpool parallel dispatch runtime config, dry-run observability, and handoff backlog archive workflow
+- New Hermes scripts `~/.hermes/scripts/brain_api.py` and `~/.hermes/scripts/edge_worker.py` implement a local cloud-edge prototype (Brain HTTP API + Edge execution proxy) for validating the brain-tentacle architecture. See `cloud-edge-architecture` skill for the full architecture pattern.
 - `references/prompt-builder-cache-layers.md` — 3-tier stable/context/volatile prompt cache architecture
 - `references/layered-prompt-cache-implementation.md` — implementation pattern for Anthropic system content blocks, internal `_hermes_cacheable` markers, native tool cache markers, byte-stability fallback, and regression tests
 - `references/evolution-lane-cert-loop.md` — evolution lane multimodel certification deadloop pattern and prevention

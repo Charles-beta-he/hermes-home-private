@@ -1,16 +1,27 @@
 ---
 name: auto-optimize-loop
-description: "Execute self-contained optimization loops on a codebase — scan for issues, generate proposals, prune risky ones, execute safe changes, commit per round, and record results. Integrates PUA pressure, P10/P9/P8 hierarchy, and git-per-round discipline. Proven over 11+ rounds on gomoku-react."
+description: Use when you need guidance on execute self-contained optimization loops on a codebase — scan for issues, generate proposals, prune risky ones, execute safe changes, commit per round, and record results.
 version: 1.0.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [optimization, refactoring, code-quality, automation]
-    related_skills: [systematic-debugging, test-driven-development, codebase-inspection, requesting-code-review]
+    tags:
+    - optimization
+    - refactoring
+    - code-quality
+    - automation
+    related_skills:
+    - systematic-debugging
+    - test-driven-development
+    - codebase-inspection
+    - requesting-code-review
 ---
 
 # Auto-Optimization Loop
+
+## Overview
+
 
 Systematic code improvement in 5 steps. Designed for self-contained execution (cron jobs, background sessions, or interactive use).
 
@@ -128,6 +139,10 @@ Stop and report when ANY of these are true:
 - All proposals pruned
 - Test coverage decreases
 - N loops completed (configurable, default: 5)
+
+For UI/mobile-H5 loops, these generic stop conditions are necessary but not sufficient. If real browser evidence still shows HIGH offscreen interactive controls on auth, OTP, PIN/payment, security, wallet, or other critical paths, the loop must continue even when the script reached the final state. Use `browser-harness-integration` → `references/mobile-h5-loop-gates.md` for short-viewport gates, stop/continue/pause/abort rules, and `templates/mobile-h5-issue-ledger.json` for a frozen mainstream device matrix + issue-ledger ratchet.
+
+Anti-gaming rule: do not improve loop pass rate by removing device buckets, relaxing thresholds, or changing harness classification in the same round as a UI fix. First classify findings (`true_clip`, `scrollable_below_fold`, `bottom_nav_overlap`, `safe_area_risk`, `harness_false_positive`, `needs_scroll_proof`), then fix UI or file an accepted risk with evidence.
 
 ## Multi-Dimensional Scanning
 
@@ -415,3 +430,16 @@ git commit + push — 交付
 ```
 
 P10 defines WHAT and WHY, P9 defines WHERE and HOW MUCH, Loop executes.
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] The Definition of Done items above were explicitly checked, not assumed.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

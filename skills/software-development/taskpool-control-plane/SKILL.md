@@ -1,11 +1,26 @@
 ---
 name: taskpool-control-plane
-description: Diagnose and operate the local brain/taskpool control plane — dispatch tick, autorun, eligibility, proof/evidence governance, and fail-safe claim behavior when the pool is stalled.
+description: "Use when diagnose and operate the local brain/taskpool control plane — dispatch tick, autorun, eligibility, proof/evidence governance, and fail-safe claim behavior when the pool is stalled."
 ---
 
 # Taskpool Control Plane
 
-When the user asks to inspect blocked taskpool items, use `references/blocked-task-triage.md`: list all tasks and filter blocked if status filters drift, classify ordinary blockage vs `evolution_lane` + `loop_non_convergence`, and avoid direct status edits; fix certification/evidence/subtasks or run the resolver.
+## Overview
+
+Diagnose and operate the local brain/taskpool control plane — dispatch tick, autorun, eligibility, proof/evidence governance, and fail-safe claim behavior when the pool is stalled. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `taskpool-control-plane` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
+
+When the user asks to inspect blocked taskpool items, use `references/blocked-task-triage.md`: list all tasks and filter blocked if status filters drift, classify ordinary blockage vs `evolution_lane` + `loop_non_convergence`, and avoid direct done/archive without evidence closure.
+
+When the user asks to turn external memory/long-context/RNN/recurrent-state ideas into Hermes evolution work, use `references/memory-cache-recurrent-state-gate.md`: treat the external material as a direction signal, build SSOT + deterministic replay fixtures first, enforce token-cost prefilter and recurrent task state, and require continuation compaction dry-run before any runtime memory/prompt mutation. If the user says “全盘推进至需要人工介入”, continue through the safe implementation boundary in `references/continuation-compaction-recurrent-state-implementation.md`: generate the no-mutation manifest, add compact recurrent resume state, verify health/taskpool/ratchet, commit, then stop before archive/delete mutation when terminal-audit or stale-recoverable packets remain.
 
 When the user asks about retry tasks in the taskpool (retry状态/retry count/what's retrying), load `references/retry-task-diagnosis.md`: query brain_task_orchestrator list --json filtered by status=retry, classify the two failure patterns (worker timed out without proof vs stale_running_retry), and decide whether to let auto-retry proceed or intervene. When infrastructure is fixed and retry tasks are waiting for next_attempt_at, use `references/retry-task-force-promote.md`: force-promote with `transition --to pending --force`, then dispatch with `parallel-claim-and-off --write`.
 
@@ -42,6 +57,8 @@ When the Hermes cron scheduler appears stuck (jobs have `Next run` in the past b
 When daily/external-repo sidecars propose multimodel fields, treat the sidecar as advisory only. `daily_report_task_ingest.py` must normalize candidates locally: ordinary `work`/product/Lark tasks lose weak multimodel fields and do not trigger expensive panels, including retry/architecture-target heuristics; explicit `requires_multimodel: true` remains a strong override. P0/P1/P2 `evolution`/Hermes control-plane/self-strengthening/repo-intake candidates may keep the contract, must include `claude-code` in expected participants, and must resolve local evidence bundles or emit a TG/manual evidence request instead of blocking workers.
 
 Reference: `references/self-proving-executor-proof-pattern.md` captures the AutoResearch-style self-proving executor pattern for Hermes/taskpool evolution: bounded command bundles, structured PASS/FAIL proof artifacts, nonzero failure exits, opt-in checkpoint side effects, and required control-plane verification before lifecycle advancement.
+
+When the user asks for an engineering review, “多模型思考”, or a concrete plan to solve Hermes/taskpool long-term debt, use `references/taskpool-long-term-debt-strategy.md`: start with a read-only baseline, distinguish live runtime blockers from historical envelope/proof/continuation/handoff debt, add a debt ledger first, harden legacy envelope proof parsing/wall budgets, run the affected cron once to prove scheduler state, compact continuation/handoff artifacts via dry-run manifests, migrate proof debt only from existing evidence, and adjust `v_state` scoring only after observability exists.
 
 References:
 - `references/brain-mirror-on-disk-recovery.md` — Recover assignees stuck at `ON DISK=no` / `skipped_nonspawnable`, then prove the lane with a smoke task and a delegate-bearing task.
@@ -151,6 +168,15 @@ For `lane=work` project/product tasks, attach the project profile contract at in
 ## Task Adapter Framework (pluggable source pattern)
 
 When the taskpool needs to ingest tasks from multiple distinct sources (Lark, brain notes, direct input, GitHub, etc.), use the pluggable TaskAdapter framework. See `references/task-adapter-framework.md`: it covers the TaskAdapter interface (fetch/enrich/classify/preflight/gates/complete), TaskRegistry, TaskPipeline, source-agnostic observer dict pattern, composite tasks (subtasks/parallelism/convergence), parallel execution, adversarial verification, checkpoint/resume, and the pitfalls around observer.observe() signature and gate checking behavior.
+
+## Observability and Depth Classification
+
+This skill is also the umbrella for taskpool visibility and task-depth analysis:
+
+- Former `hermes-observability` → dashboards, step-level task progress, heartbeats, task timelines, health score trends, and alert panels. Load `references/hermes-observability.md` when implementing or debugging progress emitters, dashboard data aggregation, or “why is running invisible?” UX.
+- Former `task-depth-analysis` → iceberg tiering / task complexity classification, project-profile domain maps, low-confidence multimodel review, and frontend-vs-backend implementation effort. Load `references/task-depth-analysis.md` when backlog triage or dispatch routing depends on task depth.
+
+Class rule: taskpool operation is not only lifecycle transitions. A healthy control plane must expose progress, classify work depth, and keep task metadata/routing evidence aligned with project profiles.
 
 ## Adding external repo / doc analysis tasks to the pool
 

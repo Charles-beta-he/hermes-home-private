@@ -5,6 +5,19 @@ description: "Use when adapting lessons from TauricResearch/TradingAgents into H
 
 # TradingAgents reference patterns
 
+## Overview
+
+Use when adapting lessons from TauricResearch/TradingAgents into Hermes multi-agent workflows: typed role graphs, quick/deep model routing, bounded adversarial debate, role-scoped tools, structured decision handoffs, resumable checkpoints, and compact outcome reflection. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+
+## When to Use
+
+Use this skill when the user's request matches `tradingagents-reference-patterns` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+
+Do not use it for:
+- generic one-off questions that do not need this workflow;
+- neighboring specialist workflows with a narrower matching skill;
+- durable memory or project-profile writes unless this skill explicitly governs that landing zone.
+
 Use this skill when the user asks to analyze TradingAgents, improve Hermes from TradingAgents, or design a multi-agent workflow with analyst/researcher/debater/manager roles.
 
 Source boundary:
@@ -78,3 +91,10 @@ Before implementing a TradingAgents-inspired workflow in Hermes:
 - Do not claim LangGraph feature parity unless Hermes has actually implemented the corresponding graph/checkpoint runtime.
 - Do not let fallback free text bypass proof gates.
 - Do not promote one run's outcome into memory; durable procedures belong in skills.
+
+## Verification Checklist
+
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side effects were verified by read-back or direct inspection.
+- [ ] Any remaining uncertainty, blocker, or human handoff was stated explicitly.
+- [ ] Every stage passed its gate before the next stage advanced, with evidence recorded.

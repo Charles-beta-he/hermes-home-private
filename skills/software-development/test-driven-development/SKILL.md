@@ -6,8 +6,14 @@ author: Hermes Agent (adapted from obra/superpowers)
 license: MIT
 metadata:
   hermes:
-    tags: [testing, tdd, development, quality, red-green-refactor]
-    related_skills: [writing-plans]
+    tags:
+    - testing
+    - tdd
+    - development
+    - quality
+    - red-green-refactor
+    related_skills:
+    - writing-plans
 ---
 
 # Test-Driven Development (TDD)
@@ -34,7 +40,7 @@ Write the test first. Watch it fail. Write minimal code to pass.
 - Configuration files
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
-
+- Don't use for: requests that do not need implementing any feature or bugfix, before writing implementation code. Enforces RED-GREEN-REFACTOR cycle with test-first approach; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## The Iron Law
 
 ```
@@ -255,6 +261,21 @@ If you catch yourself doing any of these, delete the code and restart with TDD:
 
 **All of these mean: Delete code. Start over with TDD.**
 
+## Java/Maven Multi-Module Contract Tests
+
+When adding backend compatibility/API contract behavior in a multi-module Maven repo:
+
+1. Put the RED test in the module that can see the assembled API/application dependencies.
+2. Run the specific test through the reactor with the app/API module selected, for example:
+   ```bash
+   mvn -pl app/uvisa-app -am -Dtest=FrontendCompatibilityApiContractTest -Dsurefire.failIfNoSpecifiedTests=false test
+   mvn -pl api/api-public -am -Dtest=PayeeDetailsValidatorTest -Dsurefire.failIfNoSpecifiedTests=false test
+   ```
+   Always include `-am` when the selected module depends on sibling reactor modules; otherwise Maven may compile against stale locally installed dependency jars and produce false "method not found"/signature errors for code that is correct in the working tree. `-Dsurefire.failIfNoSpecifiedTests=false` prevents upstream modules in `-am` from failing only because they do not contain the targeted test class.
+3. If Mockito/ByteBuddy fails on a very new JDK (for example Java 25), do not let the mocking framework become the bug. Prefer the project-supported JDK first (e.g. Java 21 for Lombok/TypeTag-sensitive builds); if mocking is still the issue, replace simple mocks with a tiny real fake/subclass or direct test seam so the RED/GREEN signal tests product behavior, not tool compatibility.
+4. For HTTP-accessible endpoints, a controller/unit contract test is not enough. After GREEN, start the real app and curl the exact frontend path. Public/pre-login read APIs frequently compile green but return 401 until the security whitelist is updated; write or extend a security contract for the whitelist.
+5. Full-suite failures may be pre-existing architecture gates. Still run the full suite, but classify failures by evidence: target test green + unrelated historical ArchUnit failures is not the same as full green.
+
 ## Verification Checklist
 
 Before marking work complete:
@@ -269,7 +290,7 @@ Before marking work complete:
 - [ ] Edge cases and errors covered
 
 Can't check all boxes? You skipped TDD. Start over.
-
+- [ ] Reviewer calibration: findings include a severity or rubric boundary and cite evidence.
 ## Definition of Done
 
 - [ ] **Outcome**: Every new function/method has a test, all tests pass, output pristine (no errors/warnings)
@@ -332,6 +353,27 @@ Bug found? Write failing test reproducing it. Follow TDD cycle. The test proves 
 
 Never fix bugs without a test.
 
+## Hermes Taskpool / Stateful CLI Transition Work
+
+When changing Hermes taskpool/control-plane scripts or any stateful CLI/orchestrator:
+
+0. For standalone tools under `~/.hermes/scripts`, test the full CLI/proof-artifact contract with subprocess-based tests. If the system Python lacks pytest, use the Hermes repo venv pytest when available (for this setup: `/Users/charles/.hermes/hermes-agent/.venv/bin/python -m pytest ...`). Treat this as a setup fix, not a reason to skip RED/GREEN.
+1. Write RED tests around the **state transition**, not just helper functions. Assert frontmatter/body mutations, derived fields, CLI JSON actions, process exit codes, and emitted proof artifacts.
+2. Use fixture tasks/artifacts that mimic the real control-plane evidence shape (`discussion_result.json`, blocked/retry status, proof log sections) so the failure proves the workflow, not a toy helper.
+3. Add a second-cycle closure test whenever the feature spans phases, e.g.:
+   - trigger auto-split from blocked/non-convergence
+   - mark generated subtasks done
+   - verify parent reopen/sync on `reconcile` or the primary resolver path
+4. Treat CLI/control-plane JSON output as part of the contract. Add RED assertions for structured action payloads (`action`, `resolved/kept_blocked`, `taxonomy_axes`, `axis_rationale`, counts, reopen reasons) instead of only checking file text. When diagnostics guide later automation, test that they are returned explicitly, not just implied by side effects.
+5. When a control-plane workflow derives follow-up work from failure analysis, add RED coverage that the diagnostic taxonomy survives the whole path: gate/writeback -> task frontmatter/body -> resolver/auto-split JSON result. This prevents "analysis exists but downstream step cannot consume it" regressions.
+6. When you introduce new task metadata fields, treat persistence/display as separate contract surfaces. Add RED assertions that the fields survive all of these layers as needed: in-memory task state, serialized frontmatter (`SAVE_FIELDS`/persisted keys), preferred frontmatter ordering for operator readability, and command JSON. A feature is not done if the diagnostic exists only in memory or only in one output path.
+7. After GREEN on targeted tests, run a **real task dry verification** against the actual taskpool entry to confirm:
+   - idempotent re-run is a no-op
+   - already-done parents are safe no-ops
+   - proof log is appended, not overwritten
+   - structured diagnostics remain present in command output for operators/control-plane consumers
+7. If unrelated legacy tests fail, classify them explicitly as pre-existing/off-scope instead of silently broadening the task.
+
 ## Testing Anti-Patterns
 
 - **Testing mock behavior instead of real behavior** — mocks should verify interactions, not replace the system under test
@@ -347,3 +389,88 @@ Otherwise → not TDD
 ```
 
 No exceptions without the user's explicit permission.
+
+## Replay-Based Regression Testing (Traffic-Driven)
+
+When a system has routing/dispatch logic (URL routers, intent classifiers, command matchers, LLM query classifiers), **hardcoded test cases drift from reality**. The user's inputs are unpredictable and diverse — you can't anticipate every phrasing.
+
+**Pattern: Record → Replay → Detect Drift**
+
+1. **Record**: On every live request, persist `(input, route_id, payload_snapshot)` to a local review store. This is cheap — just a JSON write.
+2. **Replay**: Periodically (batch trigger, e.g. every N records), re-run the routing logic against each recorded input and compare the new `route_id` against the recorded one.
+3. **Drift**: If they differ, you've caught a regression before the user does. Generate a regression test case from the drifted record.
+
+**Critical rule: Import real handlers, never duplicate matching logic.**
+The replay verifier must call the same handler functions that production uses. If you copy pattern-matching into the test, it will silently drift when production code changes — defeating the entire purpose.
+
+```python
+# CORRECT: import and call real handlers
+import app
+def replay(ctx):
+    return app.handle_l0_query(ctx.user_text)
+
+# WRONG: copy matching logic into test
+def replay(ctx):
+    if "天气" in ctx.user_text:  # Duplicates app.py!
+        return "weather", "..."
+```
+
+**Circular import avoidance**: If the replay tool can't import the app module directly (e.g. FastAPI app module imports the recording module), use subprocess:
+```python
+proc = await asyncio.create_subprocess_exec(
+    python_bin, "replay_verify.py", "--json",
+    stdout=asyncio.subprocess.PIPE,
+)
+```
+
+**Hot-path safety**: Never replay synchronously in the request path. Use batch triggers (count threshold since last replay) and run as a background task.
+
+**Stub payloads for offline replay**: When replaying without a real server, create lightweight stub objects that provide attribute access matching the production model:
+```python
+class _MessageStub:
+    """Wraps a dict to provide .role / .type / .image_url attribute access."""
+    def __init__(self, data):
+        self._data = data
+    def __getattr__(self, name):
+        if name.startswith("_"):
+            raise AttributeError(name)
+        return self._data.get(name)
+```
+
+**Expected drift vs unexpected drift**: When you fix a routing bug, old records will show `recorded_route_id=wrong, replayed_route_id=correct`. This is expected — not a regression. Only flag cases where the new route is unexpected.
+
+For a complete implementation example, see `references/replay-based-regression-testing.md`.
+
+## Test Suite Bootstrapping (Existing Codebases)
+
+When inheriting a codebase with zero tests, use the bootstrapping pattern:
+1. Create `test_core_components.py` with unittest-based tests
+2. Create `self_check.py` for automated health checks
+3. Run self-check to establish baseline metrics
+4. Iterate to improve coverage
+
+See `references/test-suite-bootstrapping.md` for complete template and patterns.
+
+## Python Test Debugging
+
+Common failures when testing Python code:
+- Interface mismatch: grep actual methods before testing
+- Import errors: set sys.path correctly
+- Type errors: check result existence, not specific content
+- Missing attributes: check for actual exports
+
+See `references/python-test-debugging.md` for debugging patterns.
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. **Hardcoding test inputs from screenshots/manual inspection** instead of recording live traffic for replay-based regression. Screenshots catch what you see; live recording catches what actually happens.
+5. **Duplicating routing/matching logic in tests** instead of importing the real handlers. The duplicated copy will silently drift from production, making the test worthless.
+6. **Running replay synchronously on the hot path.** Always batch-trigger and run in background.
+7. **Assuming component interfaces** — Always grep/discover actual methods before writing tests for existing code.
+8. **Assertion mismatch on warning-only paths** — When testing components that log warnings (e.g., uninitiated orchestrator), verify the actual behavior before asserting metrics. Some implementations only log warnings without incrementing error counters. Always run the test first (RED) to see what actually fails, then adjust assertions to match real behavior.
+9. **Python syntax typos with `self.`** — Common typo: `self balancer = LoadBalancer()` instead of `self.balancer = LoadBalancer()`. The linter catches this, but always run `python3 -m py_compile` on test files before running tests to catch syntax errors early.
+10. **Fake coverage from file counts** — `len(test_*.py) / len(source_*.py)` is only a boundary-mapping metric, not statement/branch coverage. If a project uses this bootstrap metric, label it explicitly (e.g. "file-level test mapping"), add behavior tests for critical files, and add a separate boundary catalog so the self-check covers execution, performance, security, stress, compatibility, and architecture links instead of only file presence.
+11. **unittest output may be on stderr** — `unittest.TextTestRunner` writes to stderr by default. Self-check scripts that parse only stdout can misclassify passing tests as UNKNOWN. Combine stdout+stderr, and prefer a Python interpreter with pytest available; if multiple Python versions exist, probe candidates before running the suite.

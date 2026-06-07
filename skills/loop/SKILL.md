@@ -1,12 +1,32 @@
 ---
 name: loop
-description: "PUA Loop — autonomous iterative development with PUA pressure. Keeps running until task is done, no user interaction needed. Combines Ralph Loop iteration mechanism with PUA quality enforcement. Triggers on: '/pua loop', '/pua:loop', '自动循环', 'loop mode', '一直跑', '自动迭代'."
+description: Use when the user explicitly requests autonomous loop execution with no interactive questioning and wants repeated implement→verify→fix iterations until completion or a hard stop condition.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - loop
+    - autonomous-iteration
+    - no-interaction
+    - pua-loop
+    related_skills:
+    - multi-model-thinking
+    - router
+    - requesting-code-review
 ---
 
 # PUA Loop — 自动迭代 + PUA 质量引擎
 
+## Overview
+
+
 > Ralph Loop 提供"不停地做"，PUA 提供"做得更好"。合在一起 = **自主迭代 + 质量压力 + 零人工干预**。
+
+## When to Use
+
+- The user explicitly requests autonomous loop execution with no interactive questioning and wants repeated implement→verify→fix iterations until completion or a hard stop condition
 
 ## 核心规则
 
@@ -229,6 +249,8 @@ Full details: load `multi-model-thinking` skill and read `references/event-drive
 
 When the user says “检查任务池进度” or “继续” after a taskpool session, do not rely on remembered state. Reconcile the local brain taskpool, close only via `brain_task_orchestrator` lifecycle commands, and rerun proof/selfcheck/dashboard gates after each batch. Typed evidence matters: frontmatter `evidence:` rows should use `artifact:` / `proof:` prefixes; bare absolute paths can make `proof-check` fail and must be normalized before claiming the taskpool is healthy. Advisory-only multimodel results (`PASS_ADVISORY_ONLY`, `CONTINUE_LOOP`, `multimodel_certification_authority: False`) are provenance, not closeout authority.
 
+For T1/T2 advisory-only taskpool intervention, do not feed the result to the canonical T3/4-model ratification gate. If the plan is `advisory_only: true`, a parseable consult artifact with concrete participants/votes should be consumed by an advisory gate as `PASS_ADVISORY_ONLY` + `continue_loop` + `certification_authority=false`; it should write `multimodel_status: advisory_completed` / `multimodel_round_status: advisory_passed` and suppress repeated weak advisory triggers, but it must not write `multimodel_ratification_artifact` or authorize `LOOP_DONE`. Strong certification triggers still require the full canonical 4-model ratification gate.
+
 Detailed recovery checklist: `references/taskpool-closeout-recovery.md`. It also records the durable advisory-only routing rule (`T1/T2` advisory, no forced `T3 --quorum 4`) and the `unresolved_noop_vs_change` pattern for MiMo concrete-patch minority vs noop majority disagreements.
 
 ## 约束
@@ -236,8 +258,14 @@ Detailed recovery checklist: `references/taskpool-closeout-recovery.md`. It also
 - 遵循项目规范
 - 在 context budget 内完成
 
-## 恢复 Loop
+## Common Pitfalls
 
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
 
-- 遵循项目规范
-- 在 context budget 内完成
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

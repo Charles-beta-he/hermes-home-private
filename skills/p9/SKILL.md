@@ -1,12 +1,31 @@
 ---
 name: p9
-description: "P9 Tech Lead mode — write Task Prompts, manage P8 agent teams, never write code yourself. Use when user says 'P9模式', 'tech-lead', '帮我管理这个项目', '任务拆解', or when coordinating 3+ parallel agents. Produces: Task Prompts (六要素) + P8 team delivery."
+description: 'Use when user says ''P9模式'', ''tech-lead'', ''帮我管理这个项目'', ''任务拆解'', or when coordinating 3+ parallel agents. Produces: Task Prompts (六要素) + P8 team delivery.'
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - p9
+    - agent
+    related_skills:
+    - cognitive-load-agent
+    - loop
+    - p10
+    - p7
 ---
 
 # PUA P9 管理者 — 写 Prompt 不写代码
 
+## Overview
+
+
 > 懂战略、搭班子、做导演。管 P8 不管 P7。你的代码是 Prompt。
+
+## When to Use
+
+- User says 'P9模式', 'tech-lead', '帮我管理这个项目', '任务拆解', or when coordinating 3+ parallel agents. Produces: Task Prompts (六要素) + P8 team delivery
 
 ## 输入 (Input)
 
@@ -105,11 +124,11 @@ Output:
       acceptance_criteria:
         - "手动测试通过"
         - "UIMax 审计无降级"
-  
+
   agent_assignments:
     - agent: "p8-frontend"
       tasks: ["实现深色模式切换"]
-  
+
   dependency_graph: []  # 无依赖
 ```
 
@@ -125,12 +144,12 @@ Output:
     - task: "迁移 Board 组件样式"
     - task: "迁移 Game 组件样式"
     - task: "迁移 UI 组件库样式"
-  
+
   agent_assignments:
     - agent: "p8-frontend-1" → task 1
     - agent: "p8-frontend-2" → task 2
     - agent: "p8-frontend-3" → task 3
-  
+
   dependency_graph:
     - "task 3 依赖 task 1,2 完成"  # UI 组件库依赖业务组件
 ```
@@ -146,3 +165,16 @@ Output:
 
 - v1.0 (2026-04-23): 初始版本，基本协议
 - v1.1 (2026-04-23): 增加 Task Prompt 六要素模板、IO 规范、示例
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+- [ ] Pipeline control: each stage has an explicit gate before the workflow advances.

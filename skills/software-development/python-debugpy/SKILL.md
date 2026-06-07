@@ -1,13 +1,21 @@
 ---
 name: python-debugpy
-description: "Debug Python: pdb REPL + debugpy remote (DAP)."
+description: 'Use when you need to debug Python: pdb REPL + debugpy remote (DAP).'
 version: 1.0.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [debugging, python, pdb, debugpy, breakpoints, dap, post-mortem]
-    related_skills: [systematic-debugging]
+    tags:
+    - debugging
+    - python
+    - pdb
+    - debugpy
+    - breakpoints
+    - dap
+    - post-mortem
+    related_skills:
+    - systematic-debugging
 ---
 
 # Python Debugger (pdb + debugpy)
@@ -338,7 +346,7 @@ Long-lived. Use `remote-pdb` at a handler, or `debugpy` with `--wait-for-client`
   ```bash
   rg -n 'breakpoint\(\)|set_trace\(|debugpy\.listen' --type py
   ```
-
+- [ ] Wrapper safety: any side effect is followed by target-state read-back before reporting completion.
 ## One-Shot Recipes
 
 **"Why is this dict missing a key?"**
