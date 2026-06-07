@@ -1,0 +1,238 @@
+{
+  "generated_at": "2026-06-07T19:55:31",
+  "repo": "/Users/charles/.hermes",
+  "commit_before": "eb80bebc1bf97cfd137c503efacd73a57f1e7058",
+  "commit_after": "5e759f86096930b717a5e34f800a3cae3667e3d5",
+  "metrics": {
+    "before": {
+      "skill_count": 230,
+      "active_count": 211,
+      "bad_yaml": 2,
+      "duplicate_names": 2,
+      "bad_eval": 31,
+      "stock_boilerplate": 26,
+      "backticked_template_refs": 5,
+      "samples": {
+        "duplicate_names": [
+          [
+            "cloud-edge-architecture",
+            ".archive/software-development/cloud-edge-architecture/SKILL.md",
+            "software-development/cloud-edge-architecture/SKILL.md"
+          ],
+          [
+            "post-deploy-verification",
+            "post-deploy-verification/SKILL.md",
+            "software-development/post-deploy-verification/SKILL.md"
+          ]
+        ],
+        "bad_eval": [
+          [
+            "bayesian-agent",
+            "missing"
+          ],
+          [
+            "cognitive-load-agent",
+            "missing"
+          ],
+          [
+            "creative/ascii-art",
+            "missing"
+          ],
+          [
+            "creative/ascii-video",
+            "missing"
+          ],
+          [
+            "creative/pixel-art",
+            "missing"
+          ],
+          [
+            "gaming/minecraft-modpack-server",
+            "missing"
+          ],
+          [
+            "gaming/pokemon-player",
+            "missing"
+          ],
+          [
+            "leisure",
+            "missing"
+          ],
+          [
+            "leisure/find-nearby",
+            "missing"
+          ],
+          [
+            "media/heartmula",
+            "missing"
+          ]
+        ],
+        "stock": [
+          "autonomous-ai-agents/hermes-agent/SKILL.md",
+          "autonomous-ai-agents/hermes-experience-ratchet/SKILL.md",
+          "autonomous-ai-agents/hermes-personal-assistant-flow/SKILL.md",
+          "autonomous-ai-agents/tradingagents-reference-patterns/SKILL.md",
+          "creative/baoyu-article-illustrator/SKILL.md",
+          "devops/hermes-storage-governance/SKILL.md",
+          "devops/kanban-worker/SKILL.md",
+          "devops/token-saver-frontend-rtk/SKILL.md",
+          "devops/token-saver-rtk/SKILL.md",
+          "personal-productivity/career-ops/SKILL.md"
+        ],
+        "placeholders": [
+          [
+            "creative/baoyu-comic/SKILL.md",
+            [
+              "references/art-styles/<style>.md",
+              "references/tones/<tone>.md",
+              "references/presets/<preset>.md"
+            ]
+          ],
+          [
+            "creative/baoyu-infographic/SKILL.md",
+            [
+              "references/layouts/<layout>.md",
+              "references/styles/<style>.md",
+              "references/layouts/<layout>.md",
+              "references/styles/<style>.md",
+              "references/layouts/<layout>.md",
+              "references/styles/<style>.md",
+              "references/layouts/<layout>.md",
+              "references/styles/<style>.md"
+            ]
+          ],
+          [
+            "software-development/hermes-agent-skill-authoring/SKILL.md",
+            [
+              "references/*.md",
+              "templates/<file>",
+              "scripts/<file>"
+            ]
+          ],
+          [
+            "software-development/skill-eval/SKILL.md",
+            [
+              "references/<topic>.md"
+            ]
+          ],
+          [
+            "software-development/workflow-ecosystem-audit/SKILL.md",
+            [
+              "references/p*-protocol.md"
+            ]
+          ]
+        ]
+      },
+      "scanner_high_risk": 80,
+      "scanner_broken_refs": 32,
+      "scanner_placeholder_contracts": 5,
+      "scanner_full_matrix": 199,
+      "scan_seconds": 0.225
+    },
+    "after": {
+      "skill_count": 237,
+      "active_count": 213,
+      "bad_yaml": 0,
+      "duplicate_names": 0,
+      "bad_eval": 0,
+      "stock_boilerplate": 0,
+      "backticked_template_refs": 0,
+      "samples": {
+        "duplicate_names": [],
+        "bad_eval": [],
+        "stock": [],
+        "placeholders": []
+      },
+      "scanner_high_risk": 0,
+      "scanner_broken_refs": 0,
+      "scanner_placeholder_contracts": 0,
+      "scanner_full_matrix": 237,
+      "scan_seconds": 0.261
+    }
+  },
+  "closed_gaps": {
+    "duplicate_names": 2,
+    "stock_boilerplate": 26,
+    "backticked_template_refs": 5,
+    "scanner_placeholder_contracts": 5,
+    "bad_yaml": 2,
+    "bad_eval": 31,
+    "scanner_broken_refs": 32,
+    "scanner_high_risk": 80
+  },
+  "diff_stats": {
+    "files": 45,
+    "insertions": 16827,
+    "deletions": 101,
+    "names": [
+      ".gitmodules",
+      "docs/private/skill-omission-fix-20260607/skill-pattern-coverage.json",
+      "docs/private/skill-omission-fix-20260607/skill-pattern-coverage.md",
+      "skills/autonomous-ai-agents/hermes-agent/SKILL.md",
+      "skills/autonomous-ai-agents/hermes-experience-ratchet/SKILL.md",
+      "skills/autonomous-ai-agents/hermes-personal-assistant-flow/SKILL.md",
+      "skills/autonomous-ai-agents/tradingagents-reference-patterns/SKILL.md",
+      "skills/creative/baoyu-comic/SKILL.md",
+      "skills/creative/baoyu-infographic/SKILL.md",
+      "skills/devops/hermes-storage-governance/SKILL.md",
+      "skills/devops/kanban-worker/SKILL.md",
+      "skills/devops/token-saver-frontend-rtk/SKILL.md",
+      "skills/devops/token-saver-rtk/SKILL.md",
+      "skills/personal-productivity/career-ops/SKILL.md",
+      "skills/post-deploy-verification/SKILL.md",
+      "skills/post-deploy-verification/evals/prompts.csv",
+      "skills/research/last30days/SKILL.md",
+      "skills/smart-home/assembly-assistance-workflow/SKILL.md",
+      "skills/smart-home/electrical-brain/SKILL.md",
+      "skills/smart-home/external-control-brain/SKILL.md",
+      "skills/smart-home/manufacturing-brain/SKILL.md",
+      "skills/software-development/agent-skill-design-patterns/SKILL.md",
+      "skills/software-development/agent-skill-design-patterns/references/full-library-routing-eval-coverage.md",
+      "skills/software-development/agent-skill-design-patterns/references/post-session-skill-update-triage.md",
+      "skills/software-development/arc-dispatch-executor/SKILL.md",
+      "skills/software-development/experience-ratchet/SKILL.md",
+      "skills/software-development/hermes-agent-skill-authoring/SKILL.md",
+      "skills/software-development/hermes-agent-skill-authoring/references/bulk-rehabilitation-playbook.md",
+      "skills/software-development/hermes-agent-skill-authoring/references/perplexity-skill-lessons.md",
+      "skills/software-development/hermes-agent-skill-authoring/references/skill-mode-patterns.md",
+      "skills/software-development/hermes-overlay-ratchet-upgrades/SKILL.md",
+      "skills/software-development/hermes-s6-container-supervision/SKILL.md",
+      "skills/software-development/hermes-self-audit/SKILL.md",
+      "skills/software-development/hermes-workflow-orchestrator/SKILL.md",
+      "skills/software-development/multi-model-certification-round/SKILL.md",
+      "skills/software-development/post-deploy-verification/SKILL.md",
+      "skills/software-development/post-update-patch-healing/SKILL.md",
+      "skills/software-development/requesting-code-review/SKILL.md",
+      "skills/software-development/requirement-clarification/SKILL.md",
+      "skills/software-development/skill-eval/SKILL.md",
+      "skills/software-development/taskpool-control-plane/SKILL.md",
+      "skills/software-development/workflow-ecosystem-audit/SKILL.md",
+      "skills/ui-skills",
+      "skills/ui-ux-pro-max",
+      "skills/workflow/qian-meta-synthesis/SKILL.md"
+    ]
+  },
+  "efficiency": {
+    "positive_gap_units_closed": 183,
+    "changed_lines": 16928,
+    "changed_files": 45,
+    "gap_units_closed_per_changed_line": 0.01081,
+    "gap_units_closed_per_changed_file": 4.067,
+    "scan_seconds_before": 0.225,
+    "scan_seconds_after": 0.261
+  },
+  "submodule_recursive": {
+    "exit_code": 0,
+    "seconds": 1.617,
+    "output_head": [
+      "-2056abfccd924d68ae6baa9193cafff0f666260b backups/20260423-224844/skills/darwin-skill",
+      "-39bc64997f1a8f7c735b55187df78354e8991663 backups/20260423-224844/skills/pua",
+      "-968f18f2be4bedaa81885fae5101822ad4ef360a hermes-agent",
+      "-2056abfccd924d68ae6baa9193cafff0f666260b skills/darwin-skill",
+      "-25e6c820aab580526f8e9ffb3866b5a5b39c16c9 skills/impeccable",
+      "-39bc64997f1a8f7c735b55187df78354e8991663 skills/pua",
+      "-4f875513a47d802bc6c75dc0745bee2fd731fa55 skills/ui-skills",
+      "-2dd9fee213caa191ebbb3832c7f8945a02e7f8e6 skills/ui-ux-pro-max"
+    ]
+  }
+}
