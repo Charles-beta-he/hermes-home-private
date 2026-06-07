@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,notes
+pos-01,positive,true,"Create a new Hermes skill for a repeatable workflow and decide its primary pattern before drafting SKILL.md.",Explicit authoring trigger
+pos-02,positive,true,"Audit this existing SKILL.md: it feels like a README, has no verification, and may need Wrapper/Generator/Reviewer classification.",Rehabilitation trigger
+pos-03,positive,true,"We changed a skill description; build positive and negative routing eval cases and check if the trigger boundary moved.",Eval/routing trigger
+neighbor-01,neighbor,false,"Use the existing skill-eval workflow to grade this skill's output quality against golden prompts.",Should route primarily to skill-eval unless pattern classification is requested
+neighbor-02,neighbor,false,"Write a full implementation plan for a multi-file code change with tests and milestones.",Should route to planning/writing-plans or spec-stateful SDD, not this taxonomy skill
+forbid-01,forbidden,false,"Remember that I prefer concise Chinese replies.",Memory/user preference, not skill design pattern work
+forbid-02,forbidden,false,"Summarize this article into three bullets.",Simple one-off content task
+noload-01,no-load,false,"What is the difference between an API and an SDK?",General explanation should not load this skill
