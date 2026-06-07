@@ -14,6 +14,11 @@ from task_continuation import detect_budget_exhausted, save_checkpoint, can_cont
 MAX_CONCURRENT = int(os.environ.get('ENVELOPE_EXECUTOR_MAX', '1'))
 STALE_PENDING_DAYS = float(os.environ.get('ENVELOPE_EXECUTOR_STALE_PENDING_DAYS', '1'))
 STALE_RUNNING_GRACE_SECONDS = int(os.environ.get('ENVELOPE_EXECUTOR_STALE_RUNNING_GRACE_SECONDS', '300'))
+# Cron jobs time out at the scheduler boundary. Keep this legacy executor's
+# worker call comfortably inside that wall clock so cron reports a classified
+# retry/failure instead of an unstructured script timeout.
+WORKER_TIMEOUT_SECONDS = int(os.environ.get('ENVELOPE_EXECUTOR_WORKER_TIMEOUT_SECONDS', '90'))
+WALL_BUDGET_SECONDS = int(os.environ.get('ENVELOPE_EXECUTOR_WALL_BUDGET_SECONDS', '105'))
 ORCHESTRATOR = Path.home() / '.hermes' / 'scripts' / 'brain_task_orchestrator.py'
 _ACTIVE_WORKER_PGID = None
 
@@ -95,23 +100,73 @@ def claim_envelope(eid):
     append_trace(eid, {'event': 'executor_claimed'})
     return True
 
+def _strip_json_fence(text):
+    text = (text or '').strip()
+    if not text.startswith('```'):
+        return text
+    lines = text.splitlines()
+    if lines and lines[0].strip().startswith('```'):
+        lines = lines[1:]
+    if lines and lines[-1].strip().startswith('```'):
+        lines = lines[:-1]
+    return '\n'.join(lines).strip()
+
+
+def _first_json_object(text):
+    text = _strip_json_fence(text)
+    start = text.find('{')
+    if start < 0:
+        return None
+    depth = 0
+    in_string = False
+    escaped = False
+    for offset, ch in enumerate(text[start:], start=start):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == '\\':
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == '{':
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+            if depth == 0:
+                return text[start:offset + 1]
+    return None
+
+
 def extract_proof(output):
-    """Extract and validate the last PROOF_JSON line from worker output.
+    """Extract and validate the last PROOF_JSON marker from worker output.
 
     Returns (proof_dict, proof_sha, error_reason).  DONE is fail-closed: a
     literal marker is not enough; the proof must be parseable structured JSON.
+    Supports both single-line and fenced/multiline PROOF_JSON payloads because
+    model workers often wrap JSON despite the prompt requesting a last line.
     """
-    saw_marker = False
-    for line in reversed((output or '').splitlines()):
+    marker = 'PROOF_JSON:'
+    output = output or ''
+    candidates = []
+    pos = output.rfind(marker)
+    if pos >= 0:
+        candidates.append(output[pos + len(marker):])
+    for line in reversed(output.splitlines()):
         text = line.strip()
-        if not text.startswith('PROOF_JSON:'):
+        if text.startswith(marker):
+            candidates.append(text.split(':', 1)[1].strip())
+    saw_marker = bool(candidates)
+    for raw in candidates:
+        json_text = _first_json_object(raw)
+        if not json_text:
             continue
-        saw_marker = True
-        raw = text.split(':', 1)[1].strip()
         try:
-            proof = json.loads(raw)
+            proof = json.loads(json_text)
         except Exception:
-            return None, None, 'invalid_proof'
+            continue
         if not isinstance(proof, dict):
             return None, None, 'invalid_proof'
         if proof.get('status') not in ('done', 'blocked'):
@@ -122,7 +177,7 @@ def extract_proof(output):
     return None, None, 'invalid_proof' if saw_marker else 'missing_proof'
 
 
-def delegate_to_worker(envelope):
+def delegate_to_worker(envelope, timeout=None):
     """Delegate envelope to a worker via hermes chat -q."""
     eid = envelope['id']
     payload = json.loads(envelope.get('payload', '{}')) if isinstance(envelope.get('payload'), str) else envelope.get('payload', {})
@@ -190,7 +245,7 @@ If blocked, still output PROOF_JSON with status=blocked and a concise summary of
             '--quiet', '--max-turns', '30', '--source', f'envelope-exec-{eid[:8]}',
             '--ignore-rules',
         ]
-        r = run_worker_command(cmd, timeout=600, cwd=cwd)
+        r = run_worker_command(cmd, timeout=timeout or WORKER_TIMEOUT_SECONDS, cwd=cwd)
         output = r.stdout
         if r.returncode != 0:
             update_status(eid, 'FAILED', error=(r.stderr or output or f'worker exited {r.returncode}')[:200])
@@ -304,6 +359,7 @@ def skip_stale_pending(envelopes):
 
 def run_executor(max_concurrent=None):
     """Execute one cycle: claim PENDING → delegate → collect result."""
+    started = time.monotonic()
     max_n = max_concurrent or MAX_CONCURRENT
     cleaned_running = cleanup_stale_running()
     
@@ -325,6 +381,17 @@ def run_executor(max_concurrent=None):
     
     results = []
     for envelope in pending[:max_n]:
+        remaining_budget = WALL_BUDGET_SECONDS - (time.monotonic() - started)
+        if remaining_budget < 30:
+            return {
+                'status': 'deferred_budget',
+                'processed': len(results),
+                'remaining_pending': len(pending) - len(results),
+                'stale_pending_quarantined': len(skipped_stale),
+                'stale_running_cleaned': len(cleaned_running),
+                'reason': 'insufficient wall budget for another worker',
+                'envelope_stats': stats(),
+            }
         eid = envelope['id']
         title = envelope.get('title', '')[:50]
         
@@ -333,7 +400,8 @@ def run_executor(max_concurrent=None):
             continue
         
         # Delegate
-        result = delegate_to_worker(envelope)
+        worker_timeout = max(20, min(WORKER_TIMEOUT_SECONDS, int(remaining_budget) - 10))
+        result = delegate_to_worker(envelope, timeout=worker_timeout)
         results.append({
             'envelope_id': eid,
             'title': title,
