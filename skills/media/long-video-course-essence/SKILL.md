@@ -232,3 +232,7 @@ python3 -m video_essence.cli ask "question" --output <out> --semantic --model no
 - [ ] Batch processing is rerunnable and avoids stdin consumption bugs.
 - [ ] Local index/ask was verified with at least one real user-style query.
 - [ ] If code was changed, targeted and full tests passed.
+
+## Support Files
+
+- `references/local-cli-mvp-pattern.md` — concrete artifact contract, CLI command surface, Ollama backoff, final-reduce noise filtering, tests, and real verification pattern proven on a 7-video Mina course.
