@@ -75,6 +75,8 @@ Every final claim should be traceable to at least one of:
 
 ## Pipeline Stages
 
+Concrete implementation reference: see `references/local-cli-mvp-pattern.md` for a proven local CLI shape, artifact contracts, final-reduce command design, Ollama embedding backoff, OCR/path noise filtering, and verification commands.
+
 ### 1. Discover and scope videos
 
 - Search only the relevant folder when possible; full desktop recursion can be slow.
@@ -181,8 +183,35 @@ For multiple machines, keep one controller and many workers:
 
 - controller: task ledger, quality gates, final reduce, index write, user-facing QA
 - workers: audio extraction, ASR, frame extraction, OCR, chunk embedding
+- Ollama node: embedding and optional final local LLM reduce; this is often the easiest first node split because inputs are text windows rather than raw video
 
 Use a canonical task ledger rather than cron-only polling. Workers should produce deterministic artifacts and never silently overwrite controller-owned summaries.
+
+### Remote / Node Ollama Pattern
+
+Ollama can run on a node computer. Prefer LAN/Tailscale/SSH tunnel access; do not expose `11434` to the public internet.
+
+Node setup:
+
+```bash
+ollama pull nomic-embed-text
+OLLAMA_HOST=0.0.0.0:11434 ollama serve  # only inside a trusted private network
+```
+
+Controller verification:
+
+```bash
+python3 -m video_essence.cli ollama-health --ollama-host http://NODE_IP_OR_NAME:11434 --model nomic-embed-text
+```
+
+Use the node for indexing and semantic QA:
+
+```bash
+python3 -m video_essence.cli index --output <out> --model nomic-embed-text --window-seconds 180 --ollama-host http://NODE_IP_OR_NAME:11434
+python3 -m video_essence.cli ask "question" --output <out> --semantic --model nomic-embed-text --ollama-host http://NODE_IP_OR_NAME:11434
+```
+
+`OLLAMA_HOST=http://NODE_IP_OR_NAME:11434` can be used as an environment default. Always verify `embedding_dim` and a real semantic query before treating the node as healthy.
 
 ## Common Pitfalls
 
