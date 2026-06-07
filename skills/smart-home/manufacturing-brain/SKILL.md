@@ -7,11 +7,11 @@ description: Use when handling manufacturing/3D-printing workflows, Bambu/X2D pr
 
 ## Overview
 
-Use when handling manufacturing/3D-printing workflows, Bambu/X2D printer status, slicer/G-code/material/AMS reasoning, print failure diagnosis, or deciding whether a print situation warrants action. Manufacturing is an independent domain brain even with one capable printer; physical actuation still routes through external-control. This skill is maintained as a `wrapper`-shaped contract: it should guide external tools, APIs, CLIs, platforms, or other side-effecting capability surfaces without stealing adjacent workflows or relying on unstated assumptions.
+Use when handling manufacturing/3D-printing workflows, Bambu/X2D printer status, slicer/G-code/material/AMS reasoning, print failure diagnosis, or deciding whether a print situation warrants action. Manufacturing is an independent domain brain even with one capable printer; physical actuation still routes through external-control. It is organized as a capability wrapper with explicit safety, idempotency, credential, and read-back checks before any side effect is treated as complete.
 
 ## When to Use
 
-Use this skill when the user's request matches `manufacturing-brain` and requires external tools, APIs, CLIs, platforms, or other side-effecting capability surfaces.
+Use this skill when the request matches the `manufacturing-brain` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

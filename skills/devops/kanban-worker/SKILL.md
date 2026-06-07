@@ -13,11 +13,11 @@ metadata:
 
 ## Overview
 
-Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios. This skill is maintained as a `reviewer`-shaped contract: it should guide evidence-grounded review, audit, critique, certification, or quality-gate work without stealing adjacent workflows or relying on unstated assumptions.
+Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios. It is organized as an evidence-grounded review gate: separate findings from preferences, cite the inspected artifact or state, and keep adjacent workflows out of scope.
 
 ## When to Use
 
-Use this skill when the user's request matches `kanban-worker` and requires evidence-grounded review, audit, critique, certification, or quality-gate work.
+Use this skill when the request matches the `kanban-worker` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

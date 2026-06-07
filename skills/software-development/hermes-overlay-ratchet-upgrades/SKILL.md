@@ -15,11 +15,11 @@ triggers:
 
 ## Overview
 
-Operate a locally customized Hermes checkout that tracks upstream while preserving local enhancements through overlay manifests, drift detection, and multi-model certification. This skill is maintained as a `reviewer`-shaped contract: it should guide evidence-grounded review, audit, critique, certification, or quality-gate work without stealing adjacent workflows or relying on unstated assumptions.
+Operate a locally customized Hermes checkout that tracks upstream while preserving local enhancements through overlay manifests, drift detection, and multi-model certification. It is organized as an evidence-grounded review gate: separate findings from preferences, cite the inspected artifact or state, and keep adjacent workflows out of scope.
 
 ## When to Use
 
-Use this skill when the user's request matches `hermes-overlay-ratchet-upgrades` and requires evidence-grounded review, audit, critique, certification, or quality-gate work.
+Use this skill when the request matches the `hermes-overlay-ratchet-upgrades` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

@@ -7,11 +7,11 @@ description: "Use when adapting lessons from TauricResearch/TradingAgents into H
 
 ## Overview
 
-Use when adapting lessons from TauricResearch/TradingAgents into Hermes multi-agent workflows: typed role graphs, quick/deep model routing, bounded adversarial debate, role-scoped tools, structured decision handoffs, resumable checkpoints, and compact outcome reflection. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Use when adapting lessons from TauricResearch/TradingAgents into Hermes multi-agent workflows: typed role graphs, quick/deep model routing, bounded adversarial debate, role-scoped tools, structured decision handoffs, resumable checkpoints, and compact outcome reflection. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `tradingagents-reference-patterns` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `tradingagents-reference-patterns` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

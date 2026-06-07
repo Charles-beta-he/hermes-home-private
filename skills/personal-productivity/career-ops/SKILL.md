@@ -15,11 +15,11 @@ metadata:
 
 ## Overview
 
-Use when helping with job-search, resume/CV, JD evaluation, ATS-safe tailoring, interview prep, recruiter messaging, and application tracking while keeping private candidate data in the user-authorized local career workspace. This skill is maintained as a `generator`-shaped contract: it should guide stable artifacts such as files, reports, specs, diagrams, configs, or structured output without stealing adjacent workflows or relying on unstated assumptions.
+Use when helping with job-search, resume/CV, JD evaluation, ATS-safe tailoring, interview prep, recruiter messaging, and application tracking while keeping private candidate data in the user-authorized local career workspace. It is organized around repeatable artifacts with clear input, output, and verification boundaries rather than open-ended exploration.
 
 ## When to Use
 
-Use this skill when the user's request matches `career-ops` and requires stable artifacts such as files, reports, specs, diagrams, configs, or structured output.
+Use this skill when the request matches the `career-ops` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

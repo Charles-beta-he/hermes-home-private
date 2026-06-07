@@ -18,11 +18,11 @@ triggers:
 
 ## Overview
 
-全架构 token 优化 21 层: CASI + Token-Eff + RTK + Caveman + Tool Schema + Task Router + Anatomy + Cerebrum + Result Spiller + Dynamic Thinking + Locale Bookend + Tool Output Pipeline + Budget Meter + Query Intent + Deterministic Bypass + Pattern Retrieve。来自 OpenWolf/DeepSeek-TUI/GBrain/Ruflo。. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+全架构 token 优化 21 层: CASI + Token-Eff + RTK + Caveman + Tool Schema + Task Router + Anatomy + Cerebrum + Result Spiller + Dynamic Thinking + Locale Bookend + Tool Output Pipeline + Budget Meter + Query Intent + Deterministic Bypass + Pattern Retrieve。来自 OpenWolf/DeepSeek-TUI/GBrain/Ruflo。. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `token-saver-rtk` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `token-saver-rtk` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

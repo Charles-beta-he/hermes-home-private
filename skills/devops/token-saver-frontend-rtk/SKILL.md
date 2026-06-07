@@ -15,7 +15,7 @@ tags: [token-optimization, frontend, react, rtk, casi]
 
 ## Overview
 
-Layer 1-2 token optimization for React/Vue frontend: CASI + RTK state machine + index-first file reading + backend-verified assertions. 40-60% token reduction vs unoptimized. Use when working in uvisa-app-2.0 or similar React/Vue projects. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Layer 1-2 token optimization for React/Vue frontend: CASI + RTK state machine + index-first file reading + backend-verified assertions. 40-60% token reduction vs unoptimized. Use when working in uvisa-app-2.0 or similar React/Vue projects. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 Frontend-specific token optimization derived from analysis of 5 real uvisa-app-2.0 sessions.
 

@@ -7,11 +7,11 @@ description: Use when capturing, validating, promoting, or reusing cross-project
 
 ## Overview
 
-Use when capturing, validating, promoting, or reusing cross-project experience in Hermes without mutating Hermes core. Implements the dev-brain external overlay for ExperienceAtom / MemoryMaze / RatchetConsensus. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Use when capturing, validating, promoting, or reusing cross-project experience in Hermes without mutating Hermes core. Implements the dev-brain external overlay for ExperienceAtom / MemoryMaze / RatchetConsensus. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `hermes-experience-ratchet` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `hermes-experience-ratchet` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

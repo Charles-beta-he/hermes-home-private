@@ -57,7 +57,7 @@ skill_view("skill-name")
 
 Check the `linked_files` field. If it references files that don't exist, mark as **broken reference**.
 
-**Common broken reference pattern**: SKILL.md says "详细协议见 `references/p*-protocol.md`" but the file doesn't exist.
+**Common broken reference pattern**: SKILL.md says "详细协议见 references/p*-protocol.md" as if a wildcard were a real file, but no concrete protocol file exists.
 
 ### Step 3: Map Skills to Workflow Stages
 

@@ -9,11 +9,11 @@ tags: [requirements, planning, clarification, acceptance-criteria]
 
 ## Overview
 
-需求澄清与验收定义 — 接任务时的标准流程。确保理解正确、验收标准明确、边界清晰后再动手。Use when receiving a new task, feature request, or bug report. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+需求澄清与验收定义 — 接任务时的标准流程。确保理解正确、验收标准明确、边界清晰后再动手。Use when receiving a new task, feature request, or bug report. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `requirement-clarification` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `requirement-clarification` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

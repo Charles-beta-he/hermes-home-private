@@ -1,5 +1,5 @@
 ---
-name: post-deploy-verification
+name: post-deploy-verification-alias
 version: 1.0.0
 author: Hermes Agent
 license: MIT

@@ -1,14 +1,25 @@
 ---
 name: hermes-agent-skill-authoring
-description: "Author in-repo SKILL.md: frontmatter, validator, structure."
+description: Use when creating, rehabilitating, or structurally improving Hermes SKILL.md files, including trigger design, frontmatter normalization, mode selection, and peer-shape validation.
 version: 1.0.0
 author: Hermes Agent
 license: MIT
-platforms: [linux, macos, windows]
+platforms:
+- linux
+- macos
+- windows
 metadata:
   hermes:
-    tags: [skills, authoring, hermes-agent, conventions, skill-md]
-    related_skills: [writing-plans, requesting-code-review]
+    tags:
+    - skills
+    - authoring
+    - hermes-agent
+    - conventions
+    - skill-md
+    related_skills:
+    - skill-eval
+    - workflow-ecosystem-audit
+    - writing-plans
 ---
 
 # Authoring Hermes-Agent Skills (in-repo)
@@ -23,6 +34,8 @@ There are two places a SKILL.md can live:
 ## When to Use
 
 - User asks you to add a skill "in this branch / repo / commit"
+- User asks whether an existing self-created skill is bloated, unstable, duplicate, poorly triggered, or structurally weak
+- You need to rehabilitate a user-local skill under `~/.hermes/skills/` by tightening triggers, refactoring sections, splitting references/templates, or clarifying verification
 - You're committing a reusable workflow that should ship with hermes-agent
 - You're editing an existing skill under `/home/bb/hermes-agent/skills/` (use `patch` for small edits, `write_file` for rewrites; `skill_manage` still works for patch on in-repo skills, but not for `create`)
 
@@ -54,6 +67,9 @@ Peer-matched shape used by every skill under `skills/software-development/`:
 ---
 name: my-skill-name               # lowercase, hyphens, ≤64 chars (MAX_NAME_LENGTH)
 description: Use when <trigger>. <one-line behavior>.
+# Include when your library/router uses them as part of the entry contract:
+# level: advanced
+# requires: [other-skill]
 version: 1.0.0
 author: Hermes Agent
 license: MIT
@@ -64,15 +80,17 @@ metadata:
 ---
 ```
 
-`version` / `author` / `license` / `metadata` are NOT enforced by the validator, but every peer has them — omit and your skill sticks out.
+`version` / `author` / `license` / `metadata` are NOT enforced by the validator, but every peer has them — omit and your skill sticks out. Likewise, `level` and `requires` are ecosystem-shape fields rather than validator-mandated fields: preserve them whenever the target library uses them as part of routing or prerequisite declaration.
 
 ## Size Limits
 
 - Description: ≤ 1024 chars (enforced).
 - Full SKILL.md: ≤ 100,000 chars (enforced as `MAX_SKILL_CONTENT_CHARS`, ~36k tokens).
-- Peer skills in `software-development/` sit at **8-14k chars**. Aim for that range. If you're pushing past 20k, split into `references/*.md` and reference them from SKILL.md.
+- Peer skills in `software-development/` sit at **8-14k chars**. Aim for that range. If you're pushing past 20k, split the long material into concrete files under `references/` and reference those files from SKILL.md.
 
 ## Peer-Matched Structure
+
+See also `references/skill-mode-patterns.md` for a compact mode-selection reference and the shared frontmatter contract, and `references/perplexity-skill-lessons.md` for a concise external rubric on context budgets, trigger-writing, and gotcha-first maintenance.
 
 Every in-repo skill follows roughly:
 
@@ -92,16 +110,205 @@ One or two paragraphs: what and why.
 - Hermes-specific recipes (tests via scripts/run_tests.sh, ui-tui paths, etc.)
 
 ## Common Pitfalls
+
 Numbered list of mistakes and their fixes.
-
+1. Skipping prerequisite checks and assuming the environment already matches the workflow.
+2. Applying the workflow mechanically without confirming that the request still matches this skill's trigger class.
+3. Reporting success before reading back the actual outputs, files, or external side-effects.
 ## Verification Checklist
-- [ ] Checkbox list of post-action verifications
 
+- [ ] Checkbox list of post-action verifications
+- [ ] Preconditions, scope, and tool availability were checked before following this workflow.
+- [ ] The key output artifacts, commands, or side-effects were verified by read-back or direct inspection.
 ## One-Shot Recipes (optional)
 Named scenarios → concrete command sequences.
 ```
 
 Not every section is mandatory, but `Overview` + `When to Use` + actionable body + pitfalls are the minimum for the skill to feel like a peer.
+
+## SKILL.md as an Entry Contract: 5 Internal Control-Flow Modes
+
+Treat `SKILL.md` as the entry contract. Keep the shared routing skeleton stable: `name`, `description`, and—when the surrounding library uses them—`level` and `requires`. `description` remains the primary trigger surface that determines when the skill should load. The main design choice is the internal control-flow shape inside the body.
+
+### The five modes
+
+1. **Wrapper**
+   - Shape: `SKILL.md -> reference -> agent capability`
+   - Use when the skill's main job is to expose or normalize an external capability, SDK, API, toolchain, or operational surface.
+   - Typical body: prerequisites, exact commands, capability map, parameter caveats, verification steps.
+
+2. **Generator**
+   - Shape: `SKILL.md -> template + data -> output`
+   - Use when the output format is stable and repeatable: reports, contracts, specs, briefs, summaries, checklists, or other templated deliverables.
+   - Typical body: input schema, template slots, transformation rules, acceptance examples.
+
+3. **Reviewer**
+   - Shape: `input -> checklist -> graded report`
+   - Use when the skill is a quality gate, audit pass, static review, or rules-based inspection layer.
+   - Typical body: review dimensions, scoring rubric, fail/warn/pass conditions, evidence requirements.
+
+4. **Inversion**
+   - Shape: role inversion — the agent leads the interrogation, the user answers, and the agent synthesizes.
+   - Use when requirements are unclear, context is missing, or the agent must actively elicit constraints before producing a safe result.
+   - Typical body: interview sequence, branching questions, synthesis rules, stop conditions.
+
+5. **Pipeline**
+   - Shape: mandatory ordered stages with checkpoints and no step-skipping.
+   - Use when the workflow is multi-step and each step must produce a verifiable artifact before the next one begins.
+   - Typical body: stage list, inputs/outputs per stage, gating checks, rollback/retry rules.
+
+### Selection heuristic
+
+| Scenario | Prefer |
+|----------|--------|
+| Calling a complex SDK/API/toolchain | Wrapper |
+| Fixed-format deliverable | Generator |
+| Quality gate / static audit / review | Reviewer |
+| Ambiguous request / missing context | Inversion |
+| Multi-step workflow with verifiable artifacts | Pipeline |
+
+### Shared contract across all five modes
+
+Regardless of mode, keep the entry contract stable:
+
+- Frontmatter remains the router-facing contract: `name`, `description`, and—when the surrounding library uses them—`level` and `requires`
+- `description` remains the primary trigger surface that decides when the skill should load
+- The mode only changes the internal organization of the body, not the external routing contract
+- Rich session-specific detail belongs in `references/`, reusable starter artifacts belong in `templates/`, and deterministic repeatable actions belong in `scripts/`
+
+### Context-budget contract (index / load / runtime)
+
+Treat every skill as three cost layers, not one markdown blob:
+
+1. **Index layer** — `name` + `description`
+   - Paid in every session for every user
+   - Keep the description trigger-oriented, compact, and free of workflow summary
+   - Bad pattern: explaining what the skill does
+   - Better pattern: stating *when* to load it in the user's language
+2. **Load layer** — root `SKILL.md` body
+   - Paid after the skill loads and competes with other loaded skills
+   - Keep only high-signal workflow decisions, branch points, pitfalls, and verification
+   - If the model likely already knows a command sequence, do not spend root-body budget on it
+3. **Runtime layer** — `references/`, `templates/`, `scripts/`, `assets/`
+   - Paid only when read or executed
+   - Move conditional branches, long domain notes, heavy docs, templates, and deterministic helper logic here
+
+Heuristic: if the root body starts reading like a README, command cheat sheet, or long domain memo, split it. Prefer a short SKILL.md plus progressive disclosure into `references/`.
+
+### Description quality checklist
+
+When reviewing or rewriting `description`, check all of these:
+
+- It answers **when to load**, not **what the skill does**
+- It uses the user's likely intent language, not internal implementation language
+- It avoids summarizing the workflow or tool steps
+- It helps separate adjacent skills and reduce off-target loads
+- It is short enough that every word earns its place in the global index budget
+
+If the description changed materially, treat it as routing logic and pair it with explicit positive + negative trigger evals.
+
+### Gotcha-first maintenance rule
+
+For mature skills, the highest-value growth is usually append-mostly:
+
+- Agent failed in-domain -> add a gotcha, negative example, or tighter verification step
+- Agent loaded off-target -> tighten description and add negative evals
+- Agent missed a valid trigger -> add intent phrasing and positive evals
+
+Do **not** default to making the main workflow longer. Prefer recording the sharp edge that caused the failure, and move bulky or conditional detail into `references/`.
+
+### Authoring implication
+
+Do not treat every skill as a generic prose memo. Pick one primary mode first, then structure the skill body to match that control-flow. Hybrid skills are allowed, but the dominant mode should be obvious from the section layout and verification pattern.
+
+## Rehabilitating Existing Self-Created Skills
+
+When improving a user-local skill that already exists under `~/.hermes/skills/`, do not jump straight to rewriting prose. Run a short diagnosis loop first:
+
+1. **Classify the failure mode**
+   - Trigger failure: description too vague / too narrow / wrong vocabulary
+   - Control-flow failure: wrong primary mode (for example Pipeline written like Wrapper)
+   - Scope failure: duplicates an umbrella skill or mixes multiple jobs
+   - Artifact failure: missing template / reference / checklist / verification
+   - Maintenance failure: body too long, stale examples, broken related_skills, weak pitfalls
+
+2. **Choose the smallest effective repair**
+   - Tighten `description` when routing is the problem
+   - Re-section the body when control-flow is the problem
+   - Split long details into `references/` when density is the problem
+   - Add `templates/` for Generator skills
+   - Add rubric/checklist tables for Reviewer skills
+   - Add stage gates and evidence checks for Pipeline skills
+   - Merge into an existing umbrella skill when the standalone trigger class is not justified
+
+3. **Prefer patch over rewrite**
+   - Use `skill_manage(action='patch')` for focused repairs
+   - Use `skill_manage(action='edit')` or full-file rewrite only when the skill needs a structural reset
+   - Preserve the skill name unless the trigger class itself changed
+
+4. **Verify read-back, not intention**
+   - Re-open the skill with `skill_view`
+   - Confirm frontmatter still parses cleanly
+   - Confirm the dominant mode is now obvious from the body
+   - Confirm examples/checklists/templates align with the mode
+
+### Rehabilitation heuristics by symptom
+
+| Symptom | Likely fix |
+|---------|------------|
+| Skill rarely auto-loads | rewrite `description` around trigger class |
+| Skill loads but outputs drift | convert toward Generator or add template/checklist |
+| Skill skips necessary steps | convert toward Pipeline with explicit gates |
+| Skill gives shallow critiques | convert toward Reviewer with rubric/severity |
+| Skill asks too little before acting | convert toward Inversion with interview flow |
+| Skill feels like random notes | pick one primary mode and move the rest to references |
+| Skill overlaps another skill | patch umbrella skill or merge instead of keeping both |
+
+### Multi-skill rehabilitation pass (recommended order)
+
+When auditing a batch of legacy self-created skills, do not review them through only one lens. Use three short passes, then repair in order of confidence:
+
+1. **Trigger/frontmatter pass**
+   - Check whether `description` expresses a clear trigger class and preferably starts with `Use when ...`
+   - Normalize `version`, `author`, `license`, and `metadata.hermes.{tags,related_skills}`
+   - Remove ad-hoc frontmatter fields when they are not part of the stable peer shape
+
+2. **Mode/structure pass**
+   - Infer the primary mode (Wrapper / Generator / Reviewer / Inversion / Pipeline)
+   - Check whether the body sections make that mode obvious
+   - For mature skills, prefer the standard shell: `Overview` -> `When to Use` -> body -> `Common Pitfalls` -> `Verification Checklist`
+
+3. **Ecosystem/governance pass**
+   - Identify overlap, umbrella fit, and whether details should move to `references/`
+   - Distinguish `patch now` from `merge later`
+   - Treat duplicate tails, broken examples, and conflicting command snippets as immediate repairs
+
+Repair order:
+- First: low-risk contract fixes (description, frontmatter, related_skills)
+- Second: obvious structural corruption (duplicate headings, dangling tails, contradictory command examples)
+- Third: deeper body reshaping or umbrella slimming
+
+This sequencing keeps the library improving without overfitting one session's wording or doing unnecessary full rewrites.
+
+### Library-wide bulk rehabilitation rule
+
+When the user asks for a full-library batch pass, split the work into two layers:
+
+- **Safe contract-layer normalization (scriptable):** add missing `version` / `author` / `license`, ensure `metadata.hermes`, move top-level `tags` and `related_skills` into `metadata.hermes`, normalize obvious heading variants, repair invalid frontmatter YAML, and eliminate empty `related_skills` with conservative umbrella fallbacks.
+- **Semantic trigger/body rewrites (manual or tightly reviewed):** `description` modernization, primary-mode reassignment, section-shell injection, and umbrella slimming.
+
+Do the contract layer first and verify by exact counts before touching trigger semantics. Do **not** batch-rewrite every `description` into `Use when ...` with a naive script; trigger text is routing logic, not just style.
+
+After the contract layer, the highest-leverage semantic batch order is:
+
+1. **Umbrella/root routing pass** — rewrite placeholder category roots into real routing surfaces with `Routing Guide`, `Selection Rules`, child-skill maps, and explicit counter-triggers.
+2. **Verification/pitfall pass** — raise weak shells to a minimum actionable floor (for example 3+ checklist items and 3+ numbered pitfalls) before doing stylistic prose edits.
+3. **Overview/counter-trigger pass** — expand obviously thin `Overview` sections and add `Don't use for:` bullets where missing, but stop before overwriting mature hand-written specialist prose.
+4. **Residual manual queue** — leave dense expert skills, ambiguous duplicate-heading cases, and umbrella nodes without auto-discovered children for manual refinement instead of forcing a low-signal bulk rewrite.
+
+This sequencing keeps the batch pass moving from safest structural wins toward narrower semantic edits, while preserving high-signal specialist content.
+
+For a reusable checklist and verification counters, see `references/bulk-rehabilitation-playbook.md`.
 
 ## Directory Placement
 
@@ -144,7 +351,7 @@ Pick the closest existing category. Don't invent new top-level categories casual
 
 - **Small fix (typo, added pitfall, tightened trigger):** `skill_manage(action='patch', name=..., old_string=..., new_string=...)` works fine on in-repo skills.
 - **Major rewrite:** `write_file` the whole SKILL.md. `skill_manage(action='edit')` also works but requires supplying the full new content.
-- **Adding supporting files:** `write_file` to `skills/<category>/<name>/references/<file>.md`, `templates/<file>`, or `scripts/<file>`. `skill_manage(action='write_file')` also works and enforces the references/templates/scripts/assets subdir allowlist.
+- **Adding supporting files:** `write_file` to a concrete file under the skill's `references/`, `templates/`, or `scripts/` directory. `skill_manage(action='write_file')` also works and enforces the references/templates/scripts/assets subdir allowlist.
 - **Always commit** the edit — in-repo skills are source, not runtime state.
 
 ## Common Pitfalls
@@ -176,3 +383,69 @@ Pick the closest existing category. Don't invent new top-level categories casual
 - [ ] Structure: `# Title` → `## Overview` → `## When to Use` → body → `## Common Pitfalls` → `## Verification Checklist`
 - [ ] `related_skills` references resolve in-repo (or are explicitly OK to be user-local)
 - [ ] `git add skills/<category>/<name>/ && git commit` completed on the intended branch
+
+## Routing-Surface Governance and Progressive Loading
+
+Treat skill quality as a routing-and-loading problem, not just a writing problem.
+
+### Description changes are routing changes
+
+If you change `description`, you changed the index-layer routing surface. Do not treat this as a cosmetic edit.
+
+Required follow-through after a description edit:
+- Re-run trigger evals with the old and new description against the same prompt set
+- Check for **neighbor-load regressions**: prompts that should still match a nearby skill, not this one
+- Check for **forbidden/off-target loads**: prompts that should load no skill or a different class entirely
+- Record whether the edit narrowed, widened, or merely clarified the trigger boundary
+
+### Define the negative space explicitly
+
+Every skill should name not only what it is for, but what it must *not* steal.
+
+For each skill, maintain at least these buckets while authoring:
+- **Positive loads** — prompts that should clearly load this skill
+- **Neighbor loads** — prompts that belong to an adjacent skill and must stay there
+- **Forbidden loads** — prompts that should not load this skill even if they share vocabulary
+- **No-load prompts** — prompts that should remain general reasoning with no skill activation
+
+This negative-space list is the fastest way to catch over-broad descriptions and umbrella skills that eat the graph.
+
+### Accessory files need an explicit load contract
+
+If a skill ships linked files under `references/`, `templates/`, `scripts/`, or `assets/`, declare why each one exists and when it should be read.
+
+Document per file:
+- what question or task state unlocks it
+- whether it is always-read, conditionally-read, or rarely-read
+- the cost of loading it late vs early
+- what goes wrong if the agent reads it unnecessarily
+
+Good accessory files reduce context cost. Unscoped accessory files become hidden prompt bloat.
+
+### Progressive loading by graph layer
+
+Use progressive disclosure deliberately:
+1. **Index layer** — `name` + `description` decide whether the skill should load at all
+2. **Core layer** — SKILL.md body gives the default working procedure
+3. **Accessory layer** — linked files load only when the current subproblem actually needs them
+
+Author the graph so most requests stop at layer 1 or layer 2. If routine usage always requires a linked file, move that content up into the core layer or split the skill.
+
+### Append-mostly gotcha maintenance
+
+Skills often decay by endless appends: more caveats, more examples, more edge cases, but no re-organization.
+
+Use this maintenance rule:
+- Append for fresh evidence only when the current structure still routes cleanly
+- Refactor when new caveats start changing trigger boundaries, load order, or default execution
+- If a gotcha can only be understood with a long exception chain, rewrite the section instead of appending again
+- Periodically compress repeated caveats into a smaller canonical rule plus one or two examples
+
+### Minimum read-back before you call a skill "improved"
+
+After an authoring pass, read the skill back as a graph artifact and answer:
+- What causes this skill to load?
+- What nearby prompts should *not* load it?
+- Which linked files are safe to defer?
+- Did the latest edits increase surface area without increasing clarity?
+- Would a different model likely route this the same way from `description` alone?

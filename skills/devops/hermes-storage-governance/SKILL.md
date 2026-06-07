@@ -16,11 +16,11 @@ triggers:
 
 ## Overview
 
-Hermes 存储治理: state.db FTS 膨胀治理、会话 TTL、快照清理、自动 cron。防止多模型运行导致磁盘膨胀。. This skill is maintained as a `reviewer`-shaped contract: it should guide evidence-grounded review, audit, critique, certification, or quality-gate work without stealing adjacent workflows or relying on unstated assumptions.
+Hermes 存储治理: state.db FTS 膨胀治理、会话 TTL、快照清理、自动 cron。防止多模型运行导致磁盘膨胀。. It is organized as an evidence-grounded review gate: separate findings from preferences, cite the inspected artifact or state, and keep adjacent workflows out of scope.
 
 ## When to Use
 
-Use this skill when the user's request matches `hermes-storage-governance` and requires evidence-grounded review, audit, critique, certification, or quality-gate work.
+Use this skill when the request matches the `hermes-storage-governance` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

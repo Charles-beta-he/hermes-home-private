@@ -7,11 +7,11 @@ description: Use when a task requires 钱学森式从定性到定量综合集成
 
 ## Overview
 
-Use when a task requires 钱学森式从定性到定量综合集成、多脑研讨厅、source/evidence/dissent separation, or research→dev capability-gap handback governance. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Use when a task requires 钱学森式从定性到定量综合集成、多脑研讨厅、source/evidence/dissent separation, or research→dev capability-gap handback governance. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `qian-meta-synthesis` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `qian-meta-synthesis` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

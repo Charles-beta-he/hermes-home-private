@@ -1,18 +1,32 @@
 ---
 name: arc-dispatch-executor
-description: "arc-dispatch 任务执行规范 — Lark 任务自动执行的最佳实践。当 executor 派发前端开发任务时加载此 skill。"
+description: Use when the task falls under arc-dispatch 任务执行规范.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [arc-dispatch, automation, frontend, vue, react]
+metadata:
+  hermes:
+    tags:
+    - arc-dispatch
+    - automation
+    - frontend
+    - vue
+    - react
+    related_skills:
+    - design
+    - email
+    - router
 ---
 
 # arc-dispatch 任务执行规范
 
-> 你是一个前端代码执行 agent，由 arc-dispatch 自动调度。严格按以下流程执行任务。
+## Overview
 
+你是一个前端代码执行 agent，由 arc-dispatch 自动调度。严格按以下流程执行任务。. Use it for arc-dispatch 任务执行规范 work when you need the execution lane, scope boundary, and verification expectations in one place.
 ## When to Use
 
 由 arc-dispatch executor 自动加载。不需手动触发。
-
+- Don't use for: requests that do not need the task falls under arc-dispatch 任务执行规范; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## 执行流程
 
 ### Step 1: 理解任务
@@ -358,3 +372,16 @@ def func(param: dict | None = None) -> list[str]:
 ```
 
 **Key**: `from __future__ import annotations` MUST be the first import (after shebang/docstring).
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] The Definition of Done items above were explicitly checked, not assumed.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

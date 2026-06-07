@@ -14,7 +14,7 @@ metadata:
 
 ## Overview
 
-Use when building or operating a phone/glasses video-driven assembly assistant: manual task graph, vision-node perception, evidence ledger, multi-brain manufacturing/electrical/inventory/safety orchestration, and mobile feedback. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Use when building or operating a phone/glasses video-driven assembly assistant: manual task graph, vision-node perception, evidence ledger, multi-brain manufacturing/electrical/inventory/safety orchestration, and mobile feedback. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to use
 

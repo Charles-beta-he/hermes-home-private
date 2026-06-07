@@ -64,11 +64,11 @@ metadata:
 
 ## Overview
 
-Research what people actually say about any topic in the last 30 days. Pulls posts and engagement from Reddit, X, YouTube, TikTok, Hacker News, Polymarket, GitHub, and the web. This skill is maintained as a `generator`-shaped contract: it should guide stable artifacts such as files, reports, specs, diagrams, configs, or structured output without stealing adjacent workflows or relying on unstated assumptions.
+Research what people actually say about any topic in the last 30 days. Pulls posts and engagement from Reddit, X, YouTube, TikTok, Hacker News, Polymarket, GitHub, and the web. It is organized around repeatable artifacts with clear input, output, and verification boundaries rather than open-ended exploration.
 
 ## When to Use
 
-Use this skill when the user's request matches `last30days` and requires stable artifacts such as files, reports, specs, diagrams, configs, or structured output.
+Use this skill when the request matches the `last30days` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

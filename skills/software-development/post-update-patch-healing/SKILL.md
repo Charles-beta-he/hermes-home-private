@@ -27,7 +27,7 @@ metadata:
 
 ## When to Use
 
-Use this skill when the user's request matches `post-update-patch-healing` and requires evidence-grounded review, audit, critique, certification, or quality-gate work.
+Use this skill when the request matches the `post-update-patch-healing` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

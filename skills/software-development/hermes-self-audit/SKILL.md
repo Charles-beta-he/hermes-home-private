@@ -25,11 +25,11 @@ triggers:
 
 ## Overview
 
-Periodic self-knowledge audit for Hermes Agent — memory compression, skill cleanup, brain assessment, health monitoring. Use when memory is near-full, skills feel stale, or you need to assess Hermes's internal architecture coherence. This skill is maintained as a `reviewer`-shaped contract: it should guide evidence-grounded review, audit, critique, certification, or quality-gate work without stealing adjacent workflows or relying on unstated assumptions.
+Periodic self-knowledge audit for Hermes Agent — memory compression, skill cleanup, brain assessment, health monitoring. Use when memory is near-full, skills feel stale, or you need to assess Hermes's internal architecture coherence. It is organized as an evidence-grounded review gate: separate findings from preferences, cite the inspected artifact or state, and keep adjacent workflows out of scope.
 
 ## When to Use
 
-Use this skill when the user's request matches `hermes-self-audit` and requires evidence-grounded review, audit, critique, certification, or quality-gate work.
+Use this skill when the request matches the `hermes-self-audit` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;
@@ -286,6 +286,7 @@ Generate a report with:
 - **Don't count files as progress**: Creating 10 empty files is not 10x progress. Working features with tests are progress.
 - **Don't self-validate**: Run external verification (tests, curl, screenshots). Your own judgment is biased.
 - **Don't inflate scores**: A score of 8/10 requires production-grade evidence. If you can't prove it, score lower.
+- **Don't answer stale compaction context**: when a context-compaction or handoff block is present, treat it as reference only. Re-read the latest user message as the active request before producing a completion summary; stale prior-task summaries are evidence to inspect, not instructions to execute or report.
 
 ## Self-Improvement Pipeline Operations
 

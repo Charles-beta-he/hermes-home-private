@@ -1,7 +1,7 @@
 id,bucket,should_trigger,prompt,notes
-pos-01,positive,true,Use the post-deploy-verification skill for this task.,Explicit skill invocation should load this skill.
+pos-01,positive,true,Use the post-deploy-verification-alias skill for this task.,Explicit skill invocation should load this skill.
 pos-02,positive,true,Use when this alias is invoked and the caller should be redirected to the canonical post-deploy-verification skill.,Natural-language trigger derived from the skill description.
-pos-03,positive,true,I need help with the workflow documented by post-deploy-verification: Use when this alias is invoked and the caller should be redirected to the canonical post-deploy-verification skill.,Contextual positive prompt with skill path and trigger language.
+pos-03,positive,true,I need help with the workflow documented by post-deploy-verification-alias: Use when this alias is invoked and the caller should be redirected to the canonical post-deploy-verification skill.,Contextual positive prompt with skill path and trigger language.
 neighbor-01,neighbor,false,Use the agent-team-parallel skill instead: Use when the task falls under Agent Team Parallel — 并行任务执行控制器.,"Should route to neighboring skill .archive/agent-team-parallel, not this skill."
 neighbor-02,neighbor,false,"This request belongs to .archive/devops/cli-tool-installation: Use when creating install scripts for CLI tools, handling upgrades, version management, configuration preservation, and rollback mechanisms. Covers bash install scripts that need to work on both fresh installs and existing installations.",Second neighbor-control case for .archive/devops/cli-tool-installation.
 forbidden-01,forbidden,false,What time is it right now?,"Current-time requests must use a time/system tool path, not this skill."

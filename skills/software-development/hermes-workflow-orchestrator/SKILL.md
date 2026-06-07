@@ -44,7 +44,7 @@ metadata:
 
 ## Overview
 
-Hermes 强在纵深持久性（记得你、学习你、随时可达）；Claude Code 强在横向代码能力（LSP/AST 感知、harness 安全层、IDE 集成深度）。两者互补多于竞争。. In practice, load it when the task falls under Hermes Workflow Orchestrator. It defines the expected execution lane, scope boundaries, and verification shape for this class of work.
+Hermes 强在纵深持久性（记得你、学习你、随时可达）；Claude Code 强在横向代码能力（LSP/AST 感知、harness 安全层、IDE 集成深度）。两者互补多于竞争。. Use it for Hermes Workflow Orchestrator work when you need the execution lane, scope boundary, and verification expectations in one place.
 ## When to Use
 
 - 构建外部系统（Lark/Jira/Linear）→ Agent 执行 → 结果写回 的自动化 pipeline

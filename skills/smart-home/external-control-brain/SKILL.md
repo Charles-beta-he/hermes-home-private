@@ -7,11 +7,11 @@ description: Use when handling IoT/local devices or any Hermes action that can a
 
 ## Overview
 
-Use when handling IoT/local devices or any Hermes action that can affect the physical world, including device adapters, transport, credentials, command confirmation, idempotency, audit logs, and fail-closed safety gates. This skill is maintained as a `wrapper`-shaped contract: it should guide external tools, APIs, CLIs, platforms, or other side-effecting capability surfaces without stealing adjacent workflows or relying on unstated assumptions.
+Use when handling IoT/local devices or any Hermes action that can affect the physical world, including device adapters, transport, credentials, command confirmation, idempotency, audit logs, and fail-closed safety gates. It is organized as a capability wrapper with explicit safety, idempotency, credential, and read-back checks before any side effect is treated as complete.
 
 ## When to Use
 
-Use this skill when the user's request matches `external-control-brain` and requires external tools, APIs, CLIs, platforms, or other side-effecting capability surfaces.
+Use this skill when the request matches the `external-control-brain` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

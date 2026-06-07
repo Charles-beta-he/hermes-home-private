@@ -1,16 +1,27 @@
 ---
 name: baoyu-infographic
-description: Generate professional infographics with 21 layout types and 21 visual styles. Analyzes content, recommends layout×style combinations, and generates publication-ready infographics. Use when user asks to create "infographic", "visual summary", "信息图", "可视化", or "高密度信息大图".
+description: Use when user asks to create "infographic", "visual summary", "信息图", "可视化", or "高密度信息大图".
 version: 1.56.1
 author: 宝玉 (JimLiu)
 license: MIT
 metadata:
   hermes:
-    tags: [infographic, visual-summary, creative, image-generation]
+    tags:
+    - infographic
+    - visual-summary
+    - creative
+    - image-generation
     homepage: https://github.com/JimLiu/baoyu-skills#baoyu-infographic
+    related_skills:
+    - design
+    - github
+    - outlines
 ---
 
 # Infographic Generator
+
+## Overview
+
 
 Adapted from [baoyu-infographic](https://github.com/JimLiu/baoyu-skills) for Hermes Agent's tool ecosystem.
 
@@ -55,7 +66,7 @@ Trigger this skill when the user asks to create an infographic, visual summary, 
 | `circular-flow` | Cycles, recurring processes |
 | `dense-modules` | High-density modules, data-rich guides |
 
-Full definitions: `references/layouts/<layout>.md`
+Full definitions live under the layouts reference directory; `<layout>` is a template variable, not a literal file path.
 
 ## Style Gallery
 
@@ -83,7 +94,7 @@ Full definitions: `references/layouts/<layout>.md`
 | `retro-pop-grid` | 1970s retro pop art, Swiss grid, thick outlines |
 | `hand-drawn-edu` | Macaron pastels, hand-drawn wobble, stick figures |
 
-Full definitions: `references/styles/<style>.md`
+Full definitions live under the styles reference directory; `<style>` is a template variable, not a literal file path.
 
 ## Recommended Combinations
 
@@ -191,11 +202,11 @@ Use the `clarify` tool to confirm options with the user. Since `clarify` handles
 
 **Backup rule**: If `prompts/infographic.md` exists, rename to `prompts/infographic-backup-YYYYMMDD-HHMMSS.md`
 
-**Load references**: Read the selected layout from `references/layouts/<layout>.md` and style from `references/styles/<style>.md`.
+**Load references**: Read the selected concrete layout and style files from their reference directories; `<layout>` and `<style>` are template variables, not literal file paths.
 
 Combine:
-1. Layout definition from `references/layouts/<layout>.md`
-2. Style definition from `references/styles/<style>.md`
+1. Layout definition from the concrete layout reference file
+2. Style definition from the concrete style reference file
 3. Base template from `references/base-prompt.md`
 4. Structured content from Step 2
 5. All text in confirmed language
@@ -224,13 +235,18 @@ Report: topic, layout, style, aspect, language, output path, files created.
 - `references/analysis-framework.md` — Analysis methodology
 - `references/structured-content-template.md` — Content format
 - `references/base-prompt.md` — Prompt template
-- `references/layouts/<layout>.md` — 21 layout definitions
-- `references/styles/<style>.md` — 21 style definitions
+- concrete files under `references/layouts/` — 21 layout definitions (`<layout>` is a template variable)
+- concrete files under `references/styles/` — 21 style definitions (`<style>` is a template variable)
 
-## Pitfalls
-
+## Common Pitfalls
 1. **Data integrity is paramount** — never summarize, paraphrase, or alter source statistics. "73% increase" must stay "73% increase", not "significant increase".
 2. **Strip secrets** — always scan source content for API keys, tokens, or credentials before including in any output file.
 3. **One message per section** — each infographic section should convey one clear concept. Overloading sections reduces readability.
 4. **Style consistency** — the style definition from the references file must be applied consistently across the entire infographic. Don't mix styles.
 5. **image_generate aspect ratios** — the tool only supports `landscape`, `portrait`, and `square`. Custom ratios like `3:4` should map to the nearest option (portrait in that case).
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

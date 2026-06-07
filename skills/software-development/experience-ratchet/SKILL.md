@@ -8,11 +8,11 @@ description: "Use when cross-project experience capture, validation, and promoti
 
 ## Overview
 
-Cross-project experience capture, validation, and promotion system. Ratchet-based promotion with evidence gate. Zero core modification. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Cross-project experience capture, validation, and promotion system. Ratchet-based promotion with evidence gate. Zero core modification. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `experience-ratchet` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `experience-ratchet` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;

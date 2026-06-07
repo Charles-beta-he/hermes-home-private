@@ -7,11 +7,11 @@ description: "Use when turning a human request into a Hermes personal-assistant 
 
 ## Overview
 
-Use when turning a human request into a Hermes personal-assistant workflow: intake, goal calibration, evidence-first routing, taskpool/delegation/cron selection, verification, handoff, and reusable experience capture. This skill is maintained as a `pipeline`-shaped contract: it should guide ordered multi-stage work with gates, evidence, retries, and closure states without stealing adjacent workflows or relying on unstated assumptions.
+Use when turning a human request into a Hermes personal-assistant workflow: intake, goal calibration, evidence-first routing, taskpool/delegation/cron selection, verification, handoff, and reusable experience capture. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
 ## When to Use
 
-Use this skill when the user's request matches `hermes-personal-assistant-flow` and requires ordered multi-stage work with gates, evidence, retries, and closure states.
+Use this skill when the request matches the `hermes-personal-assistant-flow` trigger and the domain-specific boundaries in this skill apply.
 
 Do not use it for:
 - generic one-off questions that do not need this workflow;
