@@ -29,7 +29,9 @@ If the user explicitly approves crossing the review boundary, keep mutation narr
 5. Never mutate `live`, `stale-recoverable`, or `terminal-audit` packets in the same pass.
 6. Never delete packets in the first approved pass; move to archived only.
 7. Regenerate a post-apply manifest and verify active count changed only by the archived count.
-8. Run py_compile, health, ratchet, taskpool dashboard, scoped secret scan, and commit.
+8. If terminal-audit remains, a second read-only audit may extract stronger evidence (`target_file`, embedded `task_id`, linked task statuses, orphaned multimodel-delta hints). Only after explicit approval and dry-run, a second apply pass may archive candidates whose audit action starts with `archive-candidate`; keep `needs-human-review`, `keep-active-linked`, `live`, and `stale-recoverable` untouched.
+9. Regenerate the manifest and terminal-audit report after the second pass. Stop when archive_candidate_count is 0 and remaining packets are human-review-only or live/stale.
+10. Run py_compile, health, ratchet, taskpool dashboard, scoped secret scan, and commit.
 
 A good apply report schema should include `mutation_performed`, `archived_count`, `skipped_count`, `blocked_buckets_not_mutated`, and `delete_performed:false`.
 

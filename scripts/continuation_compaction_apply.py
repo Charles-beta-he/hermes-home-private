@@ -9,9 +9,8 @@ packets that the manifest classified as disposable.
 Red lines:
 - never mutate live packets
 - never mutate stale-recoverable packets
-- never mutate terminal-audit packets
 - never delete packets
-- never rescan and invent a new decision set; consume the manifest supplied by
+- never rescan and invent a new decision set; consume the manifest/audit supplied by
   the reviewer/operator
 """
 from __future__ import annotations
@@ -24,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 EXPECTED_SCHEMA = "hermes_continuation_compaction_manifest_v1"
+AUDIT_SCHEMA = "hermes_continuation_terminal_audit_v1"
 APPLY_SCHEMA = "hermes_continuation_compaction_apply_report_v1"
 
 
@@ -113,20 +113,98 @@ def apply_archive_disposable(manifest: dict[str, Any], *, dry_run: bool) -> dict
     }
 
 
+def load_audit(path: Path) -> dict[str, Any]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("audit is not a JSON object")
+    if data.get("schema") != AUDIT_SCHEMA:
+        raise ValueError(f"unexpected audit schema: {data.get('schema')!r}")
+    if data.get("mutation_performed") is not False:
+        raise ValueError("audit must be read-only/no-mutation")
+    return data
+
+
+def apply_archive_audit_candidates(audit: dict[str, Any], *, dry_run: bool) -> dict[str, Any]:
+    archived: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    blocked = {"keep_active_linked": 0, "needs_human_review": 0, "other_not_mutated": 0}
+    for item in audit.get("audited", []):
+        if not isinstance(item, dict):
+            continue
+        action = str(item.get("action") or "")
+        if action == "keep-active-linked":
+            blocked["keep_active_linked"] += 1
+            continue
+        if action == "needs-human-review":
+            blocked["needs_human_review"] += 1
+            continue
+        if not action.startswith("archive-candidate"):
+            blocked["other_not_mutated"] += 1
+            continue
+        src = Path(str(item.get("path") or "")).expanduser()
+        if not src.exists():
+            skipped.append({"path": str(src), "reason": "source_missing", "action": action})
+            continue
+        if src.parent.name != "active":
+            skipped.append({"path": str(src), "reason": "not_in_active_dir", "action": action})
+            continue
+        root = src.parent.parent
+        dest = safe_archive_destination(src, root)
+        record = {
+            "source": str(src),
+            "destination": str(dest),
+            "action": action,
+            "confidence": item.get("confidence"),
+            "audit_reasons": item.get("audit_reasons"),
+            "linked_statuses": item.get("linked_statuses"),
+        }
+        if not dry_run:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(src), str(dest))
+        archived.append(record)
+    return {
+        "schema": APPLY_SCHEMA,
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "mode": "dry_run_terminal_audit" if dry_run else "apply_archive_terminal_audit_candidates_only",
+        "audit_path": audit.get("report_path"),
+        "audit_generated_at": audit.get("generated_at"),
+        "mutation_performed": not dry_run,
+        "allowed_actions": ["archive-candidate-terminal-linked", "archive-candidate-orphaned-multimodel-delta"],
+        "archived_count": len(archived),
+        "skipped_count": len(skipped),
+        "archived": archived,
+        "skipped": skipped,
+        "blocked_buckets_not_mutated": blocked,
+        "delete_performed": False,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", required=True, help="path to dry-run manifest JSON")
+    parser.add_argument("--manifest", help="path to dry-run manifest JSON")
+    parser.add_argument("--audit", help="path to terminal-audit JSON")
     parser.add_argument("--archive-disposable", action="store_true", help="archive active disposable packets from the supplied manifest")
+    parser.add_argument("--archive-audit-candidates", action="store_true", help="archive active terminal-audit archive candidates from the supplied audit report")
     parser.add_argument("--dry-run", action="store_true", help="show actions without moving files")
     parser.add_argument("--out", default=None, help="write apply report JSON")
     parser.add_argument("--summary", action="store_true", help="print compact summary")
     args = parser.parse_args()
-    if not args.archive_disposable:
-        raise SystemExit("No action selected. Use --archive-disposable.")
-    manifest_path = Path(args.manifest).expanduser().resolve()
-    manifest = load_manifest(manifest_path)
-    manifest["report_path"] = str(manifest_path)
-    report = apply_archive_disposable(manifest, dry_run=args.dry_run)
+    if args.archive_disposable:
+        if not args.manifest:
+            raise SystemExit("--manifest is required with --archive-disposable")
+        manifest_path = Path(args.manifest).expanduser().resolve()
+        manifest = load_manifest(manifest_path)
+        manifest["report_path"] = str(manifest_path)
+        report = apply_archive_disposable(manifest, dry_run=args.dry_run)
+    elif args.archive_audit_candidates:
+        if not args.audit:
+            raise SystemExit("--audit is required with --archive-audit-candidates")
+        audit_path = Path(args.audit).expanduser().resolve()
+        audit = load_audit(audit_path)
+        audit["report_path"] = str(audit_path)
+        report = apply_archive_audit_candidates(audit, dry_run=args.dry_run)
+    else:
+        raise SystemExit("No action selected. Use --archive-disposable or --archive-audit-candidates.")
     if args.out:
         out = Path(args.out).expanduser().resolve()
         out.parent.mkdir(parents=True, exist_ok=True)

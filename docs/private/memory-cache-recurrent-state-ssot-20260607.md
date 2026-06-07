@@ -63,8 +63,10 @@
 - `~/.hermes/scripts/continuation_compaction_manifest.py`：只读生成 continuation compaction dry-run manifest，按 `live` / `stale-recoverable` / `terminal-audit` / `disposable` 分桶，不执行删除或归档。
 - `~/.hermes/scripts/continuation_compaction_apply.py`：独立 mutation tool，只消费已审阅 manifest；当前仅允许把 `active + disposable + task_status:done` packets 移入 archived，不删除，不碰 live/stale/terminal-audit。
 - `~/.hermes/scripts/task_continuation.py`：续跑上下文新增 `hermes_recurrent_task_state_v1` compact resume state；保留原始 checkpoint，不把 compact state 伪装成 proof。
-- 当前 manifest proof artifact：`~/.hermes/state/continuation-compaction-manifest-after-apply-20260607.json`。
+- 当前 manifest proof artifact：`~/.hermes/state/continuation-compaction-manifest-final-20260607.json`。
 - 当前 apply proof artifact：`~/.hermes/state/continuation-compaction-apply-20260607.json`；已归档 23 个 disposable active packets，active continuation 从 101 降至 78，未执行删除。
+- 当前 terminal-audit proof artifact：`~/.hermes/state/continuation-terminal-audit-20260607.json`、`~/.hermes/state/continuation-terminal-audit-apply-20260607.json`、`~/.hermes/state/continuation-terminal-audit-apply-2-20260607.json`、`~/.hermes/state/continuation-terminal-audit-apply-3-20260607.json`；二级审计后累计归档 55 个 archive candidates，active continuation 从 78 降至 23，仍未执行删除。
+- 当前剩余人工边界：`~/.hermes/state/continuation-terminal-audit-final-20260607.json`；剩余 terminal-audit 16 个，archive_candidate_count=0。
 
 ## 后续主线
 
