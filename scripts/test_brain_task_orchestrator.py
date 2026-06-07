@@ -176,7 +176,7 @@ def make_env_and_vault():
 
 
 def seed_project_profile(env, *, aliases=None, project="hermes"):
-    aliases = aliases or []
+    aliases = aliases if aliases is not None else ["hermes", "hermes-agent", "local-brain"]
     profiles_dir = Path(env["HERMES_PROJECT_PROFILES_DIR"])
     profiles_dir.mkdir(parents=True, exist_ok=True)
     (profiles_dir / "hermes.json").write_text(json.dumps({
@@ -187,6 +187,10 @@ def seed_project_profile(env, *, aliases=None, project="hermes"):
         "test_cmd": "python3 -m unittest",
         "build_cmd": "python3 -m compileall .",
         "acceptance": ["tests pass"],
+        "source_weighting_policy": {
+            "applies_to": "Hermes test work-lane tasks",
+            "weights": [{"source": "runtime evidence", "weight": 1.0}],
+        },
         "lark_task_execution_policy": {},
         "lark_evidence_policy": {},
         "backend_contract_policy": {},
@@ -219,6 +223,69 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
         text = text.replace("workflow_contract:", f"source_weighting_policy_ref: project-profile:{project}:test\nworkflow_contract:", 1)
         created_path.write_text(text, encoding="utf-8")
     return created["id"], created_path
+
+
+def test_command_add_work_task_binds_source_weighting_policy_before_dispatch_hook():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["hermes-agent"], project="hermes")
+        created = json.loads(run(
+            env,
+            "add",
+            "production add-created Hermes work task regression",
+            "--priority",
+            "P1",
+            "--project",
+            "hermes-agent",
+            "--lane",
+            "work",
+            "--expires-at",
+            "2099-01-01",
+            "--json",
+        ).stdout)
+        task_path = Path(created["created"])
+        task_text = task_path.read_text(encoding="utf-8")
+        assert "lane: work" in task_text
+        assert "project: hermes-agent" in task_text
+        assert "source_weighting_policy_ref:" in task_text
+        assert "hermes.json#source_weighting_policy" in task_text
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        row = next(r for r in rows if r["id"] == created["id"])
+        assert row["project"] == "hermes-agent"
+        assert row["project_profile_missing"] is False
+        assert row["project_profile_path"].endswith("/project-profiles/hermes.json")
+        assert row["dispatchable"] is True
+        nxt = json.loads(run(env, "next", "--json").stdout)["next"]
+        assert nxt and nxt["id"] == created["id"]
+
+
+def test_command_add_work_task_fails_closed_without_source_weighting_policy():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        profile_path = Path(env["HERMES_PROJECT_PROFILES_DIR"]) / "hermes.json"
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        profile.pop("source_weighting_policy", None)
+        profile_path.write_text(json.dumps(profile, ensure_ascii=False, indent=2), encoding="utf-8")
+        r = run(
+            env,
+            "add",
+            "malformed work task must not be created dispatch-dead",
+            "--priority",
+            "P1",
+            "--project",
+            "hermes",
+            "--lane",
+            "work",
+            "--expires-at",
+            "2099-01-01",
+            "--json",
+            check=False,
+        )
+        assert r.returncode != 0
+        assert "source_weighting_policy" in r.stderr
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        assert not any(r["title"] == "malformed work task must not be created dispatch-dead" for r in rows)
 
 
 def add_work_closeout_pair(env, title="Lark 修复闭环"):
@@ -1043,7 +1110,7 @@ def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
                     "task_id": impl_id,
                     "disabled": "1",
                     "phase": "generic",
-                    "dispatchable": False,
+                    "dispatchable": True,
                     "blockers": [],
                 },
                 {
@@ -1051,7 +1118,7 @@ def test_work_closeout_pair_fires_event_hook_only_after_metadata_is_persisted():
                     "task_id": retest_id,
                     "disabled": "1",
                     "phase": "generic",
-                    "dispatchable": False,
+                    "dispatchable": True,
                     "blockers": [],
                 },
                 {

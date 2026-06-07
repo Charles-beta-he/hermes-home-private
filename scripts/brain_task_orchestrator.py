@@ -613,6 +613,34 @@ def project_profile_failures(task_or_fm: Any) -> list[str]:
     return []
 
 
+def source_weighting_policy_ref_for_project(project: str) -> str:
+    """Return the durable source-weighting policy reference for a work task.
+
+    Work-lane project tasks are intentionally dispatch-fail-closed unless their
+    task note binds the evidence/source weighting authority. Resolve that
+    authority at task creation time so the note is self-contained before the
+    taskpool event hook can dispatch it.
+    """
+    project = str(project or "").strip()
+    if not project:
+        return ""
+    loaded = load_project_profile(project)
+    if loaded.get("missing"):
+        detail = loaded.get("error") or "project_profile_missing"
+        raise SystemExit(f"work task creation requires project profile before dispatch; project={project}; error={detail}")
+    raw_profile = loaded.get("profile")
+    profile: dict[str, Any] = raw_profile if isinstance(raw_profile, dict) else {}
+    raw_policy = profile.get("source_weighting_policy")
+    policy = raw_policy if isinstance(raw_policy, dict) else {}
+    if not policy:
+        path = str(loaded.get("path") or "")
+        raise SystemExit(
+            "work task creation requires project profile source_weighting_policy before dispatch; "
+            f"project={project}; profile={path or '(missing)'}"
+        )
+    return f"{loaded.get('path')}#source_weighting_policy"
+
+
 def compact_profile_value(value: Any, *, max_items: int = 8) -> str:
     if isinstance(value, dict):
         parts = [f"{k}={v}" for k, v in list(value.items())[:max_items]]
@@ -4212,6 +4240,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
     concepts = [x.strip() for x in (args.concepts or "task").split(",") if x.strip()]
     preliminary = {"lane": "" if lane_arg == "auto" else lane_arg, "project": args.project, "concepts": concepts, "type": "task"}
     lane = infer_lane(preliminary)
+    source_weighting_policy_ref = source_weighting_policy_ref_for_project(args.project) if lane == "work" and args.project else ""
     fm = {
         "type": "task",
         "lane": lane,
@@ -4235,6 +4264,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "acceptance_evidence": getattr(args, "acceptance_evidence", "") or "",
         "multimodel_triage_result": normalized_multimodel_triage_result,
         "workflow_contract": args.workflow_contract,
+        "source_weighting_policy_ref": source_weighting_policy_ref,
         "requires_multimodel": "true" if getattr(args, "requires_multimodel", False) else "",
         "multimodel_reason": getattr(args, "multimodel_reason", "") or "",
         "expected_participants": split_csv_frontmatter_value(getattr(args, "expected_participants", "")),
