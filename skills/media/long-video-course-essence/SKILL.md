@@ -101,6 +101,8 @@ For each video:
 
 Important pitfall: some ASR tools read stdin. When batch-processing shell loops, invoke subprocesses with `stdin=subprocess.DEVNULL` and, for shell scripts, redirect child commands with `</dev/null` so the ASR process cannot consume subsequent loop lines.
 
+Python interpreter pitfall on this macOS setup: Homebrew `python3` may resolve to Python 3.14 without `PIL`/`pytesseract`, causing OCR to fail with `ModuleNotFoundError: No module named 'PIL'`. The Xcode Python 3.9 at `/Applications/Xcode.app/Contents/Developer/usr/bin/python3` has the OCR dependencies in this environment; use it for real batch runs unless the active environment is verified with `import PIL, pytesseract`.
+
 ### 3. Normalize terms
 
 Build a domain-specific confusion table as soon as real ASR errors appear. For technical courses this is critical.
@@ -187,6 +189,12 @@ For multiple machines, keep one controller and many workers:
 
 Use a canonical task ledger rather than cron-only polling. Workers should produce deterministic artifacts and never silently overwrite controller-owned summaries.
 
+Before asking the user for node details, actively discover what is already queryable from the controller: local interface/subnet, route table neighbors, SSH config hosts, Tailscale/ZeroTier status, TCP reachability for `22`, `8080`, `9000`, `9001`/`9002`, and `11434`, plus safe read-only probes such as `/health`, `/info`, `/v1/models`, `/api/tags`, and `ollama-health` for reachable Ollama endpoints. Write a small `nodes.json` plus `nodes-health.md` report, then stop only at the concrete authorization/setup boundary.
+
+Important correction: do not treat failed SSH login as proof that a node is not connected. A node may already expose Hermes Edge Worker, MLX LLM, vision-node, or Ollama services over HTTP. If `/health` works but `/command` or `/execute` returns `401`, the node is connected but command execution is not authorized; update/synchronize Edge Worker token and command allowlist rather than asking for generic SSH authorization.
+
+When the user asks how to cooperate, minimize manual steps. Prefer a short-lived controller-hosted one-line `curl ... | bash` helper that the user runs on the node, with token material embedded only in the temporary private script and never printed. The helper should update the node env/config, restart Edge Worker, and print a health result. If health becomes connection-refused after restart, generate a second diagnostic/startup helper that rewrites `start.sh`, launches the worker, and prints logs rather than asking the user to manually inspect files. See `references/node-control-plane-patterns.md` for the detailed discovery, classification, and automation pattern.
+
 ### Remote / Node Ollama Pattern
 
 Ollama can run on a node computer. Prefer LAN/Tailscale/SSH tunnel access; do not expose `11434` to the public internet.
@@ -222,6 +230,11 @@ python3 -m video_essence.cli ask "question" --output <out> --semantic --model no
 5. **Embedding every one-second row.** Group into course windows first; otherwise retrieval is fragmented and slow.
 6. **Ignoring OCR noise before embedding.** Repeated taskbar/menu/icon text can dominate vectors. Clean, deduplicate, and truncate with retry/backoff.
 7. **Reporting success without read-back.** Count artifacts and run a real ask/semantic ask before finalizing.
+8. **Misclassifying connected nodes because SSH fails.** Probe service endpoints (`/health`, `/info`, `/v1/models`, Edge Worker `/health`, Ollama APIs) before concluding that authorization is missing. If Edge Worker health is reachable but command endpoints return `401`, the fix is token/allowlist synchronization for that service, not necessarily SSH.
+9. **Making the user do multi-step node setup manually.** For trusted LAN nodes, generate a short-lived one-line helper (`curl -fsSL http://CONTROLLER:PORT/private.sh | bash`) that updates token/config, restarts the worker, and prints health/log output. Keep the script private/temporary and redact token material from all reports.
+10. **Only updating `.env` when the worker was started with a hardcoded `--token`.** Some Edge Worker deployments ignore env changes because `start.sh` or launchctl passes `--token` explicitly. Patch or rewrite the startup script as part of the helper, then restart and verify `/command` with the expected auth header.
+11. **Confusing token auth success with command execution readiness.** `/info` may be authorized while `run_command` is still blocked by `allowed_commands=[]`. Use `write_file` to update config/allowlist, restart the worker to reload it, then test with a single allowed command such as `python3 /tmp/probe.py`; avoid semicolon-heavy probe strings that fail prefix allowlists.
+12. **Starting node Ollama only on loopback.** If controller verification of `http://NODE:11434` fails after local node `/api/tags` works, restart Ollama with `OLLAMA_HOST=0.0.0.0:11434` in the process environment and verify embedding dimension from the controller.
 
 ## Verification Checklist
 
@@ -236,3 +249,4 @@ python3 -m video_essence.cli ask "question" --output <out> --semantic --model no
 ## Support Files
 
 - `references/local-cli-mvp-pattern.md` — concrete artifact contract, CLI command surface, Ollama backoff, final-reduce noise filtering, tests, and real verification pattern proven on a 7-video Mina course.
+- `references/node-control-plane-patterns.md` — LAN worker discovery order, service-vs-SSH distinction, Edge Worker 401 auth-boundary interpretation, and role-specific node classification.
