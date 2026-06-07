@@ -416,3 +416,4 @@ When using an adjacent mode, still apply routing, context budget, artifact contr
 - `references/pattern-matrix.md` — compact comparison matrix and body-shape guide.
 - `evals/prompts.csv` — canonical routing eval prompt set for skill-eval.
 - `references/pattern-routing-evals.csv` — readable reference copy of the starter routing eval prompts.
+- `scripts/scan_skill_pattern_coverage.py` — non-mutating coverage scanner for existing skill libraries.
