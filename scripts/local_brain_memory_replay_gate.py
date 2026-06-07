@@ -36,6 +36,12 @@ def tokenize(text: str) -> set[str]:
     return {t.lower() for t in TOKEN_RE.findall(text)}
 
 
+def estimate_tokens(text: str) -> int:
+    """Cheap deterministic token estimate for budget gates."""
+    text = text or ""
+    return max(1, (len(text) + 3) // 4)
+
+
 def score(query: str, text: str) -> dict[str, Any]:
     q = query.lower()
     low = text.lower()
@@ -167,6 +173,62 @@ def default_fixtures() -> list[dict[str, Any]]:
             "expected_accepted": ["daily_report_walrus_boundary"],
             "expected_rejected": ["walrus_marketing_claim"],
         },
+        {
+            "id": "recurrent_task_state_compaction_preference",
+            "class": "recurrent_state_compaction",
+            "query": "recurrent task state continuation compact proof next action blocker",
+            "min_accepted": 1,
+            "documents": [
+                {
+                    "id": "compact_recurrent_task_state",
+                    "source": "memory-cache-recurrent-state-ssot",
+                    "path": "/Users/charles/.hermes/docs/private/memory-cache-recurrent-state-ssot-20260607.md",
+                    "text": "Recurrent task state keeps objective, completed proof artifacts, current blocker, next bounded action, and wrong-source hypothesis. It is compact, replayable, and proof-linked; raw transcript history remains outside the prompt unless explicitly needed.",
+                    "required_terms": ["objective", "proof artifacts", "current blocker", "next bounded action", "wrong-source hypothesis"],
+                    "reject_terms": ["raw transcript history remains inside every prompt", "replace proof artifacts"],
+                    "max_token_estimate": 90,
+                },
+                {
+                    "id": "raw_history_dump",
+                    "source": "fixture_noise",
+                    "path": "fixture://noise/raw-history-dump.md",
+                    "text": "Raw continuation dump: repeat every previous turn, every tool output, all stale task statuses, old failed hypotheses, unrelated browser page text, provider error logs, and historical proof debt inside every prompt so the model can remember everything without a compact recurrent state or proof-linked next action." * 8,
+                    "required_terms": ["continuation"],
+                    "reject_terms": ["remember everything", "every previous turn", "without a compact recurrent state"],
+                    "max_token_estimate": 120,
+                },
+            ],
+            "expected_accepted": ["compact_recurrent_task_state"],
+            "expected_rejected": ["raw_history_dump"],
+        },
+        {
+            "id": "token_cost_prefilter_rejection",
+            "class": "token_cost_prefilter",
+            "query": "memory cache token cost prefilter compact state budget",
+            "min_accepted": 1,
+            "documents": [
+                {
+                    "id": "budgeted_memory_cache_summary",
+                    "source": "memory-cache-recurrent-state-ssot",
+                    "path": "/Users/charles/.hermes/docs/private/memory-cache-recurrent-state-ssot-20260607.md",
+                    "text": "Memory cache is rebuildable and must pass token-cost prefilter, staleness rejection, proof-linked usage, and rollback evidence before promotion. Compact state is preferred over full history when it covers the same proof obligations.",
+                    "required_terms": ["token-cost prefilter", "staleness rejection", "proof-linked", "rollback evidence"],
+                    "reject_terms": ["full history always", "unbounded context"],
+                    "max_token_estimate": 80,
+                },
+                {
+                    "id": "unbounded_full_history_prompt",
+                    "source": "fixture_noise",
+                    "path": "fixture://noise/unbounded-full-history.md",
+                    "text": "Use full history always and skip token-cost prefilter because unbounded context is simpler. Include stale memories, all archived continuations, all handoff logs, and every previous proof warning in the next prompt." * 12,
+                    "required_terms": ["token-cost prefilter"],
+                    "reject_terms": ["full history always", "skip token-cost prefilter", "unbounded context", "stale memories"],
+                    "max_token_estimate": 120,
+                },
+            ],
+            "expected_accepted": ["budgeted_memory_cache_summary"],
+            "expected_rejected": ["unbounded_full_history_prompt"],
+        },
     ]
 
 
@@ -186,12 +248,17 @@ def evaluate_fixture(fixture: dict[str, Any], *, top_k: int = 5) -> dict[str, An
     ranked = []
     for doc in fixture.get("documents", []):
         text = str(doc.get("text") or "")
+        token_estimate = estimate_tokens(text)
+        max_token_estimate = doc.get("max_token_estimate")
+        max_token_limit = int(max_token_estimate) if max_token_estimate is not None else None
+        token_budget_ok = max_token_limit is None or token_estimate <= max_token_limit
         s = score(query, text)
         accepted = (
             contains_all(text, doc.get("required_terms", []))
             and not contains_any(text, doc.get("reject_terms", []))
             and not bool(doc.get("stale"))
             and not bool(doc.get("missing_evidence"))
+            and token_budget_ok
         )
         rejection_reasons = []
         if not contains_all(text, doc.get("required_terms", [])):
@@ -202,11 +269,15 @@ def evaluate_fixture(fixture: dict[str, Any], *, top_k: int = 5) -> dict[str, An
             rejection_reasons.append("stale_temporal_state")
         if doc.get("missing_evidence"):
             rejection_reasons.append("missing_benchmark_schema_or_rollback_evidence")
+        if not token_budget_ok:
+            rejection_reasons.append(f"token_budget_exceeded:{token_estimate}>{max_token_limit}")
         ranked.append({
             "id": doc.get("id"),
             "source": doc.get("source"),
             "path": doc.get("path"),
             "score": s,
+            "token_estimate": token_estimate,
+            "max_token_estimate": max_token_limit,
             "accepted": accepted,
             "rejection_reasons": rejection_reasons,
             "text_sha256": sha256_text(text),
@@ -252,6 +323,8 @@ def run_gate(fixtures: Sequence[dict[str, Any]], *, top_k: int = 5) -> dict[str,
                 "source": item["source"],
                 "path": item["path"],
                 "reasons": item["rejection_reasons"],
+                "token_estimate": item.get("token_estimate"),
+                "max_token_estimate": item.get("max_token_estimate"),
             }
             if item["accepted"]:
                 adopted.append(record)
