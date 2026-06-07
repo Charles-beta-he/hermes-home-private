@@ -57,12 +57,20 @@
 - taskpool 新增 follow-through 任务，引用本 SSOT 和 gate report。
 - health/taskpool/ratchet 复测无回退。
 
+## 已落地实现（2026-06-07）
+
+- `~/.hermes/scripts/local_brain_memory_replay_gate.py`：默认 fixture 已覆盖 recurrent-state compaction 与 token-cost prefilter；compact state 被采纳，raw/full-history prompt 被 token budget 拒绝。
+- `~/.hermes/scripts/continuation_compaction_manifest.py`：只读生成 continuation compaction dry-run manifest，按 `live` / `stale-recoverable` / `terminal-audit` / `disposable` 分桶，不执行删除或归档。
+- `~/.hermes/scripts/task_continuation.py`：续跑上下文新增 `hermes_recurrent_task_state_v1` compact resume state；保留原始 checkpoint，不把 compact state 伪装成 proof。
+- 当前 manifest proof artifact：`~/.hermes/state/continuation-compaction-manifest-20260607.json`。
+
 ## 后续主线
 
-1. Memory cache gate：检索命中、staleness、wrong-source rejection、token saving、proof-linked use。
-2. Recurrent task state：任务级 schema，支持 continuation prompt 构造时引用 compact state 而非原始日志。
-3. Continuation compaction：引用安全 dry-run manifest，先分类再移动。
-4. Benchmark：比较 no memory / full history / retrieval memory / recurrent state / proof-linked cache 的成本、成功率、幻觉率、重复工作率。
+1. 人工/多模型审阅 manifest 中 `terminal-audit` 与 `stale-recoverable` 桶，确认哪些可归档、哪些需要恢复、哪些应保留审计。
+2. Memory cache gate：检索命中、staleness、wrong-source rejection、token saving、proof-linked use。
+3. Recurrent task state：将更多 taskpool worker resume path 迁移到 compact state，禁止 full-history prompt 回退成为默认。
+4. Continuation compaction：在人工批准后实现独立 mutation tool；mutation 必须消费已审阅 manifest，不能重新粗暴扫描删除。
+5. Benchmark：比较 no memory / full history / retrieval memory / recurrent state / proof-linked cache 的成本、成功率、幻觉率、重复工作率。
 
 ## 反例门
 
