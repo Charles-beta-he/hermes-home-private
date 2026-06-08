@@ -1086,6 +1086,27 @@ def yaml_scalar(v: Any) -> str:
     return s
 
 
+def sanitize_frontmatter_value(key: str, value: Any) -> Any:
+    """Keep rendered task frontmatter bounded and parseable.
+
+    `evidence_bundle` is often fed by external/advisory metadata.  When it is
+    repeatedly serialized as a YAML scalar, escaping can compound into very
+    large single lines that make taskpool list/dashboard effectively hang.  The
+    detailed source evidence should live in `evidence` / `evidence_refs` /
+    artifact paths; frontmatter only needs a compact dispatch hint.
+    """
+    if key != "evidence_bundle" or not isinstance(value, str):
+        return value
+    backslashes = value.count("\\")
+    if len(value) <= 4096 and backslashes <= 512:
+        return value
+    return (
+        "proof:evidence_bundle_sanitized_due_yaml_escape_bloat; "
+        f"original_length={len(value)}; original_backslashes={backslashes}; "
+        "use evidence/evidence_refs/artifacts for full source detail"
+    )
+
+
 def render_frontmatter(fm: dict[str, Any]) -> str:
     preferred = [
         "type", "lane", "layer", "status", "priority", "priority_layer", "dependency_order", "created", "updated", "expires_at", "project",
@@ -1119,7 +1140,7 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
     for k in keys:
         if k not in fm:
             continue
-        v = fm[k]
+        v = sanitize_frontmatter_value(k, fm[k])
         if isinstance(v, list) and k == "evidence" and v:
             out.append(f"{k}:")
             for item in v:

@@ -241,10 +241,63 @@ def save_state(state: dict[str, Any]) -> None:
     STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _compact_for_tick_log(value: Any, *, depth: int = 0) -> Any:
+    """Return a bounded JSONL-safe projection for dispatch tick logs.
+
+    Full tick events can contain every task body plus evidence-spine payloads;
+    appending those on every cron tick turns a health log into a multi-GB hot
+    file.  Keep operational counters/statuses in JSONL and let detailed proof
+    remain in task notes, handoff files, and explicit artifacts.
+    """
+    if depth > 5:
+        return "<max_depth>"
+    if isinstance(value, str):
+        if len(value) > 1200:
+            return value[:1200] + f"...<truncated {len(value) - 1200} chars>"
+        return value
+    if isinstance(value, (int, float, bool)) or value is None:
+        return value
+    if isinstance(value, list):
+        limit = 30
+        items = [_compact_for_tick_log(item, depth=depth + 1) for item in value[:limit]]
+        if len(value) > limit:
+            items.append({"truncated_count": len(value) - limit})
+        return items
+    if isinstance(value, dict):
+        out: dict[str, Any] = {}
+        for key, item in value.items():
+            k = str(key)
+            if k in {"body", "description", "prompt", "stdout", "stderr"}:
+                out[k] = _compact_for_tick_log(item, depth=depth + 1)
+                continue
+            if k in {"claims", "evidence"} and isinstance(item, list) and depth <= 2:
+                out[k + "_count"] = len(item)
+                continue
+            if k == "rows" and isinstance(item, list):
+                rows: list[Any] = []
+                for row in item[:20]:
+                    if isinstance(row, dict):
+                        rows.append({
+                            rk: _compact_for_tick_log(row.get(rk), depth=depth + 1)
+                            for rk in ("id", "title", "status", "priority", "lane", "project", "claimed_by", "claim_expires_at", "stale_claim")
+                            if rk in row
+                        })
+                    else:
+                        rows.append(_compact_for_tick_log(row, depth=depth + 1))
+                if len(item) > 20:
+                    rows.append({"truncated_count": len(item) - 20})
+                out[k] = rows
+                continue
+            out[k] = _compact_for_tick_log(item, depth=depth + 1)
+        return out
+    return str(value)
+
+
 def append_log(event: dict[str, Any]) -> None:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+    payload = event if os.environ.get("HERMES_BRAIN_DISPATCH_TICK_FULL_LOG", "").strip().lower() in {"1", "true", "yes", "on"} else _compact_for_tick_log(event)
     with LOG_FILE.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
+        f.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
 
 
 def build_claim_state_telemetry(event: dict[str, Any], *, requested_event_next_tick_depth: int = 0) -> dict[str, Any]:
@@ -593,14 +646,39 @@ def save_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds:
 
 
 def _recent_tick_events(log_file: Path, *, window: int) -> list[dict[str, Any]]:
+    """Read recent tick events without loading an oversized JSONL log.
+
+    Historical dispatch logs can grow to many GB because full tick events include
+    task bodies and evidence snapshots.  The quality-capacity probe only needs a
+    small tail window, so this function performs a bounded reverse byte scan
+    instead of Path.read_text() over the whole file.
+    """
+    max_lines = max(1, int(window or 1))
+    max_bytes = int(os.environ.get("HERMES_TASKPOOL_LOG_TAIL_MAX_BYTES", "8388608") or 8388608)
+    chunk_size = 64 * 1024
     try:
-        lines = log_file.read_text(encoding="utf-8").splitlines()[-max(1, int(window or 1)):]
+        size = log_file.stat().st_size
+        with log_file.open("rb") as f:
+            pos = size
+            chunks: list[bytes] = []
+            newline_count = 0
+            bytes_read = 0
+            while pos > 0 and newline_count <= max_lines and bytes_read < max_bytes:
+                read_size = min(chunk_size, pos, max_bytes - bytes_read)
+                pos -= read_size
+                f.seek(pos)
+                chunk = f.read(read_size)
+                chunks.append(chunk)
+                newline_count += chunk.count(b"\n")
+                bytes_read += read_size
     except Exception:
         return []
+    data = b"".join(reversed(chunks)) if 'chunks' in locals() else b""
+    lines = data.splitlines()[-max_lines:]
     events: list[dict[str, Any]] = []
-    for line in lines:
+    for raw in lines:
         try:
-            obj = json.loads(line)
+            obj = json.loads(raw.decode("utf-8", errors="replace"))
         except Exception:
             continue
         if isinstance(obj, dict):
