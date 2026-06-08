@@ -48,7 +48,7 @@ When an evolution lane task's analysis is complete but multimodel certification 
 
 ## Operational Watchdog Cron Scripts
 
-When building or modifying `no_agent=True` cron scripts that monitor task pool health (budget-exhausted triage, auth-blocked notifications, stale-claim cleanup), load `references/operational-cron-watchdogs.md`: it covers the script-path pitfall (`script` takes filename only, not full path), deduplication/cooldown patterns, JSONL logging, kanban DB query templates, hook registry `post_task_block` integration, and the budget-exhausted triage decision matrix (续费/拆分/降级/放弃 by domain × complexity × progress).
+When building or modifying `no_agent=True` cron scripts that monitor task pool health (budget-exhausted triage, auth-blocked notifications, stale-claim cleanup) — or any script that calls `brain_task_orchestrator.py` as a subprocess — load `references/operational-cron-watchdogs.md` and `references/brain-orchestrator-subprocess-timeout.md`: it covers the script-path pitfall (`script` takes filename only, not full path), deduplication/cooldown patterns, JSONL logging, kanban DB query templates, hook registry `post_task_block` integration, the budget-exhausted triage decision matrix (续费/拆分/降级/放弃 by domain × complexity × progress), and the subprocess timeout pitfall (orchestrator `list --json` can exceed 30s on cold cache with 300+ task files — always use `timeout=120`).
 
 ## Cron Scheduler Recovery — Model Provider 429 Blocking
 
@@ -169,6 +169,8 @@ For `lane=work` project/product tasks, attach the project profile contract at in
 
 When the taskpool needs to ingest tasks from multiple distinct sources (Lark, brain notes, direct input, GitHub, etc.), use the pluggable TaskAdapter framework. See `references/task-adapter-framework.md`: it covers the TaskAdapter interface (fetch/enrich/classify/preflight/gates/complete), TaskRegistry, TaskPipeline, source-agnostic observer dict pattern, composite tasks (subtasks/parallelism/convergence), parallel execution, adversarial verification, checkpoint/resume, and the pitfalls around observer.observe() signature and gate checking behavior.
 
+When extending Control Tower or any ledger/control-plane path from taskpool projection into a real taskpool brain-note mutation, load `references/taskpool-external-write-through.md`: keep the slice explicitly adapter/operation allowlisted, consume exact command digests, recheck evidence/authorization freshness before mutation, mutate only frontmatter status plus an audit marker, and test both final-file symlink and ancestor-directory symlink escapes.
+
 ## Observability and Depth Classification
 
 This skill is also the umbrella for taskpool visibility and task-depth analysis:
@@ -229,6 +231,8 @@ For Lark/work bursts, treat `parallel-dispatch-dry-run --max-agents N` `selected
 
 When asked for Kanban coverage, distinguish three ratios instead of trusting a single health score: (1) taskpool dispatchable -> mirrored Kanban coverage, (2) brain-note -> Kanban provenance/link coverage, and (3) Kanban ready -> spawnable assignee coverage. Use the live diagnostic first: `python3 ~/.hermes/scripts/kanban_coverage.py --json`; it emits `dispatchable_mirror`, `brain_note_provenance`, `active_brain_note_provenance`, `kanban_ready_spawnability`, `ready_nonspawnable`, `skipped_nonspawnable`, and `missing_ready_assignees`. `v_state.py` now consumes this report, so kanban health is no longer false-green when `dispatchable == 0` but ready Kanban tasks are nonspawnable. Still verify raw sources with `hermes kanban stats --json`, `hermes kanban assignees --json`, and `hermes kanban dispatch --dry-run --json` when diagnosing discrepancies.
 
+When the user asks to inspect recent unfinished tasks and canonical `dashboard`/`list`/`next` commands stall or the dynamic runner returns empty output, use `references/recent-unfinished-task-audit.md`: bounded canonical command attempts first, then read-only frontmatter scanning of brain task notes plus read-only kanban DB status summaries. Report brain markdown and kanban projection separately, and flag large escaped frontmatter as an observability/performance issue rather than treating projection emptiness as proof that no tasks remain.
+
 ## SSOT: One Task Pool Only
 
 When building any distributed worker, executor, or edge node, do NOT create a competing task pool. The canonical task pool is `brain_task_orchestrator.py` + `kanban.db`. Workers are execution-only layers that fetch tasks from the brain and report results back. See `references/ssot-violation-edge-worker-task-pool.md` for the anti-pattern, correct architecture, detection checklist, recovery steps, and the concrete three-layer implementation pattern (UnifiedTaskPool adapter → EdgeWorkerExecutor → UnifiedAPI).
@@ -258,6 +262,7 @@ When patching dispatch logic:
 - Allow bounded `autorun_step` / claim-and-handoff to proceed when only soft governance warnings are present.
 - Return a visible non-OK status such as `WARN` when governance is unhealthy, but do not convert that into an execution stop by default.
 - Preserve observability: emit warning/error counts and retain the specific failing governance step in the payload/log.
+- Do not append full task bodies/evidence-spine payloads to hot tick JSONL logs. If `~/.hermes/logs/brain_task_dispatch_tick.jsonl` grows to many GB, `quality_capacity_probe` / recent-event readers can OOM even when list/dashboard are healthy. Use bounded tail reads and compact JSONL projections; preserve full historical logs outside the hot path (for example `~/taskpool-bloat-quarantine/...`) rather than deleting evidence.
 
 ## False-positive `done` tasks
 
@@ -608,6 +613,7 @@ git log --oneline -3
 - `blocker_summary` may be outside YAML frontmatter (e.g., line 90+). Use `grep -n` before patching.
 - Frontmatter `multimodel_last_failures` is a YAML list — contains structured failure reasons like `agreement_below_threshold:approach:0.65`
 - `execute_code` file writes may not persist to disk. Use `patch` tool or `terminal` with `sed` for brain markdown edits.
+- **`brain_task_orchestrator.py` subprocess timeout mismatch.** The `list --json` command scans all `.md` files in `~/Documents/brain/05-实践与项目/tasks/` (300+ files). On macOS with Xcode Python 3.9, this takes 60-90+ seconds. Any wrapper script (e.g., `kanban_bridge.py`, cron watchdogs) calling it must use `timeout≥120`. The default 30s timeout causes silent bridge/watchdog failures. **Zombie processes** of `brain_task_orchestrator.py` (especially `next --reconcile`) can accumulate and consume 7.5GB+ RAM. Before running any orchestrator-dependent script, check `ps aux | grep brain_task_orchestrator | grep -v grep` and kill stale processes. See `references/brain-orchestrator-subprocess-timeout.md`.
 - **`write_file` destroys YAML frontmatter on task markdown files.** When writing evaluation reports or task body content, `write_file` replaces the ENTIRE file — including the YAML frontmatter block. This silently removes `status`, `priority`, `lane`, `multimodel_*`, `evidence_*`, and all other structured metadata, making the task invisible to the orchestrator and breaking lifecycle transitions. Observed twice in one session: both times the file had to be fully recreated with `terminal` + `cat > ... << 'EOF'` heredoc. **Safe alternatives**: (1) `patch` tool for targeted body edits that preserve frontmatter, (2) `terminal` + `sed` for status field changes, (3) `terminal` + `cat > ... << 'EOF'` when you must rewrite the entire file (include the full frontmatter block). After any task file write, always `grep "^status:"` the file to confirm frontmatter survived.
 
 - `lane=work` tasks with a `project` but missing `source_weighting_policy_ref` are **silently non-dispatchable**. `is_dispatchable()` fails closed on this field. The symptom is `eligibility-check` returning `eligible=false` + `no_dispatchable_task` with no obvious error. Fix: add `source_weighting_policy_ref: ~/.hermes/project-profiles/<project>.json#source_weighting_policy` to the task frontmatter. This affects batch intake of Lark/imported tasks where the project was renamed (e.g. `uvisa-app-2.0` → `uvisa-app-2.0-work`) — both the project name AND the policy ref must be present and matching. See `references/project-profile-dispatchability-gates.md`.
