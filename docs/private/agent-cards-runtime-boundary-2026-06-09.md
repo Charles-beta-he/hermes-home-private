@@ -33,6 +33,8 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `/Users/charles/.hermes/scripts/agent_team_controller.py`
 - `/Users/charles/.hermes/scripts/external_adapter_harness.py`
 - `/Users/charles/.hermes/scripts/test_external_adapter_harness.py`
+- `/Users/charles/.hermes/scripts/skill_writer_harness.py`
+- `/Users/charles/.hermes/scripts/test_skill_writer_harness.py`
 - `/Users/charles/.hermes/docs/private/agent-cards-v1.json`
 
 ## What changed
@@ -232,6 +234,39 @@ HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=shadow
 
 This is not a network sender/deployer. It does not touch Lark, Telegram, memory, skills, providers, cron, shell, or network. Taskpool/Kanban support is deliberately limited to done closeout and rollback of that exact verified write.
 
+### 9. Default-on canonical skill writer
+
+`skill_writer_harness.py` is a default-on digest-bound skill writer for new skills only:
+
+- operation allowlist: `create_skill` only;
+- no overwrite of existing skill directories;
+- default category: `agent-generated`;
+- validates skill name/category and SKILL.md frontmatter/body shape;
+- authorization requires elevated role and evidence;
+- write is bound to payload/content/authorization/request digests;
+- readback verifies the exact SKILL.md digest;
+- rollback requires exact request digest and the write marker, then deletes only the created skill directory.
+
+Default mode:
+
+```bash
+HERMES_SKILL_WRITER_MODE=apply
+```
+
+Rollback/disable:
+
+```bash
+HERMES_SKILL_WRITER_MODE=off
+```
+
+Observation-only:
+
+```bash
+HERMES_SKILL_WRITER_MODE=shadow
+```
+
+This writer does not edit existing skills, memory, cron, providers, plugins, config, or external systems.
+
 ## Verification
 
 Tests added:
@@ -252,11 +287,13 @@ Tests added:
 - local adapter harness intent/authorization/execution is digest-bound, readback-verified, idempotent, and rollback-verified;
 - local adapter harness rejects path escapes, symlinks, non-elevated actors, missing evidence, and digest tampering;
 - taskpool note closeout mutates only frontmatter status plus an audit marker and rolls back by exact request digest;
-- Kanban DB closeout mutates only one `tasks.status` cell using parameterized SQL and rolls back by exact request digest.
+- Kanban DB closeout mutates only one `tasks.status` cell using parameterized SQL and rolls back by exact request digest;
+- canonical skill writer defaults to apply and supports off/shadow escape hatch;
+- skill writer creates only new skills, verifies readback digest, rejects overwrite/tamper/non-elevated actors, and rolls back by exact request digest.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, and default-on local Taskpool/Kanban adapter closeout.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, default-on local Taskpool/Kanban adapter closeout, and default-on canonical new-skill writer.
 
 Still not enabled automatically:
 
@@ -266,11 +303,11 @@ Still not enabled automatically:
 
 2. Non-local external adapter writes
    - Enabled external adapters are local-file fixture, taskpool note closeout, and Kanban DB closeout only.
-   - Lark, Telegram, deployments, providers, cron, memory, and skills remain outside this harness.
+   - Lark, Telegram, deployments, providers, cron, and memory remain outside this harness.
 
-3. Canonical skill writer / external skill installation
-   - Would mutate production skills.
-   - Requires human review and gated writer.
+3. Existing-skill mutation / external skill installation
+   - Enabled skill path creates new skills only and refuses overwrites.
+   - Existing skill edits/deletes and external skill production installation remain outside this writer.
 
 4. External side-effect executors
    - Would write/send/deploy externally.
@@ -278,4 +315,4 @@ Still not enabled automatically:
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, and default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets. The enabled write paths are deliberately narrow: review -> done only for lifecycle, and local adapter `status: done` closeout only for adapter write-through, both with digest/readback/rollback boundaries. The next boundary is broad lifecycle mutation authority, non-local external adapters, canonical skill writers, or external send/deploy side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets, and default-on digest-bound creation of new canonical skills. The enabled write paths are deliberately narrow: review -> done only for lifecycle, local adapter `status: done` closeout only for adapter write-through, and create-new-skill only for skill writes, all with digest/readback/rollback boundaries. The next boundary is broad lifecycle mutation authority, non-local external adapters, existing-skill mutation, or external send/deploy side-effect executors.
