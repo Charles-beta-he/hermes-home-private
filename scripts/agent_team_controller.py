@@ -1436,6 +1436,25 @@ def handle_continuations():
     
     return continuations
 
+def _timeout_text(value):
+    if value is None:
+        return ''
+    if isinstance(value, bytes):
+        return value.decode(errors='replace')
+    return str(value)
+
+
+def _timeout_exc_output(exc):
+    """Return stdout/stderr text carried by subprocess.TimeoutExpired."""
+    stdout = _timeout_text(getattr(exc, 'stdout', None) or getattr(exc, 'output', None))
+    stderr = _timeout_text(getattr(exc, 'stderr', None))
+    return stdout, stderr
+
+
+def _is_no_output_timeout(output, stderr):
+    return not _timeout_text(output).strip() and not _timeout_text(stderr).strip()
+
+
 def _detect_infra_failure(output, stderr=''):
     """Detect infrastructure-level failures that justify immediate model fallback.
 
@@ -1692,10 +1711,33 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
                     continue
                 return {'status': 'failed', 'reason': 'missing_proof', 'output': output[-300:], 'model_used': model}
 
-        except _sp.TimeoutExpired:
-            # Timeout could be infra (model hanging) or task (too complex)
-            # If we have stderr showing infra issues, fallback; otherwise treat as task timeout
-            is_infra, infra_cat = _detect_infra_failure(last_output, last_stderr)
+        except _sp.TimeoutExpired as exc:
+            # Timeout could be infra (model hanging) or task (too complex).
+            # Prefer the current TimeoutExpired stdout/stderr over stale output
+            # from a prior provider attempt; an empty timeout is a provider
+            # no-output hang and must not be requeued as task-level proof debt.
+            timeout_output, timeout_stderr = _timeout_exc_output(exc)
+            current_output = timeout_output or ''
+            current_stderr = timeout_stderr or ''
+            if _is_no_output_timeout(current_output, current_stderr):
+                append_trace(eid, {
+                    'event': 'provider_no_output_timeout',
+                    'chain_idx': chain_idx,
+                    'model': model,
+                    'provider': provider,
+                    'timeout_s': timeout_s,
+                    'category': 'provider_no_output_timeout',
+                })
+                if chain_idx < len(model_chain) - 1:
+                    continue
+                return {
+                    'status': 'blocked',
+                    'reason': 'provider_no_output_circuit_open',
+                    'infra_category': 'all_models_provider_no_output_timeout',
+                    'model_used': model,
+                }
+
+            is_infra, infra_cat = _detect_infra_failure(current_output, current_stderr)
             if is_infra and chain_idx < len(model_chain) - 1:
                 append_trace(eid, {
                     'event': 'timeout_infra_fallback',

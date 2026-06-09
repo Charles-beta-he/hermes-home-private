@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -105,6 +106,60 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertEqual(result["status"], "failed")
         self.assertEqual(result["reason"], "missing_proof")
         self.assertIn("output", result)
+
+    def test_delegate_worker_no_output_timeout_falls_back_to_next_provider(self):
+        good_output = 'done\nPROOF_JSON: {"status":"done","summary":"ok","files_changed":[],"tests_passed":0,"proof_sha":"sha256:test","acceptance_criteria_covered":[],"red_lines_status":{},"no_red_line_violations":true,"blockers":[],"evidence":["artifact:/tmp/proof.md"]}'
+        timeout = subprocess.TimeoutExpired(cmd=["hermes"], timeout=1)
+        with patch.object(self.ctrl, "can_continue", return_value=(False, 0)), \
+             patch.object(self.ctrl, "append_trace") as append_trace, \
+             patch.object(self.ctrl, "record_worker_timeout_checkpoint") as timeout_checkpoint, \
+             patch("subprocess.run", side_effect=[timeout, FakeCompleted(good_output)]) as run:
+            result = self.ctrl.delegate_to_worker(
+                {"title": "task", "id": "task-1", "project": "p", "parallel_boundary": "b"},
+                "group",
+                "envelope-id",
+            )
+
+        self.assertEqual(result["status"], "done")
+        self.assertEqual(run.call_count, 2)
+        timeout_checkpoint.assert_not_called()
+        self.assertTrue(any(call.args[1].get("event") == "provider_no_output_timeout" for call in append_trace.call_args_list))
+
+    def test_delegate_worker_all_providers_no_output_timeout_blocks_not_requeues(self):
+        def raise_timeout(*args, **kwargs):
+            raise subprocess.TimeoutExpired(cmd=["hermes"], timeout=kwargs.get("timeout", 1))
+
+        with patch.object(self.ctrl, "append_trace") as append_trace, \
+             patch.object(self.ctrl, "record_worker_timeout_checkpoint") as timeout_checkpoint, \
+             patch("subprocess.run", side_effect=raise_timeout) as run:
+            result = self.ctrl.delegate_to_worker(
+                {"title": "task", "id": "task-1", "project": "p", "parallel_boundary": "b"},
+                "group",
+                "envelope-id",
+            )
+
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(result["reason"], "provider_no_output_circuit_open")
+        self.assertEqual(result["infra_category"], "all_models_provider_no_output_timeout")
+        self.assertEqual(run.call_count, 4)
+        timeout_checkpoint.assert_not_called()
+        self.assertTrue(any(call.args[1].get("event") == "provider_no_output_timeout" for call in append_trace.call_args_list))
+
+    def test_delegate_worker_timeout_with_rate_limit_stderr_uses_infra_fallback(self):
+        good_output = 'done\nPROOF_JSON: {"status":"done","summary":"ok","files_changed":[],"tests_passed":0,"proof_sha":"sha256:test","acceptance_criteria_covered":[],"red_lines_status":{},"no_red_line_violations":true,"blockers":[],"evidence":["artifact:/tmp/proof.md"]}'
+        timeout = subprocess.TimeoutExpired(cmd=["hermes"], timeout=1, output="", stderr="HTTP 429: Too many requests")
+        with patch.object(self.ctrl, "can_continue", return_value=(False, 0)), \
+             patch.object(self.ctrl, "append_trace") as append_trace, \
+             patch("subprocess.run", side_effect=[timeout, FakeCompleted(good_output)]) as run:
+            result = self.ctrl.delegate_to_worker(
+                {"title": "task", "id": "task-1", "project": "p", "parallel_boundary": "b"},
+                "group",
+                "envelope-id",
+            )
+
+        self.assertEqual(result["status"], "done")
+        self.assertEqual(run.call_count, 2)
+        self.assertTrue(any(call.args[1].get("event") == "timeout_infra_fallback" and call.args[1].get("infra_category") == "provider_rate_limit_or_quota" for call in append_trace.call_args_list))
 
     def test_uvisa_lark_worker_context_injects_acceptance_contract(self):
         self.ctrl.STATE_DIR = Path(self.tmp.name) / "state"
