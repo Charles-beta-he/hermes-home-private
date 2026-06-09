@@ -207,12 +207,13 @@ def render_agent_card_context(
     return output
 
 
-def routing_mode(default: str = "shadow") -> str:
+def routing_mode(default: str = "apply") -> str:
     """Return Agent Card routing mode: off, shadow, or apply.
 
-    `shadow` records/returns recommendations without changing runtime profile.
-    `apply` is the explicit rollout mode that callers may use to set worker
-    process profile environment. This module still does not mutate tasks.
+    Default is `apply`: worker subprocesses are routed to the recommended
+    specialist Hermes profile. `shadow` and `off` remain explicit escape
+    hatches. This module still does not mutate tasks, Kanban assignees,
+    lifecycle state, or proof gates.
     """
     raw = os.environ.get("HERMES_AGENT_CARD_ROUTING_MODE") or os.environ.get("HERMES_AGENT_CARD_ROUTING") or default
     mode = str(raw or "").strip().lower()
@@ -231,10 +232,9 @@ def routing_decision(
 ) -> Dict[str, Any]:
     """Return a deterministic runtime routing decision.
 
-    The decision is safe-by-default: `shadow` is the default and never changes
-    the worker profile. In `apply`, callers may route the worker subprocess to
-    the chosen profile, but only if the card marks it as a spawnable/active
-    profile rather than a placeholder.
+    The decision remains narrow: callers may route the worker subprocess to the
+    chosen profile, but only if the card marks it as a spawnable/active profile
+    rather than a placeholder. `shadow` can be forced for observation-only mode.
     """
     cards = cards or load_cards()
     mode = routing_mode() if mode is None else str(mode or "shadow").lower()
@@ -261,7 +261,7 @@ def routing_decision(
         "applies": applies,
         "recommendation": recommendation,
         "blocked_reason": blocked_reason,
-        "safety": "shadow is recommendation-only; apply only sets worker subprocess profile and never mutates task lifecycle or proof gates",
+        "safety": "apply routes only the worker subprocess profile; off/shadow remain escape hatches; routing never mutates task lifecycle or proof gates",
     }
 
 

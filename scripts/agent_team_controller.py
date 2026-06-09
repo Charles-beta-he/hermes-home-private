@@ -1586,6 +1586,73 @@ def _worker_needs_codegen(task, title_l='', project_l=''):
     return ('uvisa' in project_l) or ('hermes-agent' in project_l) or any(kw in title_l for kw in code_markers)
 
 
+_PROFILE_PROVIDER_STATUS_CACHE = {}
+
+
+def _profile_provider_status(profile_name):
+    """Best-effort provider auth readiness for a Hermes named profile.
+
+    Uses `hermes -p <profile> doctor` because provider auth can live in profile
+    homes and OAuth stores. Cached per controller process; failure is fail-open
+    for providers without an explicit auth signal, but fail-closed for Gemini to
+    avoid known routed-profile OAuth misses.
+    """
+    profile_name = str(profile_name or '').strip()
+    if not profile_name:
+        return {}
+    if profile_name in _PROFILE_PROVIDER_STATUS_CACHE:
+        return _PROFILE_PROVIDER_STATUS_CACHE[profile_name]
+    status = {'profile': profile_name, 'doctor_ok': False, 'openai_codex': None, 'google_gemini': None}
+    try:
+        r = subprocess.run(
+            ['hermes', '-p', profile_name, 'doctor'],
+            capture_output=True,
+            text=True,
+            timeout=25,
+        )
+        output = (r.stdout or '') + '\n' + (r.stderr or '')
+        status['doctor_ok'] = r.returncode == 0
+        status['openai_codex'] = '✓ OpenAI Codex auth' in output
+        status['google_gemini'] = '✓ Google Gemini OAuth' in output
+    except Exception as exc:
+        status['error'] = str(exc)
+    _PROFILE_PROVIDER_STATUS_CACHE[profile_name] = status
+    return status
+
+
+def _provider_available_for_worker_profile(profile_name, provider):
+    """Return whether provider is ready under the routed worker profile."""
+    provider = str(provider or '').strip()
+    profile_name = str(profile_name or '').strip()
+    if not profile_name:
+        return True
+    status = _profile_provider_status(profile_name)
+    if provider == 'google-gemini-cli':
+        return status.get('google_gemini') is True
+    if provider == 'openai-codex':
+        # Codex is the primary routed-profile provider; require positive auth
+        # when a profile is explicitly used so routing does not create an auth
+        # regression hidden behind fallbacks.
+        return status.get('openai_codex') is True
+    return True
+
+
+def _filter_model_chain_for_worker_profile(model_chain, profile_name):
+    """Drop providers known unavailable in the routed worker profile."""
+    profile_name = str(profile_name or '').strip()
+    if not profile_name:
+        return model_chain, []
+    filtered = []
+    dropped = []
+    for entry in model_chain:
+        model, provider, *_ = entry
+        if _provider_available_for_worker_profile(profile_name, provider):
+            filtered.append(entry)
+        else:
+            dropped.append({'model': model, 'provider': provider, 'reason': 'profile_provider_not_ready'})
+    return (filtered or model_chain), dropped
+
+
 def delegate_to_worker(task, conflict_group, eid, sibling_tasks=None):
     """Delegate task to a lightweight worker via hermes chat -q."""
     import subprocess as _sp
@@ -1656,6 +1723,15 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
             ('gpt-5.5', 'openai-codex', 15, 360),
             ('mimo-v2.5-pro', 'xiaomi', 10, 220),
         ]
+    if agent_card_routing.get('applies') and worker_profile_name:
+        model_chain, dropped_providers = _filter_model_chain_for_worker_profile(model_chain, worker_profile_name)
+        if dropped_providers:
+            append_trace(eid, {
+                'event': 'agent_card_profile_provider_filter',
+                'profile': worker_profile_name,
+                'dropped': dropped_providers,
+                'remaining_providers': [provider for _, provider, *_ in model_chain],
+            })
     chain_idx = 0
     model, provider, max_turns, timeout_s = model_chain[chain_idx]
 

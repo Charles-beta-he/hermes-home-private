@@ -76,6 +76,51 @@ class AgentCardsRuntimeTest(unittest.TestCase):
             if old is not None:
                 os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = old
 
+    def test_routing_decision_default_is_apply_with_escape_hatches(self):
+        old_mode = os.environ.pop("HERMES_AGENT_CARD_ROUTING_MODE", None)
+        old_short = os.environ.pop("HERMES_AGENT_CARD_ROUTING", None)
+        try:
+            result = runtime.routing_decision(
+                {"iceberg_scope": "control_plane_taskpool", "title": "dispatch workflow"},
+                self.sample_cards(),
+            )
+            self.assertEqual(result["mode"], "apply")
+            self.assertTrue(result["applies"])
+            os.environ["HERMES_AGENT_CARD_ROUTING_MODE"] = "shadow"
+            shadow = runtime.routing_decision(
+                {"iceberg_scope": "control_plane_taskpool", "title": "dispatch workflow"},
+                self.sample_cards(),
+            )
+            self.assertEqual(shadow["mode"], "shadow")
+            self.assertFalse(shadow["applies"])
+        finally:
+            if old_mode is None:
+                os.environ.pop("HERMES_AGENT_CARD_ROUTING_MODE", None)
+            else:
+                os.environ["HERMES_AGENT_CARD_ROUTING_MODE"] = old_mode
+            if old_short is None:
+                os.environ.pop("HERMES_AGENT_CARD_ROUTING", None)
+            else:
+                os.environ["HERMES_AGENT_CARD_ROUTING"] = old_short
+
+    def test_profile_provider_filter_drops_unavailable_gemini(self):
+        controller._PROFILE_PROVIDER_STATUS_CACHE.clear()
+        controller._PROFILE_PROVIDER_STATUS_CACHE["workflow"] = {
+            "profile": "workflow",
+            "doctor_ok": True,
+            "openai_codex": True,
+            "google_gemini": False,
+        }
+        chain = [
+            ("gemini-3-flash-preview", "google-gemini-cli", 15, 300),
+            ("gpt-5.5", "openai-codex", 15, 360),
+            ("deepseek-v4-flash", "deepseek", 15, 300),
+        ]
+        filtered, dropped = controller._filter_model_chain_for_worker_profile(chain, "workflow")
+        self.assertNotIn("google-gemini-cli", [entry[1] for entry in filtered])
+        self.assertIn("openai-codex", [entry[1] for entry in filtered])
+        self.assertEqual(dropped[0]["provider"], "google-gemini-cli")
+
     def test_routing_decision_shadow_recommends_without_applying(self):
         result = runtime.routing_decision(
             {"iceberg_scope": "control_plane_taskpool", "title": "dispatch workflow", "assignee": "brain-mirror"},

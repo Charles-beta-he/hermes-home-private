@@ -489,7 +489,7 @@
         "brain-mirror",
         "workflow"
       ],
-      "runtime_boundary": "recommendation_only_default_off"
+      "runtime_boundary": "controlled_apply_with_escape_hatches"
     },
     "control_plane_taskpool": {
       "role": "Planning/orchestration/action-control domain",
@@ -543,7 +543,7 @@
         "hermes-agent",
         "brain-mirror"
       ],
-      "runtime_boundary": "recommendation_only_default_off"
+      "runtime_boundary": "controlled_apply_with_escape_hatches"
     },
     "skill_graph_governance": {
       "role": "Tool/capability registry and skill promotion governance domain",
@@ -594,7 +594,7 @@
         "workflow",
         "brain-mirror"
       ],
-      "runtime_boundary": "recommendation_only_default_off"
+      "runtime_boundary": "controlled_apply_with_escape_hatches"
     },
     "visual_ingest_runtime": {
       "role": "Multimodal observation and visual input runtime domain",
@@ -640,7 +640,7 @@
         "workflow",
         "brain-mirror"
       ],
-      "runtime_boundary": "recommendation_only_default_off"
+      "runtime_boundary": "controlled_apply_with_escape_hatches"
     },
     "multimodel_conductor_architecture": {
       "role": "Multi-model role orchestration and evaluator/arbiter architecture domain",
@@ -694,7 +694,7 @@
         "hermes-agent",
         "workflow"
       ],
-      "runtime_boundary": "recommendation_only_default_off"
+      "runtime_boundary": "controlled_apply_with_escape_hatches"
     }
   },
   "current_runtime_boundary": {

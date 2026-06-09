@@ -6,14 +6,16 @@ Date: 2026-06-09
 
 User authorized continuing from the Agent Cards documentation/validator layer until the overall boundary.
 
-This follow-through advanced two safe runtime layers deeper than documentation:
+This follow-through advanced from default-off scaffold to default-on specialist routing:
 
-- default-off Agent Card runtime helper module;
+- Agent Card runtime helper module;
 - deterministic specialist profile recommendations;
-- shadow/apply routing decisions with `shadow` as the default;
-- optional worker prompt Agent Card context gated by `HERMES_ENABLE_AGENT_CARD_CONTEXT=1`;
-- worker subprocess profile handoff only when `HERMES_AGENT_CARD_ROUTING_MODE=apply` or `HERMES_AGENT_CARD_ROUTING=1` is explicitly set;
-- tests proving default runtime behavior remains unchanged;
+- routing decisions with `apply` as the default;
+- `off` / `shadow` escape hatches for rollback or observation-only mode;
+- optional worker prompt Agent Card context still gated by `HERMES_ENABLE_AGENT_CARD_CONTEXT=1`;
+- worker subprocess profile handoff via `hermes -p <chosen_profile> chat ...`;
+- profile-auth-aware worker model chain filtering so routed profiles skip known-unavailable providers such as Gemini OAuth when missing;
+- tests proving task/Kanban/lifecycle/proof gates remain unmutated by routing;
 - validation that coverage/classification stayed healthy.
 
 ## Landed artifacts
@@ -30,9 +32,9 @@ This follow-through advanced two safe runtime layers deeper than documentation:
 Each architecture domain in `agent-cards-v1.json` now has:
 
 - `recommended_runtime_profiles`
-- `runtime_boundary: recommendation_only_default_off`
+- `runtime_boundary: controlled_apply_with_escape_hatches`
 
-This is intentionally advisory. It does not change any Kanban assignee.
+This does not change any Kanban assignee. It only chooses the Hermes profile for the spawned worker subprocess.
 
 ### 2. Runtime helper module
 
@@ -44,7 +46,7 @@ This is intentionally advisory. It does not change any Kanban assignee.
 - `routing_decision(task)`
 - `render_agent_card_context(task, profile, enabled=...)`
 
-The module is deterministic and read-only. `routing_decision` supports `off`, `shadow`, and `apply`; `shadow` is default and recommendation-only.
+The module is deterministic and read-only for task state. `routing_decision` supports `off`, `shadow`, and `apply`; `apply` is default, while `shadow` remains observation-only rollback mode.
 
 ### 3. Optional worker context integration
 
@@ -66,65 +68,77 @@ The rendered context explicitly says:
 
 ### 4. Controlled routing apply mode
 
-`agent_team_controller.py` records an `agent_card_routing_decision` trace for each delegated worker. Default mode is `shadow`, so it only records the recommended profile.
+`agent_team_controller.py` records an `agent_card_routing_decision` trace for each delegated worker. Default mode is now `apply`, so the worker subprocess is launched through the recommended specialist Hermes profile.
 
-When explicitly launched with:
+Rollback / observation-only modes:
 
 ```bash
-HERMES_AGENT_CARD_ROUTING_MODE=apply
+HERMES_AGENT_CARD_ROUTING_MODE=shadow
 ```
 
 or:
 
 ```bash
-HERMES_AGENT_CARD_ROUTING=1
+HERMES_AGENT_CARD_ROUTING_MODE=off
 ```
 
-the worker subprocess environment gets:
+The worker command is shaped as:
+
+```bash
+hermes -p <chosen_profile> chat ...
+```
+
+and the worker subprocess environment also gets:
 
 - `HERMES_PROFILE=<chosen_profile>`
 - `HERMES_PROFILE_NAME=<chosen_profile>`
 
-This does not mutate task notes, Kanban assignees, lifecycle state, proof gates, or model chain. It only routes the spawned worker process through a specialist Hermes profile when the operator explicitly enables apply mode.
+This does not mutate task notes, Kanban assignees, lifecycle state, proof gates, or model chain semantics. It only routes the spawned worker process through a specialist Hermes profile.
+
+### 5. Profile-auth-aware model chain filtering
+
+When routed through a named profile, the controller checks `hermes -p <profile> doctor` once per controller process and drops providers known to be unavailable for that profile.
+
+Current known boundary handled:
+
+- named specialist profiles have OpenAI Codex auth;
+- named specialist profiles lack Google Gemini OAuth;
+- advisory chains therefore skip `google-gemini-cli` under routed profiles instead of wasting the first attempt on a predictable auth miss.
 
 ## Verification
 
 Tests added:
 
+- default routing is apply with off/shadow escape hatches;
 - recommendations prefer domain card profiles;
 - context is default-off;
 - opt-in context carries no-authority-expansion rule;
+- profile-provider filtering drops unavailable Gemini for routed profiles;
 - worker context excludes cards by default;
 - worker context includes cards only when env opt-in is set.
 
 ## Boundary reached
 
-This is the overall safe boundary for this authorization.
+This is the next safe boundary after default-on specialist routing.
 
 Still not enabled automatically:
 
-1. Default-on specialist profile routing
-   - The apply path exists, but default remains `shadow`.
-   - Profile doctor smoke checks passed for config/OpenAI Codex auth on workflow/hermes-agent/brain-mirror/media/mlops/dev/hermes-core.
-   - Boundary: named profiles do not have Google Gemini OAuth logged in, so advisory worker fallback chains would spend time failing Gemini before fallback unless profile OAuth is completed or the model chain becomes profile-auth-aware.
-   - Enabling it globally needs a staged rollout config, live shadow metrics, profile auth parity, and rollback.
+1. Always-on Agent Card worker prompt injection
+   - Routing is default-on, but Agent Card prompt context remains opt-in to avoid changing two worker behavior variables at once.
+   - Enable only after prompt-size/performance regression.
 
-2. Always-on Agent Card worker prompt injection
-   - Would alter every worker prompt and token budget.
-   - Requires budget/performance tests and prompt-regression checks.
-
-3. Default-on multimodel conductor routing
+2. Default-on multimodel conductor routing
    - Would alter model/provider orchestration.
    - Requires quorum/quotas/fallback/truth-gate regression.
 
-4. Canonical skill writer / external skill installation
+3. Canonical skill writer / external skill installation
    - Would mutate production skills.
    - Requires human review and gated writer.
 
-5. External side-effect executors
+4. External side-effect executors
    - Would write/send/deploy externally.
    - Requires explicit confirmation, digest-bound executor, audit event, and rollback path.
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to a default-off runtime scaffold. The next step is no longer safe as silent self-architecture work: it would change live dispatch or worker behavior and therefore needs an explicit runtime rollout decision.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing. The system still does not mutate task lifecycle/proof gates through Agent Cards. The next boundary is prompt-context default-on, multimodel conductor default-on, or write-through/external side-effect executors.
