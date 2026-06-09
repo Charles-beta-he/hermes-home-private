@@ -44,4 +44,7 @@ When external projects mention Qdrant, Pinecone, Chroma, Weaviate, Milvus, pgvec
 - Evidence note exists and references both the social source and canonical repo/docs.
 - Newly created tasks are discoverable in `brain_task_orchestrator.py list --json` and have rich metadata.
 - Dashboard/control-center refresh succeeds.
+- If `add --json` returns `event_hook.status: ERROR` but the top-level `status: OK` and `created` path are present, treat task creation as successful and classify the hook payload separately. Common safe outcomes include `reconcile_required`, `autorun_disabled`, or an async multimodel route that moved the task into `running`.
+- For security-sensitive/evolution video leads with `requires_multimodel`, verify whether the event hook started a background multimodel job with `brain_task_orchestrator.py multimodel-intervention-jobs --json`; a resulting `status: running` means the certification process owns the task, not that intake failed.
+- Avoid passing a title that already starts with `Task -` to `brain_task_orchestrator.py add`; the template may add its own heading prefix and produce a visible `Task - Task - ...` title. If this happens, patch only the body heading and re-run `list --json` to verify the title projection.
 - Any event-hook or multimodel allowlist skip is reported as a policy boundary, not hidden as success or misdiagnosed as task creation failure.
