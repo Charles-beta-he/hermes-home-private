@@ -1588,6 +1588,64 @@ def _worker_needs_codegen(task, title_l='', project_l=''):
     return ('uvisa' in project_l) or ('hermes-agent' in project_l) or any(kw in title_l for kw in code_markers)
 
 
+def multimodel_conductor_mode(default='apply'):
+    """Return multimodel conductor mode: off, shadow, or apply.
+
+    apply is default: worker proofs get a multi-model advisory certification
+    packet before the controller moves the task to review. The packet never
+    grants lifecycle/write authority; review->done remains separately gated.
+    """
+    raw = os.environ.get('HERMES_MULTIMODEL_CONDUCTOR_MODE') or os.environ.get('HERMES_MULTIMODEL_CONDUCTOR') or default
+    mode = str(raw or '').strip().lower()
+    if mode in {'0', 'false', 'off', 'no', 'disabled'}:
+        return 'off'
+    if mode in {'1', 'true', 'yes', 'on'}:
+        return 'apply'
+    if mode not in {'off', 'shadow', 'apply'}:
+        return 'apply'
+    return mode
+
+
+def run_multimodel_conductor(task, worker_output, project_profile, worker_profile_name='', mode=None):
+    """Run default-on advisory multi-model certification for worker proof.
+
+    This is not a done/write authority. It returns a packet attached to the
+    worker proof and trace. If providers fail, the packet records degraded
+    certification instead of fabricating approval.
+    """
+    mode = multimodel_conductor_mode() if mode is None else str(mode or 'apply').lower()
+    packet: dict = {
+        'schema': 'hermes_multimodel_conductor_v1',
+        'mode': mode,
+        'status': 'skipped' if mode == 'off' else 'pending',
+        'profile': worker_profile_name or '',
+        'authority': 'advisory_only_no_lifecycle_or_write_authority',
+    }
+    if mode == 'off':
+        packet['reason'] = 'disabled_by_env'
+        return packet
+    try:
+        verdict = verify_with_models(str(task.get('title') or 'untitled'), worker_output, project_profile or {})
+        packet.update({
+            'status': 'certified' if verdict.get('passed') else 'not_certified',
+            'passed': bool(verdict.get('passed')),
+            'verified': verdict.get('verified', 0),
+            'models_checked': verdict.get('models_checked', 0),
+            'errors': verdict.get('errors', 0),
+            'issues': verdict.get('issues', []),
+            'details': verdict.get('details', []),
+            'model_errors': verdict.get('model_errors', []),
+        })
+    except Exception as exc:
+        packet.update({
+            'status': 'degraded',
+            'passed': False,
+            'errors': 1,
+            'model_errors': [str(exc)[:200]],
+        })
+    return packet
+
+
 _PROFILE_PROVIDER_STATUS_CACHE = {}
 
 
@@ -1821,7 +1879,15 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
                     return {'status': 'blocked', 'proof': proof, 'proof_check': proof_check, 'output': output[:500]}
                 if proof_check.get('status') != 'PASS':
                     return {'status': 'blocked', 'reason': 'proof_consistency_failed', 'proof': proof, 'proof_check': proof_check, 'output': output[-500:]}
-                return {'status': 'done', 'proof': proof, 'proof_check': proof_check, 'output': output, 'model_used': model}
+                conductor = run_multimodel_conductor(
+                    task,
+                    output,
+                    profile or {},
+                    worker_profile_name=worker_profile_name,
+                )
+                proof['multimodel_conductor'] = conductor
+                append_trace(eid, {'event': 'multimodel_conductor_verdict', 'verdict': conductor})
+                return {'status': 'done', 'proof': proof, 'proof_check': proof_check, 'multimodel_conductor': conductor, 'output': output, 'model_used': model}
             elif 'BLOCKED' in output:
                 return {'status': 'blocked', 'output': output[:200], 'model_used': model}
             else:

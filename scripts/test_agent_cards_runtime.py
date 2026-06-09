@@ -185,6 +185,52 @@ class AgentCardsRuntimeTest(unittest.TestCase):
                 os.environ.pop("HERMES_ENABLE_AGENT_CARD_CONTEXT", None)
             else:
                 os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = old
+    def test_multimodel_conductor_default_apply_with_escape_hatch(self):
+        old_mode = os.environ.pop("HERMES_MULTIMODEL_CONDUCTOR_MODE", None)
+        old_short = os.environ.pop("HERMES_MULTIMODEL_CONDUCTOR", None)
+        try:
+            self.assertEqual(controller.multimodel_conductor_mode(), "apply")
+            os.environ["HERMES_MULTIMODEL_CONDUCTOR_MODE"] = "off"
+            self.assertEqual(controller.multimodel_conductor_mode(), "off")
+            skipped = controller.run_multimodel_conductor({"title": "x"}, "output", {}, mode="off")
+            self.assertEqual(skipped["status"], "skipped")
+            self.assertEqual(skipped["authority"], "advisory_only_no_lifecycle_or_write_authority")
+        finally:
+            if old_mode is None:
+                os.environ.pop("HERMES_MULTIMODEL_CONDUCTOR_MODE", None)
+            else:
+                os.environ["HERMES_MULTIMODEL_CONDUCTOR_MODE"] = old_mode
+            if old_short is None:
+                os.environ.pop("HERMES_MULTIMODEL_CONDUCTOR", None)
+            else:
+                os.environ["HERMES_MULTIMODEL_CONDUCTOR"] = old_short
+
+    def test_multimodel_conductor_attaches_advisory_packet(self):
+        original = getattr(controller, "verify_with_models")
+        try:
+            setattr(controller, "verify_with_models", lambda title, output, profile: {
+                "passed": True,
+                "verified": 3,
+                "models_checked": 4,
+                "errors": 0,
+                "issues": [],
+                "details": [{"model": "fake", "verified": True}],
+                "model_errors": [],
+            })
+            packet = controller.run_multimodel_conductor(
+                {"title": "dispatch workflow"},
+                "worker output with PROOF_JSON",
+                {"display_name": "Hermes"},
+                worker_profile_name="workflow",
+            )
+            self.assertEqual(packet["status"], "certified")
+            self.assertTrue(packet["passed"])
+            self.assertEqual(packet["verified"], 3)
+            self.assertEqual(packet["profile"], "workflow")
+            self.assertEqual(packet["authority"], "advisory_only_no_lifecycle_or_write_authority")
+        finally:
+            setattr(controller, "verify_with_models", original)
+
     def test_worker_context_agent_card_prompt_delta_stays_bounded(self):
         task = {"id": "t_test", "title": "dispatch workflow", "iceberg_scope": "control_plane_taskpool"}
         old = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT")

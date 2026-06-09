@@ -6,7 +6,7 @@ Date: 2026-06-09
 
 User authorized continuing from the Agent Cards documentation/validator layer until the overall boundary.
 
-This follow-through advanced from default-off scaffold to default-on specialist routing and default-on Agent Card prompt context:
+This follow-through advanced from default-off scaffold to default-on specialist routing, default-on Agent Card prompt context, and default-on advisory multimodel conductor certification:
 
 - Agent Card runtime helper module;
 - deterministic specialist profile recommendations;
@@ -16,7 +16,9 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `HERMES_ENABLE_AGENT_CARD_CONTEXT=0/off/false/no` escape hatch for prompt rollback;
 - worker subprocess profile handoff via `hermes -p <chosen_profile> chat ...`;
 - profile-auth-aware worker model chain filtering so routed profiles skip known-unavailable providers such as Gemini OAuth when missing;
-- tests proving task/Kanban/lifecycle/proof gates remain unmutated by routing/context;
+- default-on advisory multimodel conductor packet attached to validated worker proofs;
+- `HERMES_MULTIMODEL_CONDUCTOR_MODE=off|shadow` escape hatch;
+- tests proving task/Kanban/lifecycle/proof gates remain unmutated by routing/context/conductor;
 - prompt budget test proving Agent Card context delta stays bounded;
 - validation that coverage/classification stayed healthy.
 
@@ -116,6 +118,32 @@ Current known boundary handled:
 - named specialist profiles lack Google Gemini OAuth;
 - advisory chains therefore skip `google-gemini-cli` under routed profiles instead of wasting the first attempt on a predictable auth miss.
 
+### 6. Default-on advisory multimodel conductor
+
+`agent_team_controller.py` now runs `run_multimodel_conductor(...)` after a worker returns a valid proof and after deterministic proof consistency passes.
+
+Default mode:
+
+```bash
+HERMES_MULTIMODEL_CONDUCTOR_MODE=apply
+```
+
+Rollback/disable:
+
+```bash
+HERMES_MULTIMODEL_CONDUCTOR_MODE=off
+```
+
+The conductor packet is attached to the proof under `multimodel_conductor` and traced as `multimodel_conductor_verdict`.
+
+Authority boundary:
+
+- advisory only;
+- does not mark done;
+- does not write task lifecycle;
+- does not install skills or mutate memory;
+- cannot bypass proof gates or review closeout.
+
 ## Verification
 
 Tests added:
@@ -126,17 +154,19 @@ Tests added:
 - default worker context includes Agent Card guidance;
 - Agent Card context carries no-authority-expansion rule;
 - Agent Card prompt delta stays within the configured budget cap;
-- profile-provider filtering drops unavailable Gemini for routed profiles.
+- profile-provider filtering drops unavailable Gemini for routed profiles;
+- multimodel conductor defaults to apply and supports off escape hatch;
+- multimodel conductor attaches advisory-only certification packets.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing and default-on Agent Card prompt context.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, and default-on advisory multimodel conductor.
 
 Still not enabled automatically:
 
-1. Default-on multimodel conductor routing
-   - Would alter model/provider orchestration.
-   - Requires quorum/quotas/fallback/truth-gate regression.
+1. Conductor-as-authority / automatic lifecycle closeout
+   - The conductor is advisory and proof-attached only.
+   - Review -> done still requires the existing proof-gated closeout path.
 
 2. Canonical skill writer / external skill installation
    - Would mutate production skills.
@@ -148,4 +178,4 @@ Still not enabled automatically:
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing plus default-on Agent Card worker prompt guidance. The system still does not mutate task lifecycle/proof gates through Agent Cards. The next boundary is multimodel conductor default-on or digest-bound write-through/external side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, and default-on advisory multimodel conductor certification on valid worker proofs. The system still does not mutate task lifecycle/proof gates through Agent Cards or conductor output. The next boundary is conductor-as-authority, canonical skill writers, or digest-bound write-through/external side-effect executors.
