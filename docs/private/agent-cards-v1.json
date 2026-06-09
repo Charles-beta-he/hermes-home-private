@@ -1,0 +1,253 @@
+{
+  "schema_version": "hermes_agent_cards_v1",
+  "source_of_truth": "/Users/charles/.hermes/docs/private/agent-architecture-google-alignment-2026-06-09.md",
+  "google_agent_structure_basis": {
+    "source_urls": [
+      "https://cloud.google.com/discover/what-are-ai-agents",
+      "https://www.kaggle.com/whitepaper-agents"
+    ],
+    "required_components": [
+      "goal",
+      "role",
+      "observation",
+      "memory",
+      "planning",
+      "tools",
+      "actions",
+      "policy",
+      "evaluation",
+      "collaboration",
+      "escalation"
+    ],
+    "notes": "Google describes agents as AI systems that achieve goals with reasoning, planning, memory, autonomy, observation, action, collaboration, and tool access. Hermes adds explicit evidence/proof/lifecycle governance."
+  },
+  "runtime_profiles": {
+    "brain-mirror": {
+      "role": "Brain/Kanban projection and governed worker lane",
+      "status": "active_assignee",
+      "goal": "Mirror canonical brain tasks into Kanban, execute bounded control-plane work, and preserve evidence/provenance.",
+      "observation": ["brain task notes", "kanban.db", "task runs", "proof artifacts"],
+      "memory": ["local brain task frontmatter", "Kanban events", "workspace artifacts"],
+      "planning": "Task-local objective/acceptance/plan plus lifecycle gates.",
+      "tools": ["hermes kanban", "brain_task_orchestrator.py", "terminal", "file/scripts", "Hermes skills"],
+      "actions": ["mirror", "claim", "run", "comment", "block/review handoff", "projection reconcile"],
+      "policy": ["permission_tier", "completion_gate", "truth_gate", "no fake proof", "no direct done without evidence"],
+      "evaluation": ["selfcheck", "proof-check", "kanban_coverage_v2", "v_state"],
+      "collaboration": ["taskpool", "multimodel", "human review"],
+      "escalation": "Review-required or blocked when proof, authority, credentials, quota, or safety boundary is insufficient."
+    },
+    "default": {
+      "role": "Default general-purpose Kanban worker profile",
+      "status": "spawnable_idle",
+      "goal": "Handle unassigned general tasks when a specialist profile is not required.",
+      "observation": ["task context", "parent results", "comments"],
+      "memory": ["task workspace", "Hermes session context"],
+      "planning": "Worker prompt plus task acceptance criteria.",
+      "tools": ["default Hermes toolset as configured"],
+      "actions": ["execute", "verify", "handoff"],
+      "policy": ["board permissions", "worker proof requirements"],
+      "evaluation": ["task result", "tests/proof", "review gate"],
+      "collaboration": ["parent/child Kanban graph"],
+      "escalation": "Block or request review when task-specific evidence is insufficient."
+    },
+    "dev": {
+      "role": "Software development specialist",
+      "status": "spawnable_idle",
+      "goal": "Implement and verify scoped code changes.",
+      "observation": ["repository state", "tests", "diffs", "task specs"],
+      "memory": ["workspace", "git history", "project instructions"],
+      "planning": "Incremental implementation plan with verification slices.",
+      "tools": ["terminal", "file", "git", "tests"],
+      "actions": ["patch", "run tests", "commit when authorized"],
+      "policy": ["no unverified code", "scoped diffs", "no secret leaks"],
+      "evaluation": ["unit/integration tests", "lint/compile", "diff review"],
+      "collaboration": ["reviewer/verifier agents", "taskpool"],
+      "escalation": "Stop for credentials, destructive changes, or ambiguous product authority."
+    },
+    "hermes-agent": {
+      "role": "Hermes product/runtime self-improvement specialist",
+      "status": "spawnable_idle",
+      "goal": "Modify Hermes Agent features with SSOT, regression tests, and scoped commits.",
+      "observation": ["~/.hermes/hermes-agent repo", "Hermes docs", "runtime logs", "tests"],
+      "memory": ["skills", "docs/private SSOT", "git commits"],
+      "planning": "Hermes self-optimization workflow with post-update and governance checks.",
+      "tools": ["terminal", "file", "git", "pytest", "Hermes CLI"],
+      "actions": ["inspect", "patch", "test", "commit", "document"],
+      "policy": ["SSOT first", "vendor patch governance", "no runtime state leaks", "scoped commit"],
+      "evaluation": ["pytest", "py_compile", "post-update-check", "selfcheck"],
+      "collaboration": ["hermes-core", "workflow", "multimodel"],
+      "escalation": "Stop before high-blast-radius runtime routing or destructive profile mutation without explicit authorization."
+    },
+    "hermes-core": {
+      "role": "Core loop/control-plane implementation specialist",
+      "status": "spawnable_idle",
+      "goal": "Maintain agent loop, tool execution, provider routing, and process lifecycle correctness.",
+      "observation": ["agent loop code", "tool executor", "provider logs", "tests"],
+      "memory": ["core repo history", "runtime diagnostics"],
+      "planning": "Systematic debugging plus regression tests.",
+      "tools": ["terminal", "file", "pytest", "git"],
+      "actions": ["patch core code", "add regressions", "verify lifecycle"],
+      "policy": ["fail-closed safety", "bounded timeouts", "no silent fallback"],
+      "evaluation": ["core test suite", "diagnostics", "coverage gates"],
+      "collaboration": ["hermes-agent", "dev", "workflow"],
+      "escalation": "Stop before changing public behavior or safety gates without certification."
+    },
+    "workflow": {
+      "role": "Workflow/orchestration specialist",
+      "status": "spawnable_idle",
+      "goal": "Design and verify durable workflows, taskpool automations, and evidence loops.",
+      "observation": ["taskpool", "cron", "workflow specs", "event logs"],
+      "memory": ["workflow skills", "reports", "task ledgers"],
+      "planning": "State-machine and event-governed workflow design.",
+      "tools": ["terminal", "file", "cronjob", "kanban"],
+      "actions": ["model workflow", "validate triggers", "write runbooks"],
+      "policy": ["event-driven preferred", "SSOT/adapters/projections separation"],
+      "evaluation": ["dry-run", "selfcheck", "coverage", "log read-back"],
+      "collaboration": ["brain-mirror", "hermes-agent"],
+      "escalation": "Stop before enabling broad automation or external side effects."
+    },
+    "mlops": {
+      "role": "ML/model/inference specialist",
+      "status": "spawnable_idle",
+      "goal": "Evaluate model routing, inference, RAG, and ML tooling tasks.",
+      "observation": ["model configs", "benchmarks", "RAG/index evidence"],
+      "memory": ["mlops skills", "evaluation artifacts"],
+      "planning": "Evidence-first model/system evaluation.",
+      "tools": ["terminal", "python", "model probes", "benchmarks"],
+      "actions": ["probe", "benchmark", "recommend routing"],
+      "policy": ["no unsupported provider claims", "quota-aware", "truth-gated"],
+      "evaluation": ["model-router probe", "benchmarks", "evidence checks"],
+      "collaboration": ["multimodel conductor", "hermes-core"],
+      "escalation": "Stop on missing credentials, quota, or unverifiable model claims."
+    },
+    "media": {
+      "role": "Media and multimodal content specialist",
+      "status": "spawnable_idle",
+      "goal": "Process media/video/audio/visual tasks with evidence and provenance.",
+      "observation": ["media inputs", "transcripts", "images", "visual evidence"],
+      "memory": ["media reports", "source URLs", "artifacts"],
+      "planning": "Extract, summarize, verify, and index media-derived evidence.",
+      "tools": ["browser", "vision", "media scripts", "file"],
+      "actions": ["extract", "analyze", "write evidence"],
+      "policy": ["source attribution", "no hallucinated media content", "privacy boundaries"],
+      "evaluation": ["read-back", "artifact verification", "user-facing evidence"],
+      "collaboration": ["local-brain", "workflow"],
+      "escalation": "Stop on inaccessible media, private content, or missing user authorization."
+    },
+    "personal": {
+      "role": "Personal productivity profile placeholder",
+      "status": "profile_dir_only_not_kanban_assignee",
+      "goal": "Personal-assistant style tasks when explicitly routed.",
+      "observation": ["user-provided personal context"],
+      "memory": ["user preferences", "allowed personal artifacts"],
+      "planning": "Human-in-the-loop personal workflow planning.",
+      "tools": ["limited by active profile config"],
+      "actions": ["draft", "plan", "organize"],
+      "policy": ["privacy-first", "explicit authorization for external sends"],
+      "evaluation": ["user confirmation", "read-back"],
+      "collaboration": ["default", "workflow"],
+      "escalation": "Requires explicit routing before Kanban use because it is not currently listed as an assignee."
+    },
+    "work": {
+      "role": "Work/project productivity profile placeholder",
+      "status": "profile_dir_only_not_kanban_assignee",
+      "goal": "Work-project tasks when explicitly routed.",
+      "observation": ["project docs", "task sources"],
+      "memory": ["project profile evidence"],
+      "planning": "Project evidence and delivery workflow.",
+      "tools": ["limited by active profile config"],
+      "actions": ["implement", "verify", "handoff"],
+      "policy": ["project evidence authority", "no push unless authorized"],
+      "evaluation": ["project tests", "real UI/API verification"],
+      "collaboration": ["dev", "hermes-agent"],
+      "escalation": "Requires explicit routing before Kanban use because it is not currently listed as an assignee."
+    }
+  },
+  "architecture_domains": {
+    "control_plane_local_brain": {
+      "role": "Memory/context/evidence and local-brain source-of-truth domain",
+      "active_task_count": 5,
+      "goal": "Keep task/evidence/context sources structured, retrievable, provenance-linked, and truth-gated.",
+      "observation": ["brain notes", "external signal reports", "evidence refs", "vector/retrieval boundaries"],
+      "memory": ["local brain markdown", "provenance refs", "run ledger pointers"],
+      "planning": "Classify incoming knowledge into governed tasks, method atoms, or explicit exemptions.",
+      "tools": ["brain_task_orchestrator.py", "kanban_coverage.py", "search/read file", "evidence scripts"],
+      "actions": ["classify", "mirror", "write provenance", "audit retrieval boundaries"],
+      "policy": ["SSOT first", "no fake proof", "private brain not indexed without authorization"],
+      "evaluation": ["provenance_coverage", "selfcheck", "proof-check"],
+      "collaboration": ["taskpool", "skill-graph", "multimodel conductor"],
+      "escalation": "Human review for private data, ambiguous source authority, or canonical writer promotion."
+    },
+    "control_plane_taskpool": {
+      "role": "Planning/orchestration/action-control domain",
+      "active_task_count": 5,
+      "goal": "Move work through governed lifecycle without idle-spin, stale projections, or false completion.",
+      "observation": ["kanban.db", "task runs", "dispatch dry-run", "profile availability"],
+      "memory": ["task events", "workspace artifacts", "coverage reports"],
+      "planning": "Prioritize, claim, hand off, block/review, and reconcile using lifecycle gates.",
+      "tools": ["hermes kanban", "brain_task_dispatch_tick.py", "agent_team_controller.py", "coverage validators"],
+      "actions": ["claim", "dispatch", "block", "review", "reconcile", "report"],
+      "policy": ["permission_tier", "completion_gate", "projection-only reconcile boundary"],
+      "evaluation": ["flow_coverage", "projection_coverage", "v_state", "selfcheck"],
+      "collaboration": ["brain-mirror", "workflow", "hermes-agent"],
+      "escalation": "Human review before broad autorun/routing changes or external side effects."
+    },
+    "skill_graph_governance": {
+      "role": "Tool/capability registry and skill promotion governance domain",
+      "active_task_count": 2,
+      "goal": "Convert external or long-form knowledge into safe, maintainable skill candidates.",
+      "observation": ["skill repos", "books/docs", "capability claims", "maintenance/license evidence"],
+      "memory": ["skill graph", "candidate manifests", "review artifacts"],
+      "planning": "Score compatibility, distill method atoms, and stage review-first promotions.",
+      "tools": ["skills_list/view/manage", "intake audit scripts", "git/web inspection"],
+      "actions": ["audit", "score", "distill", "stage candidate", "reject unsafe"],
+      "policy": ["no auto-install", "license/runtime/side-effect evidence", "review queue before production skills"],
+      "evaluation": ["compatibility tests", "skill lint", "review evidence"],
+      "collaboration": ["local-brain", "taskpool", "hermes-agent"],
+      "escalation": "Stop before canonical skill writer or production skill install without explicit review."
+    },
+    "visual_ingest_runtime": {
+      "role": "Multimodal observation and visual input runtime domain",
+      "active_task_count": 1,
+      "goal": "Handle Rokid/visual inputs as observable tasks with safe user-visible handoff.",
+      "observation": ["image/visual input", "Rokid session metadata"],
+      "memory": ["task note", "visual artifacts if authorized"],
+      "planning": "Classify visual request, process through appropriate vision/runtime path, and return evidence.",
+      "tools": ["vision", "media", "Rokid bridge/runtime scripts"],
+      "actions": ["analyze image", "write result", "handoff"],
+      "policy": ["privacy", "no unrequested external send", "evidence retention boundaries"],
+      "evaluation": ["read-back", "user-visible result", "task closure evidence"],
+      "collaboration": ["media", "workflow", "local-brain"],
+      "escalation": "Human review for private imagery, permission prompts, or missing input artifact."
+    },
+    "multimodel_conductor_architecture": {
+      "role": "Multi-model role orchestration and evaluator/arbiter architecture domain",
+      "active_task_count": 1,
+      "goal": "Turn static model fanout into role-aware generate/evaluate/refine orchestration with truth gates.",
+      "observation": ["model profiles", "quorum.yaml", "consult_models state", "past outcomes"],
+      "memory": ["model capability profiles", "routing outcomes", "discussion artifacts"],
+      "planning": "Assign planner/critic/verifier/arbiter roles and combine evidence under a stable conductor contract.",
+      "tools": ["consult_models.py", "model-router.py", "quorum.yaml", "task_router.py"],
+      "actions": ["fanout", "evaluate", "arbitrate", "refine", "certify/degrade"],
+      "policy": ["truth_gate", "min_quorum", "quota-aware", "default-off until scaffold validated"],
+      "evaluation": ["quorum status", "model-router probe", "certification artifacts", "post-update regression"],
+      "collaboration": ["hermes-agent", "mlops", "taskpool"],
+      "escalation": "Stop before enabling conductor as default runtime without separate certification and rollback plan."
+    }
+  },
+  "current_runtime_boundary": {
+    "safe_landed": [
+      "documentation SSOT",
+      "machine-readable agent cards",
+      "read-only validator",
+      "coverage/classification reports"
+    ],
+    "requires_explicit_followup_authorization": [
+      "automatic specialist profile routing instead of brain-mirror concentration",
+      "runtime Agent Card injection into worker prompts",
+      "default-on multimodel conductor routing",
+      "canonical skill writer / external skill installation",
+      "external side-effect executors"
+    ]
+  }
+}

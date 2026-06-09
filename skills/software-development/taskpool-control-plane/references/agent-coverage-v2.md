@@ -63,6 +63,7 @@ When the user asks for “agent 分类” or asks to drive classification to 100
 - Treat `iceberg_tier` for Hermes self-architecture tasks as a system/control-plane tier, not only product UI tiers. `L` is appropriate when the task touches service/runtime/control-plane architecture rather than display-only UI.
 - If Kanban says a card is blocked but the brain note still says running, inspect `hermes kanban show <id>` and `task_runs.summary`. A real `review-required` worker outcome should normally align the brain note to `review` with a lifecycle/projection audit line, not `done`.
 - A classification 100% result requires zero missing canonical fields on active notes, empty `projection_drift`, empty caps, and tests/selfcheck after metadata changes.
+- Scope: Hermes self-architecture agent/domain audits only. Applicability: when comparing Hermes runtime profiles and architecture domains to Google-style agent structure. Use a scoped, machine-readable Agent Card SSOT plus a read-only validator. Required card fields are goal, role, observation, memory, planning, tools, actions, policy, evaluation, collaboration, and escalation. Anti-condition: do not treat the card layer as runtime authorization; specialist profile routing, worker-prompt card injection, default-on conductor routing, canonical skill writers, or external side-effect executors still require explicit follow-up authorization and separate verification.
 
 ## Completion standard
 
