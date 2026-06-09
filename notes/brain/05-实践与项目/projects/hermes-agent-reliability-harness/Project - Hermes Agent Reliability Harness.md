@@ -8,8 +8,9 @@ scope: hermes-agent-self-architecture
 canonical_ssot:
   - /Users/charles/.hermes/docs/private/agent-eval-dynamic-workflow-longterm-20260609.md
   - /Users/charles/.hermes/docs/private/agent-eval-harness-full-landing-20260609.md
+  - /Users/charles/.hermes/docs/private/agent-reliability-harness-enterprise-distribution-20260609.md
 implementation_repo: /Users/charles/.hermes/hermes-agent
-implementation_commit: 628e9104c
+implementation_commit: 96f2f0f2a
 parent_commit: e0237a1
 ---
 
@@ -34,6 +35,13 @@ Core implementation:
 Operational skill:
 
 - `agent-eval-dynamic-workflow-harness`
+- Now bundled into the private repo under `skills/software-development/agent-eval-dynamic-workflow-harness/`, so private-repo wheel/source installs can receive the trunk skill rather than relying on a profile-local overlay.
+
+Enterprise distribution surface:
+
+- `hermes-eval` console script.
+- Bundled eval baseline under install-time `evals/cases/*.json`.
+- Wheel data-files preserve runtime lookup paths for `evals/cases` and the trunk skill.
 
 ## Component map
 
@@ -75,8 +83,9 @@ Artifacts from smoke run:
 ## Git state
 
 - Hermes Agent implementation commit: `628e9104c Add offline agent reliability harness`.
+- Hermes Agent enterprise distribution commit: `96f2f0f2a Ship reliability harness distribution assets`.
 - Implementation repo remote push: pushed to `origin/private/main`.
-- Parent Hermes profile commit: `e0237a1 Land agent reliability harness`.
+- Parent Hermes profile commit: `e0237a1 Land agent reliability harness`; later local profile commit pending for enterprise distribution SSOT/brain mirror.
 - Parent repo has no configured remote at the time of this note, so only the submodule implementation could be pushed.
 
 ## Boundaries
