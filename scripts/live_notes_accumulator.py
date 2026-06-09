@@ -21,6 +21,7 @@ import sqlite3
 import json
 import os
 import sys
+import hashlib
 from datetime import datetime, timedelta
 
 DB_PATH = os.path.expanduser("~/.hermes/state/live_notes.sqlite")
@@ -63,19 +64,32 @@ def init_db():
         conn.execute("ALTER TABLE notes ADD COLUMN access_count INTEGER DEFAULT 0")
     if "last_accessed_at" not in cols:
         conn.execute("ALTER TABLE notes ADD COLUMN last_accessed_at TEXT")
+    if "content_hash" not in cols:
+        conn.execute("ALTER TABLE notes ADD COLUMN content_hash TEXT")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_notes_hash ON notes(content_hash)")
     conn.commit()
     return conn
 
 
 def add_note(content, category="observation", tags=None, importance=5, session_id=None):
-    """Add a live note."""
+    """Add a live note. Deduplicates by content hash."""
     conn = init_db()
     now = datetime.now().isoformat()
     tags_json = json.dumps(tags or [])
+    content_hash = hashlib.sha256(content.strip().encode()).hexdigest()[:16]
+
+    # Dedup: skip if identical content already exists
+    existing = conn.execute(
+        "SELECT id FROM notes WHERE content_hash = ? AND consolidated >= 0 LIMIT 1",
+        (content_hash,)
+    ).fetchone()
+    if existing:
+        conn.close()
+        return existing[0]  # Return existing note id (idempotent)
 
     cur = conn.execute(
-        "INSERT INTO notes (content, category, tags, session_id, importance, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-        (content, category, tags_json, session_id, importance, now)
+        "INSERT INTO notes (content, category, tags, session_id, importance, created_at, content_hash) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (content, category, tags_json, session_id, importance, now, content_hash)
     )
     conn.commit()
     note_id = cur.lastrowid

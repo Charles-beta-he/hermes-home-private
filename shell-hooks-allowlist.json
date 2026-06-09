@@ -11,6 +11,12 @@
       "command": "/Users/charles/.claude/hooks/log-route-outcome.sh",
       "event": "post_tool_call",
       "script_mtime_at_approval": null
+    },
+    {
+      "approved_at": "2026-05-17T13:58:47.883905Z",
+      "command": "~/.hermes/scripts/log-route-outcome.sh",
+      "event": "post_tool_call",
+      "script_mtime_at_approval": "2026-05-17T13:53:45.616029Z"
     }
   ]
 }

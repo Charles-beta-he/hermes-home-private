@@ -22,6 +22,7 @@ from typing import Any
 HOME = Path.home()
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(HOME / ".hermes"))).expanduser()
 ORCH = HERMES_HOME / "scripts" / "brain_task_orchestrator.py"
+TICK = HERMES_HOME / "scripts" / "brain_task_dispatch_tick.py"
 STATE_DIR = HERMES_HOME / "state" / "multimodel_dynamic"
 STATE = STATE_DIR / "state.json"
 PID = STATE_DIR / "worker.pid"
@@ -87,6 +88,32 @@ def summarize_worker_result(result: dict[str, Any]) -> dict[str, Any]:
     summary["stdout_bytes"] = result.get("stdout_bytes")
     summary["stderr_bytes"] = result.get("stderr_bytes")
     return summary
+
+
+def post_certification_closeout(env: dict[str, str]) -> dict[str, Any]:
+    """Close review tasks that became certified during the multimodel worker.
+
+    The dynamic worker is the certification lane. Once it writes PASS/LOOP_DONE
+    evidence back to task notes, complete automation should not wait for a later
+    dispatch tick to notice it. Keep this follow-up non-recursive: consume only
+    existing certification and never spawn another model round from review-close.
+    """
+    close_env = dict(env)
+    close_env["HERMES_AUTO_CLOSE_REVIEW_TRIGGER_CERT"] = "0"
+    return run([sys.executable, str(ORCH), "auto-close-review", "--max-tasks", "6", "--json"], timeout=180, env=close_env)
+
+
+def post_closeout_dispatch_tick(env: dict[str, str]) -> dict[str, Any]:
+    """Run one bounded dispatch tick after certification closeout.
+
+    This provides complete automation for cert -> review close -> next bounded
+    task advancement without creating a recursive certification loop. The tick's
+    own review-close step is forced to consume-only mode.
+    """
+    tick_env = dict(env)
+    tick_env["HERMES_AUTO_CLOSE_REVIEW_TRIGGER_CERT"] = "0"
+    tick_env.setdefault("HERMES_LOCAL_BRAIN_AUTORUN", "1")
+    return run([sys.executable, str(TICK), "--summary", "--autorun-step", "--no-state"], timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "240")), env=tick_env)
 
 
 def alive(pid: int) -> bool:
@@ -155,6 +182,29 @@ def worker(max_workers: int) -> int:
     cmd = [sys.executable, str(ORCH), "multimodel-intervention-parallel-step", "--max-workers", str(max_workers), "--json"]
     result = run(cmd, timeout=int(os.environ.get("HERMES_MULTIMODEL_WORKER_TIMEOUT", "7200")), env=env)
     event["finished_at"] = utc(); event["worker_summary"] = summarize_worker_result(result); event["result"] = compact_result(result)
+    if result.get("returncode") == 0:
+        closeout = post_certification_closeout(env)
+        closeout_payload = parse_json(closeout.get("stdout", "")) or {}
+        event["post_certification_closeout"] = compact_result(closeout)
+        event["post_certification_closeout_summary"] = {
+            "returncode": closeout.get("returncode"),
+            "closed_count": closeout_payload.get("closed_count"),
+            "skipped_count": closeout_payload.get("skipped_count"),
+            "error_count": closeout_payload.get("error_count"),
+        }
+        if closeout.get("returncode") == 0:
+            dispatch_tick = post_closeout_dispatch_tick(env)
+            dispatch_payload = parse_json(dispatch_tick.get("stdout", "")) or {}
+            event["post_closeout_dispatch_tick"] = compact_result(dispatch_tick)
+            event["post_closeout_dispatch_tick_summary"] = {
+                "returncode": dispatch_tick.get("returncode"),
+                "status": dispatch_payload.get("status"),
+                "next_task_id": dispatch_payload.get("next_task_id"),
+                "dispatchable": dispatch_payload.get("dispatchable"),
+                "error_count": dispatch_payload.get("error_count"),
+                "autorun": dispatch_payload.get("autorun"),
+                "auto_close_review": dispatch_payload.get("auto_close_review"),
+            }
     append(event)
     print(json.dumps(event, ensure_ascii=False, indent=2))
     try: PID.unlink()
@@ -166,7 +216,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--worker", action="store_true")
-    ap.add_argument("--max-workers", type=int, default=1)
+    ap.add_argument("--max-workers", type=int, default=int(os.environ.get("HERMES_MULTIMODEL_DYNAMIC_MAX_WORKERS", "3")))
     ap.add_argument("--cooldown-seconds", type=int, default=int(os.environ.get("HERMES_MULTIMODEL_DYNAMIC_COOLDOWN", "1800")))
     args = ap.parse_args()
     if args.worker:
@@ -211,8 +261,13 @@ def main() -> int:
         append(event)
         return 0
 
-    # Keep worker count conservative to avoid provider timeouts and rate-limit cascades.
-    max_workers = 1 if event["queued_count"] < 8 else min(2, args.max_workers or 2)
+    # Scale workers by queue depth: 1 for small queues, up to 3 for large queues.
+    if event["queued_count"] >= 8:
+        max_workers = min(3, args.max_workers or 3)
+    elif event["queued_count"] >= 3:
+        max_workers = min(2, args.max_workers or 2)
+    else:
+        max_workers = 1
     pid = start_worker(max_workers)
     event.update({"status": "OK", "action": "started_worker", "pid": pid, "max_workers": max_workers, "worker_log": str(WORKER_LOG)})
     save_state({"updated_at": event["ts"], "signature": sig, "last_start_epoch": now, "selected_task_id": event["selected_task_id"], "queued_count": event["queued_count"]})

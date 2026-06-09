@@ -70,14 +70,14 @@ def detect_type(text: str) -> str:
         try:
             json.loads(text)
             return "json"
-        except:
+        except json.JSONDecodeError:
             pass
     # Python 代码检测
     if any(kw in text for kw in ["def ", "class ", "import ", "from "]):
         try:
             ast.parse(text)
             return "code"
-        except:
+        except SyntaxError:
             pass
     return "text"
 

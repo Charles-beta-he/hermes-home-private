@@ -397,7 +397,14 @@ def emit(msg: dict, db_path: Optional[str] = None) -> bool:
     返回 True 表示写入成功。
     """
     import sqlite3
-    db = db_path or os.path.expanduser("~/.hermes/route_outcomes.db")
+    # Honor explicit db_path arg, then test-injection env, then default.
+    db = (
+        db_path
+        or os.environ.get("HERMES_PROTOCOL_DB_PATH")
+        or os.environ.get("HERMES_ROUTE_DB_PATH")
+        or os.path.expanduser("~/.hermes/route_outcomes.db")
+    )
+    db = os.path.expanduser(db)
 
     try:
         conn = sqlite3.connect(db)
@@ -461,7 +468,13 @@ def query_messages(chain_id: str, db_path: Optional[str] = None,
                    limit: int = 100) -> List[dict]:
     """查询指定 chain 的所有协议消息（按 ts_ns 排序）"""
     import sqlite3
-    db = db_path or os.path.expanduser("~/.hermes/route_outcomes.db")
+    db = (
+        db_path
+        or os.environ.get("HERMES_PROTOCOL_DB_PATH")
+        or os.environ.get("HERMES_ROUTE_DB_PATH")
+        or os.path.expanduser("~/.hermes/route_outcomes.db")
+    )
+    db = os.path.expanduser(db)
     try:
         conn = sqlite3.connect(db)
         conn.row_factory = sqlite3.Row

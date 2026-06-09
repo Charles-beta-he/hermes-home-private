@@ -137,6 +137,44 @@ def test_worker_summary_preserves_parseable_result_before_log_compaction():
     assert summary["decisions"] == ["LOOP_DONE"]
 
 
+def test_worker_runs_non_recursive_post_certification_closeout():
+    m = load_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        m.LOG = root / "log.jsonl"
+        m.PID = root / "worker.pid"
+        m.PID.write_text("999999", encoding="utf-8")
+        calls = []
+
+        def fake_run(cmd, timeout=90, env=None):
+            calls.append((cmd, timeout, dict(env or {})))
+            if "multimodel-intervention-parallel-step" in cmd:
+                payload = {"status": "OK", "tasks_processed": 1, "tasks_passed": 1, "tasks_failed": 0, "tasks_errors": 0, "results": [{"task_id": "task-a", "gate": {"status": "PASS", "decision": "LOOP_DONE"}}]}
+                return m.with_output_tails({"cmd": cmd, "returncode": 0, "stdout": json.dumps(payload), "stderr": ""})
+            if "auto-close-review" in cmd:
+                assert (env or {}).get("HERMES_AUTO_CLOSE_REVIEW_TRIGGER_CERT") == "0"
+                payload = {"status": "OK", "closed_count": 1, "skipped_count": 0, "error_count": 0}
+                return m.with_output_tails({"cmd": cmd, "returncode": 0, "stdout": json.dumps(payload), "stderr": ""})
+            if any("brain_task_dispatch_tick.py" in str(part) for part in cmd):
+                assert (env or {}).get("HERMES_AUTO_CLOSE_REVIEW_TRIGGER_CERT") == "0"
+                assert (env or {}).get("HERMES_LOCAL_BRAIN_AUTORUN") == "1"
+                payload = {"status": "OK", "next_task_id": "task-b", "dispatchable": True, "error_count": 0, "autorun": {"advanced": True}, "auto_close_review": {"closed_count": 0}}
+                return m.with_output_tails({"cmd": cmd, "returncode": 0, "stdout": json.dumps(payload), "stderr": ""})
+            raise AssertionError(cmd)
+
+        m.run = fake_run
+        with contextlib.redirect_stdout(io.StringIO()):
+            rc = m.worker(2)
+        assert rc == 0
+        event = json.loads(m.LOG.read_text(encoding="utf-8").splitlines()[-1])
+        assert event["worker_summary"]["tasks_passed"] == 1
+        assert event["post_certification_closeout_summary"]["closed_count"] == 1
+        assert event["post_closeout_dispatch_tick_summary"]["status"] == "OK"
+        assert event["post_closeout_dispatch_tick_summary"]["autorun"]["advanced"] is True
+        assert any("auto-close-review" in cmd for cmd, _, _ in calls)
+        assert any(any("brain_task_dispatch_tick.py" in str(part) for part in cmd) for cmd, _, _ in calls)
+
+
 if __name__ == "__main__":
     tests = [v for k, v in globals().items() if k.startswith("test_")]
     for test in tests:

@@ -21,11 +21,11 @@ BRAIN = HOME / "Documents" / "brain"
 
 REQUIRED_SKILL = HERMES / "skills" / "software-development" / "multi-model-thinking" / "references" / "gitnexus-code-evidence-mcp-pattern.md"
 REQUIRED_BRAIN_FILES = [
-    BRAIN / "20-projects" / "hermes-code-evidence-mcp" / "Project - Hermes Code Evidence MCP Fusion.md",
-    BRAIN / "20-projects" / "hermes-code-evidence-mcp" / "P10 - Long-term Strategy.md",
-    BRAIN / "20-projects" / "hermes-code-evidence-mcp" / "P9 - Implementation Backlog.md",
-    BRAIN / "08-实践方案" / "04-GitNexus-inspired多模型代码证据门落地方案.md",
-    BRAIN / "60-reviews" / "2026-05-06-gitnexus-fusion-multimodel-selfcheck.md",
+    BRAIN / "05-实践与项目" / "projects" / "hermes-code-evidence-mcp" / "Project - Hermes Code Evidence MCP Fusion.md",
+    BRAIN / "05-实践与项目" / "projects" / "hermes-code-evidence-mcp" / "P10 - Long-term Strategy.md",
+    BRAIN / "05-实践与项目" / "projects" / "hermes-code-evidence-mcp" / "P9 - Implementation Backlog.md",
+    BRAIN / "05-实践与项目" / "实践方案" / "04-GitNexus-inspired多模型代码证据门落地方案.md",
+    BRAIN / "06-治理与评审" / "reviews" / "2026-05-06-gitnexus-fusion-multimodel-selfcheck.md",
 ]
 
 PATTERNS = {

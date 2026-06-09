@@ -27,7 +27,7 @@ SKILLS_DIR = Path(os.path.expanduser(os.environ.get("HERMES_SKILLS_DIR", "~/.her
 BRAIN_DIR = Path(os.path.expanduser("~/Documents/brain"))
 REPORT_DIR = SKILLS_DIR / "steward"
 REPORT_FILE = REPORT_DIR / "audit-report.json"
-DASHBOARD_FILE = BRAIN_DIR / "06-仪表盘" / "技能生态健康度.md"
+DASHBOARD_FILE = BRAIN_DIR / "07-仪表盘" / "技能生态健康度.md"
 MAX_GRAPH_DEPTH = int(os.environ.get("HERMES_SKILL_GRAPH_MAX_DEPTH", "4"))
 MAX_MOLECULE_DEPS = int(os.environ.get("HERMES_SKILL_GRAPH_MAX_MOLECULE_DEPS", "10"))
 

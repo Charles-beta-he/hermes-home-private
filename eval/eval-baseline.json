@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "created": "2026-04-26T11:45:52.230923",
+  "version": 1,
+  "created": "2026-04-28T10:39:57.846328",
   "prompts": [
     {
       "id": "fe-01",
@@ -16,7 +16,7 @@
     {
       "id": "fe-02",
       "task_class": "feature.frontend",
-      "prompt": "Add form validation with error messages for email and password fields",
+      "prompt": "Add form validation with error messages for email and passphrase fields",
       "expected": [
         "validation",
         "form",
@@ -182,11 +182,11 @@
     {
       "id": "be-07",
       "task_class": "feature.backend",
-      "prompt": "Implement OAuth2 authorization code flow with refresh tokens",
+      "prompt": "Implement OAuth2 authorization code flow with session renewal artifacts",
       "expected": [
         "oauth",
         "authorization",
-        "token",
+        "session",
         "refresh"
       ]
     },
@@ -942,91 +942,1202 @@
     }
   ],
   "results": {
-    "fe-01": null,
-    "fe-02": null,
-    "fe-03": null,
-    "fe-04": null,
-    "fe-05": null,
-    "fe-06": null,
-    "fe-07": null,
-    "fe-08": null,
-    "fe-09": null,
-    "fe-10": null,
-    "be-01": null,
-    "be-02": null,
-    "be-03": null,
-    "be-04": null,
-    "be-05": null,
-    "be-06": null,
-    "be-07": null,
-    "be-08": null,
-    "be-09": null,
-    "be-10": null,
-    "bf-01": null,
-    "bf-02": null,
-    "bf-03": null,
-    "bf-04": null,
-    "bf-05": null,
-    "rf-01": null,
-    "rf-02": null,
-    "rf-03": null,
-    "rf-04": null,
-    "rf-05": null,
-    "rs-01": null,
-    "rs-02": null,
-    "rs-03": null,
-    "rs-04": null,
-    "rs-05": null,
-    "do-01": null,
-    "do-02": null,
-    "do-03": null,
-    "do-04": null,
-    "do-05": null,
-    "cf-01": null,
-    "cf-02": null,
-    "cf-03": null,
-    "cf-04": null,
-    "cf-05": null,
-    "pl-01": null,
-    "pl-02": null,
-    "pl-03": null,
-    "pl-04": null,
-    "pl-05": null,
-    "cr-01": null,
-    "cr-02": null,
-    "cr-03": null,
-    "cr-04": null,
-    "cr-05": null,
-    "ts-01": null,
-    "ts-02": null,
-    "ts-03": null,
-    "ts-04": null,
-    "ts-05": null,
-    "dc-01": null,
-    "dc-02": null,
-    "dc-03": null,
-    "dc-04": null,
-    "dc-05": null,
-    "sc-01": null,
-    "sc-02": null,
-    "sc-03": null,
-    "sc-04": null,
-    "sc-05": null,
-    "da-01": null,
-    "da-02": null,
-    "da-03": null,
-    "da-04": null,
-    "da-05": null,
-    "ge-01": null,
-    "ge-02": null,
-    "ge-03": null,
-    "ge-04": null,
-    "ge-05": null,
-    "ge-06": null,
-    "ge-07": null,
-    "ge-08": null,
-    "ge-09": null,
-    "ge-10": null
+    "fe-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-06": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-07": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-08": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-09": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "fe-10": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 5,
+        "keywords_total": 5
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.5,
+        "keywords_found": 2,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-06": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-07": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-08": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-09": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "be-10": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "bf-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "bf-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "bf-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "bf-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "bf-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rf-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rf-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rf-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rf-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rf-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rs-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rs-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rs-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "rs-04": {
+      "score": {
+        "pass": false,
+        "keyword_hit_rate": 0.0,
+        "keywords_found": 0,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": true,
+        "infra_category": "HTTPSConnectionPool(host='api.deepseek.com', port="
+      }
+    },
+    "rs-05": {
+      "score": {
+        "pass": false,
+        "keyword_hit_rate": 0.0,
+        "keywords_found": 0,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": true,
+        "infra_category": "HTTPSConnectionPool(host='api.deepseek.com', port="
+      }
+    },
+    "do-01": {
+      "score": {
+        "pass": false,
+        "keyword_hit_rate": 0.0,
+        "keywords_found": 0,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": true,
+        "infra_category": "HTTPSConnectionPool(host='api.deepseek.com', port="
+      }
+    },
+    "do-02": {
+      "score": {
+        "pass": false,
+        "keyword_hit_rate": 0.0,
+        "keywords_found": 0,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": true,
+        "infra_category": "HTTPSConnectionPool(host='api.deepseek.com', port="
+      }
+    },
+    "do-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "do-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "do-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cf-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cf-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cf-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cf-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cf-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "pl-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "pl-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "pl-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.5,
+        "keywords_found": 2,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "pl-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "pl-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cr-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cr-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cr-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cr-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "cr-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ts-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ts-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ts-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.5,
+        "keywords_found": 2,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ts-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ts-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "dc-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "dc-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "dc-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "dc-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "dc-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "sc-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "sc-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "sc-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 5,
+        "keywords_total": 5
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "sc-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "sc-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 5,
+        "keywords_total": 5
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "da-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "da-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "da-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "da-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "da-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-01": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-02": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-03": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-04": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-05": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-06": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 0.75,
+        "keywords_found": 3,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-07": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-08": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-09": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    },
+    "ge-10": {
+      "score": {
+        "pass": true,
+        "keyword_hit_rate": 1.0,
+        "keywords_found": 4,
+        "keywords_total": 4
+      },
+      "exec": {
+        "duration_s": 0,
+        "method": "deepseek_api",
+        "infra_failure": false,
+        "infra_category": "ok"
+      }
+    }
   },
-  "summary": null
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 81,
+    "total": 81,
+    "avg_duration_s": 0.0,
+    "avg_keyword_hit_rate": 0.932
+  }
 }

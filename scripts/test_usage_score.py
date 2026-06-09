@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sqlite3
 import tempfile
@@ -118,6 +119,27 @@ class UsageScoreTests(unittest.TestCase):
             self.assertEqual(data["components"]["ratification_corpus"]["count_7d"], 1)
             self.assertIn("discussion_result", data["components"]["ratification_corpus"]["sources"])
             self.assertNotIn("ratification_corpus", data["semantic_grades"]["evidence_readiness"]["missing"])
+
+    def test_executed_ensemble_votes_count_as_evidence_readiness(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            db = str(root / "route_outcomes.db")
+            self.make_db(db)
+            logs = root / "logs"
+            logs.mkdir()
+            mod = self.load_module(db)
+            ts = mod.NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
+            (logs / "ensemble-votes.jsonl").write_text(
+                f'{{"ts":"{ts}","execute":true,"total_voters":3,'
+                '"models":["gpt-5.5","claude-opus-4-7","mimo-v2.5-pro"]}\n'
+            )
+            mod.H = root
+            mod.ENSEMBLE = logs / "ensemble-votes.jsonl"
+            mod.read_jsonl = lambda path: [json.loads((logs / "ensemble-votes.jsonl").read_text())] if Path(path) == mod.ENSEMBLE else []
+            data = mod.compute()
+            self.assertEqual(data["components"]["ensemble_executed"]["count_7d"], 1)
+            self.assertGreater(data["components"]["ensemble_executed"]["score"], 0)
+            self.assertNotIn("ensemble_executed", data["semantic_grades"]["evidence_readiness"]["missing"])
 
 
 if __name__ == "__main__":

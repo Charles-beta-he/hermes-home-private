@@ -94,6 +94,16 @@ class PricingTable:
                 try:
                     expires = datetime.fromisoformat(expires_str.replace("Z", "+00:00"))
                     if now_utc < expires:
+                        # TTL warning: within 7 days of expiry
+                        days_left = (expires - now_utc).total_seconds() / 86400
+                        if days_left <= 7:
+                            import logging
+                            logging.getLogger("pricing").warning(
+                                "PROMO_EXPIRING_SOON: %s promotion expires in %.1f days (%s). "
+                                "Post-promo rate will be ~%.1fx higher. Consider shifting workload.",
+                                model_name, days_left, expires_str,
+                                (model.get("output", 1) / max(promo.get("promo_output", 1), 0.01)),
+                            )
                         return (
                             round(promo.get("promo_input", 0), 4),
                             round(promo.get("promo_output", 0), 4),

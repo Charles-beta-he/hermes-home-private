@@ -200,6 +200,21 @@ def compute_state_hash(state_file: str) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
+def read_prompt_file(path: str) -> str:
+    """Read a prompt/question from a UTF-8 text file for shell-safe long prompts."""
+    if not path:
+        return ""
+    expanded = os.path.expanduser(path)
+    if not os.path.isfile(expanded):
+        raise FileNotFoundError(f"--prompt-file is not a file: {path}")
+    with open(expanded, "r", encoding="utf-8") as f:
+        prompt = f.read()
+    prompt = prompt.strip()
+    if not prompt:
+        raise ValueError(f"--prompt-file is empty: {path}")
+    return prompt
+
+
 def _env_int(name: str, default: Any) -> int:
     try:
         return int(os.environ.get(name, default))
@@ -4297,7 +4312,8 @@ def cli():
 
     # ── state ──
     state_p = sub.add_parser("state", help="Create orchestrator-owned state.json from CLI inputs")
-    state_p.add_argument("question", help="Problem/question for multi-model discussion")
+    state_p.add_argument("question", nargs="?", help="Problem/question for multi-model discussion")
+    state_p.add_argument("--prompt-file", default="", help="Read the problem/question from a UTF-8 text file; mutually exclusive with positional question")
     state_p.add_argument("--context-json", default="{}", help="JSON object with factual context")
     state_p.add_argument("--constraint", action="append", default=[], help="Constraint (repeatable)")
     state_p.add_argument("--accept", action="append", default=[], help="Acceptance criterion (repeatable)")
@@ -4386,11 +4402,16 @@ def cli():
 
     elif args.cmd == "state":
         try:
+            question = read_prompt_file(args.prompt_file) if args.prompt_file else (args.question or "")
+            if args.prompt_file and args.question:
+                raise ValueError("use either positional question or --prompt-file, not both")
+            if not question.strip():
+                raise ValueError("question is required unless --prompt-file is provided")
             context = json.loads(args.context_json)
             if not isinstance(context, dict):
                 raise ValueError("--context-json must be a JSON object")
-        except (json.JSONDecodeError, ValueError) as e:
-            print(f"Error: invalid --context-json: {e}", file=sys.stderr)
+        except (json.JSONDecodeError, ValueError, OSError) as e:
+            print(f"Error: invalid state input: {e}", file=sys.stderr)
             sys.exit(2)
         claims = []
         for i, raw_claim in enumerate(args.claim or [], start=1):
@@ -4410,7 +4431,7 @@ def cli():
                 print(f"Error: invalid --evidence-json: {e}", file=sys.stderr)
                 sys.exit(2)
         state = build_state(
-            question=args.question,
+            question=question,
             context=context,
             constraints=args.constraint,
             acceptance_criteria=args.accept,

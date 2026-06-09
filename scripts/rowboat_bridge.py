@@ -49,6 +49,17 @@ DECAY_HALF_LIFE_DAYS = 30  # Memories lose half importance every 30 days
 MIN_IMPORTANCE = 1
 MAX_IMPORTANCE = 10
 ACCESS_BOOST = 0.5  # Each access boosts importance by this
+CONSOLIDATION_THRESHOLD = 3  # Lowered from 7 — notes with score >= 3 get promoted
+
+# Category-based importance bonuses (auto-scoring)
+CATEGORY_IMPORTANCE = {
+    "decision": 3,   # Decisions are high-signal
+    "insight": 2,    # Insights worth preserving
+    "fact": 1,       # Facts are useful
+    "task": 1,       # Tasks need tracking
+    "observation": 0, # Observations are default
+    "context": -1,   # Context is low-signal unless accessed
+}
 
 
 def get_session_id():
@@ -165,6 +176,17 @@ def on_session_start(session_id=None):
     except Exception as e:
         context["entities_error"] = str(e)
     
+    # Semantic suggestions — query recent context through TF-IDF index
+    try:
+        note_texts = [n["content"][:50] for n in context.get("live_notes", [])[:3]]
+        if note_texts:
+            context_query = " ".join(note_texts)
+            sem_result = run_script("semantic_retrieval.py", ["search", context_query, "--top", "3"])
+            if sem_result["returncode"] == 0 and sem_result["stdout"].strip():
+                context["semantic_suggestions"] = sem_result["stdout"].strip().split("\n")
+    except Exception as e:
+        context["semantic_error"] = str(e)
+    
     return context
 
 
@@ -214,14 +236,23 @@ def on_session_end(session_id=None):
         if os.path.exists(LIVE_NOTES_DB):
             conn = sqlite3.connect(LIVE_NOTES_DB)
             
-            # Find notes worth consolidating (importance >= 7)
+            # Auto-boost importance by category before consolidation
+            for cat, bonus in CATEGORY_IMPORTANCE.items():
+                if bonus != 0:
+                    conn.execute(
+                        "UPDATE notes SET importance = MIN(?, importance + ?) WHERE category = ? AND consolidated = 0",
+                        (MAX_IMPORTANCE, bonus, cat)
+                    )
+            conn.commit()
+            
+            # Find notes worth consolidating (importance >= CONSOLIDATION_THRESHOLD)
             high_value = conn.execute("""
                 SELECT id, content, category, importance, access_count, created_at
                 FROM notes
-                WHERE consolidated = 0 AND importance >= 7
+                WHERE consolidated = 0 AND importance >= ?
                 ORDER BY importance DESC
                 LIMIT 20
-            """).fetchall()
+            """, (CONSOLIDATION_THRESHOLD,)).fetchall()
             
             consolidated = []
             stale = []

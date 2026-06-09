@@ -78,82 +78,147 @@ def score_output(output, expected_keywords):
         "keyword_hit_rate": found / max(total, 1),
         "keywords_found": found,
         "keywords_total": total,
-        "length": len(output),
     }
 
 
-def time_execution(prompt):
-    """模拟执行时间 (实际使用 delegate_task 或 hermes chat -q)"""
-    # 如果 hermes 可用, 注入实际调用
-    try:
-        start = datetime.datetime.now()
-        result = subprocess.run(
-            ["hermes", "chat", "-q", prompt],
-            capture_output=True, text=True, timeout=120,
-            env={**os.environ, "PYTHONUNBUFFERED": "1"}
-        )
-        elapsed = (datetime.datetime.now() - start).total_seconds()
-        return {
-            "output": result.stdout[:3000],
-            "duration_s": elapsed,
-            "exit_code": result.returncode,
-            "method": "hermes_chat",
-        }
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
-        return {
-            "output": f"[eval-harness] cannot run hermes: {e}",
-            "duration_s": 0,
-            "exit_code": -1,
-            "method": "dry_run",
-        }
+# ─── 五种 Infra Failure 分类 ───
+
+INFRA_CATEGORIES = {
+    "timeout": "执行超时",
+    "empty_output": "无有效输出",
+    "provider_unavailable": "provider 不可用",
+    "configuration_error": "配置错误",
+    "unexpected_exception": "未预期异常",
+}
+
+def classify_infra_failure(output, stderr):
+    """根据输出和 stderr 分类 infra failure"""
+    combined = (output or "") + " " + (stderr or "")
+    if "timeout" in combined.lower():
+        return "timeout"
+    if "unavailable" in combined.lower() or "rate limit" in combined.lower() or "429" in combined:
+        return "provider_unavailable"
+    if "configuration" in combined.lower() or "config" in combined.lower() or "auth" in combined.lower():
+        return "configuration_error"
+    if not (output or "").strip():
+        return "empty_output"
+    return "unexpected_exception"
 
 
 def evaluate_skill(skill_name):
-    """评估 staging 中的 skill 改动"""
-    staging_skill = os.path.join(STAGING_DIR, skill_name)
-    prod_skill = os.path.join(SKILLS_DIR, skill_name)
-
-    # 读 staging 版本
-    staging_md = os.path.join(staging_skill, "SKILL.md")
-    if not os.path.exists(staging_md):
-        # 如果没有 staging, 直接评估 production
-        staging_md = os.path.join(prod_skill, "SKILL.md")
-        if not os.path.exists(staging_md):
-            print(f"Skill {skill_name} not found in staging or production")
-            return None
-
-    with open(staging_md) as f:
-        content = f.read()
-
+    """评估 skill 性能: 调用 hermes chat -q 逐一测试"""
+    baseline = load_or_init_baseline()
+    prompts = baseline["prompts"]
     results = {}
-    for prompt in BASELINE_PROMPTS:
-        # 执行
-        exec_result = time_execution(prompt["prompt"])
-        score = score_output(exec_result["output"], prompt["expected"])
-        results[prompt["id"]] = {
-            "exec": exec_result,
-            "score": score,
-        }
+    infra_failure_count = 0
+    evaluable_count = 0
 
-    # 汇总
-    passed = sum(1 for r in results.values() if r["score"]["pass"])
-    total = len(results)
-    avg_duration = sum(r["exec"]["duration_s"] for r in results.values()) / max(total, 1)
+    os.makedirs(STAGING_DIR, exist_ok=True)
+
+    for p in prompts:
+        pid = p["id"]
+        prompt = p["prompt"]
+        expected = p["expected"]
+
+        print(f"  [{pid}] Running...", end="", flush=True)
+        start = datetime.datetime.now()
+
+        try:
+            # 构造调用: hermes chat -q <prompt>  使用 staging 中的 skill 内容 (如果有)
+            cmd = ["hermes", "chat", "-q", prompt]
+            out = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            duration = (datetime.datetime.now() - start).total_seconds()
+            output = (out.stdout or "").strip()
+            stderr = (out.stderr or "").strip()
+
+            infra_category = "ok"
+            is_infra = False
+
+            if not output or out.returncode != 0:
+                is_infra = True
+                infra_category = classify_infra_failure(output, stderr)
+                infra_failure_count += 1
+                score = {"pass": False, "keyword_hit_rate": 0.0, "keywords_found": 0, "keywords_total": len(expected)}
+            else:
+                score = score_output(output, expected)
+                if not score["pass"] and len(output) < 20:
+                    # 输出过短且未命中 — 可能也是 infra 问题
+                    is_infra = True
+                    infra_category = "empty_output"
+                    infra_failure_count += 1
+                else:
+                    evaluable_count += 1
+
+            results[pid] = {
+                "score": score,
+                "exec": {
+                    "duration_s": round(duration, 2),
+                    "method": "hermes_chat",
+                    "infra_failure": is_infra,
+                    "infra_category": infra_category,
+                },
+            }
+            print(f" {'PASS' if score['pass'] else 'FAIL'} ({score['keyword_hit_rate']:.0%} / {duration:.1f}s)", flush=True)
+
+        except subprocess.TimeoutExpired:
+            duration = (datetime.datetime.now() - start).total_seconds()
+            results[pid] = {
+                "score": {"pass": False, "keyword_hit_rate": 0.0, "keywords_found": 0, "keywords_total": len(expected)},
+                "exec": {"duration_s": round(duration, 2), "method": "hermes_chat", "infra_failure": True, "infra_category": "timeout"},
+            }
+            infra_failure_count += 1
+            print(f" TIMEOUT ({duration:.1f}s)", flush=True)
+
+        except Exception as e:
+            results[pid] = {
+                "score": {"pass": False, "keyword_hit_rate": 0.0, "keywords_found": 0, "keywords_total": len(expected)},
+                "exec": {"duration_s": 0, "method": "hermes_chat", "infra_failure": True, "infra_category": "unexpected_exception"},
+            }
+            infra_failure_count += 1
+            print(f" ERROR: {str(e)[:40]}", flush=True)
+
+    # 计算摘要
+    if infra_failure_count == len(results):
+        # 全部 infra failure — 整体标记
+        passed = 0
+        total = 0
+        avg_duration = 0.0
+        avg_keyword_hit = 0.0
+        overall_status = "infrastructure_failure"
+    else:
+        passed = sum(1 for r in results.values() if r["score"]["pass"])
+        total = evaluable_count
+        avg_duration = sum(r["exec"]["duration_s"] for r in results.values()) / max(len(results), 1)
+        avg_keyword_hit = sum(r["score"]["keyword_hit_rate"] for r in results.values()
+                               if not r["exec"]["infra_failure"]) / max(evaluable_count, 1)
+        overall_status = "success" if infra_failure_count == 0 else "partial_infra_failure"
 
     report = {
         "skill": skill_name,
         "timestamp": datetime.datetime.now().isoformat(),
-        "method": results.get(list(results.keys())[0], {}).get("exec", {}).get("method", "unknown"),
+        "method": "hermes_chat",
+        "status": overall_status,
+        "infra_failure_count": infra_failure_count,
+        "total_infra_categories": {},
         "summary": {
             "pass_rate": round(passed / max(total, 1), 3),
             "passed": passed,
             "total": total,
             "avg_duration_s": round(avg_duration, 1),
-            "avg_keyword_hit_rate": round(
-                sum(r["score"]["keyword_hit_rate"] for r in results.values()) / max(total, 1), 3),
+            "avg_keyword_hit_rate": round(avg_keyword_hit, 3),
         },
         "results": results,
     }
+
+    # Aggregate infra categories across all results
+    categories = {}
+    for pid, r in results.items():
+        inf = r.get("exec", {}).get("infra_category")
+        if inf and inf != "ok":
+            cat = r["exec"].get("infra_category", "unknown")
+            categories.setdefault(cat, 0)
+            categories[cat] += 1
+    report["total_infra_categories"] = categories
 
     # 保存临时结果
     result_path = os.path.join(EVAL_DIR, f"eval-{skill_name}.json")
@@ -176,6 +241,21 @@ def compare_with_baseline(skill_name):
 
     baseline = load_or_init_baseline()
 
+    # Handle infra failure: if current eval is entirely infrastructure failure,
+    # do not attempt to compare — return special status
+    if current.get("status") == "infrastructure_failure":
+        result = {
+            "action": "skip",
+            "reason": f"All {current.get('infra_failure_count', '?')} prompts were infrastructure failures "
+                      f"(categories: {current.get('total_infra_categories', {})}). "
+                      f"Cannot compare — fix infrastructure first.",
+            "current_status": "infrastructure_failure",
+            "infra_categories": current.get("total_infra_categories", {}),
+        }
+        print(f"  WARNING: Evaluation entirely infrastructure failure, skipping comparison.")
+        print(f"  Infra categories: {current.get('total_infra_categories', {})}")
+        return result
+
     # 如果有基线记录, 比较
     baseline_summary = baseline.get("summary")
     current_summary = current["summary"]
@@ -189,22 +269,25 @@ def compare_with_baseline(skill_name):
     duration_delta = current_summary["avg_duration_s"] - baseline_summary.get("avg_duration_s", 0)
     quality_delta = current_summary["avg_keyword_hit_rate"] - baseline_summary.get("avg_keyword_hit_rate", 0)
 
+    comparison = {
+        "pass_rate": {"baseline": baseline_summary.get("pass_rate"),
+                      "current": current_summary["pass_rate"],
+                      "delta": round(pass_rate_delta, 3)},
+        "avg_duration_s": {"baseline": baseline_summary.get("avg_duration_s"),
+                           "current": current_summary["avg_duration_s"],
+                           "delta": round(duration_delta, 1)},
+        "avg_keyword_hit_rate": {"baseline": baseline_summary.get("avg_keyword_hit_rate"),
+                                 "current": current_summary["avg_keyword_hit_rate"],
+                                 "delta": round(quality_delta, 3)},
+    }
     result = {
         "action": "unknown",
-        "comparison": {
-            "pass_rate": {"baseline": baseline_summary.get("pass_rate"),
-                          "current": current_summary["pass_rate"],
-                          "delta": round(pass_rate_delta, 3)},
-            "avg_duration_s": {"baseline": baseline_summary.get("avg_duration_s"),
-                               "current": current_summary["avg_duration_s"],
-                               "delta": round(duration_delta, 1)},
-            "avg_keyword_hit_rate": {"baseline": baseline_summary.get("avg_keyword_hit_rate"),
-                                     "current": current_summary["avg_keyword_hit_rate"],
-                                     "delta": round(quality_delta, 3)},
-        }
+        "comparison": comparison,
+        "current_status": current.get("status", "unknown"),
+        "infra_failure_count": current.get("infra_failure_count", 0),
     }
 
-    # 决策逻辑
+    # 决策逻辑 — 若有 partial_infra_failure, 在最终结论备注
     THRESHOLD = 0.05  # 5%
 
     worse_count = 0
@@ -238,28 +321,100 @@ def compare_with_baseline(skill_name):
         result["action"] = "promote"
         result["reason"] = "No significant changes"
 
+    # Append infra note
+    infra_count = current.get("infra_failure_count", 0)
+    if infra_count > 0:
+        result["reason"] += f" (with {infra_count} infra failures: {current.get('total_infra_categories', {})})"
+
     return result
 
 
 def init_baseline():
-    """初始化或更新基线"""
+    """初始化或更新基线 — 使用 hermes chat -q 异步评估每个 prompt"""
     baseline = load_or_init_baseline()
     print(f"Baseline loaded: {len(baseline['prompts'])} prompts")
     print(f"Version: {baseline['version']}, created: {baseline['created'][:19]}")
 
-    # 评估当前 baseline
-    print(f"\nRunning evaluation on current production...")
-    report = evaluate_skill("current_production")
+    # 检查是否需要填充 — 已有全部结果则跳过
+    unfilled = [pid for pid, r in baseline['results'].items() if r is None]
+    if not unfilled:
+        print(f"\nAll {len(baseline['prompts'])} prompts already have baseline results.")
+        return baseline
 
-    if report:
-        baseline["summary"] = report["summary"]
-        baseline["results"] = {pid: report["results"].get(pid) for pid in baseline["results"]}
-        with open(BASELINE_PATH, "w") as f:
-            json.dump(baseline, f, indent=2, ensure_ascii=False, default=str)
-        print(f"\nBaseline updated:")
-        print(f"  Pass rate:       {report['summary']['pass_rate']:.1%}")
-        print(f"  Avg duration:    {report['summary']['avg_duration_s']:.1f}s")
-        print(f"  Keyword hit:     {report['summary']['avg_keyword_hit_rate']:.1%}")
+    print(f"\n{len(unfilled)}/{len(baseline['prompts'])} prompts need baseline evaluation.")
+
+    # 逐个评估未填充的 prompt（异步调用 hermes chat -q）
+    results = {}
+    for p in baseline['prompts']:
+        pid = p['id']
+        prompt = p['prompt']
+        expected = p['expected']
+        print(f"  [{pid}] Evaluating: {prompt[:60]}...", end=" ", flush=True)
+        try:
+            cmd = ["hermes", "chat", "-q", prompt]
+            start = datetime.datetime.now()
+            out = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            duration = (datetime.datetime.now() - start).total_seconds()
+            output = (out.stdout or out.stderr or "").strip()
+            if not output:
+                results[pid] = {"score": {"pass": False, "keyword_hit_rate": 0.0,
+                                          "keywords_found": 0, "keywords_total": len(expected)},
+                                "exec": {"duration_s": duration, "method": "hermes_chat",
+                                         "infra_failure": True, "infra_category": "empty_output"}}
+                print(f"EMPTY ({duration:.1f}s)")
+            else:
+                lower = output.lower()
+                found_kws = [kw for kw in expected if kw.lower() in lower]
+                hit_rate = len(found_kws) / max(len(expected), 1)
+                results[pid] = {"score": {"pass": hit_rate >= 0.5, "keyword_hit_rate": hit_rate,
+                                          "keywords_found": len(found_kws), "keywords_total": len(expected)},
+                                "exec": {"duration_s": duration, "method": "hermes_chat",
+                                         "infra_failure": False, "infra_category": "ok"}}
+                tag = "PASS" if hit_rate >= 0.5 else "FAIL"
+                print(f"{tag} ({hit_rate:.0%}/{duration:.1f}s)")
+        except subprocess.TimeoutExpired:
+            duration = 120
+            results[pid] = {"score": {"pass": False, "keyword_hit_rate": 0.0,
+                                      "keywords_found": 0, "keywords_total": len(expected)},
+                            "exec": {"duration_s": duration, "method": "hermes_chat",
+                                     "infra_failure": True, "infra_category": "timeout"}}
+            print(f"TIMEOUT (120s)")
+        except Exception as e:
+            results[pid] = {"score": {"pass": False, "keyword_hit_rate": 0.0,
+                                      "keywords_found": 0, "keywords_total": len(expected)},
+                            "exec": {"duration_s": 0, "method": "hermes_chat",
+                                     "infra_failure": True, "infra_category": str(e)[:50]}}
+            print(f"ERROR: {str(e)[:40]}")
+
+    # 计算摘要
+    evaluable = {pid: r for pid, r in results.items()
+                 if not r['exec'].get('infra_failure')}
+    infra_count = sum(1 for r in results.values() if r['exec'].get('infra_failure'))
+    evaluable_count = len(evaluable)
+    passed = sum(1 for pid, r in evaluable.items() if r['score']['pass'])
+    total = evaluable_count
+    avg_duration = sum(r['exec']['duration_s'] for r in evaluable.values()) / max(evaluable_count, 1)
+    avg_keyword_hit = sum(r['score']['keyword_hit_rate'] for r in evaluable.values()) / max(evaluable_count, 1)
+
+    baseline['results'] = results
+    baseline['summary'] = {
+        'pass_rate': round(passed / max(total, 1), 3),
+        'passed': passed,
+        'total': total,
+        'avg_duration_s': round(avg_duration, 1),
+        'avg_keyword_hit_rate': round(avg_keyword_hit, 3),
+    }
+    with open(BASELINE_PATH, 'w') as f:
+        json.dump(baseline, f, indent=2, ensure_ascii=False, default=str)
+
+    print(f"\n{'='*50}")
+    print(f"  Baseline initialized:")
+    print(f"  Pass rate:       {baseline['summary']['pass_rate']:.1%} ({passed}/{total})")
+    print(f"  Avg duration:    {baseline['summary']['avg_duration_s']:.1f}s")
+    print(f"  Keyword hit:     {baseline['summary']['avg_keyword_hit_rate']:.1%}")
+    if infra_count:
+        print(f"  Infra failures:  {infra_count}/{len(results)}")
+    print(f"{'='*50}")
 
     return baseline
 

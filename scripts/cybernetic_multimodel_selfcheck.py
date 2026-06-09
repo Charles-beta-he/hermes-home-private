@@ -10,25 +10,25 @@ import argparse, json, os, re, subprocess, sys
 from pathlib import Path
 
 VAULT = Path(os.environ.get("HERMES_BRAIN_VAULT", str(Path.home()/"Documents/brain"))).expanduser()
-PROJECT = VAULT/"20-projects"/"cybernetic-multimodel-intervention"
+PROJECT = VAULT/"05-实践与项目"/"projects"/"cybernetic-multimodel-intervention"
 FILES = {
   "project": PROJECT/"Project - Cybernetic Multi-model Intervention.md",
   "p10": PROJECT/"P10 - Long-term Strategy.md",
   "p9": PROJECT/"P9 - Implementation Backlog.md",
-  "playbook": VAULT/"08-实践方案"/"06-一阶二阶控制论多模型介入Playbook.md",
-  "route_matrix": VAULT/"08-实践方案"/"07-关键点多模型介入路由矩阵.md",
-  "review": VAULT/"60-reviews"/"2026-05-06-cybernetic-multimodel-intervention-review.md",
-  "hierarchy_review": VAULT/"60-reviews"/"2026-05-06-hierarchy-rewrite-vs-overlay-review.md",
-  "task": VAULT/"30-tasks"/"2026-05-06-cybernetic-multimodel-intervention-log.md",
-  "hierarchy_task": VAULT/"30-tasks"/"2026-05-06-hierarchy-overlay-routing-landing-log.md",
-  "evolution": VAULT/"05-进化日志"/"2026-05-06-控制论多模型介入落地.md",
-  "hierarchy_evolution": VAULT/"05-进化日志"/"2026-05-06-主层级覆盖层路由矩阵落地.md",
-  "atom_first": VAULT/"10-atoms"/"first-order-cybernetic-multimodel-intervention.md",
-  "atom_second": VAULT/"10-atoms"/"second-order-cybernetic-self-observation.md",
-  "atom_overlay": VAULT/"10-atoms"/"semantic-overlay-before-hierarchy-rewrite.md",
-  "atom_routing": VAULT/"10-atoms"/"keypoint-to-multimodel-routing.md",
-  "theory_fo_so": VAULT/"01-控制论基础"/"06-一阶与二阶控制论.md",
-  "theory_second": VAULT/"03-系统理论"/"SecondOrder-二阶控制论.md",
+  "playbook": VAULT/"05-实践与项目"/"实践方案"/"06-一阶二阶控制论多模型介入Playbook.md",
+  "route_matrix": VAULT/"05-实践与项目"/"实践方案"/"07-关键点多模型介入路由矩阵.md",
+  "review": VAULT/"06-治理与评审"/"reviews"/"2026-05-06-cybernetic-multimodel-intervention-review.md",
+  "hierarchy_review": VAULT/"06-治理与评审"/"reviews"/"2026-05-06-hierarchy-rewrite-vs-overlay-review.md",
+  "task": VAULT/"05-实践与项目"/"tasks"/"2026-05-06-cybernetic-multimodel-intervention-log.md",
+  "hierarchy_task": VAULT/"05-实践与项目"/"tasks"/"2026-05-06-hierarchy-overlay-routing-landing-log.md",
+  "evolution": VAULT/"06-治理与评审"/"进化日志"/"2026-05-06-控制论多模型介入落地.md",
+  "hierarchy_evolution": VAULT/"06-治理与评审"/"进化日志"/"2026-05-06-主层级覆盖层路由矩阵落地.md",
+  "atom_first": VAULT/"04-知识原子"/"atoms"/"first-order-cybernetic-multimodel-intervention.md",
+  "atom_second": VAULT/"04-知识原子"/"atoms"/"second-order-cybernetic-self-observation.md",
+  "atom_overlay": VAULT/"04-知识原子"/"atoms"/"semantic-overlay-before-hierarchy-rewrite.md",
+  "atom_routing": VAULT/"04-知识原子"/"atoms"/"keypoint-to-multimodel-routing.md",
+  "theory_fo_so": VAULT/"03-理论与元认知"/"控制论基础"/"06-一阶与二阶控制论.md",
+  "theory_second": VAULT/"03-理论与元认知"/"系统理论"/"SecondOrder-二阶控制论.md",
 }
 PATTERNS = {
   "p10": ["first-order cybernetics", "second-order cybernetics", "observer", "P10 stop gate", "model agreement is not evidence"],
@@ -48,9 +48,20 @@ PATTERNS = {
 }
 SECRET_RE = re.compile(r"(?i)((?:sk-(?:proj|live|test)-[A-Za-z0-9_\-]{20,})|ghp_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9\-]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----)")
 WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
+FENCED_BLOCK_RE = re.compile(r"```.*?```", re.S)
 
 def text(p: Path) -> str:
     return p.read_text(encoding="utf-8", errors="replace")
+
+def wikilink_scan_text(p: Path) -> str:
+    """Return text for real-note wikilink validation.
+
+    Templates often include illustrative placeholder wikilinks inside fenced
+    markdown examples (for example [[related-note-1]]). Those are not live vault
+    links and should not make the structural selfcheck fail. Real links outside
+    code fences are still validated fail-closed.
+    """
+    return FENCED_BLOCK_RE.sub("", text(p))
 
 def run(cmd):
     p = subprocess.run(cmd, text=True, capture_output=True, timeout=60)
@@ -72,7 +83,7 @@ def structural():
     basenames={p.stem for p in md}; rels={str(p.relative_to(VAULT).with_suffix("")) for p in md}
     broken=[]
     for p in md:
-        for m in WIKILINK_RE.finditer(text(p)):
+        for m in WIKILINK_RE.finditer(wikilink_scan_text(p)):
             target=m.group(1).split("|",1)[0].split("#",1)[0].strip()
             if not target or target in basenames or target in rels or Path(target).name in basenames: continue
             broken.append({"file":str(p.relative_to(VAULT)),"target":target})

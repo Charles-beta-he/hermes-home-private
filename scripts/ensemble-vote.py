@@ -54,11 +54,30 @@ QUORUM_FILE = os.environ.get(
 )
 QUORUM_FILE = os.path.expanduser(QUORUM_FILE)
 ENSEMBLE_LOG_SCHEMA_VERSION = 1
-SUPPORTED_HERMES_PROVIDERS = {
-    "openai-codex", "anthropic", "xiaomi", "openrouter", "gemini", "xai",
-    "ollama-cloud", "huggingface", "zai", "kimi-coding", "kimi-coding-cn",
-    "stepfun", "minimax", "minimax-cn", "kilocode", "arcee", "nvidia",
-}
+def _load_supported_hermes_providers() -> set[str]:
+    """Return provider ids accepted by `hermes chat --provider`.
+
+    Keep a static fallback for portability, then augment from Hermes provider
+    overlays so OAuth/external providers such as google-gemini-cli do not drift
+    out of ensemble-vote arbitration.
+    """
+    providers = {
+        "openai-codex", "anthropic", "xiaomi", "openrouter", "gemini", "xai",
+        "ollama-cloud", "huggingface", "zai", "kimi-coding", "kimi-coding-cn",
+        "stepfun", "minimax", "minimax-cn", "kilocode", "arcee", "nvidia",
+        "google-gemini-cli",
+    }
+    try:
+        import importlib
+        sys.path.insert(0, os.path.join(HERMES_HOME, "hermes-agent"))
+        provider_module = importlib.import_module("hermes_cli.providers")
+        providers.update(getattr(provider_module, "HERMES_OVERLAYS", {}).keys())
+    except Exception:
+        pass
+    return providers
+
+
+SUPPORTED_HERMES_PROVIDERS = _load_supported_hermes_providers()
 
 
 def load_config() -> dict:

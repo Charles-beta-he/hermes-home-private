@@ -251,6 +251,7 @@ def main() -> int:
     parser.add_argument("--max-log-files", type=int, default=80)
     parser.add_argument("--max-hits", type=int, default=20)
     parser.add_argument("--json", action="store_true", help="Retained for consistency; output is always JSON")
+    parser.add_argument("--emit-signal", action="store_true", help="Write structured signal to budget_signals.jsonl when hits found")
     args = parser.parse_args()
 
     home = Path(args.home).expanduser().resolve()
@@ -268,6 +269,7 @@ def main() -> int:
         "compression_threshold": get_nested(config, "compression", "threshold"),
         "process_env_HERMES_MAX_ITERATIONS_present": "HERMES_MAX_ITERATIONS" in os.environ,
     }
+    advisories = build_advisories(config, warnings, cron, tasks)
     result = {
         "schema": "hermes_iteration_budget_doctor_v1",
         "status": "OK",
@@ -279,9 +281,40 @@ def main() -> int:
         "recent_iteration_budget_warnings": warnings,
         "cron": cron,
         "task_pool": tasks,
-        "advisories": build_advisories(config, warnings, cron, tasks),
+        "advisories": advisories,
         "secret_policy": "secret files are not printed; .env values are never emitted",
     }
+
+    if args.emit_signal and warnings.get("hit_count"):
+        signal_path = home / "state" / "budget_signals.jsonl"
+        signal_path.parent.mkdir(parents=True, exist_ok=True)
+        severity = "high" if warnings["hit_count"] >= 3 else "warn"
+        budget_ratio = 0.0
+        if warnings.get("hits"):
+            for h in warnings["hits"]:
+                used = h.get("used")
+                limit = h.get("limit")
+                if used is not None and limit and limit > 0:
+                    budget_ratio = max(budget_ratio, used / limit)
+        recommended_tier = "T2_advisory" if budget_ratio >= 0.85 or warnings["hit_count"] >= 3 else "T1_advisory"
+        signal = {
+            "schema": "local_brain_trigger_signal_v1",
+            "ts": utc_now(),
+            "source": "iteration_budget_doctor",
+            "phase": "mid_loop",
+            "severity": severity,
+            "signal_type": "iteration_budget_saturation",
+            "recommended_tier": recommended_tier,
+            "advisory_only": True,
+            "hit_count": warnings["hit_count"],
+            "budget_ratio": round(budget_ratio, 3),
+            "confidence": 0.9,
+            "rationale": f"iteration_budget_doctor detected {warnings['hit_count']} hit(s), max budget_ratio={budget_ratio:.3f}",
+        }
+        with signal_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(signal, ensure_ascii=False, sort_keys=True) + "\n")
+        result["signal_emitted"] = {"path": str(signal_path), "recommended_tier": recommended_tier}
+
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

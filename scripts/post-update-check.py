@@ -22,6 +22,23 @@ HERMES_ROOT = str(LEGACY_HERMES_HOME / "hermes-agent")
 OVERLAY_REGISTRY = str(LEGACY_HERMES_HOME / "overlays" / "hermes-local-enhancements.json")
 CHECKS = []
 
+
+def _python_with_pytest() -> str | None:
+    """Return a Hermes repo Python interpreter that can import pytest."""
+    candidates = [
+        os.path.join(HERMES_ROOT, ".venv", "bin", "python"),
+        os.path.join(HERMES_ROOT, "venv", "bin", "python"),
+        sys.executable,
+    ]
+    for py in candidates:
+        if not os.path.exists(py):
+            continue
+        rc, _out = _run_cmd([py, "-m", "pytest", "--version"], cwd=HERMES_ROOT, timeout=30)
+        if rc == 0:
+            return py
+    return None
+
+
 def register(name, file_rel, pattern_needle, fix_desc, fix_func=None):
     """Register a check. fix_func(path) applies the fix, returns bool."""
     CHECKS.append({
@@ -681,7 +698,7 @@ def check_conductor_runtime_productization():
     if missing:
         return "BROKEN (missing conductor runtime files: " + ", ".join(os.path.basename(x) for x in missing) + ")"
 
-    py = os.path.join(root, ".venv", "bin", "python")
+    py = _python_with_pytest() or os.path.join(root, ".venv", "bin", "python")
     if not os.path.exists(py):
         py = sys.executable
 
@@ -698,7 +715,7 @@ def check_conductor_runtime_productization():
 
     rc, _ = _run_cmd([py, "-m", "pytest", "--version"], cwd=root, timeout=30)
     if rc == 0:
-        rc, out = _run_cmd([py, "-m", "pytest", "tests/agent/test_conductor_runtime.py", "-q"], cwd=root)
+        rc, out = _run_cmd([py, "-m", "pytest", "-o", "addopts=", "tests/agent/test_conductor_runtime.py", "-q"], cwd=root)
         runner = "pytest"
     else:
         manual = """

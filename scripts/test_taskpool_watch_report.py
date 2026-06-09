@@ -23,7 +23,7 @@ def test_high_score_review_not_certified_is_closeout_gate_not_stuck():
             "id": "score445-task",
             "score": 445,
             "status": "review",
-            "project": "uvisa-app-2.0-work",
+            "project": "uvisa-app-2.0",
             "multimodel_status": "not_certified",
             "stale_claim": False,
             "dispatchable": False,

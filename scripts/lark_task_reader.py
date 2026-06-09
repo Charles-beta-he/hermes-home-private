@@ -714,6 +714,17 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
         body_parts.append("## 评论图片本地证据\n" + "\n".join(downloaded_paths))
     if placeholder_count and not image_keys:
         body_parts.append("## 评论图片待解析\nLark Task API returned " + str(placeholder_count) + " [Image] placeholder(s) without image_key/file_token; screenshot evidence exists but cannot be downloaded from the current read payload.")
+    attachments = task.get("attachments", []) or []
+    image_attachments = [
+        a for a in attachments
+        if str(a.get("name", "")).lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp"))
+    ]
+    if image_attachments:
+        lines = []
+        for a in image_attachments:
+            size = a.get("size", 0)
+            lines.append(f"{a.get('name', '')} ({size} bytes) file_token={str(a.get('file_token', ''))[:12]}... attachment_guid={a.get('guid', '')}")
+        body_parts.append("## 原生任务图片附件\n" + "\n".join(lines))
     if docs_content:
         body_parts.append("## 关联文档内容\n" + docs_content)
     issue_body = "\n\n".join(body_parts)
@@ -728,6 +739,9 @@ def payload_from_task(token: str, task: dict[str, Any], client: LarkClient | Any
         "comment_image_keys": image_keys,
         "comment_image_placeholders": placeholder_count,
         "comment_images": comment_images,
+        "attachments": attachments,
+        "attachment_count": len(attachments),
+        "native_image_attachments": image_attachments,
         "linked_docs": docs_content,
         "docs_content": docs_content,
         "custom_fields": task.get("custom_fields", []),
