@@ -9,14 +9,14 @@ Skill Steward 不是一个人，是一个 **cronjob 驱动的自治角色**。�
 
 ## 职责矩阵
 
-| 职责 | 频率 | 理论依据 | 工具 |
-|------|------|---------|------|
-| 检测僵尸 skill | 每日 | Prigogine 熵债 | `skill-steward.py` |
-| 检测同名冲突 | 每日 | Parnas 分解 | `skill-steward.py` |
-| 更新健康仪表盘 | 每日 | Ostrom 监控 | `skill-steward.py --dashboard` |
-| 执行梯度制裁 | 每周 | Ostrom 制裁 | `skill-steward.py --cleanup` |
-| 报告违规 | 每日 | Ostrom 原则4 | 输出到 Obsidian |
-| 同步 brain | 每小时 | Conway 逆 | `sync-brain.py` |
+| 职责         | 频率  | 理论依据         | 工具                             |
+| ---------- | --- | ------------ | ------------------------------ |
+| 检测僵尸 skill | 每日  | Prigogine 熵债 | `skill-steward.py`             |
+| 检测同名冲突     | 每日  | Parnas 分解    | `skill-steward.py`             |
+| 更新健康仪表盘    | 每日  | Ostrom 监控    | `skill-steward.py --dashboard` |
+| 执行梯度制裁     | 每周  | Ostrom 制裁    | `skill-steward.py --cleanup`   |
+| 报告违规       | 每日  | Ostrom 原则4   | 输出到 Obsidian                   |
+| 同步 brain   | 每小时 | Conway 逆     | `sync-brain.py`                |
 
 ## Cron 配置
 

@@ -1,0 +1,80 @@
+{
+  "schema": "tool_failure_diagnostic_v1",
+  "schema_version": "tool_failure_diagnostic_v1",
+  "generated_at": "2026-05-06T17:36:55Z",
+  "source": "session_autopsy",
+  "action_type": "fix_tool_config",
+  "summary": "工具失败 14 次 (工具失败 3 次，最多: execute_code (2 次)/legacy_detail: 6 次)",
+  "status": "pending_review",
+  "auto_edit_config": false,
+  "threshold": {
+    "roi_min": 2.0,
+    "impact_min": 4
+  },
+  "item": {
+    "roi": 1.75,
+    "impact": 7,
+    "impact_label": "high",
+    "effort": 4,
+    "effort_label": "medium",
+    "category": "reliability"
+  },
+  "health_context": {
+    "usage_grade": "A",
+    "operational_health_grade": "A",
+    "cron_bad_count": 0,
+    "cron_recent_24h": 19,
+    "fallback_used": false
+  },
+  "failures": [
+    {
+      "count": 6,
+      "error_signature": "legacy_detail",
+      "exit_code": null,
+      "stale_status": "unknown",
+      "tool_name": "工具失败 3 次，最多: execute_code (2 次)"
+    },
+    {
+      "count": 4,
+      "error_signature": "legacy_detail",
+      "exit_code": null,
+      "stale_status": "unknown",
+      "tool_name": "工具失败 2 次"
+    },
+    {
+      "count": 2,
+      "error_signature": "python_traceback",
+      "exit_code": 1,
+      "first_seen": "2026-05-06T22:00:26.586887",
+      "last_seen": "2026-05-06T22:00:26.586887",
+      "stale_status": "unknown",
+      "stderr_tail": "               ~~~~~^^^^^^^^^^^^^^^^^^^\nKeyError: 'generated_count'\n\n----------------------------------------------------------------------\nRan 42 tests in 0.014s\n\nFAILED (errors=1)\n\n============================================================\n  Auto-Execute Mode\n============================================================\n  → Read-only diagnostic written: /var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmppi2gd64x/tool-failure-diagnostic-2026-05-06T163338Z.json\n  No high-ROI actions to execute",
+      "tool_name": "terminal"
+    },
+    {
+      "count": 1,
+      "error_signature": "timeout",
+      "exit_code": 124,
+      "first_seen": "2026-05-06T23:59:34.260496",
+      "last_seen": "2026-05-06T23:59:34.260496",
+      "stale_status": "unknown",
+      "stderr_tail": "s] Cleaned old tick: tick-20260505-160722\n[consult_models] Cleaned old tick: tick-20260505-160258\n[consult_models] Tier=T3 Quorum=4 Min=2 Planners=['claude-opus-4-7', 'gpt-5.5', 'deepseek-v4-pro', 'mimo-v2.5-pro'] Shadow=False QuotaSkipped=0\n[consult_models] → claude-opus-4-7 planning...\n[consult_models] → gpt-5.5 planning...\n[consult_models] → deepseek-v4-pro planning...\n[consult_models] → mimo-v2.5-pro planning...\n[consult_models] Running consensus on 4 plans...\n\n[Command timed out after 600s]",
+      "tool_name": "terminal"
+    },
+    {
+      "count": 1,
+      "error_signature": "timeout",
+      "exit_code": 1,
+      "first_seen": "2026-05-06T22:00:26.586887",
+      "last_seen": "2026-05-06T22:00:26.586887",
+      "stale_status": "unknown",
+      "stderr_tail": "l': 1, 'recent_24h': 1, 'pending_first_run': 0, 'bad': 0, 'source': 'test'}, 'self_evolution_closure': {'score': 0.0, 'max': 10, 'closure_events_14d': 0}}, 'thresholds': {'A': 85, 'B': 70, 'C': 55}}\n\n----------------------------------------------------------------------\nRan 42 tests in 0.014s\n\nFAILED (failures=4, errors=3)\n\n============================================================\n  Auto-Execute Mode\n============================================================\n  No high-ROI actions to execute",
+      "tool_name": "terminal"
+    }
+  ],
+  "recommendation": {
+    "safe_next_action": "human_review_or_targeted_fix",
+    "reason": "roi_below_threshold_or_not_auto_safe"
+  },
+  "safe_next_action": "human_review_or_targeted_fix"
+}

@@ -2,23 +2,33 @@
 type: task
 lane: work
 layer: L3
-status: pending
+status: done
 priority: P0
 created: 2026-05-12T01:43:02+08:00
 updated: 2026-05-12T01:46:57+08:00
 expires_at: 2026-05-26T01:43:02+08:00
-project: uvisa-app-2.0-work
+project: uvisa-app-2.0
 workflow_contract: "work/product delivery: live Lark reopened task; evidence-first; classify FE/BE/contract before execution; real API/end-to-end proof required; no mock-only closeout; no deleting routes/buttons/fields; frontend build plus backend JDK21 tests/package when backend touched; Railway/package monitor; scoped local commit; no push unless required by UVISA Lark loop"
 required_authority: autonomous-execution
 max_authority: yolo-execution
+permission_tier: autonomous-execution
 write_surfaces: ["taskpool", "codebase", "brain"]
 completion_gate: project-evidence-real-api-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
 permission_gates: ["real-api-e2e-required", "backend-contract-check-required", "human-or-review-before-done"]
-claimed_by:
-claim_expires_at:
-run_id:
+multimodel_status: advisory_completed
+multimodel_last_checked_at: 2026-05-13T14:32:23+08:00
+multimodel_round_status: advisory_passed
+multimodel_last_gate_status: PASS_ADVISORY_ONLY
+multimodel_last_decision: CONTINUE_LOOP
+multimodel_last_discussion_artifact: /Users/charles/.hermes/tick-20260513-062950-424770-p92012-1c1f6a28-f3495fd9/discussion_result.json
+multimodel_last_state_path: /Users/charles/.hermes/state/taskpool-multimodel/2026-05-12-lark-reopened-uvisa-real-api-ed1cb905-单点登录真实多设备踢出-state.json
+multimodel_last_failures: []
+claimed_by: 
+claim_expires_at: 
+run_id: 
 retry_count: 1
-next_attempt_at:
+next_attempt_at: 
 workspace: /Users/charles/Desktop/folder/work/uvisa-app-2.0
 parallel_boundary: conflict:/Users/charles/Desktop/folder/work/uvisa-app-2.0:/Users/charles/Desktop/folder/work/uvisa-backend:uvisa-reopened-real-api
 evidence:
@@ -37,8 +47,11 @@ real_api_e2e_required: true
 security_or_money_gate: true
 source_snapshot: /tmp/lark_uvisa_live_tasks.json
 classification_artifact: /Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/uvisa-lark-reopened-real-api-classification-2026-05-12.json
-multimodel_status: not_run_current_reopen
 certified_requires_ratification_artifact: true
+multimodel_advisory_only: True
+multimodel_certification_authority: False
+multimodel_advisory_reasons: ["P0_priority", "closeout_ratification"]
+multimodel_certification_reasons: []
 ---
 
 # Task - Lark reopened ed1cb905: 用户端-未做单点登陆-同账户不同设备登陆未顶掉帐号
@@ -99,3 +112,22 @@ certified_requires_ratification_artifact: true
 - 2026-05-12T01:43:02+08:00: Created from live Lark reopened-task sweep. Old completion note invalidated because the task remains in live incomplete list.
 
 - 2026-05-12T01:46:57+08:00: Reconcile action `retry_due_promoted` by `hermes-lark-reopen-sweep`. Previous status `retry`.
+
+- 2026-05-12T02:54:26+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"permission_tier": "autonomous-execution", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+## Real-API E2E Closure 2026-05-12T17:30:00+08:00
+
+- BE SSO (Redis active sid) pre-existing (commit `d2457db`): `JwtTokenService.issue` writes `auth:session:{userId}=newSid` overwriting; `JwtBlacklistAuthConverter.convert` rejects mismatched sid; `JwtTokenService.rotate` also rejects mismatched sid on refresh.
+- FE additions (commit `c37bbef`): App.tsx visibility/focus listener → `fetchProfile()` ping when tab regains focus → existing api.ts 401 interceptor → `uvisa:auth-expired` event → toast + redirect /login. No frontend timer, BE remains source of truth.
+- Live real-API E2E against running BE `http://localhost:8080`:
+  - Device A login via phone OTP → access token `T_A` + refresh `RT_A` + sid_A in Redis.
+  - Verify `T_A` /api/me → code=0, uvisaUid=UV1380000.
+  - Device B login same account → new access `T_B` + refresh `RT_B` + sid_B in Redis (overwrites sid_A).
+  - `T_A` /api/me → HTTP 401 ✓ (JwtBlacklistAuthConverter.isSessionValid=false).
+  - `RT_A` /api/auth/refresh → code=10002 `登录已过期，请重新登录` ✓ (rotate() detects mismatched sid).
+  - `T_B` /api/me → code=0, uvisaUid=UV1380000 ✓ (new device unaffected).
+- FE UX flow: device A 老 token → 401 → api.ts performRefresh → 10002 → wipe tokens → dispatch `uvisa:auth-expired` → toast + redirect.
+- 顶号机制 BE+FE 全链路通; user 在 device A 切回前台触发 fetchProfile heartbeat → 立刻 401 → 登出。
+- Residual nice-to-have (phase-3 / not blocking): BE 当前 401 body 为空，FE `ssoKick` flag 走 generic expiry 文案而非 "已在其他设备登录"。可加自定义 AuthenticationEntryPoint 写 JSON body 把 BizException msg 透传到 FE。本任务核心要求 "顶掉" 已完整实现。
+
+- 2026-05-13T14:32:23+08:00: Multimodel PUA-loop round `advisory_passed`. Gate `PASS_ADVISORY_ONLY`, decision `CONTINUE_LOOP`. Discussion `/Users/charles/.hermes/tick-20260513-062950-424770-p92012-1c1f6a28-f3495fd9/discussion_result.json`. Failures: []

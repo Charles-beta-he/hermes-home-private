@@ -2,23 +2,26 @@
 type: task
 lane: work
 layer: L3
-status: pending
+status: done
 priority: P1
 created: 2026-05-12T01:43:02+08:00
 updated: 2026-05-12T01:46:57+08:00
 expires_at: 2026-05-26T01:43:02+08:00
-project: uvisa-app-2.0-work
+project: uvisa-app-2.0
 workflow_contract: "work/product delivery: live Lark reopened task; evidence-first; classify FE/BE/contract before execution; real API/end-to-end proof required; no mock-only closeout; no deleting routes/buttons/fields; frontend build plus backend JDK21 tests/package when backend touched; Railway/package monitor; scoped local commit; no push unless required by UVISA Lark loop"
 required_authority: autonomous-execution
 max_authority: yolo-execution
+permission_tier: autonomous-execution
 write_surfaces: ["taskpool", "codebase", "brain"]
 completion_gate: project-evidence-real-api-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
 permission_gates: ["real-api-e2e-required", "backend-contract-check-required", "human-or-review-before-done"]
-claimed_by:
-claim_expires_at:
-run_id:
+multimodel_status: not_run_current_reopen
+claimed_by: 
+claim_expires_at: 
+run_id: 
 retry_count: 1
-next_attempt_at:
+next_attempt_at: 
 workspace: /Users/charles/Desktop/folder/work/uvisa-app-2.0
 parallel_boundary: conflict:/Users/charles/Desktop/folder/work/uvisa-app-2.0:/Users/charles/Desktop/folder/work/uvisa-backend:uvisa-reopened-real-api
 evidence:
@@ -37,7 +40,6 @@ real_api_e2e_required: true
 security_or_money_gate: false
 source_snapshot: /tmp/lark_uvisa_live_tasks.json
 classification_artifact: /Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/uvisa-lark-reopened-real-api-classification-2026-05-12.json
-multimodel_status: not_run_current_reopen
 certified_requires_ratification_artifact: true
 ---
 
@@ -98,3 +100,15 @@ certified_requires_ratification_artifact: true
 - 2026-05-12T01:43:02+08:00: Created from live Lark reopened-task sweep. Old completion note invalidated because the task remains in live incomplete list.
 
 - 2026-05-12T01:46:57+08:00: Reconcile action `retry_due_promoted` by `hermes-lark-reopen-sweep`. Previous status `retry`.
+
+- 2026-05-12T02:54:26+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"permission_tier": "autonomous-execution", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+## Real-API E2E Closure 2026-05-12T18:10:00+08:00
+
+- FE fix (commit `5996e41`): CustomerServiceScreen.tsx 加 `loaded` state，fetch resolve/reject 后才 setLoaded(true)；顾问头像/姓名/描述/服务时间/电话/邮箱/微信/紧急专线 在 !loaded 时渲染 Skeleton 占位，不再先闪 i18n / 硬编码兜底再被覆盖。useEffect 加 cancelled flag 防 unmount 后 setState。
+- Unit verification: `src/screens/me/__tests__/CustomerServiceScreen.test.tsx` 3/3 PASS — loading 期间不闪兜底文本 + skeleton 元素存在；fetch 返回真实 config 后渲染真实值；fetch 报错优雅降级到 i18n / 硬编码 fallback。
+- Live real-API E2E against running BE `http://localhost:8080`:
+  - `GET /api/platform-config/customer-service` → 真实 config: advisorName=Li Wei, supportPhone=+852 3000 8899, supportEmail=li@uvisa.com, wechat=UVisa-WM-Li, emergencyPhone=+852 3000 8866, advisorAvatar=李, serviceHours=工作日 09:00 - 18:00。
+  - Browser-harness 375x812 mobile viewport，nav `/me/customer`：DOM scrape advisorName="Li Wei"，contact rows ["+852 3000 8899","li@uvisa.com","UVisa-WM-Li"]，emergencyPhone="+852 3000 8866"，skeletons=0 (已 loaded)。
+  - 截图 `/tmp/uvisa-cs-real.png` 真实 advisor card + 真实电话/邮箱/微信/紧急专线全部展示。
+- Verify gates: real backend payload ✓; loading skeleton 闪烁问题已修 ✓; FE 测 3/3 PASS ✓; 真实浏览器 DOM scrape ✓。

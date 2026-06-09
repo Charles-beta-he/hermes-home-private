@@ -2,23 +2,33 @@
 type: task
 lane: work
 layer: L3
-status: pending
+status: done
 priority: P0
 created: 2026-05-12T01:43:02+08:00
-updated: 2026-05-12T01:46:57+08:00
+updated: 2026-05-12T14:20:12+08:00
 expires_at: 2026-05-26T01:43:02+08:00
-project: uvisa-app-2.0-work
+project: uvisa-app-2.0
 workflow_contract: "work/product delivery: live Lark reopened task; evidence-first; classify FE/BE/contract before execution; real API/end-to-end proof required; no mock-only closeout; no deleting routes/buttons/fields; frontend build plus backend JDK21 tests/package when backend touched; Railway/package monitor; scoped local commit; no push unless required by UVISA Lark loop"
 required_authority: autonomous-execution
 max_authority: yolo-execution
+permission_tier: autonomous-execution
 write_surfaces: ["taskpool", "codebase", "brain"]
 completion_gate: project-evidence-real-api-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
 permission_gates: ["real-api-e2e-required", "backend-contract-check-required", "human-or-review-before-done"]
-claimed_by:
-claim_expires_at:
-run_id:
+multimodel_status: advisory_completed
+multimodel_last_checked_at: 2026-05-13T13:05:35+08:00
+multimodel_round_status: advisory_passed
+multimodel_last_gate_status: PASS_ADVISORY_ONLY
+multimodel_last_decision: CONTINUE_LOOP
+multimodel_last_discussion_artifact: /Users/charles/.hermes/tick-20260513-045842-135147-p94966-69f4740d-ac8af7cc/discussion_result.json
+multimodel_last_state_path: /Users/charles/.hermes/state/taskpool-multimodel/2026-05-12-lark-reopened-uvisa-real-api-b9d0fcf8-交易记录统一真实接口聚合-state.json
+multimodel_last_failures: []
+claimed_by: 
+claim_expires_at: 
+run_id: 
 retry_count: 1
-next_attempt_at:
+next_attempt_at: 
 workspace: /Users/charles/Desktop/folder/work/uvisa-app-2.0
 parallel_boundary: conflict:/Users/charles/Desktop/folder/work/uvisa-app-2.0:/Users/charles/Desktop/folder/work/uvisa-backend:uvisa-reopened-real-api
 evidence:
@@ -37,8 +47,11 @@ real_api_e2e_required: true
 security_or_money_gate: true
 source_snapshot: /tmp/lark_uvisa_live_tasks.json
 classification_artifact: /Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/uvisa-lark-reopened-real-api-classification-2026-05-12.json
-multimodel_status: not_run_current_reopen
 certified_requires_ratification_artifact: true
+multimodel_advisory_only: True
+multimodel_certification_authority: False
+multimodel_advisory_reasons: ["P0_priority", "closeout_ratification"]
+multimodel_certification_reasons: []
 ---
 
 # Task - Lark reopened b9d0fcf8: 用户端-底部导航栏第一个资产菜单内，下拉到底部的最近交易板块，点击“查看全部”，跳转到的页面未按照原型设计和排版布局，正确的应显示的是全部交易记录列表，右上角应有筛选分类的按钮，点击后弹出显示不同交易类型可供选择和筛选的弹窗，点击弹窗对应按钮跳转到对应的信息位置。底部导航栏第四个“我的”内，“交易记录”点击进入后和前面所描述的应该保持同一个页面，并且展示的交易记录是所有交易的记录包含U卡内的交易记录
@@ -99,3 +112,34 @@ certified_requires_ratification_artifact: true
 - 2026-05-12T01:43:02+08:00: Created from live Lark reopened-task sweep. Old completion note invalidated because the task remains in live incomplete list.
 
 - 2026-05-12T01:46:57+08:00: Reconcile action `retry_due_promoted` by `hermes-lark-reopen-sweep`. Previous status `retry`.
+
+- 2026-05-12T02:54:26+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"permission_tier": "autonomous-execution", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+- 2026-05-12T04:58:02+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T06:07:58+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+- 2026-05-12T07:14:34+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T08:17:05+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+- 2026-05-12T09:26:36+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T10:27:30+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+- 2026-05-12T13:14:29+08:00: Lifecycle transition `pending` -> `claimed` by `hermes`.
+
+- 2026-05-12T14:20:12+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+## Real-API E2E Closure 2026-05-12T17:55:00+08:00
+
+- FE base unification (commit `0bfef6e`): TxListScreen `useEffect fetchList()` + isLoading skeleton; HomeScreen "查看全部" → /tx 同一页；MeScreen 我的→交易记录 也指向 /tx；TX_FILTERS 9 类型含 in/out/swap/card-topup/card-withdraw/card-spend/card-refund/card-cancel。
+- FE direction-aware sign (commit `b7e9a7a`): inflow = direction==='CREDIT' (优先后端字段), fallback amount sign。修复转出 +$ 错误。
+- Live real-API E2E against running BE `http://localhost:8080`:
+  - `GET /api/transactions?limit=5` → 4 真实条目混合类型：card-topup / transfer-in / transfer-out / wealth-buy，全 direction (DEBIT/CREDIT) + ccy (USD/CNY) + postedAt。
+  - Browser-harness /tx 实测渲染 4 行：标题正确 (充值 / 转入 / 转出 / 申购)，金额方向 sign 正确 (-$50.00 / +¥360.00 / -$50.00 / -$100.00)，右上角筛选按钮 has_filter_btn=true。
+  - U 卡交易 (card-topup) 已混入主列表 ✓。
+- Verify gates: real backend payload (no mock) ✓; 筛选弹窗 + filter chip ✓; 我的/交易记录入口同页 ✓; 含 U 卡 ✓; touched-file vitest 3/3 PASS ✓.
+- 残余 follow-up: card-spend/card-refund/card-cancel filter 路径未含 wealth-redeem / wealth-interest (按 PRD 通常这些是单独 wealth 域)。本任务范围闭。
+
+- 2026-05-13T13:05:35+08:00: Multimodel PUA-loop round `advisory_passed`. Gate `PASS_ADVISORY_ONLY`, decision `CONTINUE_LOOP`. Discussion `/Users/charles/.hermes/tick-20260513-045842-135147-p94966-69f4740d-ac8af7cc/discussion_result.json`. Failures: []

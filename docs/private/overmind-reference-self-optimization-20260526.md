@@ -114,3 +114,100 @@ P2, optional skill/doc if the audits confirm recurring need:
 - `go test ./...` in the cloned repo: passed, with no test files.
 - `python3 ~/.hermes/scripts/consult_models.py run ... --tier T1 --quorum 3 --discussion --max-rounds 1 --keep --timeout 240`
 - Local Hermes verification is recorded in the final response and commit metadata.
+
+## Structured T1 improvement plan
+
+This section is the immediate scoped artifact for the 2026-05-26 Overmind reference review. It is intentionally documentation/governance only: no Overmind/tmux integration, no runtime behavior change, and no edits to unrelated untracked private docs.
+
+### Top transferable patterns, traceable to evidence
+
+1. Explicit command surface for lifecycle operations.
+   - Evidence: E-001 / README features and E-002 / main.go command surface list `start`, `restart`, `stop`, `connect`, `quit`, `kill`, `run`, `echo`, and `status`.
+   - Hermes transfer: prefer named, inspectable lifecycle actions for background processes, gateway bridges, cron-launched jobs, and taskpool workers instead of relying only on ad-hoc process IDs or log tails.
+
+2. Layered environment/config precedence with skip/extra controls.
+   - Evidence: E-002 / main.go maps CLI flags to `OVERMIND_*` and loads `~/.overmind.env`, `./.overmind.env`, `./.env`, plus `OVERMIND_ENV` extras unless skipped.
+   - Hermes transfer: any future Hermes supervisor/selfcheck should report which config/env sources were considered, which were skipped, and which profile/home path is active. This aligns with Hermes' profile-aware config expectations.
+
+3. Instance isolation and cleanup as lifecycle invariants.
+   - Evidence: E-003 / command.go creates unique instance IDs, per-process temp scripts, a command-center socket, and defers cleanup.
+   - Hermes transfer: long-running Hermes subsystems should expose an instance/run ID and cleanup status so stale sockets, temp directories, and orphaned workers can be detected by selfchecks.
+
+4. Two-phase graceful shutdown before kill.
+   - Evidence: E-003 / command.go sends a configured stop signal, waits a timeout, then kills.
+   - Hermes transfer: gateway/platform adapters, external-control bridges, and background workers should make graceful timeout policy explicit before hard termination.
+
+5. Process lifecycle state machine with restart/can-die semantics.
+   - Evidence: E-004 / process.go models `Running`, `Stop`, `Kill`, `Restart`, `autoRestart`, `canDie`, observe, and respawn.
+   - Hermes transfer: selfchecks should distinguish allowed exits from unexpected deaths and should not infer health only from a process existing.
+
+6. Central output fan-in with prefixes, subscribers, and drain behavior.
+   - Evidence: E-006 / multi_output.go centralizes output through one channel with process prefixes/colors, optional timestamps, echo subscribers, and explicit stop/drain.
+   - Hermes transfer: multi-agent/taskpool/gateway diagnostics should keep source-prefixed output boundaries, especially when several agents or processes are active.
+
+7. Treat validation gaps as caution, not a pattern to copy.
+   - Evidence: E-007 / CI build/lint exists while local `go test ./...` has no tests.
+   - Hermes transfer: do not cargo-cult the coverage gap. Any runtime code change inspired by this review needs Hermes-native tests or selfcheck verification first.
+
+### Hermes gaps identified from current evidence
+
+The supplied state and local inspection prove the reference patterns and show that `/Users/charles/.hermes/scripts/agent_systems_engineering_control_plane_selfcheck.py` currently performs brain/control-plane file and search checks. They do not prove a live Hermes runtime defect.
+
+Therefore these are gap hypotheses, not certified bugs:
+
+- Hermes may need a small lifecycle-contract verifier for long-running local subsystems.
+- Hermes may need better source-prefixed fan-in summaries for multi-process/multi-agent diagnostics.
+- Hermes may need a stale-instance/temp/socket cleanup check for local control-plane scripts.
+- Hermes may need explicit can-die/auto-restart policy fields for workers or gateway adapters.
+
+No runtime patch should be made solely from these hypotheses. The next code-bearing step must first collect Hermes-side evidence for one specific gap.
+
+### Immediate scoped artifact to land
+
+Land this private documentation artifact only:
+
+- `/Users/charles/.hermes/docs/private/overmind-reference-self-optimization-20260526.md`
+
+Do not modify or stage unrelated files, including:
+
+- `docs/private/graph-lite-provenance-manifest-schema-20260526.md`
+- `docs/private/codegraph-v094-disposable-verification-20260526.md`
+- pre-existing modified source files in `agent/`, `gateway/`, `run_agent.py`, or tests.
+
+### Verification guidance
+
+Minimum verification for this scoped doc/governance change:
+
+```bash
+python3 -m py_compile /Users/charles/.hermes/scripts/agent_systems_engineering_control_plane_selfcheck.py
+git -C /Users/charles/.hermes/hermes-agent diff -- docs/private/overmind-reference-self-optimization-20260526.md
+git -C /Users/charles/.hermes/hermes-agent status --short --branch
+```
+
+If a future implementation touches Hermes runtime or scripts, broaden verification according to impact:
+
+- scripts: `python3 -m py_compile <changed-script>` and any matching script tests.
+- Hermes source: focused pytest through the repo venv or `scripts/run_tests.sh`.
+- taskpool/brain: `python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json` and `~/.hermes/scripts/p10-health.sh`.
+
+### Commit guidance
+
+Commit only this artifact if it changed:
+
+```bash
+git -C /Users/charles/.hermes/hermes-agent add docs/private/overmind-reference-self-optimization-20260526.md
+git -C /Users/charles/.hermes/hermes-agent commit -m "docs: capture overmind reference self-optimization plan"
+```
+
+Before committing, confirm the staged diff contains only the Overmind reference note. Do not push unless explicitly requested.
+
+### Next evidence request before any runtime change
+
+A future T1/T2 implementation proposal should first answer one narrow question with Hermes-side evidence, for example:
+
+- Which Hermes local subsystems already expose lifecycle state, graceful stop/kill policy, run IDs, and cleanup status?
+- Which existing selfcheck is the correct home for a lifecycle-contract check?
+- Which logs or process registries are canonical for gateway, cron, taskpool, and background-process health?
+
+Only after that evidence exists should a concrete `add_verifier` or runtime patch be proposed.
+

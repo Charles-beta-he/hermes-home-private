@@ -9,13 +9,13 @@
 
 ## 5 级模型
 
-| 级别 | 名称 | 特征 | Hermes Skill 映射 |
-|------|------|------|------------------|
-| 1 | Novice | 依赖无上下文规则，无法判断优先级 | 仅有 SKILL.md 骨架，无 test-prompts |
-| 2 | Advanced Beginner | 能识别情境特征，但无法自主决策 | 有 test-prompts，无 CHANGELOG |
-| 3 | Competent | 能制定计划并执行，有责任感 | 有测试 + 日志 + 边界条件 |
-| 4 | Proficient | 能从全局视角判断，直觉辅助决策 | 有 cross-ref + 多场景覆盖 |
-| 5 | Expert | 直觉驱动，无需分析直接行动 | 有 Darwin 评分 ≥ 90 + 实测验证 |
+| 级别  | 名称                | 特征               | Hermes Skill 映射               |
+| --- | ----------------- | ---------------- | ----------------------------- |
+| 1   | Novice            | 依赖无上下文规则，无法判断优先级 | 仅有 SKILL.md 骨架，无 test-prompts |
+| 2   | Advanced Beginner | 能识别情境特征，但无法自主决策  | 有 test-prompts，无 CHANGELOG    |
+| 3   | Competent         | 能制定计划并执行，有责任感    | 有测试 + 日志 + 边界条件               |
+| 4   | Proficient        | 能从全局视角判断，直觉辅助决策  | 有 cross-ref + 多场景覆盖           |
+| 5   | Expert            | 直觉驱动，无需分析直接行动    | 有 Darwin 评分 ≥ 90 + 实测验证       |
 
 ## 在 steward 中的应用
 

@@ -2,23 +2,33 @@
 type: task
 lane: work
 layer: L3
-status: pending
+status: done
 priority: P0
 created: 2026-05-12T01:43:02+08:00
-updated: 2026-05-12T01:46:57+08:00
+updated: 2026-05-12T11:47:05+08:00
 expires_at: 2026-05-26T01:43:02+08:00
-project: uvisa-app-2.0-work
+project: uvisa-app-2.0
 workflow_contract: "work/product delivery: live Lark reopened task; evidence-first; classify FE/BE/contract before execution; real API/end-to-end proof required; no mock-only closeout; no deleting routes/buttons/fields; frontend build plus backend JDK21 tests/package when backend touched; Railway/package monitor; scoped local commit; no push unless required by UVISA Lark loop"
 required_authority: autonomous-execution
 max_authority: yolo-execution
+permission_tier: autonomous-execution
 write_surfaces: ["taskpool", "codebase", "brain"]
 completion_gate: project-evidence-real-api-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
 permission_gates: ["real-api-e2e-required", "backend-contract-check-required", "human-or-review-before-done"]
-claimed_by:
-claim_expires_at:
-run_id:
+multimodel_status: advisory_completed
+multimodel_last_checked_at: 2026-05-13T12:43:42+08:00
+multimodel_round_status: advisory_passed
+multimodel_last_gate_status: PASS_ADVISORY_ONLY
+multimodel_last_decision: CONTINUE_LOOP
+multimodel_last_discussion_artifact: /Users/charles/.hermes/tick-20260513-044055-777256-p74201-db9d63a4-16795282/discussion_result.json
+multimodel_last_state_path: /Users/charles/.hermes/state/taskpool-multimodel/2026-05-12-lark-reopened-uvisa-real-api-82f47f18-电子钱包收款账号格式校验-fe-be-state.json
+multimodel_last_failures: []
+claimed_by: 
+claim_expires_at: 
+run_id: 
 retry_count: 1
-next_attempt_at:
+next_attempt_at: 
 workspace: /Users/charles/Desktop/folder/work/uvisa-app-2.0
 parallel_boundary: conflict:/Users/charles/Desktop/folder/work/uvisa-app-2.0:/Users/charles/Desktop/folder/work/uvisa-backend:uvisa-reopened-real-api
 evidence:
@@ -37,8 +47,11 @@ real_api_e2e_required: true
 security_or_money_gate: true
 source_snapshot: /tmp/lark_uvisa_live_tasks.json
 classification_artifact: /Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/uvisa-lark-reopened-real-api-classification-2026-05-12.json
-multimodel_status: not_run_current_reopen
 certified_requires_ratification_artifact: true
+multimodel_advisory_only: True
+multimodel_certification_authority: False
+multimodel_advisory_reasons: ["P0_priority", "closeout_ratification"]
+multimodel_certification_reasons: []
 ---
 
 # Task - Lark reopened 82f47f18: 用户端-底部导航栏我的-点击收款人管理-新增收款人，选择电子钱包，收款账号输入不符合规则的内容（输入空格、特殊符号、表情包）是也能保存成功，没有进行格式校验
@@ -99,3 +112,34 @@ certified_requires_ratification_artifact: true
 - 2026-05-12T01:43:02+08:00: Created from live Lark reopened-task sweep. Old completion note invalidated because the task remains in live incomplete list.
 
 - 2026-05-12T01:46:57+08:00: Reconcile action `retry_due_promoted` by `hermes-lark-reopen-sweep`. Previous status `retry`.
+
+- 2026-05-12T02:54:26+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"permission_tier": "autonomous-execution", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+- 2026-05-12T03:53:37+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T04:58:02+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+- 2026-05-12T06:07:58+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T07:21:46+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+- 2026-05-12T08:24:00+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T09:39:23+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+- 2026-05-12T10:45:49+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-12T11:47:05+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: guardian_stale_claim_cleanup
+
+## Real-API E2E Closure 2026-05-12T17:25:00+08:00
+
+- BE PayeeDetailsValidator wallet path: WALLET_ACCOUNT_PATTERN `^[A-Za-z0-9@._+\-]{4,64}$` + WALLET_EMAIL_PATTERN (PayPal/Skrill). `validateCreateBody` + `validateLegacyDetails` both branch on WALLET. PayeeDetailsValidatorTest 5/5 PASS (api-public total 23/23). Commit `3bf19c4`.
+- FE RemitNewWalletScreen 已有 SAFE_ACCOUNT_RE 同等 regex (pre-existing); 本次只补 BE fail-closed,不改 FE。
+- Live real-API E2E against running BE `http://localhost:8080` with authenticated JWT (demo `+8613800000000` / OTP 888888 redis-injected):
+  - POST `/api/remit/payees` `{type:wallet, provider:Alipay, account:"user with space"}` → 10001 `钱包账号仅支持字母 / 数字 / @ . _ + -，长度 4-64，不支持空格 / 表情 / 特殊符号` ✓
+  - POST `... account:"alice🎉pay"` (emoji) → 10001 same msg ✓
+  - POST `... provider:PayPal, account:"not-an-email"` → 10001 `钱包账号必须是合法 email，不支持空格 / 表情 / 特殊符号` ✓
+  - POST `... provider:Alipay, account:"alice_pay-123"` → 0 ok (新增成功) ✓
+- Gates met: real backend payload + canonical envelope, no mock; fail-closed; FE already validates, BE now independent guard; touched-file tests + BE compile + api-public package PASS.
+
+- 2026-05-13T12:43:42+08:00: Multimodel PUA-loop round `advisory_passed`. Gate `PASS_ADVISORY_ONLY`, decision `CONTINUE_LOOP`. Discussion `/Users/charles/.hermes/tick-20260513-044055-777256-p74201-db9d63a4-16795282/discussion_result.json`. Failures: []

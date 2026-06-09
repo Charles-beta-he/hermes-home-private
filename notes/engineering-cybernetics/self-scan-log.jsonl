@@ -24,3 +24,52 @@
 {"timestamp": "2026-05-11 00:14:27", "issues": [], "issue_count": 0}
 {"timestamp": "2026-05-12 00:23:08", "issues": [], "issue_count": 0}
 {"timestamp": "2026-05-12 00:23:54", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-13 00:13:05", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-13 00:13:53", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-14 00:10:34", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-14 00:11:05", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-15 00:10:53", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-15 00:11:31", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-17 00:11:23", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-17 00:12:15", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-18 00:10:27", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-18 00:11:04", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-19 00:10:29", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-19 00:11:03", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-20 00:13:53", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-20 00:14:23", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-21 00:13:06", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-21 00:13:36", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-22 00:11:32", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-22 00:11:55", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-23 00:10:28", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-23 00:10:51", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-24 01:32:21", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-24 01:32:41", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-25 00:12:35", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-25 00:12:57", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-26 00:10:17", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-26 00:10:42", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-27 00:10:37", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-27 00:11:05", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-28 00:10:50", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-28 00:11:13", "issues": [], "issue_count": 0}
+{"timestamp": "2026-05-29 00:12:42", "issues": [], "issue_count": 0}
+
+{"timestamp": "2026-06-01 00:12:03 CST", "issues": ["ERROR: self-scan-4h.py failed before logging: FileNotFoundError /Users/charles/.hermes/skills/bayesian-agent/confidence-db.json"], "issue_count": 1, "source": "cron-wrapper-recovery"}
+{"timestamp": "2026-06-02 00:12:36 ", "issues": ["ERROR: self-scan-4h.py failed before logging: FileNotFoundError /Users/charles/.hermes/skills/bayesian-agent/confidence-db.json"], "issue_count": 1, "source": "cron-wrapper-recovery"}
+{"timestamp": "2026-06-03 00:12:29 CST", "issues": ["ERROR: self-scan-4h.py failed before logging: FileNotFoundError /Users/charles/.hermes/skills/bayesian-agent/confidence-db.json"], "issue_count": 1, "source": "cron-wrapper-recovery"}
+{"timestamp": "2026-06-04 00:17:57 CST", "issues": ["ERROR: self-scan-4h.py failed before logging: FileNotFoundError /Users/charles/.hermes/skills/bayesian-agent/confidence-db.json"], "issue_count": 1, "source": "cron-wrapper-recovery"}
+{"timestamp": "2026-06-04 10:50:34", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-04 11:07:32", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-05 00:10:57", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-05 00:11:19", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-06 00:11:20", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-06 00:11:38", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-07 00:10:12", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-07 00:10:30", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-08 00:10:07", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-08 00:15:30", "issues": ["WARNING: active confidence-db \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/bayesian-agent/confidence-db.json", "WARNING: active results.tsv \u7f3a\u5931\uff0c\u964d\u7ea7\u8bfb\u53d6 /Users/charles/.hermes/skills-archived/darwin-skill/results.tsv"], "issue_count": 2}
+{"timestamp": "2026-06-08 00:17:16", "issues": [], "issue_count": 0}
+{"timestamp": "2026-06-09 00:10:21", "issues": [], "issue_count": 0}
+{"timestamp": "2026-06-09 00:10:41", "issues": [], "issue_count": 0}

@@ -66,3 +66,7 @@ folder: 30-tasks
 - [[05-实践与项目/tasks/任务池-排序]]
 
 - [[05-实践与项目/tasks/2026-05-08-local-brain-taskflow-closure-proof]]
+
+## UVISA 兑换全栈缺陷审计 (2026-05-13)
+
+- [[05-实践与项目/tasks/2026-05-13-uvisa-exchange-fullstack-gap-landing]] — 119→12 项审计落 BFU-014~023, 错改后端 3 处已回滚, 红线遵守证据齐

@@ -49,10 +49,11 @@ verified_claim_count: 5/5
 
 | Anchor | Path/URL | Type | Immutable? | Verification |
 |---|---|---|---|---|
+| 2026-05-13 | Semantic control-plane runtime soft-launch landed for UVISA project profile/taskpool | `/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/semantic-control-plane-dry-run-2026-05-13.json`; `/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/semantic-control-plane-selfcheck-2026-05-13.json`; `~/.hermes/scripts/brain_task_orchestrator.py`; `~/.hermes/scripts/test_brain_task_orchestrator.py`; review `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-13-uvisa-interconnection-theory-multimodel-review.md` | PASS for deterministic implementation slice: dry-run is read-only, emits `profile_policy_contract_v1`, classifies active UVISA Lark tasks as T3/fullstack-integrated where money/backend semantics are present, dispatch prompt injects WARN-only contract JSON, selfcheck stays PASS with semantic_control_plane WARN-only soft gate. Certification remains advisory/not full ratification; no proof gate is fail-closed yet. | Next: only promote profile-aware proof/closeout from WARN to fail-closed after target-bound T3 ratification + rollout/rollback plan |
 | Product PRD (Lark) | `https://uaecprod.sg.larksuite.com/docx/GaGLdayTSosobYx6kWylgS7PgMg` | product baseline | Yes for product semantics | extracted via Chrome logged-in fallback; evidence `/tmp/uvisa-lark-product-doc-evidence.json`; tick 20260509-040423 |
 | User test environment | `https://uvisa-app-trnn-production.up.railway.app/login` | real user-end environment | Yes for backend/UI联调 | user-provided test account below; must verify via browser/Playwright before claiming real-backend PASS |
 | Railway project/services | project `uvisa-test`; frontend service `uvisa-app-tRnN`; backend service `uvisa-backend` | remote package/deploy monitor | Yes for Lark closeout | select the `uvisa-test` project in Railway dashboard; inspect services/deployments with screenshots from the already-open/logged-in browser; do not record cookies/tokens/session data |
-| Backend OTP log source | Browser-open Railway `uvisa-backend` service → Deploy Logs | temporary verification-code channel | Yes for current test environment only | read latest `LOGIN` OTP from deploy logs; never persist one-time code values |
+| User-end authenticated session | existing browser/session artifact or project acceptance harness | real user-end environment access | Yes for UI验收 | before creating new login/debug scripts, discover and reuse existing session/auth-state/harness; if unavailable, stop with an explicit auth capability blocker |
 | Current project | `/Users/charles/Desktop/folder/work/uvisa-app-2.0` | code repo | No | `git status`, package scripts, routes/screens |
 | Current-state baseline | `/Users/charles/Desktop/folder/work/uvisa-app-2.0` | canonical baseline | Yes for next loop | 以当前 routes/screens/docs/tests 为主；本轮记录 78 routes / 72 screens |
 | Product user logic cases | `docs/PRODUCT_USER_LOGIC_TEST_CASES.md` | PRD-derived test ledger | Append-only preferred | separates product/user/business logic from page function cases in `docs/UI_TEST_CASES.md` |
@@ -70,6 +71,7 @@ verified_claim_count: 5/5
 - 不能用 mock 成功掩盖真实后端路径不一致；mock/real backend alignment 必须有证据。
 - 不能跳过 i18n/dark/mobile/PWA/console/network 检查宣称 A+。
 - 不能把本项目临时 TODO、当前进度、未验证猜测写进全局 memory。
+- **Mock 数据架构**：硬编码假数据必须推到 service 层，距离真实后端数据仅一步之遥。组件禁止 import `FAKE_*` 常量或使用 `?? FAKE_*` fallback 模式。所有 mock 数据必须 service → store → component 逐层传递，数据结构与真实 API 一致。详见 `docs/MOCK_DATA_ARCHITECTURE_CONSTRAINTS.md`。
 
 ## 5. Skill Route
 
@@ -108,15 +110,14 @@ verified_claim_count: 5/5
 
 | Environment | Login URL | Login ID | Phone | UID | KYC | Payment PIN | Source / Rule |
 |---|---|---|---|---|---|---|---|
-| 用户端 Railway 测换环境 | `https://uvisa-app-trnn-production.up.railway.app/login` | `charles.he@uaec.net` | `+8613800000000` | `UV1380000` | `L3` | `123456` | 2026-05-09 用户提供；当前线上入口为邮箱 OTP 登录；仅用于 browser/Playwright 真实联调，结果需写回 Evidence Ledger/UI_TEST_CASES |
+| 用户端 Railway 测换环境 | `https://uvisa-app-trnn-production.up.railway.app/login` | `charles.he@uaec.net` | `+861****0000` | `UV1380000` | `L3` | `199406` | 2026-05-09 用户提供；2026-05-28 用户纠正支付 PIN；当前线上入口为邮箱 OTP 登录；仅用于 browser/Playwright 真实联调，结果需写回 Evidence Ledger/UI_TEST_CASES |
 
-### Verification Code Retrieval / 当前临时验证码来源
+### Auth/session reuse discovery / 线上登录能力发现
 
-- 当前测试环境登录验证码暂时不以真实邮件/短信为准，而是在浏览器已打开的 Railway `uvisa-backend` 服务日志中读取。
-- 操作入口：Railway 控制台 → project 中选择 `uvisa-backend` 服务 → `Deploy Logs` 标签页。
-- 识别方式：查看最新登录相关日志，优先搜索/过滤 `OTP-CODE`、`SMS-DEV`、`purpose=LOGIN`、登录邮箱或账号标识；日志形态通常包含 `OtpService` / `LogSmsSender`、`ttlSeconds=300` 或 `5 分钟内有效`。
-- 使用规则：只读取最新一条与本次登录请求匹配的 `LOGIN` 验证码；发送验证码后，后端日志出现 OTP 可能有一段时间间隔，不要立刻判定失败，应等待/刷新/按关键词过滤后再读取；验证码 5 分钟内有效，过期/多次请求后必须重新发送并重新读日志。
-- 安全规则：Workpad 只记录“从日志读取验证码”的方法，不保存任何一次性验证码值；截图/日志如包含验证码，应视为敏感调试证据，不进入公开文档、PR、issue 或全局 memory。
+- 普通 C 端线上 UI 验收默认不重新触发 OTP，也不新写一次性登录脚本；先找并复用既有功能。
+- 必查顺序：1) 当前 browser-harness/浏览器是否已有登录态；2) 项目内是否已有 storageState/auth-state/acceptance 脚本；3) 历史会话或 Workpad 是否记录了已打通的验收入口；4) repo 内既有 Playwright harness（如 `playwright.real-backend.config.ts`、`tests/real-backend-login.spec.ts`）是否可复用。
+- 只有在任务本身明确验证 auth/OTP/通知链路，或用户明确要求重跑登录合约时，才进入登录挑战；否则缺少会话态应记录为 `session_artifact_missing` / `auth_capability_missing` blocker，而不是临时改写流程。
+- 禁止把账号凭据、cookies、session token、一次性验证码或含敏感值的截图/日志写入 repo docs、Lark 评论、PR/issue 或全局 memory。
 
 ## 7. Acceptance Matrix
 
@@ -161,14 +162,14 @@ verified_claim_count: 5/5
 | 2026-05-09 | Product PRD from Lark read and certified | `/tmp/uvisa-lark-product-doc-redacted.txt`, `/tmp/uvisa-lark-product-doc-evidence.json`, `/tmp/uvisa-lark-product-doc-summary.md`, `/tmp/uvisa-lark-window-screenshot-proof/summary.json`, `/tmp/uvisa-lark-window-screenshot-proof/manifest.json`, `/Users/charles/.hermes/tick-20260509-040423`, skill `lark-docx-reading` | grounded 5/5; T2 discussion certified 4/4 approve; extracted `U-VISA2.0 C 端产品需求文档（PRD v1.0）`, 27069 chars / 967 lines / sha256 `3b1eb4cce25572dd2049ae42e70482851be48f6de6d7a44a84d70ea5481e74a9`; 11 modules / 13 flows summarized; OpenAPI path recorded as 403/1770032; Chrome logged-in fallback succeeded; screenshot sweep 129 window-only captures / 110 unique hashes, vision samples confirm sections 1/4/5/6 and late Appendix D | For official OpenAPI read, request Lark permission `查看新版文档`, optionally `创建及编辑新版文档` for edit/history, optionally `获取用户 user ID` only if user fields needed; app/bot or user token must also have document-level read access. Preserve `暂时无法在Lark文档外展示此内容` placeholders as unknown, not inferred |
 | 2026-05-09 | Lark Docx official API route changed to user OAuth-first | `/tmp/uvisa-lark-user-oauth-permission-state.json`, `/tmp/lark-permission-after-apply.png`, `/tmp/lark-oauth-after-permission.png`, `~/.hermes/scripts/lark_docx_reader.py`, skill reference `lark-user-oauth-docx.md` | redirect URL added; user scopes `offline_access` + `docx:document` imported/applied; script supports `--auth user`; OAuth still `20027` because permissions are `待发布`; no user_access_token / OpenAPI read yet | Needs explicit user confirmation before version creation/release/admin approval; then retry OAuth and read PRD with `user_access_token` |
 | 2026-05-09 | 用户端 Railway 测换环境测试账号已登记 | current user instruction; Workpad section 6.1 | verified as user-provided; 2026-05-09 updated login identifier to email; browser opened live login page and confirmed filled email enables `下一步`; OTP not sent in this update | Next real-backend loop must authenticate with this account, inspect console/network/storage, then update UI_TEST_CASES + Evidence Ledger |
-| 2026-05-09 | 当前测试环境验证码需从浏览器打开的 Railway `uvisa-backend` Deploy Logs 读取 | current user instruction + attached screenshots; Workpad section 6.1 | verified as user-provided workflow; screenshot examples show `OTP-CODE` / `SMS-DEV` / `purpose=LOGIN` log pattern; OTP values intentionally not persisted; user clarified OTP log may appear after a delay; current login challenge is email OTP | During login smoke tests, send code once, then wait/refresh/filter for the latest matching log entry from `uvisa-backend` deploy logs; do not store OTP values in docs |
+| 2026-05-09 | 当前测试环境曾记录 Railway `uvisa-backend` Deploy Logs 读取验证码路径（已降级为历史调试资料） | current user instruction + attached screenshots; Workpad section 6.1 | historical only: screenshot examples showed `OTP-CODE` / `SMS-DEV` / `purpose=LOGIN`; OTP values intentionally not persisted | Superseded by 2026-05-28 rule: ordinary C端线上 UI验收 must first reuse existing browser/session/auth-state/acceptance harness; do not default to Railway OTP/log lookup unless the task explicitly validates auth/OTP contracts or the user asks to rerun the login contract |
 | 2026-05-09 | PRD-derived 产品用户逻辑测试用例已补充 | `docs/PRODUCT_USER_LOGIC_TEST_CASES.md`, `docs/UI_TEST_CASES.md` section 0.3, PRD summary `/tmp/uvisa-lark-product-doc-summary.md`, PRD redacted lines 737-858 | created test layer for product/user logic distinct from page function tests; covers PRD constraints, 13 core user flows, funds/state closure, risk/security/device logic, backend transparency, product limits, and real-env execution protocol | Next loop should execute P0: real login baseline, T2 outflow coverage, backend-transparency checks; update statuses with evidence |
-| 2026-05-09 | PRD deterministic product-logic smoke started | repo `tests/product-logic-prd.spec.ts`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md` §9, `docs/UI_TEST_CASES.md` §0.3, multi-model tick `/Users/charles/.hermes/tick-20260509-070819`, command `npx playwright test tests/product-logic-prd.spec.ts --reporter=line` | PASS 8/8 chromium + mobile-chrome: no C-side self-registration, KYC readonly + advisor, USDT payout EVM-only + TRON-format address blocked + T2 PIN→email-code paging, single physical card + stable-only wealth/fund-quant empty states | Next: real Railway login smoke with delayed OTP-log workflow, topup/USDC EVM, full outflow T2 matrix, card注销/72h/限流专项 |
-| 2026-05-09 | PRD deterministic product-logic smoke expanded + UI guards rerun | repo `tests/product-logic-prd.spec.ts`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md` §9, `docs/UI_TEST_CASES.md` §0.3, `test-results/ui-regression-2026-05-09T08-06-20-061Z/report.md`, `/tmp/uvisa-mobile-h5-loop-gate-1778314001330/report.md`; commands: `pnpm exec playwright test tests/product-logic-prd.spec.ts --reporter=line`, `BASE_URL=http://localhost:5173 pnpm run ui:regression`, `BASE_URL=http://localhost:5173 pnpm run ui:mobile-h5`, `pnpm test`, `pnpm run build`, touched-file `eslint` | PASS: product logic 16/16 chromium + mobile-chrome, including USDC ERC20 deposit-address guard against token contract display; UI regression 22 captures/0 issues; mobile-H5 6/6 buckets to new-email-code, 60 captures, 53 INFO, 0 blockers/P0 true clip/unclassified HIGH/console error/pageerror/API failure; unit 52 files/451 pass/1 skipped; build PASS; touched-file ESLint 0 errors. Full `pnpm lint` remains baseline FAIL 139 errors/8 warnings unrelated to touched files | Next: real Railway login smoke with delayed OTP-log workflow, full outflow T2 matrix (汇款/赎回/卡注销), card注销/72h/限流专项, real webhook/到账闭环, full failure-state backend-transparency scan |
+| 2026-05-09 | PRD deterministic product-logic smoke started | repo `tests/product-logic-prd.spec.ts`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md` §9, `docs/UI_TEST_CASES.md` §0.3, multi-model tick `/Users/charles/.hermes/tick-20260509-070819`, command `npx playwright test tests/product-logic-prd.spec.ts --reporter=line` | PASS 8/8 chromium + mobile-chrome: no C-side self-registration, KYC readonly + advisor, USDT payout EVM-only + TRON-format address blocked + T2 PIN→email-code paging, single physical card + stable-only wealth/fund-quant empty states | Next: auth/session capability discovery + reusable login-gated UI验收, topup/USDC EVM, full outflow T2 matrix, card注销/72h/限流专项 |
+| 2026-05-09 | PRD deterministic product-logic smoke expanded + UI guards rerun | repo `tests/product-logic-prd.spec.ts`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md` §9, `docs/UI_TEST_CASES.md` §0.3, `test-results/ui-regression-2026-05-09T08-06-20-061Z/report.md`, `/tmp/uvisa-mobile-h5-loop-gate-1778314001330/report.md`; commands: `pnpm exec playwright test tests/product-logic-prd.spec.ts --reporter=line`, `BASE_URL=http://localhost:5173 pnpm run ui:regression`, `BASE_URL=http://localhost:5173 pnpm run ui:mobile-h5`, `pnpm test`, `pnpm run build`, touched-file `eslint` | PASS: product logic 16/16 chromium + mobile-chrome, including USDC ERC20 deposit-address guard against token contract display; UI regression 22 captures/0 issues; mobile-H5 6/6 buckets to new-email-code, 60 captures, 53 INFO, 0 blockers/P0 true clip/unclassified HIGH/console error/pageerror/API failure; unit 52 files/451 pass/1 skipped; build PASS; touched-file ESLint 0 errors. Full `pnpm lint` remains baseline FAIL 139 errors/8 warnings unrelated to touched files | Next: auth/session capability discovery + reusable login-gated UI验收, full outflow T2 matrix (汇款/赎回/卡注销), card注销/72h/限流专项, real webhook/到账闭环, full failure-state backend-transparency scan |
 | 2026-05-09 | 新会话 handoff capsule 已补齐 | Workpad section 12, repo `AGENTS.md`, commit `eb3b91a`, global memory updated with repo + Workpad pointer | another Hermes session can restore project context by reading `AGENTS.md`, this Workpad, `docs/UI_TEST_CASES.md`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md`, ADR index, and latest git status; sensitive OTP/test-account details stay project-scoped | On new session, do not rely on compressed chat alone; load `AGENTS.md` + section 12 first, then verify repo HEAD/status |
-| 2026-05-09 | P0 card no-card + topup receiving safety hardening verified | frontend repo `src/services/card.service.ts`, `src/screens/card/RequireCard.tsx`, `src/screens/topup/SwiftDetailsScreen.tsx`, `src/screens/topup/CnyBankScreen.tsx`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md`, `docs/UI_TEST_CASES.md`; backend repo `PlatformPublicConfigController.java`, `LegacyApiController.java`, `FrontendCompatibilityApiContractTest.java`; evidence `/tmp/uvisa-ui-regression-p0-card-topup-20260509-v4`, `/tmp/uvisa-mobile-h5-p0-card-topup-20260509-v4` | PASS deterministic slice after independent reviewer blocker fix: backend contract 10/10 + package PASS; frontend Vitest 55 files/468 pass/1 skip + build PASS; UI regression 21 captures/0 issues; mobile-H5 6/6 buckets/0 blockers; frontend/backend `git diff --check` + added-line static scan PASS. Topup receiving details now fail-closed unless backend section is explicitly `publicVisible=true` and all fields are safe/masked; reviewer blocker fix added numeric/split-digit account-number bypass tests, validates displayed CNY hints, and removes synthetic CNY reference generation. Initial local real-backend smoke caveat was resolved by the later JDBC timing proxy exception-unwrapping fix recorded below. Four-model T3 ratification certified this deterministic slice at `/Users/charles/.hermes/tick-20260509-145115`; scoped local commits landed as frontend `7f63a78` and backend `cb80f2a`, with both repo worktrees clean; keep sensitive account/PIN/OTP only in section 6.1. | Next: real Railway login smoke with Workpad OTP-log workflow, card cancel semantics decision, and full backend architecture-gate cleanup as separate task. |
+| 2026-05-09 | P0 card no-card + topup receiving safety hardening verified | frontend repo `src/services/card.service.ts`, `src/screens/card/RequireCard.tsx`, `src/screens/topup/SwiftDetailsScreen.tsx`, `src/screens/topup/CnyBankScreen.tsx`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md`, `docs/UI_TEST_CASES.md`; backend repo `PlatformPublicConfigController.java`, `LegacyApiController.java`, `FrontendCompatibilityApiContractTest.java`; evidence `/tmp/uvisa-ui-regression-p0-card-topup-20260509-v4`, `/tmp/uvisa-mobile-h5-p0-card-topup-20260509-v4` | PASS deterministic slice after independent reviewer blocker fix: backend contract 10/10 + package PASS; frontend Vitest 55 files/468 pass/1 skip + build PASS; UI regression 21 captures/0 issues; mobile-H5 6/6 buckets/0 blockers; frontend/backend `git diff --check` + added-line static scan PASS. Topup receiving details now fail-closed unless backend section is explicitly `publicVisible=true` and all fields are safe/masked; reviewer blocker fix added numeric/split-digit account-number bypass tests, validates displayed CNY hints, and removes synthetic CNY reference generation. Initial local real-backend smoke caveat was resolved by the later JDBC timing proxy exception-unwrapping fix recorded below. Four-model T3 ratification certified this deterministic slice at `/Users/charles/.hermes/tick-20260509-145115`; scoped local commits landed as frontend `7f63a78` and backend `cb80f2a`, with both repo worktrees clean; keep sensitive account/PIN/OTP only in section 6.1. | Next: auth/session capability discovery + reusable login-gated UI验收, card cancel semantics decision, and full backend architecture-gate cleanup as separate task. |
 | 2026-05-09 | Local full Spring Boot real-backend smoke unblocked | backend repo `app/uvisa-app/src/main/java/com/uvisa/app/jdbc/JdbcTimingDataSource.java`, `app/uvisa-app/src/test/java/com/uvisa/app/jdbc/JdbcTimingDataSourceTest.java`; frontend repo `docs/REAL_BACKEND_REBASE_AND_GAP_REPORT_2026-05-09.md`; process `proc_e9e31c3c5c1b` | Root cause: dev `JdbcTimingDataSource` reflection proxy wrapped MySQL/Flyway `SQLException` as `InvocationTargetException`/`UndeclaredThrowableException`, preventing Flyway's MySQL user-variable permission probe from degrading gracefully. Fix unwraps reflective invocation causes and preserves original checked `SQLException`. Verification: RED test reproduced UTE; GREEN targeted Maven test PASS; `mvn -pl app/uvisa-app -am -DskipTests package` PASS; `FLYWAY_ENABLED=true` + production-like RocketMQ `spring-boot:run` stayed running on 8080; Flyway applied 89 migrations to v940; `/actuator/health` 200/UP with DB/Redis UP; `/api/platform-config/topup` and `/api/platform-config/customer-service` 200. | Next: commit backend fix separately; keep RocketMQ-excluded harness marked invalid because `CoboWebhookController` requires `RocketMQTemplate`; do not claim full backend test-suite green until existing ArchUnit/M1 gates are separately fixed. |
-| 2026-05-09 | Real-backend login contract switched to email OTP | repo `tests/real-backend-login.spec.ts`, `playwright.real-backend.config.ts`, `tests/auth-login.spec.ts`, `tests/payment-pin-gate.spec.ts`, `scripts/ui-regression.mjs`, `scripts/mobile-h5-loop-gate.mjs`, `docs/UI_TEST_CASES.md`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md`; live browser page `https://uvisa-app-trnn-production.up.railway.app/login`; commands `pnpm exec playwright test tests/auth-login.spec.ts tests/payment-pin-gate.spec.ts --reporter=line`, `pnpm exec playwright test -c playwright.real-backend.config.ts tests/real-backend-login.spec.ts --reporter=line`, `pnpm test`, `pnpm run build` | PASS for mock/local guards: auth+PIN gate 18/18, unit 52 files/452 pass/1 skipped, build PASS with existing chunk warning; real-backend spec skips unless `UVISA_TEST_LOGIN_EMAIL` is provided from Workpad; live browser confirmed email input and enabled next CTA without sending OTP | Next: run real login with OTP from Railway Deploy Logs, then finish login→logout→login→pin-setup gate and security review |
+| 2026-05-09 | Real-backend login contract switched to email OTP | repo `tests/real-backend-login.spec.ts`, `playwright.real-backend.config.ts`, `tests/auth-login.spec.ts`, `tests/payment-pin-gate.spec.ts`, `scripts/ui-regression.mjs`, `scripts/mobile-h5-loop-gate.mjs`, `docs/UI_TEST_CASES.md`, `docs/PRODUCT_USER_LOGIC_TEST_CASES.md`; live browser page `https://uvisa-app-trnn-production.up.railway.app/login`; commands `pnpm exec playwright test tests/auth-login.spec.ts tests/payment-pin-gate.spec.ts --reporter=line`, `pnpm exec playwright test -c playwright.real-backend.config.ts tests/real-backend-login.spec.ts --reporter=line`, `pnpm test`, `pnpm run build` | PASS for mock/local guards: auth+PIN gate 18/18, unit 52 files/452 pass/1 skipped, build PASS with existing chunk warning; real-backend spec skips unless `UVISA_TEST_LOGIN_EMAIL` is provided from Workpad; live browser confirmed email input and enabled next CTA without sending OTP | Next: run auth/session capability discovery; if a reusable logged-in session/auth-state/harness exists, use it for login-gated UI验收; only rerun the login contract when explicitly validating auth/OTP behavior, then finish login→logout→login→pin-setup gate and security review |
 
 | 2026-05-09 | Backend repo write permission granted for full local-stack workflow | current user instruction; backend repo `/Users/charles/Desktop/folder/work/uvisa-backend`; Workpad section 12.2 | verified as user-provided workflow change; backend branch `feat/frontend-api-gap-analysis` clean at `0805d09`; frontend branch has pending email-OTP migration diff awaiting scoped commit | Next: run multi-model evidence-first planning across PRD + frontend + backend, then TDD-gated backend/frontend changes, local full-stack UI scoring, and separate local commits per repo |
 
@@ -199,7 +200,7 @@ verified_claim_count: 5/5
 - [ ] Run Playwright/browser-harness mobile dark/i18n closure sweep.
 - [ ] For UI tasks, prefer browser-harness real browser walkthrough: open the app, follow `docs/UI_TEST_CASES.md` step-by-step, test interactions, inspect console/network, capture screenshots, and grade with ui-ux-pro-max/UIMax/baseline-ui/a11y/motion constraints; `npm run ui:regression` is a guard, not the sole acceptance proof.
 - [ ] Run mock/real backend path alignment check and record unresolved API mismatches.
-- [ ] Use the registered Railway test account (current login identifier: email) for a real user-end login smoke test; after sending verification code, wait for delayed backend log emission if needed, then read the latest matching `LOGIN` OTP from browser-open Railway `uvisa-backend` Deploy Logs, then record console/network/storage evidence before marking real-backend login PASS. Do not persist the OTP value itself.
+- [ ] For real user-end login or login-gated UI验收, run auth/session capability discovery first: reuse existing browser/session/auth-state/acceptance harness if present; only run a login challenge for auth/OTP contract validation or explicit user request. If no reusable capability exists, record `session_artifact_missing` / `auth_capability_missing` instead of creating a one-off OTP/Railway-log script.
 - [ ] Update docs/UI_TEST_CASES.md, ADR if needed, and this Evidence Ledger after each loop.
 
 ## 11. Deposition Rules
@@ -242,8 +243,8 @@ verified_claim_count: 5/5
 ### 12.3 Test environment facts
 
 - 用户端测换环境 URL、测试账号、登录邮箱、支付 PIN 只保存在本 Workpad section 6.1；不要复制到全局 memory、README、PR、issue。
-- 当前线上登录入口为邮箱 OTP；验证码来源：浏览器打开的 Railway `uvisa-backend` → `Deploy Logs`，读取最新 `LOGIN` OTP；发送验证码后日志可能有延迟，要等待/刷新/过滤，不能立刻判失败。
-- 本地浏览器/Railway 控制台预计有可复用登录态；Railway 项目是 `uvisa-test`，前端服务 `uvisa-app-tRnN`，后端服务 `uvisa-backend`。优先使用现有登录态通过截图查看 `uvisa-backend` Deploy Logs、相关服务 Deployments/package/build 状态。若登录态失效或需重新认证，只记录为访问 blocker；不要把账号凭据、cookies、session token 或一次性 OTP 写入 repo docs、Lark 评论、PR/issue 或全局 memory。
+- 当前线上登录入口为邮箱 OTP；普通 C 端线上 UI 验收必须先复用已有浏览器/session/auth-state/acceptance harness，不默认重新触发登录挑战；只有 auth/OTP/通知链路任务或用户明确要求重跑登录合约时才进入登录流程。
+- 本地浏览器/Railway 控制台预计有可复用登录态；Railway 项目是 `uvisa-test`，前端服务 `uvisa-app-tRnN`，后端服务 `uvisa-backend`。优先使用现有登录态查看服务 Deployments/package/build 状态。若登录态失效或需重新认证，只记录为访问 blocker；不要把账号凭据、cookies、session token 或一次性 OTP 写入 repo docs、Lark 评论、PR/issue 或全局 memory。
 - 不保存一次性 OTP 值；含 OTP 的截图/日志视为敏感调试证据。
 
 ### 12.4 Verification status
@@ -318,3 +319,116 @@ verified_claim_count: 5/5
 - `remote_frontend_build`: 前端修改后按用户要求 push 并监控远端前端打包；后端部署状态当前不纳入 closeout gate，除非用户另行要求。
 
 触发 backend-aware gate 的任务类型：auth/OTP/PIN/payment password/2FA/device/session/KYC/card/wallet/topup/exchange/remittance/notification/account/profile/money/status/time/order 字段，或任何 PRD source-of-truth 语义。多模型方案必须覆盖这些后端完善点，不能只给前端兼容 shim。
+
+
+
+### 12.9 Project profile update — resumed Claude session d964ad07 (2026-05-13)
+
+Source session: `/Users/charles/.claude/projects/-Users-charles/d964ad07-b963-498e-9d25-53f4d60d3d31.jsonl`.
+Redacted compact evidence: `/Users/charles/.hermes/project-profiles/evidence/uvisa-app-2.0-session-d964-profile-evidence.json`.
+Multi-model advisory tick: `/Users/charles/.hermes/tick-20260513-031044`.
+
+Status: evidence grounded / advisory profile update. Four models participated and truth gate grounded 7/7 claims; final ratification remains `not_certified` because the 2-round discussion did not converge on patch-shape/approval gates. Use this as durable project-profile guidance, not as a claim that all future Lark tasks are certified.
+
+Profile deltas now encoded in `~/.hermes/project-profiles/uvisa-app-2.0.json`:
+
+- Prototype anchor: `https://napp.denatrust.com` is recorded as UI/interaction prototype comparison only. It is not a real backend, integration environment, production status proof, or API contract certificate.
+- Lark evidence precedence: trace requirements back to current Lark task body/comments/PM screenshots/images/prototype. Agent-generated taskpool `description` fields are evidence pointers/placeholders and must not override real Lark evidence by themselves.
+- Conflict rule: if task/comment/prototype/PRD conflict, record the conflict and the source chosen for the current delivery. Explicit current Lark requirement wins for this delivery; prototype is the anchor when the task/comment says “1:1复刻/和原型保持一致”.
+- Backend-first fixpoint: if the failure is backend-owned data shape/business semantics/persistence/status-time-order/auth-session/API contract drift, inspect and fix backend directly when backend is the correct fix point. FE-only shim is a policy violation unless documented as temporary with a backend blocker.
+- Release sync: frontend release branch is `feat/uvisa-2.0`; backend release branch is `main`. When the user explicitly asks release sync/closeout, rebase both scoped branches, run relevant tests/build evidence, push as requested, and monitor remote frontend Railway/package/build. Backend deploy monitoring remains non-default unless explicitly requested.
+- Local fullstack UI acceptance: for fullstack-integrated UI acceptance, run local frontend against local real backend and collect browser/Playwright console/network/storage evidence. Mock/Railway are comparison/monitoring only.
+
+
+### 12.10 Sanitized PROJECT-PROFILE reference imported for task execution (2026-05-13)
+
+Source: `/Users/charles/Downloads/PROJECT-PROFILE.md` (`sha256:9dc2b1ecf9167f248307e445369a246e777921b99f486c29b40eeda1cd002ac2`).
+Multi-model tick: `/Users/charles/.hermes/tick-20260513-032950`.
+Sanitized Hermes reference: `/Users/charles/.hermes/project-profiles/evidence/uvisa-app-2.0-PROJECT-PROFILE-sanitized-reference.md`.
+Brain reference: `/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/PROJECT-PROFILE-sanitized-reference.md`.
+
+Decision: keep existing Hermes `uvisa-app-2.0.json` as canonical operational profile, but import sanitized PROJECT-PROFILE content as task-execution navigation. Raw account/OTP/credential-like content is excluded. Unverified/TBD PRD/code claims remain advisory until checked against current PRD/code/Lark evidence.
+
+Task execution implication: future UVISA tasks should use the compact `uvisa_business_navigation` field in the project profile for C端/Admin/PAD/backend impact analysis, while still applying Lark evidence precedence and backend-first/fullstack verification gates.
+
+
+### 12.11 Private runtime test data policy for PROJECT-PROFILE (2026-05-13)
+
+User clarified that some sensitive PROJECT-PROFILE test data/accounts are useful during task execution. Policy update: do not persist raw values into global/project profile/shared docs, but keep a private read-on-demand pointer in `~/.hermes/project-profiles/uvisa-app-2.0.json` under `private_runtime_evidence_sources`.
+
+Private source: `/Users/charles/Downloads/PROJECT-PROFILE.md`, sensitive line range `649-680`.
+Allowed: local/test login/bootstrap when the current UVISA task needs it.
+Forbidden: raw values in multi-model state, memory, public docs, PR/Lark comments, final summaries, or project-profile JSON.
+
+### 12.12 Exchange fullstack audit + multi-model gate (2026-05-13)
+
+**Task**: `/Users/charles/Documents/brain/05-实践与项目/tasks/2026-05-13-uvisa-exchange-fullstack-gap-landing.md`
+**Outcome**: `returned_for_backend_completion` / `not_fully_closed` (Workpad §12.6 precedent applied)
+**Source sessions**:
+- v1 fan-out: `/Users/charles/.hermes/tick-20260513-042038-338249-p43031-7eccb5e4-d3313aa2/`
+- v2 fan-out + resume-discussion 3 rounds: `/Users/charles/.hermes/tick-20260513-042630-803810-p51447-340a87e7-ef804f9a/`
+
+**Audit findings landed as BFU-014 to BFU-027** in `uvisa-app-2.0/BACKEND_FOLLOWUPS.md`:
+
+| Category | BFUs | Severity |
+|----------|------|----------|
+| PRD drift | BFU-014 (TTL 30s vs 600s), BFU-015 (10万 USD T2 gate) | MEDIUM, HIGH |
+| Backend safety | BFU-016 (idempotency 5xx), BFU-017 (amount cap), BFU-018 (inflow risk), BFU-019 (ghost row), BFU-020 (PIN rate-limit) | HIGH/MEDIUM/LOW/HIGH |
+| Frontend | BFU-022 (PWA SW exchange exclusion), BFU-023 (useFinishOnce ordering) | HIGH, MEDIUM |
+| Architecture | BFU-021 (history route), BFU-024 (FxOrder bypass), BFU-025 (spread/fee leak), BFU-026 (Aggregator bypass), BFU-027 (zero JUnit tests) | LOW/HIGH/HIGH/MEDIUM/HIGH |
+
+**Multi-model gate verdict**: `not_certified` (3 reject + 1 amend; 25 unresolved blockers — 9× sev=4 + 16× sev=3). Per `multi_model_policy.full_certification_rule`, full landing not permitted.
+
+**Key red-team blocker (new insight)**: BFU-014 (TTL 600s → 30s) is a 20× reduction; in-flight quote migration safety analysis missing. Future remediation must add grace period / feature flag / dual-mode rollout for quotes already in flight at deploy moment.
+
+**Red-line evidence**: backend repo untouched (`git status` clean), frontend repo only `BACKEND_FOLLOWUPS.md` modified. No autonomous backend code edit.
+
+**Truth gate gap**: `evidence_coverage = 0.0` despite 8 manually-attached evidence rows. `consult-models.sh fulfill-evidence` allowlist does not include file-read tools; manual evidence attachment lacks the `link_review` metadata the truth gate requires. Process improvement: extend allowlist or document linkage schema before next gate run.
+
+**Next-step trigger**: an explicit Lark task referencing one or more BFU-014~027 will reopen this work. Subsequent gate run must include (a) explicit evidence link metadata per claim, (b) migration safety analysis for the TTL change, and (c) a single planner-preferred patch shape per file (current 2 vs 2 split blocks ratification).
+
+**Update 2026-05-13 (later same day)**: Gate v5 with corrected `evidence[].supports: ["C-NNN"]` schema achieved `truth_status=grounded` 3/3. Ratification: 1 approve (mimo) + 2 amend (opus, deepseek) + 1 reject (gpt-5.5 about empty merged_plan I-004, since fixed by canonical injection). Per §12.7 `certified_with_amendments` precedent, BFU-022 (PWA cache money-API exclusion) and BFU-023 (useFinishOnce success-only marker) landed FE-only: commit `69cb3fb` in frontend repo, `pnpm vitest 85 passed`, `pnpm build` PASS, no push. Backend repo untouched. Tick artifact: `~/.hermes/tick-20260513-050556-989539-p7116-254c3308-e9b5b2ae/`. Remaining BFU-014/15/16/17/18/19/20/21/24/25/26/27 still OPEN — require independent Lark task driver per scope_control.
+
+**Schema lesson for future runs**: `consult-models.sh state --claim` auto-assigns ids as `C-NNN` regardless of inline prefix. `evidence[].supports` must reference those generated ids exactly. Use a separate post-process step to fix `supports` references when constructing state programmatically.
+
+**Phase 5 ABORT note (same day, BE attempt)**: Gate v6 `tick-20260513-052357-307190-p28628-36d33bea-0484aad3` attempted BFU-021 (history route move) + BFU-027 (ExchangeServiceTest JUnit) backend landing. truth_status=grounded 3/3, but ratification 4 amend votes were scope-contested: 2 planners proposed implementation, 2 proposed noop (issue I-005/I-008/I-010 explicitly: "noop/no-change is sufficient"). Gate I-006 self-acknowledged "noop vote contradicts truth-gate-verified evidence". Interpretation: multi-model gate objectively enforced scope_control red-line — no Lark task means split panel even with verified gaps. Per §12.7 precedent (1 approve + 2 amend + 1 reject pattern), v6's 4-amend-with-act/noop split does NOT meet certification threshold. Phase 5 ABORT; backend repo untouched; remaining 12 BFU exit to independent Lark task driver as originally classified.
+
+**Gate certification taxonomy lesson**: §12.7 `certified_with_amendments` requires explicit approve/amend signal toward action; uniform amend votes split between act/noop indicate scope contention, not amend-to-implement. Treat the latter as `scope_contested` and do not land.
+
+### 12.13 Semantic control-plane theory review (2026-05-13)
+
+Source review: `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-13-uvisa-interconnection-theory-multimodel-review.md`.
+State: `/tmp/uvisa_interconnection_theory_state.json`.
+Tick: `/Users/charles/.hermes/tick-20260513-075141-150334-p515-2173ba88-77c89751`.
+
+Status: `truth_grounded_advisory_not_full_ratification`. Four models participated (claude-opus-4-7, gpt-5.5, deepseek-v4-pro, mimo-v2.5-pro) and the truth gate grounded 4/4 claims. This was planner fan-out without full discussion/ratification; `merged_plan.consensus_verdict=weak_consensus`, so it is strategy guidance, not runtime enforcement certification.
+
+Conclusion: UVISA/Hermes does not lack all links; it has profile/workpad/dispatch/proof/multimodel skeletons but lacks a semantic control-plane contract that converts task classification into dispatch route, worker handoff, required evidence labels, ratification authority, and learning/writeback.
+
+Theory basis: cybernetics/systems theory (Wiener, Ashby, Conant-Ashby, Beer, Forrester, Meadows), modularity/software architecture (Parnas, Brooks, Baldwin-Clark, Bass/Clements/Kazman, Evans, Fowler, Ousterhout), socio-technical systems (Conway, Trist/Emery, Senge, Team Topologies, Argyris/Schön), safety/evidence engineering (Deming, Popper, Reason, Leveson, Toyota/Jidoka), knowledge management (Nonaka, Schön), complex adaptive systems (Simon, Holland, Ostrom, Taleb), and language/semantic commitment (Wittgenstein, Brandom, DDD ubiquitous language).
+
+Long-term plan: keep a stable kernel (task taxonomy, evidence schema, typed handoff envelope, risk-tiered ratification semantics, writeback/rollback rules) separate from UVISA overlay (domain map, Lark evidence precedence, prototype anchor, branch/release policy, local fullstack acceptance, private runtime evidence protocol). Implement in slices: advisory schema → read-only selfcheck → classification dry-run → typed handoff → profile-aware proof WARN gate → risk-tiered ratification.
+
+Maintenance rule: do not turn this advisory directly into fail-closed runtime behavior. Future enforcement needs impact map, rollback boundary, soft-launch WARN period, and fresh target-bound verification.
+
+
+### 12.14 Semantic control-plane runtime soft-launch (2026-05-13)
+
+This implements slices 2-4 from §12.13 as a bounded, deterministic runtime landing, not as final closeout certification.
+
+Landed runtime surfaces:
+- `semantic-control-plane-dry-run`: read-only command that emits `profile_policy_contract_v1` and per-task `semantic_task_classification_v1`.
+- `dispatch-dry-run`: worker prompt now includes `PROFILE POLICY CONTRACT (WARN-ONLY SOFT-LAUNCH)` JSON when a project profile is available.
+- `selfcheck`: includes `semantic_control_plane_selfcheck_v1`; missing consumer mappings are WARN-only and do not fail taskpool health.
+
+Evidence:
+- Dry-run report: `/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/semantic-control-plane-dry-run-2026-05-13.json`.
+- Selfcheck report: `/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/evidence/taskpool/semantic-control-plane-selfcheck-2026-05-13.json`.
+- Focused regression: `python3 ~/.hermes/scripts/test_brain_task_orchestrator.py` PASS.
+- Profile JSON parse: `python3 -m json.tool ~/.hermes/project-profiles/uvisa-app-2.0.json` PASS.
+
+Policy boundary:
+- This is `warn_only_soft_launch` and `advisory_not_full_ratification`.
+- It does not claim, mutate, release, or close tasks.
+- It does not turn planner fanout / weak consensus into certification authority.
+- Promotion to fail-closed proof/closeout requires a separate target-bound T3 ratification, impact map, rollback boundary, and soft-launch review window.

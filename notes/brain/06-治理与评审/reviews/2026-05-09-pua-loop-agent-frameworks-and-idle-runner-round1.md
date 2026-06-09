@@ -14,6 +14,10 @@ tags: [pua-loop, multi-model, agent-s, agent-reach, idle-runner, hermes-native]
 - Line B: 在本地大脑任务池上新增只读 idle detector + 风险路由最小切片。
 - Line C: `Panniantong/Agent-Reach` 固定 commit `17624268a059ccfb23eba8a2ba50f9f92c8dc0ca`，给出 Hermes-native 优化方案；默认不 vendor/不安装第二套栈。
 
+## Evidence Boundary
+
+Model agreement is provenance only. This round certifies the pinned repository audits, idle-runner read-only slice, and listed deterministic gates; it does not certify importing Agent-S/Agent-Reach runtime code, enabling GUI automation, credential/cookie automation, or automatic task execution.
+
 ## Deterministic evidence
 
 - Repo clone/fixed commits: `~/.hermes/artifacts/pua-loop-multimodel-round1/repo_commits.txt`
@@ -176,10 +180,3 @@ Post-review hardening after independent reviewer suggestions:
 - Added subprocess diagnostic redaction for `api_key/token/secret/password/passwd/proxy/auth_token/ct0` in idle-runner error payloads.
 - Added regression tests for `--write-state` no task mutation, scalar `blocked_by`, multiline `blocked_by`, and redaction.
 - Added skill guidance: never paste raw Cookie/API key/token into prompts/logs/shell history/task notes; prefer permission-restricted config files.
-- Added idle-runner `run_id` frontmatter fallback regression and fix: pending tasks with partial lease metadata keep `active_count > 0` and `next_action=observe_only`.
-- Added multi-model loop runner automation: deterministic evidence first, then T3 quorum4 discussion, with ratification-first stop condition and fail-closed continuation ledger.
-- Live Round 2 hardening: added explicit `verify_ratification()` and `should_continue()` APIs plus tests after the first live quorum flagged ambiguity about whether the stop gate existed.
-- Live Round 3 hardening: fixed `consult_models.py` merge-orchestrator false blocker where one no-action planner emitted low-risk advisory follow-ups, causing `implementation_required` + empty merged `patches=[]`; no-action advisory plans now remain `no_action_certification` with `concrete_patch_count=0`.
-- Live Round 4 hardening: fixed `brain_task_multimodel_loop_runner.py` to catch outer `consult_models.py` timeout and return a fail-closed JSON verdict instead of tracebacking; added regression test `test_run_consult_timeout_fails_closed_without_traceback`.
-- Live Round 5 hardening from live4 not-certified ledger: added explicit ratification artifact export (`round-XX-ratification-artifact.json`), `ratification-selfcheck` CLI, claim-linked runner capability evidence, and read-only local model quota probe evidence so discussion status/votes/agreement/issue ledger/remaining risks/`best_within_constraints` and quota observability are auditable instead of inferred.
-- Live Round 6 hardening from live5 not-certified ledger/evidence requests: added read-only `--probe-quota`, synthetic negative-path `--dry-run --inject`, and offline `--selfcheck-runtime` artifact export probes; migrated the legacy 2026-05-06 body-only proof note to structured frontmatter evidence so `proof-check` no longer warns.

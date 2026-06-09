@@ -1,6 +1,6 @@
 ---
 type: task-log
-status: active
+status: done
 expiry: 2026-06-07
 created: 2026-05-07T00:05:39+08:00
 concepts: [agent-cos-landing-log, proof-ledger, local-brain-selfcheck]
@@ -148,3 +148,27 @@ Observed at 2026-05-07T00:13:27+0800: background process `proc_8de33b9e571f` com
 - Final status: `FULLY_CERTIFIED`.
 
 T3 four-model attempt `/Users/charles/.hermes/tick-20260506-165552/` is recorded as degraded_not_certified because Claude credentials were unavailable and planner quorum was below min_quorum. It is not used as certification. The successful certification is the scoped T1 ratification artifact above.
+
+## Second-pass absorption closure (2026-05-20)
+
+### Canonical source
+- Local canonical source: `07-仪表盘/Agent认知操作系统互补矩阵.md` and the project/atom/playbook files linked in this ledger.
+- Certification source: `05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json` plus `/Users/charles/.hermes/scripts/ratification_gate.py`.
+- This file is retained as the proof ledger, not the durable status source.
+
+### Decision
+- Decision: `adopt` / absorbed.
+- The Agent COS landing is fully absorbed into the dashboard matrix, atom, project, playbook, review, evolution log, selfcheck script, and ratification gate. This log is closed as a historical proof ledger.
+
+### Landing surface
+- Dashboard: `07-仪表盘/Agent认知操作系统互补矩阵.md`.
+- Atom/project/playbook: `04-知识原子/atoms/agent-cognitive-operating-system.md`, `05-实践与项目/projects/agent-cognitive-operating-system/`, `05-实践与项目/实践方案/09-Agent认知操作系统Playbook.md`.
+- Verification scripts/artifacts: `/Users/charles/.hermes/scripts/agent_cos_selfcheck.py`, `/Users/charles/.hermes/scripts/ratification_gate.py`, `05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json`.
+
+### Verification evidence
+- `HERMES_BRAIN_VAULT=/Users/charles/Documents/brain python3 /Users/charles/.hermes/scripts/agent_cos_selfcheck.py --json` exited `0` with `status=PASS`, `pair_rows_count=24`, `missing_pairs=0`, `below_a_plus=0`, `ratification_status=CERTIFIED`, and `final_integration_status=FULLY_CERTIFIED`.
+- `HERMES_BRAIN_VAULT=/Users/charles/Documents/brain python3 /Users/charles/.hermes/scripts/ratification_gate.py --json --discussion-result /Users/charles/Documents/brain/05-实践与项目/projects/agent-cognitive-operating-system/ratification-discussion-result-2026-05-07.json` exited `0` with `status=PASS`, `vote_count=3`, `approval_count=3`, and `evidence_coverage=1.0`.
+
+### Stop-condition / anti-drift boundary
+- Stop when this log points to the absorbed dashboard/project/script/certification surfaces and has fresh verification evidence.
+- Anti-drift: do not treat this proof ledger’s old `active` status or expiry as current WIP; future Agent COS changes must update the canonical dashboard/project artifacts and pass `agent_cos_selfcheck.py` plus `ratification_gate.py` when certification status changes.

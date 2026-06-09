@@ -21,35 +21,44 @@ status: current
 
 ## 前端项目默认路线
 
-| 阶段 | 技能/能力链 | 输出 |
-|---|---|---|
-| Intake | requirement-clarification + source-driven-development + read-repo | 目标、非目标、锚点、风险 |
-| Architecture | p10 + p9 + architecture-optimization-loop | P10/P9 任务树 |
-| Implementation | test-driven-development + incremental-implementation + project modify-code | 小切片修改与回归测试 |
-| UI Closure | browser-harness-integration + visual-regression + uimax-audit + fixing-accessibility/motion/metadata | 交互闭环证据 |
-| Verification | requesting-code-review + post-deploy-verification + multi-model-thinking(按风险) | build/test/UI/多模型验证 |
-| Deposition | obsidian + project workpad + ADR/UI_TEST_CASES | 项目记忆沉淀 |
+| 阶段             | 技能/能力链                                                                                               | 输出                  |
+| -------------- | ---------------------------------------------------------------------------------------------------- | ------------------- |
+| Intake         | requirement-clarification + source-driven-development + read-repo                                    | 目标、非目标、锚点、风险        |
+| Architecture   | p10 + p9 + architecture-optimization-loop                                                            | P10/P9 任务树          |
+| Implementation | test-driven-development + incremental-implementation + project modify-code                           | 小切片修改与回归测试          |
+| UI Closure     | browser-harness-integration + visual-regression + uimax-audit + fixing-accessibility/motion/metadata | 交互闭环证据              |
+| Verification   | requesting-code-review + post-deploy-verification + multi-model-thinking(按风险)                        | build/test/UI/多模型验证 |
+| Deposition     | obsidian + project workpad + ADR/UI_TEST_CASES                                                       | 项目记忆沉淀              |
 
 ## 任务池 / 长期闭环路线
 
-| 阶段 | 技能/能力链 | 输出 |
-|---|---|---|
-| Intake | obsidian + local-brain-task-orchestration | canonical task note，而不是 session-local todo |
-| Reconcile | brain_task_orchestrator reconcile + proof-check | stale lease / expired / due retry 调和结果 |
-| Safe Dispatch | brain_task_dispatch_tick + dispatch-dry-run | 只给下一任务 hint，不自动执行、不自动 done |
-| Execution | p9 + loop + 项目专属 skill route | claim -> execute -> verify -> done/retry/release |
-| Proof Gate | proof-check + brainctl sync/reindex/search | 结构化 evidence；done 不允许空口完成 |
-| Cadence | no_agent cron local-brain-task-dispatch-safe-tick | 静默定时 tick；有变化/错误才输出 |
+| 阶段            | 技能/能力链                                            | 输出                                               |
+| ------------- | ------------------------------------------------- | ------------------------------------------------ |
+| Intake        | obsidian + local-brain-task-orchestration         | canonical task note，而不是 session-local todo       |
+| Reconcile     | brain_task_orchestrator reconcile + proof-check   | stale lease / expired / due retry 调和结果           |
+| Safe Dispatch | brain_task_dispatch_tick + dispatch-dry-run       | 只给下一任务 hint，不自动执行、不自动 done                       |
+| Execution     | p9 + loop + 项目专属 skill route                      | claim -> execute -> verify -> done/retry/release |
+| Proof Gate    | proof-check + brainctl sync/reindex/search        | 结构化 evidence；done 不允许空口完成                        |
+| Cadence       | no_agent cron local-brain-task-dispatch-safe-tick | 静默定时 tick；有变化/错误才输出                              |
 
 ## 外部 GitHub 项目分析 -> 技能树完善路线
 
+| 阶段                 | 技能/能力链                                                 | 输出                                                |
+| ------------------ | ------------------------------------------------------ | ------------------------------------------------- |
+| Recon              | github + framework-audit + source-driven-development   | repo 结构、核心概念、可借鉴/不采纳边界                            |
+| Multi-model Review | multi-model-thinking(T1/T2 按风险) + ratification gate    | scoped claims/evidence/issue ledger，不把模型共识当事实     |
+| Skill Gap Mapping  | skill-ecosystem-governance + Agent技能树路由矩阵              | 新增/修改 skill 的最小必要清单                               |
+| Landing            | obsidian + hermes-agent-skill-authoring                | Project/Review/Evolution/Task proof + skill patch |
+| Verification       | skill-steward graph-check + py_compile/test/build(按项目) | graph 无环/深度合规，脚本和文档可检索                            |
+
+## GUI / Computer-use agent 评估路线
+
 | 阶段 | 技能/能力链 | 输出 |
 |---|---|---|
-| Recon | github + framework-audit + source-driven-development | repo 结构、核心概念、可借鉴/不采纳边界 |
-| Multi-model Review | multi-model-thinking(T1/T2 按风险) + ratification gate | scoped claims/evidence/issue ledger，不把模型共识当事实 |
-| Skill Gap Mapping | skill-ecosystem-governance + Agent技能树路由矩阵 | 新增/修改 skill 的最小必要清单 |
-| Landing | obsidian + hermes-agent-skill-authoring | Project/Review/Evolution/Task proof + skill patch |
-| Verification | skill-steward graph-check + py_compile/test/build(按项目) | graph 无环/深度合规，脚本和文档可检索 |
+| Recon | framework-audit + `references/gui-computer-use-agent-audit.md` + github | 固定 commit/license/entry point，读取 README/CLI/wrapper/grounding/action/local-env |
+| Safety Boundary | macos-computer-use + browser-harness-integration + requesting-code-review | screen/OCR/grounding/Accessibility/clipboard/shell/log-redaction 风险矩阵 |
+| Evidence Closure | multi-model-thinking(按风险) + visual-regression/browser artifacts | trajectory screenshot/trace/fact-caption/judge artifact；不把截图 smoke 当完成证明 |
+| Landing | skill-ecosystem-governance + hermes-agent-skill-authoring | 只提炼 capability doctor/action contract/evaluator，不默认安装外部 GUI runtime |
 
 ## 路由规则
 

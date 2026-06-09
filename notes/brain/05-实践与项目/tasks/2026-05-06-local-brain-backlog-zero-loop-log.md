@@ -5,6 +5,17 @@ status: completed
 created: 2026-05-06T13:35:04Z
 expires_at: 2099-12-31T00:00:00Z
 project: hermes-local-brain
+required_authority: autonomous-execution
+max_authority: yolo-execution
+permission_tier: autonomous-execution
+write_surfaces: ["taskpool", "codebase"]
+completion_gate: project-evidence-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
+evidence:
+  - command:python -m unittest scripts/test_brainctl.py scripts/test_code_evidence_gate.py scripts/test_local_brain_mempalace_benchmark.py scripts/test_evidence_request_runner.py scripts/test_claim_guard_wrapper.py -> 24 tests OK
+  - "brainctl:validate --dry-run --write-dashboard passed=true notes_scanned=227 l3_expiry_open=0 violations=[]"
+  - "brainctl:expire --dry-run items=[]"
+  - artifact:Final verification bundle 2026-05-06T14:06Z in task body
 ---
 
 # Local Brain Backlog-zero Loop Log
@@ -47,3 +58,5 @@ Completion must be proven by local scripts, tests, brainctl validation, structur
 ## Evidence Boundary
 
 This closes the local-brain backlog-zero loop as a local-first/dry-run governance slice. It does not claim external checkpoint hardening, production multi-tenant orchestration, or vector/KG truth promotion.
+
+- 2026-05-12T02:54:22+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"required_authority": "autonomous-execution", "max_authority": "yolo-execution", "permission_tier": "autonomous-execution", "write_surfaces": ["taskpool", "codebase"], "completion_gate": "project-evidence-review-done", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}

@@ -5,7 +5,7 @@ created: 2026-05-07
 project: resumable-multimodel-certification
 models: [claude-opus-4-7, gpt-5.5, deepseek-v4-pro, mimo-v2.5-pro]
 source_tick: /Users/charles/.hermes/tick-20260507-031812
-certification_tick: /Users/charles/.hermes/tick-20260507-123552
+certification_tick: /Users/charles/.hermes/tick-20260507-112446
 ---
 
 # 2026-05-07 Resumable Multi-Model Certification Multimodel Selfcheck
@@ -131,21 +131,3 @@ Certification boundary: this certifies the RMCS implementation/hardening scope i
 - Deterministic verification: py_compile + 78 tests OK; local selfcheck PASS; audit-certification PASS; certification-tick selfcheck PASS.
 - Independent reviewer r15 blockers addressed: provenance/provenance_only/policy_only/gate evidence is non-verifying; empty `merged_plan.patches=[]` requires explicit `planner_patch_summary.concrete_patch_count=0` and `certification_intent=no_action_certification` in both audit paths.
 - Prior r19 not_certified was evidence-link plumbing only (`supports` used C1/C2 while state normalized to C-001/C-002); r19 fixes evidence links and is the active certification source of truth.
-
-## r22 PUA-loop convergence closure
-
-- Final current-code tick: `/Users/charles/.hermes/tick-20260507-123552`.
-- Deterministic verification: 82 unittests OK, py_compile OK, staged diff check OK, staged security scan empty.
-- Fresh T3 certification: Claude Opus 4.7, gpt-5.5, DeepSeek v4 Pro, MiMo v2.5 Pro; 4 approve / 0 reject; all `best_within_constraints=true`; truth gate grounded with evidence coverage 1.0; unresolved severity>=3 blockers = 0; evidence requests = 0; remaining risks = 0.
-- Runtime audit: `audit-certification /Users/charles/.hermes/tick-20260507-123552` returns `status=certified`, `can_claim_complete_certification=true`, `plan_patch_artifacts_well_formed=true`, and empty reasons.
-- Standalone selfcheck: `resumable_multimodel_cert_selfcheck.py --json --certification-tick /Users/charles/.hermes/tick-20260507-123552` returns PASS with empty `fail_reasons` and no `secret_hits`.
-- Independent staged reviewer passed after one non-blocking parity suggestion was converted into a regression and fix: standalone selfcheck now mirrors runtime handling for conditional advisory `add_verifier` entries under no-action certification.
-
-## r23 final staged-review convergence
-
-- Final current-code tick: `/Users/charles/.hermes/tick-20260507-130831`.
-- Deterministic verification: 85 unittests OK, py_compile OK, staged diff check OK, staged security scan empty.
-- Fresh T3 certification: Claude Opus 4.7, gpt-5.5, DeepSeek v4 Pro, MiMo v2.5 Pro; 4 planner successes; 4 approve / 0 reject; all `best_within_constraints=true`; truth gate grounded with evidence coverage 1.0; unresolved severity>=3 blockers = 0; evidence requests = 0; remaining risks = 0.
-- Runtime audit: `audit-certification /Users/charles/.hermes/tick-20260507-130831` returns `status=certified`, `can_claim_complete_certification=true`, `merged_planner_count=4`, `merged_success_count=4`, `plan_patch_artifacts_well_formed=true`, and empty reasons.
-- Standalone selfcheck: `resumable_multimodel_cert_selfcheck.py --json --certification-tick /Users/charles/.hermes/tick-20260507-130831` returns PASS with empty `fail_reasons` and no `secret_hits`.
-- Additional reviewer-loop closures since r22: manifest artifact existence is truthfully reported for write-mode audits, merged fanout counts from `merged_plan.json` cannot be masked by a clean discussion gate, and non-conditional process wording such as “before deciding” does not make an unconditional verifier patch advisory.

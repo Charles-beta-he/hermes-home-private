@@ -1,0 +1,116 @@
+---
+type: task
+lane: advisory
+layer: L3
+status: running
+priority: P2
+priority_layer: P2 core reading lane for frontend/fullstack/backend fundamentals
+dependency_order: ["category_order=3; within_category_path=PDF-file/javascript/JavaScript设计模式与开发实践.pdf; 同类别可顺序精读，不同类别可按优先级并行挑选。"]
+created: 2026-05-26T01:50:37+08:00
+updated: 2026-05-28T18:33:16+08:00
+expires_at: 2026-06-25T01:50:37+08:00
+project: reading-programming-books
+architecture_target: skill-graph
+capability_delta: 完成《JavaScript设计模式与开发实践》精读：输出章节地图、关键概念、实践练习、与当前前端/后端/工程化能力的连接点。来源路径：PDF-file/javascript/JavaScript设计模式与开发实践.pdf
+anti_drift_check: 不得下载/传播疑似侵权 PDF；优先使用合法可访问资料或个人已有副本；不得只写读后感，必须沉淀可复用概念卡、实践题和工程应用边界。
+acceptance_evidence: artifact:精读笔记；proof:章节地图 + 10条关键概念/例子 + 3个实践练习 + 1个可落地到项目/技能树的应用点。
+workflow_contract: ["[08-模板/task-workflow-contract-template]"]
+requires_multimodel: 
+multimodel_reason: 
+expected_participants: []
+truth_gate: 
+evidence_bundle: 
+required_authority: dispatch-hint
+max_authority: budget-handoff
+permission_tier: dispatch-hint
+write_surfaces: ["taskpool", "brain"]
+completion_gate: advisory-evidence-review-done
+lane_semantics: "research/advisory: evidence deposition; no execution closeout without promotion"
+mission_schema_version: mission_envelope_v1
+mission_id: advisory-intake-2026-05-26-精读书籍javascript设计模式与开发实践
+mission_title: Task - 精读书籍：《JavaScript设计模式与开发实践》
+mission_objective: 精读 Some-Many-Books/PDF-file/javascript/JavaScript设计模式与开发实践.pdf 对应书籍《JavaScript设计模式与开发实践》，沉淀可检索学习笔记和实践任务。
+mission_constraints: ["read-only/advisory execution only", "no unknown code execution or unlicensed content redistribution", "must deposit structured proof before review/done"]
+red_lines: ["do not download or redistribute questionable PDFs", "do not close as done without source-grounded proof artifact"]
+non_goals: ["not a generic repository/book summary", "not implementation unless promoted by a separate task"]
+evidence_refs: ["url:https://github.com/Dujltqzv/Some-Many-Books/blob/main/PDF-file/javascript/JavaScript%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B8%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5.pdf", "artifact:/Users/charles/.hermes/tick-20260525-172741-910315-p94591-4689f46a-c3650ca6/discussion_result.json"]
+acceptance_criteria: ["artifact:精读笔记；proof:章节地图 + 10条关键概念/例子 + 3个实践练习 + 1个可落地到项目/技能树的应用点。"]
+dag_nodes: ["read_source_index", "extract_structure_or_chapters", "write_structured_notes", "record_proof_and_handoff"]
+checkpoint_states: ["pending:intake_created", "review:notes_produced", "done:proof_artifact_accepted"]
+permission_gates: ["dispatch-hint gate for advisory worker; no elevated authority"]
+handoff_artifacts: ["artifact:task proof log / reading note path"]
+proof_artifacts: ["proof:structured notes satisfy acceptance_evidence"]
+rollback_signal: archive or requeue if duplicate/source unavailable/legal-access boundary fails
+certification_status: advisory
+ratification_artifact: proof:intake triage and task acceptance metadata recorded
+multimodel_triage_result: "fixed intake triage: Some-Many-Books is a reading backlog, no per-book multimodel execution required; priority derived from user career relevance and category leverage"
+claimed_by: agent-team-controller
+claim_expires_at: 2026-05-28T19:29:21+08:00
+run_id: agent-team-controller-20260528182921
+retry_count: 2
+next_attempt_at: 
+workspace: 
+parallel_boundary: 同一类别 javascript 内建议串行；不同类别可并行；每本书独立验收。
+evidence:
+  - command:agent_team_controller consume-claimed human_escape_release
+concepts: ["reading", "programming-books", "javascript", "Some-Many-Books", "mission-envelope"]
+run_envelope_ref: "/Users/charles/.hermes/state/run_ledger/run_events.jsonl#5202"
+---
+
+# Task - 精读书籍：《JavaScript设计模式与开发实践》
+
+## Objective
+
+精读 Some-Many-Books/PDF-file/javascript/JavaScript设计模式与开发实践.pdf 对应书籍《JavaScript设计模式与开发实践》，沉淀可检索学习笔记和实践任务。
+
+## Acceptance Criteria
+
+- [ ] Observable result is recorded in Proof Log.
+
+## Plan / Workpad
+
+- [ ] Reconcile current state, dependency order, and architecture boundaries before execution.
+- [ ] Advance the long-term maintainable mainline plan with the next bounded step and staged evidence.
+- [ ] Record proof, status, and any next dependency or handoff required.
+
+## Validation
+
+| Command / Check | Status | Evidence |
+|---|---|---|
+| brain_task_orchestrator list | pending | |
+
+## Proof Log
+
+- 2026-05-26T01:50:37+08:00: Task created from local-brain control point.
+
+## Blockers / Confusions
+
+- None.
+
+## Final Handoff
+
+- Status:
+- Evidence:
+- Residual risk:
+
+- 2026-05-26T19:46:31+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-26T20:49:36+08:00: Reconcile action `stale_claim_released` by `hermes-reconcile`. Previous status `claimed`.
+
+- 2026-05-28T13:59:20+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-28T14:04:03+08:00: Lifecycle transition `claimed` -> `running` by `agent-team-controller`. Reason: execute-cycle worker trigger after queued claim
+
+- 2026-05-28T15:01:19+08:00: Reconcile action `stale_running_retry` by `hermes-reconcile`. Previous status `running`.
+
+- 2026-05-28T16:07:11+08:00: Reconcile action `retry_due_promoted` by `hermes-reconcile`. Previous status `retry`.
+
+- 2026-05-28T16:50:01+08:00: Lifecycle transition `pending` -> `claimed` by `hermes-parallel`. Reason: parallel-claim-and-handoff; batch=parallel-20260528164935-10
+
+- 2026-05-28T16:53:41+08:00: Lifecycle transition `claimed` -> `retry` by `hermes-parallel`. Reason: event-driven worker blocked by human escape; claim released for retry: {'blocks': 0, 'failures': 4, 'since_ack': {'blocks': 0, 'failures': 4, 'invalid_timestamps': 0}, 'historical': {'blocks': 5, 'failures': 97, 'invalid_timestamps': 0}, 'ack': {'status': 'ok', 'acked_at': '2026-05-28T08:32:01Z', 'acked_by': 'human', 'reason': 'multi-model controlled recovery 2026-05-2 Evidence: command:agent_team_controller consume-claimed human_escape_release
+
+- 2026-05-28T18:10:52+08:00: Reconcile action `retry_due_promoted` by `hermes-reconcile`. Previous status `retry`.
+
+- 2026-05-28T18:29:21+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-28T18:33:16+08:00: Lifecycle transition `claimed` -> `running` by `agent-team-controller`. Reason: execute-cycle worker trigger after queued claim

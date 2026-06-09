@@ -4,22 +4,28 @@ layer: L3
 status: done
 priority: P0
 created: 2026-05-08T00:06:02+08:00
-updated: 2026-05-08T01:27:00+08:00
+updated: 2026-05-08T22:38:24+08:00
 expires_at: 2026-06-08T00:00:00+08:00
 project: symphony-inspired-local-task-orchestrator
-claimed_by:
-claim_expires_at:
-run_id: symphony-task-orchestrator-landing-20260508
+required_authority: autonomous-execution
+max_authority: yolo-execution
+permission_tier: autonomous-execution
+write_surfaces: ["taskpool", "codebase"]
+completion_gate: project-evidence-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
+claimed_by: 
+claim_expires_at: 
+run_id: 
 retry_count: 0
-next_attempt_at:
+next_attempt_at: 
 workspace: ~/Documents/brain/05-实践与项目/projects/symphony-inspired-local-task-orchestrator
 evidence:
   - ~/.hermes/scripts/brain_task_orchestrator.py
   - ~/.hermes/scripts/test_brain_task_orchestrator.py
   - ~/.hermes/scripts/symphony_task_orchestrator_selfcheck.py
-  - /Users/charles/.hermes/tick-20260507-172524/
+  - artifact:/Users/charles/.hermes/tick-20260507-172524/
   - /Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-symphony-inspired-task-orchestrator-final-certification.json
-concepts: [symphony-inspired, task-orchestrator, pua-loop, certified]
+concepts: ["symphony-inspired", "task-orchestrator", "pua-loop", "certified"]
 ---
 
 # 2026-05-08 Symphony-inspired Task Orchestrator Landing Log
@@ -55,3 +61,15 @@ No current known caveat.
 No active local-brain task remains in this scoped task pool: `brain_task_orchestrator.py next --json` returns `next: null`.
 
 Future external tracker bridges or unattended destructive execution runners are explicitly new scopes, not unfinished work from this scope.
+
+- 2026-05-08T22:38:24+08:00: Reconcile action `orphan_claim_metadata_cleared` by `lifecycle-audit`. Previous status `done`.
+
+- 2026-05-12T02:54:24+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"required_authority": "autonomous-execution", "max_authority": "yolo-execution", "permission_tier": "autonomous-execution", "write_surfaces": ["taskpool", "codebase"], "completion_gate": "project-evidence-review-done", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+## Second-pass Evidence Backfill (2026-05-20)
+
+- Source: 2026-05-19 prior external-analysis quality audit classed this note as `reopen_for_evidence_and_landing` because it was missing human-readable `source,decision,stop`; see `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-19-prior-external-analysis-quality-audit.md` lines 32-33 and the second-pass owner bucket at `/Users/charles/.hermes/kanban/workspaces/t_33aaa548/second-pass-external-analysis-quality-gap-review.md` lines 34-43.
+- Decision: keep as absorbed / done. The task was not a raw external repo intake; the external inspiration was Symphony-style task orchestration and the adopted Hermes decision was to land local-brain task orchestration primitives, not to import an upstream runtime wholesale.
+- Landing: `/Users/charles/.hermes/scripts/brain_task_orchestrator.py`; `/Users/charles/.hermes/scripts/symphony_task_orchestrator_selfcheck.py`; local-brain control center/task inbox/sorted pool/dashboard notes referenced in the Proof Log.
+- Verification: historical Proof Log records final T3 certification path `/Users/charles/.hermes/tick-20260507-172524/` with `status=certified`, `truth_status=grounded`, `verified_claim_count=6/6`, and `evidence_coverage=1.0`; second-pass does not treat that expired tick directory as current filesystem proof, and current evidence is limited to the still-existing landing scripts above plus the durable note text.
+- Stop-condition / boundary: no follow-up bridge is implied by this historical scope. Future external tracker bridges or unattended destructive execution runners remain new scoped tasks; this note does not loosen Hermes truth/cert gates or authorize background execution outside the existing taskpool controls.

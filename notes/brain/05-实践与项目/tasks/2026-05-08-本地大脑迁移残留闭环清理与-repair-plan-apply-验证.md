@@ -8,6 +8,12 @@ updated: 2026-05-08T19:04:57+08:00
 expires_at: 2026-06-07T18:01:13+08:00
 project: local-brain-governance
 workflow_contract: repair-plan dry-run + review gate + explicit repair-apply + verification chain + structured proof
+required_authority: autonomous-execution
+max_authority: yolo-execution
+permission_tier: autonomous-execution
+write_surfaces: ["taskpool", "codebase"]
+completion_gate: project-evidence-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
 claimed_by: 
 claim_expires_at: 
 run_id: 
@@ -22,7 +28,7 @@ evidence:
   - command:brain_task_orchestrator selfcheck/proof-check PASS
   - file:/Users/charles/Documents/brain/06-治理与评审/历史快照/legacy-06-dashboard-20260508/repair-manifest.json
   - artifact:/tmp/local_brain_doc_func_after_archive_*
-concepts: [local-brain, residue-cleanup, repair-plan, repair-apply, dashboard-migration, proof-gate]
+concepts: ["local-brain", "residue-cleanup", "repair-plan", "repair-apply", "dashboard-migration", "proof-gate"]
 ---
 
 # Task - 本地大脑迁移残留闭环清理与 repair-plan/apply 验证
@@ -64,3 +70,5 @@ concepts: [local-brain, residue-cleanup, repair-plan, repair-apply, dashboard-mi
 - 2026-05-08T19:04:57+08:00: Claimed by `hermes-doc-function-closure` until `2026-05-08T21:04:57+08:00`.
 
 - 2026-05-08T19:04:57+08:00: Marked done by `hermes-doc-function-closure`. Evidence: command:local_brain_main_hierarchy_migration_selfcheck.py --json PASS, command:local_brain_exhaustive_audit.py --sample-limit 100 PASS stop_gate_pass=true broken_wikilinks=0 secret_hits=0, command:brainctl validate --write-dashboard PASS violations=0 l3_expiry_open=0, command:test_brainctl.py PASS 15 tests, command:brain_task_orchestrator selfcheck/proof-check PASS, file:/Users/charles/Documents/brain/06-治理与评审/历史快照/legacy-06-dashboard-20260508/repair-manifest.json, artifact:/tmp/local_brain_doc_func_after_archive_*.
+
+- 2026-05-12T02:54:24+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"required_authority": "autonomous-execution", "max_authority": "yolo-execution", "permission_tier": "autonomous-execution", "write_surfaces": ["taskpool", "codebase"], "completion_gate": "project-evidence-review-done", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}

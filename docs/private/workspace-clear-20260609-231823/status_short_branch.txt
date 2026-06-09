@@ -1,0 +1,642 @@
+## master...origin/master
+ m backups/20260423-224844/skills/darwin-skill
+ m backups/20260423-224844/skills/pua
+ M config.yaml
+ M config/quorum.yaml
+ M context_length_cache.yaml
+ M cron/jobs.json
+ M docs/private/overmind-reference-self-optimization-20260526.md
+ M edge-worker/edge_worker.py
+ M eval/eval-baseline.json
+ M gateway.lock
+ M gateway_state.json
+ M hermes-agent
+ M logs/cron-missed-runs.jsonl
+ M logs/cron-quarantine.jsonl
+ D logs/cross-patch.jsonl
+ M logs/ensemble-votes.jsonl
+ M logs/health-history.jsonl
+ D logs/model-router.jsonl
+ M memories/MEMORY.md
+ M memories/USER.md
+ M models_dev_cache.json
+ M "notes/brain/03-\347\220\206\350\256\272\344\270\216\345\205\203\350\256\244\347\237\245/\345\205\203\350\256\244\347\237\245/01-\347\275\256\344\277\241\345\272\246\346\240\241\345\207\206\344\270\216\350\257\201\346\215\256\347\255\211\347\272\247.md"
+ M "notes/brain/03-\347\220\206\350\256\272\344\270\216\345\205\203\350\256\244\347\237\245/\345\205\203\350\256\244\347\237\245/02-\351\224\231\350\257\257\345\210\206\347\261\273\344\270\216\345\244\215\347\233\230\345\276\252\347\216\257.md"
+ M "notes/brain/03-\347\220\206\350\256\272\344\270\216\345\205\203\350\256\244\347\237\245/\347\263\273\347\273\237\347\220\206\350\256\272/Ashby-\345\277\205\350\246\201\345\244\232\346\240\267\346\200\247\345\256\232\345\276\213.md"
+ M "notes/brain/03-\347\220\206\350\256\272\344\270\216\345\205\203\350\256\244\347\237\245/\347\263\273\347\273\237\347\220\206\350\256\272/Dreyfus-\346\212\200\350\203\275\350\216\267\345\217\2265\347\272\247\346\250\241\345\236\213.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/projects/resumable-multimodel-certification/P9 - Implementation Backlog.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/00-tasks\347\264\242\345\274\225.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-06-local-brain-backlog-zero-loop-log.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-07-agent-cos-landing-log.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-07-resumable-multimodel-certification-landing-log.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-08-local-brain-taskflow-closure-proof.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-08-symphony-inspired-task-orchestrator-landing-log.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-08-\346\234\254\345\234\260\345\244\247\350\204\221\350\277\201\347\247\273\346\256\213\347\225\231\351\227\255\347\216\257\346\270\205\347\220\206\344\270\216-repair-plan-apply-\351\252\214\350\257\201.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-08-\350\220\275\345\234\260-iteration-budget-pua-loop-\346\234\211\347\225\214\346\211\247\350\241\214\344\270\216-handoff-\351\227\255\347\216\257.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-openai-openai-cli-\346\262\231\347\256\261\350\257\204\344\274\260\344\270\216-hermes-api-\350\207\252\345\212\250\345\214\226\351\233\206\346\210\220\345\206\263\347\255\226.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skillclaw-\346\262\231\347\256\261\350\257\204\344\274\260\344\270\216-hermes-\346\212\200\350\203\275\350\277\233\345\214\226\351\233\206\346\210\220\345\206\263\347\255\226.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277code-review-\345\244\232-agent-\345\271\266\350\241\214\345\256\241\346\237\245\344\270\216\347\275\256\344\277\241\345\272\246\350\277\207\346\273\244\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277code-simplifier-\351\207\215\345\244\215\351\200\273\350\276\221\345\220\210\345\271\266\344\270\216\345\256\211\345\205\250\351\207\215\346\236\204\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277mcp-builder-\345\233\233\351\230\266\346\256\265-mcp-server-\345\274\225\345\257\274\344\270\216-hermes-mcp-skill-\350\241\245\345\274\272\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277planning-with-files-\346\226\207\344\273\266\345\214\226\350\247\204\345\210\222\344\270\216\344\270\212\344\270\213\346\226\207\345\216\213\347\274\251\346\212\227\344\270\242\345\244\261\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277pptx-\347\233\264\346\216\245\347\224\237\346\210\220-pptx-\346\226\207\344\273\266\344\270\216-hermes-productivity-\346\265\201\347\250\213\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277ralph-loop-hook-\351\230\262\346\217\220\345\211\215\346\224\266\345\267\245\344\270\216-hermes-pua-loop-\350\276\271\347\225\214\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277skill-creator-\345\256\230\346\226\271\345\205\203\346\212\200\350\203\275\344\270\216-eval-\346\265\213\350\257\225\346\241\206\346\236\266\351\200\202\351\205\215\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277superpowers-\345\217\257\347\273\204\345\220\210\345\274\200\345\217\221\346\265\201\347\250\213\344\270\216-tdd-brainstorming-\351\200\202\351\205\215\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277ui-ux-pro-max-\351\243\216\346\240\274-\351\205\215\350\211\262\345\272\223\344\270\216-hermes-ui-\345\256\241\347\276\216\345\237\272\347\272\277\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-skill\345\255\246\344\271\240\350\267\257\347\272\277webapp-testing-playwright-\350\207\252\345\212\250\345\214\226\344\270\216\346\210\252\345\233\276\350\257\201\346\215\256\346\265\201\346\260\264\347\272\277\350\257\204\344\274\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-10-\344\277\256\345\244\215-uvisa-\351\200\232\347\237\245\346\227\266\351\227\264\345\220\216\347\253\257\344\270\232\345\212\241\344\272\213\344\273\266\346\227\266\351\227\264\346\272\220lark-6906ef6e-d0655d71-\346\211\223\345\233\236.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-0cd14898-\345\256\242\346\234\215\347\274\223\345\255\230\347\234\237\345\256\236\344\274\232\350\257\235\345\210\267\346\226\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-57da3f4f-\345\244\247\351\207\221\351\242\235\351\200\202\351\205\215\347\234\237\345\256\236\344\275\231\351\242\235\351\252\214\350\257\201.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-82f47f18-\347\224\265\345\255\220\351\222\261\345\214\205\346\224\266\346\254\276\350\264\246\345\217\267\346\240\274\345\274\217\346\240\241\351\252\214-fe-be.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-b9d0fcf8-\344\272\244\346\230\223\350\256\260\345\275\225\347\273\237\344\270\200\347\234\237\345\256\236\346\216\245\345\217\243\350\201\232\345\220\210.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-c1bb88b4-sw\346\233\264\346\226\260\347\274\223\345\255\230\351\235\236\345\274\272\345\210\266\346\233\264\346\226\260.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-ce96f98c-cny\350\275\254\345\205\245\347\273\221\345\256\232\351\223\266\350\241\214\347\234\237\345\256\236\346\216\245\345\217\243.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/2026-05-12-lark-reopened-uvisa-real-api-ed1cb905-\345\215\225\347\202\271\347\231\273\345\275\225\347\234\237\345\256\236\345\244\232\350\256\276\345\244\207\350\270\242\345\207\272.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/tasks/\344\273\273\345\212\241\346\261\240-\346\216\222\345\272\217.md"
+ M "notes/brain/05-\345\256\236\350\267\265\344\270\216\351\241\271\347\233\256/\345\256\236\350\267\265\346\226\271\346\241\210/07-\345\205\263\351\224\256\347\202\271\345\244\232\346\250\241\345\236\213\344\273\213\345\205\245\350\267\257\347\224\261\347\237\251\351\230\265.md"
+ M "notes/brain/06-\346\262\273\347\220\206\344\270\216\350\257\204\345\256\241/reviews/2026-05-07-resumable-multimodel-certification-multimodel-selfcheck.md"
+ M "notes/brain/06-\346\262\273\347\220\206\344\270\216\350\257\204\345\256\241/reviews/2026-05-09-pua-loop-agent-frameworks-and-idle-runner-round1.md"
+ M "notes/brain/06-\346\262\273\347\220\206\344\270\216\350\257\204\345\256\241/\346\212\200\350\203\275\347\224\237\346\200\201/skill-steward\350\247\222\350\211\262\345\256\232\344\271\211.md"
+ M "notes/brain/06-\346\262\273\347\220\206\344\270\216\350\257\204\345\256\241/\346\212\200\350\203\275\347\224\237\346\200\201/\347\206\265\345\200\272\346\267\230\346\261\260\346\234\272\345\210\266.md"
+ M "notes/brain/06-\346\262\273\347\220\206\344\270\216\350\257\204\345\256\241/\350\277\233\345\214\226\346\227\245\345\277\227/2026-05-07-\345\217\257\346\201\242\345\244\215\345\244\232\346\250\241\345\236\213\350\256\244\350\257\201\347\263\273\347\273\237\351\225\277\346\234\237\347\233\256\346\240\207\350\220\275\345\234\260.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/00-\344\273\252\350\241\250\347\233\230\347\264\242\345\274\225.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/Agent\346\212\200\350\203\275\346\240\221\350\267\257\347\224\261\347\237\251\351\230\265.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/Agent\350\256\244\347\237\245\346\223\215\344\275\234\347\263\273\347\273\237\344\272\222\350\241\245\347\237\251\351\230\265.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/\345\276\205\345\256\214\346\210\220\344\273\273\345\212\241\346\216\247\345\210\266\345\217\260.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/\345\276\205\345\256\214\346\210\220\344\273\273\345\212\241\350\277\220\350\241\214\346\200\201.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/\346\212\200\350\203\275\347\224\237\346\200\201\345\201\245\345\272\267\345\272\246.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/\346\234\254\345\234\260\345\244\247\350\204\221\346\262\273\347\220\206\345\201\245\345\272\267\345\272\246.md"
+ M "notes/brain/07-\344\273\252\350\241\250\347\233\230/\347\220\206\350\256\272\350\246\206\347\233\226\347\237\251\351\230\265.md"
+ M notes/engineering-cybernetics/AGENT-EVOLUTION-PLAN.md
+ M notes/engineering-cybernetics/autonomous-evolution-log.jsonl
+ M notes/engineering-cybernetics/evolution-dashboard.md
+ M notes/engineering-cybernetics/health-history.jsonl
+ M notes/engineering-cybernetics/pa-health-history.jsonl
+ M notes/engineering-cybernetics/pa-trigger-log.jsonl
+ M notes/engineering-cybernetics/self-scan-log.jsonl
+ M notes/improvement-action-plan.json
+ M notes/improvement-signals.jsonl
+ M notes/user-routine-patterns.json
+ M ollama_cloud_models_cache.json
+ M route_outcomes.db
+ M scripts/agent_protocol.py
+ M scripts/auth_blocked_notifier.py
+ M scripts/code-intel.py
+ M scripts/consensus-check.py
+ M scripts/consult_models.py
+ M scripts/cron-missed-run-guard.py
+ M scripts/cross-patch.py
+ M scripts/cybernetic_multimodel_selfcheck.py
+ M scripts/ensemble-vote.py
+ M scripts/eval-harness.py
+ M scripts/gitnexus_fusion_selfcheck.py
+ M scripts/iteration_budget_doctor.py
+ M scripts/iteration_budget_triage.py
+ M scripts/lark_task_reader.py
+ M scripts/live_notes_accumulator.py
+ M scripts/multimodel_intervention_dynamic_step.py
+ M scripts/multimodel_intervention_parallel_step.py
+ M scripts/multimodel_keypoint_coverage_ratchet.py
+ M scripts/pa-daily-report.py
+ M scripts/post-session-autopsy.py
+ M scripts/post-update-check.py
+ M scripts/pricing.py
+ M scripts/rowboat_bridge.py
+ M scripts/session-close.sh
+ M scripts/skill-steward.py
+ M scripts/sync-brain.py
+ M scripts/task_pool_guardian_run.py
+ M scripts/taskpool_watch_report.py
+ M scripts/test_multimodel_intervention_dynamic_step.py
+ M scripts/test_multimodel_keypoint_coverage_ratchet.py
+ M scripts/test_taskpool_watch_report.py
+ M scripts/test_usage_score.py
+ M shell-hooks-allowlist.json
+ M skills/.bundled_manifest
+ M skills/.hub/index-cache/hermes-index.json
+ M skills/.hub/lock.json
+ M skills/api-and-interface-design/SKILL.md
+ M skills/apple/SKILL.md
+ M skills/apple/apple-notes/SKILL.md
+ M skills/apple/apple-reminders/SKILL.md
+ M skills/apple/findmy/SKILL.md
+ M skills/apple/imessage/SKILL.md
+ M skills/autonomous-ai-agents/SKILL.md
+ M skills/autonomous-ai-agents/claude-code/SKILL.md
+ M skills/autonomous-ai-agents/codex/SKILL.md
+ M skills/autonomous-ai-agents/hermes-agent/SKILL.md
+ M skills/autonomous-ai-agents/hermes-agent/references/local-brain-dynamic-cron.md
+ M skills/autonomous-ai-agents/hermes-agent/references/p10-iteration-budget-loop.md
+ M skills/autonomous-ai-agents/hermes-agent/references/taskpool-auto-completer-semantics.md
+ M skills/autonomous-ai-agents/hermes-agent/references/tool-budget-and-permission-gates.md
+ M skills/autonomous-ai-agents/hermes-pipeline/SKILL.md
+ M skills/autonomous-ai-agents/opencode/SKILL.md
+ D skills/bayesian-agent/CHANGELOG.md
+ D skills/bayesian-agent/SKILL.md
+ D skills/bayesian-agent/confidence-db.json
+ D skills/bayesian-agent/references/README.md
+ D skills/bayesian-agent/references/confidence-driven-selection.md
+ D skills/bayesian-agent/references/kalman-self-estimation.md
+ D skills/bayesian-agent/references/reinforcement-learning.md
+ D skills/bayesian-agent/test-prompts.json
+ M skills/chinese-platforms/SKILL.md
+ D skills/cognitive-load-agent/CHANGELOG.md
+ D skills/cognitive-load-agent/SKILL.md
+ D skills/cognitive-load-agent/references/chunk-success-rate.md
+ D skills/cognitive-load-agent/test-prompts.json
+ M skills/creative/SKILL.md
+ M skills/creative/architecture-diagram/SKILL.md
+ D skills/creative/ascii-art/CHANGELOG.md
+ D skills/creative/ascii-art/SKILL.md
+ D skills/creative/ascii-art/test-prompts.json
+ D skills/creative/ascii-video/CHANGELOG.md
+ D skills/creative/ascii-video/README.md
+ D skills/creative/ascii-video/SKILL.md
+ D skills/creative/ascii-video/references/architecture.md
+ D skills/creative/ascii-video/references/composition.md
+ D skills/creative/ascii-video/references/effects.md
+ D skills/creative/ascii-video/references/inputs.md
+ D skills/creative/ascii-video/references/optimization.md
+ D skills/creative/ascii-video/references/scenes.md
+ D skills/creative/ascii-video/references/shaders.md
+ D skills/creative/ascii-video/references/troubleshooting.md
+ D skills/creative/ascii-video/test-prompts.json
+ M skills/creative/baoyu-article-illustrator/SKILL.md
+ M skills/creative/creative-ideation/SKILL.md
+ M skills/creative/design-md/SKILL.md
+ M skills/creative/excalidraw/SKILL.md
+ M skills/creative/manim-video/SKILL.md
+ M skills/creative/manim-video/scripts/setup.sh
+ M skills/creative/p5js/SKILL.md
+ M skills/creative/p5js/scripts/render.sh
+ M skills/creative/p5js/scripts/serve.sh
+ M skills/creative/p5js/scripts/setup.sh
+ D skills/creative/pixel-art/ATTRIBUTION.md
+ D skills/creative/pixel-art/CHANGELOG.md
+ D skills/creative/pixel-art/SKILL.md
+ D skills/creative/pixel-art/references/palettes.md
+ D skills/creative/pixel-art/scripts/__init__.py
+ D skills/creative/pixel-art/scripts/palettes.py
+ D skills/creative/pixel-art/scripts/pixel_art.py
+ D skills/creative/pixel-art/scripts/pixel_art_video.py
+ D skills/creative/pixel-art/test-prompts.json
+ M skills/creative/popular-web-designs/SKILL.md
+ M skills/creative/sketch/SKILL.md
+ M skills/creative/songwriting-and-ai-music/SKILL.md
+ M skills/creative/web-animation-optimization/SKILL.md
+ M skills/creative/web-animation-patterns/SKILL.md
+ D skills/darwin-skill
+ M skills/data-science/SKILL.md
+ M skills/data-science/jupyter-live-kernel/SKILL.md
+ M skills/devops/SKILL.md
+ M skills/devops/cloudflare-pages-pnpm/SKILL.md
+ M skills/devops/semantic-release-monorepo/SKILL.md
+ M skills/devops/webhook-subscriptions/SKILL.md
+ M skills/diagramming/SKILL.md
+ M skills/dogfood/SKILL.md
+ M skills/domain/SKILL.md
+ M skills/email/SKILL.md
+ M skills/email/himalaya/SKILL.md
+ M skills/feeds/SKILL.md
+ M skills/framework-audit/SKILL.md
+ M skills/gaming/SKILL.md
+ D skills/gaming/minecraft-modpack-server/CHANGELOG.md
+ D skills/gaming/minecraft-modpack-server/SKILL.md
+ D skills/gaming/minecraft-modpack-server/test-prompts.json
+ D skills/gaming/pokemon-player/CHANGELOG.md
+ D skills/gaming/pokemon-player/SKILL.md
+ D skills/gaming/pokemon-player/test-prompts.json
+ M skills/gifs/CHANGELOG.md
+ M skills/gifs/SKILL.md
+ M skills/gifs/test-prompts.json
+ M skills/github/SKILL.md
+ M skills/github/codebase-inspection/SKILL.md
+ M skills/github/git-repo-operations/SKILL.md
+ M skills/github/github-auth/SKILL.md
+ M skills/github/github-auth/scripts/gh-env.sh
+ M skills/github/github-code-review/SKILL.md
+ M skills/github/github-issues/SKILL.md
+ M skills/github/github-pr-workflow/SKILL.md
+ M skills/github/github-repo-management/SKILL.md
+ D skills/impeccable
+ D skills/impeccable-skill
+ M skills/incremental-implementation/SKILL.md
+ M skills/inference-sh/SKILL.md
+ D skills/leisure/CHANGELOG.md
+ D skills/leisure/SKILL.md
+ D skills/leisure/find-nearby/CHANGELOG.md
+ D skills/leisure/find-nearby/SKILL.md
+ D skills/leisure/find-nearby/scripts/find_nearby.py
+ D skills/leisure/find-nearby/test-prompts.json
+ D skills/leisure/references/README.md
+ D skills/leisure/references/skill-overview.md
+ D skills/leisure/test-prompts.json
+ M skills/mcp/SKILL.md
+ M skills/mcp/mcporter/SKILL.md
+ M skills/mcp/native-mcp/SKILL.md
+ M skills/media/SKILL.md
+ M skills/media/gif-search/SKILL.md
+ D skills/media/heartmula/CHANGELOG.md
+ D skills/media/heartmula/SKILL.md
+ D skills/media/heartmula/test-prompts.json
+ M skills/media/long-video-course-essence/SKILL.md
+ D skills/media/songsee/CHANGELOG.md
+ D skills/media/songsee/SKILL.md
+ D skills/media/songsee/test-prompts.json
+ M skills/media/spotify/SKILL.md
+ M skills/media/youtube-content/SKILL.md
+ M skills/mlops/SKILL.md
+ M skills/mlops/cloud/modal/SKILL.md
+ D skills/mlops/evaluation/lm-evaluation-harness/CHANGELOG.md
+ D skills/mlops/evaluation/lm-evaluation-harness/SKILL.md
+ D skills/mlops/evaluation/lm-evaluation-harness/references/api-evaluation.md
+ D skills/mlops/evaluation/lm-evaluation-harness/references/benchmark-guide.md
+ D skills/mlops/evaluation/lm-evaluation-harness/references/custom-tasks.md
+ D skills/mlops/evaluation/lm-evaluation-harness/references/distrib
+
+... [OUTPUT TRUNCATED - 342895 chars omitted out of 392895 total] ...
+
+/hermes-agent/references/auxiliary-compression-provider-fallback.md
+?? skills/autonomous-ai-agents/hermes-agent/references/background-review-async-debugging.md
+?? skills/autonomous-ai-agents/hermes-agent/references/background-review-taskpool-suggest-mode.md
+?? skills/autonomous-ai-agents/hermes-agent/references/background-watch-notifications.md
+?? skills/autonomous-ai-agents/hermes-agent/references/budget-handoff-automation.md
+?? skills/autonomous-ai-agents/hermes-agent/references/budget-relay-debugging.md
+?? skills/autonomous-ai-agents/hermes-agent/references/budget-relay-delegation.md
+?? skills/autonomous-ai-agents/hermes-agent/references/continuation-control-plane.md
+?? skills/autonomous-ai-agents/hermes-agent/references/cron-taskpool-script-args-and-human-escape.md
+?? skills/autonomous-ai-agents/hermes-agent/references/dreaming-outcomes-skill-review-and-evaluator.md
+?? skills/autonomous-ai-agents/hermes-agent/references/event-governed-agent-control-plane.md
+?? skills/autonomous-ai-agents/hermes-agent/references/evolution-lane-cert-loop.md
+?? skills/autonomous-ai-agents/hermes-agent/references/external-skill-to-brain-overlay.md
+?? skills/autonomous-ai-agents/hermes-agent/references/gateway-fd-exhaustion.md
+?? skills/autonomous-ai-agents/hermes-agent/references/git-snapshot-drift-debugging.md
+?? skills/autonomous-ai-agents/hermes-agent/references/hermes-conductor-runtime-scaffold.md
+?? skills/autonomous-ai-agents/hermes-agent/references/hermes-hosted-seaos-pua-loop.md
+?? skills/autonomous-ai-agents/hermes-agent/references/hermes-rokid-lingzhu-bridge.md
+?? skills/autonomous-ai-agents/hermes-agent/references/hermes-self-check-update.md
+?? skills/autonomous-ai-agents/hermes-agent/references/layered-prompt-cache-implementation.md
+?? skills/autonomous-ai-agents/hermes-agent/references/memory-cap-selfcheck.md
+?? skills/autonomous-ai-agents/hermes-agent/references/openclaw-inspired-hermes-control-plane.md
+?? skills/autonomous-ai-agents/hermes-agent/references/openclaw-productization-and-taskpool-budget-handoff.md
+?? skills/autonomous-ai-agents/hermes-agent/references/openclaw-seaos-hermes-fusion.md
+?? skills/autonomous-ai-agents/hermes-agent/references/pa-evolution-daily-reporting.md
+?? skills/autonomous-ai-agents/hermes-agent/references/private-repo-personal-assistant-sync.md
+?? skills/autonomous-ai-agents/hermes-agent/references/prompt-assembly-cache.md
+?? skills/autonomous-ai-agents/hermes-agent/references/prompt-builder-cache-layers.md
+?? skills/autonomous-ai-agents/hermes-agent/references/prompt-builder-test-fixing.md
+?? skills/autonomous-ai-agents/hermes-agent/references/provider-version-drift-and-codex-breaker.md
+?? skills/autonomous-ai-agents/hermes-agent/references/pua-loop-p10-self-check.md
+?? skills/autonomous-ai-agents/hermes-agent/references/pua-loop-self-optimization.md
+?? skills/autonomous-ai-agents/hermes-agent/references/ratchet-upgrades.md
+?? skills/autonomous-ai-agents/hermes-agent/references/rokid-lingzhu-bridge.md
+?? skills/autonomous-ai-agents/hermes-agent/references/rokid-lingzhu-sse-bridge.md
+?? skills/autonomous-ai-agents/hermes-agent/references/sakana-conductor-pattern.md
+?? skills/autonomous-ai-agents/hermes-agent/references/self-evolution-pua-loop.md
+?? skills/autonomous-ai-agents/hermes-agent/references/self-evolving-agent-architecture.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-add-evolution-tasks.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-blocked-resolution.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hook-debugging.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hook-smart-routing.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hooks-and-certified-auto-done.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hooks-and-multimodel-autodone.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-event-hooks.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-pre-ingest-triage.md
+?? skills/autonomous-ai-agents/hermes-agent/references/taskpool-priority-mode.md
+?? skills/autonomous-ai-agents/hermes-experience-ratchet/references/
+?? skills/autonomous-ai-agents/hermes-pipeline/references/brain-task-orchestrator-integration.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/capability-routing-pattern.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/cron-script-timeout-mismatch.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/dynamic-n-and-classifier.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/envelope-bus-implementation.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/envelope-executor-missing-link.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/escape-triggered-cron-alert-pattern.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/task-continuation-pattern.md
+?? skills/autonomous-ai-agents/hermes-pipeline/references/v-state-function.md
+?? skills/autonomous-ai-agents/kanban-codex-lane/SKILL.md
+?? skills/autonomous-ai-agents/kanban-codex-lane/templates/
+?? skills/autonomous-ai-agents/references/agent-architecture-control-plane-coverage.md
+?? skills/code-simplification/SKILL.md
+?? skills/code-simplification/references/
+?? skills/codebase-intelligence/SKILL.md
+?? skills/codebase-intelligence/references/
+?? skills/creative/baoyu-article-illustrator/PORT_NOTES.md
+?? skills/creative/baoyu-article-illustrator/prompts/
+?? skills/creative/baoyu-article-illustrator/references/
+?? skills/creative/claude-design/SKILL.md
+?? skills/creative/comfyui/SKILL.md
+?? skills/creative/comfyui/references/
+?? skills/creative/comfyui/scripts/
+?? skills/creative/comfyui/tests/
+?? skills/creative/comfyui/workflows/
+?? skills/creative/humanizer/LICENSE
+?? skills/creative/humanizer/SKILL.md
+?? skills/creative/pretext/SKILL.md
+?? skills/creative/pretext/references/
+?? skills/creative/pretext/templates/
+?? skills/creative/touchdesigner-mcp/SKILL.md
+?? skills/creative/touchdesigner-mcp/references/
+?? skills/creative/touchdesigner-mcp/scripts/
+?? skills/deprecation-and-migration/SKILL.md
+?? skills/devops/gateway-telegram-setup/SKILL.md
+?? skills/devops/gateway-telegram-setup/references/
+?? skills/devops/hermes-storage-governance/scripts/
+?? skills/devops/hermes-tool-availability/
+?? skills/devops/kanban-orchestrator/SKILL.md
+?? skills/devops/kanban-orchestrator/references/
+?? skills/devops/kanban-worker/references/
+?? skills/devops/local-devops-tooling/SKILL.md
+?? skills/devops/local-devops-tooling/references/
+?? skills/devops/token-saver-rtk/references/deepseek-tui-analysis.md
+?? skills/devops/token-saver-rtk/references/openwolf-analysis.md
+?? skills/devops/token-saver-rtk/references/prefix-cache-architecture.md
+?? skills/devops/token-saver-rtk/references/repo-analysis-strategy.md
+?? skills/devops/token-saver-rtk/references/task-router-tuning.md
+?? skills/devops/token-saver-rtk/references/testfile
+?? skills/documentation-and-adrs/SKILL.md
+?? skills/documentation-and-adrs/references/
+?? skills/domain/references/personal-infrastructure-domain-selection.md
+?? skills/feeds/references/aihot-daily-browser-cron.md
+?? skills/feeds/references/odaily-crypto-daily-source.md
+?? skills/framework-audit/references/agent-proxy-quota-router-audit.md
+?? skills/framework-audit/references/agent-reach-hermes-selective-adoption.md
+?? skills/framework-audit/references/ai-memory-repo-benchmark-audit.md
+?? skills/framework-audit/references/gui-computer-use-agent-audit.md
+?? skills/framework-audit/references/local-brain-memory-repo-adoption.md
+?? skills/framework-audit/references/official-api-cli-audit.md
+?? skills/framework-audit/references/provider-usage-telemetry-repo-audit.md
+?? skills/github/git-repo-operations/references/
+?? skills/github/github-pr-workflow/references/dual-repo-fresh-branch-closeout.md
+?? skills/github/github-pr-workflow/references/dual-repo-rebase-push.md
+?? skills/github/github-pr-workflow/references/junk-file-cleanup.md
+?? skills/github/github-pr-workflow/references/pr-closeout-consensus.md
+?? skills/github/github-pr-workflow/references/surgical-file-revert.md
+?? skills/github/references/rebase-conflict-resolution.md
+?? skills/incremental-implementation/references/
+?? skills/loop/references/hermes-pua-loop-double-gating.md
+?? skills/loop/references/taskpool-closeout-recovery.md
+?? skills/mcp/references/code-intelligence-mcp-patterns.md
+?? skills/mcp/references/mcp-builder-learning-path.md
+?? skills/mcp/references/mcp-skill-enhancement-assessment.md
+?? skills/media/long-video-course-essence/references/desktop-batch-closure-pattern.md
+?? skills/media/long-video-course-essence/references/node-control-plane-patterns.md
+?? skills/media/references/douyin-short-video-analysis.md
+?? skills/media/references/long-video-essence-pipeline.md
+?? skills/mlops/rag-knowledge-management/SKILL.md
+?? skills/mlops/rag-knowledge-management/references/
+?? skills/note-taking/obsidian/references/external-memory-system-landing.md
+?? skills/note-taking/obsidian/references/icloud-documents-local-brain-recovery.md
+?? skills/note-taking/obsidian/references/local-brain-category-landing.md
+?? skills/note-taking/obsidian/references/local-brain-hierarchy-overlay-routing.md
+?? skills/note-taking/obsidian/references/local-brain-icloud-documents-recovery.md
+?? skills/note-taking/obsidian/references/local-brain-keypoint-coverage-audit.md
+?? skills/note-taking/obsidian/references/local-brain-sync-and-cli.md
+?? skills/note-taking/obsidian/references/local-brain-theory-folder-governance.md
+?? skills/note-taking/obsidian/references/project-workpad-handoff-bootstrap.md
+?? skills/note-taking/references/local-brain-llm-wiki-intake.md
+?? skills/note-taking/references/project-profile-refresh-from-transcript-and-prototype-repo.md
+?? skills/note-taking/references/session-transcript-to-project-profile.md
+?? skills/personal-productivity/travel-planning/
+?? skills/productivity/airtable/SKILL.md
+?? skills/productivity/lark-docx-reading/references/lark-user-oauth-docx.md
+?? skills/productivity/lark-docx-reading/scripts/
+?? skills/red-teaming/references/client-controlled-trust.md
+?? skills/research/last30days/AGENTS.md
+?? skills/research/last30days/CONCEPTS.md
+?? skills/research/last30days/CONFIGURATION.md
+?? skills/research/last30days/README.md
+?? skills/research/last30days/agents/
+?? skills/research/last30days/assets/
+?? skills/research/last30days/references/
+?? skills/research/last30days/scripts/
+?? skills/research/references/llm-wiki-compiled-knowledge-layer.md
+?? skills/research/references/travel-planning-with-personal-history.md
+?? skills/smart-home/external-control-brain/references/
+?? skills/smart-home/manufacturing-brain/references/
+?? skills/software-development/agent-eval-dynamic-workflow-harness/references/
+?? skills/software-development/architecture-governance-evaluation/SKILL.md
+?? skills/software-development/architecture-governance-evaluation/references/
+?? skills/software-development/browser-harness-integration/references/
+?? skills/software-development/browser-harness-integration/templates/
+?? skills/software-development/development-closure-consensus/references/abc-schema.md
+?? skills/software-development/development-closure-consensus/references/core-sources.md
+?? skills/software-development/development-closure-consensus/references/evidence-bound-authorization-closeout.md
+?? skills/software-development/development-closure-consensus/references/resolver-protocol.md
+?? skills/software-development/development-closure-consensus/templates/
+?? skills/software-development/event-governed-side-effect-executors/
+?? skills/software-development/frontend-state-domain-correctness/references/
+?? skills/software-development/hermes-overlay-ratchet-upgrades/references/
+?? skills/software-development/hermes-self-audit/references/
+?? skills/software-development/hermes-warning-governance/references/
+?? skills/software-development/hermes-workflow-orchestrator/references/agent-team-controller-timeout-pattern.md
+?? skills/software-development/hermes-workflow-orchestrator/references/control-tower-architecture-governance.md
+?? skills/software-development/hermes-workflow-orchestrator/references/control-tower-command-and-schema-patterns.md
+?? skills/software-development/hermes-workflow-orchestrator/references/control-tower-execution-policy-projection.md
+?? skills/software-development/hermes-workflow-orchestrator/references/local-brain-idle-runner-risk-router.md
+?? skills/software-development/hermes-workflow-orchestrator/references/local-brain-task-boundary-parallel-agents.md
+?? skills/software-development/hermes-workflow-orchestrator/references/multimodel-certified-auto-close.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-bounded-advancement-pass.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-certified-auto-done-loop.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-event-hook-rc2-certification.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-event-hooks.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-evolution-add-notes.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-flow-tolerance.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-multimodel-auto-done.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-pre-ingest-multimodel-triage.md
+?? skills/software-development/hermes-workflow-orchestrator/references/taskpool-review-closeout-evidence-shape.md
+?? skills/software-development/lark-task-reading/references/lark-direct-task-fetch-by-guid.md
+?? skills/software-development/lark-task-reading/references/lark-task-detail-lookup-patterns.md
+?? skills/software-development/lark-task-reading/references/railway-ts-build-pitfalls.md
+?? "skills/software-development/lark-task-reading/references/uvisa-c\347\253\257-iceberg-classifier.md"
+?? skills/software-development/lark-task-reading/references/uvisa-ios-pwa-profile-install.md
+?? skills/software-development/lark-task-reading/references/uvisa-unified-iceberg-multimodel-consensus.md
+?? skills/software-development/mobile-frontend-delivery/references/
+?? skills/software-development/multi-model-certification-round/references/
+?? skills/software-development/multi-model-thinking/references/4-model-execution-patterns.md
+?? skills/software-development/multi-model-thinking/references/autonomous-certification-scope-and-provider-evidence.md
+?? skills/software-development/multi-model-thinking/references/autonomy-write-guard-caller-integration.md
+?? skills/software-development/multi-model-thinking/references/claims-injection-for-taskpool-intervention.md
+?? skills/software-development/multi-model-thinking/references/claude-code-wrapper-runtime-errors.md
+?? skills/software-development/multi-model-thinking/references/code-evidence-long-term-landing.md
+?? skills/software-development/multi-model-thinking/references/communication-budget-protocol.md
+?? skills/software-development/multi-model-thinking/references/current-code-certification-after-amend.md
+?? skills/software-development/multi-model-thinking/references/deepseek-reasoning-budget.md
+?? skills/software-development/multi-model-thinking/references/direct-multi-model-ratification.md
+?? skills/software-development/multi-model-thinking/references/event-driven-trigger-timing-and-loop-economy.md
+?? skills/software-development/multi-model-thinking/references/evidence-request-fulfillment-loop.md
+?? skills/software-development/multi-model-thinking/references/external-repo-to-evolution-taskpool-advisory.md
+?? skills/software-development/multi-model-thinking/references/fanout-advisory-closeout.md
+?? skills/software-development/multi-model-thinking/references/fanout-certification-fail-closed.md
+?? skills/software-development/multi-model-thinking/references/grounded-not-certified-amend-loop.md
+?? skills/software-development/multi-model-thinking/references/hook-automation-verifier-gates.md
+?? skills/software-development/multi-model-thinking/references/image-to-taskpool-optimization-advisory.md
+?? skills/software-development/multi-model-thinking/references/iron-plate-consolidation-pattern.md
+?? skills/software-development/multi-model-thinking/references/long-running-discussion-and-resume.md
+?? skills/software-development/multi-model-thinking/references/long-term-taskpool-autorun-activation.md
+?? skills/software-development/multi-model-thinking/references/methodology-to-taskpool-advisory.md
+?? skills/software-development/multi-model-thinking/references/mimo-concurrency-pitfalls.md
+?? skills/software-development/multi-model-thinking/references/mission-envelope-taskpool-closeout.md
+?? skills/software-development/multi-model-thinking/references/multi-direction-amend-loop-pattern.md
+?? skills/software-development/multi-model-thinking/references/multimodel-intervention-step-pitfalls.md
+?? skills/software-development/multi-model-thinking/references/parallel-multimodel-step-architecture.md
+?? skills/software-development/multi-model-thinking/references/post-update-fusion-verifier-gates.md
+?? skills/software-development/multi-model-thinking/references/project-profile-injection-pattern.md
+?? skills/software-development/multi-model-thinking/references/provider-adapter-fallback-ratification.md
+?? skills/software-development/multi-model-thinking/references/provider-concurrency-and-token-budget-pitfalls.md
+?? skills/software-development/multi-model-thinking/references/ratification-gate-pattern.md
+?? skills/software-development/multi-model-thinking/references/real-run-benchmark-2026-05-11.md
+?? skills/software-development/multi-model-thinking/references/repository-audit-evidence-packaging.md
+?? skills/software-development/multi-model-thinking/references/resumable-multimodel-certification-system.md
+?? skills/software-development/multi-model-thinking/references/robust-json-extraction.md
+?? skills/software-development/multi-model-thinking/references/self-optimizing-verification-loop.md
+?? skills/software-development/multi-model-thinking/references/systemic-interconnection-control-plane.md
+?? skills/software-development/multi-model-thinking/references/task-flow-deadlock-detection-and-fix.md
+?? skills/software-development/multi-model-thinking/references/task-pool-guardian-pattern.md
+?? skills/software-development/multi-model-thinking/references/taskpool-artifact-verification-regression.md
+?? skills/software-development/multi-model-thinking/references/taskpool-autonomy-readiness-and-evidence-spine.md
+?? skills/software-development/multi-model-thinking/references/taskpool-autorun-status-review-and-certification.md
+?? skills/software-development/multi-model-thinking/references/taskpool-boundary-coverage-permission-gates.md
+?? skills/software-development/multi-model-thinking/references/taskpool-dispatch-tick-multimodel-ratchet.md
+?? skills/software-development/multi-model-thinking/references/taskpool-multimodel-intervention-pitfalls.md
+?? skills/software-development/multi-model-thinking/references/trigger-timing-event-driven-pattern.md
+?? skills/software-development/multi-model-thinking/references/trigger-timing-implementation-landing.md
+?? skills/software-development/multi-model-thinking/references/trigger-timing-implementation-pattern.md
+?? skills/software-development/multi-model-thinking/references/trigger-timing-implementation.md
+?? skills/software-development/multi-model-thinking/references/vx-state-function-and-auto-trigger-chain.md
+?? skills/software-development/objective-model-path-verification/references/
+?? skills/software-development/planning-with-files/SKILL.md
+?? skills/software-development/planning-with-files/references/
+?? skills/software-development/post-update-patch-healing/references/
+?? skills/software-development/private-fork-evolution-governance/SKILL.md
+?? skills/software-development/process-lifecycle-control-plane/references/
+?? skills/software-development/project-evidence-grounding/SKILL.md
+?? skills/software-development/project-evidence-grounding/references/
+?? skills/software-development/react-architecture-migration/SKILL.md
+?? skills/software-development/react-architecture-migration/references/
+?? skills/software-development/real-engineering-workflows/references/
+?? skills/software-development/references/flyway-migration-hygiene.md
+?? skills/software-development/references/fullstack-verification-workflow.md
+?? skills/software-development/references/multi-repo-sync-and-self-checks.md
+?? skills/software-development/self-improvement-pipeline/references/
+?? skills/software-development/simplify-code/
+?? skills/software-development/spec-stateful-sdd-workflow/references/
+?? skills/software-development/systematic-debugging/references/
+?? skills/software-development/taskpool-control-plane/references/agent-team-parallel.md
+?? skills/software-development/taskpool-control-plane/references/approval-after-analysis-handoff.md
+?? skills/software-development/taskpool-control-plane/references/auto-subtask-backfill-paused.md
+?? skills/software-development/taskpool-control-plane/references/blocked-evolution-running-recovery.md
+?? skills/software-development/taskpool-control-plane/references/blocked-parent-proof-compat-and-live-state.md
+?? skills/software-development/taskpool-control-plane/references/blocked-ratification-certification.md
+?? skills/software-development/taskpool-control-plane/references/blocked-resolver-missing-artifact.md
+?? skills/software-development/taskpool-control-plane/references/blocked-task-diagnosis.md
+?? skills/software-development/taskpool-control-plane/references/blocked-task-resolution.md
+?? skills/software-development/taskpool-control-plane/references/blocked-task-triage.md
+?? skills/software-development/taskpool-control-plane/references/bounded-evolution-child-evidence-tranche.md
+?? skills/software-development/taskpool-control-plane/references/brain-kanban-dual-store-desync.md
+?? skills/software-development/taskpool-control-plane/references/brain-mirror-on-disk-recovery.md
+?? skills/software-development/taskpool-control-plane/references/brain-orchestrator-subprocess-timeout.md
+?? skills/software-development/taskpool-control-plane/references/brain-task-file-patching.md
+?? skills/software-development/taskpool-control-plane/references/bulk-taskpool-unclog.md
+?? skills/software-development/taskpool-control-plane/references/certification-unblock-and-selfcheck-upgrade.md
+?? skills/software-development/taskpool-control-plane/references/child-closeout-vs-parent-ratification.md
+?? skills/software-development/taskpool-control-plane/references/cron-scheduler-429-recovery.md
+?? skills/software-development/taskpool-control-plane/references/cycle-timeout-diagnostics.md
+?? skills/software-development/taskpool-control-plane/references/deterministic-selfcheck-closeout-vs-reconcile.md
+?? skills/software-development/taskpool-control-plane/references/digest-bound-closeout-and-rollback-executors.md
+?? skills/software-development/taskpool-control-plane/references/dispatch-gate-triage.md
+?? skills/software-development/taskpool-control-plane/references/dispatch-tick-soft-governance-gating.md
+?? skills/software-development/taskpool-control-plane/references/dynamic-n-integration.md
+?? skills/software-development/taskpool-control-plane/references/edge-worker-test-coverage-improvement.md
+?? skills/software-development/taskpool-control-plane/references/envelope-bus-escape-triage-cli-patterns.md
+?? skills/software-development/taskpool-control-plane/references/event-driven-auto-execution.md
+?? skills/software-development/taskpool-control-plane/references/event-governed-agent-write-through-boundaries.md
+?? skills/software-development/taskpool-control-plane/references/evolution-lane-cert-loop-analysis.md
+?? skills/software-development/taskpool-control-plane/references/evolution-lane-certification-loop.md
+?? skills/software-development/taskpool-control-plane/references/fail-safe-claim-vs-governance-warnings.md
+?? skills/software-development/taskpool-control-plane/references/false-positive-done-vs-feature-implementation.md
+?? skills/software-development/taskpool-control-plane/references/follow-through-automation.md
+?? skills/software-development/taskpool-control-plane/references/google-agent-card-runtime-scaffold.md
+?? skills/software-development/taskpool-control-plane/references/google-agent-structure-alignment.md
+?? skills/software-development/taskpool-control-plane/references/hermes-observability.md
+?? skills/software-development/taskpool-control-plane/references/human-escape-autorun-cron-triage.md
+?? skills/software-development/taskpool-control-plane/references/iceberg-tier-dispatch-integration.md
+?? skills/software-development/taskpool-control-plane/references/infrastructure-blocked-evolution-task-archiving.md
+?? skills/software-development/taskpool-control-plane/references/kanban-db-operations.md
+?? skills/software-development/taskpool-control-plane/references/kanban-worker-and-queue-recovery.md
+?? skills/software-development/taskpool-control-plane/references/kanban-worker-disabled-bootstrap.md
+?? skills/software-development/taskpool-control-plane/references/lark-batch-import-dedup.md
+?? skills/software-development/taskpool-control-plane/references/manual-targeted-evidence-refresh.md
+?? skills/software-development/taskpool-control-plane/references/memory-cache-recurrent-state-gate.md
+?? skills/software-development/taskpool-control-plane/references/multimodel-ratification-unblock-patterns.md
+?? skills/software-development/taskpool-control-plane/references/native-multimodel-contracts.md
+?? skills/software-development/taskpool-control-plane/references/no-running-allowlist-vs-blocked-evolution.md
+?? skills/software-development/taskpool-control-plane/references/no-running-final-drain-and-policy-boundary.md
+?? skills/software-development/taskpool-control-plane/references/non-work-validation-baseline.md
+?? skills/software-development/taskpool-control-plane/references/openclaw-garden-skills-intake.md
+?? skills/software-development/taskpool-control-plane/references/prd-evidence-persistence.md
+?? skills/software-development/taskpool-control-plane/references/project-profile-dispatchability-gates.md
+?? skills/software-development/taskpool-control-plane/references/proof-debt-migration.md
+?? skills/software-development/taskpool-control-plane/references/recent-unfinished-task-audit.md
+?? skills/software-development/taskpool-control-plane/references/reconcile-gating-and-proof-debt.md
+?? skills/software-development/taskpool-control-plane/references/retroactive-done-closeout-audit.md
+?? skills/software-development/taskpool-control-plane/references/retry-task-diagnosis.md
+?? skills/software-development/taskpool-control-plane/references/retry-task-force-promote.md
+?? skills/software-development/taskpool-control-plane/references/self-proving-executor-proof-pattern.md
+?? skills/software-development/taskpool-control-plane/references/self-strengthening-repo-intake-gap-analysis.md
+?? skills/software-development/taskpool-control-plane/references/ssot-violation-edge-worker-task-pool.md
+?? skills/software-development/taskpool-control-plane/references/stale-claim-and-finished-subtasks.md
+?? skills/software-development/taskpool-control-plane/references/task-adapter-framework.md
+?? skills/software-development/taskpool-control-plane/references/task-depth-analysis.md
+?? skills/software-development/taskpool-control-plane/references/task-file-bloat-and-dedup.md
+?? skills/software-development/taskpool-control-plane/references/task-framing-governance.md
+?? skills/software-development/taskpool-control-plane/references/task-lifecycle-transition-chain.md
+?? skills/software-development/taskpool-control-plane/references/taskpool-dispatch-soft-governance-gating.md
+?? skills/software-development/taskpool-control-plane/references/taskpool-external-write-through.md
+?? skills/software-development/taskpool-control-plane/references/taskpool-ingest-triage.md
+?? skills/software-development/taskpool-control-plane/references/taskpool-long-term-debt-strategy.md
+?? skills/software-development/taskpool-control-plane/references/taskpool-pools-capabilities.md
+?? skills/software-development/taskpool-control-plane/references/tree-shaped-boundary-refinement.md
+?? skills/software-development/taskpool-control-plane/references/video-project-intake-and-vector-boundary.md
+?? skills/software-development/test-driven-development/references/
+?? skills/software-development/theory-driven-evolution/references/
+?? skills/software-development/visual-conversation-core/SKILL.md
+?? skills/software-development/visual-regression/references/
+?? skills/steward/batch-normalization-report.json
+?? skills/steward/checklist-refinement-report.json
+?? skills/steward/description-structure-pass-report.json
+?? skills/steward/overview-countertrigger-pass-report.json
+?? skills/steward/semantic-refinement-summary.json
+?? skills/steward/semantic-refinement-verify.json
+?? skills/steward/shell-baseline-pass-report.json
+?? skills/steward/umbrella-refinement-report.json
+?? skills/steward/umbrella-refinement-verify.json
+?? skills/workflow/qian-meta-synthesis/templates/
+?? state.db.bak.20260529
+?? task-observer/
+?? task-preflight/
+?? task-progress/
+?? task-worker/
+?? taskpool-followthrough/
+?? taskpool/
+?? taskpool_evidence/
+?? taskpool_repair_evidence/
+?? tasks/
+?? tmp-arxiv-queries.json
+?? tmp-claude-resident-state.json
+?? tmp-dream-literature-multimodel-prompt.txt
+?? tmp-dream-literature-state.json
+?? tmp-dream-rootcause-multimodel-prompt.txt
+?? tmp-dream-rootcause-state.json
+?? tmp-dream-source-queries.json
+?? tmp-security-hardening-plan-prompt.md
+?? tmp-security-hardening-plan-state.json
+?? tmp-taskpool-chat-ssot-plan.json
+?? tmp-taskpool-no-hardcode-policy-prompt.txt
+?? tmp-taskpool-no-hardcode-policy-state.json
+?? tmp-taskpool-ssot-final-review-prompt.txt
+?? tmp-taskpool-ssot-review-prompt.txt
+?? tools/
+?? vendor/
+?? worktrees/

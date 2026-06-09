@@ -4,23 +4,29 @@ layer: L3
 status: done
 priority: P0
 created: 2026-05-08T16:47:43+08:00
-updated: 2026-05-08T16:47:43+08:00
+updated: 2026-05-08T22:38:24+08:00
 expires_at: 2026-06-08T00:00:00+08:00
 project: local-brain-taskflow
 workflow_contract: local-brain-task-orchestration + ratification-gate-pattern
-claimed_by:
-claim_expires_at:
-run_id: taskflow-closure-20260508
+required_authority: autonomous-execution
+max_authority: yolo-execution
+permission_tier: autonomous-execution
+write_surfaces: ["taskpool", "codebase"]
+completion_gate: project-evidence-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
+claimed_by: 
+claim_expires_at: 
+run_id: 
 retry_count: 0
-next_attempt_at:
+next_attempt_at: 
 workspace: ~/.hermes/scripts
 evidence:
-  - command: python3 ~/.hermes/scripts/test_brain_task_orchestrator.py PASS
-  - command: python3 ~/.hermes/scripts/brain_task_orchestrator.py proof-check --json PASS
-  - command: python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always OK
+  - "command: python3 ~/.hermes/scripts/test_brain_task_orchestrator.py PASS"
+  - "command: python3 ~/.hermes/scripts/brain_task_orchestrator.py proof-check --json PASS"
+  - "command: python3 ~/.hermes/scripts/brain_task_dispatch_tick.py --print-always OK"
   - file:/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-local-brain-taskflow-closure-certification.json
   - artifact:/Users/charles/.hermes/tick-20260508-084332/
-concepts: [taskflow-closure, proof-gate, no-agent-cron, skill-route-matrix]
+concepts: ["taskflow-closure", "proof-gate", "no-agent-cron", "skill-route-matrix"]
 ---
 
 # Local-brain Taskflow Closure Proof
@@ -53,3 +59,15 @@ concepts: [taskflow-closure, proof-gate, no-agent-cron, skill-route-matrix]
 - Status: done / certified for taskflow closure infrastructure.
 - Next dispatchable task: [[05-实践与项目/tasks/2026-05-08-多模型分析-simular-ai-agent-s-并完善-hermes-技能树]].
 - Residual risk: Agent-S analysis is intentionally separate pending work; not part of this closure certification.
+
+- 2026-05-08T22:38:24+08:00: Reconcile action `orphan_claim_metadata_cleared` by `lifecycle-audit`. Previous status `done`.
+
+- 2026-05-12T02:54:24+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"required_authority": "autonomous-execution", "max_authority": "yolo-execution", "permission_tier": "autonomous-execution", "write_surfaces": ["taskpool", "codebase"], "completion_gate": "project-evidence-review-done", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+## Second-pass Evidence Backfill (2026-05-20)
+
+- Source: 2026-05-19 prior audit classed this done task as `reopen_for_evidence_and_landing` due to missing human-readable `source,decision,stop`; see `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-19-prior-external-analysis-quality-audit.md` lines 34-35.
+- Decision: keep as absorbed / done for the taskflow-closure infrastructure slice. The adoption decision was to close the local-brain taskflow path only after parser cleanup, proof-check repair, deterministic gates, brainctl sync/reindex/search, and scoped T1 certification.
+- Landing: `/Users/charles/.hermes/scripts/brain_task_orchestrator.py`; proof-check/selfcheck paths invoked by the Proof Log; local-brain review/certification/evolution artifacts written back at 2026-05-08T16:47:43+08:00.
+- Verification: historical Proof Log records deterministic gates (`py_compile`, unit test, selfcheck, proof-check, safe dispatch tick, symphony selfcheck, and `brainctl sync/reindex/search`) plus T1 certification path `/Users/charles/.hermes/tick-20260508-084332/`; second-pass does not treat that expired tick directory as current filesystem proof, and current evidence is limited to the durable note text plus still-existing orchestrator script.
+- Stop-condition / boundary: Agent-S analysis was explicitly separate pending work and is not retroactively part of this closure. This task closes only the taskflow infrastructure evidence chain; future repo analyses require their own source/decision/landing/verification/stop packets.

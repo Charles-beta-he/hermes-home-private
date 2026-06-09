@@ -1,6 +1,6 @@
 {
   "task_types": {
-    "unknown": 2,
+    "unknown": 3,
     "system-activation": 1,
     "refactor": 1,
     "obsidian-setup": 1

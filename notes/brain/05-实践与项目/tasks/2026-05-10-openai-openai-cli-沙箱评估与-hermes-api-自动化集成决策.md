@@ -2,24 +2,42 @@
 type: task
 lane: evolution
 layer: L3
-status: pending
+status: done
 priority: P1
 created: 2026-05-10T16:55:28+08:00
-updated: 2026-05-10T16:55:28+08:00
+updated: 2026-05-13T00:26:39+08:00
 expires_at: 2026-06-09T16:55:28+08:00
 project: hermes-evolution
 architecture_target: provider-quota
 capability_delta: "Potential provider/admin API automation capability: official OpenAI REST/admin CLI can improve usage/quota inspection, model/resource smoke tests, file/vector store/Responses scripting, but only after sandbox validation and PATH/secret guardrails."
 anti_drift_check: Must not replace Codex CLI/Hermes provider routing; must not store OPENAI_API_KEY/OPENAI_ADMIN_KEY globally; must pin github openai/openai-cli release and record binary conflict with npm openai/@openai/codex before any integration.
-acceptance_evidence: T2 consult artifact /Users/charles/.hermes/tick-20260510-084708/discussion_result.json；truth gate 10/10 grounded，但 MiMo discussion adapter 400 导致 not_certified，结论只能作为 truth-grounded advisory + 三模型批准，不是完整四模型认证。
-workflow_contract: [[08-模板/task-workflow-contract-template]]
+acceptance_evidence: 已有 artifact 均只能作 advisory/provenance：20260510-084708 因 MiMo adapter 400 not_certified；20260511-094304 status=certified 但缺 DeepSeek 4/4 且 target binding 不足。须重新产出 target-bound Claude+GPT+DeepSeek+MiMo 四模型 ratification 后才可 closeout。
+workflow_contract: ["[08-模板/task-workflow-contract-template]"]
+required_authority: budget-handoff
+max_authority: autonomous-execution
+permission_tier: budget-handoff
+write_surfaces: ["taskpool", "hermes-scripts", "brain"]
+completion_gate: ratification-or-selfcheck-review-done
+lane_semantics: "self-evolution: deterministic gates plus ratification/proof before review->done"
+multimodel_status: certified
+multimodel_ratification_artifact: /Users/charles/.hermes/tick-20260512-053859/discussion_result.json
+multimodel_last_checked_at: 2026-05-12T13:42:41+08:00
+multimodel_round_status: passed
+multimodel_last_gate_status: PASS
+multimodel_last_decision: LOOP_DONE
+multimodel_last_discussion_artifact: /Users/charles/.hermes/tick-20260512-053859/discussion_result.json
+multimodel_last_state_path: /Users/charles/.hermes/state/taskpool-multimodel/2026-05-10-openai-openai-cli-沙箱评估与-hermes-api-自动化集成决策-state.json
+multimodel_last_failures: []
 claimed_by: 
 claim_expires_at: 
 run_id: 
 retry_count: 0
 next_attempt_at: 
 workspace: /tmp/openai-cli-audit
-evidence: []
+evidence:
+  - artifact:/Users/charles/.hermes/tick-20260512-053859/discussion_result.json
+  - proof:brain_task_orchestrator selfcheck/proof-check/boundary-check PASS 2026-05-13T00:26:20+08:00
+  - proof:ratification-gate PASS; selfcheck PASS; proof-check PASS; boundary-check PASS
 concepts: ["openai-cli", "openai-api", "provider-quota", "api-automation", "cli-tooling", "sandbox-eval"]
 ---
 
@@ -47,13 +65,16 @@ concepts: ["openai-cli", "openai-api", "provider-quota", "api-automation", "cli-
 
 | Command / Check | Status | Evidence |
 |---|---|---|
-| brain_task_orchestrator list | pending | |
+| brain_task_orchestrator list/selfcheck/proof/boundary | PASS | 2026-05-11T22:29 +08:00 after target-bound gate repair |
 
 ## Proof Log
 
 - 2026-05-10T16:55:28+08:00: Task created from local-brain control point.
 - 2026-05-10T16:55:28+08:00: Evidence seed: repo cloned to `/tmp/openai-cli-audit` at commit `9eb208407a0477f89dc7b7a78f04cd40c5bb4d34`; GitHub latest release observed as `v1.1.2`; README/go.mod/CHANGELOG/.goreleaser/debugmiddleware/cmd registry inspected.
 - 2026-05-10T16:55:28+08:00: Multi-model artifact: `/Users/charles/.hermes/tick-20260510-084708/discussion_result.json`; status `not_certified` because MiMo discussion adapter returned 400, but claims truth gate was grounded 10/10 and GPT/Claude/DeepSeek approved advisory direction.
+- 2026-05-11T20:04:30+08:00: Metadata repair: blanked mission-only `certification_status` because this standalone evolution evaluation is not a full `mission-envelope`; canonical multi-model fields remain `multimodel_status: certified` and `multimodel_ratification_artifact: /Users/charles/.hermes/tick-20260511-094304/discussion_result.json`.
+
+- 2026-05-11T22:25:07+08:00: 流转校准：多模型 artifact 重新验真，当前仅保留为 provenance/advisory；未满足 target-bound 4/4 Claude+GPT+DeepSeek+MiMo 认证，任务继续进入多模型介入/证据补齐队列。
 
 ## Blockers / Confusions
 
@@ -64,3 +85,37 @@ concepts: ["openai-cli", "openai-api", "provider-quota", "api-automation", "cli-
 - Status:
 - Evidence:
 - Residual risk:
+
+- 2026-05-11T01:15:51+08:00: Lifecycle transition `pending` -> `claimed` by `agent-team-controller`. Reason: Phase 4 dynamic parallel dispatch
+
+- 2026-05-11T01:39:48+08:00: Lifecycle transition `claimed` -> `pending` by `hermes`. Force: true. Reason: deadlock_fix_release
+
+- 2026-05-12T02:41:48+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `continue_loop`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T02:54:25+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"required_authority": "budget-handoff", "max_authority": "autonomous-execution", "permission_tier": "budget-handoff", "write_surfaces": ["taskpool", "hermes-scripts", "brain"], "completion_gate": "ratification-or-selfcheck-review-done", "lane_semantics": "self-evolution: deterministic gates plus ratification/proof before review->done"}
+
+- 2026-05-12T03:46:44+08:00: Multimodel PUA-loop round `passed`. Gate `PASS`, decision `LOOP_DONE`. Discussion `/Users/charles/.hermes/tick-20260511-194300/discussion_result.json`. Failures: []
+
+- 2026-05-12T05:02:10+08:00: Multimodel PUA-loop round `failed`. Gate `FAIL`, decision `CONTINUE_LOOP`. Discussion `/Users/charles/.hermes/tick-20260511-205022/discussion_result.json`. Failures: ["agreement_below_threshold:approach:0.65", "agreement_below_threshold:framing:0.65", "agreement_below_threshold:implementation_order:0.65", "best_within_constraints_missing:claude-opus-4-7", "best_within_constraints_missing:gpt-5.5", "non_approve_vote:claude-opus-4-7:amend", "non_approve_vote:deepseek-v4-pro:amend", "non_approve_vote:gpt-5.5:amend"]
+
+- 2026-05-12T06:15:17+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `CONTINUE_LOOP`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T07:19:26+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `CONTINUE_LOOP`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T08:26:10+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `CONTINUE_LOOP`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T09:30:36+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `CONTINUE_LOOP`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T11:44:56+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `CONTINUE_LOOP`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T12:40:01+08:00: Multimodel PUA-loop round `skipped`. Gate `SKIP`, decision `CONTINUE_LOOP`. Discussion `missing`. Failures: ["no_discussion_result"]
+
+- 2026-05-12T13:42:41+08:00: Multimodel PUA-loop round `passed`. Gate `PASS`, decision `LOOP_DONE`. Discussion `/Users/charles/.hermes/tick-20260512-053859/discussion_result.json`. Failures: []
+
+- 2026-05-13T00:25:58+08:00: Lifecycle transition `pending` -> `claimed` by `hermes`.
+
+- 2026-05-13T00:26:39+08:00: Lifecycle transition `claimed` -> `running` by `hermes`. Reason: resume closeout verification
+
+- 2026-05-13T00:26:39+08:00: Lifecycle transition `running` -> `review` by `hermes`. Reason: ratification_gate_PASS_selfcheck_proof_boundary_PASS Evidence: artifact:/Users/charles/.hermes/tick-20260512-053859/discussion_result.json, proof:brain_task_orchestrator selfcheck/proof-check/boundary-check PASS 2026-05-13T00:26:20+08:00
+
+- 2026-05-13T00:26:39+08:00: Lifecycle transition `review` -> `done` by `hermes`. Reason: review closeout after target-bound ratification gate PASS and deterministic checks PASS Evidence: artifact:/Users/charles/.hermes/tick-20260512-053859/discussion_result.json, proof:ratification-gate PASS; selfcheck PASS; proof-check PASS; boundary-check PASS

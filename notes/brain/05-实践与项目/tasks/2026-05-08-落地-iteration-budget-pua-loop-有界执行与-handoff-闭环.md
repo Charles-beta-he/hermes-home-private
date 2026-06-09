@@ -8,6 +8,12 @@ updated: 2026-05-08T18:37:48+08:00
 expires_at: 2026-06-07T18:34:14+08:00
 project: hermes-automation-budget
 workflow_contract: iteration-budget-doctor + bounded-task-tick + handoff-template + proof-check
+required_authority: autonomous-execution
+max_authority: yolo-execution
+permission_tier: autonomous-execution
+write_surfaces: ["taskpool", "codebase"]
+completion_gate: project-evidence-review-done
+lane_semantics: "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"
 claimed_by: 
 claim_expires_at: 
 run_id: 
@@ -23,7 +29,7 @@ evidence:
   - file:/Users/charles/Documents/brain/05-实践与项目/tasks/2026-05-08-iteration-budget-pua-loop-proof.md
   - file:/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-iteration-budget-p10-multimodel-review.md
   - artifact:/Users/charles/.hermes/artifacts/iteration-budget/20260508-183533-2026-05-08-落地-iteration-budget-pua-loop-有界执行与-handoff-闭环/handoff.md
-concepts: [iteration-budget, bounded-tick, pua-loop, handoff, proof-gate]
+concepts: ["iteration-budget", "bounded-tick", "pua-loop", "handoff", "proof-gate"]
 ---
 
 # Task - 落地 Iteration Budget PUA-loop 有界执行与 handoff 闭环
@@ -73,3 +79,13 @@ concepts: [iteration-budget, bounded-tick, pua-loop, handoff, proof-gate]
 - 2026-05-08T18:34:24+08:00: Claimed by `hermes-pua-loop` until `2026-05-08T20:34:24+08:00`.
 
 - 2026-05-08T18:37:48+08:00: Marked done by `hermes-pua-loop`. Evidence: command:py_compile iteration_budget scripts PASS, command:test_iteration_budget_guard.py PASS 3 tests, command:brain_task_orchestrator selfcheck/proof-check PASS, command:skill-steward graph-check PASS cycles=0 depth_max=4, brainctl:sync/reindex/search PASS indexed_blocks=2380 skipped_secret_blocks=18, file:/Users/charles/Documents/brain/05-实践与项目/tasks/2026-05-08-iteration-budget-pua-loop-proof.md, file:/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-08-iteration-budget-p10-multimodel-review.md, artifact:/Users/charles/.hermes/artifacts/iteration-budget/20260508-183533-2026-05-08-落地-iteration-budget-pua-loop-有界执行与-handoff-闭环/handoff.md.
+
+- 2026-05-12T02:54:24+08:00: Permission taxonomy defaults applied by `permission-migrate --apply`. Changes: {"required_authority": "autonomous-execution", "max_authority": "yolo-execution", "permission_tier": "autonomous-execution", "write_surfaces": ["taskpool", "codebase"], "completion_gate": "project-evidence-review-done", "lane_semantics": "work/product delivery: project evidence, tests/build, scoped commit, report/push policy as required"}
+
+## Second-pass Evidence Backfill (2026-05-20)
+
+- Source: 2026-05-19 prior audit classed this done task as `reopen_for_evidence_and_landing` because the task note needed explicit `source,decision,stop`; see `/Users/charles/Documents/brain/06-治理与评审/reviews/2026-05-19-prior-external-analysis-quality-audit.md` lines 36-37.
+- Decision: keep as absorbed / done for the bounded iteration-budget slice. Adopted pattern: budget doctor + bounded tick + handoff template + proof gate, rather than continuing a 60/60 loop into an unverifiable half-delivery.
+- Landing: `/Users/charles/.hermes/scripts/iteration_budget_doctor.py`; `/Users/charles/.hermes/scripts/brain_task_budget_tick.py`; `/Users/charles/.hermes/scripts/iteration_budget_handoff_template.md`; `/Users/charles/.hermes/scripts/test_iteration_budget_guard.py`; artifact `/Users/charles/.hermes/artifacts/iteration-budget/20260508-183533-2026-05-08-落地-iteration-budget-pua-loop-有界执行与-handoff-闭环/handoff.md`.
+- Verification: existing Marked-done evidence records `py_compile iteration_budget scripts PASS`, `test_iteration_budget_guard.py PASS 3 tests`, `brain_task_orchestrator selfcheck/proof-check PASS`, `skill-steward graph-check PASS cycles=0 depth_max=4`, and `brainctl sync/reindex/search PASS`; current second-pass existence check confirms the named script/template/artifact paths above exist.
+- Stop-condition / boundary: the bounded tick is a safe preparer and handoff generator, not a full autonomous idle-runner. Auto-claim/run/retry remains separate P1 work and must retain proof-gated review before done.
