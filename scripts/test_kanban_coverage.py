@@ -76,6 +76,29 @@ class KanbanCoverageTests(unittest.TestCase):
         self.assertIn("stale_projection_caps_score_at_0.75", v2["caps"])
         self.assertLessEqual(report["score"], 0.75)
 
+    def test_review_required_blocked_card_aligns_with_brain_review_note(self):
+        report = kc.compute_coverage(
+            brain_rows=[],
+            kanban_stats={"by_status": {"blocked": 1}},
+            assignees=[{"name": "brain-mirror", "on_disk": True, "counts": {"blocked": 1}}],
+            dispatch_dry_run={"skipped_nonspawnable": [], "spawned": []},
+            brain_notes=[{"status": "review", "title": "A", "text": "workspace t_bbbbbbbb"}],
+            kanban_tasks=[{
+                "id": "t_bbbbbbbb",
+                "title": "Task - A",
+                "status": "blocked",
+                "assignee": "brain-mirror",
+                "workspace_path": "/tmp",
+                "body": "Source: brain_task_orchestrator\nStatus: blocked",
+                "result": "review-required: needs eyes before canonical writer promotion",
+            }],
+        )
+
+        v2 = report["agent_coverage_v2"]
+        self.assertEqual(v2["metrics"]["projection_coverage"], 1.0)
+        self.assertEqual(v2["counts"]["projection_drift_tasks"], 0)
+        self.assertEqual(v2["projection_drift"], [])
+
     def test_explicit_projection_exemption_counts_as_active_governed_coverage(self):
         report = kc.compute_coverage(
             brain_rows=[],

@@ -166,9 +166,32 @@ Result summary:
 - failures: []
 - warnings_count: 3
 
-## Remaining work
+## 100% follow-up
 
-P1 follow-up only, not required for 90+ coverage:
+User requested continued advance to 100%.
 
-- Resolve or consciously preserve the single projection drift on t_bc4a2166.
-- Long-term: migrate projection state from markdown/body inference to RunEnvelope/Event Ledger as the source of projection truth.
+Final 100% result after follow-up:
+
+- score: 1.0
+- state: flow_blocked_backlog
+- caps: []
+- profile_coverage: 1.0
+- flow_coverage: 1.0
+- projection_coverage: 1.0
+- provenance_coverage: 1.0
+- blockage_coverage: 1.0
+- active_projection_tasks: 4
+- stale_projection_tasks: 0
+- projection_drift_tasks: 0
+- blocked_tasks_structured: 3
+- active_notes_with_ref_or_exempt: 14
+
+Resolution for previous drift:
+
+- t_bc4a2166 was not a stale projection; the Kanban card is blocked by a real `review-required` worker outcome while the brain note is in `review`.
+- v2 now reads latest task run summary and treats explicit review-required blocked cards as `blocked_review_gate_aligned`, not as hidden drift.
+- No task lifecycle was falsified and no proof was fabricated.
+
+Remaining long-term architecture work:
+
+- Migrate projection state from markdown/body/run-summary inference to RunEnvelope/Event Ledger as the source of projection truth.

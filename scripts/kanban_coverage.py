@@ -107,8 +107,11 @@ def load_kanban_tasks(db_path: Path = KANBAN_DB) -> List[Dict[str, Any]]:
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
         return [dict(row) for row in conn.execute(
-            "SELECT id,title,body,assignee,status,workspace_path,result,session_id FROM tasks "
-            "WHERE status != 'archived'"
+            "SELECT tasks.id,tasks.title,tasks.body,tasks.assignee,tasks.status,tasks.workspace_path,"
+            "tasks.result,tasks.session_id,"
+            "(SELECT task_runs.summary FROM task_runs WHERE task_runs.task_id=tasks.id "
+            " ORDER BY task_runs.id DESC LIMIT 1) AS latest_run_summary "
+            "FROM tasks WHERE tasks.status != 'archived'"
         )]
     except Exception:
         return []
@@ -216,6 +219,10 @@ def _classify_projection(task: Mapping[str, Any], note: Optional[Mapping[str, st
     note_status = str(note.get("status") or "") if note else ""
     workspace_path = str(task.get("workspace_path") or "")
     workspace_exists = bool(workspace_path and Path(workspace_path).exists())
+    task_text = "\n".join(str(task.get(k) or "") for k in ("body", "result", "latest_run_summary"))
+    review_required_block = task_status == "blocked" and bool(
+        re.search(r"\breview-required\b|human review|needs eyes|blocked for review", task_text, re.IGNORECASE)
+    )
     stale = False
     reason = "ok"
 
@@ -227,6 +234,8 @@ def _classify_projection(task: Mapping[str, Any], note: Optional[Mapping[str, st
         # Done kanban can be a historical attempt. Keep as warning-level, not hard stale,
         # because old task mirrors may have been intentionally closed with proof.
         reason = "done_projection_for_active_source"
+    elif task_status == "blocked" and review_required_block and source_current == "review":
+        reason = "blocked_review_gate_aligned"
     elif task_status == "blocked" and source_current in {"pending", "ready", "running", "review", "retry"}:
         reason = "blocked_projection_for_non_done_source"
     elif task_status == "blocked" and source_current == "blocked":
@@ -267,7 +276,7 @@ def _coverage_v2(
     stale_rows = [r for r in projection_rows if r["stale"]]
     drift_rows = [
         r for r in projection_rows
-        if r["reason"] not in {"ok", "blocked_source_aligned"}
+        if r["reason"] not in {"ok", "blocked_source_aligned", "blocked_review_gate_aligned"}
         and r["kanban_status"] in {"ready", "running", "blocked"}
     ]
     active_projection_rows = [r for r in projection_rows if r["kanban_status"] in {"ready", "running", "blocked"}]
