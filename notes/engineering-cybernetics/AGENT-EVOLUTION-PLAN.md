@@ -141,7 +141,7 @@ V̇ = V(t) - V(t-1)  // 每 session 计算一次
 | T23 | cronjob | 激活 4 小时自扫描 cronjob | 每 4 小时自动输出健康检查报告 | ✅ |
 | T24 | 可视化 | 构建 skill 依赖图（调用链） | 生成 Mermaid 依赖图 | ✅ |
 | T25 | GSD | GSD Bridge 实际调用验证 | 建立 GSD↔Hermes workflow 映射表 | ✅ |
-| T26 | cognitive-load | Context Budget 运行时计算器 | 可估算剩余 token 并给出行动建议 | ✅ |
+| T26 | cognitive-load | Context Budget 运行时计算器 | 可估算剩余 context budget 并给出行动建议 | ✅ |
 | T27 | reference-model | 整合 Phase 3-5 成果到参考模型 | reference-model.md 包含所有新组件 | ✅ |
 | T28 | automation | Health dashboard 自动刷新 | 每次 session 后 dashboard 自动更新 | ✅ |
 | T22 | Darwin-skill | 批量填补 D 级 skill 标准组件 | D 级 skill 数量 < 10 | ✅ |
@@ -155,7 +155,7 @@ V̇ = V(t) - V(t-1)  // 每 session 计算一次
 | T29 | 工程化 | 所有 scripts 添加 CLI 帮助与错误处理 | 每个 script 有 argparse + 异常处理 | ✅ |
 | T30 | 搜索 | 建立 skill 快速搜索索引 | JSON 索引包含所有 skill 的 keywords | ✅ |
 | T31 | 启动流程 | 每日启动时自检 checklist | 19/19 检查项全部通过 | ✅ |
-| T32 | 闭环 | Control-loop 真实数据闭环 | 基于多轮 session 数据验证 V(x) 有效性 | ⏳ |
+| T32 | 闭环 | Control-loop 真实数据闭环 | 基于多轮 session 数据验证 V(x) 有效性 | 🔄 W20: 已生成周报；0 失败 / 1 退化，未触发极限环；继续观察退化趋势 |
 
 ---
 

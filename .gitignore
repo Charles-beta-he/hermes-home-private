@@ -102,6 +102,11 @@ state.db.bak.*
 state-snapshots/
 
 # Local control-plane runtime queues/evidence and scratch prompts.
+notes/reports/
+notes/*diagnosis*.md
+notes/*score*.md
+notes/*selfcheck*.md
+notes/tool-failure-diagnostic-*.json
 task-observer/
 task-preflight/
 task-progress/
