@@ -6,7 +6,7 @@ Date: 2026-06-09
 
 User authorized continuing from the Agent Cards documentation/validator layer until the overall boundary.
 
-This follow-through advanced from default-off scaffold to default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor certification, and default-on digest-bound conductor closeout for certified worker proofs:
+This follow-through advanced from default-off scaffold to default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor certification, default-on digest-bound conductor closeout for certified worker proofs, and default-on local-file external adapter write-through harness:
 
 - Agent Card runtime helper module;
 - deterministic specialist profile recommendations;
@@ -20,7 +20,9 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `HERMES_MULTIMODEL_CONDUCTOR_MODE=off|shadow` escape hatch;
 - default-on digest-bound conductor done authorization for narrow review->done closeout;
 - `HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=off|shadow` escape hatch;
-- tests proving task/Kanban/lifecycle/proof gates remain bounded by routing/context/conductor/closeout;
+- default-on digest-bound local-file external adapter harness with rollback;
+- `HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=off|shadow` escape hatch;
+- tests proving task/Kanban/lifecycle/proof gates remain bounded by routing/context/conductor/closeout/adapter harness;
 - prompt budget test proving Agent Card context delta stays bounded;
 - validation that coverage/classification stayed healthy.
 
@@ -29,6 +31,8 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `/Users/charles/.hermes/scripts/agent_cards_runtime.py`
 - `/Users/charles/.hermes/scripts/test_agent_cards_runtime.py`
 - `/Users/charles/.hermes/scripts/agent_team_controller.py`
+- `/Users/charles/.hermes/scripts/external_adapter_harness.py`
+- `/Users/charles/.hermes/scripts/test_external_adapter_harness.py`
 - `/Users/charles/.hermes/docs/private/agent-cards-v1.json`
 
 ## What changed
@@ -189,6 +193,40 @@ The executor then:
 
 This is not a generic lifecycle executor. It does not authorize reopen, retry, blocked, archive, arbitrary SQL, taskpool note mutation, external adapter writes, skill writes, memory writes, sends, or deployments.
 
+### 8. Default-on local-file external adapter harness
+
+`external_adapter_harness.py` is the first default-on external adapter write-through executor, but it is deliberately a fixture harness:
+
+- adapter allowlist: `local_file` only;
+- operation allowlist: `set_status` only;
+- target status: `done` only;
+- target path: JSON file under `/Users/charles/.hermes/state/external-adapter-harness/` unless a test harness base is explicitly supplied;
+- symlink and path escape rejected;
+- authorization requires elevated role and evidence;
+- mutation is bound to intent digest, authorization digest, and canonical done authorization id;
+- execution writes the fixture file and immediately reads back;
+- rollback requires exact request digest and restores the captured previous state.
+
+Default mode:
+
+```bash
+HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=apply
+```
+
+Rollback/disable:
+
+```bash
+HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=off
+```
+
+Observation-only:
+
+```bash
+HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=shadow
+```
+
+This is not a real external sender/deployer. It does not touch Kanban DB, taskpool notes, Lark, Telegram, memory, skills, providers, cron, shell, or network.
+
 ## Verification
 
 Tests added:
@@ -204,26 +242,33 @@ Tests added:
 - multimodel conductor attaches advisory-only certification packets;
 - conductor done closeout defaults to apply and supports off/shadow escape hatch;
 - closeout authorization is digest-bound to proof/conductor/task/status;
-- closeout executes only from review, verifies readback, and is idempotent for already-done.
+- closeout executes only from review, verifies readback, and is idempotent for already-done;
+- external adapter harness defaults to apply and supports off/shadow escape hatch;
+- local-file harness intent/authorization/execution is digest-bound, readback-verified, idempotent, and rollback-verified;
+- local-file harness rejects path escapes, symlinks, non-elevated actors, missing evidence, and digest tampering.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, and default-on digest-bound conductor closeout.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, and default-on local-file external adapter harness.
 
 Still not enabled automatically:
 
 1. Broad lifecycle mutation authority
-   - Enabled path is only review -> done, and only with certified conductor proof.
+   - Enabled lifecycle path is only review -> done, and only with certified conductor proof.
    - Reopen/retry/blocked/archive/force transitions remain outside this executor.
 
-2. Canonical skill writer / external skill installation
+2. Real external adapter writes
+   - Enabled external adapter is local-file fixture only.
+   - Kanban DB, taskpool notes, Lark, Telegram, deployments, providers, cron, memory, and skills remain outside this harness.
+
+3. Canonical skill writer / external skill installation
    - Would mutate production skills.
    - Requires human review and gated writer.
 
-3. External side-effect executors
+4. External side-effect executors
    - Would write/send/deploy externally.
    - Requires explicit confirmation, digest-bound executor, audit event, and rollback path.
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, and default-on digest-bound conductor closeout for certified review tasks. The enabled write path is deliberately narrow: review -> done only, with proof/conductor/authorization digests and readback. The next boundary is broad lifecycle mutation authority, canonical skill writers, or external adapter/side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, and a default-on digest-bound local-file external adapter harness. The enabled write paths are deliberately narrow: review -> done only for lifecycle, and local-file fixture status writes only for adapter write-through, both with digest/readback boundaries. The next boundary is broad lifecycle mutation authority, real external adapters, canonical skill writers, or external send/deploy side-effect executors.
