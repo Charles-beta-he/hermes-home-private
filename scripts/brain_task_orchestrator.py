@@ -348,6 +348,26 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
         return {"status": "SKIPPED", "reason": "disabled"}
     if os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DEPTH"):
         return {"status": "SKIPPED", "reason": "recursive_guard"}
+
+    def _observe_selfcheck(status: str, summary: str, evidence_refs: list[str] | None = None) -> None:
+        try:
+            hermes_agent = Path.home() / ".hermes" / "hermes-agent"
+            if str(hermes_agent) not in sys.path:
+                sys.path.insert(0, str(hermes_agent))
+            from agent.selfcheck_operator import observe_taskpool_event
+
+            observe_taskpool_event(
+                event_type=f"event_hook.{status.lower()}",
+                summary=summary,
+                task_id=task_id,
+                status=status,
+                actor="brain_task_orchestrator",
+                fingerprint_hint=f"{event}.{status}",
+                evidence_refs=evidence_refs or [],
+            )
+        except Exception:
+            pass
+
     tick = Path.home() / ".hermes" / "scripts" / "brain_task_dispatch_tick.py"
     if not tick.exists():
         return {"status": "SKIPPED", "reason": "tick_missing", "tick": str(tick)}
@@ -393,6 +413,11 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
         except Exception as exc:
             payload["summary_parse_error"] = str(exc)
         log_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        _observe_selfcheck(
+            payload["status"],
+            f"taskpool event hook {event} finished status={payload['status']} returncode={proc.returncode}",
+            [f"file:{log_path}"],
+        )
         return {
             "status": payload["status"],
             "event": event,
@@ -421,10 +446,12 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
             "stderr": (exc.stderr or "")[-12000:] if isinstance(exc.stderr, str) else "",
         }
         log_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        _observe_selfcheck("TIMEOUT", f"taskpool event hook {event} timed out after {exc.timeout}s", [f"file:{log_path}"])
         return {"status": "TIMEOUT", "event": event, "task_id": task_id, "log": str(log_path)}
     except Exception as exc:
         payload = {"status": "ERROR", "event": event, "task_id": task_id, "reason": reason, "error": str(exc), "finished_at": iso()}
         log_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        _observe_selfcheck("ERROR", f"taskpool event hook {event} failed: {exc}", [f"file:{log_path}"])
         return {"status": "ERROR", "event": event, "task_id": task_id, "log": str(log_path), "error": str(exc)}
 
 
