@@ -717,7 +717,10 @@ def build_agent_card_context_pack(task, profile=None):
         return ''
     try:
         from agent_cards_runtime import render_agent_card_context
-        profile_name = profile.get('name') if isinstance(profile, dict) else None
+        profile_name = None
+        if isinstance(profile, dict):
+            profile_name = profile.get('agent_card_profile') or profile.get('name')
+        profile_name = profile_name or task.get('agent_card_profile') or task.get('recommended_profile')
         return render_agent_card_context(task, profile=profile_name, enabled=True)
     except Exception as exc:
         return f'''AGENT CARD CONTEXT UNAVAILABLE (non-blocking):
@@ -1593,6 +1596,20 @@ def delegate_to_worker(task, conflict_group, eid, sibling_tasks=None):
     # Load and inject project profile
     project = task.get('project', '')
     profile = load_project_profile(project)
+    agent_card_routing = {'mode': 'unavailable', 'applies': False, 'chosen_profile': ''}
+    worker_profile_name = ''
+    try:
+        from agent_cards_runtime import routing_decision
+        current_profile = str(task.get('assignee') or task.get('claimed_by') or '')
+        agent_card_routing = routing_decision(task, current_profile=current_profile)
+        worker_profile_name = str(agent_card_routing.get('chosen_profile') or '')
+        task['agent_card_routing'] = agent_card_routing
+        if worker_profile_name:
+            task['agent_card_profile'] = worker_profile_name
+        append_trace(eid, {'event': 'agent_card_routing_decision', **agent_card_routing})
+    except Exception as exc:
+        agent_card_routing = {'mode': 'error', 'applies': False, 'chosen_profile': '', 'error': str(exc)}
+        append_trace(eid, {'event': 'agent_card_routing_error', 'error': str(exc)})
     profile_context = ''
     if profile:
         profile_context = f'''
@@ -1607,8 +1624,11 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
 
     # Check continuation
     can_cont, cont_count = can_continue(task_id)
-    required_skills = collect_worker_required_skills(task, profile)
-    context = build_worker_context(task, conflict_group, sibling_tasks=sibling_tasks, profile=profile) + profile_context
+    profile_for_context = dict(profile or {})
+    if worker_profile_name:
+        profile_for_context['agent_card_profile'] = worker_profile_name
+    required_skills = collect_worker_required_skills(task, profile_for_context)
+    context = build_worker_context(task, conflict_group, sibling_tasks=sibling_tasks, profile=profile_for_context) + profile_context
     if cont_count > 0:
         context = build_continuation_context(task_id, context)
     
@@ -1656,17 +1676,24 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
     last_stderr = ''
     for chain_idx, (model, provider, max_turns, timeout_s) in enumerate(model_chain):
         try:
-            cmd = [
-                'hermes', 'chat', '-q', context,
+            cmd = ['hermes']
+            if agent_card_routing.get('applies') and worker_profile_name:
+                cmd.extend(['-p', worker_profile_name])
+            cmd.extend([
+                'chat', '-q', context,
                 '--model', model, '--provider', provider,
                 '--quiet', '--max-turns', str(max_turns),
                 '--source', f'team-worker-{eid[:8]}',
-            ]
+            ])
             for skill_name in required_skills:
                 cmd.extend(['--skills', skill_name])
             cmd.append('--ignore-rules')
-            append_trace(eid, {'event': 'worker_attempt', 'chain_idx': chain_idx, 'model': model, 'provider': provider})
-            r = _sp.run(cmd, capture_output=True, text=True, timeout=timeout_s)
+            worker_env = os.environ.copy()
+            if agent_card_routing.get('applies') and worker_profile_name:
+                worker_env['HERMES_PROFILE'] = worker_profile_name
+                worker_env['HERMES_PROFILE_NAME'] = worker_profile_name
+            append_trace(eid, {'event': 'worker_attempt', 'chain_idx': chain_idx, 'model': model, 'provider': provider, 'agent_card_profile': worker_profile_name if agent_card_routing.get('applies') else '', 'agent_card_routing_mode': agent_card_routing.get('mode')})
+            r = _sp.run(cmd, capture_output=True, text=True, timeout=timeout_s, env=worker_env)
             record_worker_heartbeat(task, envelope_id=eid, proof_stub_path=proof_stub.get('proof_stub_path', ''), checkpoint='hermes_chat_returned', note=f'model={model} returncode={r.returncode}')
             output = r.stdout
             last_output = output

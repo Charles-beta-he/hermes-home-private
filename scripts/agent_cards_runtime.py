@@ -207,6 +207,64 @@ def render_agent_card_context(
     return output
 
 
+def routing_mode(default: str = "shadow") -> str:
+    """Return Agent Card routing mode: off, shadow, or apply.
+
+    `shadow` records/returns recommendations without changing runtime profile.
+    `apply` is the explicit rollout mode that callers may use to set worker
+    process profile environment. This module still does not mutate tasks.
+    """
+    raw = os.environ.get("HERMES_AGENT_CARD_ROUTING_MODE") or os.environ.get("HERMES_AGENT_CARD_ROUTING") or default
+    mode = str(raw or "").strip().lower()
+    if mode in {"1", "true", "yes", "on"}:
+        return "apply"
+    if mode not in {"off", "shadow", "apply"}:
+        return "shadow"
+    return mode
+
+
+def routing_decision(
+    task: Mapping[str, Any],
+    cards: Optional[Mapping[str, Any]] = None,
+    mode: Optional[str] = None,
+    current_profile: str = "",
+) -> Dict[str, Any]:
+    """Return a deterministic runtime routing decision.
+
+    The decision is safe-by-default: `shadow` is the default and never changes
+    the worker profile. In `apply`, callers may route the worker subprocess to
+    the chosen profile, but only if the card marks it as a spawnable/active
+    profile rather than a placeholder.
+    """
+    cards = cards or load_cards()
+    mode = routing_mode() if mode is None else str(mode or "shadow").lower()
+    recommendation = recommend_profiles(task, cards, limit=3)
+    runtime_cards = cards.get("runtime_profiles") or {}
+    chosen = ""
+    blocked_reason = ""
+    for profile in recommendation.get("recommended_profiles") or []:
+        card = runtime_cards.get(profile) or {}
+        status = str(card.get("status") or "")
+        if status == "profile_dir_only_not_kanban_assignee":
+            continue
+        chosen = str(profile)
+        break
+    if not chosen:
+        blocked_reason = "no_spawnable_recommended_profile"
+    applies = mode == "apply" and bool(chosen)
+    return {
+        "schema": "agent_card_routing_decision_v1",
+        "status": "OK" if not blocked_reason else "SKIP",
+        "mode": mode,
+        "current_profile": current_profile,
+        "chosen_profile": chosen,
+        "applies": applies,
+        "recommendation": recommendation,
+        "blocked_reason": blocked_reason,
+        "safety": "shadow is recommendation-only; apply only sets worker subprocess profile and never mutates task lifecycle or proof gates",
+    }
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Default-off Agent Card runtime helpers.")
     parser.add_argument("--cards", default=str(DEFAULT_CARDS_PATH))
@@ -218,6 +276,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ctx.add_argument("--task-json", required=True)
     ctx.add_argument("--profile", default="")
     ctx.add_argument("--enabled", action="store_true")
+    decision_cmd = sub.add_parser("decision", help="Return shadow/apply routing decision for a task JSON object")
+    decision_cmd.add_argument("--task-json", required=True)
+    decision_cmd.add_argument("--mode", choices=["off", "shadow", "apply"], default="")
+    decision_cmd.add_argument("--current-profile", default="")
     args = parser.parse_args(argv)
     cards = load_cards(args.cards)
     task = json.loads(args.task_json)
@@ -226,6 +288,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 0
     if args.cmd == "context":
         print(render_agent_card_context(task, profile=args.profile or None, cards=cards, enabled=args.enabled))
+        return 0
+    if args.cmd == "decision":
+        print(json.dumps(routing_decision(task, cards, mode=args.mode or None, current_profile=args.current_profile), ensure_ascii=False, indent=2))
         return 0
     return 2
 

@@ -76,6 +76,37 @@ class AgentCardsRuntimeTest(unittest.TestCase):
             if old is not None:
                 os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = old
 
+    def test_routing_decision_shadow_recommends_without_applying(self):
+        result = runtime.routing_decision(
+            {"iceberg_scope": "control_plane_taskpool", "title": "dispatch workflow", "assignee": "brain-mirror"},
+            self.sample_cards(),
+            mode="shadow",
+            current_profile="brain-mirror",
+        )
+        self.assertEqual(result["chosen_profile"], "workflow")
+        self.assertFalse(result["applies"])
+        self.assertEqual(result["mode"], "shadow")
+
+    def test_routing_decision_apply_sets_apply_flag_but_does_not_mutate_task(self):
+        task = {"iceberg_scope": "visual_ingest_runtime", "title": "Rokid 图片"}
+        result = runtime.routing_decision(task, self.sample_cards(), mode="apply")
+        self.assertEqual(result["chosen_profile"], "media")
+        self.assertTrue(result["applies"])
+        self.assertNotIn("assignee", task)
+
+    def test_routing_decision_skips_placeholder_profiles(self):
+        cards = self.sample_cards()
+        cards["runtime_profiles"]["personal"] = {
+            "status": "profile_dir_only_not_kanban_assignee", "role": "p", "goal": "g",
+            "observation": ["o"], "memory": ["m"], "planning": "p", "tools": ["t"],
+            "actions": ["a"], "policy": ["p"], "evaluation": ["e"],
+            "collaboration": ["c"], "escalation": "e",
+        }
+        cards["architecture_domains"]["control_plane_taskpool"]["recommended_runtime_profiles"] = ["personal", "workflow"]
+        result = runtime.routing_decision({"iceberg_scope": "control_plane_taskpool"}, cards, mode="apply")
+        self.assertEqual(result["chosen_profile"], "workflow")
+        self.assertTrue(result["applies"])
+
     def test_worker_context_opt_in_includes_agent_card_context(self):
         old = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT")
         os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = "1"

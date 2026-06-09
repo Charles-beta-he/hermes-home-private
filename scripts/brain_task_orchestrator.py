@@ -6963,6 +6963,11 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
     dispatch_plan = []
     for t in selected:
         row = t.row()
+        try:
+            from agent_cards_runtime import routing_decision
+            agent_card_routing = routing_decision(row, current_profile=str(row.get("assignee") or ""))
+        except Exception as exc:
+            agent_card_routing = {"status": "ERROR", "mode": "unavailable", "error": str(exc), "applies": False}
         dispatch_plan.append({
             "id": t.id,
             "boundary_key": task_parallel_boundary_key(t),
@@ -6970,6 +6975,7 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
             "conflict_group": str(t.fm.get("conflict_group") or "").strip(),
             "claim_command": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py claim {t.id} --actor hermes --ttl-minutes 60",
             "execution_prompt": dispatch_prompt_for_row(row),
+            "agent_card_routing": agent_card_routing,
         })
     return {
         "status": "OK",

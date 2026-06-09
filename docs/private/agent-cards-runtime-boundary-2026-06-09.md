@@ -6,11 +6,13 @@ Date: 2026-06-09
 
 User authorized continuing from the Agent Cards documentation/validator layer until the overall boundary.
 
-This follow-through advanced one safe layer deeper than documentation:
+This follow-through advanced two safe runtime layers deeper than documentation:
 
 - default-off Agent Card runtime helper module;
 - deterministic specialist profile recommendations;
+- shadow/apply routing decisions with `shadow` as the default;
 - optional worker prompt Agent Card context gated by `HERMES_ENABLE_AGENT_CARD_CONTEXT=1`;
+- worker subprocess profile handoff only when `HERMES_AGENT_CARD_ROUTING_MODE=apply` or `HERMES_AGENT_CARD_ROUTING=1` is explicitly set;
 - tests proving default runtime behavior remains unchanged;
 - validation that coverage/classification stayed healthy.
 
@@ -39,9 +41,10 @@ This is intentionally advisory. It does not change any Kanban assignee.
 - `load_cards()`
 - `task_domain(task)`
 - `recommend_profiles(task)`
+- `routing_decision(task)`
 - `render_agent_card_context(task, profile, enabled=...)`
 
-The module is deterministic and read-only.
+The module is deterministic and read-only. `routing_decision` supports `off`, `shadow`, and `apply`; `shadow` is default and recommendation-only.
 
 ### 3. Optional worker context integration
 
@@ -61,6 +64,29 @@ The rendered context explicitly says:
 - Agent Cards do not authorize lifecycle mutation.
 - Conflicts with task/policy gates must fail closed.
 
+### 4. Controlled routing apply mode
+
+`agent_team_controller.py` records an `agent_card_routing_decision` trace for each delegated worker. Default mode is `shadow`, so it only records the recommended profile.
+
+When explicitly launched with:
+
+```bash
+HERMES_AGENT_CARD_ROUTING_MODE=apply
+```
+
+or:
+
+```bash
+HERMES_AGENT_CARD_ROUTING=1
+```
+
+the worker subprocess environment gets:
+
+- `HERMES_PROFILE=<chosen_profile>`
+- `HERMES_PROFILE_NAME=<chosen_profile>`
+
+This does not mutate task notes, Kanban assignees, lifecycle state, proof gates, or model chain. It only routes the spawned worker process through a specialist Hermes profile when the operator explicitly enables apply mode.
+
 ## Verification
 
 Tests added:
@@ -77,9 +103,11 @@ This is the overall safe boundary for this authorization.
 
 Still not enabled automatically:
 
-1. Automatic specialist profile routing
-   - Would mutate task assignment/dispatch behavior.
-   - Requires separate rollout plan, dry-run shadow metrics, rollback, and profile auth checks.
+1. Default-on specialist profile routing
+   - The apply path exists, but default remains `shadow`.
+   - Profile doctor smoke checks passed for config/OpenAI Codex auth on workflow/hermes-agent/brain-mirror/media/mlops/dev/hermes-core.
+   - Boundary: named profiles do not have Google Gemini OAuth logged in, so advisory worker fallback chains would spend time failing Gemini before fallback unless profile OAuth is completed or the model chain becomes profile-auth-aware.
+   - Enabling it globally needs a staged rollout config, live shadow metrics, profile auth parity, and rollback.
 
 2. Always-on Agent Card worker prompt injection
    - Would alter every worker prompt and token budget.
