@@ -1,0 +1,121 @@
+---
+name: objective-model-path-verification
+description: "Use when a task is complex, high-risk, multi-path, or explicitly asks for production-grade/全盘推进/想清楚再做; run an objective-driven gate before execution: objective and cost, situation model, candidate paths, consequence prediction, selected plan, and evidence verification. Do not use for simple Q&A, trivial edits, or urgent small tasks where the overhead exceeds risk."
+version: 1.0.0
+author: Hermes Agent
+license: MIT
+metadata:
+  hermes:
+    tags: [planning, verification, self-evolution, objective-driven, complex-tasks]
+    related_skills: [agent-boundary-audit, project-evidence-grounding, test-driven-development, systematic-debugging, taskpool-control-plane]
+---
+
+# Objective–Model–Path–Verification Gate
+
+## Overview
+
+This skill turns a vague “think carefully” instruction into a compact, auditable gate before non-trivial work. It borrows the useful part of world-model / objective-driven planning vocabulary without claiming that Hermes has changed its underlying model architecture.
+
+The rule: **do not render or execute the first plausible answer when the task is high-risk. First define the objective/cost, model the situation, compare paths, predict consequences, choose, then verify with evidence.**
+
+## When to Use
+
+Use this skill when any of these are true:
+
+- The user says: `全盘推进`, `生产级`, `长期方案`, `想清楚再做`, `别顺嘴生成`, `用世界模型工作法`, `规划出来的`, or equivalent.
+- The task has multiple plausible implementation paths and the wrong path is costly.
+- The task touches production, release, data, money, auth, permissions, user-visible UI, lifecycle state, or taskpool/agent control-plane behavior.
+- A code change spans multiple files, changes architecture, or could remove/alter existing behavior.
+- The user asks for self-evolution, workflow governance, or reusable process landing.
+- Evidence requirements matter: real backend/API/UI/tests/logs are required, not mocks.
+
+Do **not** use this skill for:
+
+- Simple factual Q&A after evidence lookup.
+- Trivial formatting, small copy edits, or one-command tasks with obvious execution.
+- Cases where the user explicitly asks for only a terse answer and risk is low.
+- Replacing real tool execution with a plan. This gate decides how to act; it is not proof that action succeeded.
+
+## Core Gate
+
+For complex tasks, run these steps before substantive execution:
+
+1. **Objective & cost function**
+   - Define success in concrete terms.
+   - List hard constraints/red lines.
+   - State what to minimize: risk, regression, user steering, downtime, token cost, migration cost, data loss, etc.
+
+2. **Situation model**
+   - Identify key objects, actors, state stores, dependencies, invariants, and permissions.
+   - Separate facts already evidenced from assumptions.
+   - For project work, locate the canonical source of truth before editing.
+
+3. **Candidate paths**
+   - Generate at least two viable paths unless only one is technically possible.
+   - Include the “do nothing / defer / ask human” path when authority or evidence is insufficient.
+
+4. **Consequence prediction**
+   - For each path, predict likely outcome, failure mode, blast radius, rollback path, and verification burden.
+   - Prefer paths that preserve existing behavior, are reversible, and produce evidence quickly.
+
+5. **Selection and execution plan**
+   - Choose one path and say why it wins against the cost function.
+   - Convert it into small verifiable steps.
+   - If action has side effects beyond granted scope, stop and ask or record a taskpool candidate.
+
+6. **Evidence verification**
+   - Before claiming completion, attach real evidence: test output, diff, logs, HTTP responses, screenshots, readback, or source citations.
+   - If verification is blocked, report the blocker and what was still completed.
+
+## Compact Output Forms
+
+### Full form for high-risk work
+
+```text
+【目标 & 成本】成功标准 / 最小化代价 / 硬约束
+【情境模型】关键对象 / 状态源 / 依赖 / 已证据化事实 / 假设
+【候选路径 & 后果】A/B/C → 结果、风险、回滚、验收成本
+【选择】选中路径 + 对照成本函数的理由
+【执行】小步行动清单
+【证据】真实命令/文件/接口/UI/日志/截图
+【边界】未做什么、为何停、需人工介入项
+```
+
+### Compressed form for medium-risk work
+
+```text
+目标: ...
+约束: ...
+选路: A over B because ...
+验证: ...
+```
+
+### Internal-only form
+
+When the user wants concise output, perform the gate internally and final only the decision, evidence, and next boundary. Do not expose long deliberation unless it helps the user decide.
+
+## Integration with Other Skills
+
+- For self-evolution or durable learning, combine with `agent-boundary-audit` and classify outputs into memory, skill, SSOT doc, taskpool candidate, or do-not-do.
+- For software changes, combine with `test-driven-development`, `systematic-debugging`, and `project-evidence-grounding`; this skill does not replace tests.
+- For taskpool/control-plane work, combine with `taskpool-control-plane`; task records and evidence ledgers remain canonical.
+- For user-facing UI work, add visual/UI verification and avoid mock-only acceptance.
+
+## Pitfalls
+
+1. **Marketing-word trap**: “world model” vocabulary is a planning metaphor here, not proof of JEPA-like architecture or environment learning.
+2. **Plan-as-proof trap**: a clean plan is not completion. Completion requires real evidence.
+3. **Over-triggering**: applying the full form to every small request wastes time and tokens. Use compressed or skip when risk is low.
+4. **Single-path bias**: if only one path is considered, the model is probably still “顺嘴生成”. Compare alternatives unless the task is truly constrained.
+5. **Memory pollution**: do not save one-off task choices as memory. Durable procedure belongs in skills; scoped evidence belongs in SSOT docs or task records.
+6. **Authority expansion**: user trust in “全盘推进” does not authorize destructive cleanup, secret handling, payment, credential entry, broad config rewrites, or external publishing without the relevant scope and gates.
+
+## Verification Checklist
+
+- [ ] Objective and hard constraints were explicit before execution.
+- [ ] At least two paths or a justified single-path constraint were considered.
+- [ ] The selected path was chosen against a cost function, not convenience.
+- [ ] The execution plan was broken into verifiable steps.
+- [ ] Completion claims are backed by real evidence.
+- [ ] Unverified assumptions and boundary stops are labeled honestly.
+- [ ] Durable learnings were landed in the right boundary, not dumped into memory.
