@@ -38,6 +38,8 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `/Users/charles/.hermes/scripts/capability_lease_gate.py`
 - `/Users/charles/.hermes/scripts/test_capability_lease_gate.py`
 - `/Users/charles/.hermes/scripts/harness_event_ledger.py`
+- `/Users/charles/.hermes/scripts/telegram_send_harness.py`
+- `/Users/charles/.hermes/scripts/test_telegram_send_harness.py`
 - `/Users/charles/.hermes/docs/private/agent-cards-v1.json`
 
 ## What changed
@@ -308,8 +310,51 @@ The gate is validation-only. It does not execute shell commands or any other too
 - `external_adapter_rollback`
 - `skill_write`
 - `skill_rollback`
+- `telegram_send`
 
 This is a lightweight local event ledger for replay/debug visibility. Full Control Tower dashboard/replay integration remains a separate maturity boundary.
+
+### 12. Default-on Telegram send harness
+
+`telegram_send_harness.py` is a target-specific external side-effect gate for Telegram sends:
+
+- default target allowlist: `telegram:he cheng`;
+- intent binds task id, target, message digest, purpose, and evidence;
+- authorization binds elevated actor, approval evidence, target allowlist, message digest, and authorization id;
+- the actual send still goes through Hermes messaging adapter/tool;
+- receipt recording requires external send result `success=true` and `message_id`;
+- verified receipts are written under `~/.hermes/state/telegram-send-receipts/` and logged to the harness ledger.
+
+Default mode:
+
+```bash
+HERMES_TELEGRAM_SEND_MODE=apply
+```
+
+Rollback/disable:
+
+```bash
+HERMES_TELEGRAM_SEND_MODE=off
+```
+
+Observation-only:
+
+```bash
+HERMES_TELEGRAM_SEND_MODE=shadow
+```
+
+Target allowlist override:
+
+```bash
+HERMES_TELEGRAM_SEND_TARGET_ALLOWLIST="telegram:he cheng"
+```
+
+Live verification receipt from this opening:
+
+- target: `telegram:he cheng`
+- message_id: `3242`
+- receipt: `/Users/charles/.hermes/state/telegram-send-receipts/7e4beb26c7f6cced21b3dfd69912624c597b5d5c68bc9d3162afa9bb49cd35ca.json`
+- ledger event: `e0f871078e2bcd37dcfdd2c56a0e4386c2dbac52fd0625f22b84f6415cd96d98`
 
 ### Capability matrix
 
@@ -322,6 +367,7 @@ This is a lightweight local event ledger for replay/debug visibility. Full Contr
 | Local adapters | apply | harness executor | local_file/taskpool_note/kanban_db `status: done` | exact request digest rollback; `HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=off/shadow` |
 | New skill writer | apply | harness executor | create-new-skill only | marker-bound rollback; `HERMES_SKILL_WRITER_MODE=off/shadow` |
 | Capability lease gate | apply | validation gate | run_command/etc lease validation | TTL/field denial; `HERMES_CAPABILITY_LEASE_MODE=off/shadow` |
+| Telegram send | apply | messaging adapter/tool receipt path | allowlisted `telegram:he cheng` send only | receipt required; `HERMES_TELEGRAM_SEND_MODE=off/shadow` |
 
 ## Verification
 
@@ -347,11 +393,12 @@ Tests added:
 - canonical skill writer defaults to apply and supports off/shadow escape hatch;
 - skill writer creates only new skills, verifies readback digest, rejects overwrite/tamper/non-elevated actors, and rolls back by exact request digest;
 - capability lease gate defaults to apply, validates scoped `run_command` leases, rejects mismatched capability/scope/danger/expired/missing-evidence requests, and supports off/shadow;
-- harness ledger records idempotent write/rollback events for adapter and skill harnesses.
+- harness ledger records idempotent write/rollback events for adapter and skill harnesses;
+- Telegram send harness defaults to apply, authorizes only allowlisted targets, rejects non-elevated/tampered/missing-evidence requests, requires external `success=true` + `message_id` receipt, and recorded a live verified send to `telegram:he cheng` message `3242`.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, default-on local Taskpool/Kanban adapter closeout, default-on canonical new-skill writer, default-on dangerous capability lease validation, and lightweight harness event ledgering.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, default-on local Taskpool/Kanban adapter closeout, default-on canonical new-skill writer, default-on dangerous capability lease validation, lightweight harness event ledgering, and default-on Telegram send with allowlisted target plus external receipt.
 
 Still not enabled automatically:
 
@@ -360,16 +407,16 @@ Still not enabled automatically:
    - Reopen/retry/blocked/archive/force transitions remain outside this executor.
 
 2. Non-local external adapter writes
-   - Enabled external adapters are local-file fixture, taskpool note closeout, and Kanban DB closeout only.
-   - Lark, Telegram, deployments, providers, cron, and memory remain outside this harness.
+   - Enabled external adapters are local-file fixture, taskpool note closeout, Kanban DB closeout, and allowlisted Telegram send.
+   - Lark, deployments, providers, cron, and memory remain outside this harness.
 
 3. Existing-skill mutation / external skill installation
    - Enabled skill path creates new skills only and refuses overwrites.
    - Existing skill edits/deletes and external skill production installation remain outside this writer.
 
-4. External side-effect executors
-   - Would write/send/deploy externally.
-   - Requires explicit confirmation, digest-bound executor, audit event, and rollback path.
+4. External side-effect executors beyond Telegram
+   - Telegram send is enabled only for allowlisted target + external receipt.
+   - Other write/send/deploy executors require target-specific confirmation, digest-bound executor, audit event, and rollback/compensation path.
 
 5. Full Control Tower dashboard/replay integration
    - Harness ledger is local JSONL and idempotent.
@@ -377,4 +424,4 @@ Still not enabled automatically:
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets, default-on digest-bound creation of new canonical skills, default-on scoped dangerous-capability lease validation, and idempotent harness event ledgering. The enabled write paths are deliberately narrow: review -> done only for lifecycle, local adapter `status: done` closeout only for adapter write-through, create-new-skill only for skill writes, and validation-only capability leases, all with digest/readback/rollback or TTL boundaries. The remaining boundaries are broad lifecycle mutation authority, non-local external adapters, existing-skill mutation, memory/cron/provider writes, external send/deploy side-effect executors, and full Control Tower dashboard/replay integration.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets, default-on digest-bound creation of new canonical skills, default-on scoped dangerous-capability lease validation, idempotent harness event ledgering, and default-on allowlisted Telegram send with external receipt verification. The enabled write paths are deliberately narrow: review -> done only for lifecycle, local adapter `status: done` closeout only for adapter write-through, create-new-skill only for skill writes, validation-only capability leases, and Telegram send only to allowlisted target with `message_id` receipt, all with digest/readback/rollback/receipt or TTL boundaries. The remaining boundaries are broad lifecycle mutation authority, Lark/deploy/provider/cron/memory adapters, existing-skill mutation, non-Telegram external side-effect executors, and full Control Tower dashboard/replay integration.

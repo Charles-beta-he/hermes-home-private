@@ -100,6 +100,7 @@ The active set is fully classified:
 4. Digest-bound local write-through is enabled for narrow targets.
    - lifecycle: certified `review -> done` only;
    - adapters: `local_file`, `taskpool_note`, `kanban_db` closeout only;
+   - external send: allowlisted Telegram target with external `message_id` receipt;
    - skills: create-new-skill only;
    - capabilities: lease validation for dangerous capabilities such as `run_command`.
 
