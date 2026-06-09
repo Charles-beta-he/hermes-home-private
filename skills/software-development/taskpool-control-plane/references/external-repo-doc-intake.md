@@ -15,6 +15,7 @@ For GitHub inputs:
 - Confirm the path exists.
 - Inspect top-level structure via browser or GitHub contents API.
 - Read at least one architectural file (`README.md`, `ARCHITECTURE.md`, package manifest, etc.).
+- For long READMEs, use `browser_vision` to get a comprehensive overview without scrolling through the entire page. This is faster than multiple `browser_scroll` + `browser_snapshot` calls.
 
 For docs inputs:
 - Open the live documentation page.
@@ -126,6 +127,7 @@ If an event hook or proof-only bounded step auto-closes an external-repo task be
 
 ## Pitfalls
 
+- **GitHub repo name verification**: When the user provides a repo name verbally or from memory, the actual GitHub URL may differ in punctuation (dots vs hyphens, underscores, capitalization). Always confirm the live repo URL via GitHub search or API before committing to browser navigation. Example: user said "architecture-of-internet-product" but the real repo was `architecture.of.internet-product`. The initial wrong-URL navigation wastes a round trip.
 - Do not add a vague "analyze repo X" task without checking the actual repo/doc shape.
 - Do not defer priority/classification until after the task is already in the pool when the user explicitly wants intake triaged up front.
 - Do not present later-stage adoption gates as a chat-only plan; create taskpool artifacts or report them as not yet landed.

@@ -38,6 +38,21 @@ Don't use for:
 
 Goal calibration is a fixed high-priority internal gate, not a mandatory human interruption. It should run after intent parsing and any cheap read-only context gathering that clarifies the baseline, but before planning, implementation, file writes, deployments, messages, or other side effects.
 
+### Quoted-reply / thread-context intent gate
+
+On Telegram or any platform that prepends a quoted message like `[Replying to: "..."]`, treat the quoted block as **context/evidence only**, not as the active request. Before acting, split the input into:
+
+- `quoted_context`: the message being replied to; useful for resolving references such as “继续”, “这个”, “认可”.
+- `active_user_text`: the new user-authored text after the quote; this is the command to satisfy.
+
+Rules:
+
+1. Never let a quoted cron/report/old answer override the active user text.
+2. If the active text is a correction like “你理解错了 / 不是这个 / 为什么串线程”, switch to incident diagnosis of the immediately preceding assistant behavior, not the quoted task.
+3. If the active text is “继续” while quoting a prior plan, resume that quoted plan; if it adds new clauses, satisfy those clauses in order.
+4. If there are multiple plausible anchors (quoted message vs latest conversation topic vs current session task), state the inferred anchor before side effects or ask one compact clarification.
+5. Verification must check the active command was answered, not merely that some referenced context was processed.
+
 Default flow:
 
 ```text
@@ -129,6 +144,39 @@ Treat prototypes, screenshots, and old implementations as evidence of desired ef
 - Recommend backend changes only when the effect lacks a stable business fact or semantic state.
 - Keep presentation mapping in the frontend unless presentation is explicitly CMS/ops-configurable.
 
+## Evidence Reliability Gate for UI / Prototype Tasks
+
+Scope: UI, prototype, screenshot, issue-tracker, or product-review tasks that say a surface should "show", "display", "match", "align", "restore", or "1:1" some visible fields.
+
+Primary rule: evidence reliability comes before implementation classification. Do not decide whether a task is presentation-only, mapping, or data-source work until the supplied reference has been treated as the source of truth and its evidential limits have been extracted.
+
+Required evidence pass before side effects:
+
+1. Extract the reference literally: visible labels, visible values, zero/non-zero states, absent elements, layout, and annotations.
+2. Separate observed facts from inferred implementation. A visible field is evidence of required output, not proof of data source.
+3. Identify missing data-contract evidence. If source, eligibility, aggregation, or launch gate is not specified, mark it unknown instead of filling it from historical code.
+4. Treat existing comments/history as lower-reliability hints unless their preconditions are verified. A comment like "restore this when upstream is ready" is not proof that upstream is ready now.
+5. Preserve the current business data path when evidence is incomplete. Change data semantics only after explicit task text, product contract, runtime proof, or user approval establishes the change.
+6. Define a falsifier from the reference/task. Example shape: if the reference establishes a placeholder state and no data-source requirement, any live value is a failure even if layout matches.
+
+Only after this reliability pass should the task be classified as one of:
+
+1. Presentation-only: labels, layout, visual hierarchy, visibility of existing fields; preserve existing business data source and guards.
+2. Mapping change: same source, different frontend mapping/filter/format; state the source and invariant.
+3. Data-source change: new endpoint/store/aggregation/contract; requires explicit evidence from task text, PRD, backend contract, or user approval.
+4. Placeholder/feature-gated surface: visible UI exists but real data must remain disabled or zero until launch criteria are met.
+
+If the task only names UI fields but not data semantics, keep the current data source and business gates. Do not infer that "show X" means "wire raw shared store collection into X".
+
+Calibration questions to answer internally before implementation:
+
+- What does the screenshot/prototype/task text literally prove, and what does it not prove?
+- Which claims are observed facts, which are assumptions, and which are historical-code hints?
+- Is there an existing placeholder, feature gate, or business guard, and what evidence would authorize removing it?
+- Does the task explicitly change source, eligibility, aggregation, or only observable layout/copy?
+- Is the displayed collection raw shared state or a page-specific view model?
+- What reference-derived negative case must stay true after the change?
+
 ## Common Pitfalls
 
 1. Keyword-trigger narrowing: only running calibration for specific phrases like "prototype states" or "missing fields". Calibration applies to all fuzzy human-language goals.
@@ -138,6 +186,7 @@ Treat prototypes, screenshots, and old implementations as evidence of desired ef
 5. Prompt literalism: improving a prompt for the shown sentence instead of the future task class and negative space.
 6. Goal drift: calibrating once, then letting implementation expand into unrelated refactors or a different success metric.
 7. False completion: verifying only the touched layer instead of the calibrated target dimensions.
+8. Data-source leap: treating visible field names in UI tasks as authorization to change API source, aggregation, cache, or domain eligibility.
 
 ## Regression Evals
 

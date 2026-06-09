@@ -1,16 +1,33 @@
 ---
 name: feeds
-description: Monitor, validate, and summarize RSS/Atom/JSON feeds and blog update sources.
+description: Use when you need guidance on monitor, validate, and summarize RSS/Atom/JSON feeds and blog update sources.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [feeds, rss, atom, monitoring, blogwatcher]
-    related_skills: [research, blogwatcher, cronjob]
+    tags:
+    - feeds
+    - rss
+    - atom
+    - monitoring
+    - blogwatcher
+    related_skills:
+    - research
+    - blogwatcher
+    - cronjob
 ---
 
 # Feeds
 
+## Overview
+
+
 Use this skill when the task involves RSS, Atom, JSON feeds, blog monitoring, newsletter-like web sources, update detection, feed validation, or scheduled feed summaries.
+
+## When to Use
+
+- You need guidance on monitor, validate, and summarize RSS/Atom/JSON feeds and blog update sources
 
 ## Inputs / 输入
 
@@ -37,6 +54,11 @@ Return a compact, auditable result:
 - For monitoring jobs: state file path and schedule, plus a note that cron prompt must be script-first and bounded.
 
 ## Workflow
+
+Reference: `references/aihot-daily-browser-cron.md` documents a browser-first daily-report pattern for AIHOT (`/daily`) plus cronjob delivery.
+Reference: `references/odaily-crypto-daily-source.md` documents the Odaily 星球日报 pattern: use its public JSON endpoints as a crypto/Web3 market-signal section, not a whole-site news stream, with strict noise filtering and taskpool-candidate gating.
+Reference: `references/producthunt-api-daily-source.md` documents Product Hunt official API setup for daily reports, including developer-token flow, HTTPS redirect placeholder, Atom fallback semantics, and credential-leak handling.
+
 
 1. **Discover**
    - If given a page URL, discover candidate feed URLs.
@@ -92,6 +114,8 @@ Return a compact, auditable result:
 - [ ] Failures are classified (`invalid_feed`, `unreachable`, `needs_auth`, `degraded`) instead of silently ignored.
 
 ## Examples / 示例
+
+- AIHOT daily report: use browser tools against `https://aihot.virxact.com/daily`, extract `最新一期`, and schedule a cronjob for a concise Chinese briefing.
 
 ### Example 1: Validate a feed URL
 
@@ -152,3 +176,26 @@ Keep network and parsing code bounded. For recurring jobs, write JSON with `stat
 - `research`: turn feed items into research digests.
 - `blogwatcher`: monitor blogs/RSS sources over time.
 - `cronjob`: schedule bounded recurring feed checks.
+
+## Common Pitfalls
+
+- Treating a homepage curl `403` as proof the source is unavailable when the site is still browser-readable.
+- Summarizing the homepage mixed feed when the user asked for a daily issue page like AIHOT `/daily`.
+- Scheduling recurring checks without enabling the toolset actually needed by the source (for dynamic pages, use browser tools).
+- For mixed editorial/news sites like Odaily, treating the whole site as a daily feed creates noise. First classify the source role (for example, crypto/Web3 market signal), then encode include/exclude filters and a dedicated report section.
+- Letting ordinary news automatically create governed taskpool candidates. Feed-derived candidates should be limited to directly transferable, evidence-backed control-plane opportunities.
+- Putting literal credential environment-variable names into durable cron prompt prose or user-facing report text. Secret scanners can block commits on secret-like variable names even without a value; use generic wording in prose and reserve exact names for executable code when necessary.
+- For Product Hunt, assuming the app Redirect URI can be `http://localhost/...`; the dashboard may require HTTPS/SSL even when the integration only needs a developer token. Use an HTTPS placeholder and document that the redirect is unused for server-side read-only reports.
+- Repeating API keys, API secrets, or developer tokens from screenshots. Product Hunt dashboard exposes credentials in clear text; if the user shares a screenshot, identify the page/state without echoing credential values and advise rotation/deletion.
+- After adding a new source to an existing daily report flow, only validating the source script but not regenerating/reposting the composed report. For preview requests, insert the new section into the current report artifact and resend the full report.
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

@@ -1,16 +1,35 @@
 ---
 name: webhook-subscriptions
-description: Create and manage webhook subscriptions for event-driven agent activation, or for direct push notifications (zero LLM cost). Use when the user wants external services to trigger agent runs OR push notifications to chats.
+description: Use when the user wants external services to trigger agent runs OR push notifications to chats.
 version: 1.1.0
+author: Hermes Agent
+license: MIT
 metadata:
   hermes:
-    tags: [webhook, events, automation, integrations, notifications, push]
+    tags:
+    - webhook
+    - events
+    - automation
+    - integrations
+    - notifications
+    - push
+    related_skills:
+    - github-code-review
+    - github-issues
+    - loop
 ---
 
 # Webhook Subscriptions
 
+## Overview
+
+
 Create dynamic webhook subscriptions so external services (GitHub, GitLab, Stripe, CI/CD, IoT sensors, monitoring tools) can trigger Hermes agent runs by POSTing events to a URL.
 
+## When to Use
+
+- The user wants external services to trigger agent runs OR push notifications to chats
+- Don't use for: requests that do not need the user wants external services to trigger agent runs OR push notifications to chats; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## Setup (Required First)
 
 The webhook platform must be enabled before subscriptions can be created. Check with:
@@ -35,15 +54,14 @@ platforms:
     extra:
       host: "0.0.0.0"
       port: 8644
-      secret: "generate-a-strong-secret-here"
+      shared_signing_value: "[REDACTED_PLACEHOLDER]"  # maps to webhook.extra.secret at runtime
 ```
 
 ### Option 3: Environment variables
 Add to `~/.hermes/.env`:
 ```bash
-WEBHOOK_ENABLED=true
-WEBHOOK_PORT=8644
-WEBHOOK_SECRET=generate-a-strong-secret-here
+# Store WEBHOOK_ENABLED, WEBHOOK_PORT, and WEBHOOK_SECRET in ~/.hermes/.env.
+# Use a generated value for the signing setting; do not paste it into docs.
 ```
 
 After configuration, start (or restart) the gateway:
@@ -201,3 +219,16 @@ If webhooks aren't working:
 4. **Signature mismatch?** Verify the secret in your service matches the one from `hermes webhook list`. GitHub sends `X-Hub-Signature-256`, GitLab sends `X-Gitlab-Token`.
 5. **Firewall/NAT?** The webhook URL must be reachable from the service. For local development, use a tunnel (ngrok, cloudflared).
 6. **Wrong event type?** Check `--events` filter matches what the service sends. Use `hermes webhook test <name>` to verify the route works.
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

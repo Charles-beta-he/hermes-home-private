@@ -456,6 +456,7 @@ When checking for omissions after full-library eval or contract rehabilitation, 
 - **Boilerplate debt**: after script-assisted rehabilitation, search for stock phrases like “This skill is maintained as a ... shaped contract” and queue human semantic cleanup. Passing contract coverage does not prove the prose is natural or domain-rich.
 - **Nested repo boundaries**: verify target nested skill repos directly, and do not claim recursive submodule verification if `git submodule status --recursive` is blocked by unrelated stale mappings or backup gitlinks.
 - **Generated audit artifacts**: remove temporary omission-check reports unless the user asked to keep them; avoid adding untracked noise to an already dirty profile repository.
+- **Post-commit closure gate**: after a scoped skill-library commit, verify the commit itself (`git show --check HEAD` or equivalent), re-run the coverage/frontmatter/eval/name/submodule checks, and run a scoped status against the touched paths. If unrelated historical dirty files remain, report them as unrelated rather than claiming the whole repository is clean.
 
 Classify findings as:
 

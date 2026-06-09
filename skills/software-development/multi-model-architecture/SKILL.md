@@ -1,14 +1,39 @@
 ---
 name: multi-model-architecture
-description: "多模型/多Agent 全栈架构 L0-L5 — 从模型追踪到多脑自进化。使用 Claude Code 作为架构设计伙伴, Hermes 负责实施。触发词: 多模型, 互相印证, cross-patch, 三模型验证, ensemble, consensus, 模型路由, pricing, 任务分层, 多脑, consult-models, dual-brain"
+description: Use when the task falls under Multi-Model Architecture — 多模型全栈架构.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - software
+    - development
+    - multi
+    - model
+    - architecture
+    related_skills:
+    - claude-code
+    - incremental-implementation
+    - loop
+    - multi-model-thinking
+    - p10-architecture-self-check
+    - plan
+    - router
 ---
 
 # Multi-Model Architecture — 多模型全栈架构
 
+## Overview
+
+
 > L0: 模型追踪 → L1: 模型路由 → L2: Agent协议 → L3: 投票 → L4: 互相印证 → L5: 多脑自进化
 > 双脑模式: self-describe → Claude Code -p 设计 → Hermes 落地 → eval gate
 
+## When to Use
+
+- The task falls under Multi-Model Architecture — 多模型全栈架构
+- Don't use for: requests that do not need the task falls under Multi-Model Architecture — 多模型全栈架构; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## 架构总览
 
 ```
@@ -439,13 +464,20 @@ Token 节省:
   ✅ consult_models.py — planner call 前尝试 SPL 编码, 失败回退自然语言
   ✅ ensemble-vote.py  — vote call 前尝试 SPL 编码, 失败回退自然语言
 
-## Claude 访问方式变更
+## Claude 访问方式变更 / 当前口径
 
-consult_models.py 中 Claude adapter 从 `claude -p` CLI 改为 Hermes 内置路由:
-  旧: claude -p prompt --output-format json --max-turns 8 --allowedTools Read
-  新: hermes chat -q prompt --model claude-sonnet-4-6 --provider anthropic --max-turns 1
+当前 `consult_models.py` 对 Claude 模型优先走 Claude Code CLI，而不是 Hermes Anthropic adapter：
+  当前: `claude -p prompt --model <claude-model> --max-turns 1 --output-format json`
+  fallback: 非 Claude / 无 `claude` CLI 时才走 `hermes chat -q ... --provider <provider>`；DeepSeek 仍走 direct API fallback。
 
-效果: 启动 ~500ms → ~50ms, 复用 Hermes Anthropic adapter, 统一认证
+原因: Claude Code CLI 使用用户 Claude Max/OAuth session，能避开部分本地 Hermes Anthropic adapter 的 provider/model misroute；同时与“Claude Code 作为多脑 P10 设计/仲裁参与者”的实际决策路径一致。
+
+验证口径:
+  - `claude --version` + `claude auth status --text` 确认 CLI/auth。
+  - `printf 'ping' | claude -p 'Reply exactly: CLAUDE_CODE_OK' --max-turns 1 --allowedTools ""` 确认 Claude Code print mode 可用。
+  - `consult_models.py run <state> --tier T3 --quorum 1 --keep` 后检查 `tick-*/plans/claude-*.json.meta.adapter == "claude-code"`。
+  - Discussion/ratification 路径可直接通过 `call_discussion_model('claude-opus-4-7', ...)` 或完整 `--discussion` tick 验证；只有 planner fan-out 不等于完整认证。
+
 双脑工作流中的 Claude Code 调用 (Step 2) 仍用 `claude -p` (需要完整 Claude Code 能力)
 
 ## DeepSeek V4 幻觉验证 (2026-04-28)
@@ -751,8 +783,7 @@ def _log_and_emit(result, ...):
 - anthropic: Claude CLI session (独立于 ANTHROPIC_API_KEY)
 - openrouter: OPENROUTER_API_KEY (当前未设置 → 自动过滤)
 
-## 验证
-
+## Verification Checklist
 - [x] self-test 44/44
 - [x] test_cross_patch_safety 19/19 (原有5 + Phase 4.5 selector mock 14)
 - [x] eval-harness classify_infra_failure: 5 类全部已验证 (ok/timeout/auth/unavailable/dry_run)
@@ -773,3 +804,10 @@ def _log_and_emit(result, ...):
 - multi-model-thinking: 多模型思考协议 (设计→验证→合并，避免单模型盲信)
 - p10-architecture-self-check: P10 架构自检
 - incremental-implementation: 增量实施策略
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+

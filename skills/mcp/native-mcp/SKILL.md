@@ -1,16 +1,23 @@
 ---
 name: native-mcp
-description: Built-in MCP (Model Context Protocol) client that connects to external MCP servers, discovers their tools, and registers them as native Hermes Agent tools. Supports stdio and HTTP transports with automatic reconnection, security filtering, and zero-config tool injection.
+description: Use when you need guidance on built-in MCP (Model Context Protocol) client that connects to external MCP servers, discovers their tools, and registers them as native Hermes Agent tools.
 version: 1.0.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [MCP, Tools, Integrations]
-    related_skills: [mcporter]
+    tags:
+    - MCP
+    - Tools
+    - Integrations
+    related_skills:
+    - mcporter
 ---
 
 # Native MCP Client
+
+## Overview
+
 
 Hermes Agent has a built-in MCP client that connects to MCP servers at startup, discovers their tools, and makes them available as first-class tools the agent can call directly. No bridge CLI needed -- tools from MCP servers appear alongside built-in tools like `terminal`, `read_file`, etc.
 
@@ -82,7 +89,7 @@ mcp_servers:
   server_name:
     url: "https://my-server.example.com/mcp"   # (required) server URL
     headers:                                     # (optional) HTTP headers
-      Authorization: "Bearer sk-..."
+      Authorization: "Bearer [REDACTED_PLACEHOLDER]"
     timeout: 180               # (optional) per-tool-call timeout in seconds, default: 120
     connect_timeout: 60        # (optional) initial connection timeout in seconds, default: 60
 ```
@@ -166,7 +173,7 @@ mcp_servers:
   remote_api:
     url: "https://mcp.example.com/mcp"
     headers:
-      Authorization: "Bearer sk-..."
+      Authorization: "Bearer [REDACTED_PLACEHOLDER]"
 ```
 
 If HTTP support is not available in your installed `mcp` version, the server will fail with an ImportError and other servers will continue normally.
@@ -238,6 +245,14 @@ pip install --upgrade mcp
 - Look at Hermes Agent startup logs for connection messages
 - Tool names are prefixed with `mcp_{server}_{tool}` -- look for that pattern
 
+### Startup banner shows all MCP servers as `failed`
+
+The CLI banner can render configured MCP servers as `failed` before startup discovery has completed. Treat this as a status-timing signal, not proof of a broken server. Verify before changing config:
+
+1. Check `~/.hermes/logs/agent.log` around the session start for `MCP server '<name>' ... registered ... tool(s)` and `MCP: registered ... from ... server(s)`.
+2. If needed, run a one-process probe from the Hermes checkout/venv that calls `get_mcp_status()`, then `discover_mcp_tools()`, then `get_mcp_status()` again. If servers switch from `connected=false` to `connected=true`, the banner was early rather than the server failing.
+3. Only troubleshoot command paths, npm/uvx packages, args, or credentials after logs/probe show discovery really failed.
+
 ### Connection keeps dropping
 
 The client retries up to 5 times with exponential backoff (1s, 2s, 4s, 8s, 16s, capped at 60s). If the server is fundamentally unreachable, it gives up after 5 attempts. Check the server process and network connectivity.
@@ -288,7 +303,7 @@ mcp_servers:
   company_api:
     url: "https://mcp.mycompany.com/v1/mcp"
     headers:
-      Authorization: "Bearer sk-xxxxxxxxxxxxxxxxxxxx"
+      Authorization: "Bearer [REDACTED_PLACEHOLDER]"
       X-Team-Id: "engineering"
     timeout: 180
     connect_timeout: 30
@@ -315,7 +330,7 @@ mcp_servers:
   company_api:
     url: "https://mcp.internal.company.com/mcp"
     headers:
-      Authorization: "Bearer sk-xxxxxxxxxxxxxxxxxxxx"
+      Authorization: "Bearer [REDACTED_PLACEHOLDER]"
     timeout: 300
 ```
 
@@ -354,3 +369,16 @@ Disable sampling for untrusted servers with `sampling: { enabled: false }`.
 - The native MCP client is independent of `mcporter` -- you can use both simultaneously
 - Server connections are persistent and shared across all conversations in the same agent process
 - Adding or removing servers requires restarting the agent (no hot-reload currently)
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

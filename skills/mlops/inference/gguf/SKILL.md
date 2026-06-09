@@ -1,19 +1,35 @@
 ---
 name: gguf-quantization
-description: GGUF format and llama.cpp quantization for efficient CPU/GPU inference. Use when deploying models on consumer hardware, Apple Silicon, or when needing flexible quantization from 2-8 bit without GPU requirements.
+description: Use when deploying models on consumer hardware, Apple Silicon, or when needing flexible quantization from 2-8 bit without GPU requirements.
 version: 1.0.0
 author: Orchestra Research
 license: MIT
-dependencies: [llama-cpp-python>=0.2.0]
+dependencies:
+- llama-cpp-python>=0.2.0
 metadata:
   hermes:
-    tags: [GGUF, Quantization, llama.cpp, CPU Inference, Apple Silicon, Model Compression, Optimization]
-
+    tags:
+    - GGUF
+    - Quantization
+    - llama.cpp
+    - CPU Inference
+    - Apple Silicon
+    - Model Compression
+    - Optimization
+    related_skills:
+    - github
 ---
 
 # GGUF - Quantization Format for llama.cpp
 
+## Overview
+
+
 The GGUF (GPT-Generated Unified Format) is the standard file format for llama.cpp, enabling efficient inference on CPUs, Apple Silicon, and GPUs with flexible quantization options.
+
+## When to Use
+
+- Deploying models on consumer hardware, Apple Silicon, or when needing flexible quantization from 2-8 bit without GPU requirements
 
 ## When to use GGUF
 
@@ -428,3 +444,16 @@ python server.py --model model-q4_k_m.gguf --loader llama.cpp --n-gpu-layers 35
 - **Pre-quantized Models**: https://huggingface.co/TheBloke
 - **GGUF Converter**: https://huggingface.co/spaces/ggml-org/gguf-my-repo
 - **License**: MIT
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

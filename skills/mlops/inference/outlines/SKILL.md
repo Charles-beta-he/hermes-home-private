@@ -1,20 +1,41 @@
 ---
 name: outlines
-description: Guarantee valid JSON/XML/code structure during generation, use Pydantic models for type-safe outputs, support local models (Transformers, vLLM), and maximize inference speed with Outlines - dottxt.ai's structured generation library
+description: Use when you need guidance on guarantee valid JSON/XML/code structure during generation, use Pydantic models for type-safe outputs, support local models (Transformers, vLLM), and maximize inference speed with Outlines - dottxt.ai's structured generation library.
 version: 1.0.0
 author: Orchestra Research
 license: MIT
-dependencies: [outlines, transformers, vllm, pydantic]
+dependencies:
+- outlines
+- transformers
+- vllm
+- pydantic
 metadata:
   hermes:
-    tags: [Prompt Engineering, Outlines, Structured Generation, JSON Schema, Pydantic, Local Models, Grammar-Based Generation, vLLM, Transformers, Type Safety]
-
+    tags:
+    - Prompt Engineering
+    - Outlines
+    - Structured Generation
+    - JSON Schema
+    - Pydantic
+    - Local Models
+    - Grammar-Based Generation
+    - vLLM
+    - Transformers
+    - Type Safety
+    related_skills:
+    - email
+    - gguf
+    - github
+    - vllm
 ---
 
 # Outlines: Structured Text Generation
 
-## When to Use This Skill
+## Overview
 
+Guarantee valid JSON/XML/code structure during generation, use Pydantic models for type-safe outputs, support local models (Transformers, vLLM), and maximize inference speed with Outlines - dottxt.ai's structured generation library.
+
+## When to Use
 Use Outlines when you need to:
 - **Guarantee valid JSON/XML/code** structure during generation
 - **Use Pydantic models** for type-safe outputs
@@ -652,4 +673,15 @@ class Article(BaseModel):
 - `references/backends.md` - Backend-specific configuration
 - `references/examples.md` - Production-ready examples
 
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
 

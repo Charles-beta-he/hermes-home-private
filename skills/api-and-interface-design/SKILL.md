@@ -124,9 +124,23 @@ When reviewing prototype/API gaps for UI-facing features (notifications, status 
 - [ ] Stateful mutations validate input, enforce authz/ownership, check affected rows, and return resulting persisted state
 - [ ] Contract tests cover read-after-write and stale-client-cache edge cases
 
+### Authoritative Financial Field Responses
+When a mutation endpoint (confirm, execute, transfer, pay) computes derived values like fee, applied rate, net amount, or balance-after, **always return those authoritative values in the response**. Do not assume the client can reverse-calculate them from inputs:
+- Display rates may be rounded (e.g., 4dp) while applied rates carry full precision (8dp). Client-side `amountIn × displayRate ≠ amountOut` with any rounding.
+- Fee structures may involve tiering, minimums, or channel-specific logic invisible to the client.
+- Idempotency return paths must include the same fields as the primary path — clients retry and read the same response shape.
+- Frontend mapping code (service layer) should already handle optional fee/rate fields with `!= null` guards so adding backend fields is backward-compatible.
+
+**Checklist for financial mutation endpoints:**
+- [ ] Response includes all computed fields: fee/feeCcy, appliedRate, netAmount, balanceAfter
+- [ ] Idempotency return path queries and returns the same fields
+- [ ] Frontend service layer already maps these fields (grep for `fee`, `rate`, `appliedRate` in service files)
+- [ ] No client-side reverse-calculation of fee or rate from rounded display values
+- [ ] Wrapper safety: any side effect is followed by target-state read-back before reporting completion.
 ## Common Pitfalls
 
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. Financial mutation endpoints returning only txId/status without fee/rate/amountOut — forces client reverse-calculation with precision loss (UVISA exchange confirm case, 2026-05-30).
 

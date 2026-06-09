@@ -295,3 +295,8 @@ Before closure:
 - [ ] Any durable writeback was scoped, evidence-backed, and landed in the right surface.
 - [ ] Any generated files or skills were read back or validated.
 - [ ] Any high-risk action stopped at the appropriate human-intervention gate.
+- [ ] For Hermes self-governance work, distinguish governed durable artifacts from runtime/recovery artifacts before committing.
+
+## References
+
+- `references/hermes-self-governance-scoped-commit.md` — session-derived pattern for scoped commits after Hermes self-governance runs: commit SSOT/skill/memory artifacts, leave logs/backups/runtime state uncommitted unless explicitly requested.

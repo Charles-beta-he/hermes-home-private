@@ -48,6 +48,8 @@ Methodology for periodic self-knowledge audits of Hermes Agent's internal archit
 
 ## Self-Audit Methodology
 
+When the user asks for 根因 / 长期稳定方案 after a self-check, use `references/root-cause-classification-health-triage.md`: classify findings by blast radius/freshness/blocks_what, separate scheduler vs job vs provider vs delivery failures, and report P0/P1/P2 decision impact instead of a flat warning list.
+
 ### Step 1: Gather Current State
 
 ```bash
@@ -121,6 +123,25 @@ Criteria for keeping:
 - Cross-session procedural value
 
 ## Health Check Infrastructure
+
+### System-level self-check operator (`agent.selfcheck_operator`)
+
+For long-term stability, prefer system-triggered self-check over CLI-first checks. Runtime boundaries should call the resident operator when a turn ends, a tool fails, a cron delivery/job degrades, or a user intent indicates "自检/没执行/没发/卡住". The operator writes append-only events/findings/repair plans under `~/.hermes/state/selfcheck/` and is detect/plan-only in hot paths: no shell, no adapter mutation, no lifecycle advancement, no external sends.
+
+Core files in the Hermes source checkout:
+- `agent/selfcheck_operator.py` — MAPE-K monitor/analyze/plan seam and append-only ledger.
+- `agent/turn_finalizer.py` — conversation lifecycle-boundary trigger.
+- `agent/tool_executor.py` — tool failure trigger.
+- `cron/scheduler.py` — cron job/delivery degradation trigger.
+
+Design rules:
+1. CLI is only a debug/manual surface; product behavior comes from runtime events.
+2. Health checks and analyzers must be side-effect-free.
+3. Repair plans stay `waiting_for_judgement` unless a governed executor consumes exact digests/TTL/evidence.
+4. The first executor boundary should be dry-run/readback only: consume exact plan id/digest, append `repair_attempts.jsonl`, update projections, and explicitly verify no shell/send/lifecycle mutation occurred.
+5. Gateway send failures, provider errors, cron delivery failures, tool failures, conversation finalization, and taskpool event hooks should all emit into the same resident selfcheck ledger/projection surface.
+6. LLM/multi-model output is proposal/review only, never fact or direct execution authority.
+7. Repeated fingerprints must debounce/coalesce to avoid self-check storms.
 
 ### Current: Modular Self-Diagnostic System (`~/.hermes/diagnostics/`)
 
@@ -304,6 +325,8 @@ Key checks:
 ## Self-Healing Architecture Design
 
 When designing new self-healing components or diagnosing infrastructure issues, use the academic-grounded framework in `references/self-healing-architecture.md`. It covers MAPE-K, Erlang Supervisor, Design by Contract, credit-based backpressure, and K8s probes — plus a design template, health score thresholds, and existing script inventory.
+
+When the user corrects the direction toward system-level or automatic triggering, do not propose CLI-first self-check as the product path. Use `references/system-triggered-selfcheck-and-selfhealing.md`: self-check should be triggered by user intent, runtime events, lifecycle boundaries, and trends; CLI is only a debugging/manual entrypoint. Keep checks side-effect-free, execute repairs only through governed action boundaries, and include backpressure/cooldown to prevent self-healing storms.
 
 ## References
 

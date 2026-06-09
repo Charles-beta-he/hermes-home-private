@@ -1,47 +1,23 @@
 {
   "metric": "Skill Graphs 2.0 \u62d3\u6251\u5ba1\u8ba1",
-  "value": "edges=87, depth_max=4, cycles=0, tiers={'atom': 147, 'compound': 14, 'molecule': 31}",
+  "value": "edges=66, depth_max=4, cycles=0, tiers={'atom': 219, 'compound': 2, 'molecule': 18}",
   "status": "OK",
   "max_depth_allowed": 4,
-  "edge_count": 87,
+  "edge_count": 66,
   "tier_counts": {
-    "atom": 147,
-    "compound": 14,
-    "molecule": 31
+    "atom": 219,
+    "compound": 2,
+    "molecule": 18
   },
-  "explicit_tier_count": 0,
+  "explicit_tier_count": 1,
   "cycle_count": 0,
   "cycles": [],
   "excessive_depth": [],
   "typed_violations": [],
   "missing_dependencies": [
     {
-      "skill": "research/research-paper-writing",
-      "dependency": "ml-paper-writing"
-    },
-    {
-      "skill": "feeds",
-      "dependency": "cronjob"
-    },
-    {
-      "skill": "creative/comfyui",
-      "dependency": "image_gen"
-    },
-    {
-      "skill": "creative/touchdesigner-mcp",
-      "dependency": "ascii-video"
-    },
-    {
-      "skill": "creative/touchdesigner-mcp",
-      "dependency": "hermes-video"
-    },
-    {
-      "skill": "creative/p5js",
-      "dependency": "ascii-video"
-    },
-    {
-      "skill": "creative/architecture-diagram",
-      "dependency": "concept-diagrams"
+      "skill": "software-development/hermes-s6-container-supervision",
+      "dependency": "hermes-agent-dev"
     }
   ],
   "ambiguous_dependencies": [],
@@ -57,6 +33,11 @@
       "reason": "deps=0, depth=0"
     },
     {
+      "skill": "apple/macos-computer-use",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
       "skill": "apple/imessage",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
@@ -68,8 +49,8 @@
     },
     {
       "skill": "apple/apple-notes",
-      "suggested_tier": "molecule",
-      "reason": "deps=1, depth=1"
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
     },
     {
       "skill": "research",
@@ -87,19 +68,24 @@
       "reason": "deps=0, depth=0"
     },
     {
+      "skill": "research/last30days",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
       "skill": "research/llm-wiki",
-      "suggested_tier": "compound",
-      "reason": "deps=2, depth=3"
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
     },
     {
       "skill": "research/arxiv",
-      "suggested_tier": "molecule",
-      "reason": "deps=1, depth=2"
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
     },
     {
       "skill": "research/research-paper-writing",
-      "suggested_tier": "compound",
-      "reason": "deps=3, depth=4"
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
     },
     {
       "skill": "ui-ux-pro-max/.claude/skills/ui-ux-pro-max",
@@ -137,17 +123,7 @@
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": "idea-refine",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
       "skill": "gaming",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "gaming/minecraft-modpack-server",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
@@ -167,138 +143,138 @@
       "reason": "deps=0, depth=0"
     },
     {
+      "skill": ".archive/taskpool-ingest-triage",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/task-framing-governance",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/agent-team-parallel",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/devops/cli-tool-installation",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/devops/macos-network-admin",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/devops/icon-asset-pipeline",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/devops/multi-repo-branch-orchestration",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/devops/hermes-observability",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/git-state-aware-debugging",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/hybrid-app-packaging",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/hermes-self-improvement-pipeline",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/cloud-edge-architecture",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/financial-ledger-frontend-patterns",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/external-framework-evaluation",
+      "suggested_tier": "molecule",
+      "reason": "deps=4, depth=2"
+    },
+    {
+      "skill": ".archive/software-development/task-depth-analysis",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/concurrent-async-guard",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/pwa-safe-area-handling",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/pwa-cache-invalidation",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/pwa-install-prompt",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/software-development/architecture-theory-audit",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/testing/playwright-authenticated-screenshots",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/github/git-conflict-resolution",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/product-prototype-code-audit",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/project-profile-maintenance",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
       "skill": "devops",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": "devops/gateway-telegram-setup",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "devops/semantic-release-monorepo",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "devops/kanban-worker",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "devops/webhook-subscriptions",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "devops/kanban-orchestrator",
-      "suggested_tier": "molecule",
-      "reason": "deps=1, depth=1"
-    },
-    {
-      "skill": "devops/cloudflare-pages-pnpm",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "bayesian-agent",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "leisure",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "p10",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "incremental-implementation",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "pro",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "yuanbao",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "impeccable/source/skills/impeccable",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "impeccable/.claude/skills/impeccable",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "data-science",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "data-science/jupyter-live-kernel",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "api-and-interface-design",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "software-development",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "software-development/post-update-patch-healing",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "software-development/post-deploy-verification",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "software-development/parallel-worktree-delegate",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "software-development/browser-harness-integration",
-      "suggested_tier": "molecule",
-      "reason": "deps=3, depth=1"
-    },
-    {
-      "skill": "software-development/incident-response",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "software-development/test-driven-development",
-      "suggested_tier": "molecule",
-      "reason": "deps=1, depth=1"
-    },
-    {
-      "skill": "software-development/requirement-clarification",
+      "skill": "devops/token-saver-rtk",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     }
   ],
   "details": [
-    "\u663e\u5f0f tier: 0/192\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
+    "\u663e\u5f0f tier: 1/239\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
     "fail-closed gate: cycles=0, excessive_depth=0, typed_violations=0"
   ]
 }

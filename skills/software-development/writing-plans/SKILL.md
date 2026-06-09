@@ -6,8 +6,20 @@ author: Hermes Agent (adapted from obra/superpowers)
 license: MIT
 metadata:
   hermes:
-    tags: [planning, design, implementation, workflow, documentation]
-    related_skills: []
+    tags:
+    - planning
+    - design
+    - implementation
+    - workflow
+    - documentation
+    related_skills:
+    - design
+    - domain
+    - email
+    - guidance
+    - plan
+    - subagent-driven-development
+    - test-driven-development
 ---
 
 # Writing Implementation Plans
@@ -301,3 +313,16 @@ Frequent commits
 ```
 
 **A good plan makes implementation obvious.**
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

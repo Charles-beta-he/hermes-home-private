@@ -1,18 +1,32 @@
 ---
 name: codex
-description: Delegate coding tasks to OpenAI Codex CLI agent. Use for building features, refactoring, PR reviews, and batch issue fixing. Requires the codex CLI and a git repository.
+description: Use when you need to delegate coding tasks to OpenAI Codex CLI agent.
 version: 1.0.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [Coding-Agent, Codex, OpenAI, Code-Review, Refactoring]
-    related_skills: [opencode]
+    tags:
+    - Coding-Agent
+    - Codex
+    - OpenAI
+    - Code-Review
+    - Refactoring
+    related_skills:
+    - opencode
 ---
 
 # Codex CLI
 
+## Overview
+
+
 Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes terminal. Codex is OpenAI's autonomous coding agent CLI.
+
+## When to Use
+
+- You need to delegate coding tasks to OpenAI Codex CLI agent
+- You need to evaluate, install, or route work through Codex plugins/skills. For plugin triage and permission tiers, see `references/codex-plugin-evaluation.md`.
 
 ## Prerequisites
 
@@ -106,9 +120,26 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 ## Rules
 
 1. **Always use `pty=true`** — Codex is an interactive terminal app and hangs without a PTY
-2. **Git repo required** — Codex won't run outside a git directory. Use `mktemp -d && git init` for scratch
+2. **Git repo required for agentic code execution** — Codex code tasks should run inside a git directory. Use `mktemp -d && git init` for scratch
 3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
 4. **`--full-auto` for building** — auto-approves changes within the sandbox
 5. **Background for long tasks** — use `background=true` and monitor with `process` tool
 6. **Don't interfere** — monitor with `poll`/`log`, be patient with long-running tasks
 7. **Parallel is fine** — run multiple Codex processes at once for batch work
+8. **For plugin questions, verify the local plugin surface first** — run `codex plugin --help` and `codex plugin list`, then read plugin metadata/README before recommending install or use.
+9. **Apply least authority to plugins** — prefer local in-app Browser/APIs/CLIs before real Chrome state, desktop Computer Use, or account/action plugins; require explicit authorization for high-permission surfaces.
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. Treating plugin marketplace availability as permission to install/use the plugin; browser state, desktop control, account data, and external sending still need explicit task-scoped authorization.
+5. Confusing Codex `browser` with `chrome`: `browser` is the in-app/local web target route, while `chrome` touches the user's real Chrome state and should be a later fallback.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

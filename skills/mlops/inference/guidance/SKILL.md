@@ -1,20 +1,37 @@
 ---
 name: guidance
-description: Control LLM output with regex and grammars, guarantee valid JSON/XML/code generation, enforce structured formats, and build multi-step workflows with Guidance - Microsoft Research's constrained generation framework
+description: Use when you need to control LLM output with regex and grammars, guarantee valid JSON/XML/code generation, enforce structured formats, and build multi-step workflows with Guidance - Microsoft Research's constrained generation framework.
 version: 1.0.0
 author: Orchestra Research
 license: MIT
-dependencies: [guidance, transformers]
+dependencies:
+- guidance
+- transformers
 metadata:
   hermes:
-    tags: [Prompt Engineering, Guidance, Constrained Generation, Structured Output, JSON Validation, Grammar, Microsoft Research, Format Enforcement, Multi-Step Workflows]
-
+    tags:
+    - Prompt Engineering
+    - Guidance
+    - Constrained Generation
+    - Structured Output
+    - JSON Validation
+    - Grammar
+    - Microsoft Research
+    - Format Enforcement
+    - Multi-Step Workflows
+    related_skills:
+    - email
+    - gguf
+    - github
 ---
 
 # Guidance: Constrained LLM Generation
 
-## When to Use This Skill
+## Overview
 
+Control LLM output with regex and grammars, guarantee valid JSON/XML/code generation, enforce structured formats, and build multi-step workflows with Guidance - Microsoft Research's constrained generation framework.
+
+## When to Use
 Use Guidance when you need to:
 - **Control LLM output syntax** with regex or grammars
 - **Guarantee valid JSON/XML/code** generation
@@ -572,4 +589,15 @@ lm += gen("name", regex=r"^(John|Jane)$", max_tokens=10)
 - `references/backends.md` - Backend-specific configuration
 - `references/examples.md` - Production-ready examples
 
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
 

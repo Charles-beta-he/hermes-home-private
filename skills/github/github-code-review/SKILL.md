@@ -1,18 +1,31 @@
 ---
 name: github-code-review
-description: Review code changes by analyzing git diffs, leaving inline comments on PRs, and performing thorough pre-push review. Works with gh CLI or falls back to git + GitHub REST API via curl.
+description: Use when you need to review code changes by analyzing git diffs, leaving inline comments on PRs, and performing thorough pre-push review.
 version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [GitHub, Code-Review, Pull-Requests, Git, Quality]
-    related_skills: [github-auth]
+    tags:
+    - GitHub
+    - Code-Review
+    - Pull-Requests
+    - Git
+    - Quality
+    related_skills:
+    - github-auth
 ---
 
 # GitHub Code Review
 
+## Overview
+
+
 Perform code reviews on local changes before pushing, or review open PRs on GitHub. Most of this skill uses plain `git` — the `gh`/`curl` split only matters for PR-level interactions.
+
+## When to Use
+
+- You need to review code changes by analyzing git diffs, leaving inline comments on PRs, and performing thorough pre-push review
 
 ## Prerequisites
 
@@ -78,11 +91,11 @@ git log main..HEAD --oneline
 git diff main...HEAD -- src/auth/login.py
 ```
 
-3. **Check for common issues:**
+### Check for common issues:
 
 ```bash
 # Debug statements, TODOs, console.logs left behind
-git diff main...HEAD | grep -n "print(\|console\.log\|TODO\|FIXME\|HACK\|XXX\|debugger"
+git diff main...HEAD | grep -n "print\(\|console\.log\|TODO\|FIXME\|HACK\|XXX\|debugger"
 
 # Large files accidentally staged
 git diff main...HEAD --stat | sort -t'|' -k2 -rn | head -10
@@ -93,6 +106,10 @@ git diff main...HEAD | grep -in "password\|secret\|api_key\|token.*=\|private_ke
 # Merge conflict markers
 git diff main...HEAD | grep -n "<<<<<<\|>>>>>>\|======="
 ```
+
+### Verification pitfalls from reviews
+
+- If a Java/Maven review test fails only because Mockito inline/ByteBuddy does not support the host JDK (example: Java 25 reports `Java 25 (69) is not supported ... officially supports Java 23 (67)`), retry the same targeted Maven command with `-DargLine='-Dnet.bytebuddy.experimental=true'` before treating it as a product-code failure. Report both the initial environment failure and the successful retry if it passes.
 
 4. **Present structured feedback** to the user.
 
@@ -478,3 +495,17 @@ git branch -D pr-$PR_NUMBER
 - **Approve** — no critical or warning-level issues, only minor suggestions or all clear
 - **Request Changes** — any critical or warning-level issue that should be fixed before merge
 - **Comment** — observations and suggestions, but nothing blocking (use when you're unsure or the PR is a draft)
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. **Merge commit ≠ feature branch commit hash.** When searching for "which commit introduced this change", `git log <branch> -- <file>` only finds commits on that branch. Feature branch commits do NOT appear on main — they arrive as merge commits with different hashes. If the user says "this change is on main" but you only found a feature branch commit, the main version is a separate merge commit. Use `git log --all -- <file>` to find all related commits across branches, then identify the merge commit with `git show <hash>` (look for `Merge:` line). If the merge commit isn't in local history, `git fetch --all` first — it may only exist on remote.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

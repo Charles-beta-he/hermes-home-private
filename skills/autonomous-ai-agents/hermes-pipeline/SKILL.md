@@ -1,11 +1,30 @@
 ---
 name: hermes-pipeline
-description: "Build automated task pipelines using hermes chat -q as execution engine. Compose hermes skills (confirmer, executor, validator) into multi-stage workflows with SQLite envelope bus, error isolation, and Lark/webhook integration."
+description: Use when you need to build automated task pipelines using hermes chat -q as execution engine.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [pipeline, automation, hermes, orchestration, task-dispatch]
+metadata:
+  hermes:
+    tags:
+    - pipeline
+    - automation
+    - hermes
+    - orchestration
+    - task-dispatch
+    related_skills:
+    - loop
+    - multi-model-thinking
+    - plan
+    - requesting-code-review
+    - router
+    - software-development
 ---
 
 # Hermes Pipeline — Agent 执行引擎
+
+## Overview
+
 
 > 用 hermes chat -q 构建自动化任务流水线，skills 作为 pipeline 组件。
 
@@ -91,6 +110,19 @@ def run_full():
             print(f"[{step.__name__} ERROR] {e}")
             # 不阻断后续步骤
 ```
+
+## File Locations (Key Paths)
+
+| Component | Path | Notes |
+|-----------|------|-------|
+| envelope_bus.py | `~/.hermes/scripts/envelope_bus.py` | Bus module (import) |
+| envelope_executor.py | `~/.hermes/scripts/envelope_executor.py` | Executor CLI: `stats`, `run N`, `ack` |
+| envelope_bus.db | `~/.hermes/state/envelope_bus.db` | **Actual SQLite state** |
+| envelope_escape_ack.json | `~/.hermes/state/envelope_escape_ack.json` | Last human ack |
+| task_continuation.py | `~/.hermes/scripts/task_continuation.py` | Budget exhaustion checkpoint |
+| brain_task_orchestrator.py | `~/.hermes/scripts/brain_task_orchestrator.py` | Orchestrator CLI |
+
+**⚠️ Common mistake**: `~/.hermes/scripts/envelope_state.db` exists but is stale/empty. The real DB is in `~/.hermes/state/`.
 
 ## Environment Variables
 
@@ -393,9 +425,93 @@ Step 5: Report → done
 
 Or fully automated via cron.
 
-## Pitfalls
+## Full Auto-Trigger Chain (4-Model Certified 2026-05-11)
+
+```
+orchestrator.list (brain_task_orchestrator.py)
+    ↓ cron: pipeline-tick-hourly
+pipeline_tick.py (create PENDING envelopes from dispatchable tasks)
+    ↓ cron: envelope-executor-cycle (every 30m)
+envelope_executor.py (PENDING → claim → delegate to worker → DONE/BLOCKED/RETRY)
+    ↓ cron: brain-kanban-bridge-sync (every 2h)
+kanban_bridge.py (one-way mirror to Kanban for observability)
+    ↓ cron: v-state-hourly
+v_state.py (V(x) health score, alert if < 0.7)
+```
+
+Supporting crons:
+- `agent-team-cycle-hourly` — dynamic N controller (claims tasks, conflict group scheduling)
+- `orchestrator-selfcheck-6h` — brain_task_orchestrator.py selfcheck
+- `memory-selfcheck-6h` — agent_memory_architecture_selfcheck.py
+
+## V(x) State Function
+
+System health score `V(x) = Σ wᵢ·fᵢ(xᵢ) ∈ [0,1]`. See `references/v-state-function.md`.
+
+## Dynamic N + Task Classifier
+
+Adaptive parallelism: `N = min(ceil(dispatchable/7), conflict_groups, 3)` with smoothing. See `references/dynamic-n-and-classifier.md`.
+
+## Task Continuation (Budget Exhaustion Resume)
+
+When worker hits "Iteration budget reached (60/60)", checkpoint progress and resume with injected context. Max 3 continuations. See `references/task-continuation-pattern.md`.
+
+## Envelope Executor (The Missing Link)
+
+Pipeline_tick creates PENDING envelopes but doesn't execute them. The executor consumes them. See `references/envelope-executor-missing-link.md`.
+
+## Numeric Guardrails (4-Model Certified)
+
+When using hermes-pipeline for autonomous/long-running execution, enforce these numeric bounds:
+
+| Parameter | Default | Configurable | Purpose |
+|-----------|---------|-------------|---------|
+| appetite_timeout | 30min | 15/60/120min per task type | Shape Up time budget per task |
+| max_retry | 3 | - | After 3 failures: escalate + block |
+| human_escape | 2 block OR 3 crash | - | Auto-pause pipeline + notify user |
+| max_runtime | 3600s/task | - | Single task max execution time |
+| lease_ttl | 900s | - | Worker claim validity |
+| heartbeat_interval | 120s | - | Worker heartbeat frequency |
+| state_source | SQLite envelope bus | - | Single source of truth, cron triggers tick only |
+| OKR↔proof | sha256 artifact | - | Each KR must link to envelope DONE proof |
+
+These guardrails were 4-model certified (Claude + GPT-5.5 + DeepSeek + MiMo) on 2026-05-10. See `references/numeric-guardrails.md` in the multi-model-thinking skill for the full ratification artifact path.
+
+## Self-Optimizing Verification Loop
+
+When `verify_with_models` rejects a task, the system enters a self-improving loop:
+
+1. `save_rejection()` — record rejection history
+2. `analyze_rejection()` — detect patterns (missing_build/test/screenshot/evidence)
+3. `generate_enhanced_criteria()` — expand acceptance 4→8 criteria
+4. `update_project_profile()` — auto-learn rules into project profile
+5. Retry with enhanced criteria (max 3 attempts)
+
+Safety: no scope expansion, intent preservation, 3 failures → human escalation.
+
+Full implementation: see multi-model-thinking skill `references/self-optimizing-verification-loop.md`.
+
+## Capability Routing
+
+Route tasks to appropriate models by type:
+
+```python
+needs_code = any(kw in title.lower() for kw in ['修复', 'fix', '实现', '代码', 'uvisa'])
+model = 'gpt-5.5' if needs_code else 'mimo-v2.5-pro'
+provider = 'openai-codex' if needs_code else 'xiaomi'
+max_turns = 30 if needs_code else 15
+timeout = 600 if needs_code else 300
+```
+
+## Common Pitfalls
 
 - **hermes chat -q 比直接 API 调用慢** — 但获得完整 tool calling + skill 加载
+- **Programmatic JSON 需要 quiet mode** — confirmer/validator 解析 JSON 时使用 `-Q`/`HERMES_NO_BANNER=1` 抑制 banner；不要使用未知 CLI 参数（例如旧版 `--toolsets none` 会输出 warning 并污染 JSON）。仍需用 robust extractor 从 mixed stdout 中取 JSON。
+- **只保存真实 Hermes session id** — `--resume` 必须使用 Hermes 真实 session id；禁止按时间戳伪造 `arc-{project}-{ts}`。首轮用稳定 `--source` tag，之后从 stdout/stderr 或 `hermes sessions list --source <tag>` 提取真实 id，提取失败就不 resume。
+- **Backpressure 要贯穿所有阶段** — pipeline 的 `--limit` 不应只限制 execute；confirm/execute/full 都要支持同一 limit，且 limit 只裁剪"需要新处理"的任务，不隐藏 already-confirmed/validated 的既有状态。
+- **状态必须反映最终验证结果** — executor 可先临时写 DONE 以保存 output，但 build failure、auto-fix failure、browser harness critical issues 必须最终覆盖为 FAILED；避免通知失败/验证失败后留下假 DONE。
+- **为边界状态写回归测试** — 覆盖 build result 缺少 `error` 但有 `output`、browser harness critical→FAILED、mixed Hermes JSON、真实 session id 提取、confirm limit 等容易在无人值守 loop 中变成 silent failure 的路径。
+- **Git hygiene: pycache 可能已被跟踪** — 添加 `.gitignore` 不会停止跟踪已入库 `__pycache__/*.pyc`；用 `git ls-files '*__pycache__*' '*.pyc'` 检查，必要时 `git rm --cached` 或删除并 commit 清理，验证前后都看 `git status --short`。
 - **SKIPPED vs FAILED** — 不可执行任务用 SKIPPED，保留重试能力，通过通知让用户知晓
 - **错误隔离** — 每个步骤独立 try-catch，单个 envelope 失败不阻断其他
 - **Python 3.9 兼容** — 加 `from __future__ import annotations`，用 `Optional[dict]` 或 `dict | None`（需 future annotations）
@@ -404,3 +520,30 @@ Or fully automated via cron.
 - **无限重试** — validator reject 必须加 retry_count + max_retries 限制
 - **confirm 重复分析** — 过滤已有 confirm_plan 的任务，只分析新任务
 - **共享代码** — 认证等重复逻辑提取到共享模块，不要 copy-paste
+- **Claim-delegate 死锁** — controller 如果只 claim 不 delegate，任务会永远卡在 claimed 状态。正确做法是 claim 后立即 delegate（在同一 cycle 内），或者让 envelope_executor 消费 PENDING envelopes。executor 用 `hermes chat -q` 跑 worker 时如果太重（max_turns=60, 600s timeout），会超时导致 envelope 卡在 RUNNING。轻量化 worker: max_turns=15, MiMo 模型, 300s timeout。详见 multi-model-thinking skill 的 `references/task-flow-deadlock-detection-and-fix.md`。
+- **brain_task_orchestrator list 输出用 `rows` 不是 `tasks`** — `list --json` 返回 `{"rows":[...]}` 不是 `{"tasks":[...]}`，读取时用 `data.get('rows', [])`。
+- **hermes cron edit 不支持 --model** — 改 cron job 的 model/provider 用 `cronjob(action='update')` 工具，不是 `hermes cron edit`。修改后 last_error 仍是历史记录，下次运行才生效。
+- **hermes kanban create 输出格式** — `Created t_xxxx (ready, assignee=xxx)`，提取 ID 用 `re.search(r'Created\s+(t_[a-f0-9]+)', output)`。
+- **envelope bus + pipeline tick 详见** `references/envelope-bus-implementation.md`。
+- **brain_task_orchestrator 集成模式详见** `references/brain-task-orchestrator-integration.md`。
+- **envelope_executor 是 PENDING envelope 的消费者** — pipeline_tick 创建 envelope，executor 消费它们。详见 `references/envelope-executor-missing-link.md`。
+- **envelope bus DB at `~/.hermes/state/envelope_bus.db`** — NOT `~/.hermes/scripts/envelope_state.db` (stale/empty). Escape ack at `~/.hermes/state/envelope_escape_ack.json`. Always query state/ for diagnostics.
+- **Human escape diagnostic workflow** — when `stats` shows `human_escape_triggered: true`, query FAILED envelopes from state/ DB, identify failure pattern (missing_proof/invalid_proof/timeout/HTTP 429), report to user with ack/resume instructions. **Project-level clustering is the key signal:** if all post-ack failures are in one project with the same error, it's a systematic worker issue; fix before ACKing. If failures scatter across projects, it's likely infrastructure flakiness. See `references/envelope-executor-missing-link.md` § Diagnosing Human Escape and § Common Escape Causes.
+- **Escape-triggered cron alert precedence** — when `pipeline_tick.py tick` returns `escape_triggered=true`, ALWAYS produce a prominent alert, even if `new_envelopes=0` and `timeouts_handled=0`. Escape is a safety-critical signal that overrides the silent-when-nothing-new rule. **Failure migration pattern**: after ACKing one failure class (e.g. HTTP 429), a different class (e.g. proof-gate, stale-running) can re-trigger escape within hours — this is the pipeline cleaning up to surface the next bottleneck, not a regression. See `references/escape-triggered-cron-alert-pattern.md` for the full diagnostic workflow, classification taxonomy, and report format.
+- **Cron prompt pattern for escaped pipelines** — `"If status=escaped, ALERT."` triggers diagnostic report (stats + FAILED query + ack date + recommendation). Don't silently skip escaped state.
+- **proof gate is the #1 failure mode** — workers complete but don't output valid PROOF_JSON. The worker prompt must include explicit proof output instructions. Fix at the source (worker prompt), not by relaxing the gate.
+- **Never run long pipeline scripts synchronously** — scripts that delegate to `hermes chat -q` (envelope_executor, brain_task_orchestrator) can take 600s+ per envelope. The agent terminal times out at 60-300s. Always use `background=True, notify_on_complete=True` and poll for completion.
+- **`timeout` CLI wrapper + executor SIGTERM handler = silent empty output** — the executor registers SIGTERM→kill worker group→SystemExit. Wrapping with `timeout 100 python3 envelope_executor.py run 1` triggers this handler on deadline, producing empty output with exit 0 (looks like success). Use the terminal tool's native timeout or `subprocess.run(timeout=N)` instead, which raises `TimeoutExpired` that the executor catches properly.
+- **Cron script timeout (120s) vs worker timeout (600s) mismatch** — the cron system imposes a 120s script-level timeout on `no_agent` cron jobs, but `envelope_executor.py run N` spawns workers that take 300-600s each. The cron kills the executor mid-run, leaving RUNNING envelopes as orphans. After N cycles: N ghost RUNNING envelopes accumulate. Fix: increase cron timeout to ≥900s, or restructure as async (detach workers). Recovery: check appetite-aware stale detection (`started_at` + elapsed > `appetite_seconds`) before batch-resetting. See `references/cron-script-timeout-mismatch.md`.
+- **Three consecutive timeouts = structural problem, not transient** — if the executor times out 3 times at different timeout values (120s, 300s, 120s), the worker timeout exceeds any reasonable cron window. Don't keep retrying; reset stale ghosts, report the mismatch, and suggest structural fixes (async workers or increased cron timeout).
+- **完整自动触发链路** — orchestrator→pipeline_tick→envelope_executor→kanban_bridge，通过 cron 连接。pipeline-tick-hourly 创建，envelope-executor-cycle(30m) 消费，brain-kanban-bridge-sync(2h) 镜像，v-state-hourly 监控健康度。
+1. Skipping prerequisite checks and assuming the environment already matches the workflow.
+2. Applying the workflow mechanically without confirming that the request still matches this skill's trigger class.
+3. Reporting success before reading back the actual outputs, files, or external side-effects.
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] The Definition of Done items above were explicitly checked, not assumed.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

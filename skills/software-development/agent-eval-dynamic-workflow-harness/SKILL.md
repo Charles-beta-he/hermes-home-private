@@ -158,6 +158,12 @@ Default-off/off-hot-path scaffold landed in Hermes Agent:
 
 Keep this harness offline/default-off unless a later task explicitly authorizes live gateway/taskpool integration.
 
+## Local-Brain Sync
+
+Scope: **Hermes Agent self-architecture only**. Applicability: use when a harness/control-plane landing changes durable structure that future Hermes sessions must retrieve. Anti-condition: do not mirror raw session logs, transient failures, or ordinary product-task progress into the local brain.
+
+Mirror durable harness structure into the local brain as L2 project knowledge plus L6 review evidence. Use `references/local-brain-sync.md` for the note shape, validation commands, and pitfalls.
+
 ## Source SSOT
 
 Canonical planning note: `/Users/charles/.hermes/docs/private/agent-eval-dynamic-workflow-longterm-20260609.md`.

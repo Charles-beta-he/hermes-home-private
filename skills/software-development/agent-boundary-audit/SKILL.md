@@ -85,6 +85,17 @@ Don't use for:
 3. Creating broad skills for one-off advice. Patch an existing umbrella or create a narrow trigger-class skill with negative space.
 4. Enqueuing noisy taskpool work from every insight. Only queue concrete work with target, artifact, risk, and verification.
 5. Claiming the landing is complete without reading back the artifacts and checking git scope.
+6. Freezing transient provider/auth failures into durable negative rules. If a multi-model run degrades because one provider/CLI was unauthenticated or stale, record the run as degraded/not-certified, but do not memorialize “provider X does not work.” When the user says the login/session was refreshed, re-probe the exact CLI/provider/model path first, then re-run the narrow model call or certification step and report the old blocker as resolved only if the probe returns real model output.
+
+## Provider re-probe pattern for degraded multi-model reviews
+
+Use this when a self-optimization or architecture review was degraded by provider authentication/runtime state and the user later says the provider login was fixed:
+
+1. Preserve the original certification status: `degraded_not_certified` remains true for the old run; do not retroactively upgrade it.
+2. Probe the exact runtime path that failed, preferably with a minimal sentinel response. Example shape: direct Hermes provider call with the same provider/model and a one-token/sentinel prompt.
+3. Note provider/model normalization explicitly when relevant, because routing layers may normalize display names (for example dotted to dashed model aliases).
+4. If the direct probe succeeds, run a narrow follow-up model call or re-certification and label it as a new evidence item, not as hidden repair of the old artifact.
+5. Capture only the durable workflow: “re-probe exact provider path after auth refresh.” Do not save the transient auth failure itself as memory or as a standing tool limitation.
 
 ## Verification Checklist
 

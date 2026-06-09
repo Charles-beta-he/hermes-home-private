@@ -17,6 +17,8 @@ Reference addendum: `/Users/charles/.hermes/docs/private/vercel-reference-self-o
 
 Reference addendum: `/Users/charles/.hermes/docs/private/hermes-self-optimization-ssot-20260526.md` is the canonical multi-entry SSOT rule for Hermes self-optimization. Before changing Hermes itself through chat, taskpool, cron/bg-review, multi-model certification, skill patches, or code edits, identify/create exactly one SSOT artifact and make all derived entrypoints reference it rather than copying parallel facts.
 
+Reference addendum: `references/event-governed-agent-control-plane.md` captures the Hermes-owned Event-Governed Agent Control Plane pattern. Scope: Hermes Agent self-architecture only. Applicability: lifecycle control, worker permission, gateway/cron ingress, Control Tower, persistent learning, and external side-effect governance. Anti-condition: ordinary Q&A/read-only/simple project work should not inherit this heavy control-plane flow. Key invariant: workers submit evidence/proposals instead of directly mutating lifecycle.
+
 # Hermes Agent
 
 ## Overview
@@ -83,7 +85,9 @@ When a user asks to analyze an external repository to improve Hermes itself, fir
 3. For self-update, prefer:
    - `hermes update --backup --yes`
 4. Immediately run update validation/repair:
-   - `python3 ~/.hermes/scripts/post-update-check.py --fix`
+   - Prefer the Hermes repo venv Python so modern type syntax in local scripts does not fail on an older system `python3`:
+     - `~/.hermes/hermes-agent/venv/bin/python ~/.hermes/scripts/post-update-check.py --fix`
+   - Fallback only if needed: `python3 ~/.hermes/scripts/post-update-check.py --fix`
 5. Re-verify after update:
    - `hermes --version`
    - `git -C ~/.hermes/hermes-agent status --short --branch`
@@ -116,6 +120,7 @@ When a user asks to analyze an external repository to improve Hermes itself, fir
 - For "cron job / daily report / scheduled message did not send" incidents, do not stop at `cronjob list`. Also inspect scheduler logs for `missed its scheduled time` and `Fast-forwarding to next run`; if Hermes or the gateway was offline past the job's grace window, the scheduler will skip the missed fire and jump to the next schedule.
 - Historical `deliver=origin` warnings are not automatically the root cause of a current missed report. Verify the job's current `deliver` target and correlate with process start times plus the missed-run log line before concluding it is a routing problem.
 - For "conversation ended but async/background work did not happen" incidents, split the mechanism first: background process notification, main-task continuation/relay, or background memory/skill review. Do not infer continuation from config names alone; verify code paths and logs. For bg-review specifically, look for `thread=bg-review`, the review prompt turn, successful/failed `skill_manage`/`memory` tool calls, and missing `Turn ended`/`agent_close` before concluding. See `references/background-review-async-debugging.md`.
+- For Codex/OpenAI HTTP 400 `image data ... does not represent a valid image`, inspect `agent/image_routing.py` native attachment path before blaming provider auth/model. Native image parts are only safe for real JPEG/PNG/GIF/WEBP bytes; corrupt files or unsupported formats (BMP/TIFF/HEIC/SVG/ICO) must be skipped/fallback-texted instead of filename-guessed into `data:image/jpeg`.
 - For bg-review taskpool integration, distinguish safe candidate extraction from side effects: `background_review.taskpool.mode: suggest` only records candidates in status/HTML, while `mode: enqueue` mutates the taskpool. See `references/background-review-taskpool-suggest-mode.md`.
 - For bg-review summary regressions, remember the review agent inherits the parent conversation snapshot. Both successful action summaries and failed tool-result summaries must skip tool messages already present in `messages_snapshot` by `tool_call_id`/content; otherwise resolved main-turn tool failures can be re-announced as false `Self-improvement review failed` notifications.
 - MCP server `args` containing `~` (tilde) are NOT expanded by the MCP launcher. The path `~/.hermes/scripts/foo.py` resolves relative to the hermes-agent venv directory (e.g. `/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/foo.py`) instead of the user home. Always use absolute paths in MCP server `args` (e.g. `/Users/charles/.hermes/scripts/foo.py`). The error manifests as repeated `can't open file ... No such file or directory` in `~/.hermes/logs/mcp-stderr.log`, causing every worker that loads MCP to waste 7s × 3 retries on connection failure. Check with `grep '~' ~/.hermes/config.yaml` in the `mcp_servers` section.

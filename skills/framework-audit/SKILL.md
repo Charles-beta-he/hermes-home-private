@@ -1,13 +1,34 @@
 ---
 name: framework-audit
-description: "第三方 AI 系统/框架评估与引入决策框架 — 系统化分析外部 AI 工具（开发框架、工作流系统、CLI 工具），给出引入建议、选择性借鉴方案和集成步骤。Use when evaluating a GitHub repo, npm package, or AI tool for adoption. Triggers: '评估框架', '引入第三方', '工具选型', '框架分析', '是否引入', '对比分析', '技术选型', 'adoption analysis', 'framework evaluation'."
+description: Use when evaluating whether to adopt, reject, or selectively extract ideas from an external AI framework, GitHub repo, package, or CLI. Produces evidence-first adoption analysis, integration risk assessment, and Hermes-native selective-adoption recommendations.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [framework-audit, third-party, evaluation, adoption, integration, decision-framework]
+metadata:
+  hermes:
+    tags:
+    - framework-audit
+    - third-party
+    - evaluation
+    - adoption
+    - integration
+    - decision-framework
+    related_skills:
+    - multi-model-thinking
+    - private-fork-evolution-governance
+    - workflow-ecosystem-audit
 ---
 
 # Framework Audit — 第三方 AI 系统评估与引入决策
 
+## Overview
+
+
 > 不要因为一个工具流行就引入。评估 → 决策 → 选择性借鉴 → 集成。
+
+## When to Use
+
+- Evaluating whether to adopt, reject, or selectively extract ideas from an external AI framework, GitHub repo, package, or CLI. Produces evidence-first adoption analysis, integration risk assessment, and Hermes-native selective-adoption recommendations
 
 ## 核心流程
 
@@ -49,7 +70,101 @@ ls /tmp/<repo-name>                             # 根目录结构
 - 它与现有体系的关系是什么？替代/补充/冲突？
 - 它的运行环境要求是什么？
 
-### 1.3 兼容性检查
+### 1.3 AI Memory / RAG / Agent-Memory Benchmark 审计
+
+当目标仓库是 AI memory、RAG、长期记忆、conversation memory、local-first memory、MCP memory server，且 README 发布 recall/benchmark/SOTA 数字时，必须做 evidence-first benchmark audit，而不是只复述 README。
+
+最小审计步骤：
+1. 固定 commit SHA、branch、package version、CLI/MCP entry points。
+2. 阅读 README benchmark 表后，定位 `benchmarks/` 下的 result JSON/JSONL、split 文件、methodology 文档和 benchmark scripts。
+3. 用脚本重算 headline 数字：records、hit/recall/ndcg、category breakdown、held-out/dev split overlap。注意很多 JSONL 把指标藏在 `retrieval_results.metrics.session.recall_any@5` 这类嵌套字段里，不要只找顶层 `hit`。
+4. 读取 metric 定义，明确是 retrieval recall / evidence hit / session hit，还是 end-to-end QA accuracy。
+5. 对竞品比较做公平性检查：不同 split、不同 top-k、retrieval recall vs QA accuracy、LLM rerank vs no-LLM 不得混同。
+6. 检查 local-first/privacy 边界：默认 provider、external API consent、auto hooks、MCP write/delete tools、WAL/audit。
+7. 给 adoption 结论时优先区分：canonical memory、evidence archive、secondary search index、agent diary、KG supplement。
+8. 若用户问“对本地大脑层级是否有帮助”，先审计当前 `~/Documents/brain` 结构和 MOC，再判断该仓库是改善知识层级、检索召回、证据边界、还是只增加第二记忆栈。详细流程见 `references/local-brain-memory-repo-adoption.md`。
+
+详细清单见 `references/ai-memory-repo-benchmark-audit.md`；本地大脑适配见 `references/local-brain-memory-repo-adoption.md`。
+
+### 1.4 Agent Orchestration / Swarm Framework 深度扫描
+
+当目标仓库宣称 agent orchestration、swarm coordination、AI 军团协作、Claude Code/Codex integration、MCP tool hub、agent federation、self-learning agent platform 时，必须把“宣传的群智能”拆成三类证据：真实执行路径、协作状态账本、安全/供应链边界。
+
+最低要求：固定 commit；统计 repo/代码/skills/commands/plugins/MCP surface；阅读 README、STATUS/USERGUIDE、verification/witness docs、install/postinstall scripts、CLAUDE.md/AGENTS.md/.agents/.claude；检查 `agent_spawn`/`task_assign`/swarm/consensus/federation 是否真的执行、跨进程/跨节点，还是只写本地 metadata/EventEmitter/stub。
+
+默认三视角评审：
+- Architecture: runtime topology、CLI/MCP/tool registry、agent lifecycle、memory/source-of-truth、provider/router/cost、与 Hermes memory/multi-model/cron/skills/gateway 的重叠。
+- Security/supply-chain: `curl|bash`、`npx @latest`、global install、postinstall/native deps、terminal/browser/GitHub/auto-install tool surface、secret forwarding、remote MCP auth、federation crypto/trust 是否真实现。
+- Product/workflow: named agents、typed mailbox、lead-authoritative plan、complexity routing、budget preflight、local brain learning loop、hook lifecycle、tool group gating。
+
+结论优先选择 Hermes-native selective extraction，而不是整体安装。P0 借鉴通常是 capability witness、claim/lease/handoff ledger、budget/hop circuit breaker；P1 才是 typed SendMessage、AIDefence-lite、lazy-load/tool inventory；federation 和第二记忆栈默认暂缓。
+
+详细 checklist 和 ruvnet/ruflo 审计经验见 `references/agent-orchestration-repo-audit.md`。
+
+Agent Reach 这类“互联网能力 installer + doctor + routing skill”仓库的 Hermes 对照案例见 `references/agent-reach-hermes-selective-adoption.md`。默认姿态：不安装第二套栈；选择性借鉴 capability doctor、intent-to-tool routing matrix、setup dry-run/safe-mode UX、secret permission doctor、docs/capability drift lint。
+
+### 1.5 Agentic Development Environment / AI IDE 深度扫描
+
+当目标仓库是 AI IDE、agentic terminal、coding agent、自动化开发平台，或用户问“对 Hermes 自身有什么提升”时，除 README/package/核心代码外，必须额外检查这些信号源：
+
+```bash
+# Agent-readable context / repo-local skills / workflows / specs
+git ls-files 'AGENTS.md' 'WARP.md' 'CLAUDE.md' '.agents/**' '.claude/**' '.warp/**' 'specs/**' '.github/**'
+
+# GitHub automation and agent loops
+find .github/workflows -maxdepth 1 -type f 2>/dev/null | sort
+grep -RIn "ready-to-spec\|ready-to-implement\|plan-approved\|agent\|review.json\|triage\|spec" .github .agents .warp specs 2>/dev/null | head -200
+
+# Ownership/routing and release gates
+git ls-files '.github/STAKEHOLDERS' 'CODEOWNERS' 'resources/channel-gated-skills/**' 2>/dev/null
+```
+
+重点识别并映射到 Hermes 原生能力：
+- **Spec-first 链路**: `PRODUCT.md` + `TECH.md` + implementation 同 PR 同步 → 映射到 Hermes `specs/<feature>/` 与 P10/P9/Loop。
+- **Issue → spec → plan-approved → implementation → review**: GitHub labels + workflows + human approval gates → 映射到 Hermes cron/webhook/GitHub skills。
+- **Structured review artifacts**: `review.json`、annotated diff、禁止 agent 直接发布评论 → 映射到 Hermes 多模型 review/cross-patch 的可审计输出。
+- **Repo-local skill specialization**: `specializes:` 或项目覆盖层 → 映射到 Hermes core skill + project-local overlay，避免复制整套 skill。
+- **Agent-readable repo context**: `WARP.md`/`AGENTS.md`/`.agents/skills` → 映射到 Hermes repo 根上下文与 contributor guide。
+- **Feature/channel gating**: dogfood/preview/stable、channel-gated skills、flag lifecycle → 映射到 Hermes tools/skills/gateway adapters 的灰度发布。
+- **Ownership routing**: `.github/STAKEHOLDERS` 或 CODEOWNERS 扩展 → 映射到 Hermes issue/PR triage 的 SME 路由。
+- **External CLI agent registry**: Claude/Codex/Gemini/OpenCode/Copilot/Cursor 等检测与 skill provider 兼容 → 映射到 Hermes delegation/external-agent registry。
+- **Verification artifacts**: integration test screenshots/videos/traces/transcripts → 映射到 Hermes gateway/browser/TUI/cron 的 replayable artifacts。
+- **Telemetry/privacy rules**: UGC/secrets 标记、payload 最小化 → 映射到 Hermes tool/gateway/memory telemetry 边界。
+
+这类评估的默认结论通常是“选择性借鉴方法论，不复制代码”：大型 AI IDE 往往深度绑定语言、UI runtime、云端服务和许可证；高价值部分多在工作流、治理、review artifact、发布门禁和 agent-readable context。
+
+### 1.6 GUI / Computer-Use Agent 深度扫描
+
+当目标仓库是 desktop GUI agent、computer-use agent、visual grounding agent、pyautogui/Accessibility 自动化框架，或像 Agent-S 一样提供 `agent_s` / OpenClaw wrapper / GUI skill 时，必须使用 `references/gui-computer-use-agent-audit.md`。默认结论优先是 Hermes-native selective extraction，不整体引入运行时：先固定 commit/license/package entry point，再读 README、CLI/wrapper、grounding/ACI、action primitive、local code/bash env、trajectory/judge/bBoN、CI/benchmark 证据。
+
+重点证据字段：screen/OCR/grounding preflight、单显示器/分辨率假设、Accessibility/Input Monitoring/clipboard 权限、shell/Python/code execution 是否 default-off、有无 `eval`/free-form action code、日志是否持久化 screenshot/command/API key、timeout/step budget/interrupt、fact-caption/trajectory/judge artifact 是否可复核。
+
+可借鉴方向：capability doctor、typed GUI action contract、trajectory reflection/drift reviewer、behavior best-of-N evidence schema、多轨迹 comparative judge。禁止在未做 sandbox/permission/log-redaction certification 前，把外部 GUI agent 作为 Hermes 自动执行器直接安装或调用。
+
+### 1.7 Agent Proxy / Quota Router 深度扫描
+
+当目标仓库是 local AI proxy、multi-account/token manager、provider router、quota/rate-limit manager、model remapper、OAuth/token pool、协议兼容层，或用户问“对 Hermes 多模型/路由/额度/gateway 自身有什么优化”时，必须把它和 Hermes 现有 `quorum.yaml`、`consult_models.py`、`model_quota.py`、`model_health.py` 对照，而不是只看 README。
+
+最低要求：固定 commit 和 license；阅读 proxy config、token/account manager、rate_limit、monitor/stats、sticky/session、model mapping、auth/API docs；搜索 `quota|rate_limit|retry-after|reset|sticky|health_score|remaining_quota|mapped_model|token|account|oauth|monitor|circuit`；运行或检查 Hermes consult status / quota snapshot。
+
+默认结论优先是 Hermes-native selective extraction：
+- P0: quota confidence-gated routing、reset-aware provider/model lockouts、routing decision ledger。
+- P1: capability-aware model mapping、known-exhausted quorum skip、conversation/model affinity。
+- P2: protocol compatibility regression suite、config/gateway sync selfcheck、license firewall。
+
+如果多模型 consult 给出 weak consensus / truth_not_certified，只能作为建议池；最终报告必须引用已读文件证据。对非商业/share-alike license 的仓库，默认 clean-room 提炼模式，禁止复制源码进入 Hermes，除非单独 license review。
+
+详细 checklist 见 `references/agent-proxy-quota-router-audit.md`。
+
+### 1.8 Official API/Admin CLI 深度扫描
+
+当目标是官方 API CLI、admin CLI、provider usage/quota CLI，或用户问“这个 CLI 是否能补齐 Hermes/provider 自动化”时，不要把它当普通 agent 框架处理。先确认它是 API/admin CLI、coding-agent CLI、SDK bin，还是同名旧包；固定 repo/release/checksum；解析源码 command registry；检查 admin key、org/project scope、debug body logging、base-url/proxy、PATH binary 冲突；默认先沙箱评估，不安装、不写全局密钥。详细 checklist 见 `references/official-api-cli-audit.md`。
+
+### 1.9 Provider Usage Telemetry / Token Accounting 深度扫描
+
+当目标仓库是 token usage tracker、本地 JSONL 用量解析器、pricing/cost estimator、quota/statusline/live usage 工具，或用户问“能不能补齐 Hermes provider-quota / model routing 可观测性”时，使用 `references/provider-usage-telemetry-repo-audit.md`。重点不是整体引入 CLI/TUI/GUI，而是 clean-room 提取：redaction gate、本地 usage parser、增量 cache、pricing cache、默认关闭的 official quota probe、consult routing decision ledger。任何 credential/auth/official quota 表面都必须 redaction-first，且 not-certified 多模型产物只能进 taskpool advisory，不能直接授权实现。
+
+### 1.10 兼容性检查
 
 | 检查项 | 方法 | 不兼容处理 |
 |--------|------|-----------|
@@ -302,14 +417,59 @@ ls ~/.claude/skills/ | grep "<prefix>" | wc -l
 
 ---
 
+## 选择性借鉴 → Hermes 原生实现 (Phase 6)
+
+当评分在 60-79 区间决定"选择性借鉴"时，不是直接 fork 代码，而是：
+
+### 6.1 方法论提取
+1. 阅读目标仓库的核心 SKILL.md / 提示词 / 工作流
+2. 剥离其基础设施依赖（如 gstack 的 ~/.gstack, Claude Code preamble scripts）
+3. 提取纯方法论：触发条件、分级标准、验证清单、工作流阶段
+4. 识别 Hermes 现有工具的对应映射
+
+### 6.2 双脑翻译
+1. 将方法论描述 + Hermes 约束 封装为 state.json
+2. 发送给 Claude Code：`claude -p "Design Hermes-native equivalent of <methodology>"`
+3. Claude Code 产出完整的 SKILL.md（YAML frontmatter + markdown body）
+4. 验证：仅用 Hermes 原生工具（browser_*, terminal, read_file, write_file, patch）
+
+### 6.3 落地验证
+1. 创建 ~/.hermes/skills/<name>/SKILL.md
+2. 验证：触发词、model 推荐、步骤完整性、verification checklist
+3. self-test 确认系统无回归
+4. 对比原版：功能覆盖率、依赖数、模型绑定、许可证差异
+
+### 案例: gstack 选择性借鉴
+- 评分: 62/100 → 选择性借鉴
+- 提取: browser-qa (QA 方法论), design-audit (视觉审查), ship (发布管线)
+- 原版依赖: Claude Code + ~/.gstack + 95MB
+- Hermes 版: 3 个 SKILL.md, 总共 8.8KB, 零新依赖, 10 模型通用
+- 关键原则: 不复制代码, 不引入运行时依赖, 不绑定特定模型
+
 ## 输出物
 
 - 评估报告（本次分析的结构化输出）
 - 集成计划（如决定引入）
 - 风险登记册
 - 组件提取方案（如选择性借鉴）
+- Hermes 原生 skill（如 Phase 6 触发）
+
+如果本次评估产出了新的 Hermes 原生 artifact（skill / script / spec / workflow），后续治理与留痕应移交给 `private-fork-evolution-governance`：补 evolution note、verification 证据与 upgrade-survival 检查，而不是把评估报告当成完整闭环。
 
 ## 约束
 
 - 遵循项目规范
 - 在 context budget 内完成
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

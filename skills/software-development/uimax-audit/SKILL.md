@@ -1,11 +1,33 @@
 ---
 name: uimax-audit
-description: "UIMax — Systematic UI quality audit with A-F grading. Extends dogfood QA into quality scoring across 6 dimensions: visual design, responsiveness, accessibility, code quality, interaction, console health. Produces graded report + optimization roadmap."
+description: Use when you need guidance on uIMax — Systematic UI quality audit with A-F grading.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [qa, ui, audit, grading, browser, accessibility]
+metadata:
+  hermes:
+    tags:
+    - qa
+    - ui
+    - audit
+    - grading
+    - browser
+    - accessibility
+    related_skills:
+    - color-contrast-checker
+    - design
+    - dogfood
+    - loop
+    - p10
+    - plan
+    - popular-web-designs
+    - router
 ---
 
 # UIMax — UI Quality Audit with A-F Grading
+
+## Overview
+
 
 > Comprehensive UI quality scoring across 6 dimensions. Goes beyond bug-finding (dogfood) into quality measurement and optimization planning.
 
@@ -14,7 +36,7 @@ tags: [qa, ui, audit, grading, browser, accessibility]
 - User says "UIMax", "UI审计", "UI评分", "UI检查", "UI走查"
 - Before/after optimization loops to measure improvement
 - Pre-release quality gates
-
+- Don't use for: requests that do not need you need guidance on uIMax — Systematic UI quality audit with A-F grading; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## Scoring Dimensions
 
 | Dimension | What to Check | A Criteria |
@@ -34,13 +56,18 @@ tags: [qa, ui, audit, grading, browser, accessibility]
 
 For each page/component:
 
-1. **Navigate** to the page
-2. **Check console** for JS errors: `browser_console(clear=true)`
-3. **Screenshot + analyze**: `browser_vision(question="Analyze UI quality...", annotate=true)`
-4. **Test interactions**: Click through key flows, check console after each
-5. **Note issues** with severity and category
+1. **Read the UI test ledger first** (`docs/UI_TEST_CASES.md`, project Workpad, or equivalent) and choose the exact flow/status to verify.
+2. **Navigate** to the page in browser-harness / a real browser at the target viewport.
+3. **Actually perform the documented flow**: click, type, submit, back/interrupt, switch theme/language, and confirm finish/error states. Do not score from screenshots alone.
+4. **Check console** for JS errors: `browser_console(clear=true)`
+5. **Inspect network/storage where relevant**; redact tokens/passwords/private values in reports.
+6. **Screenshot + analyze**: `browser_vision(question="Analyze UI quality...", annotate=true)`
+7. **Test interactions**: touch target size, press feedback, loading/error states, fixed header/bottom-nav safe-area, keyboard/focus/ARIA, reduced-motion, dark/i18n contrast.
+8. **Note issues** with severity and category, and link each issue to the test case ID and evidence path.
 
 **Important**: React CSR apps may show "Empty page" in browser_snapshot. Use browser_vision screenshots instead.
+
+**Acceptance rule**: UIMax scoring is secondary to flow truth. A visually polished screenshot is not a pass if the documented business flow was not actually completed through the browser.
 
 ### Phase 2: Code Audit (terminal/file tools)
 
@@ -417,3 +444,17 @@ This skill pairs with `p10` for optimization and `loop` for iterative improvemen
 3. Execute fixes
 4. UIMax re-audit → verify improvement
 5. Loop until all A
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] The Definition of Done items above were explicitly checked, not assumed.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

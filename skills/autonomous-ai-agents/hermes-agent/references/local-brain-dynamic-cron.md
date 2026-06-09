@@ -108,6 +108,34 @@ sys.exit(0 if p.returncode == 0 else 2)
 
 Use this for nightly audits such as autonomous evolution or skill-steward graph checks when the LLM adds little value and has been causing timeout/provider-pinning failures. Keep the wrapper deterministic and auditable; do not let it create cron jobs recursively.
 
+## Pitfall: `script` field is a filename, not a command
+
+The cron `script` field must be a **filename** under `~/.hermes/scripts/`, not a full shell command. The cron runner prepends the scripts directory to the value.
+
+Wrong (causes `Script not found`):
+```bash
+hermes cron edit <job_id> --script "python3 ~/.hermes/scripts/hermes-cleanup.py --session-ttl 7"
+```
+
+Correct:
+```bash
+hermes cron edit <job_id> --script hermes-cleanup.py --no-agent
+```
+
+Arguments like `--session-ttl 7` should be handled inside the script or by a wrapper script, not embedded in the `script` field.
+
+## Pitfall: `--accept-hooks` is a global arg
+
+When using `hermes --accept-hooks cron edit ...`, the `--accept-hooks` flag must appear **before** the `cron` subcommand, not after `edit`. Placing it after the subcommand causes `unrecognized arguments: --accept-hooks`.
+
+```bash
+# Correct
+hermes --accept-hooks cron edit <job_id> --script my-script.py --no-agent
+
+# Wrong — causes argparse error
+hermes cron edit <job_id> --script my-script.py --no-agent --accept-hooks
+```
+
 ## Safe backup after cron hardening
 
 If the task includes syncing the user's personal Hermes assistant, never commit live `~/.hermes` after cron/script edits. Export through the sanitized personal-brain backup path, then validate and push only that repo:

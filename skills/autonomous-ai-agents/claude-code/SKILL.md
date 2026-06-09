@@ -1,18 +1,33 @@
 ---
 name: claude-code
-description: Delegate coding tasks to Claude Code (Anthropic's CLI agent). Use for building features, refactoring, PR reviews, and iterative coding. Requires the claude CLI installed.
+description: Use when you need to delegate coding tasks to Claude Code (Anthropic's CLI agent).
 version: 2.2.0
 author: Hermes Agent + Teknium
 license: MIT
 metadata:
   hermes:
-    tags: [Coding-Agent, Claude, Anthropic, Code-Review, Refactoring, PTY, Automation]
-    related_skills: [codex]
+    tags:
+    - Coding-Agent
+    - Claude
+    - Anthropic
+    - Code-Review
+    - Refactoring
+    - PTY
+    - Automation
+    related_skills:
+    - codex
 ---
 
 # Claude Code — Hermes Orchestration Guide
 
+## Overview
+
+
 Delegate coding tasks to [Claude Code](https://code.claude.com/docs/en/cli-reference) (Anthropic's autonomous coding agent CLI) via the Hermes terminal. Claude Code v2.x can read files, write code, run shell commands, spawn subagents, and manage git workflows autonomously.
+
+## When to Use
+
+- You need to delegate coding tasks to Claude Code (Anthropic's CLI agent)
 
 ## Prerequisites
 
@@ -510,6 +525,22 @@ terminal(command="tmux new-session -d -s task3 -x 140 -y 40 && tmux send-keys -t
 terminal(command="sleep 30 && for s in task1 task2 task3; do echo '=== '$s' ==='; tmux capture-pane -t $s -p -S -5 2>/dev/null; done")
 ```
 
+## Mining Saved Claude Code Sessions for Workflow/Profile Analysis
+
+Use this path when the user asks to analyze past Claude Code conversations, infer work habits, reconstruct a project's working goals, or audit long-running Claude workflows.
+
+Full playbook: `references/session-log-analysis.md`
+
+Core pattern:
+1. Locate saved sessions under `~/.claude/projects/<normalized-project-path>/*.jsonl` and in-repo context under `CLAUDE.md`, `.claude/skills/`, `.claude/rules/`, `.claude/agents/`.
+2. Parse logs instead of reading them raw: separate direct user prompts, assistant text summaries, agent dispatch prompts, tool results, and `ai-title` records.
+3. Redact secrets before writing any extracted corpus or final summary.
+4. Build compact evidence with claim IDs and evidence IDs; cross-check conversation-derived claims against `package.json`, route/screen inventory, docs, ADRs, and `git log`.
+5. For multi-model analysis, feed the compact evidence state to `consult_models.py`; ensure claims are in the top-level `claims` field with `evidence[].supports`, not only a prose `claims_to_check` note.
+6. In the final answer, report confidence/caveats and artifact paths, not raw private transcript dumps.
+
+Pitfall: direct user prompts outrank assistant summaries. Do not generalize one project's preferences into a global user profile unless the user asks for long-term profile work and the evidence repeats.
+
 ## CLAUDE.md — Project Context File
 
 Claude Code auto-loads `CLAUDE.md` from the project root. Use it to persist project context:
@@ -751,8 +782,7 @@ claude auth login --sso       # Enterprise
 claude update
 ```
 
-## Pitfalls & Gotchas
-
+## Common Pitfalls
 1. **Interactive mode REQUIRES tmux** — Claude Code is a full TUI app. Using `pty=true` alone in Hermes terminal works but tmux gives you `capture-pane` for monitoring and `send-keys` for input, which is essential for orchestration.
 2. **`--dangerously-skip-permissions` dialog defaults to "No, exit"** — you must send Down then Enter to accept. Print mode (`-p`) skips this entirely.
 3. **`--max-budget-usd` minimum is ~$0.05** — system prompt cache creation alone costs this much. Setting lower will error immediately.
@@ -778,3 +808,10 @@ claude update
 8. **Report results to user** — after completion, summarize what Claude did and what changed
 9. **Don't kill slow sessions** — Claude may be doing multi-step work; check progress instead
 10. **Use `--allowedTools`** — restrict capabilities to what the task actually needs
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

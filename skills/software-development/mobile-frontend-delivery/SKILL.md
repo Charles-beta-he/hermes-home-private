@@ -39,8 +39,12 @@ Don't use for:
 | Stale deployed PWA content or icons | `references/pwa-cache-invalidation.md` |
 | Install prompt / iOS install guidance | `references/pwa-install-prompt.md` |
 | Safe area, notch, Home Indicator, splash anti-repeat | `references/pwa-safe-area-handling.md` |
+| Android installed PWA bottom TabBar floats too high / `screen.height - innerHeight` safe-area over-offset | `references/android-pwa-safe-area-overoffset.md` |
 | App icons, favicons, manifest icon sets, splash colors | `references/icon-asset-pipeline.md` |
+| Android installed PWA shows wrong launcher/home-screen icon despite correct manifest paths | `references/android-pwa-launcher-icon-regression.md` |
 | Capacitor / WebView native shell decision and pitfalls | `references/hybrid-app-packaging.md` |
+| Android native Back should exit on Home/main tabs vs pop history | `references/native-back-button-terminal-tabs.md` |
+| Web/PWA browser Back returns from Home/main tab into stale flow pages | `references/native-back-button-terminal-tabs.md` |
 | Authenticated production screenshots | `references/playwright-authenticated-screenshots.md` |
 
 ## Default Delivery Checklist
@@ -72,17 +76,21 @@ Don't use for:
 - `viewport-fit=cover` is required but not sufficient.
 - Run standalone-only polyfills in `<head>` before CSS render if iOS reports zero safe-area values.
 - Make `--safe-bottom` / `--safe-top` the single source of truth; avoid compounding constants across App, Screen, and TabBar.
+- On Android installed PWAs, do **not** synthesize iPhone-style bottom inset from `screen.height - window.innerHeight`; that delta can include system chrome and lift the TabBar too high. See `references/android-pwa-safe-area-overoffset.md`.
 
-### Icon and splash assets
+### Icon, splash, and installed app labels
 
 - Map native source packages to web targets intentionally: iOS 180 for apple-touch-icon, Android playstore 512 for manifest/maskable, high-res source for favicons.
 - Strip SVG shadows, filters, and decorative strokes from production favicon/mask assets.
 - Verify dimensions and hashes after generation, especially when design packages contain multiple visual variants.
+- When changing the installed PWA/home-screen app name, update every install-label surface together: web manifest `name` and `short_name`, `<meta name="application-name">`, `<meta name="apple-mobile-web-app-title">`, and any native-shell config such as Capacitor `appName`. Keep browser `<title>` and in-app brand copy unchanged unless the request explicitly asks for those too.
+- Verify the built artifact, not only source: parse `dist/manifest.webmanifest` for `name`/`short_name`, inspect `dist/index.html` for app-name meta tags, and run the normal build gate before committing.
 
 ### Hybrid WebView packaging
 
 - Prefer Capacitor when the existing SPA is clean, team is web-focused, and native requirements are moderate.
 - Intercept native back button and route through the SPA router; otherwise system back/side-swipe can exit the app.
+- For primary TabBar routes, explicitly decide terminal-route behavior. If Home/Card/Wealth/Me should behave like app roots, check the route predicate before `window.history.length` and call `CapacitorApp.exitApp()`; don't let Android Back resurrect prior flow pages just because browser history exists. See `references/native-back-button-terminal-tabs.md`.
 - Plan native/security gaps explicitly: biometrics, push, SSL pinning, secure keyboard, jailbreak/root detection.
 
 ### Screenshot verification
@@ -91,6 +99,16 @@ Don't use for:
 - Run Playwright from a project with `@playwright/test` installed.
 - Prefer `domcontentloaded` plus a bounded render wait over `networkidle` for production SPAs with polling/SSE.
 - Always check whether the page redirected to login before treating screenshots as authenticated evidence.
+
+### Shared visual-component copy changes
+
+When a mobile/PWA UI task asks to remove, rename, or hide text on a reusable visual component (for example a card face, account tile, banner, bottom action, or detail header), treat the component as the acceptance surface, not only the screenshot route:
+
+1. Locate the reusable component and all route-level consumers before editing.
+2. Add a negative regression test at the component level (`queryByText(...)` is null for removed copy) so every consumer inherits the behavior.
+3. Keep adjacent non-target visuals intact (icons, status, amount, masked identifiers, spacing intent) unless the task explicitly asks to remove them.
+4. Run both the component test and at least one representative route/detail-screen test that depends on the shared component, then run the build gate.
+5. In closeout, state which consumers are covered by reuse and which still need live UI evidence before final Lark/production completion.
 
 ## Common Pitfalls
 

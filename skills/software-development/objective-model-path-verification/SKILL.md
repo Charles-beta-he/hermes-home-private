@@ -101,6 +101,16 @@ When the user wants concise output, perform the gate internally and final only t
 - For taskpool/control-plane work, combine with `taskpool-control-plane`; task records and evidence ledgers remain canonical.
 - For user-facing UI work, add visual/UI verification and avoid mock-only acceptance.
 
+## Runtime Prompt-Gate Landing
+
+When operationalizing this workflow as a Hermes runtime/system-prompt gate:
+
+- Keep the architecture claim bounded: this is configurable prompt guidance, not a learned world model.
+- Add an explicit config switch and avoid injection when the runtime lacks the relevant tool/skill capability.
+- Test enabled, disabled, and tool-unavailable paths, then smoke-test the final built prompt for both the guidance text and the skill name.
+- If modifying the gateway that carries the active conversation, do not restart it casually inside the reply chain; land code/tests/commits first and state the safe-restart boundary.
+- See `references/runtime-prompt-gate-landing.md` for the session-derived checklist and verification evidence pattern.
+
 ## Pitfalls
 
 1. **Marketing-word trap**: “world model” vocabulary is a planning metaphor here, not proof of JEPA-like architecture or environment learning.

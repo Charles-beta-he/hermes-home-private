@@ -41,7 +41,7 @@ Advance the pool without doing any of these by accident:
 6. Clean up bounded automation claims before final reporting.
    - If `autorun-runner`, `auto-claim-and-handoff`, or the dynamic auto-completer left tasks in `claimed` but no worker body actually ran, release those tasks back to `pending`.
    - Use an explicit reason such as `bounded_full_pool_advance_handoff_or_evidence_verified_release_no_worker_body`.
-   - Use a CLI-accepted transition authority; `brain_task_orchestrator.py transition --authority` is an enum. `budget-handoff` is the safe cleanup authority for this release path. Do not invent free-form authority labels like `bounded-full-pool-advance-cleanup` because argparse rejects them and leaves claims wedged.
+   - Use a CLI-accepted transition authority; `brain_task_orchestrator.py transition --authority` is an enum. `claim-and-handoff` and `budget-handoff` are both safe cleanup authorities. Do not invent free-form authority labels like `bounded-full-pool-advance-cleanup` because argparse accepts them silently but the transition does nothing. See `references/bulk-taskpool-unclog.md` for the full authority enum table.
    - Verify `claimed=0`, `stale_claims=0`, and that the task remains honestly dispatchable rather than falsely complete.
 
 7. Re-test the pool.

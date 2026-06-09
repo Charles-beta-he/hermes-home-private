@@ -1,18 +1,31 @@
 ---
 name: github-issues
-description: Create, manage, triage, and close GitHub issues. Search existing issues, add labels, assign people, and link to PRs. Works with gh CLI or falls back to git + GitHub REST API via curl.
+description: Use when you need guidance on create, manage, triage, and close GitHub issues.
 version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
   hermes:
-    tags: [GitHub, Issues, Project-Management, Bug-Tracking, Triage]
-    related_skills: [github-auth]
+    tags:
+    - GitHub
+    - Issues
+    - Project-Management
+    - Bug-Tracking
+    - Triage
+    related_skills:
+    - github-auth
 ---
 
 # GitHub Issues Management
 
+## Overview
+
+
 Create, search, triage, and manage GitHub issues. Each section shows `gh` first, then the `curl` fallback.
+
+## When to Use
+
+- You need guidance on create, manage, triage, and close GitHub issues
 
 ## Prerequisites
 
@@ -367,3 +380,27 @@ curl -s \
 | Comment | `gh issue comment N --body ...` | `POST /repos/{o}/{r}/issues/N/comments` |
 | Close | `gh issue close N` | `PATCH /repos/{o}/{r}/issues/N` |
 | Search | `gh issue list --search "..."` | `GET /search/issues?q=...` |
+
+## Issue Triage: Checking if Fixes Are Already Merged
+
+When told "these issues need to be closed/fixed", check whether the fix commits are already in the target branch BEFORE attempting merges or cherry-picks:
+
+1. **Find the fix commit(s)** — from session context, commit message, or `git log --all --oneline --grep="<keyword>"`.
+2. **Check containment**: `git branch -r --contains <sha> | grep <target-branch>`. If the target branch appears, the fix is already merged — just close the issue.
+3. **Verify content identity**: `git diff <target-branch> <fix-sha> -- <key-files>` — if empty, the files are identical. Non-empty doesn't mean unmerged (file may have evolved); check the specific fix logic.
+4. **Only attempt cherry-pick/merge** if the commit is genuinely NOT in the target branch.
+
+Cherry-pick conflict resolution: when the file has diverged, compare the fix's intent vs current state. If the current code already implements the same fix differently (e.g., toast vs banner for the same prompt-only behavior), the cherry-pick is unnecessary.
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

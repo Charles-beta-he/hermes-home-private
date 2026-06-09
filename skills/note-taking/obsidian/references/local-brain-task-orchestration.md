@@ -67,11 +67,21 @@ Useful concepts:
 ```bash
 python3 ~/.hermes/scripts/brain_task_orchestrator.py add "任务标题" --priority P1 --project project-slug --status pending --concepts task,tag --objective "..." --accept "..." --json
 python3 ~/.hermes/scripts/brain_task_orchestrator.py dashboard --write
+python3 ~/.hermes/scripts/brainctl.py --json sync
 python3 ~/.hermes/scripts/brainctl.py --json reindex
 python3 ~/.hermes/scripts/brainctl.py --json search "任务关键词" --limit 10
+python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json
 ```
 
-`任务收件箱.md` is only a draft/inbox entry point. Direct `add` creates an independent task note under `05-实践与项目/tasks/`, then `任务池-排序.md` and `待完成任务运行态.md` show it after `dashboard --write`. If the user cannot see a task in Obsidian, first check whether it was mistakenly added only to session todo and repair by creating the canonical task note.
+`任务收件箱.md` is only a draft/inbox entry point. Direct `add` creates an independent task note under `05-实践与项目/tasks/`, then `任务池-排序.md` and `待完成任务运行态.md` show it after `dashboard --write`. `brainctl sync` does not by itself guarantee that `brainctl search` can find the new task: run `brainctl reindex` after sync and verify with a targeted search. If a combined long query returns `[]`, retry with a short distinctive term from one task title (for example the external skill/repo name) and then with an ASCII concept tag; FTS can miss multi-term mixed Chinese/English queries even when individual task notes are indexed. If the user cannot see a task in Obsidian, first check whether it was mistakenly added only to session todo and repair by creating the canonical task note.
+
+Git/commit caveat for this user's current brain setup: the canonical vault at `~/Documents/brain` may not itself be a git repo, while `brainctl sync` mirrors notes into `~/.hermes/notes/brain` inside the `~/.hermes` git repo. When the user expects a local commit for task-pool additions, detect the actual repo root before committing. Commit only the newly created/changed task note mirrors (and any intentional dashboard/artifact mirrors) with path-limited `git add -- <paths>`; do not sweep unrelated dirty `~/.hermes` notes, cache, checkpoints, auth, or project changes into the commit.
+
+Pitfalls when creating tasks by CLI:
+- `lane=evolution` requires architecture alignment fields. Include `--architecture-target`, `--capability-delta`, and `--anti-drift-check`, otherwise `brain_task_orchestrator.py add` fails with `evolution tasks require architecture alignment fields`.
+- After `add`, read the created task note. Some CLI/parser combinations may collapse repeated `--accept` values to only the last acceptance criterion. If the task note lost criteria, patch the Markdown immediately before dashboard/reindex/search verification.
+- When converting an external repo/framework audit into a task-pool item, include the multi-model artifact path and certification status in `acceptance_evidence`, but write conservative language if discussion is `not_certified` or weak consensus. Prefer `evidence-grounded advisory` over “certified” unless the artifact explicitly supports full certification.
+- `next --json` can refuse dispatch until reconcile runs when stale task state exists. Report this as scheduler state; do not imply the newly added task is broken.
 
 Inbox parser pitfall: example task bullets in fenced code blocks or HTML comments must not be ingested. When changing `brain_task_orchestrator.py ingest-inbox`, verify it only scans the real `## Inbox Drafts` section and skips code fences / HTML comments; otherwise documentation examples like `任务标题` can become accidental real tasks. After fixing parser behavior, remove accidental generated task notes only after project-wide reference search and dashboard regeneration.
 
@@ -90,6 +100,30 @@ python3 ~/.hermes/scripts/brainctl.py --json search "dispatch-dry-run" --limit 8
 ```
 
 Prefer ASCII concept tags (`tool-budget`, `permission-gates`, `dispatch-dry-run`) in new notes when stable search verification matters; `brainctl` FTS can miss long Chinese natural-language queries even when the content is indexed.
+
+## Document-function closure audit pattern
+
+When the user asks whether local-brain documents and functions are closed-loop, audit both Markdown governance state and script/document associations. Do not treat multi-model agreement as closure by itself; require deterministic proof.
+
+Recommended gates:
+
+1. Run structure/link/schema scanners:
+   - `python3 ~/.hermes/scripts/local_brain_main_hierarchy_migration_selfcheck.py --json`
+   - `python3 ~/.hermes/scripts/local_brain_exhaustive_audit.py --sample-limit 100`
+   - `python3 ~/.hermes/scripts/brainctl.py --json validate --write-dashboard`
+   - `python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json`
+   - `python3 ~/.hermes/scripts/brain_task_orchestrator.py proof-check --json`
+2. Scan for doc/function drift: Markdown references to scripts/commands that no longer exist, renamed canonical scripts, stale generated dashboard claims, and Obsidian wikilinks pointing to non-note artifacts such as `.json` proof files.
+3. Classify findings before edits: `safe_apply`, `archive_only`, `accepted_risk`, `false_positive`, `needs_manual_decision`.
+4. For legacy top-level folders after hierarchy migration, prefer archive-with-manifest under governance history over direct deletion. The manifest should record original path, archive path, content hashes, references searched, rollback, and verification commands.
+5. For validator false positives, patch the validator and tests instead of mutating canonical notes to satisfy a wrong rule. Example: derived task views (`type: task_inbox`, `type: derived_task_pool`, `derived: true`) must not be treated as active L3 tasks merely because they live under `/tasks/`.
+6. For stale script names, either update the docs to the canonical script or add a small compatibility wrapper when historical documents legitimately reference the old command. The wrapper must delegate to the canonical implementation and have a test/compile gate.
+7. After safe fixes, rerun all scanners plus `brainctl sync`, `brainctl reindex`, targeted `brainctl search`, and skill graph audit. Write review/proof/evolution artifacts and only then mark the task done with structured evidence.
+
+Pitfalls:
+- Writing a literal example like ``[[...json]]`` in a review note can itself become a broken wikilink. Describe the pattern in prose or code fences if necessary.
+- `brainctl validate --write-dashboard` writes an observability dashboard; it is not the source of truth and must not drive automatic vault edits without a reviewed repair plan.
+- A legacy proof warning such as `legacy body-only evidence accepted` can be accepted risk only when current proof-check status is PASS and the warning predates the current repair.
 
 ## Closure audit pattern
 

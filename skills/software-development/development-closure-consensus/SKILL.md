@@ -125,7 +125,7 @@ Derive an execution consensus for the current task:
 - delivery gates: commit scope, PR base/head, cross-repo dependency comments, merge order
 - learning gates: what to write back to public consensus vs project profile vs skill/script
 
-Use `references/abc-schema.md` as the canonical structure. Use `references/resolver-protocol.md` for the full runtime resolver sequence and terminal report format.
+Use `references/abc-schema.md` as the canonical structure. Use `references/resolver-protocol.md` for the full runtime resolver sequence and terminal report format. For projection-only approval/closeout systems, use `references/evidence-bound-authorization-closeout.md` to keep evidence-bound authorization non-executing and stale-aware.
 
 ### Phase 3 — Execute with stage gates
 
@@ -173,6 +173,7 @@ PR work is the delivery tail of closure, not the start. For the PR-specific port
 7. Failing to assetize a repeated manual closure path after it is proven.
 8. Treating a prototype-parity task as only a UI layout task while missing backend state/audit/permission semantics.
 9. Claiming security-sensitive/admin/PII flows are closed without executable evidence that the real request includes the required GA/MFA/audit parameters and writes durable audit/state records.
+10. Scope: approval/authorization ledgers in any projection-only control plane. Pitfall: treating human approval as execution authority. Evidence-bound authorization must recompute evidence freshness both at request time and at decision time; approval rows must stay non-executing until a separate executor/adapter contract is designed, gated, and verified. Anti-condition: if the task is purely UI copy or has no approval/evidence/authorization boundary, skip this pitfall.
 
 ## Verification Checklist
 

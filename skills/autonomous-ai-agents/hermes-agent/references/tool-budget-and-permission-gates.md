@@ -38,6 +38,8 @@ Rules:
 
 ## Iteration budget reached warning
 
+For the full P10 pattern and exact helper scripts, see `references/p10-iteration-budget-loop.md`.
+
 When CLI or automation prints `Iteration budget reached (N/N) — response may be incomplete`, the agent hit its LLM/tool-calling iteration cap, not necessarily the context window. Diagnose before raising the cap:
 
 1. Check the effective cap:

@@ -24,7 +24,7 @@ metadata:
 
 # Lark Task Reading
 
-Reference addendum: `references/uvisa-lark-taskflow-single-source-of-truth.md` is the current canonical UVISA Lark/work flow. For `uvisa-app-2.0`, because the project has an online address and a complete publishing flow, implementation merge/current-code proof plus deterministic verification is only an implementation-sendback gate; Lark final completion must wait for online-address UI 回收/验收 evidence. `references/uvisa-admin-lark-fasttrack-closeout.md` remains background guidance for tiering, atom mapping, and upgrade triggers, but does not override the SSOT.
+Reference addendum: `references/uvisa-lark-taskflow-single-source-of-truth.md` is the current canonical UVISA Lark/work flow. For `uvisa-app-2.0`, because the project has an online address and a complete publishing flow, implementation merge/current-code proof plus deterministic verification is only an implementation-sendback gate; Lark final completion must wait for online-address UI 回收/验收 evidence. `references/uvisa-admin-lark-fasttrack-closeout.md` remains background guidance for admin-tier tiering, atom mapping, and upgrade triggers via regex matrix, but does not override the SSOT. `references/uvisa-c端-iceberg-classifier.md` is the C端 task scope classifier: semantic signal extraction with weight-based decision tree, no regex matching. Use for C端 task intake tier assignment. Script: `~/.hermes/scripts/uvisa_c端_lark_classifier.py`. **Superseded for new work** by `references/uvisa-unified-iceberg-multimodel-consensus.md` which covers the unified classifier + multimodel consensus + control plane integration.
 
 ## Taskpool quarantine behavior
 
@@ -196,6 +196,7 @@ Keep these strengths together when changing either project.
 Lark/Feishu API shapes vary by tenant, version, and permission set. Code should be tolerant in reads, strict in payload contract.
 
 - Task list: `/task/v2/tasks?page_size=...&completed=false` with pagination.
+- Single task fetch: `GET /task/v2/tasks/{guid}` returns `data.task` directly. Use when paginated fetch times out or the task is not in the incomplete list. See `references/lark-direct-task-fetch-by-guid.md`.
 - Task update: `PATCH /task/v2/tasks/{guid}` with `{"task": {...}, "update_fields": [...]}`. The `task` wrapper is required — omitting it returns 400. See `references/lark-task-api-v2-update-and-closeout.md`.
 - Comments API: `POST /task/v2/tasks/{task_id}/comments` returns 404 on larksuite.com (international). Use `description` field for evidence instead.
 - `larksuite/cli` official dry-runs are useful for checking current endpoint/parameter shape without hitting the network: `task +get-my-tasks --as user --complete=false --page-all --dry-run`, `task tasklists list --as user --dry-run`, and `task tasklists tasks --as user --dry-run`. Treat this as an oracle/fallback aid, not a replacement for project-specific payload normalization.
@@ -353,6 +354,7 @@ Detailed patterns:
 - `references/lark-task-execution-closeout.md` for finite-task closeout sequencing.
 - `references/taskpool-progress-and-closeout.md` for local brain/Hermes taskpool progress checks: close completed claimed/running/review tasks, drain actionable multi-model advisory queues with target-binding checks, refresh proof/selfcheck/dashboard gates, and report the next dispatchable item with routing, pause reasons, and multi-model constraints.
 - `references/remote-package-monitor-closeout.md` for Railway/package/deploy monitoring, including the preferred authenticated `railway service status --all --json` / `railway deployment list --service ... --json` CLI path, safe evidence fields, and `closed` / `closed_with_remote_blocker` / `not_closed` status semantics.
+- `references/railway-ts-build-pitfalls.md` for Railway TypeScript build debugging: `tsc -b` vs `tsc --noEmit` behavioral differences, unused re-export TS6133 pitfall, and general Railway build troubleshooting checklist.
 - `references/uvisa-auth-support-closeout-notes.md` for the pattern where implementation already exists, the task is completed by adding regression proof/ledger evidence, Railway CLI monitor evidence, TG fallback notification, and PGID-based dev-server cleanup.
 - `references/uvisa-regression-proof-closeout-patterns.md` for stale UVISA Lark tasks where current code already satisfies the requirement or the safe fix is a small UI regression guard; includes `ToastProvider` test-wrapper pitfall for `TxDetailScreen` and precise closeout wording.
 - `references/uvisa-transaction-timestamp-localization.md` for wallet/assets/card transaction time tasks: service-layer timestamp normalization, local-time display, TDD guards, and the TypeScript strict-build pitfall found during UVISA task execution.
@@ -373,6 +375,7 @@ Detailed patterns:
 - `references/uvisa-forgot-payment-pin-reset.md` for forgot-payment-password/PIN-reset Lark tasks: implement missing `/api/auth/pin/forgot/send-code` and `/api/auth/pin/forgot/reset` as authenticated current-user + bound-email OTP endpoints, return masked email only, sanitize audit, test with `JwtAuthenticationToken` plus `ROLE_USER`, and preserve closeout budget before long multi-model review.
 - `references/uvisa-cs-session-cache-stale-flash.md` for CS chat stale-cache flash: module-level `msgs` array persists across navigations; clear at start of `refreshCsSession()` before API call, not in hook mount.
 - `references/uvisa-sw-update-banner-mounting.md` for SW update banner defined but never mounted: check `UpdateBanner` is imported and rendered in `App.tsx`, not just defined in `src/components/`.
+- `references/uvisa-ios-pwa-profile-install.md` for iOS QR/PWA Web Clip profile install tasks: direct `window.location.assign()` to a versioned `.mobileconfig`, do not session-suppress iOS rescan/remount prompts, validate CMS/icon payload, and use WebKit/iPhone smoke proof before implementation-sendback.
 - `references/uvisa-authenticated-endpoint-data-leak.md` for authenticated endpoints returning raw sensitive data: JWT-required ≠ safe; mask at controller layer, keep service methods raw for business logic.
 - `references/lark-task-api-v2-update-and-closeout.md` for batch task closeout via PATCH API: wrapped `task` object required, comments endpoint returns 404 on larksuite.com, use `description` field for evidence.
 
@@ -454,10 +457,83 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 ```
 
 - Detailed larksuite/cli auth + dry-run oracle notes: `references/larksuite-cli-auth-and-dryrun.md`.
+- Task detail lookup patterns (matrix snapshot fallback, prototype comparison): `references/lark-task-detail-lookup-patterns.md`.
 - Lark MCP user-auth recovery notes: `references/lark-mcp-user-auth-recovery.md`.
 - Lark OAuth duplicate-login / fixed-port single-flight guard notes: `references/lark-oauth-single-flight-guard.md`.
 - UVISA live auth + stale snapshot triage notes: `references/uvisa-live-auth-and-stale-snapshot-triage.md`.
 - Taskpool Lark cleanup + flow-tolerance notes: `references/taskpool-lark-removal-and-flow-tolerance.md`.
+
+## Task classification: unified iceberg system
+
+Three-layer classification for all UVISA Lark tasks (admin + C端 unified):
+
+### Layer 1: Deterministic iceberg analysis (free, instant)
+
+**Script:** `~/.hermes/scripts/uvisa_lark_unified_classifier.py`
+```bash
+python3 ~/.hermes/scripts/uvisa_lark_unified_classifier.py \
+  --input ~/.hermes/evidence/lark-sync/uvisa-app-2.0/live-tasks.json \
+  --write-back --json
+```
+Replaces both the old admin regex matrix and the C端-only iceberg classifier with a single unified system. Extracts semantic signals (amount/UI/status/nav/backend/human/security) with weight-based decision tree. Outputs `tier + scope + domain + confidence`. No regex matching for classification decisions.
+
+**Why regex fails for C端:** C端任务标题描述的是用户操作路径（"点击底部导航栏→资产→转出→跨境汇款→输入金额→下一步"），不是技术实现。正则看到"跨境汇款"就判定"需后端"，但实际任务可能是纯前端 UI 对齐。
+
+### Layer 2: Multimodel consensus (on-demand, 3 models)
+
+For low-confidence or needs-triage tasks from Layer 1, real model consensus replaces guesswork:
+
+```bash
+# Review queue generation (dry-run)
+python3 ~/.hermes/scripts/uvisa_lark_multimodel_classifier.py \
+  --input ~/.hermes/evidence/lark-sync/uvisa-app-2.0/live-tasks.json \
+  --dry-run --json
+```
+
+**IMPORTANT:** The script cannot call models directly from Python — `consult_models.py` requires a state_file and subcommands (`run state_file`), not `--model X --prompt Y`. Instead:
+1. Run the classifier with `--dry-run` to output the review queue
+2. Use `delegate_task(tasks=[...], toolsets=[])` with empty toolsets for real model calls
+3. Aggregate votes and write back results
+
+Pattern for real multimodel consensus:
+```python
+# delegate_task with 2-3 tasks in parallel, each a different "model perspective"
+delegate_task(tasks=[
+    {"goal": "Classify these tasks: ...", "toolsets": []},
+    {"goal": "Classify these tasks: ...", "toolsets": []},
+], toolsets=[])
+# Each task returns JSON with tier/scope/domain per task
+# Majority vote wins; agreement = matching_votes / total_votes
+```
+
+Results write back to taskpool frontmatter:
+```yaml
+iceberg_tier: S0
+iceberg_confidence: multimodel_consensus
+iceberg_multimodel_consensus: agreement=100%; deterministic=M; final=S0; models=mimo-v2.5-pro×2
+```
+
+### Layer 3: Control plane integration
+
+- **Dispatch score**: S0=+12, S1=+10, F=+8, L=-3, B=-15 → quick fixes float to top
+- **Preflight gate**: lane=work + project has value but missing `source_weighting_policy_ref` → blocked
+- **Work contract**: L tasks auto-add `A-backend-contract` acceptance atom, B tasks add `A-human-confirmation`
+- **Dashboard**: Iceberg Tier Distribution block in `brain_task_orchestrator.py dashboard --write`
+
+### Legacy scripts (still available, narrower scope)
+
+| Script | Scope | Method |
+|---|---|---|
+| `uvisa-admin-lark-fasttrack-closeout.py` | admin only | regex keyword matrix |
+| `uvisa_c端_lark_classifier.py` | C端 only | semantic signal + weight tree |
+
+Prefer the unified classifier for new work. Legacy scripts remain as reference implementations.
+
+### When to use which layer
+
+- **All tasks** → Layer 1 (deterministic) runs first automatically
+- **confidence=low / tier=M / scope=inferred** → Layer 2 (multimodel consensus) for validation
+- **Dispatch/preclose** → Layer 3 (control plane) handles sorting and gates
 
 ## Common Pitfalls
 
@@ -473,6 +549,8 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 - `lark-mcp login` is a separate path from `lark-cli config bind`: it requires CLI `--app-id/--app-secret` or environment `APP_ID` / `APP_SECRET`, not `FEISHU_APP_ID` directly. If it fails with `Missing App Credentials` and `lark-mcp whoami` says no active sessions while auth-store has only `client_id_for_local_auth`, classify `CURRENT_BLOCKED_NO_TOKEN` + app-credential blocker; use snapshots only as stale triage. If a safe credential source is available, prefer the single-flight OAuth guard (`python3 ~/.hermes/scripts/lark_oauth_guard.py --json --cleanup-stale`) over raw background login; if the guard is unavailable, run a redacted `/tmp` helper that passes credentials without printing them, complete the browser authorization if prompted, then prove success with the live task reader (`--scope-mode only --summary`) rather than `whoami` alone. If plain background capture shows no authorization URL, rerun with a PTY so the `Authorization URL:` line flushes. If `EADDRINUSE ::1:3010` appears, kill the stale login listener on fixed port 3010 before retrying. If `lark-mcp login` exits 0 but `authStore.storageDataCache.tokens` remains empty and no success line appears, do not treat it as authorized. If the auth page errors with `20043` for `task:taskwrite`, retry with minimum valid read scopes `auth:user.id:read task:task:read task:tasklist:read`. If it errors with `20028 app_id 请求不合法`, or if authStore `client_id`/`client_secret` literally equal `client_id_for_local_auth`, the authStore entry is a placeholder/local MCP client, not a real app credential pair; validate a real app credential pair via the app access token endpoint without printing values, then rerun guarded login with those credentials. See `references/lark-oauth-single-flight-guard.md`, `references/lark-mcp-user-auth-recovery.md`, and `references/larksuite-cli-auth-and-dryrun.md`.
 - Do not run `lark-cli config bind` on behalf of the user without explicit confirmation; the CLI help requires the agent to confirm intent and identity preset first. Assigned/personal task reads need `user-default`; `bot-only` is safer but cannot read user resources.
 - Lark Task API metadata shapes vary; match across summary, description, custom fields, tasklists, containers, breadcrumbs, and the full JSON payload.
+- For `/im/v1/messages` text sends, Feishu/Lark expects `content` to be a JSON string such as `"{\"text\":\"...\"}"`, not a nested object. A governed internal payload may hash-bind `{content: {text: ...}}`, but the final HTTP sender must stringify `content` immediately before POSTing and must not change the preflight hash tuple.
+- Scope: Lark MCP user-token tools. Applicability: when using `lark-mcp mcp` for tools that require user access token (`useUAT: true`, `--token-mode user_access_token`, or `--token-mode auto` choosing UAT). Rule: prefer `--oauth` in the MCP server path; it validates stored UAT, tries refresh-token recovery, then returns an Authorization URL through the MCP tool result when browser reauthorization is required. Anti-condition: this is not a non-interactive app/bot authorization path; tenant-token tools and bot sends should use `tenant_access_token`/app credentials instead of waiting for user OAuth.
 - If `/task/v2/tasks` includes only `tasklists[].guid` (NOT `tasklist_guid`), scope matching by list name will fail until you enrich from `/task/v2/tasklists` and map `guid -> name`. Use `/task/v2/tasklists/{guid}/tasks` for direct tasklist-scoped reads when `prioritize_tasks()` returns all `scope=none`.
 - Do not certify `UVISA-2.0新版开发` hard-scope correctness from title/body keywords. Require enriched `tasklist_names` evidence.
 - Lark task `description` can be empty while comments hold the actionable details; `issue_body` should merge description + comments + docs, not description alone.

@@ -177,6 +177,24 @@ A useful abstraction should become at least one of:
 
 If it cannot be operationalized, keep it as an explanatory note or experience atom until it matures.
 
+## First-Principles Operationalization
+
+Use "first principles" as an executable decision discipline, not as a slogan that blocks ordinary progress.
+
+Good operational form:
+- Start from goal function, canonical facts, constraints, permission boundaries, and verifiable outcome.
+- Do not blindly follow templates, prior habits, or tool preferences; however, do reuse proven skills/checklists when they still fit the goal and constraints.
+- Ask for clarification only when the ambiguity would change execution path, side effects, authority, acceptance criteria, or long-term architecture. Otherwise act on the safest reversible default.
+- If the user's requested path is not the best route to the stated goal, say so and offer the lower-cost / safer / more verifiable path without unnecessarily blocking a clearly authorized request.
+- For failures, reproduce and identify root cause before patching symptoms; each key decision should be able to answer why this path, why this evidence source, and how completion will be verified.
+- Compress output to information that changes the user's decision, execution path, or risk assessment.
+
+Anti-patterns:
+- Turning "first principles" into generic philosophical preamble.
+- Asking the user to restate obvious defaults.
+- Treating "do not start from templates" as "ignore skills"; skills are experience compression, not a substitute for checking fit.
+- Promoting a creator/social-media claim directly into global agent rules without scope, anti-conditions, and falsifiers.
+
 ## Agent Psychology Checks
 
 Run these checks for abstraction-heavy work:
@@ -249,10 +267,16 @@ Current hot-path wiring:
 
 - `tools/memory_tool.py` for `memory(action=add|replace)`;
 - `tools/skill_manager_tool.py` for `skill_manage(action=create|edit|patch|write_file)`;
-- `tools/file_tools.py` for `write_file` / `patch` when the path targets narrow Hermes governance surfaces:
-  - `~/.hermes/project-profiles/*.json` → `project_profile`;
-  - `~/.hermes/docs/adr/**` or `~/.hermes/docs/adrs/**` → `adr`;
-  - `~/.hermes/experience-ratchet/**` → `experience`.
+- `tools/file_tools.py` for `write_file` / `patch` when the path targets narrow Hermes governance surfaces;
+- `model_tools.handle_function_call()` for common external MCP filesystem mutations (`mcp_filesystem_write_file`, `mcp_filesystem_edit_file`, `mcp_filesystem_move_file`) before generic registry dispatch, so MCP writes cannot bypass the same gate.
+
+Governed filesystem surfaces:
+
+- `~/.hermes/project-profiles/*.{json,yaml,yml}` → `project_profile`;
+- `~/.hermes/docs/adr/**` or `~/.hermes/docs/adrs/**` → `adr`;
+- `~/.hermes/experience-ratchet/**` → `experience`.
+
+Move/rename operations into governed surfaces are blocked when content is opaque; read the source and rewrite through a reviewed `write_file` / `patch` path instead.
 
 The runtime gate is intentionally deterministic and conservative. It is not a substitute for full abstraction review; it catches obvious boundary violations before they enter persistent prompt context. Ordinary project file writes are not classified by this gate; they continue through normal file/write guards.
 

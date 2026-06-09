@@ -115,7 +115,7 @@ Examples from a Mina/o1js course:
 - `Sircon`, `Skern Skern` -> `Circom`
 - `Trusted setup setup` -> `Trusted setup`
 
-Do not rely on English word boundaries when terms sit next to Chinese characters. Test cases should include strings like `基于Timescript的` and `语言叫Sircon`.
+Do not rely on English word boundaries when terms sit next to Chinese characters. Test cases should include strings like `基于Timescript的` and `语言叫Sircon`. Apply the confusion table inside the shared evidence-cleaning path before generating search/review artifacts so search, bookmarks, review UI, and exports all see the same normalized terms.
 
 ### 4. Generate per-video summaries
 
@@ -146,7 +146,7 @@ For semantic retrieval:
 
 If Ollama returns HTTP 500 on long/noisy inputs, reduce `max_embed_chars` and use backoff/truncation. Course OCR can create repeated noise; always clean and deduplicate before embedding.
 
-### 6. Ask and final reduce
+### 6. Ask, final reduce, and ASR-first study guides
 
 Use two retrieval modes:
 
@@ -161,6 +161,12 @@ Final reduce should not read raw video. It should consume:
 - key frame paths
 
 Then produce a course-level `course-final.md` with traceable conclusions.
+
+For noisy screencasts or meeting recordings, also generate an ASR-first `study-guide-asr.md`: select high-signal transcript segments first and use OCR/code evidence only as supporting context. This avoids letting repeated OCR artifacts, subtitles, UI chrome, file paths, or frame names dominate the human-readable study notes. Keep `course-final.md` as the evidence-navigation artifact and `study-guide-asr.md` as the direct reading artifact.
+
+For review/productization, generate a local `review-ui.html` per output directory. It should use a native `<video controls>` element pointing to the original local video path, a course video selector, timestamp buttons that set `video.currentTime`, visible focus states, accessible labels, links to `essence-reduced.md`/`manifest.json`, and key-frame thumbnails. If search deep-links are used for iterative study, add previous/next evidence navigation in the review UI: native `上一条`/`下一条` buttons, keyboard shortcuts such as J/right-arrow and K/left-arrow, an `aria-live` current-position status, `aria-current` on the active evidence card, and synchronized video seek. Verify by opening the top-level dashboard in a browser, following a `review-ui.html` or search deep-link, checking that the rendered page exposes the video selector, timestamp buttons, and a real `seek()`/`currentTime` change, then using next/previous navigation and confirming the active evidence id/status/currentTime all change without JS errors.
+
+For cross-course exploration, generate a local `search-ui.html`/global search page over timeline evidence. It should embed cleaned evidence rows using script-safe JSON (`</` -> `<\/`) so OCR/code examples containing `</script>` cannot terminate the page script, provide a labeled search input, course filter, keyboard shortcuts (`/` focus and `Esc` clear), an `aria-live` result count, timestamped evidence cards, key-frame thumbnails, and links to review UI/original video/essence/manifest. The review UI link should be a deep link carrying `?video=...&start=...`; `review-ui.html` should parse URL parameters, select the matching original video, seek to the requested timestamp, and announce the jump with an `aria-live` status. Add a local review-list/bookmark panel when the user is iteratively studying: result cards should include an accessible `加入复习清单` button, persist selected evidence ids in browser `localStorage`, render selected evidence as a visible list, and generate a copyable Markdown export beginning with `# 长视频复习清单`. Add an accessible `展开上下文` control when search snippets risk losing surrounding explanation: it should use native buttons with `aria-expanded`/`aria-controls`, render adjacent timeline rows from the same original video (for example two rows before and two rows after), and visually mark the current hit. Verify from the dashboard link with a real term that exists in the evidence, confirm result count changes, click the deep link, check selected video/currentTime/status text, add a result to the review list, confirm localStorage and Markdown export, expand context, confirm several same-video rows plus one highlighted current row, and check browser console for zero JS errors.
 
 ## Batch Verification Checklist
 
@@ -250,3 +256,4 @@ python3 -m video_essence.cli ask "question" --output <out> --semantic --model no
 
 - `references/local-cli-mvp-pattern.md` — concrete artifact contract, CLI command surface, Ollama backoff, final-reduce noise filtering, tests, and real verification pattern proven on a 7-video Mina course.
 - `references/node-control-plane-patterns.md` — LAN worker discovery order, service-vs-SSH distinction, Edge Worker 401 auth-boundary interpretation, and role-specific node classification.
+- `references/desktop-batch-closure-pattern.md` — whole-desktop/folder batch closure pattern: unique-video dedupe, artifact audits, semantic ask verification, top-level entrance index, and quality-vs-completion boundary wording.

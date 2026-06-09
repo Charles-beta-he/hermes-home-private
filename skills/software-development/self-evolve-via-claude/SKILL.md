@@ -1,12 +1,35 @@
 ---
 name: self-evolve-via-claude
-description: "双脑自进化 — Hermes 自描述 -> Claude Code 规划 -> Hermes 落地 -> eval gate。每天一次, 低频防震荡。触发词: self-evolve-via-claude, 双脑进化, hermes+claude, /self-evolve"
+description: Use when the task falls under Self-Evolve via Claude Code — 双脑自进化.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - software
+    - development
+    - self
+    - evolve
+    - via
+    related_skills:
+    - design
+    - loop
+    - plan
+    - router
+    - self-improvement-pipeline
 ---
 
 # Self-Evolve via Claude Code — 双脑自进化
 
+## Overview
+
+
 > 一天一次的自进化 tick。Hermes 是执行体, Claude Code 是建筑师。
+
+## When to Use
+
+- The task falls under Self-Evolve via Claude Code — 双脑自进化
 
 ## 执行序列 (每步失败立即停, 不连环放大)
 
@@ -86,6 +109,17 @@ Rules:
 ### Step 6: 通知
 
 输出本 tick 摘要: 改了哪些, eval 结果, kept/rolled_back
+
+### Step 6.5: Final closure guard
+
+Before giving a final answer in a self-evolution loop, run an explicit closure check:
+
+```bash
+git -C ~/.hermes status --short
+git -C ~/.hermes log --oneline -3
+```
+
+If verified edits remain unstaged/uncommitted, do not say the loop is complete. Either commit them locally (no push unless asked) or state clearly that only uncommitted verified work remains. This prevents the common failure mode where the implementation and tests are done but the final cycle-cleanup/documentation diff is left outside the local audit trail.
 
 ## 终止条件 (硬停)
 
@@ -316,3 +350,16 @@ model-router v2 集成 pricing.py 后, self-evolve tick 可以:
 - `consensus-plans.py` — 多脑 plan 语义一致性引擎
 - `consult-models.sh` — 多模型 fan-out 编排器
 - `claude-budget-tracker.py` — Claude token 预算保护
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

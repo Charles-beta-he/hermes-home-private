@@ -82,6 +82,7 @@ See also: `references/factual-vs-normative-claim-repair.md`, `references/design-
 - Do NOT force normative architecture guidance through the same truth gate as factual repo claims; move it into ADR/design rationale
 - If truth is the target, ensure every evidence item is in the orchestrator-visible top-level `evidence` array (or the exact field consumed by `build_evidence_bundle`) and has explicit `supports`/`contradicts` links before rerunning certification; evidence buried under ad-hoc keys such as `context.current_evidence` will be ignored and produce `evidence_coverage=0.0`.
 - Report fanout quorum, truth gate, and discussion/ratification as separate statuses. `fanout_quorum_met` only proves enough planners returned; complete certification still needs `truth_gate.can_certify_truth=true` and a certified discussion/manifest when that mode is used.
+- If an asynchronous consult result arrives after implementation or push, still record it in the decision artifact. Preserve the distinction: `truth_status=grounded` / `can_certify_truth=true` corroborates evidence, while `certification_status=degraded_not_certified` or “planner fan-out below quorum” means do NOT claim full multi-model certification.
 - Do not mix review-package approval with immediate implementation authorization unless the packet unambiguously carries concrete patch intent and corresponding evidence.
 - If planners and reviewers disagree about whether the round is noop or change-bearing, stop and rewrite the packet scope before rerunning models.
 

@@ -37,6 +37,7 @@ This umbrella skill is the routing surface for media. Use it to choose the most 
 - `spotify` — you need to control Spotify — play music, search the catalog, manage playlists and library, inspect devices and playback state.
 - `youtube-content` — the user shares a YouTube URL or video link, asks to summarize a video, requests a transcript, or wants to extract and reformat content from any YouTube video.
 - Long local lecture/class/meeting videos — use `references/long-video-essence-pipeline.md`. Treat these as evidence-pipeline tasks: ASR + keyframes/OCR + timestamped evidence fusion + chunked map-reduce + RAG, with optional cloud-model enhancement. Consider node-computer workers for ASR/OCR/frame extraction at scale.
+- Douyin/TikTok-style short links or notes — use `references/douyin-short-video-analysis.md`. Resolve the short URL, extract caption/page text plus DOM media URLs, download high-resolution note images/video sources when accessible, and verify any linked artifact (GitHub/research/product) directly before judging value.
 
 ## Selection Rules
 

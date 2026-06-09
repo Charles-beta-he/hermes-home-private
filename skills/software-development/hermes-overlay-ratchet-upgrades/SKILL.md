@@ -9,6 +9,7 @@ triggers:
   - hermes update may overwrite vendor patches
   - Need a ratchet-style upgrade path combining upstream changes with local overlays
   - Need to certify whether a capability is helper-landed vs mainline-integrated
+  - Need to distribute or migrate users onto a private/custom Hermes branch without exposing git complexity
 ---
 
 # Hermes Overlay Ratchet Upgrades
@@ -143,6 +144,49 @@ When `HEAD` already matches `origin/main` and an auto-created stash remains:
    - Otherwise the next export/restore can resurrect a path or policy drift you already fixed.
 
 See `references/post-update-ratchet-replay-pattern.md` for a concrete session pattern covering autostash triage, MCP timeout replay, and hook allowlist remediation.
+
+## Full upstream merge ratchet pattern
+
+When `private/main` must absorb a large `upstream/main` rather than just replay a small post-update drift:
+
+1. Protect the private line before merging.
+   - Commit or intentionally ignore private evidence files.
+   - Create a backup branch and backup tag at the pre-merge private HEAD.
+   - Push `private/main`, the backup branch, and the backup tag before resolving conflicts.
+2. Prefer upstream architecture as the base when upstream split or modularized the conflicted surface.
+   - Replay private behavior into the new seam instead of preserving the old monolith.
+   - Example class: turn-loop overlays may move from `conversation_loop.py` into an upstream `turn_finalizer.py` seam.
+3. Distinguish text resolution from index resolution.
+   - No conflict markers does not mean git considers the path resolved; run `git diff --name-only --diff-filter=U` and `git add` resolved paths.
+4. Run `post-update-check.py --fix` after targeted tests, not only before them.
+   - The checker can catch missing importable seam helpers that are default-off at runtime but required by overlay governance tests.
+5. If external multi-model consult stalls, continue with evidence-first local certification.
+   - Do not fabricate model consensus.
+   - Produce a carry / absorb / retire table from inspected diffs, conflict decisions, tests, and post-update-check output.
+   - If the consult returns later, read its certification status precisely and patch the ratchet report instead of overwriting the verified engineering result. A grounded truth gate with `degraded_not_certified` still means “facts corroborated, quorum not complete,” not full multi-model certification.
+6. Before declaring the upgrade complete, re-check that `upstream/main` has not advanced during the work.
+   - Run a fresh fetch, compare `upstream/main`, and verify `git merge-base --is-ancestor upstream/main HEAD`.
+   - If upstream advanced, create a new backup branch/tag at the just-verified private HEAD, merge the new upstream tip, rerun the same gates, and push again.
+7. Treat hook-side self-check failures as advisory until rerun under the Hermes venv.
+   - Upstream merge hooks may invoke system `python3`; if that fails on modern syntax (for example `str | None`), immediately rerun `./venv/bin/python ~/.hermes/scripts/post-update-check.py --fix` before classifying the merge as broken.
+
+See `references/full-upstream-merge-ratchet-20260609.md` for a concrete full-merge case including auto-relay, conductor runtime, memory provider rollback, CLI modularization decisions, late degraded multi-model consult handling, and post-completion upstream advancement.
+
+## Private/custom branch distribution UX
+
+When designing distribution for a private or locally customized Hermes line, make the user contract one recommended bootstrap command and `hermes update`; hide repo URL, branch, upstream, venv, and migration details inside the installer. Prefer a GitHub-CLI bootstrap that first prints the recommended path, verifies private-repo access, clones or refreshes the private checkout, then delegates to a repo-local finalizer. The finalizer should write install metadata (channel/origin/upstream/branch) so `hermes update` defaults to the private branch rather than falling back to `main`, and official-to-private migrations should preserve `~/.hermes` user data while only replacing the code checkout. See `references/private-repo-distribution-ux.md` for the detailed end-user UX, bootstrap/finalizer split, error-message taxonomy, migration flow, and tradeoffs.
+
+## Lost / retired capability audit after an upgrade
+
+When the user asks for missing, lost, retired, or rolled-back old capabilities after a ratchet upgrade, do a separate evidence audit rather than only restating that tests passed:
+
+1. Compare current `HEAD` against the immediate pre-ratchet backup and any older private-line backup refs.
+2. Inspect overlay registry/plans and stashes as evidence, but do not apply stashes during the audit.
+3. Classify each capability as carried, absorbed, retired, quarantined, partial, or unknown.
+4. Explicitly call out optional-import fail-open cases and UX shortcut regressions separately from backend capability loss.
+5. Write a durable report under `docs/private/lost-retired-old-capabilities-report-YYYYMMDD.md` and commit it when operating in the Hermes private repo.
+
+See `references/lost-retired-capability-audit.md` for the detailed workflow and report expectations.
 
 ## Verification checklist
 

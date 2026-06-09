@@ -1,11 +1,29 @@
 ---
 name: theory-driven-evolution
-description: "Study a theoretical framework (book, theory, system) and operationalize it into Agent self-evolution infrastructure: chapter-by-chapter notes, capability mapping, health metrics, execution plan, and automated heartbeat monitoring."
+description: 'Use when you need guidance on study a theoretical framework (book, theory, system) and operationalize it into Agent self-evolution infrastructure: chapter-by-chapter notes, capability mapping, health metrics, execution plan, and automated heartbeat monitoring.'
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [evolution, theory, framework, automation, self-improvement, control-theory]
+metadata:
+  hermes:
+    tags:
+    - evolution
+    - theory
+    - framework
+    - automation
+    - self-improvement
+    - control-theory
+    related_skills:
+    - domain
+    - multi-model-thinking
+    - plan
+    - pua
 ---
 
 # Theory-Driven Agent Evolution
+
+## Overview
+
 
 > Take any theoretical framework — control theory, systems theory, organizational science — and turn it into concrete Agent capability improvements with automated tracking.
 
@@ -199,6 +217,46 @@ The absolute value of V matters less than its derivative. A healthy Agent should
 ### 5. Automation Without Delivery
 Set `deliver="local"` for cronjobs that just write reports to disk. Only use chat delivery for jobs that actually need human attention (e.g., V̇ < -0.05 alerts).
 
+## Theory-to-Impact Architecture Propagation
+
+When a single slice improves because of a theory/principle, do not stop at the local fix. Bind the change to a canonical `Theory Point ID`, scan Same-theory propagation targets, build a Layer Impact Map across L0-L5/LX plus skills/cron/gateway as applicable, and require operational smoothing gates (rollback/regression/evidence/selfcheck/health/diff) before claiming architecture-wide optimization.
+
+Hermes-native verifier:
+
+```bash
+HERMES_BRAIN_VAULT=/Users/charles/Documents/brain \
+  python3 ~/.hermes/scripts/architecture_theory_impact_ratchet.py --json
+```
+
+Expected closeout shape: theories `8/8`, surfaces `9/9`, gate_checks `100%`, failed_checks `[]`. If this fails, the optimization is still a local candidate or quarantined advisory, not a stable architecture rule.
+
+Canonical artifacts:
+- `~/Documents/brain/05-实践与项目/实践方案/08-理论到影响全架构传播矩阵.md`
+- `~/Documents/brain/04-知识原子/atoms/theory-impact-propagation.md`
+- `multi-model-thinking:references/theory-impact-propagation.md`
+
+## Systems-Engineering Control-Plane Overlay
+
+When the user says the agent lacks a skill tree, project-specific working memory, reusable frontend closure standards, or asks to apply Qian Xuesen / systems engineering to the agent itself, treat it as a missing semantic control-plane layer rather than a simple memory update. Use `references/systems-engineering-control-plane-overlay.md`.
+
+Required pattern:
+- Audit current brain/skill graph/search coverage before creating new artifacts.
+- Separate four stores: persistent memory for durable user facts; skill tree for class-level routes; project workpad for project-specific north star/anchors/red lines/evidence; session todo for temporary state.
+- Land reversible local-brain overlays first: skill route matrix, project work-memory template, frontend closure playbook, systems-engineering atom, review/proof log, and self-check script.
+- Verify with `brainctl sync`, `brainctl reindex`, and a self-check that tests both file existence and search hits.
+- Watch for `brainctl search` mixed Chinese+English query misses; patch self-check queries to exact titles/frontmatter keywords and record the verifier fix.
+
+## Local Brain Theory Foundation Fill
+
+When the user identifies that a local-brain theory/category folder exists but lacks real content (for example `01-控制论基础/` exists but has no theory notes), treat it as a content-governance gap, not just a writing task. Use `references/local-brain-theory-foundation-fill.md`.
+
+Required pattern:
+- Audit the folder and related existing notes first.
+- Create a MOC/index, core concept cards, bibliography/evidence-boundary note, task proof log, and optional evolution log.
+- Include English concept keywords in frontmatter so `brainctl search` works even when the folder/title is Chinese.
+- Run `brainctl sync`, `brainctl reindex`, and multiple `brainctl search` queries; write the observed results back into the proof log.
+- If `~/.hermes` is a git repo, commit only scoped brain/log artifacts with a local commit; do not push unless explicitly requested.
+
 ## Definition of Done
 
 - [ ] **Outcome**: 8-20 chapter notes generated, each with theory→Agent mapping
@@ -207,3 +265,17 @@ Set `deliver="local"` for cronjobs that just write reports to disk. Only use cha
 - [ ] **Execution plan**: Phased rollout with concrete tasks and acceptance criteria
 - [ ] **Automation**: At least daily heartbeat cronjob scheduled and running
 - [ ] **Baseline**: Initial V value recorded, V̇ computable
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] The Definition of Done items above were explicitly checked, not assumed.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

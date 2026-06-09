@@ -125,6 +125,19 @@ Expected healthy real-gate shape:
 - autonomy-readiness: `status=PASS`, `architecture_complete=true`
 - dispatch tick summary: `status=OK`, `error_count=0`
 
+## Taskpool progress checks
+
+For user-facing "检查任务池进度" requests, report a concise state snapshot from live gates: total/active/pending/review/done/dispatchable, current `dispatch_hint.next_task_id`, gate health (`selfcheck`, `proof_check`, `boundary_check`, `evidence-spine`, cron/autocompleter), and any scheduling implication such as work-lane preemption. Avoid re-running broad discovery unless the user specifically asks for a live upstream refresh.
+
+## Work-lane preemption when checking taskpool progress
+
+When the user asks whether to temporarily prioritize Hermes self-evolution, ground the answer in the live taskpool gates rather than preference or recency:
+
+1. Run/read `brain_task_orchestrator.py evidence-spine --json` or `boundary-check` / dispatch summary.
+2. If `counts.by_lane.work` has active/pending work and the boundary gate reports `evolution_preempted_by_work: true`, recommend continuing work-lane/product tasks unless the user explicitly overrides with a self-evolution priority instruction.
+3. If work-lane is empty, blocked, or the user explicitly asks to pause product work, then evolution tasks may be prioritized.
+4. Report this as a scheduling decision, not a permanent policy; it depends on the current taskpool state.
+
 ## Permission taxonomy coupling
 
 When taskpool write guard changes from legacy `kanban-worker` to `taskpool`, update tests and allowlist fixtures too. Otherwise fail-closed guards will correctly block `auto-claim-and-handoff` with `surface_allowlisted` despite P10 health passing.

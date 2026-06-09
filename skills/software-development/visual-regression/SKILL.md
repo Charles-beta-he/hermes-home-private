@@ -1,11 +1,26 @@
 ---
 name: visual-regression
-description: "browser_vision 截图 diff 对比 — 自动检测 UI 视觉回归。截图存储 + AI 对比 + 差异报告。用于 UIMax 审计、迭代验证、CI 集成。"
+description: Use when the task falls under Visual Regression — browser_vision 截图 diff 对比.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
-tags: [visual-regression, screenshot, diff, uimax, qa, browser]
+metadata:
+  hermes:
+    tags:
+    - visual-regression
+    - screenshot
+    - diff
+    - uimax
+    - qa
+    - browser
+    related_skills:
+    - design
 ---
 
 # Visual Regression — browser_vision 截图 diff 对比
+
+## Overview
+
 
 > 通过 browser_vision 截图 + AI 分析，自动检测 UI 视觉变化和回归问题。
 
@@ -197,16 +212,31 @@ def compare_with_baseline(current_dir, baseline_dir):
     return report
 ```
 
-## Pitfalls
+## Mobile floating navigation guard
 
+For mobile apps with fixed/floating TabBar or bottom navigation, use `references/mobile-floating-nav-guards.md`. Do not rely on a single full-page screenshot: capture viewport states for initial view, target sections positioned near top, and scroll-bottom; combine deterministic DOM overlap checks with vision review of the target section.
+
+## Common Pitfalls
 1. **动画状态**: 截图时动画可能处于不同阶段，需等待动画完成或禁用动画
 2. **动态内容**: 时间戳、随机 ID 等动态内容会导致每次截图不同
 3. **字体渲染**: 不同环境下字体抗锯齿可能不同
 4. **截图延迟**: React CSR 页面需等待渲染完成再截图
 5. **浏览器版本**: 不同 Chrome 版本渲染可能有细微差异
+6. **Current-state guard ≠ full E2E pass**: 如果项目没有 committed golden image baseline，可以先落一个 current-state screenshot + deterministic heuristic guard（console/pageerror/API non-2xx/横向溢出/空白页/undefined 文本），但最终报告必须明确它不是完整 Playwright E2E 通过，也不等于 money-moving submit flow 已验证。
+7. **可复跑脚本禁止本机绝对路径**: 提交到仓库的 Playwright/Node visual-regression 脚本不要硬编码 `/Users/.../repo/package.json` 这类路径；ESM 脚本用 `createRequire(import.meta.url)`，路径用 `new URL()` 或 `process.cwd()` 派生，避免 CI/其他 checkout 直接失败。
+8. **截图覆盖不足以证明 API 合约闭环**: 如果 visual guard 只截图列表/入口页，默认 dev proxy 又指向 mock，本轮必须额外验证 mock-server 与 service canonical contract 对齐（字段名、required body、response envelope），否则 UI 截图 PASS 会掩盖 submit/confirm 路径失败。
+9. **fullPage 截图会误导 bottom-nav 结论**: full-page screenshot 适合内容存档，但固定/悬浮底部导航是否遮挡内容必须看 viewport screenshot + targeted scroll。若 AI 复检说“遮挡”，先确认截图状态：初屏未展示低处内容、滚到底导致目标区被顶部裁切、还是实际 TabBar 覆盖。用 target-section-near-top 截图复核。
+10. **文字定位滚动不要匹配整页 wrapper**: `textContent.includes()` 的第一个匹配通常是大容器，会导致滚动不到目标区。选择最短 textContent 匹配元素，或用更具体 selector/role。
 
 ## 技巧
 
 - 截图前加 `browser_console(clear=True)` 确保无弹窗干扰
 - 对比时标注「装饰性差异」vs「功能性回归」
 - 保存每次迭代的截图历史，便于追踪长期变化
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

@@ -1,19 +1,35 @@
 ---
 name: modal-serverless-gpu
-description: Serverless GPU cloud platform for running ML workloads. Use when you need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling.
+description: Use when you need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling.
 version: 1.0.0
 author: Orchestra Research
 license: MIT
-dependencies: [modal>=0.64.0]
+dependencies:
+- modal>=0.64.0
 metadata:
   hermes:
-    tags: [Infrastructure, Serverless, GPU, Cloud, Deployment, Modal]
-
+    tags:
+    - Infrastructure
+    - Serverless
+    - GPU
+    - Cloud
+    - Deployment
+    - Modal
+    related_skills:
+    - github
+    - whisper
 ---
 
 # Modal Serverless GPU
 
+## Overview
+
+
 Comprehensive guide to running ML workloads on Modal's serverless GPU cloud platform.
+
+## When to Use
+
+- You need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling
 
 ## When to use Modal
 
@@ -342,3 +358,16 @@ if __name__ == "__main__":
 - **Examples**: https://github.com/modal-labs/modal-examples
 - **Pricing**: https://modal.com/pricing
 - **Discord**: https://discord.gg/modal
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

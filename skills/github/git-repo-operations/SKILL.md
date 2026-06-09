@@ -38,7 +38,10 @@ Don't use for:
    - branch orchestration: sync/check/create/rebase multiple repos
    - release/PR readiness: verify remote parity and required tests
 5. **Resolve mechanically, verify semantically**: remove markers and stage files, then run the relevant build/test/typecheck slice.
-6. **Push safely**: after rebase, use `--force-with-lease`; never blind `--force`.
+5. **Push safely**: after rebase, use `--force-with-lease`; never blind `--force`.
+6. **Scope commits in live-state repos**: when a repository contains scheduler/runtime state files that drift during normal operation (for example cron job counters, next-run timestamps, logs, caches), do not stage the whole dirty file just because one durable config field changed. Build a staged blob from `HEAD:<file>` with only the intended semantic edit, or otherwise stage a minimal patch, then verify `git diff --cached` contains only that scoped change. Leave live runtime drift unstaged.
+7. **For user-authorized “推进到边界” work, still commit only the intended slice**: before committing, run status/diff checks, stage exact touched files only, inspect `git diff --cached --stat` and `git diff --cached --name-only`, and explicitly leave unrelated untracked/dirty files unstaged. If verification passes, make the scoped commit; if the next action would enable broad runtime execution, lifecycle mutation, external writes, or other privileged authority, stop and report the boundary instead of silently expanding the commit/task scope.
+8. **For submodule operations, verify metadata before claiming recursive health**: if recursive submodule status fails because a tracked gitlink has no mapping, restore the mapping from the tracked path, expected commit, and known remote URL when available. Do not delete backup/history directories just to make recursion pass; make the metadata repair auditable, then rerun the recursive check.
 
 ## Conflict Resolution Subflow
 
@@ -78,3 +81,4 @@ Don't use for:
 
 - `references/git-conflict-resolution.md` — conflict marker, rebase, stash-pop, binary conflict, and verification details.
 - `references/multi-repo-branch-orchestration.md` — project-profile-driven branch sync and batch templates.
+- `references/control-plane-home-workspace-triage.md` — classify and safely clean mixed agent/control-plane home repos with config, runtime DBs, logs, notes, skills, task evidence, vendored checkouts, and submodules.

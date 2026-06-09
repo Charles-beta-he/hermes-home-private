@@ -1,24 +1,19 @@
 [submodule "backups/20260423-224844/skills/darwin-skill"]
 	path = backups/20260423-224844/skills/darwin-skill
 	url = https://github.com/alchaincyf/darwin-skill.git
+	ignore = dirty
 [submodule "backups/20260423-224844/skills/pua"]
 	path = backups/20260423-224844/skills/pua
 	url = https://github.com/tanweai/pua.git
+	ignore = dirty
 [submodule "hermes-agent"]
 	path = hermes-agent
 	url = https://github.com/Charles-beta-he/hermes-agent-private.git
-[submodule "skills/darwin-skill"]
-	path = skills/darwin-skill
-	url = https://github.com/alchaincyf/darwin-skill.git
-[submodule "skills/impeccable"]
-	path = skills/impeccable
-	url = https://github.com/pbakaus/impeccable.git
-[submodule "skills/pua"]
-	path = skills/pua
-	url = https://github.com/tanweai/pua.git
 [submodule "skills/ui-skills"]
 	path = skills/ui-skills
 	url = https://github.com/ibelick/ui-skills.git
+	ignore = dirty
 [submodule "skills/ui-ux-pro-max"]
 	path = skills/ui-ux-pro-max
 	url = https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git
+	ignore = dirty

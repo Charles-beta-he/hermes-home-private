@@ -1,13 +1,32 @@
 ---
 name: mcp-server-from-scratch
-description: "从零构建自定义 MCP stdio 服务器。当 npm/uvx 上没有现成的 MCP server 时, 用 Python 按 MCP 协议 (JSON-RPC over stdio) 自行实现。触发词：'MCP server', '实现 MCP', '自定义 MCP', 'mcp server from scratch', '自定义工具', 'build mcp'。"
+description: Use when the task falls under MCP Server From Scratch.
+version: 1.0.0
+author: Hermes Agent
 license: MIT
+metadata:
+  hermes:
+    tags:
+    - software
+    - development
+    - mcp
+    - server
+    - scratch
+    related_skills:
+    - mcp
 ---
 
 # MCP Server From Scratch
 
+## Overview
+
+
 > 当 npm/uvx 上没有现成的 MCP server 时, 按协议自行实现。
 > 不需要 MCP SDK — MCP 协议就是 JSON-RPC over stdio。
+
+## When to Use
+
+- The task falls under MCP Server From Scratch
 
 ## MCP 协议 (最小实现)
 
@@ -213,4 +232,19 @@ proc.terminate()
 4. **Stdout 必须 flush** — `flush=True` 在每条 print 后必须加, 否则 MCP 客户端读不到响应
 5. **测试时使用非阻塞读** — subprocess.stdout.readline() 在无数据时会阻塞。用 `fcntl` 设置 NONBLOCK + time.sleep
 6. **Tool 参数名注意** — `tools/call` 的 params 结构是 `{"name":"...", "arguments":{...}}`, 不是直接 `tool_name` 和 `args`
+7. **Tool inputSchema 必须是合法 JSON Schema** — `type:"object"` 必须有 `properties`, `required` 是数组不是布尔。缺少 `properties` 会导致客户端 schema 验证失败但不报错，tool 调用时参数丢失
+8. **stderr 用于调试日志，不要写 stdout** — 如果需要 debug 输出，写到 stderr (`print("debug", file=sys.stderr)`)，stdout 是 MCP 协议通道，任何非 JSON-RPC 内容都会导致客户端解析失败
 9. **initialize 时序问题** — 有些 MCP 客户端在初始化时先发 `initialize` 再发 `notifications/initialized`。但极少数客户端 (如自定义 wrapper) 会在 initialize 之后直接发 `tools/list` 而不发 notifications/initialized。如果你的 server 被 tools/list 和 tools/call 的 `and initialized` 条件挡住, 确保不要漏掉这种 "跳过 notification" 的客户端模式。解决方案: 在 initialize 响应后立即设置 `initialized = True`, 不等待 `notifications/initialized` — 客户端发不发的差异可通过检查: 如果初始化后第一条消息是 `tools/list` 而非 `notifications/initialized`, 允许通过但不响应 notification。
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

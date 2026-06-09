@@ -1,14 +1,28 @@
 ---
 name: browser-harness-integration
-description: Integrate comprehensive browser-based verification into automated task pipelines - combines dogfood testing, visual regression, and UIMax audit with project-type detection and viewport-specific testing
+description: Use when you need guidance on integrate comprehensive browser-based verification into automated task pipelines - combines dogfood testing, visual regression, UIMax audit, protected admin mocked-API verification, permission matrix checks, and viewport-specific testing.
 version: 1.0.0
+author: Hermes Agent
+license: MIT
 metadata:
   hermes:
-    tags: [qa, browser, testing, automation, verification, pipeline]
-    related_skills: [dogfood, visual-regression, uimax-audit]
+    tags:
+    - qa
+    - browser
+    - testing
+    - automation
+    - verification
+    - pipeline
+    related_skills:
+    - dogfood
+    - visual-regression
+    - uimax-audit
 ---
 
 # Browser Harness Integration
+
+## Overview
+
 
 > Integrate comprehensive browser-based verification into automated task pipelines. Combines dogfood testing, visual regression, and UIMax audit with intelligent project detection.
 
@@ -19,7 +33,7 @@ metadata:
 - Want comprehensive testing (functional, visual, quality scoring)
 - Need project-type detection for Vue, React, mobile vs desktop
 - Integrating browser verification into existing automation workflows
-
+- Don't use for: requests that do not need you need guidance on integrate comprehensive browser-based verification into automated task pipelines - combines dogfood testing, visual regression, and UIMax audit with project-type detection and viewport-specific testing; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## Core Workflow
 
 ```
@@ -83,6 +97,9 @@ When closing a frontend/UI-affecting task, distinguish these evidence levels exp
 - Unit/store/service tests prove mapping/logic only.
 - Multi-model review can suggest missing cases, but model agreement is not UI evidence.
 - Playwright/browser-harness evidence is required before saying “UI 回测已通过” or “browser verified”.
+- Target-surface proof is mandatory: before capturing evidence, identify the exact page/tab/modal/filter state named by the task, navigate to it, and record visible anchors in the screenshot/report (active tab text, URL/route, breadcrumb, selected filter, table header, or modal title). If a task says “业绩统计 tab 下” or names specific columns, a screenshot from the default sibling tab (for example “理财师管理”) is invalid even if the surrounding module is correct. Treat wrong-tab/wrong-filter screenshots as `UI evidence invalid / rerun required`, not as partial pass.
+- Default Lark/admin UI evidence viewport: capture screenshots as a 14-inch desktop browser interface (use a 1512×982 CSS viewport unless the project has a more specific 14-inch profile). Do not use narrow/mobile screenshots for admin evidence unless the task explicitly targets mobile H5. Label the viewport in the report and screenshot filename.
+- User preference: 验收严禁 mock，除非用户明确允许。Do not use mocked-auth, mocked API, mock-server, synthetic fixtures, or intercepted browser routes as acceptance evidence unless the user explicitly asked for/allowed mocks. If only mock evidence exists, label it as a non-acceptance developer check and continue to real auth + real backend + real interface data, or report that true acceptance is not yet done.
 
 ### Playwright Script + Screenshot + Log Evidence Chain
 
@@ -108,6 +125,8 @@ When the user provides a frontend prototype URL (for example a design demo or cl
 5. Do not let a prototype demo path certify backend semantics. A prototype can validate UI copy/flow shape only; auth/OTP/PIN/security contracts still require real backend or inspected controller/service evidence.
 
 For i18n/toast/error-state fixes, add at least one browser-level assertion that drives the user flow and checks the rendered user-facing text in the active language, including a negative assertion that the raw backend message in the wrong language is not visible. Prefer running both desktop Chromium and mobile viewport projects when the app is H5/mobile-first.
+
+If auth-gated local UI verification is blocked because the app bootstrap/profile fetch clears your injected storage session and bounces back to `/login`, use the deterministic mocked-auth + mocked-API Playwright pattern in `references/mocked-auth-mocked-api-local-ui-verification.md`. This is the preferred fallback for local UI evidence when the task scope is frontend rendering/interaction verification rather than real auth or backend business acceptance.
 
 Evidence path durability: Playwright may clean or overwrite `test-results/` during later runs. For evidence that will be referenced in docs/Workpad/TG closeout, write reports/screenshots to a stable temp path such as `/tmp/<project>-<scope>-<date>/...` or copy them there before running additional Playwright commands.
 
@@ -313,6 +332,10 @@ Reports are generated in `~/.arc-dispatch/reports/{project-id}-{timestamp}/verif
 | login | B | B | B | A | B | B |
 ```
 
+## Browser Tool Output Truth Gate
+
+When hardening Hermes browser automation itself, or when reviewing browser-derived text that will enter model context, use `references/browser-tool-truth-gate.md`. Browser accessibility-tree text is page-controlled untrusted data: wrap it as untrusted, classify prompt-injection-looking and anti-bot/Cloudflare content as `validation_status=degraded`, classify failures as `needs_auth`/`unreachable`/`degraded`, cap agent-facing snapshot output with before/after metadata, and apply the same gate to `browser_navigate` auto-snapshots as well as explicit `browser_snapshot`.
+
 ## Product Logic / PRD-derived Guards
 
 When a project has product/business semantics beyond page function (funds, KYC, registration boundaries, card lifecycle, allowed rails/networks, investment scope), use `references/prd-product-logic-guards.md`. Add deterministic Playwright tests that assert PRD invariants directly, run the configured browser matrix, and update the product ledger + UI ledger + Workpad. Treat single-surface coverage as PARTIAL, not PASS.
@@ -339,17 +362,18 @@ Committed mobile-H5 gates should promote browser console errors into blocking is
 
 For repeatable project gates, start from `templates/mobile-h5-issue-ledger.json`: it freezes the mainstream iOS/Android/HarmonyOS matrix, records stable issue IDs, and encodes ratchet/no-regression rules so loops cannot preserve pass rate by changing coverage, thresholds, or harness behavior.
 
-## Pitfalls
-
+## Common Pitfalls
 0. **Real-backend evidence before mock alignment**: For backend-contract or security-state-machine issues, do not prove the claim with `mock-server` first and then treat it as acceptance. First run the deployed/test-env UI or local frontend connected to the real test backend, capture console/network/storage evidence, and classify whether the fix belongs to frontend or backend. Only after the real backend behavior is known should mock-server be updated to mirror the confirmed or recommended contract. If the best fix is backend-owned, record it in a frontend-repo backend-followup document (issue, evidence, recommended API shape) rather than hiding the drift with a frontend/mock shim.
 1. **Dev server startup**: Always verify server is ready before testing. Use health checks.
 1a. **Route reachable is not PRD PASS**: In live-backend product-flow work, a page rendering and a 200 list/detail API only proves PARTIAL. Money/card/security flows require the actual business outcome (write action, state transition, balances/notifications/ledger consistency, or documented safe non-execution). If the live account has no card/holding/payee seed, classify as FAIL/BLOCKED/PARTIAL by evidence instead of letting legacy placeholders or mock-era IDs manufacture a pass.
 2. **Timeout handling**: Browser tests can be slow. Set appropriate timeouts.
 3. **False positives**: Dynamic content (timestamps, random IDs) can cause visual regression false positives.
-4. **Mobile viewport**: Browser tools may not always expose direct viewport controls; when available, test both normal and short mobile heights. When not available, add deterministic CSS/layout probes and screenshots for short-height states.
+4. **Mobile viewport**: Browser tools may not always expose direct viewport controls; when available, test both normal and short mobile heights. When not available, add deterministic CSS/layout probes and screenshots for short-height states. When the browser tool launches at desktop resolution and you need a mobile viewport, use Playwright from the project's pnpm `node_modules` — see `references/playwright-mobile-viewport-fallback.md` for the exact require path pattern and one-liner alternatives.
 5. **Nested scroll containers**: Mobile H5 apps often keep `body/documentElement` fixed while the real content scrolls inside `main` or another `overflow-y:auto` container under a fixed header/bottom nav. If `browser_scroll` appears ineffective or bottom nav seems to cover below-fold content, run a DOM probe such as `Array.from(document.querySelectorAll('*')).filter(el => el.scrollHeight > el.clientHeight + 5)` to identify the scrollable container, then set `container.scrollTop` and re-screenshot before classifying the issue. Treat "fixed bottom nav overlaps first viewport but content can scroll above it" as INFO; only escalate to HIGH/P0 when critical controls or final content remain inaccessible after scrolling the actual container.
 6. **Project detection**: Some projects may have unusual dependency structures. Provide fallbacks.
-7. **Auth-gated route testing**: When a local frontend route is blocked by `RequireAuth` but the task is a frontend validation/layout change, create an explicit test-only authenticated browser state rather than burning the closeout budget on OTP/login. For Zustand/sessionStorage-style apps, inspect the store shape first, then set only the minimal token/user/isAuthenticated fields in `localStorage`/`sessionStorage` and reload the protected route. Label evidence as mocked-auth browser UI verification and do not use it to certify backend contracts, OTP, permission, or business-write flows.
+6. **Auth-gated route testing**: When a local frontend route is blocked by `RequireAuth` but the task is a frontend validation/layout change, create an explicit test-only authenticated browser state rather than burning the closeout budget on OTP/login.
+6a. **Email+OTP auth with no mailbox access**: When the app uses email+OTP login (no password), the mocked-auth storage injection pattern from `references/mocked-auth-mocked-api-local-ui-verification.md` will NOT work — there is no password to mock, and the OTP requires real mailbox access or a test-channel bypass. If the project Workpad with test credentials doesn't exist in the current environment and Lark Mail isn't accessible, browser verification is blocked. Fallback evidence hierarchy: (1) unit/integration tests covering the changed logic, (2) TypeScript compilation passing, (3) code diff showing the exact change. Document the blocker explicitly ("browser verification blocked: email+OTP auth requires test credentials from Workpad") rather than claiming browser-verified. Offer to complete browser verification if the user provides the test email or grants mailbox access.
+8. **`browser_console` async wrapper**: The `browser_console` expression parameter runs in a non-async context. Top-level `await` throws `SyntaxError: await is only valid in async functions`. Always wrap async code in an IIFE: `(async () => { const resp = await fetch('/api'); return await resp.json(); })()`. This catches `fetch`, `await`, and any other async API calls you might inject into a console verification. For Zustand/sessionStorage-style apps, inspect the store shape first, then set only the minimal token/user/isAuthenticated fields in `localStorage`/`sessionStorage` and reload the protected route. Label evidence as mocked-auth browser UI verification and do not use it to certify backend contracts, OTP, permission, or business-write flows.
 
 ## Key Learnings
 
@@ -362,6 +386,10 @@ For repeatable project gates, start from `templates/mobile-h5-issue-ledger.json`
 6a. For local-frontend-to-live-backend walkthroughs, always inspect both the frontend service/store path and backend controller/config source for abnormal states. Common high-value checks: legacy compatibility endpoints versus canonical endpoints; public config rows overriding safe fallbacks; canonical list endpoints returning empty while legacy single-object endpoints return placeholders; PRD/test ledgers containing mock-era IDs not present in live products/holdings.
 7. For repeatable project gates, start from `templates/mobile-h5-issue-ledger.json`: it freezes the mainstream iOS/Android/HarmonyOS matrix, records stable issue IDs, and encodes ratchet/no-regression rules so loops cannot preserve pass rate by changing coverage, thresholds, or harness behavior.
 
+## Learning Route
+
+For a structured from-zero-to-one learning path covering browser tools → dogfood → Playwright evidence chain → UIMax audit → pipeline integration → advanced modes (mocked auth, full-stack, PRD guards), see `references/webapp-testing-learning-route.md`.
+
 ## Integration with Other Skills
 
 - **dogfood**: Core testing methodology for exploratory QA
@@ -369,3 +397,10 @@ For repeatable project gates, start from `templates/mobile-h5-issue-ledger.json`
 - **uimax-audit**: Quality scoring across 6 dimensions
 - **systematic-debugging**: When browser tests fail unexpectedly
 - **requesting-code-review**: Can trigger browser verification as part of code review
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+

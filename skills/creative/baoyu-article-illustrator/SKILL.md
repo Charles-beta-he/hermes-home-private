@@ -16,7 +16,7 @@ metadata:
 
 ## Overview
 
-Article illustrations: type × style × palette consistency. This skill is maintained as a `generator`-shaped contract: it should guide stable artifacts such as files, reports, specs, diagrams, configs, or structured output without stealing adjacent workflows or relying on unstated assumptions.
+Article illustrations: type × style × palette consistency. It is organized around repeatable artifacts with clear input, output, and verification boundaries rather than open-ended exploration.
 
 Adapted from [baoyu-article-illustrator](https://github.com/JimLiu/baoyu-skills) for Hermes Agent's tool ecosystem.
 

@@ -1,5 +1,0 @@
-[
-    {"prompt": "把这个流程存成 skill", "expected": "用 skill_manage create 保存，写 test-prompts.json，验证可加载"},
-    {"prompt": "以后复用这个配置流程", "expected": "用 skill_manage create 保存，含 YAML frontmatter + 步骤 + pitfalls + test-prompts"},
-    {"prompt": "把这个排查方法存下来下次用", "expected": "保存为 skill: 命名, 描述触发条件, 写详细步骤, 加 pitfalls, 写 test-prompts"}
-]

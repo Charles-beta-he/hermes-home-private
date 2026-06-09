@@ -6,8 +6,15 @@ author: Hermes Agent (adapted from obra/superpowers)
 license: MIT
 metadata:
   hermes:
-    tags: [delegation, subagent, implementation, workflow, parallel]
-    related_skills: [writing-plans, requesting-code-review]
+    tags:
+    - delegation
+    - subagent
+    - implementation
+    - workflow
+    - parallel
+    related_skills:
+    - writing-plans
+    - requesting-code-review
 ---
 
 # Subagent-Driven Development
@@ -340,3 +347,74 @@ Catch issues early
 ```
 
 **Quality is not an accident. It's the result of systematic process.**
+
+## Multi-Task Batch Delegation (Alternative to Per-Task)
+
+When tasks are **truly independent** and don't need review between them, batch multiple tasks into a single `delegate_task` call with `role='orchestrator'`. This is faster than per-task dispatch when:
+
+- Tasks don't touch the same files
+- Each task is self-contained with clear inputs/outputs
+- No sequential dependency (task B doesn't need task A's output)
+- Review can happen after all tasks complete (not between)
+
+### Pattern
+
+```python
+delegate_task(
+    tasks=[
+        {
+            "goal": "Task 1: ...",
+            "context": "Full context for task 1...",
+            "toolsets": ["terminal", "file"]
+        },
+        {
+            "goal": "Task 2: ...",
+            "context": "Full context for task 2...",
+            "toolsets": ["terminal", "file"]
+        },
+        # Up to 3 tasks (max_concurrent_children=3 for this user)
+    ],
+    role="orchestrator"  # Allows each task to be independent
+)
+```
+
+### When to use batch vs per-task
+
+| Aspect | Batch (this section) | Per-task (above) |
+|--------|---------------------|------------------|
+| Speed | Faster (parallel) | Slower (sequential) |
+| Review | After all tasks | Between each task |
+| Dependencies | Independent only | Can be sequential |
+| Risk | Higher (no mid-review) | Lower (catch early) |
+| Context | Each task isolated | Each task isolated |
+
+### Real-World Example: Self-Healing Implementation (2026-05)
+
+5 tasks batch-delegated to Claude Code (Opus 4.8), all independent:
+1. Create continuation-gc.py script
+2. Add MAX_ACTIVE_CONTINUATIONS backpressure to continuation.py
+3. Remove --discussion flag from upstream_ratchet_review
+4. Fix dispatch tick evidence_spine exit-2 issue
+5. Create unified-health-check.py
+
+Each task included: research context (academic frameworks), exact file paths, exact diffs/patches, and verification commands. All 5 completed in one delegate_task call. Post-batch verification caught one JSON key mismatch (health_score vs score) — always verify after batch.
+
+### Pitfalls
+
+1. **Don't batch tasks that touch the same file** — race condition risk
+2. **Always verify after batch** — subagent self-reports may be wrong
+3. **Include verification commands in each task's context** — subagent can self-verify
+4. **Max 3 tasks per batch** (for this user's delegation.max_concurrent_children)
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
+
