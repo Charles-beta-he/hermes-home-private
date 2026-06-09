@@ -137,6 +137,28 @@ Feedback landing: skill / issue / docs / taskpool candidate / discard?
 Verification: commands, broken-case checks, regression threshold.
 ```
 
+## Existing Hermes Implementation
+
+Scope: **Hermes Agent self-architecture only**. Applicability: use these paths only inside a Hermes Agent checkout when evaluating or extending the offline Agent Reliability Harness. Anti-condition: do not apply these commands to unrelated product repositories or non-Hermes agent frameworks.
+
+Default-off/off-hot-path scaffold landed in Hermes Agent:
+
+- Module: `agent/reliability_harness.py`
+- Tests: `tests/agent/test_reliability_harness.py`
+- Seed cases: `evals/cases/*.json`
+- CLI smoke:
+  ```bash
+  python -m agent.reliability_harness list --cases-dir evals/cases --json
+  python -m agent.reliability_harness run --cases-dir evals/cases --runs-dir /tmp/hermes-eval-smoke --case direct-basic-answer --response-text OK --json
+  ```
+- Regression command:
+  ```bash
+  uv run --extra dev pytest tests/agent/test_reliability_harness.py tests/test_trajectory_compressor.py tests/test_trajectory_compressor_async.py -q
+  ```
+
+Keep this harness offline/default-off unless a later task explicitly authorizes live gateway/taskpool integration.
+
 ## Source SSOT
 
 Canonical planning note: `/Users/charles/.hermes/docs/private/agent-eval-dynamic-workflow-longterm-20260609.md`.
+Landing note: `/Users/charles/.hermes/docs/private/agent-eval-harness-full-landing-20260609.md`.

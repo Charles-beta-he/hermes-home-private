@@ -23,6 +23,9 @@ Make `/Users/charles/Documents/brain` the canonical local-first brain for both h
 - Symphony/Codex orchestration source analysis exists.
 - Multi-model review artifact exists, with timeout caveat.
 - Formal self-evolution event exists and is mirrored under `99-hermes-notes/evolution/`.
+- HTML sidecar control plane landed: `brainctl html build|status|refresh|watch|graph` generates clickable derived `.html` views with canonical Markdown backlinks, graph-navigation backlinks, manifest-based stale detection, and dependency stale checks.
+- Dynamic HTML refresh landed via quiet no-agent script `~/.hermes/scripts/local_brain_html_refresh.py` and cron job `local-brain-html-refresh` every 5 minutes; the wrapper refreshes stale sidecars and regenerates `07-仪表盘/本地大脑图形导航.html`, Obsidian-visible launcher `07-仪表盘/本地大脑HTML入口.md`, and jump-test note `07-仪表盘/本地大脑HTML跳转测试.md`. Graph node hrefs are emitted relative to the graph file location, preventing duplicated static directories such as `07-仪表盘/07-仪表盘/...`. `brainctl html watch --interval 5` is available for foreground/launchd-style realtime polling. HTML remains derived, Markdown/JSON/kanban.db remain canonical.
+- Hermes Agent Reliability Harness structure synced as L2/L6 local-brain notes: [[Project - Hermes Agent Reliability Harness]] and [[2026-06-09-agent-reliability-harness-landing-review]].
 
 ## Category landing map
 
@@ -42,6 +45,7 @@ Make `/Users/charles/Documents/brain` the canonical local-first brain for both h
 - `brainctl promote`: controlled promotion from evidence/reviews/tasks to atoms/projects/skills.
 - `brainctl expire`: WIP task expiry and archive report.
 - `brainctl review record`: structured multi-model issue ledger and vote artifact.
+- `brainctl html --watch`: optional future filesystem-event watcher; current near-real-time path is cron/event-hook-compatible `brainctl html refresh`.
 
 Related:
 
