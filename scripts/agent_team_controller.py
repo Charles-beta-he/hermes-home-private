@@ -707,6 +707,24 @@ def _configured_mcp_servers(config_path=None):
     return sorted(name for name in servers if name)
 
 
+def build_agent_card_context_pack(task, profile=None):
+    """Build optional Agent Card context for workers.
+
+    Default is empty. Enabling requires HERMES_ENABLE_AGENT_CARD_CONTEXT=1 so
+    landing Agent Cards cannot silently change worker prompts or permissions.
+    """
+    if os.environ.get('HERMES_ENABLE_AGENT_CARD_CONTEXT') != '1':
+        return ''
+    try:
+        from agent_cards_runtime import render_agent_card_context
+        profile_name = profile.get('name') if isinstance(profile, dict) else None
+        return render_agent_card_context(task, profile=profile_name, enabled=True)
+    except Exception as exc:
+        return f'''AGENT CARD CONTEXT UNAVAILABLE (non-blocking):
+- reason: {exc}
+- boundary: Agent Cards are optional guidance only; do not expand permissions.'''
+
+
 def build_environment_capability_pack(task, profile=None, config_path=None, max_field_chars=900):
     """Build a compact skills/MCP/local-brain capability snapshot for workers.
 
@@ -831,6 +849,7 @@ PAGE-BATCH RULES:
     execution_rules_digest = build_execution_rules_digest()
     task_spec_section = build_task_spec_section(task)
     environment_capability_pack = build_environment_capability_pack(task, profile=profile)
+    agent_card_context_pack = build_agent_card_context_pack(task, profile=profile)
 
     return f"""You are a Kanban worker executing a brain task.
 
@@ -839,6 +858,8 @@ PAGE-BATCH RULES:
 {task_spec_section}
 
 {environment_capability_pack}
+
+{agent_card_context_pack}
 
 TASK: {task.get('title', 'untitled')}
 ID: {task.get('id', '')}
