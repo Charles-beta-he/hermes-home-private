@@ -18,6 +18,11 @@ import time
 from pathlib import Path
 from typing import Any
 
+try:
+    from harness_event_ledger import append_event
+except Exception:  # pragma: no cover
+    append_event = None
+
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
 SKILLS_BASE = HERMES_HOME / "skills"
 DEFAULT_CATEGORY = "agent-generated"
@@ -203,6 +208,8 @@ def execute(intent: dict[str, Any], authorization: dict[str, Any], *, mode: str 
     readback = path.read_text(encoding="utf-8")
     verified = hashlib.sha256(readback.encode("utf-8")).hexdigest() == intent.get("content_digest")
     result.update({"status": "skill_write_verified" if verified else "skill_write_readback_mismatch", "write_executed": True, "readback_verified": verified, "request_digest": request_digest, "skill_dir": str(directory), "skill_file": str(path), "readback_digest": hashlib.sha256(readback.encode("utf-8")).hexdigest()})
+    if append_event is not None:
+        result["ledger_event"] = append_event(kind="skill_write", payload={k: result.get(k) for k in ["status", "intent_id", "authorization_id", "request_digest", "readback_verified", "skill_dir", "skill_file"]})
     return result
 
 
@@ -230,6 +237,8 @@ def rollback(execution: dict[str, Any], *, expected_request_digest: str, evidenc
     shutil.rmtree(directory)
     verified = not directory.exists()
     result.update({"status": "skill_write_rollback_verified" if verified else "skill_write_rollback_mismatch", "rollback_executed": True, "readback_verified": verified, "skill_dir": str(directory)})
+    if append_event is not None:
+        result["ledger_event"] = append_event(kind="skill_rollback", payload={k: result.get(k) for k in ["status", "request_digest", "rollback_executed", "readback_verified", "skill_dir"]})
     return result
 
 

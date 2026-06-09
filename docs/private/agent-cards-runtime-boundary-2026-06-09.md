@@ -35,6 +35,9 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `/Users/charles/.hermes/scripts/test_external_adapter_harness.py`
 - `/Users/charles/.hermes/scripts/skill_writer_harness.py`
 - `/Users/charles/.hermes/scripts/test_skill_writer_harness.py`
+- `/Users/charles/.hermes/scripts/capability_lease_gate.py`
+- `/Users/charles/.hermes/scripts/test_capability_lease_gate.py`
+- `/Users/charles/.hermes/scripts/harness_event_ledger.py`
 - `/Users/charles/.hermes/docs/private/agent-cards-v1.json`
 
 ## What changed
@@ -267,6 +270,59 @@ HERMES_SKILL_WRITER_MODE=shadow
 
 This writer does not edit existing skills, memory, cron, providers, plugins, config, or external systems.
 
+### 10. Default-on capability lease gate
+
+`capability_lease_gate.py` is a default-on validation gate for dangerous capabilities such as `run_command`:
+
+- lease binds actor, role, task id, capability, scope, max danger, TTL, and evidence;
+- validation binds lease id, capability, scope, danger, request payload, request digest, and request evidence;
+- apply mode returns `allowed` only if all fields match and TTL is live;
+- shadow mode validates but does not allow execution;
+- off mode skips by explicit escape hatch.
+
+Default mode:
+
+```bash
+HERMES_CAPABILITY_LEASE_MODE=apply
+```
+
+Rollback/disable:
+
+```bash
+HERMES_CAPABILITY_LEASE_MODE=off
+```
+
+Observation-only:
+
+```bash
+HERMES_CAPABILITY_LEASE_MODE=shadow
+```
+
+The gate is validation-only. It does not execute shell commands or any other tool.
+
+### 11. Harness event ledger
+
+`harness_event_ledger.py` records idempotent JSONL events for harness executions and rollbacks:
+
+- `external_adapter_write`
+- `external_adapter_rollback`
+- `skill_write`
+- `skill_rollback`
+
+This is a lightweight local event ledger for replay/debug visibility. Full Control Tower dashboard/replay integration remains a separate maturity boundary.
+
+### Capability matrix
+
+| Capability | Default mode | Runtime integration | Write/validation target | Rollback / escape |
+| --- | --- | --- | --- | --- |
+| Agent Card specialist routing | apply | worker dispatch | profile selection only | `HERMES_AGENT_CARD_ROUTING_MODE=shadow/off` |
+| Agent Card prompt context | on | worker prompt build | prompt guidance only | `HERMES_ENABLE_AGENT_CARD_CONTEXT=off` |
+| Multimodel conductor | apply | worker proof path | advisory certification packet | `HERMES_MULTIMODEL_CONDUCTOR_MODE=off/shadow` |
+| Conductor closeout | apply | worker proof path | lifecycle `review -> done` | `HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=off/shadow` |
+| Local adapters | apply | harness executor | local_file/taskpool_note/kanban_db `status: done` | exact request digest rollback; `HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=off/shadow` |
+| New skill writer | apply | harness executor | create-new-skill only | marker-bound rollback; `HERMES_SKILL_WRITER_MODE=off/shadow` |
+| Capability lease gate | apply | validation gate | run_command/etc lease validation | TTL/field denial; `HERMES_CAPABILITY_LEASE_MODE=off/shadow` |
+
 ## Verification
 
 Tests added:
@@ -289,11 +345,13 @@ Tests added:
 - taskpool note closeout mutates only frontmatter status plus an audit marker and rolls back by exact request digest;
 - Kanban DB closeout mutates only one `tasks.status` cell using parameterized SQL and rolls back by exact request digest;
 - canonical skill writer defaults to apply and supports off/shadow escape hatch;
-- skill writer creates only new skills, verifies readback digest, rejects overwrite/tamper/non-elevated actors, and rolls back by exact request digest.
+- skill writer creates only new skills, verifies readback digest, rejects overwrite/tamper/non-elevated actors, and rolls back by exact request digest;
+- capability lease gate defaults to apply, validates scoped `run_command` leases, rejects mismatched capability/scope/danger/expired/missing-evidence requests, and supports off/shadow;
+- harness ledger records idempotent write/rollback events for adapter and skill harnesses.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, default-on local Taskpool/Kanban adapter closeout, and default-on canonical new-skill writer.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, default-on local Taskpool/Kanban adapter closeout, default-on canonical new-skill writer, default-on dangerous capability lease validation, and lightweight harness event ledgering.
 
 Still not enabled automatically:
 
@@ -313,6 +371,10 @@ Still not enabled automatically:
    - Would write/send/deploy externally.
    - Requires explicit confirmation, digest-bound executor, audit event, and rollback path.
 
+5. Full Control Tower dashboard/replay integration
+   - Harness ledger is local JSONL and idempotent.
+   - Full dashboard projection, replay, and reconcile remain separate integration work.
+
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets, and default-on digest-bound creation of new canonical skills. The enabled write paths are deliberately narrow: review -> done only for lifecycle, local adapter `status: done` closeout only for adapter write-through, and create-new-skill only for skill writes, all with digest/readback/rollback boundaries. The next boundary is broad lifecycle mutation authority, non-local external adapters, existing-skill mutation, or external send/deploy side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets, default-on digest-bound creation of new canonical skills, default-on scoped dangerous-capability lease validation, and idempotent harness event ledgering. The enabled write paths are deliberately narrow: review -> done only for lifecycle, local adapter `status: done` closeout only for adapter write-through, create-new-skill only for skill writes, and validation-only capability leases, all with digest/readback/rollback or TTL boundaries. The remaining boundaries are broad lifecycle mutation authority, non-local external adapters, existing-skill mutation, memory/cron/provider writes, external send/deploy side-effect executors, and full Control Tower dashboard/replay integration.

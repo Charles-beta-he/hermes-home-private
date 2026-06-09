@@ -85,42 +85,52 @@ The active set is fully classified:
 - Evaluation: selfcheck, proof-check, v_state, kanban_coverage_v2, tests.
 - Governance: permission_tier, completion_gate, truth_gate, no fake proof, review-required boundaries.
 
-### Partial fit / remaining maturity gaps
+### Current runtime maturity after follow-through
 
-1. Runtime profile routing is still concentrated in `brain-mirror`.
-   - The architecture has specialist profiles, but live Kanban work is not broadly distributed among them.
+1. Runtime profile routing is default-on.
+   - Specialist profile routing now defaults to `apply` and can be rolled back with `HERMES_AGENT_CARD_ROUTING_MODE=shadow|off`.
 
-2. Agent Cards were not previously machine-readable.
-   - This session landed `/Users/charles/.hermes/docs/private/agent-cards-v1.json` as the first explicit, Google-style card layer.
+2. Agent Cards are machine-readable and injected into worker prompts by default.
+   - `/Users/charles/.hermes/docs/private/agent-cards-v1.json` is the explicit Google-style card layer.
+   - Worker prompt context can be disabled with `HERMES_ENABLE_AGENT_CARD_CONTEXT=off`.
 
-3. Agent Card injection into worker prompts is not enabled.
-   - The card file is documentation/validation only for now.
-   - Runtime prompt injection and specialist routing are higher-blast-radius changes requiring explicit follow-up authorization.
+3. Multimodel conductor is default-on for validated worker proofs.
+   - Conductor certification defaults to `apply` and can be disabled with `HERMES_MULTIMODEL_CONDUCTOR_MODE=off`.
 
-4. Multimodel conductor is still an architecture domain, not the default runtime conductor.
-   - Default-on conductor routing needs separate certification, model/profile regression tests, and rollback.
+4. Digest-bound local write-through is enabled for narrow targets.
+   - lifecycle: certified `review -> done` only;
+   - adapters: `local_file`, `taskpool_note`, `kanban_db` closeout only;
+   - skills: create-new-skill only;
+   - capabilities: lease validation for dangerous capabilities such as `run_command`.
 
-5. ToolSearch/SkillSearch and external skill intake remain governed review/block domains.
-   - Safe read-only evaluation exists, but canonical skill writers/installers remain blocked behind review.
+5. Remaining maturity gaps are now deliberately higher-risk boundaries.
+   - broad lifecycle transitions;
+   - non-local external sends/deploys;
+   - existing-skill edit/delete;
+   - memory/cron/provider writes;
+   - full Control Tower dashboard/replay integration for every harness event.
 
 ## Boundary reached
 
-Safe scope completed:
+Safe scope completed and then advanced:
 
 - SSOT comparison document.
 - Machine-readable Agent Cards for runtime profiles and architecture domains.
 - Read-only validation script.
+- Default-on specialist routing and worker Agent Card context.
+- Default-on multimodel conductor certification.
+- Digest-bound local write-through for narrow lifecycle/adapter/skill/capability surfaces.
 - Skill/runbook update.
 - Coverage/classification verification.
 
-Boundary requiring explicit next authorization:
+Still requiring separate target-specific authorization/design:
 
-- Rewire Kanban dispatch to specialist profiles instead of `brain-mirror` concentration.
-- Inject Agent Cards into worker prompts at runtime.
-- Make multimodel conductor default-on.
-- Enable canonical external skill writers or installers.
-- Add external side-effect executors.
+- Broad lifecycle transitions beyond certified `review -> done`.
+- Non-local external sends/deploys.
+- Existing-skill edit/delete.
+- Memory/cron/provider writes.
+- Full Control Tower dashboard/replay integration for every harness event.
 
 ## Current verdict
 
-Hermes conforms to the Google agent structure at the control-plane architecture level, and now has explicit Agent Cards that map profiles/domains to Google-style components. It is stronger than a typical simple agent on governance/evidence/lifecycle, but not yet fully mature as a runtime multi-specialist agent system because execution remains concentrated in `brain-mirror` and Agent Cards are not yet active runtime contracts.
+Hermes conforms to the Google agent structure at the control-plane architecture level and now has active Agent Cards that map profiles/domains to Google-style components. It is stronger than a typical simple agent on governance/evidence/lifecycle, with runtime multi-specialist routing and bounded digest/readback write-through. Remaining maturity gaps are deliberately higher-risk external or broad-mutation capabilities rather than missing core agent structure.

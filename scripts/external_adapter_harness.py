@@ -17,6 +17,11 @@ import time
 from pathlib import Path
 from typing import Any
 
+try:
+    from harness_event_ledger import append_event
+except Exception:  # pragma: no cover - ledger is best-effort for standalone imports
+    append_event = None
+
 HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
 HARNESS_DIR = HERMES_HOME / "state" / "external-adapter-harness"
 ELEVATED_ROLES = {"admin", "operator", "system"}
@@ -415,9 +420,9 @@ def execute_write(intent: dict[str, Any], authorization: dict[str, Any], *, mode
         "readback_status": readback.get("status"),
         "rollback_snapshot": rollback_snapshot,
     })
+    if append_event is not None:
+        result["ledger_event"] = append_event(kind="external_adapter_write", payload={k: result.get(k) for k in ["status", "adapter", "intent_id", "authorization_id", "request_digest", "readback_verified", "adapter_state_path"]})
     return result
-
-
 def rollback_write(execution: dict[str, Any], *, expected_request_digest: str, evidence: list[str] | None = None) -> dict[str, Any]:
     evidence = [str(x) for x in (evidence or []) if str(x).strip()]
     result: dict[str, Any] = {
@@ -489,6 +494,8 @@ def rollback_write(execution: dict[str, Any], *, expected_request_digest: str, e
         "adapter_state_path": str(path),
         "readback_status": readback.get("status"),
     })
+    if append_event is not None:
+        result["ledger_event"] = append_event(kind="external_adapter_rollback", payload={k: result.get(k) for k in ["status", "request_digest", "rollback_executed", "readback_verified", "adapter_state_path"]})
     return result
 
 
