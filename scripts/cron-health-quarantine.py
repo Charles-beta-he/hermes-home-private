@@ -19,6 +19,10 @@ H = Path.home() / ".hermes"
 LOG = H / "logs" / "cron-quarantine.jsonl"
 JOBS = H / "cron" / "jobs.json"
 STALE_TRANSIENT_RE = re.compile(r"interpreter shutdown|timeout_recorded|degraded_recorded|partial_fail_recorded", re.I)
+SAFETY_PAUSE_RE = re.compile(r"SAFETY_PAUSE_POST_ACK_FAILURES|human_escape_active_preclaim", re.I)
+PROVIDER_RE = re.compile(r"Non-streaming API call timed out|Codex backend|Request timed out|Connection error|RateLimit|Too many requests", re.I)
+DELIVERY_RE = re.compile(r"delivery error|Telegram send failed|send failed", re.I)
+SCHEDULER_RE = re.compile(r"Script not found|missed its scheduled time|Fast-forwarding|idle for .*limit|Script timed out", re.I)
 
 
 def utc() -> str:
@@ -60,6 +64,21 @@ def stale_job(j: Dict[str, Any], now: datetime) -> bool:
     return (now - last).total_seconds() > 86400 and nxt > now and bool(STALE_TRANSIENT_RE.search(err))
 
 
+def classify_job(j: Dict[str, Any]) -> str:
+    text = "\n".join(str(j.get(k) or "") for k in ("last_error", "last_delivery_error", "name", "id"))
+    if SAFETY_PAUSE_RE.search(text):
+        return "safety_pause"
+    if DELIVERY_RE.search(text):
+        if PROVIDER_RE.search(str(j.get("last_error") or "")):
+            return "provider_generation"
+        return "delivery"
+    if PROVIDER_RE.search(text):
+        return "provider_generation"
+    if SCHEDULER_RE.search(text):
+        return "scheduler_runtime"
+    return "job_error"
+
+
 def jobs_report() -> Dict[str, Any]:
     now = datetime.now(timezone.utc)
     live_bad = []
@@ -77,6 +96,8 @@ def jobs_report() -> Dict[str, Any]:
             "next_run_at": j.get("next_run_at"),
             "last_status": j.get("last_status"),
             "last_error": j.get("last_error"),
+            "last_delivery_error": j.get("last_delivery_error"),
+            "class": classify_job(j),
         }
         if stale_job(j, now):
             rec["stale"] = True
@@ -96,8 +117,12 @@ def main() -> int:
     except Exception as e:
         txt = "ERROR " + repr(e)
     report = jobs_report()
-    bad_lines = [f"{j.get('name')}: {j.get('last_error')}" for j in report["bad_jobs"]]
-    stale_lines = [f"{j.get('name')}: {j.get('last_error')}" for j in report["stale_jobs"]]
+    bad_lines = [f"{j.get('name')}[{j.get('class')}]: {j.get('last_error') or j.get('last_delivery_error')}" for j in report["bad_jobs"]]
+    stale_lines = [f"{j.get('name')}[{j.get('class')}]: {j.get('last_error') or j.get('last_delivery_error')}" for j in report["stale_jobs"]]
+    classes: Dict[str, int] = {}
+    for j in report["bad_jobs"]:
+        cls = str(j.get("class") or "job_error")
+        classes[cls] = classes.get(cls, 0) + 1
     # If jobs.json was unavailable, fall back to textual scan so failures are not hidden.
     if not report["bad_jobs"] and not report["stale_jobs"]:
         bad_lines = [line.strip() for line in txt.splitlines() if re.search(r"\berror\b", line, re.I)]
@@ -106,6 +131,8 @@ def main() -> int:
         "mode": "apply" if args.apply else "report",
         "bad_count": len(bad_lines),
         "bad_lines": bad_lines[:20],
+        "classes": classes,
+        "bad_jobs": report["bad_jobs"][:20],
         "stale_count": len(stale_lines),
         "stale_lines": stale_lines[:20],
         "stale_jobs": report["stale_jobs"][:20],
