@@ -45,6 +45,14 @@ This umbrella skill is the routing surface for media. Use it to choose the most 
 - Stay at the umbrella level only for routing, taxonomy, or category-wide orientation.
 - If the request spans multiple subskills, use this umbrella to map the lane first, then hand off to the specific workflow that will do the real work.
 
+## Absorbed Workflow Packages (2 consolidated in curator umbrella pass)
+
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+
+- `gif-search` → `references/absorbed/gif-search/SKILL.md`: Use when you need to search and download GIFs from Tenor using curl.
+- `youtube-content` → `references/absorbed/youtube-content/SKILL.md`: Use when the user shares a YouTube URL or video link, asks to summarize a video, requests a transcript, or wants to extract and reformat content from any YouTube video.
+
+
 ## Common Pitfalls
 
 1. Using the media umbrella as the full procedure even though a more specific child skill already fits.

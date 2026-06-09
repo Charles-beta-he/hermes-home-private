@@ -73,6 +73,18 @@ When the user says to save code and pull latest, especially because others chang
 
 - `references/rebase-conflict-resolution.md` — batch conflict resolution, corrupted ref fixes, non-interactive rebase, complementary-change merge strategy.
 
+## Absorbed Workflow Packages (6 consolidated in curator umbrella pass)
+
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+
+- `codebase-inspection` → `references/absorbed/codebase-inspection/SKILL.md`: Use when asked to check lines of code, repo size, language composition, or codebase stats.
+- `github-auth` → `references/absorbed/github-auth/SKILL.md`: Use when you need guidance on set up GitHub authentication for the agent using git (universally available) or the gh CLI.
+- `github-code-review` → `references/absorbed/github-code-review/SKILL.md`: Use when you need to review code changes by analyzing git diffs, leaving inline comments on PRs, and performing thorough pre-push review.
+- `github-issues` → `references/absorbed/github-issues/SKILL.md`: Use when you need guidance on create, manage, triage, and close GitHub issues.
+- `github-pr-workflow` → `references/absorbed/github-pr-workflow/SKILL.md`: Use when you need guidance on full pull request lifecycle — create branches, commit changes, open PRs, monitor CI status, auto-fix failures, and merge.
+- `github-repo-management` → `references/absorbed/github-repo-management/SKILL.md`: Use when you need guidance on clone, create, fork, configure, and manage GitHub repositories.
+
+
 ## Common Pitfalls
 
 1. Using the github umbrella as the full procedure even though a more specific child skill already fits.

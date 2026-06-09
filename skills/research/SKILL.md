@@ -48,6 +48,17 @@ This umbrella skill is the routing surface for research. Use it to choose the mo
 - Stay at the umbrella level only for routing, taxonomy, or category-wide orientation.
 - If the request spans multiple subskills, use this umbrella to map the lane first, then hand off to the specific workflow that will do the real work.
 
+## Absorbed Workflow Packages (5 consolidated in curator umbrella pass)
+
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+
+- `arxiv` → `references/absorbed/arxiv/SKILL.md`: Use when you need to search and retrieve academic papers from arXiv using their free REST API.
+- `blogwatcher` → `references/absorbed/blogwatcher/SKILL.md`: Use when you need to monitor blogs and RSS/Atom feeds for updates using the blogwatcher-cli tool.
+- `llm-wiki` → `references/absorbed/llm-wiki/SKILL.md`: Use when you need guidance on karpathy's LLM Wiki — build and maintain a persistent, interlinked markdown knowledge base.
+- `polymarket` → `references/absorbed/polymarket/SKILL.md`: Use when you need guidance on query Polymarket prediction market data — search markets, get prices, orderbooks, and price history.
+- `research-paper-writing` → `references/absorbed/research-paper-writing/SKILL.md`: Use when you need guidance on end-to-end pipeline for writing ML/AI research papers — from experiment design through analysis, drafting, revision, and submission.
+
+
 ## Common Pitfalls
 
 1. Using the research umbrella as the full procedure even though a more specific child skill already fits.

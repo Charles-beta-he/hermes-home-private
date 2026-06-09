@@ -53,6 +53,20 @@ This umbrella skill is the routing surface for productivity. Use it to choose th
 - Stay at the umbrella level only for routing, taxonomy, or category-wide orientation.
 - If the request spans multiple subskills, use this umbrella to map the lane first, then hand off to the specific workflow that will do the real work.
 
+## Absorbed Workflow Packages (8 consolidated in curator umbrella pass)
+
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+
+- `airtable` → `references/absorbed/airtable/SKILL.md`: Use when you need guidance on airtable REST API via curl.
+- `google-workspace` → `references/absorbed/google-workspace/SKILL.md`: Use when you need guidance on gmail, Calendar, Drive, Contacts, Sheets, and Docs integration for Hermes.
+- `maps` → `references/absorbed/maps/SKILL.md`: Use when you need guidance on location intelligence — geocode a place, reverse-geocode coordinates, find nearby places (46 POI categories), driving/walking/cycling distance + time, turn-by-turn directions, timezone lookup, bounding box + area for a named place, and POI search within a rectangle.
+- `nano-pdf` → `references/absorbed/nano-pdf/SKILL.md`: Use when you need guidance on edit PDFs with natural-language instructions using the nano-pdf CLI.
+- `notion` → `references/absorbed/notion/SKILL.md`: Use when you need guidance on notion API for creating and managing pages, databases, and blocks via curl.
+- `ocr-and-documents` → `references/absorbed/ocr-and-documents/SKILL.md`: Use when you need guidance on extract text from PDFs and scanned documents.
+- `powerpoint` → `references/absorbed/powerpoint/SKILL.md`: Use when you need to use this skill any time a .pptx file is involved in any way — as input, output, or both.
+- `teams-meeting-pipeline` → `references/absorbed/teams-meeting-pipeline/SKILL.md`: Use when you need guidance on operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.
+
+
 ## Common Pitfalls
 
 1. Using the productivity umbrella as the full procedure even though a more specific child skill already fits.

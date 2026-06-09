@@ -286,6 +286,36 @@ gh repo edit --add-topic "machine-learning,python"
 gh repo edit --enable-auto-merge
 ```
 
+### Repository collaborators / invitations
+
+GitHub collaborator APIs require a GitHub username, not an email address. If the user provides only an email, first resolve or ask for the username; do not guess from the email local-part without verification.
+
+```bash
+repo="OWNER/REPO"
+user="github-login"
+
+# Verify target and admin rights before mutating permissions.
+gh api "users/$user" --jq '{login,id,html_url,type}'
+gh repo view "$repo" --json nameWithOwner,visibility,viewerPermission,defaultBranchRef \
+  --jq '{repo:.nameWithOwner, visibility, permission:.viewerPermission, defaultBranch:.defaultBranchRef.name}'
+
+# Invite as read-only (pull). GitHub returns 201 for a new invitation, 204 if already a collaborator/invited.
+gh api -X PUT "repos/$repo/collaborators/$user" -f permission=pull --include
+
+# Verify pending invitation.
+gh api "repos/$repo/invitations" --paginate \
+  --jq ".[] | select(.invitee.login == \"$user\") | {id, invitee:.invitee.login, permissions, repository:.repository.full_name, html_url, created_at, expired}"
+```
+
+Pitfall: `PUT /repos/{owner}/{repo}/collaborators/{username}` may not downgrade an existing collaborator from `write` to `read` even if `permission=pull` or `permission=read` returns `204 No Content`. If the explicit goal is read-only and the user already has write access, remove the collaborator and re-add/invite with `permission=pull`:
+
+```bash
+gh api -X DELETE "repos/$repo/collaborators/$user"
+gh api -X PUT "repos/$repo/collaborators/$user" -f permission=pull --include
+```
+
+After a remove-and-reinvite, `repos/$repo/collaborators/$user/permission` can report `none` until the invitee accepts; the authoritative verification before acceptance is the pending invitation list showing `permissions: read`.
+
 **With curl:**
 
 ```bash

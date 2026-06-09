@@ -53,6 +53,15 @@ This umbrella skill is the routing surface for autonomous ai agents. Use it to c
 - Stay at the umbrella level only for routing, taxonomy, or category-wide orientation.
 - If the request spans multiple subskills, use this umbrella to map the lane first, then hand off to the specific workflow that will do the real work.
 
+## Absorbed Workflow Packages (3 consolidated in curator umbrella pass)
+
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+
+- `claude-code` → `references/absorbed/claude-code/SKILL.md`: Use when you need to delegate coding tasks to Claude Code (Anthropic's CLI agent).
+- `codex` → `references/absorbed/codex/SKILL.md`: Use when you need to delegate coding tasks to OpenAI Codex CLI agent.
+- `opencode` → `references/absorbed/opencode/SKILL.md`: Use when you need to delegate coding tasks to OpenCode CLI agent for feature implementation, refactoring, PR review, and long-running autonomous sessions.
+
+
 ## Common Pitfalls
 
 1. Using the autonomous ai agents umbrella as the full procedure even though a more specific child skill already fits.
