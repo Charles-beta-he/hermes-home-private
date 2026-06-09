@@ -13,6 +13,10 @@ import sys
 from pathlib import Path
 
 REPO = Path.home() / ".hermes" / "hermes-agent"
+if sys.version_info < (3, 10):
+    for candidate in (REPO / ".venv" / "bin" / "python", REPO / "venv" / "bin" / "python"):
+        if candidate.exists() and Path(sys.executable) != candidate:
+            os.execv(str(candidate), [str(candidate), __file__, *sys.argv[1:]])
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 

@@ -15,6 +15,10 @@ from pathlib import Path
 
 HERMES_HOME = Path(os.environ.get("HERMES_HOME") or (Path.home() / ".hermes"))
 HERMES_AGENT = HERMES_HOME / "hermes-agent"
+if sys.version_info < (3, 10):
+    for candidate in (HERMES_AGENT / ".venv" / "bin" / "python", HERMES_AGENT / "venv" / "bin" / "python"):
+        if candidate.exists() and Path(sys.executable) != candidate:
+            os.execv(str(candidate), [str(candidate), __file__, *sys.argv[1:]])
 if str(HERMES_AGENT) not in sys.path:
     sys.path.insert(0, str(HERMES_AGENT))
 
