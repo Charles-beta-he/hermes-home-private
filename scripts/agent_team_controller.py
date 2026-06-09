@@ -1646,6 +1646,128 @@ def run_multimodel_conductor(task, worker_output, project_profile, worker_profil
     return packet
 
 
+def conductor_done_closeout_mode(default='apply'):
+    """Return conductor-authorized closeout mode: off, shadow, or apply.
+
+    apply is default after explicit operator authorization. It is narrow:
+    only review -> done for a task that already produced a valid proof and a
+    certified multimodel conductor packet.
+    """
+    raw = os.environ.get('HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE') or os.environ.get('HERMES_CONDUCTOR_DONE_CLOSEOUT') or default
+    mode = str(raw or '').strip().lower()
+    if mode in {'0', 'false', 'off', 'no', 'disabled'}:
+        return 'off'
+    if mode in {'1', 'true', 'yes', 'on'}:
+        return 'apply'
+    if mode not in {'off', 'shadow', 'apply'}:
+        return 'apply'
+    return mode
+
+
+def _canonical_digest(obj):
+    return hashlib.sha256(json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest()
+
+
+def build_conductor_done_authorization(task_id, proof, proof_path, ttl_seconds=900, mode=None):
+    """Build a digest-bound authorization packet for narrow review->done closeout."""
+    mode = conductor_done_closeout_mode() if mode is None else str(mode or 'apply').lower()
+    conductor = proof.get('multimodel_conductor') if isinstance(proof, dict) else None
+    packet: dict = {
+        'schema': 'hermes_conductor_done_authorization_v1',
+        'mode': mode,
+        'task_id': task_id,
+        'previous_status': 'review',
+        'target_status': 'done',
+        'authority': 'narrow_review_to_done_only_no_external_side_effects',
+        'artifact': f'artifact:{proof_path}',
+        'issued_at': utc_ts(),
+        'ttl_seconds': ttl_seconds,
+        'authorized': False,
+        'reasons': [],
+    }
+    if mode == 'off':
+        packet['reasons'].append('disabled_by_env')
+        return packet
+    if not isinstance(proof, dict) or not proof:
+        packet['reasons'].append('missing_proof')
+        return packet
+    if not isinstance(conductor, dict):
+        packet['reasons'].append('missing_multimodel_conductor')
+        return packet
+    if conductor.get('status') != 'certified' or not conductor.get('passed'):
+        packet['reasons'].append('conductor_not_certified')
+        return packet
+    if int(conductor.get('verified') or 0) < 3:
+        packet['reasons'].append('conductor_verified_below_3')
+        return packet
+    packet['proof_digest'] = _canonical_digest(proof)
+    packet['conductor_digest'] = _canonical_digest(conductor)
+    auth_basis = {
+        'task_id': task_id,
+        'previous_status': 'review',
+        'target_status': 'done',
+        'proof_digest': packet['proof_digest'],
+        'conductor_digest': packet['conductor_digest'],
+        'artifact': str(proof_path),
+    }
+    packet['authorization_id'] = _canonical_digest(auth_basis)
+    packet['authorized'] = True
+    packet['reasons'].append('certified_conductor_bound_to_proof_digest')
+    return packet
+
+
+def apply_conductor_done_closeout(task_id, actor, eid, proof, proof_path, *, mode=None, source='agent_team_controller'):
+    """Apply digest-bound conductor closeout for exactly one review->done transition."""
+    auth = build_conductor_done_authorization(task_id, proof, proof_path, mode=mode)
+    result = {
+        'schema': 'hermes_conductor_done_closeout_v1',
+        'mode': auth.get('mode'),
+        'task_id': task_id,
+        'authorization': auth,
+        'write_executed': False,
+        'readback_verified': False,
+        'status': 'skipped',
+    }
+    append_trace(eid, {'event': 'conductor_done_authorization', 'authorization': auth})
+    if not auth.get('authorized'):
+        result['reason'] = ','.join(auth.get('reasons') or ['not_authorized'])
+        return result
+    if auth.get('mode') == 'shadow':
+        result['status'] = 'shadow_authorized_not_executed'
+        return result
+    current = rows_by_id([task_id]).get(task_id) or {}
+    current_status = str(current.get('status') or '').strip()
+    if current_status == 'done':
+        result.update({'status': 'already_done', 'write_executed': False, 'readback_verified': True})
+        return result
+    if current_status != 'review':
+        result.update({'status': 'skipped_current_status_not_review', 'current_status': current_status})
+        return result
+    transition = transition_task(
+        task_id,
+        'done',
+        actor,
+        f'{source} conductor-certified proof authorized review->done closeout',
+        evidence=[
+            f'artifact:{proof_path}',
+            f'proof:sha256:{auth.get("proof_digest")}',
+            f'conductor:sha256:{auth.get("conductor_digest")}',
+            f'authorization:{auth.get("authorization_id")}',
+        ],
+    )
+    result['transition'] = transition
+    if not transition.get('ok'):
+        result.update({'status': 'transition_failed', 'reason': str(transition)[:300]})
+        return result
+    readback = rows_by_id([task_id]).get(task_id) or {}
+    result['readback_status'] = readback.get('status')
+    result['write_executed'] = True
+    result['readback_verified'] = readback.get('status') == 'done'
+    result['status'] = 'done_write_verified' if result['readback_verified'] else 'readback_mismatch'
+    append_trace(eid, {'event': 'conductor_done_closeout_result', 'result': result})
+    return result
+
+
 _PROFILE_PROVIDER_STATUS_CACHE = {}
 
 
@@ -2119,8 +2241,14 @@ def _process_worker_result(row, actor, eid, worker_result):
         )
         record['review_transition'] = review
         if review.get('ok'):
-            update_status(eid, 'DONE')
-            record['to_status'] = 'review'
+            closeout = apply_conductor_done_closeout(task_id, actor, eid, proof, proof_path, source='execute-cycle')
+            record['conductor_done_closeout'] = closeout
+            if closeout.get('readback_verified'):
+                update_status(eid, 'DONE')
+                record['to_status'] = 'done'
+            else:
+                update_status(eid, 'DONE')
+                record['to_status'] = 'review'
         else:
             _requeue(
                 'worker proof produced but review transition failed; requeue to avoid false running',
@@ -2248,12 +2376,13 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
         processed += 1
 
     reviewed_count = sum(1 for item in results if item.get('to_status') == 'review')
+    done_count = sum(1 for item in results if item.get('to_status') == 'done')
     return {
         'status': 'ok',
         'mode': 'execute-only',
         'processed': processed,
         'reviewed_count': reviewed_count,
-        'done_count': 0,
+        'done_count': done_count,
         'results': results,
         'skipped': skipped,
         'remaining_pending': max(0, len(pending) - processed),
@@ -2301,9 +2430,10 @@ def consume_claimed_batch(claimed_items, max_agents=3):
     """Immediately consume tasks just claimed by parallel-claim-and-handoff.
 
     This is the event-driven bridge between claim/handoff and real worker
-    execution.  It only advances claimed tasks to running/review; it never marks
-    brain tasks done.  Proof-gated review->done remains owned by the normal
-    lifecycle closer.
+    execution.  It advances claimed tasks to running/review and, when a valid
+    proof carries a certified conductor packet, may perform the narrow
+    digest-bound review->done closeout. Other lifecycle/write paths remain
+    separately gated.
 
     Important: claimed handoffs are already boundary/conflict classified by the
     orchestrator.  Do not serialize the batch here; start all eligible items and
@@ -2439,8 +2569,14 @@ def consume_claimed_batch(claimed_items, max_agents=3):
             )
             out['review_transition'] = review
             if review.get('ok'):
-                update_status(eid, 'DONE')
-                out['to_status'] = 'review'
+                closeout = apply_conductor_done_closeout(task_id, actor, eid, proof, proof_path, source='consume-claimed')
+                out['conductor_done_closeout'] = closeout
+                if closeout.get('readback_verified'):
+                    update_status(eid, 'DONE')
+                    out['to_status'] = 'done'
+                else:
+                    update_status(eid, 'DONE')
+                    out['to_status'] = 'review'
             else:
                 _requeue(
                     'event-driven worker proof produced but review transition failed; requeue to avoid false running',
@@ -2517,6 +2653,7 @@ def consume_claimed_batch(claimed_items, max_agents=3):
                     })
 
     reviewed_count = sum(1 for item in consumed if item.get('to_status') == 'review')
+    done_count = sum(1 for item in consumed if item.get('to_status') == 'done')
     return {
         'status': 'ok',
         'event_driven': True,
@@ -2525,10 +2662,10 @@ def consume_claimed_batch(claimed_items, max_agents=3):
         'consumed_count': len(consumed),
         'running_count': sum(1 for item in consumed if item.get('to_status') == 'running'),
         'reviewed_count': reviewed_count,
-        'done_count': 0,
+        'done_count': done_count,
         'claimed': consumed,
         'skipped': skipped,
-        'safety': 'controller-consumed claimed handoffs in parallel; worker cannot mark done; review->done remains proof-gated',
+        'safety': 'controller-consumed claimed handoffs in parallel; worker cannot mark done; only digest-bound certified conductor closeout may perform review->done',
         'next_tick_requested': bool(reviewed_count),
     }
 

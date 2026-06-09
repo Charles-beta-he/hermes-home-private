@@ -6,7 +6,7 @@ Date: 2026-06-09
 
 User authorized continuing from the Agent Cards documentation/validator layer until the overall boundary.
 
-This follow-through advanced from default-off scaffold to default-on specialist routing, default-on Agent Card prompt context, and default-on advisory multimodel conductor certification:
+This follow-through advanced from default-off scaffold to default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor certification, and default-on digest-bound conductor closeout for certified worker proofs:
 
 - Agent Card runtime helper module;
 - deterministic specialist profile recommendations;
@@ -18,7 +18,9 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - profile-auth-aware worker model chain filtering so routed profiles skip known-unavailable providers such as Gemini OAuth when missing;
 - default-on advisory multimodel conductor packet attached to validated worker proofs;
 - `HERMES_MULTIMODEL_CONDUCTOR_MODE=off|shadow` escape hatch;
-- tests proving task/Kanban/lifecycle/proof gates remain unmutated by routing/context/conductor;
+- default-on digest-bound conductor done authorization for narrow review->done closeout;
+- `HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=off|shadow` escape hatch;
+- tests proving task/Kanban/lifecycle/proof gates remain bounded by routing/context/conductor/closeout;
 - prompt budget test proving Agent Card context delta stays bounded;
 - validation that coverage/classification stayed healthy.
 
@@ -144,6 +146,49 @@ Authority boundary:
 - does not install skills or mutate memory;
 - cannot bypass proof gates or review closeout.
 
+### 7. Default-on digest-bound conductor closeout
+
+After the conductor is certified, `agent_team_controller.py` now builds a narrow `hermes_conductor_done_authorization_v1` packet and may execute review -> done.
+
+Default mode:
+
+```bash
+HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=apply
+```
+
+Rollback/disable:
+
+```bash
+HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=off
+```
+
+Observation-only:
+
+```bash
+HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=shadow
+```
+
+The authorization is bound to:
+
+- task id;
+- previous status = `review`;
+- target status = `done`;
+- proof artifact path;
+- proof digest;
+- conductor digest;
+- authorization digest.
+
+The executor then:
+
+1. appends a trace authorization event;
+2. reads current task status;
+3. refuses anything except `review` or idempotent already-`done`;
+4. calls the existing lifecycle gate `transition_task(..., "done", ...)` with proof/conductor/authorization evidence;
+5. reads back task status;
+6. reports `done_write_verified` only if readback is `done`.
+
+This is not a generic lifecycle executor. It does not authorize reopen, retry, blocked, archive, arbitrary SQL, taskpool note mutation, external adapter writes, skill writes, memory writes, sends, or deployments.
+
 ## Verification
 
 Tests added:
@@ -156,17 +201,20 @@ Tests added:
 - Agent Card prompt delta stays within the configured budget cap;
 - profile-provider filtering drops unavailable Gemini for routed profiles;
 - multimodel conductor defaults to apply and supports off escape hatch;
-- multimodel conductor attaches advisory-only certification packets.
+- multimodel conductor attaches advisory-only certification packets;
+- conductor done closeout defaults to apply and supports off/shadow escape hatch;
+- closeout authorization is digest-bound to proof/conductor/task/status;
+- closeout executes only from review, verifies readback, and is idempotent for already-done.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, and default-on advisory multimodel conductor.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, and default-on digest-bound conductor closeout.
 
 Still not enabled automatically:
 
-1. Conductor-as-authority / automatic lifecycle closeout
-   - The conductor is advisory and proof-attached only.
-   - Review -> done still requires the existing proof-gated closeout path.
+1. Broad lifecycle mutation authority
+   - Enabled path is only review -> done, and only with certified conductor proof.
+   - Reopen/retry/blocked/archive/force transitions remain outside this executor.
 
 2. Canonical skill writer / external skill installation
    - Would mutate production skills.
@@ -178,4 +226,4 @@ Still not enabled automatically:
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, and default-on advisory multimodel conductor certification on valid worker proofs. The system still does not mutate task lifecycle/proof gates through Agent Cards or conductor output. The next boundary is conductor-as-authority, canonical skill writers, or digest-bound write-through/external side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, and default-on digest-bound conductor closeout for certified review tasks. The enabled write path is deliberately narrow: review -> done only, with proof/conductor/authorization digests and readback. The next boundary is broad lifecycle mutation authority, canonical skill writers, or external adapter/side-effect executors.

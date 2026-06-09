@@ -231,6 +231,98 @@ class AgentCardsRuntimeTest(unittest.TestCase):
         finally:
             setattr(controller, "verify_with_models", original)
 
+    def certified_proof(self):
+        return {
+            "summary": "done",
+            "multimodel_conductor": {
+                "schema": "hermes_multimodel_conductor_v1",
+                "mode": "apply",
+                "status": "certified",
+                "passed": True,
+                "verified": 3,
+                "models_checked": 4,
+                "errors": 0,
+            },
+        }
+
+    def test_conductor_done_closeout_default_apply_with_escape_hatch(self):
+        old_mode = os.environ.pop("HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE", None)
+        old_short = os.environ.pop("HERMES_CONDUCTOR_DONE_CLOSEOUT", None)
+        try:
+            self.assertEqual(controller.conductor_done_closeout_mode(), "apply")
+            os.environ["HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE"] = "shadow"
+            self.assertEqual(controller.conductor_done_closeout_mode(), "shadow")
+            os.environ["HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE"] = "off"
+            self.assertEqual(controller.conductor_done_closeout_mode(), "off")
+        finally:
+            if old_mode is None:
+                os.environ.pop("HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE", None)
+            else:
+                os.environ["HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE"] = old_mode
+            if old_short is None:
+                os.environ.pop("HERMES_CONDUCTOR_DONE_CLOSEOUT", None)
+            else:
+                os.environ["HERMES_CONDUCTOR_DONE_CLOSEOUT"] = old_short
+
+    def test_build_conductor_done_authorization_is_digest_bound(self):
+        proof = self.certified_proof()
+        auth = controller.build_conductor_done_authorization("t1", proof, "/tmp/proof.json", mode="apply")
+        self.assertTrue(auth["authorized"])
+        self.assertEqual(auth["previous_status"], "review")
+        self.assertEqual(auth["target_status"], "done")
+        self.assertIn("proof_digest", auth)
+        self.assertIn("conductor_digest", auth)
+        self.assertIn("authorization_id", auth)
+        self.assertEqual(auth["authority"], "narrow_review_to_done_only_no_external_side_effects")
+
+    def test_apply_conductor_done_closeout_requires_review_and_verifies_readback(self):
+        proof = self.certified_proof()
+        calls = []
+        original_rows = controller.rows_by_id
+        original_transition = controller.transition_task
+        original_trace = controller.append_trace
+        try:
+            states = [{"t1": {"id": "t1", "status": "review"}}, {"t1": {"id": "t1", "status": "done"}}]
+            def fake_rows(ids):
+                return states[min(len(calls), 1)]
+            def fake_transition(task_id, to_status, actor, reason, evidence=None, ttl=60, force=False):
+                calls.append({"task_id": task_id, "to_status": to_status, "actor": actor, "evidence": evidence or []})
+                return {"ok": True, "data": {"status": "OK"}}
+            setattr(controller, "rows_by_id", fake_rows)
+            setattr(controller, "transition_task", fake_transition)
+            setattr(controller, "append_trace", lambda *args, **kwargs: None)
+            result = controller.apply_conductor_done_closeout("t1", "actor", "eid", proof, "/tmp/proof.json", mode="apply")
+            self.assertEqual(result["status"], "done_write_verified")
+            self.assertTrue(result["write_executed"])
+            self.assertTrue(result["readback_verified"])
+            self.assertEqual(calls[0]["to_status"], "done")
+            self.assertTrue(any(str(e).startswith("authorization:") for e in calls[0]["evidence"]))
+        finally:
+            setattr(controller, "rows_by_id", original_rows)
+            setattr(controller, "transition_task", original_transition)
+            setattr(controller, "append_trace", original_trace)
+
+    def test_apply_conductor_done_closeout_shadow_does_not_write(self):
+        proof = self.certified_proof()
+        original_transition = controller.transition_task
+        original_trace = controller.append_trace
+        try:
+            setattr(controller, "transition_task", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should not write")))
+            setattr(controller, "append_trace", lambda *args, **kwargs: None)
+            result = controller.apply_conductor_done_closeout("t1", "actor", "eid", proof, "/tmp/proof.json", mode="shadow")
+            self.assertEqual(result["status"], "shadow_authorized_not_executed")
+            self.assertFalse(result["write_executed"])
+        finally:
+            setattr(controller, "transition_task", original_transition)
+            setattr(controller, "append_trace", original_trace)
+
+    def test_apply_conductor_done_closeout_rejects_uncertified_conductor(self):
+        proof = self.certified_proof()
+        proof["multimodel_conductor"]["status"] = "not_certified"
+        auth = controller.build_conductor_done_authorization("t1", proof, "/tmp/proof.json", mode="apply")
+        self.assertFalse(auth["authorized"])
+        self.assertIn("conductor_not_certified", auth["reasons"])
+
     def test_worker_context_agent_card_prompt_delta_stays_bounded(self):
         task = {"id": "t_test", "title": "dispatch workflow", "iceberg_scope": "control_plane_taskpool"}
         old = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT")
