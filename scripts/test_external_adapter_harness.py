@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib.util
 import os
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -58,7 +59,7 @@ class ExternalAdapterHarnessTests(unittest.TestCase):
                 evidence=["approval:cli"],
             )
             self.assertTrue(auth["authorized"])
-            self.assertEqual(auth["authority"], "local_file_adapter_only_no_network_no_skill_no_memory_no_sql")
+            self.assertEqual(auth["authority"], harness.ADAPTER_AUTHORITY)
             tampered = dict(intent)
             tampered["mutation_payload"] = dict(intent["mutation_payload"], target_status="archived")
             denied = harness.authorize_write(
@@ -156,6 +157,54 @@ class ExternalAdapterHarnessTests(unittest.TestCase):
             self.assertFalse(denied["authorized"])
             self.assertIn("actor_role_not_elevated", denied["reasons"])
             self.assertIn("authorization_evidence_required", denied["reasons"])
+    def test_taskpool_note_closeout_and_rollback(self):
+        with tempfile.TemporaryDirectory() as td:
+            note = Path(td) / "task.md"
+            note.write_text("---\ntitle: Task\nstatus: review\n---\nBody\n", encoding="utf-8")
+            intent = harness.build_write_intent(
+                task_id="task.md",
+                adapter="taskpool_note",
+                adapter_state_path="task.md",
+                canonical_done_authorization_id="auth-done-1",
+                evidence=["proof:sha256:abc"],
+                base_dir=td,
+            )
+            auth = harness.authorize_write(intent, actor_id="charles", actor_role="admin", evidence=["approval:cli"])
+            execution = harness.execute_write(intent, auth, mode="apply")
+            self.assertEqual(execution["status"], "external_adapter_write_verified")
+            self.assertTrue(execution["readback_verified"])
+            self.assertEqual(harness.read_taskpool_note(note)["status"], "done")
+            self.assertIn("hermes_external_adapter_taskpool_write", note.read_text(encoding="utf-8"))
+            second = harness.execute_write(intent, auth, mode="apply")
+            self.assertEqual(second["status"], "already_applied")
+            rb = harness.rollback_write(execution, expected_request_digest=execution["request_digest"], evidence=["rollback:cli"])
+            self.assertEqual(rb["status"], "external_adapter_rollback_verified")
+            self.assertEqual(harness.read_taskpool_note(note)["status"], "review")
+
+    def test_kanban_db_closeout_and_rollback(self):
+        with tempfile.TemporaryDirectory() as td:
+            db = Path(td) / "kanban.db"
+            with sqlite3.connect(db) as conn:
+                conn.execute("CREATE TABLE tasks (id TEXT PRIMARY KEY, status TEXT)")
+                conn.execute("INSERT INTO tasks (id, status) VALUES (?, ?)", ("t1", "review"))
+                conn.commit()
+            intent = harness.build_write_intent(
+                task_id="t1",
+                adapter="kanban_db",
+                adapter_state_path="kanban.db",
+                canonical_done_authorization_id="auth-done-1",
+                evidence=["proof:sha256:abc"],
+                base_dir=td,
+            )
+            auth = harness.authorize_write(intent, actor_id="charles", actor_role="admin", evidence=["approval:cli"])
+            execution = harness.execute_write(intent, auth, mode="apply")
+            self.assertEqual(execution["status"], "external_adapter_write_verified")
+            self.assertEqual(harness.read_kanban_status(db, "t1")["status"], "done")
+            second = harness.execute_write(intent, auth, mode="apply")
+            self.assertEqual(second["status"], "already_applied")
+            rb = harness.rollback_write(execution, expected_request_digest=execution["request_digest"], evidence=["rollback:cli"])
+            self.assertEqual(rb["status"], "external_adapter_rollback_verified")
+            self.assertEqual(harness.read_kanban_status(db, "t1")["status"], "review")
 
 
 if __name__ == "__main__":

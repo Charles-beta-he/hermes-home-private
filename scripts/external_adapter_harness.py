@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Digest-bound external adapter local-file write-through harness.
+"""Digest-bound external adapter write-through harness.
 
-This is the first default-on external side-effect executor for Hermes self-
-architecture experiments. It intentionally writes only a JSON fixture file under
-an allowlisted harness directory. It does not send network requests, mutate
-Kanban/Taskpool, install skills, write memory, or deploy.
+Default-on external adapter executor for Hermes self-architecture experiments.
+It supports three allowlisted local adapters: local_file fixtures, taskpool
+markdown note closeout, and Kanban SQLite status closeout. It does not send
+network requests, install skills, write memory, deploy, or run shell commands.
 """
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import hashlib
+import sqlite3
 import time
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,8 @@ HARNESS_DIR = HERMES_HOME / "state" / "external-adapter-harness"
 ELEVATED_ROLES = {"admin", "operator", "system"}
 DISABLE_VALUES = {"0", "false", "off", "no", "disabled"}
 ENABLE_VALUES = {"1", "true", "yes", "on"}
+ALLOWED_ADAPTERS = {"local_file", "taskpool_note", "kanban_db"}
+ADAPTER_AUTHORITY = "allowlisted_local_adapters_only_no_network_no_skill_no_memory_no_shell"
 
 
 def utc_ts() -> str:
@@ -92,16 +95,151 @@ def write_state(path: Path, state: dict[str, Any]) -> None:
     path.write_text(json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def safe_target_path(target_path: str | Path, *, base_dir: str | Path | None, suffixes: set[str]) -> Path:
+    if base_dir is None:
+        raise ValueError("base_dir_required_for_real_adapter")
+    base = Path(base_dir).expanduser().resolve()
+    raw = Path(target_path).expanduser()
+    path = raw if raw.is_absolute() else base / raw
+    if path.suffix not in suffixes:
+        raise ValueError("target_path_suffix_not_allowlisted")
+    parent = path.parent
+    parent.mkdir(parents=True, exist_ok=True)
+    resolved_parent = parent.resolve()
+    if not (resolved_parent == base or base in resolved_parent.parents):
+        raise ValueError("target_path_outside_base_dir")
+    _reject_symlink_chain(resolved_parent, stop_at=base)
+    if path.exists() and path.is_symlink():
+        raise ValueError(f"symlink_rejected:{path}")
+    return resolved_parent / path.name
+
+
+def read_taskpool_note(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        raise ValueError("taskpool_note_missing")
+    text = path.read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        raise ValueError("taskpool_frontmatter_missing")
+    end = text.find("\n---", 4)
+    if end < 0:
+        raise ValueError("taskpool_frontmatter_unclosed")
+    frontmatter = text[4:end]
+    body = text[end + 4:]
+    status = ""
+    for line in frontmatter.splitlines():
+        if line.strip().startswith("status:"):
+            status = line.split(":", 1)[1].strip().strip('"\'')
+            break
+    if not status:
+        raise ValueError("taskpool_status_missing")
+    return {"status": status, "frontmatter": frontmatter, "body": body, "text": text}
+
+
+def write_taskpool_note_status(path: Path, state: dict[str, Any], *, target_status: str, audit_payload: dict[str, Any]) -> None:
+    lines = state["frontmatter"].splitlines()
+    updated = []
+    replaced = False
+    for line in lines:
+        if line.strip().startswith("status:"):
+            updated.append(f"status: {target_status}")
+            replaced = True
+        else:
+            updated.append(line)
+    if not replaced:
+        raise ValueError("taskpool_status_missing")
+    body = state["body"]
+    suffix = "\n" if body.endswith("\n") else "\n\n"
+    audit = f"<!-- hermes_external_adapter_taskpool_write: {canonical_json(audit_payload)} -->\n"
+    path.write_text("---\n" + "\n".join(updated) + "\n---" + body + suffix + audit, encoding="utf-8")
+
+
+def read_kanban_status(db_path: Path, task_id: str) -> dict[str, Any]:
+    if not db_path.exists():
+        raise ValueError("kanban_db_missing")
+    with sqlite3.connect(str(db_path)) as conn:
+        conn.row_factory = sqlite3.Row
+        table = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='tasks'").fetchone()
+        if not table:
+            raise ValueError("kanban_tasks_table_missing")
+        row = conn.execute("SELECT id, status FROM tasks WHERE id = ?", (task_id,)).fetchone()
+        if not row:
+            raise ValueError("kanban_task_missing")
+        return {"status": row["status"], "task_id": row["id"]}
+
+
+def write_kanban_status(db_path: Path, task_id: str, target_status: str) -> None:
+    with sqlite3.connect(str(db_path)) as conn:
+        cur = conn.execute("UPDATE tasks SET status = ? WHERE id = ?", (target_status, task_id))
+        if cur.rowcount != 1:
+            raise ValueError("kanban_update_rowcount_mismatch")
+        conn.commit()
+
+
+def adapter_path(intent: dict[str, Any]) -> Path:
+    adapter = intent.get("adapter")
+    path_value = intent.get("adapter_state_path")
+    if not path_value:
+        raise ValueError("adapter_state_path_required")
+    if adapter == "local_file":
+        return safe_state_path(str(path_value), base_dir=intent.get("harness_base_dir") or None)
+    if adapter == "taskpool_note":
+        return safe_target_path(str(path_value), base_dir=intent.get("harness_base_dir"), suffixes={".md"})
+    if adapter == "kanban_db":
+        return safe_target_path(str(path_value), base_dir=intent.get("harness_base_dir"), suffixes={".db", ".sqlite", ".sqlite3"})
+    raise ValueError("adapter_not_allowlisted")
+
+
+def read_adapter_state(intent: dict[str, Any], path: Path) -> dict[str, Any]:
+    adapter = intent.get("adapter")
+    if adapter == "local_file":
+        return read_state(path)
+    if adapter == "taskpool_note":
+        state = read_taskpool_note(path)
+        return {"status": state["status"], "previous_state": state}
+    if adapter == "kanban_db":
+        return read_kanban_status(path, str(intent.get("task_id")))
+    raise ValueError("adapter_not_allowlisted")
+
+
+def write_adapter_state(intent: dict[str, Any], path: Path, *, request_digest: str, authorization_id: str) -> None:
+    adapter = intent.get("adapter")
+    if adapter == "local_file":
+        before = read_state(path)
+        rollback_snapshot = {
+            "previous_status": before.get("status", "missing"),
+            "previous_state": before,
+            "adapter_state_path": str(path),
+            "adapter": adapter,
+            "request_digest": request_digest,
+        }
+        after = dict(before)
+        after.update({"status": intent.get("target_status"), "task_id": intent.get("task_id"), "updated_at": utc_ts(), "last_request_digest": request_digest, "intent_id": intent.get("intent_id"), "authorization_id": authorization_id, "mutation_digest": intent.get("mutation_digest"), "rollback_snapshot": rollback_snapshot})
+        write_state(path, after)
+        return
+    if adapter == "taskpool_note":
+        state = read_taskpool_note(path)
+        write_taskpool_note_status(path, state, target_status=str(intent.get("target_status")), audit_payload={"request_digest": request_digest, "intent_id": intent.get("intent_id"), "authorization_id": authorization_id})
+        return
+    if adapter == "kanban_db":
+        write_kanban_status(path, str(intent.get("task_id")), str(intent.get("target_status")))
+        return
+    raise ValueError("adapter_not_allowlisted")
+
+
 def build_write_intent(
     *,
     task_id: str,
     adapter_state_path: str | Path,
+    adapter: str = "local_file",
     target_status: str = "done",
     canonical_done_authorization_id: str,
     evidence: list[str] | None = None,
     base_dir: str | Path | None = None,
 ) -> dict[str, Any]:
     """Create a digest-bound local-file adapter write intent."""
+    adapter = str(adapter or "local_file").strip()
+    if adapter not in ALLOWED_ADAPTERS:
+        raise ValueError("adapter_not_allowlisted")
     if target_status != "done":
         raise ValueError("only_target_status_done_supported")
     if not canonical_done_authorization_id:
@@ -109,10 +247,15 @@ def build_write_intent(
     evidence = [str(x) for x in (evidence or []) if str(x).strip()]
     if not evidence:
         raise ValueError("non_empty_evidence_required")
-    state_path = safe_state_path(adapter_state_path, base_dir=base_dir)
     harness_base_dir = str((Path(base_dir).expanduser() if base_dir else HARNESS_DIR).resolve())
+    if adapter == "local_file":
+        state_path = safe_state_path(adapter_state_path, base_dir=base_dir)
+    elif adapter == "taskpool_note":
+        state_path = safe_target_path(adapter_state_path, base_dir=base_dir, suffixes={".md"})
+    else:
+        state_path = safe_target_path(adapter_state_path, base_dir=base_dir, suffixes={".db", ".sqlite", ".sqlite3"})
     mutation_payload = {
-        "adapter": "local_file",
+        "adapter": adapter,
         "operation": "set_status",
         "target_status": target_status,
         "task_id": task_id,
@@ -124,7 +267,7 @@ def build_write_intent(
     intent_basis = {"schema": "hermes_external_adapter_write_intent_v1", "mutation_digest": mutation_digest}
     return {
         "schema": "hermes_external_adapter_write_intent_v1",
-        "adapter": "local_file",
+        "adapter": adapter,
         "operation": "set_status",
         "task_id": task_id,
         "target_status": target_status,
@@ -164,11 +307,11 @@ def authorize_write(
         "issued_at": utc_ts(),
         "authorized": False,
         "reasons": [],
-        "authority": "local_file_adapter_only_no_network_no_skill_no_memory_no_sql",
+        "authority": ADAPTER_AUTHORITY,
     }
     if intent.get("schema") != "hermes_external_adapter_write_intent_v1":
         auth["reasons"].append("invalid_intent_schema")
-    if intent.get("adapter") != "local_file":
+    if intent.get("adapter") not in ALLOWED_ADAPTERS:
         auth["reasons"].append("adapter_not_allowlisted")
     if intent.get("target_status") != "done":
         auth["reasons"].append("target_status_not_done")
@@ -194,7 +337,7 @@ def authorize_write(
         auth["authorization_id"] = digest(auth_basis)
         auth["authorized"] = True
         auth["evidence"] = evidence
-        auth["reasons"].append("approved_digest_bound_local_file_write")
+        auth["reasons"].append("approved_digest_bound_allowlisted_adapter_write")
     return auth
 
 
@@ -209,7 +352,7 @@ def execute_write(intent: dict[str, Any], authorization: dict[str, Any], *, mode
         "write_executed": False,
         "readback_verified": False,
         "status": "skipped",
-        "authority": "local_file_adapter_only_no_network_no_skill_no_memory_no_sql",
+        "authority": ADAPTER_AUTHORITY,
     }
     if mode == "off":
         result["reason"] = "disabled_by_env"
@@ -223,18 +366,18 @@ def execute_write(intent: dict[str, Any], authorization: dict[str, Any], *, mode
     if mode == "shadow":
         result["status"] = "shadow_authorized_not_executed"
         return result
-    adapter_state_path = intent.get("adapter_state_path")
-    if not adapter_state_path:
-        result["reason"] = "adapter_state_path_required"
+    try:
+        path = adapter_path(intent)
+        before = read_adapter_state(intent, path)
+    except Exception as exc:
+        result["reason"] = str(exc)
         return result
-    path = safe_state_path(str(adapter_state_path), base_dir=intent.get("harness_base_dir") or None)
-    before = read_state(path)
     request_digest = digest({
         "intent_id": intent.get("intent_id"),
         "authorization_id": authorization.get("authorization_id"),
         "mutation_digest": intent.get("mutation_digest"),
     })
-    if before.get("last_request_digest") == request_digest and before.get("status") == intent.get("target_status"):
+    if before.get("status") == intent.get("target_status") and (intent.get("adapter") != "local_file" or before.get("last_request_digest") == request_digest):
         result.update({
             "status": "already_applied",
             "write_executed": False,
@@ -247,24 +390,20 @@ def execute_write(intent: dict[str, Any], authorization: dict[str, Any], *, mode
         return result
     rollback_snapshot = {
         "previous_status": before.get("status", "missing"),
-        "previous_state": before,
+        "previous_state": before.get("previous_state", before),
         "adapter_state_path": str(path),
+        "adapter": intent.get("adapter"),
+        "task_id": intent.get("task_id"),
+        "target_status": intent.get("target_status"),
         "request_digest": request_digest,
     }
-    after = dict(before)
-    after.update({
-        "status": intent.get("target_status"),
-        "task_id": intent.get("task_id"),
-        "updated_at": utc_ts(),
-        "last_request_digest": request_digest,
-        "intent_id": intent.get("intent_id"),
-        "authorization_id": authorization.get("authorization_id"),
-        "mutation_digest": intent.get("mutation_digest"),
-        "rollback_snapshot": rollback_snapshot,
-    })
-    write_state(path, after)
-    readback = read_state(path)
-    verified = readback.get("status") == intent.get("target_status") and readback.get("last_request_digest") == request_digest
+    write_adapter_state(intent, path, request_digest=request_digest, authorization_id=str(authorization.get("authorization_id")))
+    readback = read_adapter_state(intent, path)
+    if intent.get("adapter") == "local_file":
+        # Preserve local-file rollback snapshot inside the fixture state.
+        local = read_state(path)
+        rollback_snapshot = local.get("rollback_snapshot", rollback_snapshot)
+    verified = readback.get("status") == intent.get("target_status")
     result.update({
         "status": "external_adapter_write_verified" if verified else "external_adapter_readback_mismatch",
         "write_executed": True,
@@ -302,22 +441,46 @@ def rollback_write(execution: dict[str, Any], *, expected_request_digest: str, e
     if not rollback_path_value:
         result["reason"] = "adapter_state_path_required"
         return result
-    path = safe_state_path(str(rollback_path_value), base_dir=execution.get("harness_base_dir") or None)
-    current = read_state(path)
-    if current.get("last_request_digest") != expected_request_digest:
-        result["reason"] = "current_state_drift"
-        return result
-    previous = snapshot.get("previous_state") or {"status": snapshot.get("previous_status", "missing")}
-    if snapshot.get("previous_status") == "missing":
-        if path.exists():
-            path.unlink()
-        readback = {"status": "missing"}
+    adapter = snapshot.get("adapter") or execution.get("adapter") or "local_file"
+    fake_intent = {"adapter": adapter, "adapter_state_path": rollback_path_value, "harness_base_dir": execution.get("harness_base_dir"), "task_id": snapshot.get("task_id")}
+    path = adapter_path(fake_intent)
+    if adapter == "local_file":
+        current = read_state(path)
+        if current.get("last_request_digest") != expected_request_digest:
+            result["reason"] = "current_state_drift"
+            return result
     else:
-        restored = dict(previous)
-        restored["rollback_of_request_digest"] = expected_request_digest
-        restored["rolled_back_at"] = utc_ts()
-        write_state(path, restored)
-        readback = read_state(path)
+        current = read_adapter_state(fake_intent, path)
+        if current.get("status") != snapshot.get("target_status"):
+            result["reason"] = "current_state_drift"
+            return result
+    previous = snapshot.get("previous_state") or {"status": snapshot.get("previous_status", "missing")}
+    if adapter == "local_file":
+        if snapshot.get("previous_status") == "missing":
+            if path.exists():
+                path.unlink()
+            readback = {"status": "missing"}
+        else:
+            restored = dict(previous)
+            restored["rollback_of_request_digest"] = expected_request_digest
+            restored["rolled_back_at"] = utc_ts()
+            write_state(path, restored)
+            readback = read_state(path)
+    elif adapter == "taskpool_note":
+        if snapshot.get("previous_status") == "missing":
+            result["reason"] = "cannot_restore_missing_taskpool_note"
+            return result
+        write_taskpool_note_status(path, previous, target_status=str(snapshot.get("previous_status")), audit_payload={"rollback_of_request_digest": expected_request_digest})
+        readback = {"status": read_taskpool_note(path)["status"]}
+    elif adapter == "kanban_db":
+        if snapshot.get("previous_status") == "missing":
+            result["reason"] = "cannot_restore_missing_kanban_task"
+            return result
+        write_kanban_status(path, str(snapshot.get("task_id")), str(snapshot.get("previous_status")))
+        readback = read_kanban_status(path, str(snapshot.get("task_id")))
+    else:
+        result["reason"] = "adapter_not_allowlisted"
+        return result
     verified = readback.get("status") == snapshot.get("previous_status", "missing")
     result.update({
         "status": "external_adapter_rollback_verified" if verified else "external_adapter_rollback_mismatch",
@@ -335,7 +498,9 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("mode")
     p = sub.add_parser("intent")
     p.add_argument("--task-id", required=True)
+    p.add_argument("--adapter", default="local_file", choices=sorted(ALLOWED_ADAPTERS))
     p.add_argument("--adapter-state-path", required=True)
+    p.add_argument("--base-dir", default=None)
     p.add_argument("--canonical-done-authorization-id", required=True)
     p.add_argument("--evidence", action="append", default=[])
     p = sub.add_parser("authorize")
@@ -355,7 +520,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "mode":
         print(json.dumps({"mode": harness_mode()}, ensure_ascii=False, indent=2))
     elif args.cmd == "intent":
-        print(json.dumps(build_write_intent(task_id=args.task_id, adapter_state_path=args.adapter_state_path, canonical_done_authorization_id=args.canonical_done_authorization_id, evidence=args.evidence), ensure_ascii=False, indent=2))
+        print(json.dumps(build_write_intent(task_id=args.task_id, adapter=args.adapter, adapter_state_path=args.adapter_state_path, canonical_done_authorization_id=args.canonical_done_authorization_id, evidence=args.evidence, base_dir=args.base_dir), ensure_ascii=False, indent=2))
     elif args.cmd == "authorize":
         print(json.dumps(authorize_write(json.loads(args.intent_json), actor_id=args.actor_id, actor_role=args.actor_role, evidence=args.evidence), ensure_ascii=False, indent=2))
     elif args.cmd == "execute":

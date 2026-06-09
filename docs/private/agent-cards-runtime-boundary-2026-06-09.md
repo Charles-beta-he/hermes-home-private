@@ -20,7 +20,7 @@ This follow-through advanced from default-off scaffold to default-on specialist 
 - `HERMES_MULTIMODEL_CONDUCTOR_MODE=off|shadow` escape hatch;
 - default-on digest-bound conductor done authorization for narrow review->done closeout;
 - `HERMES_CONDUCTOR_DONE_CLOSEOUT_MODE=off|shadow` escape hatch;
-- default-on digest-bound local-file external adapter harness with rollback;
+- default-on digest-bound local adapter write-through harness with rollback;
 - `HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=off|shadow` escape hatch;
 - tests proving task/Kanban/lifecycle/proof gates remain bounded by routing/context/conductor/closeout/adapter harness;
 - prompt budget test proving Agent Card context delta stays bounded;
@@ -193,19 +193,24 @@ The executor then:
 
 This is not a generic lifecycle executor. It does not authorize reopen, retry, blocked, archive, arbitrary SQL, taskpool note mutation, external adapter writes, skill writes, memory writes, sends, or deployments.
 
-### 8. Default-on local-file external adapter harness
+### 8. Default-on local adapter write-through
 
-`external_adapter_harness.py` is the first default-on external adapter write-through executor, but it is deliberately a fixture harness:
+`external_adapter_harness.py` is now a default-on digest-bound executor for three allowlisted local adapters:
 
-- adapter allowlist: `local_file` only;
+- `local_file`: fixture JSON status write;
+- `taskpool_note`: markdown frontmatter `status: done` closeout plus audit marker;
+- `kanban_db`: SQLite `tasks.status` closeout using parameterized SQL and one-row readback.
+
+Shared guardrails:
+
 - operation allowlist: `set_status` only;
 - target status: `done` only;
-- target path: JSON file under `/Users/charles/.hermes/state/external-adapter-harness/` unless a test harness base is explicitly supplied;
+- target path must stay inside the supplied/local harness base;
 - symlink and path escape rejected;
 - authorization requires elevated role and evidence;
 - mutation is bound to intent digest, authorization digest, and canonical done authorization id;
-- execution writes the fixture file and immediately reads back;
-- rollback requires exact request digest and restores the captured previous state.
+- execution writes and immediately reads back;
+- rollback requires exact request digest and restores the captured previous status/state.
 
 Default mode:
 
@@ -225,7 +230,7 @@ Observation-only:
 HERMES_EXTERNAL_ADAPTER_HARNESS_MODE=shadow
 ```
 
-This is not a real external sender/deployer. It does not touch Kanban DB, taskpool notes, Lark, Telegram, memory, skills, providers, cron, shell, or network.
+This is not a network sender/deployer. It does not touch Lark, Telegram, memory, skills, providers, cron, shell, or network. Taskpool/Kanban support is deliberately limited to done closeout and rollback of that exact verified write.
 
 ## Verification
 
@@ -244,12 +249,14 @@ Tests added:
 - closeout authorization is digest-bound to proof/conductor/task/status;
 - closeout executes only from review, verifies readback, and is idempotent for already-done;
 - external adapter harness defaults to apply and supports off/shadow escape hatch;
-- local-file harness intent/authorization/execution is digest-bound, readback-verified, idempotent, and rollback-verified;
-- local-file harness rejects path escapes, symlinks, non-elevated actors, missing evidence, and digest tampering.
+- local adapter harness intent/authorization/execution is digest-bound, readback-verified, idempotent, and rollback-verified;
+- local adapter harness rejects path escapes, symlinks, non-elevated actors, missing evidence, and digest tampering;
+- taskpool note closeout mutates only frontmatter status plus an audit marker and rolls back by exact request digest;
+- Kanban DB closeout mutates only one `tasks.status` cell using parameterized SQL and rolls back by exact request digest.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, and default-on local-file external adapter harness.
+This is the next safe boundary after default-on specialist routing, default-on Agent Card prompt context, default-on advisory multimodel conductor, default-on digest-bound conductor closeout, and default-on local Taskpool/Kanban adapter closeout.
 
 Still not enabled automatically:
 
@@ -257,9 +264,9 @@ Still not enabled automatically:
    - Enabled lifecycle path is only review -> done, and only with certified conductor proof.
    - Reopen/retry/blocked/archive/force transitions remain outside this executor.
 
-2. Real external adapter writes
-   - Enabled external adapter is local-file fixture only.
-   - Kanban DB, taskpool notes, Lark, Telegram, deployments, providers, cron, memory, and skills remain outside this harness.
+2. Non-local external adapter writes
+   - Enabled external adapters are local-file fixture, taskpool note closeout, and Kanban DB closeout only.
+   - Lark, Telegram, deployments, providers, cron, memory, and skills remain outside this harness.
 
 3. Canonical skill writer / external skill installation
    - Would mutate production skills.
@@ -271,4 +278,4 @@ Still not enabled automatically:
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, and a default-on digest-bound local-file external adapter harness. The enabled write paths are deliberately narrow: review -> done only for lifecycle, and local-file fixture status writes only for adapter write-through, both with digest/readback boundaries. The next boundary is broad lifecycle mutation authority, real external adapters, canonical skill writers, or external send/deploy side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing, default-on Agent Card worker prompt guidance, default-on advisory multimodel conductor certification on valid worker proofs, default-on digest-bound conductor closeout for certified review tasks, and default-on digest-bound local adapter closeout for local-file, taskpool-note, and Kanban-DB targets. The enabled write paths are deliberately narrow: review -> done only for lifecycle, and local adapter `status: done` closeout only for adapter write-through, both with digest/readback/rollback boundaries. The next boundary is broad lifecycle mutation authority, non-local external adapters, canonical skill writers, or external send/deploy side-effect executors.
