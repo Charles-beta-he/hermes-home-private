@@ -46,6 +46,7 @@ cron/output/
 
 # Disposable runtime logs only (audit/evidence logs stay visible/manual-gated).
 # Approved 2026-06-04 after runtime log classification.
+logs/*.jsonl
 logs/curator/
 logs/diagnostics-fixes.jsonl
 logs/hermes-failure-taxonomy.jsonl
@@ -83,6 +84,36 @@ skills/.usage.json
 skills/.usage.json.lock
 skills/.curator_state
 skills/.curator_backups/
+
+# Profile-local secrets, preferences, and live runtime state.
+# Keep local files on disk, but do not continue versioning live drift.
+config.yaml
+config/quorum.yaml
+memories/
+cron/jobs.json
+gateway.lock
+gateway_state.json
+context_length_cache.yaml
+models_dev_cache.json
+ollama_cloud_models_cache.json
+route_outcomes.db
+state.db
+state.db.bak.*
+state-snapshots/
+
+# Local control-plane runtime queues/evidence and scratch prompts.
+task-observer/
+task-preflight/
+task-progress/
+task-worker/
+taskpool-followthrough/
+taskpool/
+taskpool_evidence/
+taskpool_repair_evidence/
+tasks/
+tmp-*
+vendor/
+worktrees/
 
 # Evidence policy:
 # Keep durable evidence only through explicit manifest-backed docs/private or evidence manifests.

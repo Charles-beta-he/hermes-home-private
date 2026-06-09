@@ -1,1 +1,0 @@
-{"ts": "2026-04-26T14:54:10Z", "task_class": "bugfix", "model": "claude-opus-4-7", "reason": "explore(cold_start(3_models_need_warmup))", "epsilon_used": 1.0}
