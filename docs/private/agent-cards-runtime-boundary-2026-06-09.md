@@ -6,16 +6,18 @@ Date: 2026-06-09
 
 User authorized continuing from the Agent Cards documentation/validator layer until the overall boundary.
 
-This follow-through advanced from default-off scaffold to default-on specialist routing:
+This follow-through advanced from default-off scaffold to default-on specialist routing and default-on Agent Card prompt context:
 
 - Agent Card runtime helper module;
 - deterministic specialist profile recommendations;
 - routing decisions with `apply` as the default;
-- `off` / `shadow` escape hatches for rollback or observation-only mode;
-- optional worker prompt Agent Card context still gated by `HERMES_ENABLE_AGENT_CARD_CONTEXT=1`;
+- `off` / `shadow` escape hatches for rollback or observation-only routing mode;
+- worker prompt Agent Card context enabled by default;
+- `HERMES_ENABLE_AGENT_CARD_CONTEXT=0/off/false/no` escape hatch for prompt rollback;
 - worker subprocess profile handoff via `hermes -p <chosen_profile> chat ...`;
 - profile-auth-aware worker model chain filtering so routed profiles skip known-unavailable providers such as Gemini OAuth when missing;
-- tests proving task/Kanban/lifecycle/proof gates remain unmutated by routing;
+- tests proving task/Kanban/lifecycle/proof gates remain unmutated by routing/context;
+- prompt budget test proving Agent Card context delta stays bounded;
 - validation that coverage/classification stayed healthy.
 
 ## Landed artifacts
@@ -54,11 +56,20 @@ The module is deterministic and read-only for task state. `routing_decision` sup
 
 - `build_agent_card_context_pack(task, profile=None)`
 
-It returns an empty string by default. It only renders card context when:
+It renders Agent Card context by default. Disable with:
 
 ```bash
-HERMES_ENABLE_AGENT_CARD_CONTEXT=1
+HERMES_ENABLE_AGENT_CARD_CONTEXT=off
 ```
+
+Accepted disable values: `0`, `false`, `off`, `no`, `disabled`.
+
+Prompt budget probe on a representative task:
+
+- context off: 4635 chars
+- context on: 6242 chars
+- delta: 1607 chars / 34.67%
+- test cap: delta <= 2200 and total <= 8000
 
 The rendered context explicitly says:
 
@@ -111,34 +122,30 @@ Tests added:
 
 - default routing is apply with off/shadow escape hatches;
 - recommendations prefer domain card profiles;
-- context is default-off;
-- opt-in context carries no-authority-expansion rule;
-- profile-provider filtering drops unavailable Gemini for routed profiles;
-- worker context excludes cards by default;
-- worker context includes cards only when env opt-in is set.
+- context can be explicitly disabled;
+- default worker context includes Agent Card guidance;
+- Agent Card context carries no-authority-expansion rule;
+- Agent Card prompt delta stays within the configured budget cap;
+- profile-provider filtering drops unavailable Gemini for routed profiles.
 
 ## Boundary reached
 
-This is the next safe boundary after default-on specialist routing.
+This is the next safe boundary after default-on specialist routing and default-on Agent Card prompt context.
 
 Still not enabled automatically:
 
-1. Always-on Agent Card worker prompt injection
-   - Routing is default-on, but Agent Card prompt context remains opt-in to avoid changing two worker behavior variables at once.
-   - Enable only after prompt-size/performance regression.
-
-2. Default-on multimodel conductor routing
+1. Default-on multimodel conductor routing
    - Would alter model/provider orchestration.
    - Requires quorum/quotas/fallback/truth-gate regression.
 
-3. Canonical skill writer / external skill installation
+2. Canonical skill writer / external skill installation
    - Would mutate production skills.
    - Requires human review and gated writer.
 
-4. External side-effect executors
+3. External side-effect executors
    - Would write/send/deploy externally.
    - Requires explicit confirmation, digest-bound executor, audit event, and rollback path.
 
 ## Current verdict
 
-Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing. The system still does not mutate task lifecycle/proof gates through Agent Cards. The next boundary is prompt-context default-on, multimodel conductor default-on, or write-through/external side-effect executors.
+Hermes has now advanced from documentation-only Google-style Agent Cards to default-on specialist worker profile routing plus default-on Agent Card worker prompt guidance. The system still does not mutate task lifecycle/proof gates through Agent Cards. The next boundary is multimodel conductor default-on or digest-bound write-through/external side-effect executors.

@@ -63,17 +63,34 @@ class AgentCardsRuntimeTest(unittest.TestCase):
         self.assertIn("do not expand permissions", ctx)
         self.assertIn("ARCHITECTURE_DOMAIN: control_plane_taskpool", ctx)
 
-    def test_worker_context_default_excludes_agent_card_context(self):
+    def test_worker_context_default_includes_agent_card_context(self):
         old = os.environ.pop("HERMES_ENABLE_AGENT_CARD_CONTEXT", None)
         try:
             ctx = controller.build_worker_context(
                 {"id": "t_test", "title": "dispatch workflow", "iceberg_scope": "control_plane_taskpool"},
                 "g1",
-                profile={"name": "workflow"},
+                profile={"agent_card_profile": "workflow"},
+            )
+            self.assertIn("AGENT CARD CONTEXT", ctx)
+            self.assertIn("do not expand permissions", ctx)
+        finally:
+            if old is not None:
+                os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = old
+
+    def test_worker_context_escape_hatch_excludes_agent_card_context(self):
+        old = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT")
+        os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = "off"
+        try:
+            ctx = controller.build_worker_context(
+                {"id": "t_test", "title": "dispatch workflow", "iceberg_scope": "control_plane_taskpool"},
+                "g1",
+                profile={"agent_card_profile": "workflow"},
             )
             self.assertNotIn("AGENT CARD CONTEXT", ctx)
         finally:
-            if old is not None:
+            if old is None:
+                os.environ.pop("HERMES_ENABLE_AGENT_CARD_CONTEXT", None)
+            else:
                 os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = old
 
     def test_routing_decision_default_is_apply_with_escape_hatches(self):
@@ -163,6 +180,22 @@ class AgentCardsRuntimeTest(unittest.TestCase):
             )
             self.assertIn("AGENT CARD", ctx)
             self.assertIn("not extra authority", ctx)
+        finally:
+            if old is None:
+                os.environ.pop("HERMES_ENABLE_AGENT_CARD_CONTEXT", None)
+            else:
+                os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = old
+    def test_worker_context_agent_card_prompt_delta_stays_bounded(self):
+        task = {"id": "t_test", "title": "dispatch workflow", "iceberg_scope": "control_plane_taskpool"}
+        old = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT")
+        try:
+            os.environ["HERMES_ENABLE_AGENT_CARD_CONTEXT"] = "off"
+            off = controller.build_worker_context(task, "g1", profile={"agent_card_profile": "workflow"})
+            os.environ.pop("HERMES_ENABLE_AGENT_CARD_CONTEXT", None)
+            on = controller.build_worker_context(task, "g1", profile={"agent_card_profile": "workflow"})
+            self.assertIn("AGENT CARD CONTEXT", on)
+            self.assertLessEqual(len(on) - len(off), 2200)
+            self.assertLessEqual(len(on), 8000)
         finally:
             if old is None:
                 os.environ.pop("HERMES_ENABLE_AGENT_CARD_CONTEXT", None)

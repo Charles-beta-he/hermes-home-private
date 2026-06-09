@@ -708,12 +708,14 @@ def _configured_mcp_servers(config_path=None):
 
 
 def build_agent_card_context_pack(task, profile=None):
-    """Build optional Agent Card context for workers.
+    """Build Agent Card context for workers.
 
-    Default is empty. Enabling requires HERMES_ENABLE_AGENT_CARD_CONTEXT=1 so
-    landing Agent Cards cannot silently change worker prompts or permissions.
+    Default is enabled now that specialist routing is default-on. Disable with
+    HERMES_ENABLE_AGENT_CARD_CONTEXT=0/off/false/no if prompt regression or
+    budget pressure appears. Agent Cards remain guidance, not authority.
     """
-    if os.environ.get('HERMES_ENABLE_AGENT_CARD_CONTEXT') != '1':
+    raw = os.environ.get('HERMES_ENABLE_AGENT_CARD_CONTEXT')
+    if str(raw).strip().lower() in {'0', 'false', 'off', 'no', 'disabled'}:
         return ''
     try:
         from agent_cards_runtime import render_agent_card_context

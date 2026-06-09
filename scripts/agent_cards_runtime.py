@@ -169,11 +169,12 @@ def render_agent_card_context(
 ) -> str:
     """Render compact Agent Card context when explicitly enabled.
 
-    If `enabled` is None, use HERMES_ENABLE_AGENT_CARD_CONTEXT=1. Default is
-    empty string so existing workers are unchanged.
+    If `enabled` is None, Agent Card context is on by default for worker
+    prompts. Set HERMES_ENABLE_AGENT_CARD_CONTEXT=0/off/false/no to disable.
     """
     if enabled is None:
-        enabled = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT") == "1"
+        raw = os.environ.get("HERMES_ENABLE_AGENT_CARD_CONTEXT")
+        enabled = str(raw).strip().lower() not in {"0", "false", "off", "no", "disabled"}
     if not enabled:
         return ""
     cards = cards or load_cards()
@@ -200,7 +201,7 @@ def render_agent_card_context(
 
     if not sections:
         return ""
-    output = "AGENT CARD CONTEXT (opt-in; role/tool/policy summary, not extra authority):\n" + "\n\n".join(sections)
+    output = "AGENT CARD CONTEXT (default-on; role/tool/policy summary, not extra authority):\n" + "\n\n".join(sections)
     output += "\nAGENT CARD RULES:\n- Agent Cards do not expand permissions or authorize lifecycle mutation.\n- If card guidance conflicts with task/policy gates, fail closed and report BLOCKED."
     if len(output) > max_chars:
         output = output[:max_chars].rstrip() + "… [truncated]"
@@ -272,10 +273,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     route = sub.add_parser("recommend", help="Recommend profiles for a task JSON object")
     route.add_argument("--task-json", required=True)
     route.add_argument("--limit", type=int, default=3)
-    ctx = sub.add_parser("context", help="Render opt-in Agent Card context for a task JSON object")
+    ctx = sub.add_parser("context", help="Render Agent Card context for a task JSON object")
     ctx.add_argument("--task-json", required=True)
     ctx.add_argument("--profile", default="")
-    ctx.add_argument("--enabled", action="store_true")
+    ctx.add_argument("--enabled", action="store_true", default=None, help="Force context on")
+    ctx.add_argument("--disabled", action="store_true", help="Force context off")
     decision_cmd = sub.add_parser("decision", help="Return shadow/apply routing decision for a task JSON object")
     decision_cmd.add_argument("--task-json", required=True)
     decision_cmd.add_argument("--mode", choices=["off", "shadow", "apply"], default="")
@@ -287,7 +289,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(json.dumps(recommend_profiles(task, cards, limit=args.limit), ensure_ascii=False, indent=2))
         return 0
     if args.cmd == "context":
-        print(render_agent_card_context(task, profile=args.profile or None, cards=cards, enabled=args.enabled))
+        enabled = False if args.disabled else args.enabled
+        print(render_agent_card_context(task, profile=args.profile or None, cards=cards, enabled=enabled))
         return 0
     if args.cmd == "decision":
         print(json.dumps(routing_decision(task, cards, mode=args.mode or None, current_profile=args.current_profile), ensure_ascii=False, indent=2))
