@@ -1,131 +1,223 @@
-#!/usr/bin/env python3
-"""Tests for social_distribution_adapter.py.
-Run with: python3 ~/.hermes/scripts/test_social_distribution_adapter.py
-"""
+"""Tests for social_distribution_adapter.py — safety behavior and dry-run correctness."""
 from __future__ import annotations
 
-import importlib.util
 import json
 import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-SCRIPT = Path.home() / ".hermes" / "scripts" / "social_distribution_adapter.py"
+# Make the adapter importable
+sys.path.insert(0, os.path.expanduser("~/.hermes/scripts"))
+from social_distribution_adapter import (
+    Evidence,
+    PlatformPreview,
+    AdapterStatus,
+    build_command_preview,
+    check_adapter,
+    load_package,
+    map_payload,
+    run,
+    MATRIXMEDIA_REPO,
+    POSTIZ_AGENT_REPO,
+)
+
+EVIDENCE_DIR = Path(
+    os.path.expanduser(
+        "~/.hermes/runs/social-distribution-dry-run-2026-06-11"
+    )
+)
 
 
-def load_module():
-    spec = importlib.util.spec_from_file_location("social_distribution_adapter_under_test", SCRIPT)
-    assert spec and spec.loader
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def test_validate_publish_package_rejects_publish_without_explicit_approval():
-    mod = load_module()
-    package = {
-        "title": "测试标题",
-        "body": "正文 #标签",
-        "media": [{"type": "video", "path": "/tmp/demo.mp4"}],
-        "targets": [
-            {"platform": "douyin", "adapter": "matrixmedia", "mode": "publish", "account": "13800138000"}
-        ],
+def _make_pkg(title="Test", media_type="image", media_path=None):
+    """Create a minimal valid package."""
+    if media_path is None:
+        media_path = str(EVIDENCE_DIR / "test-dummy.png")
+        Path(media_path).touch()
+    return {
+        "title": title,
+        "body": "Test body",
+        "tags": ["test", "hermes"],
+        "media": [{"type": media_type, "path": media_path}],
     }
 
-    result = mod.validate_publish_package(package, media_exists=lambda p: True)
 
-    assert result["ok"] is False
-    assert "publish_requires_explicit_approval" in result["errors"]
-
-
-def test_matrixmedia_dry_run_maps_payload_and_never_builds_publish_command():
-    mod = load_module()
-    package = {
-        "title": "AI 眼镜现场注意力",
-        "body": "从共享注意力到内容证据链",
-        "tags": ["AI眼镜", "小红书"],
-        "cover": "/tmp/cover.jpg",
-        "media": [{"type": "video", "path": "/tmp/video.mp4"}],
-        "targets": [
-            {"platform": "xhs", "adapter": "matrixmedia", "mode": "dry-run", "account": "13800138000"}
-        ],
-    }
-
-    adapter = mod.MatrixMediaAdapter(binary="matrixmedia")
-    result = adapter.plan(package, package["targets"][0], media_exists=lambda p: True, command_exists=lambda c: False)
-
-    assert result["ok"] is True
-    assert result["adapter"] == "matrixmedia"
-    assert result["platform"] == "xhs"
-    assert result["mode"] == "dry-run"
-    assert result["will_publish"] is False
-    assert result["login_check"]["status"] == "unknown_binary_missing"
-    assert result["mapped_payload"]["title"] == "AI 眼镜现场注意力"
-    assert result["mapped_payload"]["tags"] == "AI眼镜,小红书"
-    assert result["commands"]["publish_preview"][0:3] == ["matrixmedia", "cli", "publish"]
-    assert result["commands"]["publish_preview"].count("--dry-run") == 1
+def _write_pkg(pkg, dir):
+    p = Path(dir) / "publish-package.json"
+    p.write_text(json.dumps(pkg, ensure_ascii=False))
+    return str(p)
 
 
-def test_postiz_draft_plan_uses_external_cli_boundary():
-    mod = load_module()
-    package = {
-        "title": "国际平台草稿",
-        "body": "Content body",
-        "media": [{"type": "image", "path": "/tmp/img.jpg"}],
-        "targets": [
-            {"platform": "linkedin", "adapter": "postiz", "mode": "draft", "integration_id": "linkedin-123"}
-        ],
-    }
+# ── RED LINE TESTS ─────────────────────────────────────────────────────
 
-    adapter = mod.PostizAdapter(binary="postiz")
-    result = adapter.plan(package, package["targets"][0], media_exists=lambda p: True, command_exists=lambda c: False)
-
-    assert result["ok"] is True
-    assert result["adapter"] == "postiz"
-    assert result["mode"] == "draft"
-    assert result["will_publish"] is False
-    assert result["commands"]["create_draft_preview"][:3] == ["postiz", "posts:create", "-c"]
-    assert "-t" in result["commands"]["create_draft_preview"]
-    assert "draft" in result["commands"]["create_draft_preview"]
-
-
-def test_cli_dry_run_writes_readable_evidence_bundle():
+def test_publish_mode_rejected_without_approval_token():
+    """mode=publish must return error when no human_approval_token."""
     with tempfile.TemporaryDirectory() as td:
-        root = Path(td)
-        video = root / "video.mp4"
-        video.write_bytes(b"fake video fixture")
-        package = root / "publish-package.json"
-        out = root / "dry-run.json"
-        package.write_text(json.dumps({
-            "title": "CLI dry-run",
-            "body": "body",
-            "media": [{"type": "video", "path": str(video)}],
-            "targets": [
-                {"platform": "douyin", "adapter": "matrixmedia", "mode": "dry-run", "account": "13800138000"},
-                {"platform": "linkedin", "adapter": "postiz", "mode": "draft", "integration_id": "linkedin-123"},
-            ],
-        }, ensure_ascii=False), encoding="utf-8")
+        pp = _write_pkg(_make_pkg(), td)
+        ev = run(pp, mode="publish", human_approval_token=None)
+        assert any(
+            "RED_LINE" in e and "publish" in e.lower() for e in ev.errors
+        ), f"Expected publish rejection, got: {ev.errors}"
+        assert "publish_without_approval_token" in ev.red_lines_held
 
-        proc = subprocess.run(
-            [sys.executable, str(SCRIPT), "dry-run", "--package", str(package), "--out", str(out)],
-            capture_output=True,
-            text=True,
-            env={**os.environ, "PATH": "/usr/bin:/bin"},
+
+def test_publish_mode_allowed_with_approval_token():
+    """mode=publish with token should not reject on the gate."""
+    with tempfile.TemporaryDirectory() as td:
+        pp = _write_pkg(_make_pkg(), td)
+        ev = run(pp, mode="publish", human_approval_token="test-abc123")
+        assert not any(
+            "publish_without_approval_token" in r for r in ev.red_lines_held
         )
-
-        assert proc.returncode == 0, proc.stderr + proc.stdout
-        data = json.loads(out.read_text(encoding="utf-8"))
-        assert data["ok"] is True
-        assert data["safety"]["default_public_publish"] == "blocked_without_explicit_approval"
-        assert [r["adapter"] for r in data["results"]] == ["matrixmedia", "postiz"]
-        assert all(r["will_publish"] is False for r in data["results"])
+        assert ev.human_approval_token_provided is True
 
 
-if __name__ == "__main__":
-    tests = [name for name in globals() if name.startswith("test_")]
-    for name in tests:
-        globals()[name]()
-    print(f"PASS {len(tests)} tests")
+def test_all_previews_have_will_publish_false_in_dry_run():
+    """In dry-run mode, every PlatformPreview.will_publish must be False."""
+    with tempfile.TemporaryDirectory() as td:
+        pp = _write_pkg(_make_pkg(), td)
+        ev = run(pp, mode="dry-run")
+        for pv in ev.platform_previews:
+            assert pv.will_publish is False, (
+                f"platform {pv.platform} has will_publish={pv.will_publish}"
+            )
+
+
+def test_load_package_rejects_invalid():
+    """load_package must return errors for bad input."""
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / "bad.json"
+        p.write_text("not json")
+        _, errors = load_package(str(p))
+        assert errors
+
+        p.write_text('{"wrong": "schema"}')
+        _, errors = load_package(str(p))
+        assert any("title" in e for e in errors)
+
+
+def test_load_package_validates_media_paths():
+    """Missing media paths must be reported."""
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / "pkg.json"
+        p.write_text(json.dumps({
+            "title": "Test",
+            "media": [{"type": "image", "path": "/nonexistent/img.png"}]
+        }))
+        _, errors = load_package(str(p))
+        assert any("path_not_found" in e for e in errors)
+
+
+# ── PLATFORM MAPPING TESTS ─────────────────────────────────────────────
+
+def test_map_payload_applies_overrides():
+    """Platform overrides should take precedence."""
+    pkg = {
+        "title": "Default title",
+        "body": "Default body",
+        "tags": ["general"],
+        "media": [{"type": "image", "path": "/tmp/dummy.png"}],
+        "platformOverrides": {
+            "dy": {"title": "抖音专用标题", "tags": ["抖音", "AI"]}
+        },
+    }
+    mapped, warnings = map_payload(pkg, "dy", "matrixmedia")
+    assert mapped["title"] == "抖音专用标题"
+    assert mapped["tags"] == ["抖音", "AI"]
+
+
+def test_map_payload_truncates_long_titles():
+    """Titles exceeding platform limits should be truncated with warning."""
+    pkg = {
+        "title": "A" * 30,
+        "media": [{"type": "image", "path": "/tmp/dummy.png"}],
+    }
+    mapped, warnings = map_payload(pkg, "xhs", "matrixmedia")
+    assert len(mapped["title"]) <= 20
+    assert any("truncated" in w.lower() for w in warnings)
+
+
+def test_command_preview_matrixmedia():
+    """MatrixMedia command preview includes dry-run marker."""
+    payload = {
+        "title": "Hello",
+        "body": "Body text",
+        "tags": ["AI", "测试"],
+        "media": [{"type": "image", "path": "/tmp/v.mp4"}],
+    }
+    cmd = build_command_preview(payload, "dy", "matrixmedia", {})
+    assert "matrixmedia cli publish" in cmd
+    assert "DRY-RUN ONLY" in cmd
+    assert "will_publish=false" in cmd
+
+
+def test_command_preview_postiz():
+    """Postiz command preview for international platforms."""
+    payload = {
+        "title": "Hello World",
+        "body": "Test",
+        "tags": [],
+        "media": [{"type": "image", "path": "/tmp/i.png"}],
+    }
+    cmd = build_command_preview(payload, "x", "postiz", {})
+    assert "postiz posts:create" in cmd
+    assert "DRY-RUN ONLY" in cmd
+
+
+def test_command_preview_unsupported_platform():
+    """Unsupported platform returns a note."""
+    cmd = build_command_preview({}, "xhs", "postiz", {})
+    assert "not supported" in cmd.lower()
+
+
+# ── ADAPTER DETECTION TESTS ────────────────────────────────────────────
+
+def test_check_adapter_reports_missing_binary():
+    """check_adapter for non-existent binary returns login_status=unknown_binary_missing."""
+    status = check_adapter("nonexistent-cli-tool", "no_such_binary_xyz")
+    assert not status.available
+    assert status.login_status == "unknown_binary_missing"
+
+
+def test_matrixmedia_repo_exists():
+    """The MatrixMedia repo checkout should be discoverable."""
+    assert MATRIXMEDIA_REPO.exists(), (
+        "MatrixMedia repo not found — run social-distribution-oss-verify first"
+    )
+
+
+def test_postiz_agent_repo_exists():
+    """The postiz-agent repo checkout should be discoverable."""
+    assert POSTIZ_AGENT_REPO.exists(), (
+        "Postiz agent repo not found"
+    )
+
+
+# ── EVIDENCE STRUCTURE ─────────────────────────────────────────────────
+
+def test_evidence_structure():
+    """Evidence output has expected top-level keys."""
+    with tempfile.TemporaryDirectory() as td:
+        pp = _write_pkg(_make_pkg(), td)
+        out = Path(td) / "evidence.json"
+        ev = run(pp, mode="dry-run", out=str(out))
+        assert out.exists()
+        data = json.loads(out.read_text())
+        for key in [
+            "generated_at", "package_valid", "mode",
+            "matrixmedia", "postiz", "platform_previews",
+            "red_lines_held",
+        ]:
+            assert key in data, f"Missing key: {key}"
+
+
+# ── SAMPLE PACKAGE ─────────────────────────────────────────────────────
+
+def test_sample_package_is_valid():
+    """The sample package must pass validation."""
+    sp = EVIDENCE_DIR / "publish-package.sample.json"
+    assert sp.exists(), "Sample package not found"
+    _, errors = load_package(str(sp))
+    # media paths in sample may not exist — that's expected
+    path_errors = [e for e in errors if "path_not_found" not in e]
+    assert not path_errors, f"Unexpected validation errors: {path_errors}"
