@@ -1,0 +1,162 @@
+{
+  "ok": true,
+  "generated_at": "2026-06-10T12:29:47.177246+00:00",
+  "safety": {
+    "default_public_publish": "blocked_without_explicit_approval",
+    "human_control_boundary": "human_only_no_secret_entry",
+    "source_license_policy": "use_external_cli_api_mcp_boundary_for_gpl_agpl"
+  },
+  "package_validation": {
+    "ok": true,
+    "errors": [],
+    "warnings": []
+  },
+  "results": [
+    {
+      "ok": true,
+      "adapter": "matrixmedia",
+      "platform": "xhs",
+      "mode": "dry-run",
+      "will_publish": false,
+      "license_boundary": "external_cli_only_gpl2_no_source_copy",
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "warnings": []
+      },
+      "login_check": {
+        "command_preview": [
+          "matrixmedia",
+          "cli",
+          "accounts",
+          "-p",
+          "xhs",
+          "--json"
+        ],
+        "status": "unknown_binary_missing",
+        "human_login_required_for_non_douyin": true
+      },
+      "mapped_payload": {
+        "platform": "xhs",
+        "title": "AI 眼镜共享注意力：从视频证据到内容分发",
+        "body": "一条证据驱动的多平台内容包，默认只 dry-run / draft。",
+        "tags": "AI眼镜,共享注意力,内容证据链",
+        "media_path": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4",
+        "cover": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-cover.jpg",
+        "account": "13800138000",
+        "publish_at": null
+      },
+      "commands": {
+        "publish_preview": [
+          "matrixmedia",
+          "cli",
+          "publish",
+          "-p",
+          "xhs",
+          "--phone",
+          "13800138000",
+          "-f",
+          "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4",
+          "-t",
+          "AI 眼镜共享注意力：从视频证据到内容分发",
+          "--tags",
+          "AI眼镜,共享注意力,内容证据链",
+          "--dry-run"
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "adapter": "matrixmedia",
+      "platform": "dy",
+      "mode": "dry-run",
+      "will_publish": false,
+      "license_boundary": "external_cli_only_gpl2_no_source_copy",
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "warnings": []
+      },
+      "login_check": {
+        "command_preview": [
+          "matrixmedia",
+          "cli",
+          "accounts",
+          "-p",
+          "dy",
+          "--json"
+        ],
+        "status": "unknown_binary_missing",
+        "human_login_required_for_non_douyin": false
+      },
+      "mapped_payload": {
+        "platform": "dy",
+        "title": "AI 眼镜共享注意力：从视频证据到内容分发",
+        "body": "一条证据驱动的多平台内容包，默认只 dry-run / draft。",
+        "tags": "AI眼镜,共享注意力,内容证据链",
+        "media_path": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4",
+        "cover": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-cover.jpg",
+        "account": "13800138000",
+        "publish_at": null
+      },
+      "commands": {
+        "publish_preview": [
+          "matrixmedia",
+          "cli",
+          "publish",
+          "-p",
+          "dy",
+          "--phone",
+          "13800138000",
+          "-f",
+          "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4",
+          "-t",
+          "AI 眼镜共享注意力：从视频证据到内容分发",
+          "--tags",
+          "AI眼镜,共享注意力,内容证据链",
+          "--dry-run"
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "adapter": "postiz",
+      "platform": "linkedin",
+      "mode": "draft",
+      "will_publish": false,
+      "license_boundary": "external_cli_or_api_only_postiz_app_agpl_no_source_copy",
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "warnings": []
+      },
+      "login_check": {
+        "command_preview": [
+          "postiz",
+          "auth:status"
+        ],
+        "status": "unknown_binary_missing"
+      },
+      "mapped_payload": {
+        "content": "一条证据驱动的多平台内容包，默认只 dry-run / draft。",
+        "integration_id": "linkedin-123",
+        "media": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4",
+        "post_type": "draft"
+      },
+      "commands": {
+        "create_draft_preview": [
+          "postiz",
+          "posts:create",
+          "-c",
+          "一条证据驱动的多平台内容包，默认只 dry-run / draft。",
+          "-t",
+          "draft",
+          "-i",
+          "linkedin-123",
+          "-m",
+          "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4"
+        ]
+      }
+    }
+  ]
+}

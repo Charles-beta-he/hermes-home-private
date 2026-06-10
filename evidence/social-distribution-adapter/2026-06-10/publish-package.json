@@ -1,0 +1,15 @@
+{
+  "title": "AI 眼镜共享注意力：从视频证据到内容分发",
+  "body": "一条证据驱动的多平台内容包，默认只 dry-run / draft。",
+  "tags": ["AI眼镜", "共享注意力", "内容证据链"],
+  "cover": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-cover.jpg",
+  "license_boundary": "external_cli_only",
+  "media": [
+    {"type": "video", "path": "/Users/charles/.hermes/evidence/social-distribution-adapter/2026-06-10/demo-video.mp4"}
+  ],
+  "targets": [
+    {"platform": "xhs", "adapter": "matrixmedia", "mode": "dry-run", "account": "13800138000"},
+    {"platform": "douyin", "adapter": "matrixmedia", "mode": "dry-run", "account": "13800138000"},
+    {"platform": "linkedin", "adapter": "postiz", "mode": "draft", "integration_id": "linkedin-123"}
+  ]
+}
