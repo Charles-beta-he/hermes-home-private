@@ -92,6 +92,12 @@ def make_env_and_vault():
         "conventions": ["load profile before worker execution", "fail closed when profile is missing"],
         "acceptance": ["focused tests pass", "p10-health remains A"],
         "forbidden": ["start worker without project profile context"],
+        "source_weighting_policy": {
+            "ranked_sources": [
+                {"source": "fixture-task-note", "weight": 1.0, "reason": "isolated dispatch tick fixture"}
+            ],
+            "decision_rule": "fixture evidence only",
+        },
     }, ensure_ascii=False), encoding="utf-8")
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
