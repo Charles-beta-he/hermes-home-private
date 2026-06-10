@@ -5552,6 +5552,20 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                     continue
 
             if mm_required and not mm_passed and "loop_non_convergence" in cert_reasons and decision.upper() == "CONTINUE_LOOP" and not list_value(task.fm.get("auto_subtask_children")):
+                if taxonomy_payload.get("taxonomy_warning"):
+                    keep_reason = "blocked resolver: loop_non_convergence needs taxonomy artifact for auto-split, but historical discussion artifact is unavailable"
+                    task.fm["blocked_resolve_last_action"] = "keep_blocked_missing_taxonomy_artifact"
+                    task.fm["blocked_resolve_reason"] = keep_reason
+                    task.fm["blocker_status"] = "unresolved"
+                    task.fm["blocker_summary"] = keep_reason
+                    save_task(task)
+                    kept_blocked.append({
+                        "task": task.id,
+                        "action": "keep_blocked_missing_taxonomy_artifact",
+                        "reason": keep_reason,
+                        **taxonomy_payload,
+                    })
+                    continue
                 split_result = command_auto_split_non_convergence(argparse.Namespace(task=task.id))
                 keep_reason = "blocked resolver: loop_non_convergence detected; auto-generated narrowed convergence subtasks before next parent ratification"
                 task = find_task(task.id)
@@ -6153,6 +6167,25 @@ def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
 
     derived_refresh = refresh_derived_task_views("reconcile") if args.write and actions else None
     return {"status": "OK", "write": bool(args.write), "action_count": len(actions), "actions": actions, "derived_refresh": derived_refresh}
+
+
+def reconcile_action_blocks_dispatch(action: dict[str, Any]) -> bool:
+    """Return whether a reconcile action must stop dispatch until it is written.
+
+    Auto-subtask progress sync rows are also used as observability for blocked
+    parents that are still waiting on open children. Those rows can repeat on
+    every reconcile call while no canonical fix is possible yet; treating them
+    as a hard reconcile requirement makes autorun report a false stall.
+    """
+    if action.get("action") == "auto_subtask_progress_synced" and not action.get("ready") and not action.get("missing_children"):
+        return False
+    return True
+
+
+def blocking_reconcile_actions(reconcile_result: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not reconcile_result:
+        return []
+    return [action for action in reconcile_result.get("actions", []) if reconcile_action_blocks_dispatch(action)]
 
 
 def command_proof_check(args: argparse.Namespace) -> dict[str, Any]:
@@ -7029,12 +7062,8 @@ def command_next(args: argparse.Namespace) -> dict[str, Any]:
     reconcile_result = None
     if not getattr(args, "no_reconcile", False):
         reconcile_result = command_reconcile(argparse.Namespace(write=bool(getattr(args, "reconcile", False)), actor="next", max_retries=3, retry_delay_minutes=60, stale_claim_status="pending", over_retry_status="blocked", promote_due_retry=True))
-        blocking_reconcile_actions = []
-        for action in reconcile_result.get("actions", []):
-            if action.get("action") == "auto_subtask_progress_synced" and not action.get("ready") and not action.get("missing_children"):
-                continue
-            blocking_reconcile_actions.append(action)
-        if blocking_reconcile_actions and not getattr(args, "reconcile", False):
+        blocking_actions = blocking_reconcile_actions(reconcile_result)
+        if blocking_actions and not getattr(args, "reconcile", False):
             return {"status": "OK", "next": None, "message": "Reconcile is required before dispatch. Re-run with --reconcile to write canonical task-note fixes, or run reconcile --write explicitly.", "reconcile": reconcile_result}
     rows = dispatchable_tasks()
     if not rows:
@@ -8386,7 +8415,7 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         nxt = command_next(argparse.Namespace(reconcile=False, no_reconcile=bool(getattr(args, "no_reconcile", False)), json=True))
         if nxt.get("next"):
             task = find_task(nxt["next"]["id"])
-        elif (nxt.get("reconcile") or {}).get("action_count"):
+        elif blocking_reconcile_actions(nxt.get("reconcile")):
             reasons.append("reconcile_required")
         else:
             reasons.append("no_dispatchable_task")

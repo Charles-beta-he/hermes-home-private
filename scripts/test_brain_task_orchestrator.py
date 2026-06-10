@@ -2454,6 +2454,62 @@ def test_non_blocking_auto_subtask_reconcile_actions_do_not_block_next_or_eligib
         assert "reconcile_required" not in eligible["reasons"], eligible
 
 
+def test_benign_auto_subtask_reconcile_action_without_dispatchable_task_is_not_reconcile_required():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["client-work"])
+        parent_id, parent_path = add_task(env, title="Parent waiting on blocked child", priority="P1", project="client-work")
+        child_id, child_path = add_task(env, title="Blocked child task", priority="P1", project="client-work")
+        add_non_blocking_auto_subtask_parent_fields(parent_path, child_id)
+        child_text = child_path.read_text(encoding="utf-8").replace("status: pending", "status: blocked", 1)
+        child_path.write_text(child_text, encoding="utf-8")
+        run(env, "dashboard", "--write", "--json")
+
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([child_id], ensure_ascii=False), encoding="utf-8")
+
+        nxt = json.loads(run(env, "next", "--json").stdout)
+        assert nxt["next"] is None, nxt
+        assert nxt["message"] == "No dispatchable local-brain tasks in canonical task notes.", nxt
+        assert any(action["action"] == "auto_subtask_progress_synced" and action["task"] == parent_id for action in nxt["reconcile"]["actions"]), nxt
+
+        eligible = json.loads(run(env, "eligibility-check", "--json").stdout)
+        assert eligible["eligible"] is False, eligible
+        assert "no_dispatchable_task" in eligible["reasons"], eligible
+        assert "reconcile_required" not in eligible["reasons"], eligible
+
+
+def test_blocked_resolve_missing_discussion_artifact_is_taxonomy_warning_not_fatal():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_evolution_task(env, title="Blocked parent missing historical artifact", priority="P1")
+        missing_artifact = task_path.parent / "missing-discussion.json"
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: blocked", 1)
+        text = text.replace(
+            "evidence: []",
+            f"multimodel_last_discussion_artifact: {missing_artifact}\n"
+            "multimodel_last_gate_status: FAIL\n"
+            "multimodel_last_decision: CONTINUE_LOOP\n"
+            "multimodel_round_status: failed\n"
+            "multimodel_status: not_certified\n"
+            "multimodel_last_failures:\n"
+            "  - loop_non_convergence\n"
+            "evidence: []",
+            1,
+        )
+        task_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "blocked-resolve-step", "--task", task_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["error_count"] == 0, result
+        assert result["kept_blocked_count"] == 1, result
+        row = result["kept_blocked"][0]
+        assert row["action"] == "keep_blocked_missing_taxonomy_artifact", result
+        assert "discussion artifact missing" in row.get("taxonomy_warning", ""), result
+
 
 def test_auto_split_non_convergence_creates_axis_specific_narrowed_briefs():
     td, _vault, env = make_env_and_vault()
