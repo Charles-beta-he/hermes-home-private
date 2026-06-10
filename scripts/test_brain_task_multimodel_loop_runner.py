@@ -33,12 +33,12 @@ def write_json(path: Path, data: dict) -> Path:
 def certified_discussion() -> dict:
     return {
         "status": "certified",
-        "models_consulted": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"],
+        "models_consulted": ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"],
         "agreement_matrix": {"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
         "issue_ledger": [{"id": "I-001", "severity": 3, "status": "resolved"}],
         "remaining_risks": [],
         "ratification_votes": [
-            {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+            {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
             {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
             {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
             {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
@@ -151,7 +151,7 @@ def test_ratification_artifact_exports_explicit_acceptance_fields():
     assert artifact["consult_models"]["discussion_result_status"] == "certified", artifact
     assert artifact["consult_models"]["agreement_matrix"]["approach"] == 0.95, artifact
     assert len(artifact["consult_models"]["ratification_votes"]) == 4, artifact
-    assert artifact["consult_models"]["best_within_constraints_by_model"]["claude-opus-4-7"] is True, artifact
+    assert artifact["consult_models"]["best_within_constraints_by_model"]["claude-fable-5"] is True, artifact
     assert artifact["consult_models"]["issue_ledger"][0]["status"] == "resolved", artifact
     assert artifact["consult_models"]["remaining_risks"] == [], artifact
     assert artifact["verifier"]["done"] is True, artifact
@@ -345,7 +345,7 @@ def test_verify_ratification_rejects_partial_certified_shell():
     module = load_module()
     data = {
         "status": "certified",
-        "models_consulted": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"],
+        "models_consulted": ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro"],
         "issue_ledger": [],
         "remaining_risks": [],
     }
@@ -441,7 +441,7 @@ def test_cli_partial_certified_discussion_fails_closed_without_loop_done():
         root = Path(td)
         fixture = write_json(root / "discussion_result.json", {
             "status": "certified",
-            "models_consulted": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"],
+            "models_consulted": ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro"],
             "issue_ledger": [],
             "remaining_risks": [],
         })
@@ -549,9 +549,9 @@ def test_ratification_selfcheck_empty_path_fails_closed_without_traceback():
 def test_verify_ratification_rejects_duplicate_consulted_models_and_fake_approval_models():
     module = load_module()
     data = certified_discussion()
-    data["models_consulted"] = ["claude-opus-4-7", "claude-opus-4-7", "gpt-5.5"]
+    data["models_consulted"] = ["claude-fable-5", "claude-fable-5", "gpt-5.5"]
     data["ratification_votes"] = [
-        {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+        {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
         {"model": "fake-b", "vote": "approve", "best_within_constraints": True},
         {"model": "fake-c", "vote": "approve", "best_within_constraints": True},
     ]
@@ -589,9 +589,9 @@ def test_verify_ratification_requires_explicit_truth_certification():
 def test_verify_ratification_requires_vote_from_every_consulted_model():
     module = load_module()
     data = certified_discussion()
-    data["models_consulted"] = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+    data["models_consulted"] = ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
     data["ratification_votes"] = [
-        {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+        {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
         {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
         {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
     ]

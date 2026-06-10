@@ -647,7 +647,7 @@ def test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns():
                 "pass_count": 1,
                 "failure_count": 3,
                 "failures": [
-                    {"model": "claude-opus-4-7", "provider": "claude-code", "status": "unobservable", "reasons": ["status_unobservable"]},
+                    {"model": "claude-fable-5", "provider": "claude-code", "status": "unobservable", "reasons": ["status_unobservable"]},
                     {"model": "deepseek-v4-pro", "provider": "deepseek", "status": "exhausted", "reasons": ["quota_exhausted"]},
                     {"model": "mimo-v2.5-pro", "provider": "xiaomi", "status": "unknown", "reasons": ["status_unknown"]},
                 ],

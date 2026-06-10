@@ -35,7 +35,7 @@ class TestModelQuota(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
             snap = mq.snapshot_from_headers(
-                model="claude-opus-4-7",
+                model="claude-fable-5",
                 provider="anthropic",
                 headers={
                     "X-RateLimit-Remaining-Tokens": "12345",
@@ -73,11 +73,11 @@ class TestModelQuota(unittest.TestCase):
             os.environ["PATH"] = str(bin_dir)
             try:
                 provider = mq.provider_for_model(
-                    "claude-opus-4-7",
-                    {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}},
+                    "claude-fable-5",
+                    {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}},
                 )
                 self.assertEqual(provider, "claude-code")
-                snap = mq.default_snapshot("claude-opus-4-7", provider)
+                snap = mq.default_snapshot("claude-fable-5", provider)
                 self.assertEqual(snap["provider"], "claude-code")
                 self.assertEqual(snap["status"], "unobservable")
                 self.assertEqual(snap["quota_type"], "subscription_cap")
@@ -100,8 +100,8 @@ class TestModelQuota(unittest.TestCase):
             os.environ["ANTHROPIC_API_KEY"] = "placeholder"
             try:
                 provider = mq.provider_for_model(
-                    "claude-opus-4-7",
-                    {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}},
+                    "claude-fable-5",
+                    {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}},
                 )
                 self.assertEqual(provider, "anthropic")
             finally:
@@ -115,17 +115,17 @@ class TestModelQuota(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)
             snapshots = {
-                "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted"},
+                "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted"},
                 "deepseek::deepseek-v4-pro": {"model": "deepseek-v4-pro", "provider": "deepseek", "status": "unknown"},
                 "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
             }
             allowed, skipped = mq.gate_models(
-                ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"],
+                ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro"],
                 snapshots,
-                providers={"claude-opus-4-7": "anthropic", "gpt-5.5": "openai-codex", "deepseek-v4-pro": "deepseek"},
+                providers={"claude-fable-5": "anthropic", "gpt-5.5": "openai-codex", "deepseek-v4-pro": "deepseek"},
             )
             self.assertEqual(allowed, ["gpt-5.5", "deepseek-v4-pro"])
-            self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
+            self.assertEqual(skipped[0]["model"], "claude-fable-5")
             self.assertEqual(skipped[0]["reason"], "quota_exhausted")
 
     def test_record_call_persists_headers_snapshot_and_jsonl(self):
@@ -325,7 +325,7 @@ class TestModelQuota(unittest.TestCase):
             with tempfile.TemporaryDirectory() as td:
                 mq = load_model_quota(td)
                 snap = mq.snapshot_from_headers(
-                    model="claude-opus-4-7",
+                    model="claude-fable-5",
                     provider="anthropic",
                     headers={"x-ratelimit-remaining-tokens": "1", "x-ratelimit-remaining-requests": "1"},
                 )
@@ -502,16 +502,16 @@ class TestModelQuota(unittest.TestCase):
             past = (now - timedelta(seconds=1)).isoformat().replace("+00:00", "Z")
             future = (now + timedelta(seconds=300)).isoformat().replace("+00:00", "Z")
             snapshots = {
-                "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": past},
+                "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted", "reset_at": past},
                 "deepseek::deepseek-v4-pro": {"model": "deepseek-v4-pro", "provider": "deepseek", "status": "exhausted", "reset_at": future},
             }
             allowed, skipped = mq.gate_models(
-                ["claude-opus-4-7", "deepseek-v4-pro"],
+                ["claude-fable-5", "deepseek-v4-pro"],
                 snapshots,
-                providers={"claude-opus-4-7": "anthropic", "deepseek-v4-pro": "deepseek"},
+                providers={"claude-fable-5": "anthropic", "deepseek-v4-pro": "deepseek"},
                 now=now,
             )
-            self.assertEqual(allowed, ["claude-opus-4-7"])
+            self.assertEqual(allowed, ["claude-fable-5"])
             self.assertEqual(skipped[0]["model"], "deepseek-v4-pro")
             self.assertEqual(skipped[0]["reason"], "quota_exhausted_until_reset")
             self.assertEqual(skipped[0]["seconds_until_reset"], 300)

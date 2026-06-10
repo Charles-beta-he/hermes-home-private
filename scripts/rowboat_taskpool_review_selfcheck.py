@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-REQUIRED_MODELS = {"claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"}
+REQUIRED_MODELS = {"claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"}
 REQUIRED_RECOMMENDATIONS = {"R-P0-1", "R-P0-2", "R-P1-1", "R-REJECT-1"}
 REQUIRED_EVIDENCE = {
     "E-README-LOCAL",

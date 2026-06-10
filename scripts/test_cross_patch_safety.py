@@ -223,19 +223,19 @@ class TestSelectorRouterStep(_FakeQuorumTempDirMixin, unittest.TestCase):
         self._write_quorum("""\
 tiers:
   T2:
-    planners: [mimo-v2.5-pro, claude-opus-4-7]
+    planners: [mimo-v2.5-pro, claude-fable-5]
 """)
         # Router returns a model that's marked unavailable
         def fake_available(m):
-            return m == "mimo-v2.5-pro" or m == "claude-opus-4-7"
+            return m == "mimo-v2.5-pro" or m == "claude-fable-5"
 
         mock_check.side_effect = fake_available
         mock_run.return_value = self._fake_router_result("mimo-v2.5-pro", "gpt-5.5")
         p, r = cross_patch.select_producer_reviewer()
         # Router gives mimo-v2.5-pro (available) + gpt-5.5 (unavailable) ->
-        # producer stays mimo-v2.5-pro, reviewer falls to quorum -> claude-opus-4-7
+        # producer stays mimo-v2.5-pro, reviewer falls to quorum -> claude-fable-5
         self.assertEqual(p, "mimo-v2.5-pro")
-        self.assertEqual(r, "claude-opus-4-7")
+        self.assertEqual(r, "claude-fable-5")
 
     @patch.object(cross_patch, '_model_available_check', return_value=True)
     @patch.object(cross_patch.subprocess, 'run')
@@ -348,7 +348,7 @@ tiers:
   T0:
     planners: [mimo-v2.5-pro]
   T2:
-    planners: [gpt-5.5, claude-opus-4-7, deepseek-v4-pro]
+    planners: [gpt-5.5, claude-fable-5, deepseek-v4-pro]
 """)
 
     @patch.object(cross_patch, '_model_available_check', return_value=True)
@@ -372,7 +372,7 @@ tiers:
         mock_run.return_value = cp
         p, r = cross_patch.select_producer_reviewer(tier="T2")
         self.assertEqual(p, "gpt-5.5")
-        self.assertEqual(r, "claude-opus-4-7")
+        self.assertEqual(r, "claude-fable-5")
 
 
 # ── Integration: selector + run_cross_patch_actual ─────────────────────────

@@ -49,7 +49,7 @@ DEFAULT_TARGET_FILES = [
     "scripts/test_brain_task_multimodel_loop_runner.py",
 ]
 
-DEFAULT_MODELS = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+DEFAULT_MODELS = ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
 ALLOWED_MODEL_IDS = {m.lower(): m.lower() for m in DEFAULT_MODELS}
 EXPECTED_CERTIFICATION_MODEL_IDS = set(ALLOWED_MODEL_IDS)
 MODEL_ID_ALIASES: dict[str, str] = {}
@@ -364,7 +364,7 @@ def _canonical_model_id(value: Any) -> str:
 
 
 def _model_family_name(canonical_id: str) -> str:
-    if canonical_id == "claude-opus-4-7":
+    if canonical_id == "claude-fable-5":
         return "claude"
     if canonical_id == "gpt-5.5":
         return "codex"

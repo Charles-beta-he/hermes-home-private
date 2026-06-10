@@ -66,23 +66,23 @@ class TestModelRouterQuota(unittest.TestCase):
             state_dir = Path(td) / "state"
             state_dir.mkdir(parents=True)
             (state_dir / "model_quota_state.json").write_text(json.dumps({
-                "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted"},
+                "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted"},
                 "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
             }))
             router = load_router(td)
             router._model_available = lambda model, config=None: True
             router._get_pricing = lambda: None
             router.get_model_stats = lambda task_class=None: [
-                {"model": "claude-opus-4-7", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+                {"model": "claude-fable-5", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
                 {"model": "gpt-5.5", "count": 100, "pass_rate": 0.5, "score": 0.5, "avg_dur": 1},
             ]
             decision = router.select_model(
-                config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["claude-opus-4-7", "gpt-5.5"], "min_traces_per_model": 1, "epsilon": 0.0},
-                candidate_override=["claude-opus-4-7", "gpt-5.5"],
+                config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["claude-fable-5", "gpt-5.5"], "min_traces_per_model": 1, "epsilon": 0.0},
+                candidate_override=["claude-fable-5", "gpt-5.5"],
                 epsilon=0.0,
             )
             self.assertEqual(decision["model"], "gpt-5.5")
-            self.assertIn("claude-opus-4-7", decision["quota_exhausted_candidates"])
+            self.assertIn("claude-fable-5", decision["quota_exhausted_candidates"])
 
     def test_log_decision_writes_auditable_routing_ledger(self):
         with tempfile.TemporaryDirectory() as td:
@@ -92,11 +92,11 @@ class TestModelRouterQuota(unittest.TestCase):
                 "reason": "exploit(score=0.9)",
                 "task_tier": "codegen",
                 "epsilon_used": 0.0,
-                "candidates": ["claude-opus-4-7", "gpt-5.5"],
+                "candidates": ["claude-fable-5", "gpt-5.5"],
                 "unavailable_candidates": [],
-                "quota_exhausted_candidates": ["claude-opus-4-7"],
+                "quota_exhausted_candidates": ["claude-fable-5"],
                 "quota_snapshot": {
-                    "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "confidence": 0.9, "reset_at": "2026-05-07T12:02:00Z"},
+                    "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted", "confidence": 0.9, "reset_at": "2026-05-07T12:02:00Z"},
                     "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "unobservable", "confidence": 0.2},
                 },
                 "schedule_label": "free",
@@ -108,11 +108,11 @@ class TestModelRouterQuota(unittest.TestCase):
             self.assertEqual(entry["event"], "routing_decision")
             self.assertEqual(entry["selected_model"], "gpt-5.5")
             self.assertEqual(entry["selected_provider"], "openai-codex")
-            self.assertEqual(entry["candidate_models"], ["claude-opus-4-7", "gpt-5.5"])
-            self.assertEqual(entry["skipped_models"][0]["model"], "claude-opus-4-7")
+            self.assertEqual(entry["candidate_models"], ["claude-fable-5", "gpt-5.5"])
+            self.assertEqual(entry["skipped_models"][0]["model"], "claude-fable-5")
             self.assertEqual(entry["skipped_models"][0]["skip_reason"], "quota_exhausted")
             self.assertEqual(entry["quota_status"]["openai-codex::gpt-5.5"]["status"], "unobservable")
-            self.assertEqual(entry["quota_status"]["anthropic::claude-opus-4-7"]["reset_at"], "2026-05-07T12:02:00Z")
+            self.assertEqual(entry["quota_status"]["anthropic::claude-fable-5"]["reset_at"], "2026-05-07T12:02:00Z")
 
     def test_select_model_prefers_capability_compatible_candidate(self):
         with tempfile.TemporaryDirectory() as td:
@@ -215,13 +215,13 @@ class TestModelRouterQuota(unittest.TestCase):
             claude_bin.write_text("#!/bin/sh\necho OK\n", encoding="utf-8")
             claude_bin.chmod(0o755)
             router = load_router(td)
-            config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+            config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
             old_path = os.environ.get("PATH", "")
             old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
             os.environ["PATH"] = str(bin_dir)
             try:
-                self.assertEqual(router._provider_for_model("claude-opus-4-7", config=config), "claude-code")
-                self.assertTrue(router._model_available("claude-opus-4-7", config=config, log_unavailable=False))
+                self.assertEqual(router._provider_for_model("claude-fable-5", config=config), "claude-code")
+                self.assertTrue(router._model_available("claude-fable-5", config=config, log_unavailable=False))
             finally:
                 os.environ["PATH"] = old_path
                 if old_key is not None:
@@ -230,13 +230,13 @@ class TestModelRouterQuota(unittest.TestCase):
     def test_claude_models_do_not_mask_anthropic_without_cli_or_key(self):
         with tempfile.TemporaryDirectory() as td:
             router = load_router(td)
-            config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+            config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
             old_path = os.environ.get("PATH", "")
             old_key = os.environ.pop("ANTHROPIC_API_KEY", None)
             os.environ["PATH"] = ""
             try:
-                self.assertEqual(router._provider_for_model("claude-opus-4-7", config=config), "anthropic")
-                self.assertFalse(router._model_available("claude-opus-4-7", config=config, log_unavailable=False))
+                self.assertEqual(router._provider_for_model("claude-fable-5", config=config), "anthropic")
+                self.assertFalse(router._model_available("claude-fable-5", config=config, log_unavailable=False))
             finally:
                 os.environ["PATH"] = old_path
                 if old_key is not None:
@@ -250,7 +250,7 @@ class TestModelRouterQuota(unittest.TestCase):
             claude_bin.write_text("#!/bin/sh\necho OK\n", encoding="utf-8")
             claude_bin.chmod(0o755)
             Path(td, "config.yaml").write_text(
-                "pricing:\n  models:\n    claude-opus-4-7:\n      provider: anthropic\n",
+                "pricing:\n  models:\n    claude-fable-5:\n      provider: anthropic\n",
                 encoding="utf-8",
             )
             router = load_router(td)
@@ -312,20 +312,20 @@ class TestModelRouterQuota(unittest.TestCase):
             state_dir = Path(td) / "state"
             state_dir.mkdir(parents=True)
             (state_dir / "model_quota_state.json").write_text(json.dumps({
-                "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted"},
+                "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted"},
                 "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "exhausted"},
             }))
             router = load_router(td)
             router._model_available = lambda model, config=None: True
             router._get_pricing = lambda: None
             decision = router.select_model(
-                config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["claude-opus-4-7", "gpt-5.5"], "min_traces_per_model": 1, "epsilon": 0.0},
-                candidate_override=["claude-opus-4-7", "gpt-5.5"],
+                config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["claude-fable-5", "gpt-5.5"], "min_traces_per_model": 1, "epsilon": 0.0},
+                candidate_override=["claude-fable-5", "gpt-5.5"],
                 epsilon=0.0,
             )
             self.assertIsNone(decision["model"])
             self.assertEqual(decision["reason"], "no_quota_candidates")
-            self.assertEqual(set(decision["quota_exhausted_candidates"]), {"claude-opus-4-7", "gpt-5.5"})
+            self.assertEqual(set(decision["quota_exhausted_candidates"]), {"claude-fable-5", "gpt-5.5"})
 
     def test_select_model_fails_closed_when_all_providers_unavailable(self):
         with tempfile.TemporaryDirectory() as td:
@@ -333,13 +333,13 @@ class TestModelRouterQuota(unittest.TestCase):
             router._model_available = lambda model, config=None: False
             router._get_pricing = lambda: None
             decision = router.select_model(
-                config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["claude-opus-4-7", "gpt-5.5"], "min_traces_per_model": 1, "epsilon": 0.0},
-                candidate_override=["claude-opus-4-7", "gpt-5.5"],
+                config={"enabled": True, "default_model": "gpt-5.5", "candidate_models": ["claude-fable-5", "gpt-5.5"], "min_traces_per_model": 1, "epsilon": 0.0},
+                candidate_override=["claude-fable-5", "gpt-5.5"],
                 epsilon=0.0,
             )
             self.assertIsNone(decision["model"])
             self.assertEqual(decision["reason"], "no_available_providers")
-            self.assertEqual(set(decision["unavailable_candidates"]), {"claude-opus-4-7", "gpt-5.5"})
+            self.assertEqual(set(decision["unavailable_candidates"]), {"claude-fable-5", "gpt-5.5"})
 
     def test_select_model_fails_closed_when_quota_gate_unavailable(self):
         with tempfile.TemporaryDirectory() as td:

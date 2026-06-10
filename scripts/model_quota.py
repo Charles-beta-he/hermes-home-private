@@ -46,7 +46,7 @@ VALID_QUOTA_STATUSES = {"ok", "low", "unknown", "unobservable", "exhausted", "ra
 DEFAULT_STALE_AFTER_SECONDS = 300
 LOW_TOKEN_THRESHOLD = _env_int("HERMES_QUOTA_LOW_TOKEN_THRESHOLD", 1000)
 LOW_REQUEST_THRESHOLD = _env_int("HERMES_QUOTA_LOW_REQUEST_THRESHOLD", 3)
-DEFAULT_T3_MODELS = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+DEFAULT_T3_MODELS = ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
 CONFIDENCE_BLOCKING_STATUSES = {"low", "unknown", "unobservable", "exhausted", "rate_limited", "malformed", "unavailable"}
 
 SENSITIVE_KEY_RE = re.compile(

@@ -285,7 +285,7 @@
   "multi_model_policy": {
     "task_solution": "For each Lark task, prepare an evidence bundle that includes frontend, backend, PRD/product docs, UI/product ledgers, and ADRs as applicable.",
     "required_models_for_full_certification": [
-      "claude-opus-4-7",
+      "claude-fable-5",
       "gpt-5.5",
       "deepseek-v4-pro",
       "mimo-v2.5-pro"

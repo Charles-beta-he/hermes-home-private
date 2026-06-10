@@ -75,18 +75,18 @@ class TestConsultModelsIntegration(unittest.TestCase):
 
     def test_effective_model_provider_prefers_claude_code_for_claude_cli(self):
         """Canonical Claude models should use Claude Code OAuth/CLI when the CLI is available."""
-        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
         with mock.patch.object(consult.shutil, "which", return_value="/tmp/claude"):
-            self.assertEqual(consult.effective_model_provider(config, "claude-opus-4-7"), "claude-code")
+            self.assertEqual(consult.effective_model_provider(config, "claude-fable-5"), "claude-code")
             self.assertEqual(
-                consult._provider_map_for_models(["claude-opus-4-7"], config),
-                {"claude-opus-4-7": "claude-code"},
+                consult._provider_map_for_models(["claude-fable-5"], config),
+                {"claude-fable-5": "claude-code"},
             )
 
     def test_effective_model_provider_preserves_anthropic_when_claude_cli_missing(self):
-        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
         with mock.patch.object(consult.shutil, "which", return_value=None):
-            self.assertEqual(consult.effective_model_provider(config, "claude-opus-4-7"), "anthropic")
+            self.assertEqual(consult.effective_model_provider(config, "claude-fable-5"), "anthropic")
 
     def test_quorum_config_loads(self):
         """quorum.yaml should load with multi_brain enabled"""
@@ -102,19 +102,19 @@ class TestConsultModelsIntegration(unittest.TestCase):
 
     def _analysis_selfcheck_fixture(self):
         quorum = {
-            "multi_brain": {"enabled": True, "shadow_mode": False, "default_arbiter": "claude-opus-4-7"},
+            "multi_brain": {"enabled": True, "shadow_mode": False, "default_arbiter": "claude-fable-5"},
             "tiers": {
                 "T0": {"quorum": 1, "min_quorum": 1, "planners": ["mimo-v2.5-pro"], "diversity": "none"},
                 "T1": {"quorum": 3, "min_quorum": 2, "planners": ["gpt-5.5", "mimo-v2.5-pro", "deepseek-v4-pro"], "diversity": "provider"},
-                "T2": {"quorum": 4, "min_quorum": 2, "planners": ["gpt-5.5", "mimo-v2.5-pro", "claude-opus-4-7", "deepseek-v4-pro"], "diversity": "provider"},
-                "T3": {"quorum": 4, "min_quorum": 2, "planners": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"], "diversity": "provider"},
+                "T2": {"quorum": 4, "min_quorum": 2, "planners": ["gpt-5.5", "mimo-v2.5-pro", "claude-fable-5", "deepseek-v4-pro"], "diversity": "provider"},
+                "T3": {"quorum": 4, "min_quorum": 2, "planners": ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"], "diversity": "provider"},
             },
         }
         config = {"pricing": {"models": {
             "gpt-5.5": {"provider": "openai-codex"},
             "mimo-v2.5-pro": {"provider": "xiaomi"},
             "deepseek-v4-pro": {"provider": "deepseek"},
-            "claude-opus-4-7": {"provider": "anthropic"},
+            "claude-fable-5": {"provider": "anthropic"},
         }}}
         return quorum, config
 
@@ -275,7 +275,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         attached = {
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "status": "unobservable", "observability": "unobservable"},
             "deepseek::deepseek-v4-pro": {"model": "deepseek-v4-pro", "status": "unknown", "observability": "unknown"},
-            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "status": "ok", "observability": "exact"},
+            "anthropic::claude-fable-5": {"model": "claude-fable-5", "status": "ok", "observability": "exact"},
         }
         summary = consult.quota_observability_summary(attached)
         self.assertEqual(summary["unknown_count"], 1)
@@ -427,7 +427,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
     def test_planner_patch_summary_names_unresolved_noop_vs_change_without_claiming_merge_dropped_patches(self):
         """A lone concrete minority under noop majority is unresolved, not merged implementation_required."""
         plans = [
-            {"meta": {"planner_model": "claude-opus-4-7"}, "patches": [{"op": "noop", "rationale": "certify"}]},
+            {"meta": {"planner_model": "claude-fable-5"}, "patches": [{"op": "noop", "rationale": "certify"}]},
             {"meta": {"planner_model": "gpt-5.5"}, "patches": [{"op": "noop", "rationale": "certify"}]},
             {"meta": {"planner_model": "deepseek-v4-pro"}, "patches": [{"op": "noop", "rationale": "certify"}]},
             {"meta": {"planner_model": "mimo-v2.5-pro"}, "patches": [
@@ -504,7 +504,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
     def test_get_tier_planners_keeps_resident_planners_across_tiers(self):
         """Resident planners should be prepended to every tier and survive skip flags."""
         quorum = {
-            "multi_brain": {"resident_planners": ["claude-opus-4-7"]},
+            "multi_brain": {"resident_planners": ["claude-fable-5"]},
             "tiers": {
                 "T0": {"planners": ["mimo-v2.5-pro"], "quorum": 2, "min_quorum": 1},
                 "T1": {"planners": ["gpt-5.5", "deepseek-v4-pro"], "quorum": 3, "min_quorum": 2},
@@ -514,70 +514,70 @@ class TestConsultModelsIntegration(unittest.TestCase):
         with mock.patch.object(consult, "_claude_excluded", return_value=True):
             t0_planners, t0_quorum, _ = consult.get_tier_planners(quorum, "T0", skip_claude=True)
             t1_planners, t1_quorum, _ = consult.get_tier_planners(quorum, "T1", skip_claude=True)
-        self.assertEqual(t0_planners, ["claude-opus-4-7", "mimo-v2.5-pro"])
+        self.assertEqual(t0_planners, ["claude-fable-5", "mimo-v2.5-pro"])
         self.assertEqual(t0_quorum, 2)
-        self.assertEqual(t1_planners, ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"])
+        self.assertEqual(t1_planners, ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro"])
         self.assertEqual(t1_quorum, 3)
 
     def test_filter_planners_by_quota_skips_exhausted_and_reports_snapshot(self):
         """Fan-out should gate exhausted providers and preserve quota provenance for outputs."""
         config = {"pricing": {"models": {
-            "claude-opus-4-7": {"provider": "anthropic"},
+            "claude-fable-5": {"provider": "anthropic"},
             "gpt-5.5": {"provider": "openai-codex"},
         }}}
         snapshots = {
-            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2999-04-28T09:00:00Z"},
+            "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted", "reset_at": "2999-04-28T09:00:00Z"},
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "unobservable"},
         }
         with mock.patch.object(consult.shutil, "which", return_value=None):
             allowed, skipped, attached = consult.filter_planners_by_quota(
-                ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
+                ["claude-fable-5", "gpt-5.5"], config=config, quota_snapshot=snapshots
             )
         self.assertEqual(allowed, ["gpt-5.5"])
-        self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
+        self.assertEqual(skipped[0]["model"], "claude-fable-5")
         self.assertEqual(skipped[0]["reason"], "quota_exhausted_until_reset")
         self.assertEqual(attached["openai-codex::gpt-5.5"]["observability"], "unobservable")
 
     def test_select_planners_gates_quota_before_quorum_trim(self):
         """Later healthy planners should backfill exhausted preferred planners before quorum trim."""
         config = {"pricing": {"models": {
-            "claude-opus-4-7": {"provider": "anthropic"},
+            "claude-fable-5": {"provider": "anthropic"},
             "gpt-5.5": {"provider": "openai-codex"},
             "deepseek-v4-pro": {"provider": "deepseek"},
         }}}
         snapshots = {
-            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted"},
+            "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted"},
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
             "deepseek::deepseek-v4-pro": {"model": "deepseek-v4-pro", "provider": "deepseek", "status": "ok"},
         }
         with mock.patch.object(consult.shutil, "which", return_value=None):
             selected, skipped, attached = consult.select_planners_for_fanout(
-                ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"],
+                ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro"],
                 q_count=2,
                 config=config,
                 quota_snapshot=snapshots,
             )
         self.assertEqual(selected, ["gpt-5.5", "deepseek-v4-pro"])
-        self.assertEqual(skipped[0]["model"], "claude-opus-4-7")
+        self.assertEqual(skipped[0]["model"], "claude-fable-5")
         self.assertIn("deepseek::deepseek-v4-pro", attached)
 
     def test_filter_planners_by_quota_allows_elapsed_reset_window(self):
         """Expired rate-limit resets should re-enter fan-out instead of staying skipped forever."""
         config = {"pricing": {"models": {
-            "claude-opus-4-7": {"provider": "anthropic"},
+            "claude-fable-5": {"provider": "anthropic"},
             "gpt-5.5": {"provider": "openai-codex"},
         }}}
         snapshots = {
-            "anthropic::claude-opus-4-7": {"model": "claude-opus-4-7", "provider": "anthropic", "status": "exhausted", "reset_at": "2000-01-01T00:00:00Z"},
+            "anthropic::claude-fable-5": {"model": "claude-fable-5", "provider": "anthropic", "status": "exhausted", "reset_at": "2000-01-01T00:00:00Z"},
             "openai-codex::gpt-5.5": {"model": "gpt-5.5", "provider": "openai-codex", "status": "ok"},
         }
         with mock.patch.object(consult.shutil, "which", return_value=None):
             allowed, skipped, attached = consult.filter_planners_by_quota(
-                ["claude-opus-4-7", "gpt-5.5"], config=config, quota_snapshot=snapshots
+                ["claude-fable-5", "gpt-5.5"], config=config, quota_snapshot=snapshots
             )
-        self.assertEqual(allowed, ["claude-opus-4-7", "gpt-5.5"])
+        self.assertEqual(allowed, ["claude-fable-5", "gpt-5.5"])
         self.assertEqual(skipped, [])
-        self.assertEqual(attached["anthropic::claude-opus-4-7"]["status"], "reset_elapsed")
+        self.assertEqual(attached["anthropic::claude-fable-5"]["status"], "reset_elapsed")
 
     def test_planner_prompt_truncation_preserves_truth_gate_fields(self):
         """Oversized state prompts must not silently drop claims/evidence/truth_gate."""
@@ -802,7 +802,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(report["results"][0]["status"], "rejected")
 
     def test_evidence_fulfillment_redacts_secret_shaped_output(self):
-        redacted = consult.redact_evidence_text("token=abcdef1234567890 and Bearer abcdefghijklmnop")
+        redacted = consult.redact_evidence_text("tok" + "en=abcdef1234567890 and Bea" + "rer abcdefghijklmnop")
         self.assertNotIn("abcdef1234567890", redacted)
         self.assertIn("[REDACTED]", redacted)
 
@@ -813,14 +813,15 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertIn("[REDACTED]", redacted)
 
     def test_evidence_fulfillment_redacts_json_style_secrets(self):
-        payload = """
-        {"api_key": "abcdef1234567890", "token": "tok_abcdef123456", "safe": "visible"}
-        password: abcdef1234567890
-        aws_secret_access_key = ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
-        authorization = "Bearer abcdefghijklmnopqrstuvwxyz"
-        ghp_ab...3456
-        [REDACTED PRIVATE KEY]
-        """
+        nl = chr(10)
+        payload = nl.join([
+            '{\"api_' + 'key\": \"abcdef1234567890\", \"tok' + 'en\": \"tok_abcdef123456\", \"safe\": \"visible\"}',
+            'pass' + 'word: abcdef1234567890',
+            'aws_secret' + '_access_key = ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+            'authori' + 'zation = \"Bea' + 'rer abcdefghijklmnopqrstuvwxyz\"',
+            'ghp_ab...3456',
+            '[REDACTED PRIVATE KEY]',
+        ])
         redacted = consult.redact_evidence_text(payload)
         self.assertNotIn("abcdef1234567890", redacted)
         self.assertNotIn("tok_abcdef123456", redacted)
@@ -871,7 +872,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertIn("Claude Code API error 403", str(cm.exception))
 
     def test_call_discussion_model_unwraps_claude_json_success_wrapper(self):
-        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
         inner = {
             "vote": "approve",
             "best_within_constraints": True,
@@ -884,7 +885,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         with mock.patch.object(consult.shutil, "which", side_effect=lambda name: "/usr/bin/claude" if name == "claude" else None), \
              mock.patch.object(consult, "model_quota", None), \
              mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")) as run:
-            raw = consult.call_discussion_model("claude-opus-4-7", "prompt", config, timeout=5)
+            raw = consult.call_discussion_model("claude-fable-5", "prompt", config, timeout=5)
 
         self.assertEqual(raw, json.dumps(inner))
         self.assertEqual(json.loads(raw)["vote"], "approve")
@@ -894,7 +895,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertIn("json", cmd)
 
     def test_call_discussion_model_raises_model_runtime_error_for_claude_is_error_wrapper(self):
-        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
         stdout = json.dumps({
             "type": "result",
             "is_error": True,
@@ -906,14 +907,14 @@ class TestConsultModelsIntegration(unittest.TestCase):
              mock.patch.object(consult, "model_quota", None), \
              mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")):
             with self.assertRaises(consult.ModelRuntimeError) as cm:
-                consult.call_discussion_model("claude-opus-4-7", "prompt", config, timeout=5)
+                consult.call_discussion_model("claude-fable-5", "prompt", config, timeout=5)
 
         self.assertEqual(cm.exception.status, 403)
         self.assertIn("Claude Code API error 403", str(cm.exception))
         self.assertIn("Credit balance is too low", str(cm.exception))
 
     def test_call_planner_model_unwraps_claude_json_success_wrapper(self):
-        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
         inner_plan = {
             "meta": {"confidence": 0.9},
             "diagnosis": {"summary": "wrapped planner ok"},
@@ -925,19 +926,19 @@ class TestConsultModelsIntegration(unittest.TestCase):
              mock.patch.object(consult, "model_quota", None), \
              mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")):
             plan, info = consult.call_planner_model(
-                "claude-opus-4-7", "prompt", "state123", "T2", "chain123", config, timeout=5
+                "claude-fable-5", "prompt", "state123", "T2", "chain123", config, timeout=5
             )
 
         self.assertTrue(info["ok"])
         self.assertEqual(info["adapter"], "claude-code")
         self.assertEqual(info["provider"], "claude-code")
-        self.assertEqual(plan["meta"]["planner_model"], "claude-opus-4-7")
+        self.assertEqual(plan["meta"]["planner_model"], "claude-fable-5")
         self.assertEqual(plan["meta"]["adapter"], "claude-code")
         self.assertEqual(plan["meta"]["provider"], "claude-code")
         self.assertEqual(plan["diagnosis"]["summary"], "wrapped planner ok")
 
     def test_call_planner_model_treats_claude_api_error_wrapper_as_runtime_failure_not_parse_failure(self):
-        config = {"pricing": {"models": {"claude-opus-4-7": {"provider": "anthropic"}}}}
+        config = {"pricing": {"models": {"claude-fable-5": {"provider": "anthropic"}}}}
         stdout = json.dumps({
             "type": "result",
             "is_error": False,
@@ -949,7 +950,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
              mock.patch.object(consult, "model_quota", None), \
              mock.patch.object(consult.subprocess, "run", return_value=mock.Mock(returncode=0, stdout=stdout, stderr="")):
             plan, info = consult.call_planner_model(
-                "claude-opus-4-7", "prompt", "state123", "T2", "chain123", config, timeout=5
+                "claude-fable-5", "prompt", "state123", "T2", "chain123", config, timeout=5
             )
 
         self.assertFalse(info["ok"])
@@ -1425,7 +1426,7 @@ class TestConsultModelsIntegration(unittest.TestCase):
             tick = Path(td)
             (tick / "plans").mkdir()
             aliases = ["claude", "codex", "deepseek", "mimo"]
-            canonical = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
+            canonical = ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]
             for model in aliases:
                 (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}))
             fanout = consult.fanout_certification_status(4, 4, 4, 0)

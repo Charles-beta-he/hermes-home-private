@@ -29,7 +29,7 @@ if str(SCRIPTS) not in sys.path:
 import permission_taxonomy as taxonomy  # noqa: E402
 
 DEFAULT_ENABLE_FILE = HERMES_HOME / "state" / "autonomy-execution.enabled"
-T3_MODELS = {"claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"}
+T3_MODELS = {"claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"}
 
 
 def run_json(cmd: list[str], timeout: int = 120) -> tuple[dict[str, Any] | None, dict[str, Any]]:

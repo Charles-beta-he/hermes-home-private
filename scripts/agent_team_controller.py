@@ -1340,7 +1340,7 @@ JSON: {{"verified":true|false,"issues":[],"reasoning":"<=80 chars"}}"""
         return _extract(r.stdout)
 
     def _call_claude():
-        cmd = ['claude', '-p', verify_prompt, '--model', 'claude-opus-4-7', '--max-turns', '1', '--output-format', 'json']
+        cmd = ['claude', '-p', verify_prompt, '--model', 'claude-fable-5', '--max-turns', '1', '--output-format', 'json']
         r = _sp.run(cmd, capture_output=True, text=True, timeout=60)
         raw = r.stdout
         try:
@@ -2747,7 +2747,7 @@ Rules: approve ONLY if ALL criteria have concrete evidence. "looks ok" is NOT en
     
     # Claude
     try:
-        r = _sp.run(['claude','-p',prompt,'--model','claude-opus-4-7','--max-turns','1','--output-format','json'],
+        r = _sp.run(['claude','-p',prompt,'--model','claude-fable-5','--max-turns','1','--output-format','json'],
                     capture_output=True, text=True, timeout=90)
         raw = r.stdout
         try:

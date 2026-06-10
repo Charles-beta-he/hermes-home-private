@@ -9,8 +9,8 @@ ensemble-vote.py — 多模型投票/仲裁 (L3)
   - arbiter: 额外的裁判模型审查所有结果后决定
 
 用法:
-  python3 ensemble-vote.py vote --task "Review auth.py for bugs" --models gpt-5.4,claude-opus-4-7 --strategy majority
-  python3 ensemble-vote.py vote --task "..." --strategy weighted --models gpt-5.4,claude-sonnet-4-6,claude-opus-4-7
+  python3 ensemble-vote.py vote --task "Review auth.py for bugs" --models gpt-5.4,claude-fable-5 --strategy majority
+  python3 ensemble-vote.py vote --task "..." --strategy weighted --models gpt-5.4,claude-fable-5,claude-fable-5
 """
 
 import argparse

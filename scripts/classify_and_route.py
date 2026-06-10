@@ -216,8 +216,8 @@ def get_model_for_tier(tier: str, available_providers: dict = None) -> dict:
     tier_models = {
         "simple": {"provider": "xiaomi", "model": "mimo-v2.5-flash", "reason": "cheapest available for simple tasks"},
         "medium": {"provider": "xiaomi", "model": "mimo-v2.5-pro", "reason": "balanced cost/quality for medium tasks"},
-        "reasoning": {"provider": "claude-code", "model": "claude-opus-4-7", "reason": "strong reasoning via Claude Code CLI for deep work"},
-        "complex": {"provider": "claude-code", "model": "claude-opus-4-7", "reason": "Claude Code CLI orchestrator for multi-agent tasks"},
+        "reasoning": {"provider": "claude-code", "model": "claude-fable-5", "reason": "strong reasoning via Claude Code CLI for deep work"},
+        "complex": {"provider": "claude-code", "model": "claude-fable-5", "reason": "Claude Code CLI orchestrator for multi-agent tasks"},
     }
     return tier_models.get(tier, tier_models["medium"])
 

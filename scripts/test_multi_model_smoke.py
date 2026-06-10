@@ -20,7 +20,7 @@ def load_module():
 
 def test_claude_smoke_records_claude_code_provider():
     mod = load_module()
-    assert mod.MODELS["claude-opus-4-7"]["provider"] == "claude-code"
+    assert mod.MODELS["claude-fable-5"]["provider"] == "claude-code"
 
 
 if __name__ == "__main__":

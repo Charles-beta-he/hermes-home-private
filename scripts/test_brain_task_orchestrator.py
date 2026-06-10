@@ -638,7 +638,7 @@ def test_add_persists_explicit_multimodel_contract_and_triggers_without_heuristi
             "--multimodel-reason",
             "external repo priority analysis requires independent model agreement",
             "--expected-participants",
-            "claude-opus-4-7,gpt-5.5,deepseek-v4-pro",
+            "claude-fable-5,gpt-5.5,deepseek-v4-pro",
             "--truth-gate",
             "evidence-first ratification with canonical participant IDs",
             "--evidence-bundle",
@@ -655,7 +655,7 @@ def test_add_persists_explicit_multimodel_contract_and_triggers_without_heuristi
         assert row["requires_multimodel"] is True, row
         assert row["multimodel_intervention_required"] is True, row
         assert "explicit_requires_multimodel" in row["multimodel_intervention_reasons"], row
-        assert row["expected_participants"] == ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro"], row
+        assert row["expected_participants"] == ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro"], row
         assert row["truth_gate"], row
         assert row["evidence_bundle"] == "repo-analysis.md", row
 
@@ -668,7 +668,7 @@ def test_ingest_inbox_preserves_explicit_multimodel_contract_metadata():
         inbox_text = inbox.read_text(encoding="utf-8")
         inbox_text = inbox_text.replace(
             "## Ingested Log",
-            "- [ ] 外部文章任务 | priority:P2 | project:research | priority_layer:P2 | dependency_order:1 | multimodel_triage_result:P2-explicit-multimodel | requires_multimodel:true | multimodel_reason:external article priority analysis | expected_participants:claude-opus-4-7,gpt-5.5 | truth_gate:evidence-first | evidence_bundle:article-notes.md\n\n## Ingested Log",
+            "- [ ] 外部文章任务 | priority:P2 | project:research | priority_layer:P2 | dependency_order:1 | multimodel_triage_result:P2-explicit-multimodel | requires_multimodel:true | multimodel_reason:external article priority analysis | expected_participants:claude-fable-5,gpt-5.5 | truth_gate:evidence-first | evidence_bundle:article-notes.md\n\n## Ingested Log",
         )
         inbox.write_text(inbox_text, encoding="utf-8")
         ing = json.loads(run(env, "ingest-inbox", "--write", "--json").stdout)
@@ -681,7 +681,7 @@ def test_ingest_inbox_preserves_explicit_multimodel_contract_metadata():
         row = next(r for r in rows if r["id"] == created["id"])
         assert row["requires_multimodel"] is True, row
         assert "explicit_requires_multimodel" in row["multimodel_intervention_reasons"], row
-        assert row["expected_participants"] == ["claude-opus-4-7", "gpt-5.5"], row
+        assert row["expected_participants"] == ["claude-fable-5", "gpt-5.5"], row
 
 
 def test_ingest_inbox_derives_preadd_triage_metadata_from_priority_when_missing():
@@ -766,7 +766,7 @@ def test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_g
             "context": {"task_id": mission_id, "task_path": str(mission_path)},
             "issue_ledger": [{"id": "I-001", "severity": 2, "status": "resolved"}],
             "ratification_votes": [
-                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
                 {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
                 {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
                 {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
@@ -1545,7 +1545,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
             "context": {"task_id": task_id, "task_path": str(task_path)},
             "issue_ledger": [{"id": "I-001", "severity": 3, "status": "resolved"}],
             "ratification_votes": [
-                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
                 {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
                 {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
                 {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
@@ -1567,7 +1567,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         optional_gemini = task_path.parent / "discussion-optional-gemini.json"
         optional_payload = json.loads(good.read_text(encoding="utf-8"))
         optional_payload["models_consulted"] = [
-            "claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "gemini-3.1-pro-preview"
+            "claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "gemini-3.1-pro-preview"
         ]
         optional_payload["ratification_votes"].append({"model": "gemini-3.1-pro-preview", "vote": "approve", "best_within_constraints": True})
         optional_gemini.write_text(json.dumps(optional_payload, ensure_ascii=False), encoding="utf-8")
@@ -1644,7 +1644,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
 
         partial_models = task_path.parent / "discussion-partial-models.json"
         partial = json.loads(good.read_text(encoding="utf-8"))
-        partial["models_consulted"] = ["claude-opus-4-7", "gpt-5.5"]
+        partial["models_consulted"] = ["claude-fable-5", "gpt-5.5"]
         partial["ratification_votes"] = partial["ratification_votes"][:2]
         partial_models.write_text(json.dumps(partial, ensure_ascii=False), encoding="utf-8")
         gate_partial_models = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(partial_models), "--json", check=False).stdout)
@@ -1661,7 +1661,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         bad.write_text(json.dumps({
             "status": "certified",
             "issue_ledger": [{"id": "I-002", "severity": 4, "status": "unresolved"}],
-            "ratification_votes": [{"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True}],
+            "ratification_votes": [{"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True}],
             "agreement_matrix": {"framing": 0.9, "approach": 0.7, "implementation_order": 0.9},
         }, ensure_ascii=False), encoding="utf-8")
         gate_fail = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(bad), "--json", check=False).stdout)
@@ -1686,7 +1686,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         gate_weak = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(weak_shell), "--json", check=False).stdout)
         assert gate_weak["status"] == "FAIL", gate_weak
         assert gate_weak["decision"] == "continue_loop", gate_weak
-        assert any("missing_required_model_vote:claude-opus-4-7" in f for f in gate_weak["failures"]), gate_weak
+        assert any("missing_required_model_vote:claude-fable-5" in f for f in gate_weak["failures"]), gate_weak
         assert any("unexpected_vote_model:claude" in f for f in gate_weak["failures"]), gate_weak
         assert "one_shot_plan_missing" in gate_weak["failures"], gate_weak
         # Shape B: no evidence_bundle -> accuracy_criterion_missing; no final_design -> final_design_missing
@@ -1723,8 +1723,8 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         malformed_models = task_path.parent / "discussion-malformed-models.json"
         malformed_models.write_text(json.dumps({
             "status": "certified",
-            "models_consulted": [{"model": "claude-opus-4-7"}],
-            "ratification_votes": [{"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True}],
+            "models_consulted": [{"model": "claude-fable-5"}],
+            "ratification_votes": [{"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True}],
             "final_design": "oops-not-a-dict",
         }, ensure_ascii=False), encoding="utf-8")
         gate_bad_models = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(malformed_models), "--json", check=False).stdout)
@@ -1951,10 +1951,10 @@ def test_discussion_task_binding_stamp_closes_target_binding_gap():
         discussion_path = root / "discussion_result.json"
         discussion = {
             "status": "certified",
-            "models_consulted": ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"],
+            "models_consulted": ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"],
             "issue_ledger": [],
             "ratification_votes": [
-                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
                 {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
                 {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
                 {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},

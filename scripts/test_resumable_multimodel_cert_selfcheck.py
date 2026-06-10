@@ -16,11 +16,11 @@ def write_tick(
     include_truth=True,
 ):
     (tick / "plans").mkdir(exist_ok=True)
-    for model in ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]:
+    for model in ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]:
         (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}), encoding="utf-8")
     (tick / "final").mkdir(exist_ok=True)
     votes = [
-        {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+        {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
         {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
         {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
         {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
@@ -213,7 +213,7 @@ class TestResumableMultimodelCertSelfcheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             tick = Path(td)
             write_tick(tick, vote_overrides=[
-                {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": "false"},
+                {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": "false"},
                 {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
                 {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
                 {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
@@ -236,7 +236,7 @@ class TestResumableMultimodelCertSelfcheck(unittest.TestCase):
             tick = Path(td)
             (tick / "plans").mkdir()
             (tick / "final").mkdir()
-            for model in ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]:
+            for model in ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"]:
                 (tick / "plans" / f"{model}.json").write_text(json.dumps({"meta": {"planner_model": model}, "patches": []}), encoding="utf-8")
             (tick / "discussion_result.json").write_text(json.dumps({
                 "status": "certified",
@@ -268,8 +268,8 @@ class TestResumableMultimodelCertSelfcheck(unittest.TestCase):
                     "issue_ledger": [{"status": "resolved", "severity": 1}, "bad-entry"],
                 },
                 vote_overrides=[
-                    {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
-                    {"model": "claude-opus-4-7", "vote": "approve", "best_within_constraints": True},
+                    {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
+                    {"model": "claude-fable-5", "vote": "approve", "best_within_constraints": True},
                     {"model": "", "vote": "approve", "best_within_constraints": True},
                     {"model": "unexpected", "vote": "approve", "best_within_constraints": True},
                     "bad-vote",

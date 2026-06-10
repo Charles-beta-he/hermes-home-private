@@ -168,7 +168,7 @@ MULTIMODEL_PASS_STATUSES = {"certified", "certified_with_minor_risks"}
 MULTIMODEL_ASYNC_JOB_DIR = HERMES_HOME / "state" / "taskpool-multimodel" / "jobs"
 MULTIMODEL_ASYNC_LOG_DIR = HERMES_HOME / "logs" / "taskpool-multimodel"
 QUORUM_CONFIG = Path(os.environ.get("HERMES_QUORUM_CONFIG", str(HERMES_HOME / "config" / "quorum.yaml"))).expanduser()
-DEFAULT_REQUIRED_RATIFICATION_MODELS = ("claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
+DEFAULT_REQUIRED_RATIFICATION_MODELS = ("claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
 DEFAULT_OPTIONAL_RATIFICATION_MODELS = ("gemini-3.1-pro-preview",)
 
 

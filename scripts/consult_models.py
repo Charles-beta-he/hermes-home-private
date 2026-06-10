@@ -2438,7 +2438,7 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
             alias_models = ["claude", "codex", "deepseek", "mimo", "gemini"]
             # Self-check fixture only: expected participants for the alias-vs-canonical guard.
             # This is not the production canonical model registry.
-            selfcheck_expected_participants = ["claude-opus-4-7", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "gemini-3.1-pro-preview"]
+            selfcheck_expected_participants = ["claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "gemini-3.1-pro-preview"]
             for model in alias_models:
                 _write_json_atomic(os.path.join(bad_plans_dir, f"{model}.json"), {"meta": {"planner_model": model}, "patches": [{"op": "noop", "rationale": "selfcheck noop"}]})
             bad_fanout = fanout_certification_status(5, 5, 5, 0)

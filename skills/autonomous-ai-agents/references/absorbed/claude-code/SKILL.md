@@ -174,7 +174,7 @@ Returns a JSON object with:
   "stop_reason": "end_turn",
   "terminal_reason": "completed",
   "usage": { "input_tokens": 5, "output_tokens": 603, ... },
-  "modelUsage": { "claude-sonnet-4-6": { "costUSD": 0.078, "contextWindow": 200000 } }
+  "modelUsage": { "claude-fable-5": { "costUSD": 0.078, "contextWindow": 200000 } }
 }
 ```
 
@@ -278,7 +278,7 @@ Automatically falls back to the specified model when the default is overloaded (
 ### Model & Performance
 | Flag | Effect |
 |------|--------|
-| `--model <alias>` | Model selection: `sonnet`, `opus`, `haiku`, or full name like `claude-sonnet-4-6` |
+| `--model <alias>` | Model selection: `sonnet`, `opus`, `fable`, `haiku`, or full name like `claude-fable-5` |
 | `--effort <level>` | Reasoning depth: `low`, `medium`, `high`, `max`, `auto` | Both |
 | `--max-turns <n>` | Limit agentic loops (print mode only; prevents runaway) |
 | `--max-budget-usd <n>` | Cap API spend in dollars (print mode only) |
@@ -741,7 +741,7 @@ Use `/context` in interactive mode to see a colored grid of context usage. Key t
 5. **Use `--allowedTools`** to restrict to only what's needed (e.g., `Read` only for reviews).
 6. **Use `/compact`** in interactive sessions when context gets large.
 7. **Pipe input** instead of having Claude read files when you just need analysis of known content.
-8. **Use `--model haiku`** for simple tasks (cheaper) and `--model opus` for complex multi-step work.
+8. **Use default Fable 5 or `--model fable`** for complex multi-step work; use `--model haiku` only for simple/cheap tasks when quality is not critical.
 9. **Use `--fallback-model haiku`** in print mode to gracefully handle model overload.
 10. **Start new sessions for distinct tasks** — sessions last 5 hours; fresh context is more efficient.
 11. **Use `--no-session-persistence`** in CI to avoid accumulating saved sessions on disk.

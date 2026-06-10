@@ -25,7 +25,7 @@ LOG_PATH = HERMES_HOME / "logs" / "multimodel-autonomy-certification.jsonl"
 
 DEFAULT_PANEL = [
     ("openai-codex", "gpt-5.5", "primary"),
-    ("claude-code", "claude-sonnet-4-6", "planner"),
+    ("claude-code", "claude-fable-5", "planner"),
     ("deepseek", "deepseek-v4-pro", "reviewer"),
     ("google-gemini-cli", "gemini-3.1-pro-preview", "planner"),
     ("xiaomi", "mimo-v2.5-pro", "low_cost_observer"),

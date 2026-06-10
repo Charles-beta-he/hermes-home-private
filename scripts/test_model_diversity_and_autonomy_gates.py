@@ -97,7 +97,7 @@ class ModelDiversityGateTests(unittest.TestCase):
 
     def test_gate_passes_for_balanced_multi_model_usage_without_route_convergence(self):
         rows = []
-        for model in ["gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "claude-opus-4-7"]:
+        for model in ["gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro", "claude-fable-5"]:
             for i in range(25):
                 rows.append((f"2026-05-09T01:{i:02d}:00Z", json.dumps([model]), "pass", f"route:{model}"))
         db = self._db(rows)

@@ -35,7 +35,7 @@ classify = load_module("classify_and_route", ROOT / "classify_and_route.py")
 
 class ClaudeCodeCliPathTests(unittest.TestCase):
     def test_autonomy_certificate_uses_claude_cli_not_hermes_provider(self):
-        cmd = certify.probe_command("claude-code", "claude-sonnet-4-6")
+        cmd = certify.probe_command("claude-code", "claude-fable-5")
         self.assertEqual(cmd[:2], ["claude", "-p"])
         self.assertIn("--output-format", cmd)
         self.assertNotIn("hermes", cmd)
@@ -58,7 +58,7 @@ class ClaudeCodeCliPathTests(unittest.TestCase):
             output, _latency, ok = cross_check.query_provider(
                 "只回复: 4",
                 provider="anthropic",
-                model="claude-sonnet-4-6",
+                model="claude-fable-5",
                 timeout=5,
             )
 

@@ -65,7 +65,7 @@ class UsageScoreTests(unittest.TestCase):
             """
         )
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        for model in ["gpt-5.5", "claude-opus-4-7", "deepseek-v4-pro", "mimo-v2.5-pro"]:
+        for model in ["gpt-5.5", "claude-fable-5", "deepseek-v4-pro", "mimo-v2.5-pro"]:
             conn.execute(
                 "INSERT INTO route_outcomes (ts, skill, route, verdict, duration_s, tokens_in, tokens_out, model_chain, cost_usd, is_synthetic) VALUES (?,?,?,?,?,?,?,?,?,0)",
                 (ts, "probe", "probe:smoke", "pass", 1.0, 10, 10, model, 0.001),
@@ -131,7 +131,7 @@ class UsageScoreTests(unittest.TestCase):
             ts = mod.NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
             (logs / "ensemble-votes.jsonl").write_text(
                 f'{{"ts":"{ts}","execute":true,"total_voters":3,'
-                '"models":["gpt-5.5","claude-opus-4-7","mimo-v2.5-pro"]}\n'
+                '"models":["gpt-5.5","claude-fable-5","mimo-v2.5-pro"]}\n'
             )
             mod.H = root
             mod.ENSEMBLE = logs / "ensemble-votes.jsonl"
