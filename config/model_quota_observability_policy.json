@@ -24,6 +24,12 @@
       "forbidden_scope": ["budget_handoff_certification", "broad_autonomous_execution", "external_write_certification"],
       "next_action": "claude_cli_quota_unobservable_lower_risk_tier_or_manual_confirmation"
     },
+    "anthropic::claude-fable-5": {
+      "observability": "anthropic_api_headers_when_direct_anthropic_route_is_used",
+      "allowed_scope": ["low_risk_routing", "budget_evidence_when_fresh"],
+      "forbidden_scope": ["use_after_stale_after_seconds_without_refresh"],
+      "next_action": "prefer_claude_code_cli_for_claude_max_or_refresh_api_header_snapshot"
+    },
     "xiaomi::mimo-v2.5-pro": {
       "observability": "direct_api_success_no_quota_headers",
       "latest_probe_kind": "direct_api_no_quota_headers",

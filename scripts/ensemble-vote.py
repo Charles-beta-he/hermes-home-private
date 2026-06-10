@@ -10,7 +10,7 @@ ensemble-vote.py — 多模型投票/仲裁 (L3)
 
 用法:
   python3 ensemble-vote.py vote --task "Review auth.py for bugs" --models gpt-5.4,claude-fable-5 --strategy majority
-  python3 ensemble-vote.py vote --task "..." --strategy weighted --models gpt-5.4,claude-fable-5,claude-fable-5
+  python3 ensemble-vote.py vote --task "..." --strategy weighted --models gpt-5.4,claude-fable-5,deepseek-v4-pro
 """
 
 import argparse

@@ -58,8 +58,11 @@ MODELS: Dict[str, Dict[str, Any]] = {
         "provider": "claude-code",
         "unobservable_on_success_no_headers": "external_cli_no_quota_headers",
         "cmd": ["claude", "-p", "{prompt}", "--model", "fable", "--max-turns", "1", "--allowedTools", ""],
-        "in": 15.0,
-        "out": 75.0,
+        # Claude Code / Claude Max is subscription-bounded and does not expose
+        # metered headers to this script; keep marginal cost aligned with
+        # config.yaml pricing.models.claude-fable-5 until exact pricing exists.
+        "in": 0.0,
+        "out": 0.0,
     },
     "deepseek-v4-pro": {
         "provider": "deepseek",
