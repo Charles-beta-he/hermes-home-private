@@ -2035,7 +2035,6 @@ def test_manual_review_final_landed_false_blocks_auto_close_review_without_real_
         row = next(r for r in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"] if r["id"] == task_id)
         assert row["status"] != "done", row
 
-
 def test_manual_review_partial_closeout_can_still_close_without_final_landed_gate():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -3423,6 +3422,31 @@ def test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_t
         td.cleanup()
 
 
+def test_auto_close_review_fails_closed_on_negative_closeout_proof_marker():
+    td, vault, env = make_env_and_vault()
+    try:
+        task_id, task_path = add_review_evolution_task(env, title="验证 negative proof 不会自动 done")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace(
+            "evidence:\n  - command:selfcheck PASS",
+            "evidence:\n  - command:selfcheck PASS\n  - proof:closeout-gap/do-not-mark-done",
+            1,
+        )
+        task_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-close-review", "--task", task_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["closed_count"] == 0, result
+        assert result["skipped_count"] == 1, result
+        skipped = result["skipped"][0]
+        assert skipped["task_id"] == task_id, skipped
+        assert any("negative_closeout_evidence_present" in failure for failure in skipped["failures"]), skipped
+        assert "proof:closeout-gap/do-not-mark-done" in skipped["evidence"], skipped
+        assert find_task_status(task_path) == "review"
+    finally:
+        td.cleanup()
+
+
 def test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task():
     td, vault, env = make_env_and_vault()
     try:
@@ -3495,6 +3519,7 @@ def main():
     test_ratification_policy_is_loaded_from_quorum_config_not_code_literals()
     test_terminal_boundary_debt_does_not_block_active_dispatch_boundary()
     test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_task()
+    test_auto_close_review_fails_closed_on_negative_closeout_proof_marker()
     test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task()
     print("PASS")
 
