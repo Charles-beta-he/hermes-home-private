@@ -1,0 +1,71 @@
+{
+  "schema": "product_workflow_evidence_bundle_v1",
+  "generated_at": "2026-06-11T05:45:01Z",
+  "workflow_slug": "pm-skills-product-workflow-os",
+  "sources": [
+    {
+      "id": "src-wechat-preview",
+      "source_type": "live_ui",
+      "source_ref": "https://weixin.qq.com/sph/Ata5dqYwjz",
+      "retrieved_at": "2026-06-11T05:00:00Z",
+      "freshness": "visible post date 2026-06-09",
+      "access_status": "ok",
+      "notes": "Preview showed author, caption, date, engagement counts, and project framing. Treat as direction signal only."
+    },
+    {
+      "id": "src-repo-clone",
+      "source_type": "repo",
+      "source_ref": "https://github.com/phuryn/pm-skills @ d384f0c9eb81fe74656a4f6da168587836939edb",
+      "retrieved_at": "2026-06-11T05:00:00Z",
+      "freshness": "commit date 2026-06-06",
+      "access_status": "ok",
+      "notes": "Local review clone at /tmp/pm-skills-review."
+    },
+    {
+      "id": "src-validator",
+      "source_type": "command",
+      "source_ref": "cd /tmp/pm-skills-review && python3 validate_plugins.py",
+      "retrieved_at": "2026-06-11T05:44:43Z",
+      "freshness": "same-session command output",
+      "access_status": "ok",
+      "notes": "Validator reported 9 plugins, 68 skills, 42 commands, total 110 components, all PASS."
+    },
+    {
+      "id": "src-review-ssot",
+      "source_type": "official_doc",
+      "source_ref": "/Users/charles/.hermes/docs/private/pm-skills-reference-review-20260611.md",
+      "retrieved_at": "2026-06-11T05:44:43Z",
+      "freshness": "same-session artifact",
+      "access_status": "ok",
+      "notes": "Scoped SSOT note for source facts and adaptation decision."
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-001",
+      "claim": "The reviewed source separates concept/framework skills from verb/workflow commands.",
+      "source_ids": ["src-repo-clone", "src-review-ssot"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "fact"
+    },
+    {
+      "id": "claim-002",
+      "claim": "Hermes needs additional gates beyond the source pattern: evidence bundle, workflow state, taskpool candidate schema, real verification, and learning writeback boundary.",
+      "source_ids": ["src-review-ssot"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "model_interpretation"
+    },
+    {
+      "id": "claim-003",
+      "claim": "A reusable Hermes skill plus templates and a local scaffold script is the safe first landing boundary; no third-party installation or external side effects are needed.",
+      "source_ids": ["src-review-ssot", "src-validator"],
+      "confidence": "high",
+      "verification_status": "verified",
+      "interpretation_boundary": "model_interpretation"
+    }
+  ],
+  "open_questions": [],
+  "blocked_evidence": []
+}

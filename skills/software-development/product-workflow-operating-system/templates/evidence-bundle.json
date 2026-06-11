@@ -1,0 +1,28 @@
+{
+  "schema": "product_workflow_evidence_bundle_v1",
+  "generated_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "workflow_slug": "<slug>",
+  "sources": [
+    {
+      "id": "src-001",
+      "source_type": "official_doc|repo|live_ui|api|transcript|screenshot|metric|log|model_inference|user_statement",
+      "source_ref": "<url-or-path-or-command>",
+      "retrieved_at": "YYYY-MM-DDTHH:MM:SSZ",
+      "freshness": "<date-or-window>",
+      "access_status": "ok|degraded|blocked|needs_auth",
+      "notes": ""
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-001",
+      "claim": "<atomic claim>",
+      "source_ids": ["src-001"],
+      "confidence": "high|medium|low",
+      "verification_status": "verified|degraded|blocked|assumption",
+      "interpretation_boundary": "fact|assumption|model_interpretation|user_preference"
+    }
+  ],
+  "open_questions": [],
+  "blocked_evidence": []
+}

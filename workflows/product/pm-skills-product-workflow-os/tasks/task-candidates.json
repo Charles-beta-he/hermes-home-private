@@ -1,0 +1,6 @@
+{
+  "schema": "daily_report_task_candidates_v1",
+  "source": "product-workflow-operating-system",
+  "workflow_slug": "pm-skills-product-workflow-os",
+  "candidates": []
+}

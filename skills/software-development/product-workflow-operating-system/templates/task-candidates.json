@@ -1,0 +1,30 @@
+{
+  "schema": "daily_report_task_candidates_v1",
+  "source": "product-workflow-operating-system",
+  "workflow_slug": "<slug>",
+  "candidates": [
+    {
+      "dedupe_key": "<stable-short-key>",
+      "title": "<actionable task title>",
+      "priority": "P1|P2|P3",
+      "project": "<project>",
+      "concepts": ["product-workflow"],
+      "priority_layer": "P1|P2|P3",
+      "dependency_order": ["<ordered-step-1>", "<ordered-step-2>"],
+      "multimodel_triage_result": "not_required|required_for_architecture|required_for_high_risk",
+      "objective": "<concrete objective>",
+      "capability_delta": "<what capability improves if completed>",
+      "anti_drift_check": "<how to prevent scope drift>",
+      "acceptance_evidence": ["<test/build/browser/api/doc evidence required>"],
+      "parallel_boundary": "<what can/cannot run in parallel>",
+      "evidence_bundle": ["evidence/evidence-bundle.json"],
+      "architecture_target": "product-workflow|taskpool|shipping|metrics|launch",
+      "truth_gate": "report-evidence-present",
+      "lane": "auto",
+      "expires_days": 14,
+      "requires_multimodel": false,
+      "expected_participants": [],
+      "multimodel_reason": ""
+    }
+  ]
+}
