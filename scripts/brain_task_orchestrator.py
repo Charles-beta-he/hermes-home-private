@@ -4009,7 +4009,47 @@ def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
         failures.append(f"completion_gate:unknown:{gate}")
     if task_requires_final_landed_evidence(task) and not evidence_has_final_landed_signal(evidence):
         failures.append("manual_review_final_landed=false requires final landed evidence bundle (implementation artifact + feature-specific verification evidence); advisory-only/py_compile/hash/ExperienceAtom evidence is insufficient")
+    failures.extend(execution_flow_closeout_failures(task, evidence))
     return failures
+
+
+EXECUTION_FLOW_IMPL_HINTS = re.compile(
+    r"(implement|fix|修复|实现|落地|UI|browser|frontend|backend|API|接口|页面|按钮|route|tab|modal|build|test|验证)",
+    re.IGNORECASE,
+)
+EXECUTION_FLOW_UI_HINTS = re.compile(r"(UI|页面|浏览器|browser|frontend|H5|mobile|viewport|截图|tab|modal|按钮|表单)", re.IGNORECASE)
+EXECUTION_FLOW_API_HINTS = re.compile(r"(API|接口|backend|后端|curl|read-?back|contract|数据库|持久)", re.IGNORECASE)
+
+
+def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[str]:
+    """Fail closeout when unified execution-flow proof requirements are missing.
+
+    Dispatch may proceed with missing harness proof, but done closeout may not. This
+    helper evaluates proposed done evidence plus existing task evidence/body and
+    only returns failures for review/done closeout; it performs no mutation.
+    """
+    if task.status != "review":
+        return []
+    existing = task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []
+    entries = [str(e) for e in existing] + [str(e) for e in evidence]
+    blob = "\n".join(entries).lower()
+    hint_fm = {k: v for k, v in task.fm.items() if k != "evidence"}
+    combined = "\n".join([task.title, task.body, json.dumps(hint_fm, ensure_ascii=False)])
+    is_impl = task.lane == "work" or bool(EXECUTION_FLOW_IMPL_HINTS.search(combined))
+    needs_ui = bool(EXECUTION_FLOW_UI_HINTS.search(combined))
+    needs_api = bool(EXECUTION_FLOW_API_HINTS.search(combined))
+    missing: list[str] = []
+    if is_impl and not any(marker in blob for marker in ("command:", "artifact:", "proof:")):
+        missing.append("feature_specific_structured_evidence")
+    if needs_ui and not any(marker in blob for marker in ("proof:browser", "screenshot", "playwright", "browser")):
+        missing.append("browser_or_ui_surface_proof")
+    if needs_api and not any(marker in blob for marker in ("proof:api", "curl", "readback", "read-back")):
+        missing.append("api_or_backend_readback_proof")
+    if is_impl and "command:" not in blob:
+        missing.append("command_proof_for_review_closeout")
+    if not missing:
+        return []
+    return ["execution_flow_closeout_blocked:" + ",".join(sorted(set(missing)))]
 
 
 def canonical_json(data: dict[str, Any]) -> str:

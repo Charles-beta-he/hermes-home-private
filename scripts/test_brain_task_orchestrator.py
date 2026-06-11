@@ -1349,6 +1349,102 @@ def test_lifecycle_transition_gate_and_audit():
         assert proof["status"] == "PASS", proof
 
 
+def test_done_closeout_blocks_work_task_missing_execution_flow_harness_proof():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Implement backend API and browser UI", priority="P1", project="hermes")
+        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: implementation build test PASS", "--json")
+        before = task_path.read_text(encoding="utf-8")
+
+        blocked = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command: final build test commit verification PASS",
+            "--json",
+            check=False,
+        )
+
+        assert blocked.returncode != 0
+        assert "execution_flow_closeout_blocked" in blocked.stderr
+        assert "browser_or_ui_surface_proof" in blocked.stderr
+        assert "api_or_backend_readback_proof" in blocked.stderr
+        assert task_path.read_text(encoding="utf-8") == before
+
+
+def test_done_closeout_allows_work_task_with_execution_flow_harness_proof():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, _task_path = add_task(env, title="Implement backend API and browser UI", priority="P1", project="hermes")
+        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: implementation build test PASS", "--json")
+
+        done = json.loads(
+            run(
+                env,
+                "transition",
+                task_id,
+                "--to",
+                "done",
+                "--actor",
+                "tester",
+                "--evidence",
+                "command: final build test commit verification PASS",
+                "--evidence",
+                "proof:browser route=/wallet viewport=desktop screenshot=/tmp/wallet.png console_errors=0",
+                "--evidence",
+                "proof:api_readback endpoint=/api/wallet status=200 fields=balance",
+                "--json",
+            ).stdout
+        )
+
+        assert done["from_status"] == "review"
+        assert done["to_status"] == "done"
+
+
+def test_done_closeout_ignores_body_placeholders_for_execution_flow_proof():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Implement backend API and browser UI", priority="P1", project="hermes")
+        note = task_path.read_text(encoding="utf-8")
+        task_path.write_text(
+            note + "\n## Acceptance placeholders\n- command: run tests before closeout\n- proof:browser required before done\n- proof:api_readback required before done\n",
+            encoding="utf-8",
+        )
+        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: implementation build test PASS", "--json")
+        before = task_path.read_text(encoding="utf-8")
+
+        blocked = run(
+            env,
+            "transition",
+            task_id,
+            "--to",
+            "done",
+            "--actor",
+            "tester",
+            "--evidence",
+            "command: final build test commit verification PASS",
+            "--json",
+            check=False,
+        )
+
+        assert blocked.returncode != 0
+        assert "execution_flow_closeout_blocked" in blocked.stderr
+        assert "browser_or_ui_surface_proof" in blocked.stderr
+        assert "api_or_backend_readback_proof" in blocked.stderr
+        assert task_path.read_text(encoding="utf-8") == before
+
+
 def test_lifecycle_transition_retry_sets_delay_and_count():
     td, _vault, env = make_env_and_vault()
     with td:

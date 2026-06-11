@@ -165,6 +165,10 @@ Do not invent evidence. If proof is blocked, record `blocked` with exact reason 
 
 ### Verifier / Closeout Gate
 
+Scope: implementation-class task closeout inside the unified Hermes/workflow/taskpool/harness execution flow.
+Applicability: use when a task is moving from `review` to `done` and the task contract implies work/UI/API/backend/command execution proof.
+Anti-condition: do not apply this as a pre-execution dispatch blocker; missing proof should guide execution until the closeout boundary.
+
 The verifier decides whether evidence satisfies the task contract. It is separate from the harness and runner.
 
 Done requires:
@@ -176,6 +180,13 @@ Done requires:
 - unresolved human gates absent;
 - external write-back read-back passed when writeback is in scope;
 - multimodel certification passed when required.
+
+Unified execution-flow closeout rule:
+
+- Missing harness evidence may allow `dispatch-dry-run` and execution, but must block `review -> done`.
+- Work/surface/API tasks must provide structured command evidence plus surface-specific proof: browser/screenshot/Playwright proof for UI surfaces, and API/curl/read-back proof for API/backend surfaces.
+- A blocked closeout must fail before mutating the task note; it should return a machine-readable failure such as `execution_flow_closeout_blocked:<missing_evidence>`.
+- Closeout proof matching must trust only structured lifecycle evidence sources such as proposed `--evidence` and frontmatter `evidence`; arbitrary task body placeholders or acceptance examples that look like `proof:*` must not satisfy closeout.
 
 Advisory pass, model consensus, generic compile checks, proof hashes, or generic selfcheck are insufficient for product/work done by themselves.
 
@@ -244,7 +255,7 @@ Pitfall: a "read-only" evaluator can accidentally stop being read-only through c
 3. Connect the evaluator to the taskpool-owned CLI surface. **Landed: `brain_task_orchestrator.py execution-flow-dry-run`; still read-only and uses canonical task ids/notes.**
 4. Make `dispatch-dry-run` consume the execution-flow gate. **Landed: dispatch plans now include `execution_flow` and `execution_flow_dispatch_decision`; pre-closeout evidence gaps are safe-to-execute, while hard authority/writeback/destructive/human-gate boundaries block dispatch in dry-run.**
 5. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
-6. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Dry-run gate landed; lifecycle mutation remains intentionally unopened.**
+6. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Landed: `review -> done` lifecycle gate now consumes execution-flow proof requirements and blocks work/UI/API closeout when browser/API/command proof is missing; safe dispatch remains allowed before closeout.**
 7. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
 8. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
 
