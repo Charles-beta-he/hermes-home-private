@@ -200,9 +200,15 @@ Events should wake the flow. Scheduled jobs are watchdog/maintenance fallback, n
 
 ## Production dry-run surface
 
-The current production-safe entrypoint is:
+The current production-safe entrypoints are:
 
 ```bash
+# Canonical taskpool-owned entrypoint (preferred)
+python3 ~/.hermes/scripts/brain_task_orchestrator.py execution-flow-dry-run --limit 5 --json
+python3 ~/.hermes/scripts/brain_task_orchestrator.py execution-flow-dry-run --task <task-id> --json --fail-on-blocked
+python3 ~/.hermes/scripts/brain_task_orchestrator.py execution-flow-dry-run --task <task-id> --report /tmp/unified-flow-report.md
+
+# Lower-level evaluator entrypoint
 python3 ~/.hermes/scripts/execution_flow_evaluator.py --limit 5 --json
 python3 ~/.hermes/scripts/execution_flow_evaluator.py --task-file <task.md> --json --fail-on-blocked
 python3 ~/.hermes/scripts/execution_flow_evaluator.py --task-file <task.md> --report /tmp/unified-flow-report.md
@@ -214,16 +220,21 @@ Contract:
 - stable schema: `schema_version=execution-flow/v1`;
 - enterprise gate: `PASS` only when no evaluated task has a boundary or missing evidence;
 - exit code: `--fail-on-blocked` returns `2` when the enterprise gate is blocked;
-- report: durable Markdown report includes contract, evaluations, and human-gate/intervention packets.
+- report: durable Markdown report includes contract, evaluations, and human-gate/intervention packets;
+- report path safety: report generation may write the explicitly requested report file, but must not create parent directories or mutate taskpool/external state as a side effect;
+- summary consistency: any aggregate such as `blocked_or_missing_evidence` must count both explicit boundaries and missing evidence so it cannot disagree with `enterprise_gate.status`.
+
+Pitfall: a "read-only" evaluator can accidentally stop being read-only through convenience filesystem behavior. `mkdir(parents=True)` for a report path is still a filesystem mutation beyond the requested artifact and should be rejected unless a separate write contract authorizes it.
 
 ## MVP landing order
 
 1. Define `ExecutionFlowState` / `HarnessSpec` as derived fields; no lifecycle mutation. **Landed as read-only evaluator.**
 2. Build a read-only evaluator that prints next stage, safe actions, blocked actions, and missing evidence for existing tasks. **Landed: `~/.hermes/scripts/execution_flow_evaluator.py`.**
-3. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
-4. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Dry-run gate landed; lifecycle mutation remains intentionally unopened.**
-5. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
-6. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
+3. Connect the evaluator to the taskpool-owned CLI surface. **Landed: `brain_task_orchestrator.py execution-flow-dry-run`; still read-only and uses canonical task ids/notes.**
+4. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
+5. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Dry-run gate landed; lifecycle mutation remains intentionally unopened.**
+6. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
+7. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
 
 ## Anti-patterns
 

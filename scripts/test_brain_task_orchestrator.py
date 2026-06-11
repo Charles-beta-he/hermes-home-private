@@ -225,6 +225,31 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
     return created["id"], created_path
 
 
+def test_execution_flow_dry_run_cli_projects_enterprise_gate_without_mutating_task():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Implement backend API and browser UI", priority="P1", project="hermes")
+        before = task_path.read_text(encoding="utf-8")
+
+        result = run(env, "execution-flow-dry-run", "--task", task_id, "--json")
+        payload = json.loads(result.stdout)
+
+        assert payload["status"] == "OK"
+        assert payload["schema_version"] == "execution-flow/v1"
+        assert payload["mode"] == "read_only"
+        assert payload["enterprise_gate"]["status"] == "BLOCKED"
+        assert payload["summary"]["evaluated"] == 1
+        assert payload["evaluations"][0]["task_id"] == task_id
+        assert "browser_or_ui_surface_proof" in payload["evaluations"][0]["missing_evidence"]
+        assert task_path.read_text(encoding="utf-8") == before
+
+        blocked = run(env, "execution-flow-dry-run", "--task", task_id, "--json", "--fail-on-blocked", check=False)
+        assert blocked.returncode == 2
+        blocked_payload = json.loads(blocked.stdout)
+        assert blocked_payload["status"] == "FAIL"
+        assert blocked_payload["enterprise_gate"]["status"] == "BLOCKED"
+
+
 def test_command_add_work_task_binds_source_weighting_policy_before_dispatch_hook():
     td, _vault, env = make_env_and_vault()
     with td:

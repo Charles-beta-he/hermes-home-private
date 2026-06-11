@@ -7193,6 +7193,39 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "multimodel_intervention": intervention, "safety": "dry-run only; does not claim or execute"}
 
 
+def command_execution_flow_dry_run(args: argparse.Namespace) -> dict[str, Any]:
+    """Project the unified execution-flow gate over canonical taskpool notes.
+
+    This is the taskpool-owned entrypoint for the execution_flow_evaluator. It
+    intentionally stays read-only: no claim, transition, done, adapter write, or
+    external side effect is performed here.
+    """
+    import execution_flow_evaluator as flow
+
+    task_ids = list(getattr(args, "task", []) or [])
+    if task_ids:
+        paths = [find_task(task_id).path for task_id in task_ids]
+    else:
+        paths = flow.iter_task_files(TASKS_DIR, int(getattr(args, "limit", 5) or 5))
+    evaluations = [flow.evaluate(path) for path in paths if path.exists()]
+    payload = flow.build_payload(evaluations)
+    payload["status"] = "OK"
+    payload["taskpool_entrypoint"] = "brain_task_orchestrator.py execution-flow-dry-run"
+    payload["safety"] = "read-only; does not claim, transition, mark done, write adapters, or execute external side effects"
+
+    report_path = str(getattr(args, "report", "") or "").strip()
+    if report_path:
+        target = Path(report_path).expanduser()
+        if not target.parent.exists():
+            raise SystemExit(f"report parent dir not found: {target.parent}")
+        target.write_text(flow.render_report(payload), encoding="utf-8")
+        payload["report"] = str(target)
+
+    if getattr(args, "fail_on_blocked", False) and payload.get("enterprise_gate", {}).get("status") != "PASS":
+        payload["status"] = "FAIL"
+    return payload
+
+
 def multimodel_intervention_sort_key(task: Task) -> tuple[int, int, int, datetime, str]:
     reasons = task_multimodel_intervention_reasons(task)
     weights = lane_sort_weight()
@@ -10002,6 +10035,13 @@ def build_parser() -> argparse.ArgumentParser:
     ddp = sub.add_parser("dispatch-dry-run")
     ddp.add_argument("--json", action="store_true")
 
+    efp = sub.add_parser("execution-flow-dry-run")
+    efp.add_argument("--task", action="append", default=[], help="Task id/slug to evaluate; repeatable")
+    efp.add_argument("--limit", type=int, default=5, help="Max recent tasks when --task is not provided")
+    efp.add_argument("--fail-on-blocked", action="store_true", help="Exit 2 when enterprise gate is BLOCKED")
+    efp.add_argument("--report", default="", help="Write a Markdown report to an existing parent directory")
+    efp.add_argument("--json", action="store_true")
+
     bcp = sub.add_parser("boundary-check")
     bcp.add_argument("--json", action="store_true")
 
@@ -10153,6 +10193,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_next(args), args.json)
     if args.cmd == "dispatch-dry-run":
         return print_result(command_dispatch_dry_run(args), args.json)
+    if args.cmd == "execution-flow-dry-run":
+        return print_result(command_execution_flow_dry_run(args), args.json)
     if args.cmd == "boundary-check":
         return print_result(command_boundary_check(args), args.json)
     if args.cmd == "boundary-diff-check":
