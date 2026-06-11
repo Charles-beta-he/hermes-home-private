@@ -198,12 +198,30 @@ task.created/task.updated
 
 Events should wake the flow. Scheduled jobs are watchdog/maintenance fallback, not the primary executor.
 
+## Production dry-run surface
+
+The current production-safe entrypoint is:
+
+```bash
+python3 ~/.hermes/scripts/execution_flow_evaluator.py --limit 5 --json
+python3 ~/.hermes/scripts/execution_flow_evaluator.py --task-file <task.md> --json --fail-on-blocked
+python3 ~/.hermes/scripts/execution_flow_evaluator.py --task-file <task.md> --report /tmp/unified-flow-report.md
+```
+
+Contract:
+
+- read-only: no task transition, external writeback, publish, delete, credential, or production mutation;
+- stable schema: `schema_version=execution-flow/v1`;
+- enterprise gate: `PASS` only when no evaluated task has a boundary or missing evidence;
+- exit code: `--fail-on-blocked` returns `2` when the enterprise gate is blocked;
+- report: durable Markdown report includes contract, evaluations, and human-gate/intervention packets.
+
 ## MVP landing order
 
-1. Define `ExecutionFlowState` / `HarnessSpec` as derived fields; no lifecycle mutation.
-2. Build a read-only evaluator that prints next stage, safe actions, blocked actions, and missing evidence for existing tasks.
-3. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records.
-4. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks.
+1. Define `ExecutionFlowState` / `HarnessSpec` as derived fields; no lifecycle mutation. **Landed as read-only evaluator.**
+2. Build a read-only evaluator that prints next stage, safe actions, blocked actions, and missing evidence for existing tasks. **Landed: `~/.hermes/scripts/execution_flow_evaluator.py`.**
+3. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
+4. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Dry-run gate landed; lifecycle mutation remains intentionally unopened.**
 5. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
 6. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
 

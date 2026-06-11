@@ -130,7 +130,8 @@ def evaluate(path: Path) -> FlowEvaluation:
     lane = str(fm.get("lane")) if fm.get("lane") else None
     priority = str(fm.get("priority") or fm.get("priority_layer") or "") or None
     stage = str(fm.get("workflow_stage") or STATUS_TO_STAGE.get(status, "evidence"))
-    combined = "\n".join([title, body, json.dumps(fm, ensure_ascii=False)])
+    hint_fm = {k: v for k, v in fm.items() if k != "evidence"}
+    combined = "\n".join([title, body, json.dumps(hint_fm, ensure_ascii=False)])
     entries = evidence_entries(fm, body)
 
     is_impl = bool(IMPLEMENTATION_HINTS.search(combined)) or lane == "work"
@@ -227,12 +228,114 @@ def iter_task_files(task_dir: Path, limit: int | None) -> list[Path]:
     return files
 
 
+def build_enterprise_gate(evaluations: list[FlowEvaluation]) -> dict[str, Any]:
+    blocked = [e for e in evaluations if e.boundary_class != "none"]
+    missing = sorted({item for e in evaluations for item in e.missing_evidence})
+    human_gates = [e for e in evaluations if e.workflow_stage == "human_gate" or e.boundary_class in {"permission", "external_side_effect", "destructive", "credential", "value_judgement", "safety_legal"}]
+    reasons = sorted({reason for e in evaluations for reason in e.reasons})
+    status = "PASS"
+    if blocked or missing:
+        status = "BLOCKED"
+    return {
+        "status": status,
+        "policy": "read_only_projection_no_lifecycle_mutation",
+        "blocked_count": len(blocked),
+        "human_gate_count": len(human_gates),
+        "missing_evidence": missing,
+        "reasons": reasons,
+        "authority_boundary": "no task transition, external writeback, publish, delete, credential, or production mutation is performed by this evaluator",
+    }
+
+
+def build_payload(evaluations: list[FlowEvaluation]) -> dict[str, Any]:
+    gate = build_enterprise_gate(evaluations)
+    blocked_or_missing = sum(
+        1 for e in evaluations if e.boundary_class != "none" or bool(e.missing_evidence)
+    )
+    return {
+        "schema_version": "execution-flow/v1",
+        "status": "OK",
+        "mode": "read_only",
+        "framework": "unified_execution_flow",
+        "contract": {
+            "truth_owner": "taskpool",
+            "order_owner": "workflow",
+            "action_owner": "hermes_runner",
+            "proof_owner": "harness",
+            "closeout_owner": "verifier",
+            "permission_owner": "human_gate",
+        },
+        "summary": {
+            "evaluated": len(evaluations),
+            "blocked_or_missing_evidence": blocked_or_missing,
+            "closeout_ready": sum(1 for e in evaluations if e.closeout_ready),
+        },
+        "enterprise_gate": gate,
+        "evaluations": [asdict(e) for e in evaluations],
+    }
+
+
+def render_report(payload: dict[str, Any]) -> str:
+    lines: list[str] = []
+    gate = payload["enterprise_gate"]
+    summary = payload["summary"]
+    lines.append("# Unified Execution Flow Report")
+    lines.append("")
+    lines.append(f"- schema: {payload['schema_version']}")
+    lines.append(f"- mode: {payload['mode']}")
+    lines.append(f"- enterprise gate: {gate['status']}")
+    lines.append(f"- evaluated: {summary['evaluated']}")
+    lines.append(f"- closeout ready: {summary['closeout_ready']}")
+    lines.append(f"- blocked or missing evidence: {summary['blocked_or_missing_evidence']}")
+    lines.append("")
+    lines.append("## Contract")
+    for key, value in payload["contract"].items():
+        lines.append(f"- {key}: {value}")
+    lines.append("")
+    lines.append("## Evaluations")
+    for e in payload["evaluations"]:
+        lines.append(f"- {e['task_id']} [{e['status']}/{e['workflow_stage']}] boundary={e['boundary_class']} closeout_ready={e['closeout_ready']}")
+        if e["missing_evidence"]:
+            lines.append(f"  - missing: {', '.join(e['missing_evidence'])}")
+        if e["safe_actions"]:
+            lines.append(f"  - safe actions: {'; '.join(e['safe_actions'])}")
+        if e["blocked_actions"]:
+            lines.append(f"  - blocked actions: {'; '.join(e['blocked_actions'])}")
+    lines.append("")
+    lines.append("## Human Gate / Intervention Packets")
+    gated = [e for e in payload["evaluations"] if e["blocked_actions"] or e["boundary_class"] != "none"]
+    if not gated:
+        lines.append("- none")
+    for e in gated:
+        lines.append(f"- task: {e['task_id']}")
+        lines.append(f"  - boundary_class: {e['boundary_class']}")
+        lines.append(f"  - blocked_actions: {', '.join(e['blocked_actions']) or 'none'}")
+        lines.append(f"  - safe_next: {'; '.join(e['safe_actions']) or 'none'}")
+        lines.append("  - rollback_escape: preserve taskpool state; no mutation was performed by evaluator")
+    lines.append("")
+    lines.append("## Authority Boundary")
+    lines.append(f"- {gate['authority_boundary']}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def print_text_summary(evaluations: list[FlowEvaluation]) -> None:
+    for e in evaluations:
+        print(f"{e.task_id} [{e.status}/{e.workflow_stage}] boundary={e.boundary_class} closeout_ready={e.closeout_ready}")
+        if e.missing_evidence:
+            print("  missing:", ", ".join(e.missing_evidence))
+        if e.safe_actions:
+            print("  next:", "; ".join(e.safe_actions))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Read-only unified execution-flow evaluator")
     parser.add_argument("--task-file", action="append", default=[], help="Specific task markdown file(s) to evaluate")
     parser.add_argument("--task-dir", default=os.environ.get("HERMES_TASK_DIR", str(DEFAULT_TASK_DIR)))
     parser.add_argument("--limit", type=int, default=5, help="Max recent tasks when --task-file is not provided")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
+    parser.add_argument("--fail-on-blocked", action="store_true", help="Exit 2 when enterprise gate is BLOCKED")
+    parser.add_argument("--report", help="Write a durable markdown report to this path")
     args = parser.parse_args()
 
     if args.task_file:
@@ -244,27 +347,21 @@ def main() -> int:
         paths = iter_task_files(task_dir, args.limit)
 
     evaluations = [evaluate(p) for p in paths if p.exists()]
-    payload = {
-        "status": "OK",
-        "mode": "read_only",
-        "framework": "unified_execution_flow",
-        "summary": {
-            "evaluated": len(evaluations),
-            "blocked_or_missing_evidence": sum(1 for e in evaluations if e.boundary_class != "none"),
-            "closeout_ready": sum(1 for e in evaluations if e.closeout_ready),
-        },
-        "evaluations": [asdict(e) for e in evaluations],
-    }
+    payload = build_payload(evaluations)
+
+    if args.report:
+        report_path = Path(args.report).expanduser()
+        if not report_path.parent.exists():
+            raise SystemExit(f"report parent dir not found: {report_path.parent}")
+        report_path.write_text(render_report(payload), encoding="utf-8")
 
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
-        for e in evaluations:
-            print(f"{e.task_id} [{e.status}/{e.workflow_stage}] boundary={e.boundary_class} closeout_ready={e.closeout_ready}")
-            if e.missing_evidence:
-                print("  missing:", ", ".join(e.missing_evidence))
-            if e.safe_actions:
-                print("  next:", "; ".join(e.safe_actions))
+        print_text_summary(evaluations)
+
+    if args.fail_on_blocked and payload["enterprise_gate"]["status"] != "PASS":
+        return 2
     return 0
 
 
