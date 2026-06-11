@@ -16,7 +16,7 @@ metadata:
 
 Use this skill when a result should be learned by Hermes itself without overstepping authority. The goal is to turn multi-model reflections, repo-governance lessons, or user corrections into the right durable landing zone while preserving evidence, permission, and reversibility.
 
-Default stance: land what is safe, propose what needs governance, queue what needs execution, and explicitly refuse what would be authority expansion or false completion.
+Default stance: land what is safe, propose what needs governance, queue what needs execution, and explicitly refuse what would be authority expansion or false completion. A boundary is not a stop-work signal: after naming the blocked action, realign to the initial objective, continue safe read-only/reversible preparation, and emit the smallest required confirmation packet for the next gated step.
 
 ## When to Use
 

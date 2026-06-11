@@ -38,6 +38,21 @@ Do **not** use this skill for:
 
 ## Core Gate
 
+### Full-landing semantics
+
+Scope: complex implementation, workflow/control-plane, UI/API, or automation tasks where the user says “全盘推进”, “完整落地”, “推进至需人工介入”, or equivalent. Applicability: when the request is to build or repair the actual working system, not only advise. Anti-condition: do not use this wording to bypass permission, value-judgement, destructive, external-side-effect, credential, or evidence-insufficient gates.
+
+For these requests, the default completion target is not a plan, draft, read-only projection, mock, visual-only button, copy-only change, local-only placeholder, or test stub. Start from the target model and carry the work through the real layers that define the intended effect: UI/interaction, API/contract, SSOT/ledger, adapter or executor boundary, persistence, read-back, tests, browser/runtime verification, and scoped commit. If a lower layer is intentionally the endpoint, label it explicitly (for example “record-only; adapter apply not opened”).
+
+If the work reaches a boundary requiring human choice or authority, do not silently downgrade to a weaker layer and call it done. Also do not stop with only “cannot continue.” Switch into boundary realignment:
+
+1. Restate the initial objective and the full-landing target that is still in force.
+2. Identify the exact boundary class: permission/authority, evidence insufficiency, destructive or external side effect, credential/secret, value judgment, or safety/legal risk.
+3. Mark confirmed vs unconfirmed facts, including what evidence would remove the boundary.
+4. Continue any safe read-only, local, reversible, dry-run, patch-preparation, rollback-design, or verification work that does not cross the boundary.
+5. Produce a compact intervention packet for the blocked action: requested authorization or choice, blast radius, rollback/escape hatch, verification after execution, and the default safe next step.
+6. Stop only at the smallest necessary confirmation point, preserving the original plan and dependency order.
+
 For complex tasks, run these steps before substantive execution:
 
 1. **Objective & cost function**
@@ -66,6 +81,7 @@ For complex tasks, run these steps before substantive execution:
 6. **Evidence verification**
    - Before claiming completion, attach real evidence: test output, diff, logs, HTTP responses, screenshots, readback, or source citations.
    - If verification is blocked, report the blocker and what was still completed.
+   - For multi-repo work, check branch names and pre-existing dirty files before committing. If the active branch is unrelated to the task or unrelated local changes are present, stop at verified working-tree changes and report a scoped commit boundary instead of mixing them into a commit.
 
 ## Compact Output Forms
 
