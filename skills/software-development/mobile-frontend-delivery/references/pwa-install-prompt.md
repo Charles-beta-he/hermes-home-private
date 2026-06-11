@@ -73,15 +73,61 @@ export function usePwaInstall() {
 }
 ```
 
-## iOS Safari Fallback
+## Android OEM / HarmonyOS Install Edge Cases
 
-```typescript
-const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-const showIOSHint = isIOS && !isStandalone;
+### Do not treat `accepted` as installed
+
+On Android Chrome, `BeforeInstallPromptEvent.userChoice` resolves when the browser prompt is accepted. It can happen before the launcher or OEM permission layer finishes creating the desktop icon/WebAPK. OnePlus/ColorOS may then show a system dialog like “Allow Chrome to create desktop shortcut?”. If the user denies it, or if the browser only supports shortcut creation, the site may not be installed as a standalone PWA.
+
+Correct state model:
+
+1. `beforeinstallprompt` captured → app can show a browser install affordance.
+2. `prompt()` called and `userChoice === 'accepted'` → browser flow started/accepted only.
+3. `appinstalled` fired, or later `display-mode: standalone` / `navigator.standalone` readback is true → installed.
+
+Do not call `setIsInstalled(true)` only from `userChoice === 'accepted'`.
+
+### HarmonyOS / Huawei Browser fallback
+
+HarmonyOS, Huawei Browser, ArkWeb, and OEM browsers may not emit `beforeinstallprompt` even with a valid manifest and service worker. Detect likely platform from UA markers such as `HarmonyOS`, `OpenHarmony`, `ArkWeb`, `HuaweiBrowser`, or `Huawei`, then after a short bounded wait (for example 1–2s) show manual browser-menu guidance if no native prompt arrived.
+
+Manual guidance should be Android/Harmony-specific, not iOS profile copy:
+
+- Open browser menu.
+- Prefer “安装应用 / Install app”.
+- If only “添加到主屏幕 / 创建快捷方式” appears, explain it may open inside the browser rather than standalone.
+- On OnePlus/ColorOS launcher permission dialogs, allow Chrome/browser to create the home-screen item, then return to confirm.
+
+### Native prompt latency: show feedback before `prompt()`
+
+On Android Chrome 138+ / Android 15 and some OEM builds, tapping the app's custom "Install now" button can pause for a moment before Chrome renders the PWA install sheet or before the launcher permission dialog appears. Avoid a dead tap feeling:
+
+1. Immediately show an in-app loading/info toast such as "正在调起系统安装窗口".
+2. Wait for the toast to paint before calling `BeforeInstallPromptEvent.prompt()` — use one or two `requestAnimationFrame` ticks.
+3. Then call `prompt()` and await `userChoice`.
+4. Dismiss the loading toast after `userChoice` resolves, and still do not mark installed until `appinstalled`/standalone readback.
+
+Pattern:
+
+```ts
+const dismissPreparing = toast(t('pwa.install.preparing'), {
+  tone: 'loading',
+  body: t('pwa.install.preparingBody'),
+});
+await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+const outcome = await promptInstall();
+dismissPreparing();
 ```
 
-Show a banner: "点击 Safari 底部分享按钮 → 添加到主屏幕"
+### Test coverage pattern
+
+Add hook/component tests for:
+
+- `userChoice: accepted` clears the one-shot prompt but does not mark installed until `appinstalled`.
+- Harmony/Huawei UA with no `beforeinstallprompt` becomes a manual install guide after the timer.
+- Android Chrome / OnePlus UA still prefers real `beforeinstallprompt` over the delayed manual guide.
+- Manual guide CTA shows browser-menu steps and does not call `promptInstall()`.
+- Browser install CTA shows the loading/preparing feedback before invoking `promptInstall()`.
 
 ## Display Mode Detection
 
