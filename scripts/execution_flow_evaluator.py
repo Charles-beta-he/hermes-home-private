@@ -102,6 +102,34 @@ def has_any(entries: list[str], terms: tuple[str, ...]) -> bool:
     return any(term in lowered for term in terms)
 
 
+SAFE_DECISION_OPTION_MAP = {
+    "needs_more_evidence": {"decision": "needs_more_evidence", "label": "退回补证据", "resumeMode": "repair"},
+    "hold": {"decision": "hold", "label": "暂停", "resumeMode": "hold"},
+}
+
+
+def decision_option(decision: str) -> dict[str, str]:
+    return dict(SAFE_DECISION_OPTION_MAP[decision])
+
+
+def derive_safe_decision_options(boundary_class: str, missing_evidence: list[str], workflow_stage: str) -> list[dict[str, str]]:
+    if boundary_class == "none" and not missing_evidence:
+        return []
+    if boundary_class in {"permission", "external_side_effect", "destructive", "credential", "value_judgement", "safety_legal"}:
+        return [decision_option("hold")]
+    if boundary_class == "evidence" or missing_evidence:
+        return [decision_option("needs_more_evidence")]
+    if workflow_stage in {"human_gate", "writeback", "done"}:
+        return [decision_option("hold")]
+    return [decision_option("hold")]
+
+
+def derive_auto_decision(options: list[dict[str, str]]) -> dict[str, str] | None:
+    if len(options) != 1:
+        return None
+    return {**options[0], "reason": "single_safe_option"}
+
+
 @dataclass
 class FlowEvaluation:
     task_id: str
@@ -114,6 +142,8 @@ class FlowEvaluation:
     allowed_to_continue: bool
     safe_actions: list[str]
     blocked_actions: list[str]
+    safe_decision_options: list[dict[str, str]]
+    auto_decision: dict[str, str] | None
     missing_evidence: list[str]
     harness_spec: dict[str, Any]
     closeout_ready: bool
@@ -154,16 +184,16 @@ def evaluate(path: Path) -> FlowEvaluation:
     safe_actions: list[str] = []
     reasons: list[str] = []
 
-    if status == "blocked":
-        boundary = "evidence"
-        blocked_actions.append("lifecycle_done_transition")
-        safe_actions.extend(["read task evidence", "derive missing proof", "prepare human gate packet"])
-        reasons.append("status_blocked")
-    elif has_side_effect and stage in {"writeback", "review", "done"}:
+    if has_side_effect and stage in {"writeback", "review", "done", "human_gate"}:
         boundary = "external_side_effect"
         blocked_actions.append("external_writeback_without_authority_gate")
         safe_actions.extend(["prepare writeback intent", "prepare rollback plan", "run read-only verification"])
         reasons.append("side_effect_requires_gate")
+    elif status == "blocked":
+        boundary = "evidence"
+        blocked_actions.append("lifecycle_done_transition")
+        safe_actions.extend(["read task evidence", "derive missing proof", "prepare human gate packet"])
+        reasons.append("status_blocked")
     elif missing:
         boundary = "evidence"
         blocked_actions.append("done_closeout")
@@ -190,6 +220,8 @@ def evaluate(path: Path) -> FlowEvaluation:
 
     closeout_ready = status in {"review", "done"} and not missing and boundary in {"none"}
     allowed = boundary == "none" and status not in {"done", "archived"}
+    safe_decision_options = derive_safe_decision_options(boundary, missing, stage)
+    auto_decision = derive_auto_decision(safe_decision_options)
 
     return FlowEvaluation(
         task_id=task_id,
@@ -202,6 +234,8 @@ def evaluate(path: Path) -> FlowEvaluation:
         allowed_to_continue=allowed,
         safe_actions=safe_actions,
         blocked_actions=blocked_actions,
+        safe_decision_options=safe_decision_options,
+        auto_decision=auto_decision,
         missing_evidence=missing,
         harness_spec=harness_spec,
         closeout_ready=closeout_ready,
