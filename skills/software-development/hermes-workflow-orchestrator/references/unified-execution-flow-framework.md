@@ -257,7 +257,8 @@ Pitfall: a "read-only" evaluator can accidentally stop being read-only through c
 5. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
 6. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Landed: `review -> done` lifecycle gate now consumes execution-flow proof requirements and blocks work/UI/API closeout when browser/API/command proof is missing; safe dispatch remains allowed before closeout.**
 7. Add event-driven claim/handoff integration after dry-run proves no competing source of truth. **Landed for `auto-claim-and-handoff`: actual claim/handoff now checks `execution_flow_dispatch_decision` before write guard and suppresses claim/handoff/proof writes on hard execution-flow boundaries.**
-8. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
+8. Route human confirmation through a scoped control-console approval projection. **Scope: local Hermes control console only. Applicability: execution-flow human/writeback/done/hard-boundary requests that need a human choice. Anti-condition: this is not an external adapter executor and does not grant publish/send/delete/deploy authority. Landed: snapshot projects those requests into `snapshot.approvalRequests`, and the Human Inbox routes choices through existing capability-gated decision/apply/dispatch/worker surfaces.**
+9. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
 
 ## Anti-patterns
 
