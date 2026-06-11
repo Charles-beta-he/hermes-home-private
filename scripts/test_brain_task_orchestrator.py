@@ -250,6 +250,114 @@ def test_execution_flow_dry_run_cli_projects_enterprise_gate_without_mutating_ta
         assert blocked_payload["enterprise_gate"]["status"] == "BLOCKED"
 
 
+def test_dispatch_dry_run_consumes_execution_flow_without_stopping_safe_execution():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Implement backend API and browser UI", priority="P1", project="hermes")
+        before = task_path.read_text(encoding="utf-8")
+
+        dry = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+
+        assert dry["status"] == "OK"
+        assert dry["dry_run"] is True
+        assert dry["dispatchable"] is True
+        assert dry["next"]["id"] == task_id
+        assert dry["execution_flow"]["schema_version"] == "execution-flow/v1"
+        assert dry["execution_flow"]["enterprise_gate"]["status"] == "BLOCKED"
+        assert dry["execution_flow_dispatch_decision"]["allowed_to_dispatch"] is True
+        assert dry["execution_flow_dispatch_decision"]["reason"] == "pre_closeout_evidence_gap_safe_to_execute"
+        assert "browser_or_ui_surface_proof" in dry["execution_flow"]["evaluations"][0]["missing_evidence"]
+        assert "execution_flow" in dry["execution_prompt"]
+        assert task_path.read_text(encoding="utf-8") == before
+
+
+def test_reconcile_requeues_false_running_multimodel_claim_without_retry_penalty():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_HOME"] = str(Path(td.name) / "hermes-home")
+        task_id, task_path = add_task(env, title="Multimodel certification target", priority="P1", project="hermes")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: running", 1)
+        text = text.replace("claimed_by: ''", "claimed_by: hermes-multimodel", 1)
+        text = text.replace("run_id: ''", "run_id: hermes-multimodel-test", 1)
+        task_path.write_text(text, encoding="utf-8")
+
+        jobs_dir = Path(env["HERMES_HOME"]) / "state" / "taskpool-multimodel" / "jobs"
+        jobs_dir.mkdir(parents=True)
+        (jobs_dir / "dead-job.json").write_text(json.dumps({
+            "schema": "taskpool_multimodel_async_job_v1",
+            "job_id": "dead-job",
+            "task_id": task_id,
+            "pid": 99999999,
+            "cmd": [sys.executable, str(SCRIPT), "multimodel-intervention-step", "--task", task_id, "--json"],
+            "log_path": str(Path(env["HERMES_HOME"]) / "logs" / "taskpool-multimodel" / "dead-job.jsonl"),
+        }, ensure_ascii=False), encoding="utf-8")
+
+        dry = json.loads(run(env, "reconcile", "--json").stdout)
+        assert any(a["action"] == "false_running_multimodel_requeued" for a in dry["actions"])
+        assert "status: running" in task_path.read_text(encoding="utf-8")
+
+        written = json.loads(run(env, "reconcile", "--write", "--json").stdout)
+        assert any(a["action"] == "false_running_multimodel_requeued" for a in written["actions"])
+        updated = task_path.read_text(encoding="utf-8")
+        assert "status: pending" in updated
+        assert "claimed_by: ''" in updated
+        assert "retry_count: 1" not in updated
+
+
+def test_dispatch_dry_run_hard_execution_flow_boundary_has_no_actionable_prompt():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Publish external writeback", priority="P1", project="hermes")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: pending\nworkflow_stage: human_gate", 1)
+        task_path.write_text(text, encoding="utf-8")
+        before = task_path.read_text(encoding="utf-8")
+
+        dry = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+
+        assert dry["status"] == "OK"
+        assert dry["dry_run"] is True
+        assert dry["dispatchable"] is False
+        assert dry["blocked_by_execution_flow"] is True
+        assert "claim_command" not in dry
+        assert "execution_prompt" not in dry
+        assert "multimodel_intervention" not in dry
+        assert dry["blocked_actions"] == ["dispatch_claim_and_execute"]
+        assert dry["execution_flow_dispatch_decision"]["allowed_to_dispatch"] is False
+        assert dry["execution_flow_dispatch_decision"]["reason"] == "stage_boundary:human_gate"
+        assert task_path.read_text(encoding="utf-8") == before
+
+
+def test_execution_flow_dispatch_decision_normalizes_hard_boundaries():
+    mod = load_orchestrator_module()
+    payload = {
+        "enterprise_gate": {"status": "PASS"},
+        "evaluations": [
+            {"workflow_stage": " Pending ", "boundary_class": " External_Side_Effect "},
+        ],
+    }
+
+    decision = mod.execution_flow_dispatch_decision(payload)
+
+    assert decision == {"allowed_to_dispatch": False, "reason": "hard_boundary:external_side_effect"}
+
+
+def test_execution_flow_dispatch_decision_blocks_review_writeback_and_done_boundaries():
+    mod = load_orchestrator_module()
+    for stage in [" Review ", "writeback", "DONE"]:
+        payload = {
+            "enterprise_gate": {"status": "PASS"},
+            "evaluations": [
+                {"workflow_stage": stage, "boundary_class": "Evidence"},
+            ],
+        }
+
+        decision = mod.execution_flow_dispatch_decision(payload)
+
+        assert decision == {"allowed_to_dispatch": False, "reason": f"stage_boundary:{stage.strip().lower()}:evidence"}
+
+
 def test_command_add_work_task_binds_source_weighting_policy_before_dispatch_hook():
     td, _vault, env = make_env_and_vault()
     with td:

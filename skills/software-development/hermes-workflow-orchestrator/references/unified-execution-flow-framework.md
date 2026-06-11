@@ -203,6 +203,9 @@ Events should wake the flow. Scheduled jobs are watchdog/maintenance fallback, n
 The current production-safe entrypoints are:
 
 ```bash
+# Dispatch planning now consumes the unified gate without mutating state.
+python3 ~/.hermes/scripts/brain_task_orchestrator.py dispatch-dry-run --json
+
 # Canonical taskpool-owned entrypoint (preferred)
 python3 ~/.hermes/scripts/brain_task_orchestrator.py execution-flow-dry-run --limit 5 --json
 python3 ~/.hermes/scripts/brain_task_orchestrator.py execution-flow-dry-run --task <task-id> --json --fail-on-blocked
@@ -224,6 +227,14 @@ Contract:
 - report path safety: report generation may write the explicitly requested report file, but must not create parent directories or mutate taskpool/external state as a side effect;
 - summary consistency: any aggregate such as `blocked_or_missing_evidence` must count both explicit boundaries and missing evidence so it cannot disagree with `enterprise_gate.status`.
 
+Dispatch consumption rule:
+
+- `dispatch-dry-run` must include the task's `execution_flow` payload and an `execution_flow_dispatch_decision`.
+- Missing harness evidence on `pending` / pre-closeout tasks is not a stop-work signal; it becomes execution/harness requirements and remains safe to dispatch.
+- Hard boundaries (`permission`, `external_side_effect`, `destructive`, `credential`, `value_judgement`, `safety_legal`) and review/writeback/done/human-gate boundaries must block dispatch in dry-run rather than creating an execution prompt that could cross authority.
+- When a dispatch is blocked by the execution-flow decision, the dry-run payload must suppress actionable `claim_command`, `execution_prompt`, and nested intervention plans; return only safe inspection/remediation actions plus the `execution_flow` evidence packet.
+- Dispatch consumption is still read-only: it must not claim, transition, mark done, write adapters, or execute external side effects.
+
 Pitfall: a "read-only" evaluator can accidentally stop being read-only through convenience filesystem behavior. `mkdir(parents=True)` for a report path is still a filesystem mutation beyond the requested artifact and should be rejected unless a separate write contract authorizes it.
 
 ## MVP landing order
@@ -231,10 +242,11 @@ Pitfall: a "read-only" evaluator can accidentally stop being read-only through c
 1. Define `ExecutionFlowState` / `HarnessSpec` as derived fields; no lifecycle mutation. **Landed as read-only evaluator.**
 2. Build a read-only evaluator that prints next stage, safe actions, blocked actions, and missing evidence for existing tasks. **Landed: `~/.hermes/scripts/execution_flow_evaluator.py`.**
 3. Connect the evaluator to the taskpool-owned CLI surface. **Landed: `brain_task_orchestrator.py execution-flow-dry-run`; still read-only and uses canonical task ids/notes.**
-4. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
-5. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Dry-run gate landed; lifecycle mutation remains intentionally unopened.**
-6. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
-7. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
+4. Make `dispatch-dry-run` consume the execution-flow gate. **Landed: dispatch plans now include `execution_flow` and `execution_flow_dispatch_decision`; pre-closeout evidence gaps are safe-to-execute, while hard authority/writeback/destructive/human-gate boundaries block dispatch in dry-run.**
+5. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
+6. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Dry-run gate landed; lifecycle mutation remains intentionally unopened.**
+7. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
+8. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
 
 ## Anti-patterns
 

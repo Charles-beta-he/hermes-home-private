@@ -6241,7 +6241,10 @@ def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
     for t in iter_tasks():
         before = dict(t.fm)
         action = None
-        if t.is_expired(stamp):
+        if task_is_false_running_multimodel_claim(t):
+            t.fm.update({"status": "pending", "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp)})
+            action = "false_running_multimodel_requeued"
+        elif t.is_expired(stamp):
             t.fm.update({"status": "expired", "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp)})
             action = "expired"
         elif t.is_stale_claim(stamp):
@@ -7041,6 +7044,11 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
     # consume scarce recovery headroom, but they still surface as reclaim work in
     # the dispatch tick.
     def _is_live_active(active: Task) -> bool:
+        try:
+            if task_is_false_running_multimodel_claim(active):
+                return False
+        except Exception:
+            pass
         stale_check = getattr(active, "is_stale_claim", None)
         if callable(stale_check):
             try:
@@ -7188,9 +7196,44 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     if not nxt.get("next"):
         return {"status": "OK", "dry_run": True, "dispatchable": False, "message": nxt["message"]}
     row = nxt["next"]
+    flow_payload = command_execution_flow_dry_run(argparse.Namespace(task=[row["id"]], limit=1, report="", fail_on_blocked=False, json=True))
+    flow_decision = execution_flow_dispatch_decision(flow_payload)
     prompt = dispatch_prompt_for_row(row)
+    prompt = f"{prompt}\n\n## Unified Execution Flow Gate\n{json.dumps(flow_payload, ensure_ascii=False, indent=2)}\n"
+    if not flow_decision.get("allowed_to_dispatch"):
+        return {
+            "status": "OK",
+            "dry_run": True,
+            "dispatchable": False,
+            "blocked_by_execution_flow": True,
+            "next": row,
+            "blocked_actions": ["dispatch_claim_and_execute"],
+            "safe_actions": ["inspect execution_flow", "resolve boundary before claim", "rerun dispatch-dry-run after evidence or authorization"],
+            "execution_flow": flow_payload,
+            "execution_flow_dispatch_decision": flow_decision,
+            "safety": "dry-run only; blocked execution-flow decision suppresses claim command, execution prompt, and nested intervention plans",
+        }
     intervention = command_multimodel_intervention_dry_run(argparse.Namespace(task=row["id"], max_tasks=1, json=True))
-    return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "multimodel_intervention": intervention, "safety": "dry-run only; does not claim or execute"}
+    return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "multimodel_intervention": intervention, "execution_flow": flow_payload, "execution_flow_dispatch_decision": flow_decision, "safety": "dry-run only; does not claim or execute"}
+
+
+def execution_flow_dispatch_decision(flow_payload: dict[str, Any]) -> dict[str, Any]:
+    evaluations = flow_payload.get("evaluations") or []
+    if not evaluations:
+        return {"allowed_to_dispatch": False, "reason": "no_execution_flow_evaluation"}
+    hard_boundaries = {"permission", "external_side_effect", "destructive", "credential", "value_judgement", "safety_legal"}
+    for evaluation in evaluations:
+        boundary = str(evaluation.get("boundary_class") or "none").strip().lower()
+        stage = str(evaluation.get("workflow_stage") or "").strip().lower()
+        if stage == "human_gate":
+            return {"allowed_to_dispatch": False, "reason": "stage_boundary:human_gate"}
+        if boundary in hard_boundaries:
+            return {"allowed_to_dispatch": False, "reason": f"hard_boundary:{boundary}"}
+        if stage in {"review", "writeback", "done"} and boundary != "none":
+            return {"allowed_to_dispatch": False, "reason": f"stage_boundary:{stage}:{boundary}"}
+    if flow_payload.get("enterprise_gate", {}).get("status") == "BLOCKED":
+        return {"allowed_to_dispatch": True, "reason": "pre_closeout_evidence_gap_safe_to_execute"}
+    return {"allowed_to_dispatch": True, "reason": "execution_flow_pass"}
 
 
 def command_execution_flow_dry_run(args: argparse.Namespace) -> dict[str, Any]:
@@ -7600,6 +7643,31 @@ def load_multimodel_async_jobs(task_id: str = "") -> list[dict[str, Any]]:
         job["alive"] = multimodel_async_job_alive(job)
         jobs.append(job)
     return jobs
+
+
+def task_multimodel_async_jobs(task: "Task") -> list[dict[str, Any]]:
+    return load_multimodel_async_jobs(str(getattr(task, "id", "") or ""))
+
+
+def task_has_live_multimodel_async_job(task: "Task") -> bool:
+    return any(job.get("alive") for job in task_multimodel_async_jobs(task))
+
+
+def task_is_false_running_multimodel_claim(task: "Task") -> bool:
+    """Return True for async multimodel claims whose owning job is gone.
+
+    Foreground multimodel runs are intentionally not classified here; the guard
+    only applies when a durable async job receipt exists for the task and all of
+    those receipts resolve to non-live processes. This lets reconcile release the
+    control-plane claim without treating model/advisory output as completion.
+    """
+    fm = getattr(task, "fm", {}) or {}
+    if str(getattr(task, "status", fm.get("status", "")) or "") != "running":
+        return False
+    if str(fm.get("claimed_by") or "") != "hermes-multimodel":
+        return False
+    jobs = task_multimodel_async_jobs(task)
+    return bool(jobs) and not any(job.get("alive") for job in jobs)
 
 
 def start_multimodel_async_job(task_id: str, *, selected: dict[str, Any], allowlist_active: bool) -> dict[str, Any]:
