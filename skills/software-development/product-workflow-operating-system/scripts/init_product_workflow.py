@@ -102,6 +102,9 @@ def build_workspace(args: argparse.Namespace) -> Path:
 
     candidates = json.loads(read_template("task-candidates.json"))
     candidates["workflow_slug"] = slug
+    # Workspaces start with no taskpool side effects.  Users/agents must fill
+    # candidates deliberately before running product_workflow_taskpool_ingest.py.
+    candidates["candidates"] = []
     write_json(workdir / "tasks" / "task-candidates.json", candidates, args.overwrite)
 
     readme = f"""# {args.title}\n\nProduct workflow workspace created by `product-workflow-operating-system`.\n\n- Slug: `{slug}`\n- Chain: `{chain}`\n- Created: `{now}`\n- Authority boundary: local artifacts only; no taskpool enqueue, no external side effects.\n\nStart with `00-intake/intent-card.md`, then update `workflow-state.yaml.md` as stages pass gates.\n"""

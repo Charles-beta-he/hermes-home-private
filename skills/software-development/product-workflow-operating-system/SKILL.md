@@ -200,6 +200,8 @@ Ordinary news, broad market trends, or low-confidence product ideas should not b
 
 ## Scaffold Script
 
+Reference: `references/landing-and-commit-pitfalls.md` is a scoped packaging note for this workflow class. Scope: product-workflow skill/workspace landing. Applicability: use when committing templates, helper scripts, or scaffolded workflow workspaces. Anti-condition: do not apply it as a general repository rule outside this workflow class.
+
 Use the helper script when a request needs a durable workspace:
 
 ```bash
@@ -212,6 +214,22 @@ python3 ~/.hermes/skills/software-development/product-workflow-operating-system/
 Default output root: `~/.hermes/workflows/product/<slug>/`.
 
 The script creates the SSOT skeleton, evidence bundle, workflow state, decision log, and task candidate file. It does not contact external services and does not enqueue taskpool items.
+
+## Taskpool Ingest Bridge
+
+Reference: `references/taskpool-ingest-bridge.md` documents the governed bridge from product workflow workspaces into the canonical taskpool ingest path. Scope: product-workflow workspace candidates only. Applicability: use when `tasks/task-candidates.json` has deliberate, evidence-backed candidates. Anti-condition: do not ingest placeholder candidates, broad trend summaries, or unverified social-post claims.
+
+Dry-run:
+
+```bash
+python3 ~/.hermes/scripts/product_workflow_taskpool_ingest.py --slug my-product-idea --json
+```
+
+Write only when taskpool mutation is intended:
+
+```bash
+python3 ~/.hermes/scripts/product_workflow_taskpool_ingest.py --slug my-product-idea --write --json
+```
 
 ## Positive / Neighbor / Forbidden Routing Examples
 
