@@ -278,8 +278,8 @@ def test_reconcile_requeues_false_running_multimodel_claim_without_retry_penalty
         task_id, task_path = add_task(env, title="Multimodel certification target", priority="P1", project="hermes")
         text = task_path.read_text(encoding="utf-8")
         text = text.replace("status: pending", "status: running", 1)
-        text = text.replace("claimed_by: ''", "claimed_by: hermes-multimodel", 1)
-        text = text.replace("run_id: ''", "run_id: hermes-multimodel-test", 1)
+        text = text.replace("claimed_by: ", "claimed_by: hermes-multimodel", 1)
+        text = text.replace("run_id: ", "run_id: hermes-multimodel-test", 1)
         task_path.write_text(text, encoding="utf-8")
 
         jobs_dir = Path(env["HERMES_HOME"]) / "state" / "taskpool-multimodel" / "jobs"
@@ -301,7 +301,8 @@ def test_reconcile_requeues_false_running_multimodel_claim_without_retry_penalty
         assert any(a["action"] == "false_running_multimodel_requeued" for a in written["actions"])
         updated = task_path.read_text(encoding="utf-8")
         assert "status: pending" in updated
-        assert "claimed_by: ''" in updated
+        assert "claimed_by: " in updated
+        assert "claimed_by: hermes-multimodel" not in updated
         assert "retry_count: 1" not in updated
 
 
@@ -2598,6 +2599,35 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
         row = next(r for r in rows if r["id"] == task_id)
         assert row["status"] == "claimed"
         assert row["claimed_by"] == "hermes-autorun"
+
+
+def test_auto_claim_and_handoff_blocks_hard_execution_flow_boundary_before_claim():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        task_id, task_path = add_task(env, title="Publish external writeback", priority="P1", project="hermes")
+        note = task_path.read_text(encoding="utf-8")
+        note = note.replace("status: pending", "status: pending\nworkflow_stage: human_gate", 1)
+        task_path.write_text(note, encoding="utf-8")
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
+        before = task_path.read_text(encoding="utf-8")
+
+        result = json.loads(run(env, "auto-claim-and-handoff", "--actor", "hermes-autorun", "--ttl-minutes", "15", "--json", check=False).stdout)
+
+        assert result["status"] == "FAIL_CLOSED"
+        assert result["claimed"] is False
+        assert result["task_id"] == task_id
+        assert "execution_flow_dispatch_blocked" in result["reasons"]
+        assert result["execution_flow_dispatch_decision"]["allowed_to_dispatch"] is False
+        assert result["execution_flow_dispatch_decision"]["reason"] == "stage_boundary:human_gate"
+        assert "handoff" not in result
+        handoff_dir = state_dir / "auto_run_handoffs"
+        assert not handoff_dir.exists() or not list(handoff_dir.glob("*.md"))
+        assert not (state_dir / "auto_run_proof.jsonl").exists()
+        assert task_path.read_text(encoding="utf-8") == before
 
 
 

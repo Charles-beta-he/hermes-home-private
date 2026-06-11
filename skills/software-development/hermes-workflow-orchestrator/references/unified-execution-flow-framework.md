@@ -256,7 +256,7 @@ Pitfall: a "read-only" evaluator can accidentally stop being read-only through c
 4. Make `dispatch-dry-run` consume the execution-flow gate. **Landed: dispatch plans now include `execution_flow` and `execution_flow_dispatch_decision`; pre-closeout evidence gaps are safe-to-execute, while hard authority/writeback/destructive/human-gate boundaries block dispatch in dry-run.**
 5. Normalize existing build/test/browser/API outputs into `EvidenceBundle` records. **Partially landed through structured evidence detection.**
 6. Wire review closeout to require feature-specific harness evidence for work/UI/API tasks. **Landed: `review -> done` lifecycle gate now consumes execution-flow proof requirements and blocks work/UI/API closeout when browser/API/command proof is missing; safe dispatch remains allowed before closeout.**
-7. Add event-driven claim/handoff integration after dry-run proves no competing source of truth.
+7. Add event-driven claim/handoff integration after dry-run proves no competing source of truth. **Landed for `auto-claim-and-handoff`: actual claim/handoff now checks `execution_flow_dispatch_decision` before write guard and suppresses claim/handoff/proof writes on hard execution-flow boundaries.**
 8. Add write-back executors one adapter at a time with digest-bound authorization and read-back.
 
 ## Anti-patterns

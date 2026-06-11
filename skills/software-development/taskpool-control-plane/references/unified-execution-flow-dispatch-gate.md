@@ -53,6 +53,19 @@ Recommended RED cases:
 - Hard boundaries are normalized and blocked: e.g. `boundary_class: " External_Side_Effect "`.
 - Review/writeback/done stages with evidence/permission boundaries are blocked.
 
+## Claim/handoff consumption rule
+
+Scope: taskpool autorun claim/handoff, after eligibility selection and before any claim/handoff/proof-log mutation.
+Applicability: use when `auto-claim-and-handoff` is about to mutate task state or create handoff artifacts.
+Anti-condition: do not use this rule to block safe pre-closeout execution gaps; those remain dispatchable and become worker proof requirements.
+
+`auto-claim-and-handoff` must run the execution-flow dispatch decision before write guard and before claim mutation:
+
+- If `allowed_to_dispatch=false`, return `FAIL_CLOSED` with `claimed=false`.
+- Do not call claim, do not create handoff files, and do not append autorun proof events.
+- Return `execution_flow` and `execution_flow_dispatch_decision` so the operator can resolve the boundary.
+- If allowed, preserve existing write-guard, claim, read-back, handoff, and proof-log gates.
+
 ## Closeout consumption rule
 
 Scope: taskpool lifecycle closeout after the dispatch gate has allowed execution.

@@ -8898,6 +8898,19 @@ def command_auto_claim_and_handoff(args: argparse.Namespace) -> dict[str, Any]:
     task = find_task(str(eligibility["task_id"]))
     if not task.is_dispatchable():
         return {"status": "PASS", "claimed": False, "eligible": False, "reasons": ["task_not_dispatchable_after_eligibility"], "task_id": task.id, "safety": "fail-closed; no execution"}
+    flow_payload = command_execution_flow_dry_run(argparse.Namespace(task=[task.id], limit=1, report="", fail_on_blocked=False, json=True))
+    flow_decision = execution_flow_dispatch_decision(flow_payload)
+    if not flow_decision.get("allowed_to_dispatch"):
+        return {
+            "status": "FAIL_CLOSED",
+            "claimed": False,
+            "eligible": True,
+            "task_id": task.id,
+            "reasons": ["execution_flow_dispatch_blocked"],
+            "execution_flow": flow_payload,
+            "execution_flow_dispatch_decision": flow_decision,
+            "safety": "fail-closed; no claim, no handoff, no execution",
+        }
     try:
         write_guard = guard_autorun_claim_and_handoff(task.id, args.actor)
     except PermissionError as exc:
