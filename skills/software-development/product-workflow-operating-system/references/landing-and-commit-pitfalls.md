@@ -26,6 +26,12 @@ Scope: reusable landing details for product-workflow skill/workspace changes. Ap
    - Run the scaffold script in `--dry-run` and real smoke mode.
    - Check staged files and commit only scoped changes.
 
+5. **Noisy Hermes-home working tree during scoped commits**
+   - `~/.hermes` often contains unrelated runtime notes, dashboards, screenshots, profile syncs, and skill updates from other lanes.
+   - Before committing product-workflow changes, inspect broad status for awareness, then stage only the explicit files for the current request.
+   - After commit, verify the scoped path set is clean with `git status --short <changed-paths...>` rather than claiming the whole Hermes home is clean.
+   - Report unrelated dirty files only if they affect the current landing or would be accidentally staged.
+
 ## Minimal closeout checklist
 
 - [ ] Root skill contains scope/applicability/anti-condition.
@@ -33,3 +39,4 @@ Scope: reusable landing details for product-workflow skill/workspace changes. Ap
 - [ ] Template wording avoids secret-like scanner triggers.
 - [ ] Ignored workspace artifacts are either force-added intentionally or deliberately left untracked.
 - [ ] Verification command output is captured before final reporting.
+- [ ] Scoped path status is clean after commit, even if unrelated Hermes-home files remain dirty.

@@ -174,6 +174,41 @@ external_side_effects:
             ])
             self.assertEqual(evaluation["auto_decision"]["decision"], "hold")
 
+    def test_declared_product_workflow_harness_fields_drive_missing_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            task = write_task(
+                Path(tmp),
+                "shipping.md",
+                """
+id: t-shipping
+ title: Product workflow shipping packet
+status: review
+lane: work
+priority: P1
+workflow_stage: review
+completion_boundary: shipping_packet
+harness_surfaces:
+  - command
+  - browser
+  - api
+  - security
+  - performance
+required_artifacts:
+  - security_audit
+  - performance_audit
+""".replace("\n title:", "\ntitle:"),
+                "AI-code shipping closeout requires full harness proof.",
+            )
+            proc = self.run_eval("--task-file", str(task), "--json")
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            evaluation = json.loads(proc.stdout)["evaluations"][0]
+            self.assertEqual(evaluation["workflow_stage"], "review")
+            self.assertEqual(evaluation["harness_spec"]["completion_boundary"], "shipping_packet")
+            self.assertIn("browser_or_ui_surface_proof", evaluation["missing_evidence"])
+            self.assertIn("api_or_backend_readback_proof", evaluation["missing_evidence"])
+            self.assertIn("security_audit_proof", evaluation["missing_evidence"])
+            self.assertIn("performance_audit_proof", evaluation["missing_evidence"])
+
     def test_report_does_not_create_parent_directories(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)

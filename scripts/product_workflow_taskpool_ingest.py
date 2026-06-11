@@ -37,6 +37,9 @@ REQUIRED_CANDIDATE_FIELDS = {
     "evidence_bundle",
 }
 PLACEHOLDER_CHARS = ("<", ">")
+VALID_WORKFLOW_STAGES = {"", "evidence", "execute", "review", "writeback", "human_gate", "done"}
+VALID_COMPLETION_BOUNDARIES = {"", "document_only", "taskpool_candidate", "implementation_ready", "shipping_packet", "launched_observing"}
+VALID_HARNESS_SURFACES = {"command", "ui", "api", "browser", "security", "performance", "metrics"}
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -78,6 +81,22 @@ def csv_items(value: Any) -> list[str]:
     return [item.strip() for item in str(value or "").split(",") if item.strip()]
 
 
+def boolify(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def normalize_candidate_optional_fields(candidate: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(candidate)
+    for field in ("harness_surfaces", "required_artifacts"):
+        if field in normalized:
+            normalized[field] = csv_items(normalized.get(field))
+    if "external_side_effects" in normalized:
+        normalized["external_side_effects"] = boolify(normalized.get("external_side_effects"))
+    return normalized
+
+
 def normalize_evidence_bundle(value: Any, workspace: Path) -> Any:
     """Resolve relative local evidence refs against the workspace.
 
@@ -117,6 +136,16 @@ def validate_candidate(candidate: dict[str, Any], index: int) -> list[str]:
     priority = str(candidate.get("priority") or "").upper()
     if priority and priority not in {"P0", "P1", "P2", "P3"}:
         errors.append(f"candidate[{index}] invalid priority: {priority}")
+    workflow_stage = str(candidate.get("workflow_stage") or "").strip()
+    if workflow_stage not in VALID_WORKFLOW_STAGES:
+        errors.append(f"candidate[{index}] invalid workflow_stage: {workflow_stage}")
+    completion_boundary = str(candidate.get("completion_boundary") or "").strip()
+    if completion_boundary not in VALID_COMPLETION_BOUNDARIES:
+        errors.append(f"candidate[{index}] invalid completion_boundary: {completion_boundary}")
+    harness_surfaces = set(csv_items(candidate.get("harness_surfaces")))
+    invalid_surfaces = sorted(harness_surfaces - VALID_HARNESS_SURFACES)
+    if invalid_surfaces:
+        errors.append(f"candidate[{index}] invalid harness_surfaces: {invalid_surfaces}")
     return errors
 
 
@@ -145,7 +174,7 @@ def build_payload(workspace: Path) -> tuple[dict[str, Any], list[str]]:
         if not isinstance(raw, dict):
             errors.append(f"candidate[{idx}] must be object")
             continue
-        candidate = dict(raw)
+        candidate = normalize_candidate_optional_fields(raw)
         candidate["evidence_bundle"] = normalize_evidence_bundle(candidate.get("evidence_bundle"), workspace)
         errors.extend(validate_candidate(candidate, idx))
         normalized_candidates.append(candidate)

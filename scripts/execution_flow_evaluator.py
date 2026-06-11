@@ -102,6 +102,14 @@ def has_any(entries: list[str], terms: tuple[str, ...]) -> bool:
     return any(term in lowered for term in terms)
 
 
+def csv_entries(value: Any) -> list[str]:
+    if isinstance(value, list):
+        raw = value
+    else:
+        raw = str(value or "").split(",")
+    return [str(item).strip().lower() for item in raw if str(item).strip()]
+
+
 SAFE_DECISION_OPTION_MAP = {
     "needs_more_evidence": {"decision": "needs_more_evidence", "label": "退回补证据", "resumeMode": "repair"},
     "hold": {"decision": "hold", "label": "暂停", "resumeMode": "hold"},
@@ -163,10 +171,21 @@ def evaluate(path: Path) -> FlowEvaluation:
     hint_fm = {k: v for k, v in fm.items() if k != "evidence"}
     combined = "\n".join([title, body, json.dumps(hint_fm, ensure_ascii=False)])
     entries = evidence_entries(fm, body)
+    harness_surfaces = set(csv_entries(fm.get("harness_surfaces")))
+    required_artifacts = set(csv_entries(fm.get("required_artifacts")))
+    completion_boundary = str(fm.get("completion_boundary") or "").strip().lower()
 
-    is_impl = bool(IMPLEMENTATION_HINTS.search(combined)) or lane == "work"
-    needs_ui = bool(UI_HINTS.search(combined))
-    needs_api = bool(API_HINTS.search(combined))
+    is_impl = (
+        bool(IMPLEMENTATION_HINTS.search(combined))
+        or lane == "work"
+        or "command" in harness_surfaces
+        or completion_boundary in {"implementation_ready", "shipping_packet", "launched_observing"}
+    )
+    needs_ui = bool(UI_HINTS.search(combined)) or bool(harness_surfaces.intersection({"ui", "browser"}))
+    needs_api = bool(API_HINTS.search(combined)) or "api" in harness_surfaces
+    needs_security = "security" in harness_surfaces or "security_audit" in required_artifacts
+    needs_performance = "performance" in harness_surfaces or "performance_audit" in required_artifacts
+    needs_metrics = "metrics" in harness_surfaces or "metric_readback" in required_artifacts
     has_side_effect = bool(SIDE_EFFECT_HINTS.search(combined)) or bool(fm.get("external_side_effects"))
 
     missing: list[str] = []
@@ -178,6 +197,12 @@ def evaluate(path: Path) -> FlowEvaluation:
         missing.append("api_or_backend_readback_proof")
     if status == "review" and is_impl and not has_any(entries, ("command:",)):
         missing.append("command_proof_for_review_closeout")
+    if needs_security and not has_any(entries, ("security", "security_audit")):
+        missing.append("security_audit_proof")
+    if needs_performance and not has_any(entries, ("performance", "perf", "performance_audit")):
+        missing.append("performance_audit_proof")
+    if needs_metrics and not has_any(entries, ("metric", "metrics", "readback", "read-back")):
+        missing.append("metric_readback_proof")
 
     boundary = "none"
     blocked_actions: list[str] = []
@@ -207,8 +232,10 @@ def evaluate(path: Path) -> FlowEvaluation:
 
     harness_spec = {
         "required": bool(is_impl or needs_ui or needs_api),
-        "surfaces": [s for s, needed in (("ui", needs_ui), ("api", needs_api), ("command", is_impl)) if needed],
+        "surfaces": sorted(harness_surfaces.union(s for s, needed in (("ui", needs_ui), ("api", needs_api), ("command", is_impl), ("security", needs_security), ("performance", needs_performance), ("metrics", needs_metrics)) if needed)),
         "required_artifacts": [],
+        "declared_required_artifacts": sorted(required_artifacts),
+        "completion_boundary": completion_boundary,
         "disallow": ["mock_acceptance_without_explicit_allowance"],
     }
     if is_impl:
@@ -217,6 +244,15 @@ def evaluate(path: Path) -> FlowEvaluation:
         harness_spec["required_artifacts"].extend(["screenshot", "console_log", "target_surface_anchor"])
     if needs_api:
         harness_spec["required_artifacts"].append("api_readback")
+    if needs_security:
+        harness_spec["required_artifacts"].append("security_audit")
+    if needs_performance:
+        harness_spec["required_artifacts"].append("performance_audit")
+    if needs_metrics:
+        harness_spec["required_artifacts"].append("metric_readback")
+    for artifact in sorted(required_artifacts):
+        if artifact not in harness_spec["required_artifacts"]:
+            harness_spec["required_artifacts"].append(artifact)
 
     closeout_ready = status in {"review", "done"} and not missing and boundary in {"none"}
     allowed = boundary == "none" and status not in {"done", "archived"}

@@ -1208,6 +1208,8 @@ def parse_yamlish(raw: str) -> dict[str, Any]:
 def yaml_scalar(v: Any) -> str:
     if v is None:
         return ""
+    if isinstance(v, bool):
+        return "true" if v else "false"
     if isinstance(v, list):
         return "[" + ", ".join(json.dumps(str(x), ensure_ascii=False) for x in v) + "]"
     s = str(v)
@@ -1245,6 +1247,7 @@ def render_frontmatter(fm: dict[str, Any]) -> str:
         "work_closeout_phase", "depends_on_task", "manual_dispatch_gate", "manual_dispatch_released",
         "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract",
         "requires_multimodel", "multimodel_reason", "expected_participants", "truth_gate", "evidence_bundle",
+        "workflow_stage", "completion_boundary", "harness_surfaces", "required_artifacts", "external_side_effects",
         "required_authority", "max_authority", "permission_tier", "write_surfaces", "completion_gate", "lane_semantics",
         "file_access_boundary", "allowed_read_paths", "allowed_write_paths", "forbidden_file_patterns", "evidence_egress_policy",
         "mission_schema_version", "mission_id", "mission_title", "mission_objective", "mission_constraints",
@@ -2752,6 +2755,11 @@ class Task:
             "expected_participants": split_csv_frontmatter_value(self.fm.get("expected_participants")),
             "truth_gate": str(self.fm.get("truth_gate") or ""),
             "evidence_bundle": str(self.fm.get("evidence_bundle") or ""),
+            "workflow_stage": str(self.fm.get("workflow_stage") or ""),
+            "completion_boundary": str(self.fm.get("completion_boundary") or ""),
+            "harness_surfaces": list_value(self.fm.get("harness_surfaces")),
+            "required_artifacts": list_value(self.fm.get("required_artifacts")),
+            "external_side_effects": bool(self.fm.get("external_side_effects")),
             "multimodel_status": task_multimodel_status(self),
             "multimodel_ratification_artifact": task_multimodel_artifact(self),
             "multimodel_passed": task_multimodel_passed(self),
@@ -3844,6 +3852,33 @@ def evidence_is_structured(e: str) -> bool:
     return False
 
 
+NEGATIVE_CLOSEOUT_EVIDENCE_MARKERS = (
+    "closeout-gap",
+    "do-not-mark-done",
+    "do_not_mark_done",
+    "do not mark done",
+    "do-not-close",
+    "do_not_close",
+    "do not close",
+)
+
+
+def evidence_is_negative_closeout_marker(e: str) -> bool:
+    """Return True for structured evidence that is explicitly anti-closeout.
+
+    Some repair/scanner tasks write structured proof refs such as
+    ``proof:closeout-gap/do-not-mark-done``.  The ``proof:`` prefix makes those
+    entries syntactically valid audit evidence, but their semantics are the
+    opposite of completion proof.  Treat them as a hard fail-closed marker for
+    review->done automation instead of letting broad ``proof`` token checks close
+    the task.
+    """
+    text = str(e or "").strip().lower()
+    if not text:
+        return False
+    return any(marker in text for marker in NEGATIVE_CLOSEOUT_EVIDENCE_MARKERS)
+
+
 def _evidence_blob(evidence: list[str]) -> str:
     return "\n".join(str(e or "").strip().lower() for e in evidence)
 
@@ -4314,6 +4349,9 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     invalid_evidence = [e for e in evidence if not evidence_is_structured(str(e))]
     if invalid_evidence:
         failures.append(f"invalid evidence shape: {invalid_evidence}; use command:/file:/search:/brainctl:/artifact:/url:/proof: prefixes; bare absolute paths must be artifact:/... refs")
+    negative_closeout_evidence = [str(e) for e in evidence if evidence_is_negative_closeout_marker(str(e))]
+    if to_status == "done" and negative_closeout_evidence:
+        failures.append(f"negative_closeout_evidence_present: {negative_closeout_evidence}; gather repair evidence before review->done closeout")
     if to_status == "done" and evidence:
         failures.extend(completion_gate_failures(task, evidence))
     if to_status == "done" and task_multimodel_certification_reasons(task) and not task_multimodel_passed(task):
@@ -4420,7 +4458,7 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
             "task creation requires explicit priority/dependency/triage metadata; "
             f"missing={missing_required_fields}"
         )
-    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, priority_layer=normalized_priority_layer, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", parallel_boundary=getattr(args, "parallel_boundary", "") or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), objective=getattr(args, "objective", ""), accept=getattr(args, "accept", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""), dependency_order=",".join(dependency_order), multimodel_triage_result=normalized_multimodel_triage_result, multimodel_reason=getattr(args, "multimodel_reason", ""), expected_participants=getattr(args, "expected_participants", ""), truth_gate=getattr(args, "truth_gate", ""), evidence_bundle=getattr(args, "evidence_bundle", ""))
+    validate_clean_values(title=title, layer=args.layer, status=args.status, priority=args.priority, priority_layer=normalized_priority_layer, project=args.project, workflow_contract=args.workflow_contract, workspace=args.workspace or "", parallel_boundary=getattr(args, "parallel_boundary", "") or "", concepts=args.concepts or "task", lane=lane_arg, architecture_target=getattr(args, "architecture_target", ""), objective=getattr(args, "objective", ""), accept=getattr(args, "accept", ""), capability_delta=getattr(args, "capability_delta", ""), anti_drift_check=getattr(args, "anti_drift_check", ""), acceptance_evidence=getattr(args, "acceptance_evidence", ""), dependency_order=",".join(dependency_order), multimodel_triage_result=normalized_multimodel_triage_result, multimodel_reason=getattr(args, "multimodel_reason", ""), expected_participants=getattr(args, "expected_participants", ""), truth_gate=getattr(args, "truth_gate", ""), evidence_bundle=getattr(args, "evidence_bundle", ""), workflow_stage=getattr(args, "workflow_stage", ""), completion_boundary=getattr(args, "completion_boundary", ""), harness_surfaces=getattr(args, "harness_surfaces", ""), required_artifacts=getattr(args, "required_artifacts", ""))
     created = now()
     expires = parse_dt(args.expires_at) if args.expires_at else created + timedelta(days=args.expires_days)
     slug = slugify(title)
@@ -4463,6 +4501,11 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "expected_participants": split_csv_frontmatter_value(getattr(args, "expected_participants", "")),
         "truth_gate": getattr(args, "truth_gate", "") or "",
         "evidence_bundle": getattr(args, "evidence_bundle", "") or "",
+        "workflow_stage": getattr(args, "workflow_stage", "") or "",
+        "completion_boundary": getattr(args, "completion_boundary", "") or "",
+        "harness_surfaces": split_csv_frontmatter_value(getattr(args, "harness_surfaces", "")),
+        "required_artifacts": split_csv_frontmatter_value(getattr(args, "required_artifacts", "")),
+        "external_side_effects": bool(getattr(args, "external_side_effects", False)),
         "claimed_by": "",
         "claim_expires_at": "",
         "run_id": "",
@@ -4473,6 +4516,15 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "evidence": [],
         "concepts": concepts,
     }
+    for optional_execution_flow_key in (
+        "workflow_stage",
+        "completion_boundary",
+        "harness_surfaces",
+        "required_artifacts",
+        "external_side_effects",
+    ):
+        if not fm.get(optional_execution_flow_key):
+            fm.pop(optional_execution_flow_key, None)
     apply_permission_defaults(fm)
     ensure_mission_envelope_defaults(
         fm,
@@ -5403,6 +5455,7 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
         # gate is PASS + LOOP_DONE.
         should_trigger_certification = (
             bool(base_failures)
+            and not any(evidence_is_negative_closeout_marker(str(e)) for e in base_evidence)
             and not any("manual_review_final_landed=false requires final landed evidence" in str(f) for f in base_failures)
             and task_multimodel_intervention_required(task)
             and not task_multimodel_passed(task)
@@ -9953,6 +10006,14 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     # not block the canonical taskpool until remote dispatch is explicitly enabled.
     for item in edge_nodes.get("errors", []):
         warnings.append(f"edge node error (dispatch disabled): {item}")
+    # Sidecar layer selfcheck (observability-only; never blocks taskpool)
+    try:
+        from session_sidecar.consumer import selfcheck_probe
+        sidecar_health = selfcheck_probe()
+        if sidecar_health.get("status") == "WARN":
+            warnings.append(f"sidecar {sidecar_health.get('reason', '')}")
+    except Exception as exc:
+        warnings.append(f"sidecar selfcheck unavailable: {exc}")
     status = "PASS" if not failures else "FAIL"
     return {"status": status, "task_count": len(iter_tasks()), "failures": failures, "warnings": warnings, "boundary": boundary, "semantic_control_plane": semantic_cp, "edge_nodes": edge_nodes, "paths": {"dashboard": str(DASHBOARD), "control_center": str(CONTROL_CENTER), "sorted_pool": str(SORTED_POOL), "inbox": str(INBOX)}}
 
@@ -9996,6 +10057,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--expected-participants", default="")
     ap.add_argument("--truth-gate", default="")
     ap.add_argument("--evidence-bundle", default="")
+    ap.add_argument("--workflow-stage", default="", choices=["", "evidence", "execute", "review", "writeback", "human_gate", "done"])
+    ap.add_argument("--completion-boundary", default="", choices=["", "document_only", "taskpool_candidate", "implementation_ready", "shipping_packet", "launched_observing"])
+    ap.add_argument("--harness-surfaces", default="")
+    ap.add_argument("--required-artifacts", default="")
+    ap.add_argument("--external-side-effects", action="store_true")
     ap.add_argument("--layer", default="L3")
     ap.add_argument("--workflow-contract", default=DEFAULT_WORKFLOW)
     ap.add_argument("--workspace", default="")

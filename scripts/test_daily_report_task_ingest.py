@@ -269,6 +269,44 @@ def test_ingest_dedupes_same_repo_signal_across_reports():
         assert second["actions"][0]["reason"] == "repo_already_analyzed", second
 
 
+def test_ingest_carries_product_workflow_execution_flow_fields():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        vault = make_vault(root)
+        report_path = root / "product-workflow.md"
+        report_path.write_text("# product workflow evidence", encoding="utf-8")
+        proposal = build_payload(report_path)
+        candidate = proposal["candidates"][0]
+        candidate.update({
+            "dedupe_key": "product-workflow-execution-flow-fields",
+            "title": "发布 Product Workflow GTM writeback gate",
+            "priority": "P2",
+            "priority_layer": "product-workflow:p2:launch-writeback",
+            "concepts": ["product-workflow", "execution-flow"],
+            "workflow_stage": "writeback",
+            "completion_boundary": "launched_observing",
+            "harness_surfaces": ["command", "metrics"],
+            "required_artifacts": ["command_output", "metric_readback"],
+            "external_side_effects": True,
+            "lane": "auto",
+            "requires_multimodel": False,
+            "expected_participants": [],
+            "multimodel_reason": "",
+        })
+        proposal_path = root / "product-workflow.tasks.json"
+        proposal_path.write_text(json.dumps(proposal, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        state_path = root / "daily_report_ingest_state.json"
+
+        result = run_ingest(proposal_path, vault, state_path, write=True)
+        assert result["created_count"] == 1, result
+        created_text = Path(result["actions"][0]["task_path"]).read_text(encoding="utf-8")
+        assert "workflow_stage: writeback" in created_text
+        assert "completion_boundary: launched_observing" in created_text
+        assert "harness_surfaces:" in created_text and "command" in created_text and "metrics" in created_text
+        assert "required_artifacts:" in created_text and "metric_readback" in created_text
+        assert "external_side_effects: true" in created_text
+
+
 def main() -> int:
     test_ingest_creates_task_and_is_idempotent_per_report()
     test_ingest_fail_closed_on_missing_governance_fields()
@@ -277,6 +315,7 @@ def main() -> int:
     test_ingest_blocks_eligible_multimodel_candidate_with_missing_local_evidence_bundle()
     test_ingest_accepts_list_and_object_fields_from_browser_sidecar()
     test_ingest_dedupes_same_repo_signal_across_reports()
+    test_ingest_carries_product_workflow_execution_flow_fields()
     print("PASS")
     return 0
 

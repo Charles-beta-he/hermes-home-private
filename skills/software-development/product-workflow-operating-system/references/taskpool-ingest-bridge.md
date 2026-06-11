@@ -34,6 +34,31 @@ The workspace must contain:
 - Relative `evidence_bundle` paths are resolved against the workspace before delegating to the canonical ingest bridge.
 - Empty candidate lists return `NO_CANDIDATES` unless `--allow-empty` is used.
 - Actual task creation is still controlled by `daily_report_task_ingest.py`, including duplicate checks, multimodel normalization, evidence gates, and `brain_task_orchestrator.py add`.
+- Product workflow execution-flow fields are validated and passed through when present: `workflow_stage`, `completion_boundary`, `harness_surfaces`, `required_artifacts`, and `external_side_effects`.
+
+## Execution-flow field contract
+
+Use these optional fields when downstream dispatch/claim/closeout needs precise gates:
+
+```json
+{
+  "workflow_stage": "evidence|execute|review|writeback|human_gate|done",
+  "completion_boundary": "document_only|taskpool_candidate|implementation_ready|shipping_packet|launched_observing",
+  "harness_surfaces": ["command", "ui", "api", "browser", "security", "performance", "metrics"],
+  "required_artifacts": ["command_output", "browser_screenshot", "api_readback", "security_audit", "performance_audit", "metric_readback"],
+  "external_side_effects": false
+}
+```
+
+These fields flow through:
+
+```text
+product_workflow_taskpool_ingest.py
+  → daily_report_task_ingest.py
+  → brain_task_orchestrator.py add
+  → task frontmatter
+  → execution_flow_evaluator.py / dispatch-dry-run / auto-claim / closeout gate
+```
 
 ## Verification sequence
 

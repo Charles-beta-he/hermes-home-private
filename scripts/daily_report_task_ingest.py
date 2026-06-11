@@ -201,11 +201,27 @@ def csvify(value: Any) -> str:
     return str(value or "").strip()
 
 
+def boolify(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def normalize_optional_product_workflow_fields(candidate: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(candidate)
+    for field in ("harness_surfaces", "required_artifacts"):
+        if field in normalized:
+            normalized[field] = csvify(normalized.get(field))
+    if "external_side_effects" in normalized:
+        normalized["external_side_effects"] = boolify(normalized.get("external_side_effects"))
+    return normalized
+
+
 def normalize_candidate(report_payload: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
     missing = sorted(field for field in REQUIRED_FIELDS if not candidate.get(field))
     if missing:
         raise ValueError(f"candidate missing required governance fields: {missing}")
-    normalized = dict(candidate)
+    normalized = normalize_optional_product_workflow_fields(candidate)
     normalized["report_id"] = candidate.get("report_id") or report_payload.get("report_id") or Path(report_payload.get("report_path", "report")).stem
     normalized["concepts"] = csvify(candidate.get("concepts"))
     normalized["dependency_order"] = csvify(candidate.get("dependency_order"))
@@ -266,6 +282,14 @@ def build_add_command(candidate: dict[str, Any]) -> list[str]:
         candidate["evidence_bundle"],
         "--truth-gate",
         candidate.get("truth_gate", "") or "",
+        "--workflow-stage",
+        candidate.get("workflow_stage", "") or "",
+        "--completion-boundary",
+        candidate.get("completion_boundary", "") or "",
+        "--harness-surfaces",
+        candidate.get("harness_surfaces", "") or "",
+        "--required-artifacts",
+        candidate.get("required_artifacts", "") or "",
         "--expected-participants",
         candidate.get("expected_participants", "") or "",
         "--multimodel-reason",
@@ -276,6 +300,8 @@ def build_add_command(candidate: dict[str, Any]) -> list[str]:
     ]
     if candidate.get("requires_multimodel"):
         cmd.append("--requires-multimodel")
+    if candidate.get("external_side_effects"):
+        cmd.append("--external-side-effects")
     expires_days = candidate.get("expires_days")
     if expires_days is not None:
         cmd.extend(["--expires-days", str(expires_days)])

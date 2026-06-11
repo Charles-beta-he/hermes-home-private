@@ -219,6 +219,10 @@ The script creates the SSOT skeleton, evidence bundle, workflow state, decision 
 
 Reference: `references/taskpool-ingest-bridge.md` documents the governed bridge from product workflow workspaces into the canonical taskpool ingest path. Scope: product-workflow workspace candidates only. Applicability: use when `tasks/task-candidates.json` has deliberate, evidence-backed candidates. Anti-condition: do not ingest placeholder candidates, broad trend summaries, or unverified social-post claims.
 
+Reference: `references/execution-flow-alignment.md` maps product workflow stages and candidate fields to taskpool's unified execution-flow gate. Use it when product workflow candidates will later be dispatched, claimed, reviewed, or closed out; carry `workflow_stage`, completion boundary, harness surfaces, external-side-effect intent, and structured proof expectations through the canonical taskpool add path.
+
+Reference: `references/safe-taskpool-smoke-verification.md` captures the safe verification pattern for product-workflow → taskpool → execution-flow smoke tests. Use file-backed JSON parsing instead of shell pipes into `python3 -c`; safety scanning may correctly block pipe-to-interpreter shapes even when the data is local JSON.
+
 Dry-run:
 
 ```bash
