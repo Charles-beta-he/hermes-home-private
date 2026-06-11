@@ -392,6 +392,7 @@ For a structured from-zero-to-one learning path covering browser tools → dogfo
 
 ## Integration with Other Skills
 
+- **hermes-workflow-orchestrator**: For the 大一统 execution-flow framework, harness engineering is the proof layer: derive HarnessSpec, run HarnessRun, normalize EvidenceBundle, and let taskpool/verifier retain closeout authority. See `hermes-workflow-orchestrator/references/unified-execution-flow-framework.md`.
 - **dogfood**: Core testing methodology for exploratory QA
 - **visual-regression**: Screenshot comparison for detecting UI changes
 - **uimax-audit**: Quality scoring across 6 dimensions

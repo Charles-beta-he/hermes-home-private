@@ -26,6 +26,7 @@ metadata:
 
 ## Recent operational references
 
+- `references/unified-execution-flow-framework.md` — canonical 大一统 execution-flow framework for merging Hermes, workflow orchestration, taskpool lifecycle, and harness engineering: Taskpool owns truth; Workflow owns order; Hermes owns action; Harness owns proof; Verifier owns closeout; Human gate owns permission.
 - `references/control-tower-architecture-governance.md` — durable pattern for Hermes Control Tower / visual workflow control-plane design: event-driven first, one canonical Control Tower Ledger, adapters/projections instead of competing SSOTs, evidence maturity, human gates, worker boundary, ADR/schema-first implementation, and the "全盘推进至需要人工介入" stop condition.
 - `references/control-tower-command-and-schema-patterns.md` — follow-on Control Tower pattern after the read-only slice: proposal-only command registry, L2+ human-inbox requests, approval lifecycle boundary with no execution, and OpenSpec-style schema/workflow graph lessons adapted without adding a second fact source.
 - `references/control-tower-execution-policy-projection.md` — Phase 4B-style non-executing execution-policy projection pattern: review dry-run executor plans, surface `allowed_to_execute=false` / `writes_enabled=false` / rollback preview, and stop before real executor/write-through adapter authority.
