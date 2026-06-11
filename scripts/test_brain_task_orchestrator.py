@@ -933,7 +933,16 @@ def test_valid_mission_envelope_preserves_work_priority_and_lifecycle_closeout_g
         passed_row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == mission_id)
         assert passed_row["multimodel_passed"] is True, passed_row
 
-        done = json.loads(run(env, "done", mission_id, "--actor", "tester", "--evidence", "artifact:mission-proof", "--json").stdout)
+        done = json.loads(run(
+            env,
+            "done",
+            mission_id,
+            "--actor",
+            "tester",
+            "--evidence",
+            "command: mission verifier PASS; proof:browser mission dashboard readback PASS; proof:api mission ledger readback PASS; artifact:mission-proof",
+            "--json",
+        ).stdout)
         assert done["status"] == "OK", done
 
         dash = json.loads(run(env, "dashboard", "--write", "--json").stdout)
@@ -1012,7 +1021,16 @@ def test_add_list_claim_release_dashboard_inbox_selfcheck():
         assert running2["to_status"] == "running"
         review2 = json.loads(run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: unit-test PASS", "--json").stdout)
         assert review2["to_status"] == "review"
-        done = json.loads(run(env, "done", task_id, "--actor", "tester", "--evidence", "command: final unit-test PASS", "--json").stdout)
+        done = json.loads(run(
+            env,
+            "done",
+            task_id,
+            "--actor",
+            "tester",
+            "--evidence",
+            "command: final unit-test PASS; proof:browser local task console readback PASS; proof:api task ledger readback PASS",
+            "--json",
+        ).stdout)
         assert done["status"] == "OK"
         proof = json.loads(run(env, "proof-check", "--json").stdout)
         assert proof["status"] == "PASS", proof
