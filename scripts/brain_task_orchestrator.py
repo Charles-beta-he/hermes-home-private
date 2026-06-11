@@ -336,6 +336,107 @@ def event_hook_multimodel_route(event: str, task_id: str = "") -> dict[str, Any]
     return {**route, "reason": "advisory_low_priority_deferred"}
 
 
+def taskpool_mission_bridge_target() -> str:
+    """Resolve the governed mission that should receive Hermes taskpool signals."""
+
+    explicit = str(os.environ.get("HERMES_TASKPOOL_MISSION_BRIDGE_ID") or "").strip()
+    if explicit:
+        return explicit
+    try:
+        from hermes_cli.missions import MissionStore
+
+        store = MissionStore(HERMES_HOME / "missions.db")
+        candidates = []
+        for row in store.board():
+            if row.get("status") not in {"active", "blocked_on_human"}:
+                continue
+            mission = store.get_mission(str(row.get("mission_id") or ""))
+            if not mission:
+                continue
+            blob = " ".join([mission.direction, mission.stage, " ".join(mission.success_criteria)]).lower()
+            if "hermes" in blob and ("架构" in blob or "self-architecture" in blob or "self architecture" in blob):
+                candidates.append(mission)
+        candidates.sort(key=lambda item: item.updated_at, reverse=True)
+        return candidates[0].mission_id if candidates else ""
+    except Exception:
+        return ""
+
+
+def taskpool_task_is_mission_relevant(task: "Task") -> bool:
+    """Keep taskpool→mission bridging scoped to Hermes self-architecture work."""
+
+    blob = " ".join(
+        str(x or "")
+        for x in (
+            task.id,
+            task.title,
+            task.project,
+            task.lane,
+            task.architecture_target,
+            getattr(task, "brain", ""),
+            " ".join(list_value(task.fm.get("concepts"))),
+        )
+    ).lower()
+    if "hermes" in blob and task.lane in {"evolution", "advisory"}:
+        return True
+    if task.project in {"hermes", "local-brain"}:
+        return True
+    if task.architecture_target in {"local-brain", "taskpool", "skill-graph", "provider-quota", "hermes-core"}:
+        return True
+    return False
+
+
+def maybe_append_taskpool_mission_signal(event: str, *, task_id: str = "", reason: str = "") -> dict[str, Any]:
+    """Bridge relevant local taskpool mutations into the Mission flow-signal ledger.
+
+    This is local-ledger only: it appends a mission event and lets MissionStore schedule
+    the already-installed mission cron. It does not run the agent inline and it is
+    fail-soft so taskpool mutations are not blocked by Mission observability failures.
+    """
+
+    if os.environ.get("HERMES_TASKPOOL_MISSION_BRIDGE_DISABLED") == "1":
+        return {"status": "SKIPPED", "reason": "disabled"}
+    if event not in {"task_added", "task_transitioned", "task_dispatch_authorized"}:
+        return {"status": "SKIPPED", "reason": "event_not_eligible", "event": event}
+    if not task_id:
+        return {"status": "SKIPPED", "reason": "missing_task_id", "event": event}
+    try:
+        task = find_task(task_id)
+    except Exception as exc:
+        return {"status": "SKIPPED", "reason": "task_not_found", "event": event, "task_id": task_id, "error": str(exc)}
+    if not taskpool_task_is_mission_relevant(task):
+        return {"status": "SKIPPED", "reason": "task_not_mission_relevant", "event": event, "task_id": task_id}
+    mission_id = taskpool_mission_bridge_target()
+    if not mission_id:
+        return {"status": "SKIPPED", "reason": "mission_not_found", "event": event, "task_id": task_id}
+    try:
+        from hermes_cli.missions import MissionStore
+
+        store = MissionStore(HERMES_HOME / "missions.db")
+        payload = {
+            "source": "taskpool",
+            "source_event": event,
+            "task_id": task.id,
+            "title": task.title,
+            "status": task.status,
+            "priority": task.priority,
+            "lane": task.lane,
+            "project": task.project,
+            "architecture_target": task.architecture_target,
+            "reason": reason,
+            "task_path": str(task.path),
+        }
+        event_row = store.append_event(
+            mission_id,
+            "taskpool_status_changed",
+            f"taskpool {event}: {task.id} status={task.status}",
+            payload,
+        )
+        return {"status": "OK", "mission_id": mission_id, "event_id": event_row["event_id"], "task_id": task.id}
+    except Exception as exc:
+        return {"status": "ERROR", "event": event, "task_id": task_id, "mission_id": mission_id, "error": str(exc)}
+
+
 def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str = "") -> dict[str, Any]:
     """Run one bounded taskpool dispatch tick after local taskpool mutations.
 
@@ -343,11 +444,14 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
     state transition and the next periodic sweep. It is deliberately fail-soft and
     non-recursive: hook failures are recorded but do not make the originating task
     mutation fail, and child orchestrator calls see HERMES_TASKPOOL_EVENT_HOOK_DEPTH=1.
+    Relevant Hermes self-architecture taskpool events are also bridged into the
+    Mission flow-signal ledger before the local dispatch tick.
     """
+    mission_bridge = maybe_append_taskpool_mission_signal(event, task_id=task_id, reason=reason)
     if os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED") == "1":
-        return {"status": "SKIPPED", "reason": "disabled"}
+        return {"status": "SKIPPED", "reason": "disabled", "mission_bridge": mission_bridge}
     if os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DEPTH"):
-        return {"status": "SKIPPED", "reason": "recursive_guard"}
+        return {"status": "SKIPPED", "reason": "recursive_guard", "mission_bridge": mission_bridge}
 
     def _observe_selfcheck(status: str, summary: str, evidence_refs: list[str] | None = None) -> None:
         try:
@@ -424,6 +528,7 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
             "task_id": task_id,
             "log": str(log_path),
             "returncode": proc.returncode,
+            "mission_bridge": mission_bridge,
             "multimodel_route": route,
             "dispatchable": (payload.get("summary") or {}).get("dispatchable"),
             "next_task_id": (payload.get("summary") or {}).get("next_task_id"),
@@ -447,12 +552,12 @@ def maybe_fire_taskpool_event_hook(event: str, *, task_id: str = "", reason: str
         }
         log_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         _observe_selfcheck("TIMEOUT", f"taskpool event hook {event} timed out after {exc.timeout}s", [f"file:{log_path}"])
-        return {"status": "TIMEOUT", "event": event, "task_id": task_id, "log": str(log_path)}
+        return {"status": "TIMEOUT", "event": event, "task_id": task_id, "log": str(log_path), "mission_bridge": mission_bridge}
     except Exception as exc:
         payload = {"status": "ERROR", "event": event, "task_id": task_id, "reason": reason, "error": str(exc), "finished_at": iso()}
         log_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         _observe_selfcheck("ERROR", f"taskpool event hook {event} failed: {exc}", [f"file:{log_path}"])
-        return {"status": "ERROR", "event": event, "task_id": task_id, "log": str(log_path), "error": str(exc)}
+        return {"status": "ERROR", "event": event, "task_id": task_id, "log": str(log_path), "error": str(exc), "mission_bridge": mission_bridge}
 
 
 def parse_dt(value: Any) -> datetime | None:
@@ -5787,6 +5892,11 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
     streaming = {}
     if to_status in {"running", "review"}:
         streaming = maybe_stream_multimodel_intervention(t)
+    event_hook = maybe_fire_taskpool_event_hook(
+        "task_transitioned",
+        task_id=t.id,
+        reason=f"command_transition:{from_status}->{to_status}",
+    )
 
     return {
         "status": "OK",
@@ -5798,6 +5908,7 @@ def command_transition(args: argparse.Namespace) -> dict[str, Any]:
         "next_allowed": allowed_next_statuses(to_status),
         "derived_refresh": derived_refresh,
         "multimodel_streaming": streaming,
+        "event_hook": event_hook,
     }
 
 
