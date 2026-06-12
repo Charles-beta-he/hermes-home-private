@@ -17,7 +17,8 @@ Contract Seed
   → Taskpool Import Dry-run
   → Taskpool Import Write
   → Candidate Consolidation Write
-  → Runtime Executor Integration
+  → Runtime Integration Record-only
+  → Runtime Executor Claim
   → Adapter Write-through
 ```
 
@@ -34,6 +35,7 @@ Do not jump from registry/spec directly into runtime execution. Each layer shoul
 - **Taskpool import dry-run**: converts executor-preview steps into candidate task previews only; set `taskpool_write_enabled=false`, `taskpool_claim_enabled=false`, and keep all runtime/model/adapter/external side-effect flags false.
 - **Taskpool import write**: writes selected candidates as canonical `status: proposed` task notes only, read-back verifies marker fields, refreshes derived taskpool views, and still keeps `taskpool_claim_enabled=false`, `runtime_enabled=false`, `model_call_enabled=false`, `adapter_write_enabled=false`, and `external_side_effects_enabled=false`.
 - **Candidate consolidation write**: groups over-fragmented imported `proposed` candidates into fewer canonical `proposed` review tasks, preserves source candidate notes, read-back verifies group/source fields, and still keeps claim/runtime/model/adapter/external side-effect flags false.
+- **Runtime integration record-only**: annotates selected consolidated `proposed` tasks with runtime packet metadata and prepared claim packets while keeping task status `proposed`, `taskpool_claim_enabled=false`, `model_call_enabled=false`, `adapter_write_enabled=false`, and `external_side_effects_enabled=false`.
 
 ## Authority boundaries
 
@@ -58,13 +60,15 @@ python3 scripts/workflow_executor_stub.py --json
 python3 scripts/workflow_taskpool_import_dry_run.py --json
 python3 scripts/workflow_taskpool_import_write.py --json
 python3 scripts/workflow_candidate_consolidation.py --json
+python3 scripts/workflow_runtime_integration.py --json
 ./scripts/run_tests.sh tests/scripts/test_workflow_contract_validator.py \
   tests/scripts/test_workflow_projection.py \
   tests/scripts/test_acceptance_compiler.py \
   tests/scripts/test_workflow_executor_stub.py \
   tests/scripts/test_workflow_taskpool_import_dry_run.py \
   tests/scripts/test_workflow_taskpool_import_write.py \
-  tests/scripts/test_workflow_candidate_consolidation.py
+  tests/scripts/test_workflow_candidate_consolidation.py \
+  tests/scripts/test_workflow_runtime_integration.py
 ```
 
 Expected invariants:
