@@ -67,7 +67,7 @@ def worker_job_signature(claimed_items, batch_id=''):
     return hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
 
-def process_alive(pid):
+def process_alive(pid, expected_cmd=None):
     try:
         pid = int(pid or 0)
     except Exception:
@@ -76,13 +76,38 @@ def process_alive(pid):
         return False
     try:
         os.kill(pid, 0)
-        return True
     except ProcessLookupError:
         return False
     except PermissionError:
-        return True
+        return False if expected_cmd else True
     except Exception:
         return False
+    if expected_cmd:
+        try:
+            proc = subprocess.run(
+                ['ps', '-p', str(pid), '-o', 'command='],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                timeout=2,
+            )
+            command = proc.stdout.strip()
+        except Exception:
+            return False
+        if not command:
+            return False
+        expected_parts = [str(part) for part in expected_cmd if part]
+        if not all(part in command for part in ('agent_team_controller.py', 'consume-claimed')):
+            return False
+        batch_id = ''
+        if '--batch-id' in expected_parts:
+            try:
+                batch_id = expected_parts[expected_parts.index('--batch-id') + 1]
+            except Exception:
+                batch_id = ''
+        if batch_id and batch_id not in command:
+            return False
+    return True
 
 
 def load_worker_job(path):
@@ -91,7 +116,7 @@ def load_worker_job(path):
         if not isinstance(job, dict):
             return None
         job['job_file'] = str(path)
-        job['alive'] = process_alive(job.get('pid'))
+        job['alive'] = process_alive(job.get('pid'), job.get('cmd') or [])
         return job
     except Exception:
         return None
