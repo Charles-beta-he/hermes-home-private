@@ -3589,8 +3589,8 @@ def build_auto_subtask_backfill(children: list[Task]) -> tuple[list[str], list[s
         )
         evidence.extend([
             f"artifact:{child.path}",
-            f"child-task:{child.id}:status:{child.status}",
-            f"child-axis:{axis}:{child.id}",
+            f"proof:child-task:{child.id}:status:{child.status}",
+            f"proof:child-axis:{axis}:{child.id}",
         ])
         ratification_artifact = str(child.fm.get("multimodel_ratification_artifact") or "").strip()
         if ratification_artifact:

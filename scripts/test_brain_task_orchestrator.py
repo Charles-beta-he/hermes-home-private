@@ -2875,6 +2875,10 @@ def test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_chi
         assert child_id in parent_note, parent_note
         assert str(child_path) in parent_note, parent_note
         assert "All auto-generated convergence subtasks reached done; parent reopened to `pending` for ratification rerun." in parent_note, parent_note
+        assert f"proof:child-task:{child_id}:status:done" in parent_note, parent_note
+        assert f"proof:child-axis:relay_ordering:{child_id}" in parent_note, parent_note
+        assert f"  - child-task:{child_id}:status:done" not in parent_note, parent_note
+        assert f"  - child-axis:relay_ordering:{child_id}" not in parent_note, parent_note
 
 
 
