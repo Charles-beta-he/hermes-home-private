@@ -163,6 +163,7 @@ MISSION_ENVELOPE_LIST_FIELDS = {
 MISSION_STRUCTURED_REF_FIELDS = {"evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact"}
 MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_minor_risks", "certified"}
 MULTIMODEL_AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"
+EVENT_HOOK_NO_MULTIMODEL_SPAWN_ENV_FLAG = "HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"
 MULTIMODEL_ALLOWLIST = AUTORUN_STATE_DIR / "multimodel_intervention_allowlist.json"
 MULTIMODEL_PASS_STATUSES = {"certified", "certified_with_minor_risks"}
 MULTIMODEL_ASYNC_JOB_DIR = HERMES_HOME / "state" / "taskpool-multimodel" / "jobs"
@@ -281,6 +282,9 @@ def event_hook_multimodel_route(event: str, task_id: str = "") -> dict[str, Any]
     mode = str(os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL", "auto") or "auto").strip().lower()
     off_values = {"0", "false", "no", "off", "disabled"}
     on_values = {"1", "true", "yes", "on", "enabled", "force"}
+    no_spawn = str(os.environ.get(EVENT_HOOK_NO_MULTIMODEL_SPAWN_ENV_FLAG, "") or "").strip().lower()
+    if no_spawn in on_values:
+        return {"enabled": False, "mode": mode, "reason": "multimodel_spawn_disabled_by_env", "env_flag": EVENT_HOOK_NO_MULTIMODEL_SPAWN_ENV_FLAG}
     if mode in off_values:
         return {"enabled": False, "mode": mode, "reason": "disabled_by_env"}
 

@@ -3499,6 +3499,51 @@ def find_task_status(task_path: Path) -> str:
     raise AssertionError(f"missing status in {task_path}")
 
 
+def test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes():
+    old_env = os.environ.copy()
+    try:
+        os.environ.clear()
+        os.environ.update(old_env)
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"] = "1"
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "force"
+        mod = load_orchestrator_module()
+
+        forced = mod.event_hook_multimodel_route("task_transitioned", "forced-task")
+        assert forced["enabled"] is False, forced
+        assert forced["reason"] == "multimodel_spawn_disabled_by_env", forced
+        assert forced["env_flag"] == "HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN", forced
+
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "auto"
+        original_find_task = mod.find_task
+        original_reasons = mod.task_multimodel_intervention_reasons
+        original_cert_reasons = mod.task_multimodel_certification_reasons
+        original_advisory_reasons = mod.task_multimodel_advisory_reasons
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="running",
+                priority="P2",
+                lane="evolution",
+                project="hermes-agent",
+                fm={},
+            ))
+            setattr(mod, "task_multimodel_intervention_reasons", lambda task: ["fixture_reason"])
+            setattr(mod, "task_multimodel_certification_reasons", lambda task: [])
+            setattr(mod, "task_multimodel_advisory_reasons", lambda task: ["fixture_reason"])
+            auto = mod.event_hook_multimodel_route("task_transitioned", "auto-task")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+            setattr(mod, "task_multimodel_intervention_reasons", original_reasons)
+            setattr(mod, "task_multimodel_certification_reasons", original_cert_reasons)
+            setattr(mod, "task_multimodel_advisory_reasons", original_advisory_reasons)
+
+        assert auto["enabled"] is False, auto
+        assert auto["reason"] == "multimodel_spawn_disabled_by_env", auto
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
 def main():
     test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
     test_railway_deploy_gate_evaluate_uses_ancestor_relation()
@@ -3539,6 +3584,7 @@ def main():
     test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_task()
     test_auto_close_review_fails_closed_on_negative_closeout_proof_marker()
     test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task()
+    test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes()
     print("PASS")
 
 
