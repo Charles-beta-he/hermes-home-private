@@ -128,6 +128,62 @@ def stage_candidate(skill_path: Path, evidence_paths: list[Path], proposal_path:
     return candidate
 
 
+def preview_candidate(skill_path: Path, evidence_paths: list[Path], proposal_path: Path, output_dir: Path, title: str) -> dict[str, Any]:
+    """Return a dry-run candidate plus the exact Markdown preview without writing artifacts."""
+    candidate = stage_candidate(skill_path, evidence_paths, proposal_path, output_dir, title, dry_run=True)
+    candidate["preview_markdown"] = render_markdown(candidate, proposal_path.expanduser().resolve())
+    candidate["governance"]["preview_only"] = True
+    return candidate
+
+
+def read_back_candidate(json_path: Path) -> dict[str, Any]:
+    """Read a staged candidate and deterministically verify linked artifacts and hashes."""
+    json_path = json_path.expanduser().resolve()
+    payload = json.loads(_read(json_path))
+    checks: list[Check] = [Check("candidate_json_exists", json_path.exists(), str(json_path))]
+
+    for section in ("source_skill", "proposal"):
+        item = payload.get(section) or {}
+        path = Path(item.get("path") or "")
+        exists = path.exists() and path.is_file()
+        expected = item.get("sha256")
+        actual = _sha256(path) if exists else None
+        checks.append(Check(f"{section}_exists", exists, str(path)))
+        checks.append(Check(f"{section}_sha256_matches", exists and actual == expected, f"expected={expected} actual={actual}"))
+
+    for idx, item in enumerate(payload.get("evidence") or []):
+        path = Path(item.get("path") or "")
+        exists = path.exists() and path.is_file()
+        expected = item.get("sha256")
+        actual = _sha256(path) if exists else None
+        checks.append(Check(f"evidence_{idx}_exists", exists, str(path)))
+        checks.append(Check(f"evidence_{idx}_sha256_matches", exists and actual == expected, f"expected={expected} actual={actual}"))
+
+    artifact_paths = payload.get("artifact_paths") or {}
+    md_path = Path(artifact_paths.get("markdown") or json_path.with_suffix(".md"))
+    md_exists = md_path.exists() and md_path.is_file()
+    md_text = _read(md_path) if md_exists else ""
+    checks.append(Check("markdown_artifact_exists", md_exists, str(md_path)))
+    checks.append(Check("markdown_mentions_candidate_id", payload.get("candidate_id", "") in md_text, "candidate id must be visible in read-back"))
+    checks.append(Check("governance_requires_controlled_apply", bool((payload.get("governance") or {}).get("requires_human_or_skill_manage_apply")), "apply remains gated"))
+    checks.append(Check("staged_checks_all_ok", all(c.get("ok") for c in payload.get("checks") or []), "stored deterministic checks must pass"))
+    return {"candidate_id": payload.get("candidate_id"), "status": payload.get("status"), "checks": [c.as_dict() for c in checks], "ok": all(c.ok for c in checks)}
+
+
+def proof_check_candidate(json_path: Path) -> dict[str, Any]:
+    """Fail-closed proof check for a staged candidate before any formal skill mutation."""
+    json_path = json_path.expanduser().resolve()
+    result = read_back_candidate(json_path)
+    payload = json.loads(_read(json_path))
+    required = {"config_rewrite", "proxy_start", "cloud_upload", "cross_profile_write", "auto_publish"}
+    declared = set((payload.get("governance") or {}).get("blocked_side_effects", []))
+    result["checks"].append(Check("blocked_side_effects_declared", required.issubset(declared), "required blocked side effects remain declared").as_dict())
+    result["checks"].append(Check("no_formal_skill_output", not path_is_formal_skill(json_path.parent), str(json_path.parent)).as_dict())
+    result["ok"] = all(c.get("ok") for c in result["checks"])
+    result["status"] = "proof_ok" if result["ok"] else "proof_failed"
+    return result
+
+
 def render_markdown(candidate: dict[str, Any], proposal_path: Path) -> str:
     proposal_text = _read(proposal_path) if proposal_path.exists() else ""
     checks = "\n".join(f"- [{'x' if c['ok'] else ' '}] {c['name']}: {c['detail']}" for c in candidate["checks"])
@@ -157,21 +213,33 @@ Blocked side effects: config rewrite, proxy start, cloud upload, cross-profile w
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Stage a Hermes skill patch candidate without applying it")
-    p.add_argument("stage", nargs="?", default="stage", choices=["stage"])
-    p.add_argument("--skill", required=True, type=Path, help="Existing Hermes skill SKILL.md to patch later")
-    p.add_argument("--evidence", required=True, action="append", type=Path, help="Local proof/transcript/task evidence path; repeatable")
-    p.add_argument("--proposal", required=True, type=Path, help="Markdown proposal containing patch intent, evidence refs, rollback")
-    p.add_argument("--title", required=True)
+    p.add_argument("command", nargs="?", default="stage", choices=["stage", "preview", "read-back", "proof-check"])
+    p.add_argument("--skill", type=Path, help="Existing Hermes skill SKILL.md to patch later")
+    p.add_argument("--evidence", action="append", type=Path, default=[], help="Local proof/transcript/task evidence path; repeatable")
+    p.add_argument("--proposal", type=Path, help="Markdown proposal containing patch intent, evidence refs, rollback")
+    p.add_argument("--title")
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    p.add_argument("--candidate", type=Path, help="Staged candidate JSON path for read-back/proof-check")
     p.add_argument("--dry-run", action="store_true")
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    result = stage_candidate(args.skill, args.evidence, args.proposal, args.output_dir, args.title, args.dry_run)
+    if args.command in {"stage", "preview"}:
+        missing = [name for name in ("skill", "proposal", "title") if getattr(args, name) is None]
+        if missing or not args.evidence:
+            raise SystemExit(f"{args.command} requires --skill, --proposal, --title, and at least one --evidence")
+        if args.command == "preview":
+            result = preview_candidate(args.skill, args.evidence, args.proposal, args.output_dir, args.title)
+        else:
+            result = stage_candidate(args.skill, args.evidence, args.proposal, args.output_dir, args.title, args.dry_run)
+    else:
+        if args.candidate is None:
+            raise SystemExit(f"{args.command} requires --candidate")
+        result = read_back_candidate(args.candidate) if args.command == "read-back" else proof_check_candidate(args.candidate)
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if result["status"] in {"staged", "dry_run_ok"} else 2
+    return 0 if result.get("ok", result.get("status") in {"staged", "dry_run_ok"}) else 2
 
 
 if __name__ == "__main__":

@@ -96,3 +96,68 @@ def test_cli_dry_run_returns_json_without_writing_artifact():
         assert payload["status"] == "dry_run_ok"
         assert "artifact_paths" not in payload
         assert not out.exists()
+
+
+def test_preview_read_back_and_proof_check_semantics():
+    mod = load_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        skill, evidence, proposal, out = write_fixture(root)
+
+        preview = mod.preview_candidate(skill, [evidence], proposal, out, "preview candidate")
+        assert preview["status"] == "dry_run_ok"
+        assert preview["governance"]["preview_only"] is True
+        assert "## Deterministic checks" in preview["preview_markdown"]
+        assert not out.exists(), "preview must not write staged artifacts"
+
+        staged = mod.stage_candidate(skill, [evidence], proposal, out, "readback candidate")
+        read_back = mod.read_back_candidate(Path(staged["artifact_paths"]["json"]))
+        assert read_back["ok"] is True, read_back
+        names = {c["name"] for c in read_back["checks"]}
+        assert "source_skill_sha256_matches" in names
+        assert "markdown_mentions_candidate_id" in names
+
+        proof = mod.proof_check_candidate(Path(staged["artifact_paths"]["json"]))
+        assert proof["status"] == "proof_ok", proof
+        proof_names = {c["name"] for c in proof["checks"]}
+        assert "blocked_side_effects_declared" in proof_names
+        assert "no_formal_skill_output" in proof_names
+
+
+def test_cli_read_back_and_proof_check_existing_candidate():
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        skill, evidence, proposal, out = write_fixture(root)
+        stage_proc = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "stage",
+                "--skill",
+                str(skill),
+                "--evidence",
+                str(evidence),
+                "--proposal",
+                str(proposal),
+                "--title",
+                "cli candidate",
+                "--output-dir",
+                str(out),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        staged = json.loads(stage_proc.stdout)
+        candidate_json = staged["artifact_paths"]["json"]
+
+        for command, expected_status in (("read-back", "staged"), ("proof-check", "proof_ok")):
+            proc = subprocess.run(
+                [sys.executable, str(SCRIPT), command, "--candidate", candidate_json],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            payload = json.loads(proc.stdout)
+            assert payload["ok"] is True
+            assert payload["status"] == expected_status
