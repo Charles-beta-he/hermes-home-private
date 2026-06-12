@@ -57,7 +57,32 @@
     "backend": "/Users/charles/Desktop/folder/work/uvisa-backend",
     "workpad": "/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md",
     "admin_frontend": "/Users/charles/Desktop/folder/work/uvisa-admin",
-    "admin_frontend_src": "/Users/charles/Desktop/folder/work/uvisa-admin/src"
+    "admin_frontend_src": "/Users/charles/Desktop/folder/work/uvisa-admin/src",
+    "rn_migration_repo": "/Users/charles/Desktop/folder/work/uvisa-app-2.0-migration",
+    "rn_mobile_app": "/Users/charles/Desktop/folder/work/uvisa-app-2.0-migration/apps/mobile"
+  },
+  "memory_decoupled_runtime_facts": {
+    "scope": "project_profile_only; migrated out of global memory/user profile to avoid cross-project coupling",
+    "updated_at": "2026-06-12",
+    "frontend_acceptance_url": "https://uvisa-app-trnn-production.up.railway.app/",
+    "frontend_acceptance_url_note": "This is the user-facing online acceptance address; do not assume app.uvisa.cc for current acceptance unless live evidence says so.",
+    "target_release_branch": "main",
+    "notification_mapping": "Notification category is DB -> appCategory -> tab; backend mapping must be checked for deposit/withdrawal flows.",
+    "pwa_safe_area_baseline": "PWA chrome/safe-area baseline uses white (#FFF) and brand blue (#1326FD) unless the scoped design task overrides it.",
+    "release_version_ssot": "/releases/{releaseId}/version.json",
+    "customer_support_labels": {
+      "knowledge_base": "AI助手",
+      "faq": "常见问题",
+      "home_entry_routes": {
+        "consultant": "chat",
+        "ai": "ai",
+        "faq": "faq"
+      },
+      "do_not_display_wechat_id": true
+    },
+    "rn_migration_target_rule": "React Native work lands under apps/mobile in the RN migration repo; never use standalone /work/app as target.",
+    "backend_java_home": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home",
+    "backend_java_note": "Use JDK 21 for local Maven verification; Homebrew OpenJDK 26 has triggered Lombok/Javac TypeTag UNKNOWN compile failures."
   },
   "fullstack_domain_map": {
     "_description": "前端页面 → 后端服务/Controller 的映射关系。每个域的改动都必须同时检查前端 service/store/screen 和后端 controller/service/domain。",
