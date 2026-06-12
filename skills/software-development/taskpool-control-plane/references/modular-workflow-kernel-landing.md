@@ -18,7 +18,7 @@ Contract Seed
   → Taskpool Import Write
   → Candidate Consolidation Write
   → Runtime Integration Record-only
-  → Runtime Executor Claim
+  → Runtime Claim Executor
   → Adapter Write-through
 ```
 
@@ -36,6 +36,7 @@ Do not jump from registry/spec directly into runtime execution. Each layer shoul
 - **Taskpool import write**: writes selected candidates as canonical `status: proposed` task notes only, read-back verifies marker fields, refreshes derived taskpool views, and still keeps `taskpool_claim_enabled=false`, `runtime_enabled=false`, `model_call_enabled=false`, `adapter_write_enabled=false`, and `external_side_effects_enabled=false`.
 - **Candidate consolidation write**: groups over-fragmented imported `proposed` candidates into fewer canonical `proposed` review tasks, preserves source candidate notes, read-back verifies group/source fields, and still keeps claim/runtime/model/adapter/external side-effect flags false.
 - **Runtime integration record-only**: annotates selected consolidated `proposed` tasks with runtime packet metadata and prepared claim packets while keeping task status `proposed`, `taskpool_claim_enabled=false`, `model_call_enabled=false`, `adapter_write_enabled=false`, and `external_side_effects_enabled=false`.
+- **Runtime claim executor**: consumes exactly one prepared claim packet for one non-human-gated consolidated task, moves that task from `proposed` to `claimed`, records `claimed_by=workflow_runtime_claim_executor`, and stops before `running`, `review`, `done`, model calls, adapter writes, or external side effects.
 
 ## Authority boundaries
 
@@ -61,6 +62,7 @@ python3 scripts/workflow_taskpool_import_dry_run.py --json
 python3 scripts/workflow_taskpool_import_write.py --json
 python3 scripts/workflow_candidate_consolidation.py --json
 python3 scripts/workflow_runtime_integration.py --json
+python3 scripts/workflow_runtime_claim_executor.py --json
 ./scripts/run_tests.sh tests/scripts/test_workflow_contract_validator.py \
   tests/scripts/test_workflow_projection.py \
   tests/scripts/test_acceptance_compiler.py \
@@ -68,7 +70,8 @@ python3 scripts/workflow_runtime_integration.py --json
   tests/scripts/test_workflow_taskpool_import_dry_run.py \
   tests/scripts/test_workflow_taskpool_import_write.py \
   tests/scripts/test_workflow_candidate_consolidation.py \
-  tests/scripts/test_workflow_runtime_integration.py
+  tests/scripts/test_workflow_runtime_integration.py \
+  tests/scripts/test_workflow_runtime_claim_executor.py
 ```
 
 Expected invariants:
@@ -77,7 +80,7 @@ Expected invariants:
 runtime_enabled=false
 write_through_enabled=false
 external_side_effects_enabled=false
-taskpool_claim_enabled=false until taskpool import/integration is explicitly authorized
+taskpool_claim_enabled=false until taskpool import/integration is explicitly authorized; true only for the one selected runtime claim executor task
 model_call_enabled=false until real model routing/eval integration is explicitly authorized
 adapter_write_enabled=false until adapter write-through is explicitly authorized
 ```
