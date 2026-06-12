@@ -19,6 +19,7 @@ Contract Seed
   → Candidate Consolidation Write
   → Runtime Integration Record-only
   → Runtime Claim Executor
+  → Runtime Execution Worker
   → Adapter Write-through
 ```
 
@@ -37,6 +38,7 @@ Do not jump from registry/spec directly into runtime execution. Each layer shoul
 - **Candidate consolidation write**: groups over-fragmented imported `proposed` candidates into fewer canonical `proposed` review tasks, preserves source candidate notes, read-back verifies group/source fields, and still keeps claim/runtime/model/adapter/external side-effect flags false.
 - **Runtime integration record-only**: annotates selected consolidated `proposed` tasks with runtime packet metadata and prepared claim packets while keeping task status `proposed`, `taskpool_claim_enabled=false`, `model_call_enabled=false`, `adapter_write_enabled=false`, and `external_side_effects_enabled=false`.
 - **Runtime claim executor**: consumes exactly one prepared claim packet for one non-human-gated consolidated task, moves that task from `proposed` to `claimed`, records `claimed_by=workflow_runtime_claim_executor`, and stops before `running`, `review`, `done`, model calls, adapter writes, or external side effects.
+- **Runtime execution worker**: starts exactly one claimed, non-human-gated task with a local no-op runtime marker, moves it from `claimed` to `running`, records `workflow_runtime_execution_status=running_noop_started_not_reviewed`, and stops before `review`, `done`, model calls, adapter writes, or external side effects.
 
 ## Authority boundaries
 
@@ -63,6 +65,7 @@ python3 scripts/workflow_taskpool_import_write.py --json
 python3 scripts/workflow_candidate_consolidation.py --json
 python3 scripts/workflow_runtime_integration.py --json
 python3 scripts/workflow_runtime_claim_executor.py --json
+python3 scripts/workflow_runtime_execution_worker.py --json
 ./scripts/run_tests.sh tests/scripts/test_workflow_contract_validator.py \
   tests/scripts/test_workflow_projection.py \
   tests/scripts/test_acceptance_compiler.py \
@@ -71,7 +74,8 @@ python3 scripts/workflow_runtime_claim_executor.py --json
   tests/scripts/test_workflow_taskpool_import_write.py \
   tests/scripts/test_workflow_candidate_consolidation.py \
   tests/scripts/test_workflow_runtime_integration.py \
-  tests/scripts/test_workflow_runtime_claim_executor.py
+  tests/scripts/test_workflow_runtime_claim_executor.py \
+  tests/scripts/test_workflow_runtime_execution_worker.py
 ```
 
 Expected invariants:
