@@ -363,6 +363,36 @@ python3 scripts/workflow_drift_watch.py --write-report --json
 
 Expected readback may be `DRIFT_WATCH_DEGRADED_NOT_BLOCKED` with `production_receipts_not_complete` until natural scheduled wrapper runs append receipts. Do not trigger cron solely to satisfy the watcher.
 
+For Phase 41, after explicit `B_SINGLE_WRAPPER_RUNTIME_ENABLE_DRY_RUN` authorization, execute only a single-wrapper shadow dry-run against every-4h using a temporary receipt ledger:
+
+```bash
+python3 -m py_compile scripts/workflow_runtime_shadow_dry_run.py
+./scripts/run_tests.sh tests/scripts/test_workflow_runtime_shadow_dry_run.py
+python3 scripts/workflow_runtime_shadow_dry_run.py --write-report --json
+```
+
+Expected readback: `RUNTIME_SHADOW_DRY_RUN_READY`, `cron_state_mutated=false`, `credentialed_generation_attempted=false`, and `receipt_runtime_mode=plan_only`. This is not scheduler mutation.
+
+For Phase 42, after explicit `C_SINGLE_WRAPPER_SCHEDULER_NATIVE_ROLLOUT` authorization, mutate exactly one job (`2c14ca2a9bd2`, every-4h) from the legacy wrapper path to the scheduler-native workflow-kernel runner, with a backup and rollback command:
+
+```bash
+python3 -m py_compile scripts/workflow_scheduler_native_rollout.py \
+  ~/.hermes/scripts/workflow-kernel-multi-model-smoke-every4h-runner.py
+./scripts/run_tests.sh tests/scripts/test_workflow_scheduler_native_rollout.py \
+  tests/scripts/test_workflow_cron_runtime_projection.py \
+  tests/scripts/test_workflow_cron_run_outcome_correlation.py
+python3 scripts/workflow_scheduler_native_rollout.py --dry-run --json
+python3 scripts/workflow_scheduler_native_rollout.py --write-report --json
+HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 \
+  python3 ~/.hermes/scripts/workflow-kernel-multi-model-smoke-every4h-runner.py
+python3 scripts/workflow_cron_runtime_projection.py --write-report --json
+python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
+python3 scripts/workflow_runtime_readiness_summary.py --write-report --json
+python3 scripts/workflow_drift_watch.py --write-report --json
+```
+
+Expected readback: `SCHEDULER_NATIVE_ROLLOUT_APPLIED`, job script set to `workflow-kernel-multi-model-smoke-every4h-runner.py`, rollback backup exists, native plan-only receipt has `runtime_mode=scheduler_native_plan_only`, projection remains ready, readiness summary remains ready. Do not broaden to the daily-full job or global runtime switch without a fresh explicit gate.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
