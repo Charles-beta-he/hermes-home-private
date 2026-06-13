@@ -77,6 +77,7 @@ python3 scripts/workflow_runtime_module_executor.py --json
 python3 scripts/workflow_runtime_review_done_gate.py --json
 python3 scripts/workflow_runtime_model_call_gate.py --json
 python3 scripts/workflow_runtime_adapter_write_gate.py --json
+python3 scripts/workflow_runtime_external_side_effect_gate.py --json
 ./scripts/run_tests.sh tests/scripts/test_workflow_contract_validator.py \
   tests/scripts/test_workflow_projection.py \
   tests/scripts/test_acceptance_compiler.py \
@@ -90,7 +91,8 @@ python3 scripts/workflow_runtime_adapter_write_gate.py --json
   tests/scripts/test_workflow_runtime_module_executor.py \
   tests/scripts/test_workflow_runtime_review_done_gate.py \
   tests/scripts/test_workflow_runtime_model_call_gate.py \
-  tests/scripts/test_workflow_runtime_adapter_write_gate.py
+  tests/scripts/test_workflow_runtime_adapter_write_gate.py \
+  tests/scripts/test_workflow_runtime_external_side_effect_gate.py
 ```
 
 Expected invariants:
