@@ -311,6 +311,18 @@ python3 scripts/workflow_runtime_readiness_summary.py --write-report --json
 
 Expected readback: `RUNTIME_READINESS_SUMMARY_READY_PENDING_EXPLICIT_ENABLE`, `blocking_checks=[]`, fresh gate/probe artifacts, `runtime_switch_enabled_by_default=false`. This is an operator summary only; it is not authorization to enable the runtime switch.
 
+For Phase 37, compile the human authorization packet instead of crossing runtime/scheduler boundaries:
+
+```bash
+python3 -m py_compile scripts/workflow_runtime_enablement_packet.py \
+  scripts/workflow_runtime_readiness_summary.py
+./scripts/run_tests.sh tests/scripts/test_workflow_runtime_enablement_packet.py \
+  tests/scripts/test_workflow_runtime_readiness_summary.py
+python3 scripts/workflow_runtime_enablement_packet.py --write-report --json
+```
+
+Expected readback: `RUNTIME_ENABLEMENT_HUMAN_AUTH_PACKET_READY` with options `A_READ_ONLY_CONTINUE`, `B_SINGLE_WRAPPER_RUNTIME_ENABLE_DRY_RUN`, `C_SINGLE_WRAPPER_SCHEDULER_NATIVE_ROLLOUT`, `D_WAIT_FOR_NATURAL_RECEIPTS`. Do not enable runtime switch, mutate cron, trigger jobs, call credentialed model generation, or send external messages without the specific option being authorized.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
