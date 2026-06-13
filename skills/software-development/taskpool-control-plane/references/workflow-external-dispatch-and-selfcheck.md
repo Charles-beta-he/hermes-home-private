@@ -432,6 +432,16 @@ python3 scripts/workflow_external_dispatch_expansion_packet.py --write-report --
 
 Expected readback: `EXTERNAL_DISPATCH_EXPANSION_CANDIDATE_READY`, `unattended_external_dispatch_enabled=false`, `external_side_effects_executed=false`, default adapter `local_outbox_simulator`, and candidate tracks for local outbox, dry-run policy, guarded single send, and unattended policy gate. Do not call `send_message`, mutate Lark/GitHub, read credentials, or enable unattended dispatch until exact adapter/target/payload/mode/idempotency/rollback are selected.
 
+For Phase 48 after broad authorization but without a concrete external target/payload, select the safe default local outbox track:
+
+```bash
+python3 -m py_compile scripts/workflow_external_dispatch_policy_gate.py
+./scripts/run_tests.sh tests/scripts/test_workflow_external_dispatch_policy_gate.py
+python3 scripts/workflow_external_dispatch_policy_gate.py --write-report --json
+```
+
+Expected readback: `EXTERNAL_DISPATCH_POLICY_GATE_LOCAL_OUTBOX_RECORDED`, `selected_track=P47A_LOCAL_OUTBOX_ONLY`, `selected_adapter=local_outbox_simulator`, `external_side_effects_executed=false`, `unattended_external_dispatch_enabled=false`, with local outbox and receipt artifacts under `docs/private/workflow-kernel-external-dispatch-policy-gate/`. This is the correct full-landing next step when the user authorizes continuation but does not supply a user-visible external target or payload.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
 
 ## Common P1/P2 classification
