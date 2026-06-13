@@ -452,6 +452,16 @@ python3 scripts/workflow_pack_manifest_compiler.py --write-report --json
 
 Expected readback: `WORKFLOW_AGENT_PACK_MANIFESTS_READY`, `validation_errors=[]`, workflow pack `workflow_kernel_external_dispatch_governance`, agent pack `agent.workflow_kernel_operator`, fail-closed side-effect policy, and artifacts under `docs/private/workflow-kernel-pack-manifests/`. This phase is projection-only: no cron mutation, model generation, credential access, external send, or unattended dispatch. If exact external adapter/target/payload is still absent after Phase49, continue to pack registry/control-tower projection rather than inventing a guarded send.
 
+For Phase 51, project the Phase49 manifests into a read-only pack registry/control-tower view:
+
+```bash
+python3 -m py_compile scripts/workflow_pack_registry_projection.py
+./scripts/run_tests.sh tests/scripts/test_workflow_pack_registry_projection.py
+python3 scripts/workflow_pack_registry_projection.py --write-report --json
+```
+
+Expected readback: `PACK_REGISTRY_PROJECTION_READY`, blockers `[]`, module rows with risk/gate/side-effect flags, and artifacts under `docs/private/workflow-kernel-pack-registry/`. This remains read-only: no cron mutation, task lifecycle mutation, model generation, credential access, external send, or unattended dispatch. After Phase51, stop at the larger divergence unless the user chooses: Phase50 guarded single external send (requires exact adapter/target/payload/mode/idempotency/rollback) vs Phase52 Control Tower UI/API productization.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
 
 ## Common P1/P2 classification
