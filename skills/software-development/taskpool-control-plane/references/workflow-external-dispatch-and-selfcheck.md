@@ -201,6 +201,18 @@ python3 ~/.hermes/scripts/multi-model-smoke-daily-full-wrapper.py
 
 Expected readback is `provider_health_degraded_skip`, `model_generation_attempted=false`, `cron_state_mutated=false`, and an append-only local skip ledger under `~/.hermes/state/cron-provider-health-gate/`. Do not edit `cron/jobs.json`, enable the global runtime switch, or patch multiple wrappers in the same slice.
 
+For Phase 29, wire the every-4h multi-provider wrapper to consume `run_with_degraded_provider_exclusions` as explicit model selection args:
+
+```bash
+python3 -m py_compile ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+./scripts/run_tests.sh tests/scripts/test_multi_model_smoke_every4h_wrapper_gate.py \
+  tests/scripts/test_multi_model_smoke_daily_wrapper_gate.py \
+  tests/scripts/test_cron_provider_health_gate.py
+HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 python3 ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+```
+
+Expected plan-only readback is `provider_health_exclusion_plan`, `selected_models` excluding `mimo-v2.5-pro`, `degraded_endpoints_excluded=[xiaomi]`, `model_generation_attempted=false`, and `cron_state_mutated=false`. This phase may patch only the every-4h wrapper; it must not execute model generation during verification or mutate cron job definitions.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
