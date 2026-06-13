@@ -177,6 +177,18 @@ python3 -m py_compile workflow_kernel/__init__.py workflow_kernel/io.py
 
 Keep `workflow_kernel.RUNTIME_SWITCH_ENABLED = False`. Existing scripts remain compatibility CLIs; importing shared IO helpers is allowed, but cron wrappers, external dispatch, autorun, config migration, and evidence-directory consolidation remain closed.
 
+For Phase 27 runtime-switch readiness, make the kernel switchable in compatibility-shim mode without enabling it by default:
+
+```bash
+python3 scripts/workflow_kernel_runtime_readiness.py --write-report --json
+./scripts/run_tests.sh tests/workflow_kernel/test_runtime_switch_readiness.py \
+  tests/workflow_kernel/test_kernel_scaffold.py \
+  tests/scripts/test_workflow_architecture_migration_evaluation.py \
+  tests/scripts/test_cron_provider_health_gate.py
+```
+
+Required status is `RUNTIME_SWITCH_READY_PENDING_EXPLICIT_ENABLE`; `runtime_switch_enabled_by_default` must remain false. This permits a later explicit single-wrapper rollout, but still forbids global cron mutation, autorun enablement, config migration, and external-dispatch expansion.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
