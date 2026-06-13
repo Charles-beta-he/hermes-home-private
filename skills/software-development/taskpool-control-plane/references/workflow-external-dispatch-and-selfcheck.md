@@ -139,6 +139,15 @@ python3 scripts/cron_provider_degradation_triage.py --write-report --json
 
 The Phase 22 triage boundary is read-only except local evidence under `docs/private/workflow-kernel-cron-provider-triage/`. Do not pause/resume/remove jobs, rerun failed jobs, retry external notifications, migrate config, or run npm audit fixes in the same slice. Use primary classes (`provider_generation`, `script_network_failure`, `telegram_delivery`, `script_failure`, `network_or_proxy`, `unknown`) to choose one repair class for the next phase.
 
+For the first provider-generation repair slice, add a bounded provider/network probe ledger instead of retrying model calls:
+
+```bash
+python3 scripts/provider_network_probe_ledger.py --write-report --json
+./scripts/run_tests.sh tests/scripts/test_provider_network_probe_ledger.py
+```
+
+The Phase 23 probe must be unauthenticated and side-effect free: no LLM prompt, no credential read/write, no cron mutation, no Telegram send. Treat HTTP `401/403/404` as reachability evidence because they still prove DNS/proxy/TLS/edge routing; record provider-specific TLS/proxy/timeout classes for downstream cron gates.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
