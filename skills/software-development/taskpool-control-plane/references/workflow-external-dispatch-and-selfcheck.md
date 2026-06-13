@@ -295,6 +295,22 @@ python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
 
 Expected behavior: if production `wrapper_run_receipts.jsonl` has post-projection rows, classify `RECEIPT_AFTER_PROJECTION_CORRELATED`; otherwise fall back to wrapper JSONL log correlation such as `REAL_RUN_CORRELATION_PARTIAL_READY`. Do not trigger cron just to create receipts.
 
+For Phase 36, compile one read-only runtime readiness summary across runtime switch, scheduler projection, run correlation, receipt readiness, provider gate, and provider probe freshness:
+
+```bash
+python3 -m py_compile scripts/workflow_runtime_readiness_summary.py \
+  scripts/workflow_cron_run_outcome_correlation.py \
+  scripts/workflow_cron_runtime_projection.py \
+  workflow_kernel/cron_wrappers.py
+./scripts/run_tests.sh tests/scripts/test_workflow_runtime_readiness_summary.py \
+  tests/scripts/test_workflow_cron_run_outcome_correlation.py \
+  tests/scripts/test_workflow_cron_runtime_projection.py \
+  tests/workflow_kernel/test_cron_wrapper_kernel_shim.py
+python3 scripts/workflow_runtime_readiness_summary.py --write-report --json
+```
+
+Expected readback: `RUNTIME_READINESS_SUMMARY_READY_PENDING_EXPLICIT_ENABLE`, `blocking_checks=[]`, fresh gate/probe artifacts, `runtime_switch_enabled_by_default=false`. This is an operator summary only; it is not authorization to enable the runtime switch.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
