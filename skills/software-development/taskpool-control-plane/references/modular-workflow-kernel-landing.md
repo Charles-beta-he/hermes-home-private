@@ -81,6 +81,7 @@ python3 scripts/workflow_runtime_external_side_effect_gate.py --json
 python3 scripts/workflow_runtime_external_apply_scaffold.py --target-adapter taskpool_outbox_simulator --authorization-packet <gate-packet.json> --json
 python3 scripts/workflow_runtime_external_apply_contract.py --json
 python3 scripts/workflow_runtime_external_apply_local.py --json
+python3 scripts/workflow_runtime_telegram_notification_policy.py --json --message '<preview message>'
 ./scripts/run_tests.sh tests/scripts/test_workflow_contract_validator.py \
   tests/scripts/test_workflow_projection.py \
   tests/scripts/test_acceptance_compiler.py \
@@ -98,7 +99,8 @@ python3 scripts/workflow_runtime_external_apply_local.py --json
   tests/scripts/test_workflow_runtime_external_side_effect_gate.py \
   tests/scripts/test_workflow_runtime_external_apply_scaffold.py \
   tests/scripts/test_workflow_runtime_external_apply_contract.py \
-  tests/scripts/test_workflow_runtime_external_apply_local.py
+  tests/scripts/test_workflow_runtime_external_apply_local.py \
+  tests/scripts/test_workflow_runtime_telegram_notification_policy.py
 ```
 
 Expected invariants:
