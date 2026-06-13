@@ -257,6 +257,18 @@ python3 scripts/workflow_cron_runtime_projection.py --write-report --json
 
 Expected readback: `SCHEDULER_READBACK_PROJECTION_READY`, fresh gate/probe artifacts, and wrapper projections classified as either `KERNEL_SHIM_SCHEDULER_READBACK_READY` or `KERNEL_SHIM_NO_GATE_DECISION_NEEDED`. Missing gate decisions are acceptable only for non-error jobs because the Phase 24 gate emits decisions for failed jobs. Do not execute cron jobs or change scheduler state in this phase.
 
+For Phase 33, correlate real scheduled-run outcomes with the Phase 32 projection without triggering cron:
+
+```bash
+python3 -m py_compile scripts/workflow_cron_run_outcome_correlation.py scripts/workflow_cron_runtime_projection.py
+./scripts/run_tests.sh tests/scripts/test_workflow_cron_run_outcome_correlation.py \
+  tests/scripts/test_workflow_cron_runtime_projection.py \
+  tests/workflow_kernel/test_cron_wrapper_kernel_shim.py
+python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
+```
+
+Expected partial readback may be `REAL_RUN_CORRELATION_PARTIAL_READY` when at least one wrapper has run after the projection and another has not reached its next schedule yet. Do not claim full two-wrapper runtime correlation until both wrappers have post-projection logs, or until a future wrapper-run ledger records explicit per-run kernel/gate metadata.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
