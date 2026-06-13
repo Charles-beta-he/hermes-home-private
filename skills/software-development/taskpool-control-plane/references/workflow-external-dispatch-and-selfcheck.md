@@ -242,6 +242,21 @@ HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 python3 ~/.hermes/scripts/multi-mod
 
 Expected readback: wrapper payload includes `kernel_shim=true`, `model_generation_attempted=false`, and `cron_state_mutated=false`. Keep `workflow_kernel.RUNTIME_SWITCH_ENABLED=false`, do not edit `cron/jobs.json`, and do not broaden to all wrappers in this slice.
 
+For Phase 32, add only a read-only scheduler-level projection that correlates cron job definitions, wrapper kernel-shim adoption, latest health gate, and latest provider probe freshness:
+
+```bash
+python3 -m py_compile scripts/workflow_cron_runtime_projection.py
+./scripts/run_tests.sh tests/scripts/test_workflow_cron_runtime_projection.py \
+  tests/workflow_kernel/test_cron_wrapper_kernel_shim.py \
+  tests/scripts/test_cron_provider_health_gate.py \
+  tests/scripts/test_provider_network_probe_ledger.py
+python3 scripts/provider_network_probe_ledger.py --write-report --json --timeout 8
+python3 scripts/cron_provider_health_gate.py --write-report --json
+python3 scripts/workflow_cron_runtime_projection.py --write-report --json
+```
+
+Expected readback: `SCHEDULER_READBACK_PROJECTION_READY`, fresh gate/probe artifacts, and wrapper projections classified as either `KERNEL_SHIM_SCHEDULER_READBACK_READY` or `KERNEL_SHIM_NO_GATE_DECISION_NEEDED`. Missing gate decisions are acceptable only for non-error jobs because the Phase 24 gate emits decisions for failed jobs. Do not execute cron jobs or change scheduler state in this phase.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
