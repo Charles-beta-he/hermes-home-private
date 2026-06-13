@@ -393,6 +393,22 @@ python3 scripts/workflow_drift_watch.py --write-report --json
 
 Expected readback: `SCHEDULER_NATIVE_ROLLOUT_APPLIED`, job script set to `workflow-kernel-multi-model-smoke-every4h-runner.py`, rollback backup exists, native plan-only receipt has `runtime_mode=scheduler_native_plan_only`, projection remains ready, readiness summary remains ready. Do not broaden to the daily-full job or global runtime switch without a fresh explicit gate.
 
+For Phase 43-45, after explicit full authorization through auto-enable, proceed in order: daily receipt closure, daily scheduler-native rollout, runtime switch enable. Keep each slice independently reversible and verified:
+
+```bash
+HERMES_MULTI_MODEL_SMOKE_DAILY_PLAN_ONLY=1 \
+  python3 ~/.hermes/scripts/workflow-kernel-multi-model-smoke-daily-full-runner.py
+python3 scripts/workflow_scheduler_native_rollout.py --target daily-full --dry-run --json
+python3 scripts/workflow_scheduler_native_rollout.py --target daily-full --write-report --json
+python3 scripts/workflow_cron_runtime_projection.py --write-report --json
+python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
+python3 scripts/workflow_drift_watch.py --write-report --json
+python3 scripts/workflow_kernel_runtime_readiness.py --write-report --json
+python3 scripts/workflow_runtime_readiness_summary.py --write-report --json
+```
+
+Expected readback: daily plan-only receipt `runtime_mode=scheduler_native_plan_only`, daily job script `workflow-kernel-multi-model-smoke-daily-full-runner.py`, every4h still `workflow-kernel-multi-model-smoke-every4h-runner.py`, projection ready, receipt correlation partial/ready, drift clear, `RUNTIME_SWITCH_AUTO_ENABLED`, `RUNTIME_READINESS_SUMMARY_AUTO_ENABLED`, and `explicit_enable_required=false`. Auto-enable still does not authorize unrelated external dispatch expansion, credential policy broadening, or broad scheduler rewrites without scoped rollback gates.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
