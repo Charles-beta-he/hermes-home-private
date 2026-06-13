@@ -189,6 +189,18 @@ python3 scripts/workflow_kernel_runtime_readiness.py --write-report --json
 
 Required status is `RUNTIME_SWITCH_READY_PENDING_EXPLICIT_ENABLE`; `runtime_switch_enabled_by_default` must remain false. This permits a later explicit single-wrapper rollout, but still forbids global cron mutation, autorun enablement, config migration, and external-dispatch expansion.
 
+For Phase 28, perform only one opt-in wrapper rollout against the most specific degraded provider job:
+
+```bash
+python3 -m py_compile ~/.hermes/scripts/multi-model-smoke-daily-full-wrapper.py
+./scripts/run_tests.sh tests/scripts/test_multi_model_smoke_daily_wrapper_gate.py \
+  tests/scripts/test_cron_provider_health_gate.py \
+  tests/workflow_kernel/test_runtime_switch_readiness.py
+python3 ~/.hermes/scripts/multi-model-smoke-daily-full-wrapper.py
+```
+
+Expected readback is `provider_health_degraded_skip`, `model_generation_attempted=false`, `cron_state_mutated=false`, and an append-only local skip ledger under `~/.hermes/state/cron-provider-health-gate/`. Do not edit `cron/jobs.json`, enable the global runtime switch, or patch multiple wrappers in the same slice.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
