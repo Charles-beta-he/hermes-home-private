@@ -157,6 +157,15 @@ python3 scripts/cron_provider_health_gate.py --write-report --json
 
 The Phase 24 gate consumes `~/.hermes/cron/jobs.json` and the latest provider probe, then emits decisions like `skip_provider_health_degraded`, `retry_allowed_by_provider_health`, and `run_with_degraded_provider_exclusions`. It must not mutate cron jobs or rerun anything; actual cron wrapper rollout is a later opt-in phase.
 
+Before migrating this growing script/ADR ladder into a new runtime architecture, compile a migration evaluation instead of switching behavior directly:
+
+```bash
+python3 scripts/workflow_architecture_migration_evaluation.py --write-report --json
+./scripts/run_tests.sh tests/scripts/test_workflow_architecture_migration_evaluation.py
+```
+
+The safe Phase 25 recommendation is incremental strangler migration: create a `kernel.*` package scaffold, keep existing scripts as compatibility CLIs, require parity tests for Phase17-24 behavior, and stop short of cron mutation, autorun changes, external dispatch expansion, or evidence-directory deletion. Big-bang rewrite is not acceptable because taskpool/mission/cron/external-dispatch semantics are evidence-sensitive.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
