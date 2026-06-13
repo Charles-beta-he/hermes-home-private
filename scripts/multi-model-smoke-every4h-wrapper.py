@@ -61,9 +61,18 @@ def main() -> int:
     script_args, gate_meta = script_args_for_decision(decision)
     if os.environ.get("HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY") == "1":
         payload = {"status": "provider_health_exclusion_plan", "job_id": JOB_ID, "job_name": JOB_NAME, "script_args": script_args, "model_generation_attempted": False, "cron_state_mutated": False, **gate_meta}
+        runtime_mode = "plan_only"
     else:
         payload = run_original(script_args)
         payload["provider_health_gate"] = gate_meta
+        runtime_mode = "provider_exclusion_or_original_run"
+    payload["wrapper_run_receipt"] = kernel_cron.record_wrapper_run_receipt(
+        job_id=JOB_ID,
+        job_name=JOB_NAME,
+        payload=payload,
+        gate_decision=decision,
+        runtime_mode=runtime_mode,
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

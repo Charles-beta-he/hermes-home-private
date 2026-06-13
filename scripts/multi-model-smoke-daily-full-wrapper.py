@@ -61,7 +61,21 @@ def run_original() -> dict:
 
 def main() -> int:
     skip = should_skip_for_provider_health()
-    payload = skip if skip else run_original()
+    if skip:
+        payload = skip
+        gate_decision = skip.get("decision") if isinstance(skip.get("decision"), dict) else load_gate_decision()
+        runtime_mode = "provider_health_degraded_skip"
+    else:
+        gate_decision = load_gate_decision()
+        payload = run_original()
+        runtime_mode = "original_run"
+    payload["wrapper_run_receipt"] = kernel_cron.record_wrapper_run_receipt(
+        job_id=JOB_ID,
+        job_name=JOB_NAME,
+        payload=payload,
+        gate_decision=gate_decision,
+        runtime_mode=runtime_mode,
+    )
     print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

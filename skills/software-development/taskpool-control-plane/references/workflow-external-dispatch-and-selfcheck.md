@@ -269,6 +269,22 @@ python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
 
 Expected partial readback may be `REAL_RUN_CORRELATION_PARTIAL_READY` when at least one wrapper has run after the projection and another has not reached its next schedule yet. Do not claim full two-wrapper runtime correlation until both wrappers have post-projection logs, or until a future wrapper-run ledger records explicit per-run kernel/gate metadata.
 
+For Phase 34, add append-only wrapper-run receipts for future scheduled runs instead of triggering cron. Patch only the opted-in wrappers and the kernel helper:
+
+```bash
+python3 -m py_compile workflow_kernel/cron_wrappers.py \
+  ~/.hermes/scripts/multi-model-smoke-daily-full-wrapper.py \
+  ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+./scripts/run_tests.sh tests/workflow_kernel/test_cron_wrapper_kernel_shim.py \
+  tests/scripts/test_multi_model_smoke_every4h_wrapper_gate.py \
+  tests/scripts/test_multi_model_smoke_daily_wrapper_gate.py
+HERMES_CRON_WRAPPER_RECEIPT_LEDGER=/tmp/phase34_receipts.jsonl \
+  HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 \
+  python3 ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+```
+
+Expected readback: receipt has `kernel_shim=true`, `runtime_mode`, `gate_report_id` when available, `cron_state_mutated=false`, and `external_side_effects=false`. The production ledger path is `~/.hermes/state/cron-provider-health-gate/wrapper_run_receipts.jsonl`; verification should use an override ledger to avoid polluting production receipts.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
