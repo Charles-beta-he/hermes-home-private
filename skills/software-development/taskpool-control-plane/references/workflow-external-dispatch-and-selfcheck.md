@@ -148,6 +148,15 @@ python3 scripts/provider_network_probe_ledger.py --write-report --json
 
 The Phase 23 probe must be unauthenticated and side-effect free: no LLM prompt, no credential read/write, no cron mutation, no Telegram send. Treat HTTP `401/403/404` as reachability evidence because they still prove DNS/proxy/TLS/edge routing; record provider-specific TLS/proxy/timeout classes for downstream cron gates.
 
+Then compile a read-only provider health gate before wiring cron execution:
+
+```bash
+python3 scripts/cron_provider_health_gate.py --write-report --json
+./scripts/run_tests.sh tests/scripts/test_cron_provider_health_gate.py
+```
+
+The Phase 24 gate consumes `~/.hermes/cron/jobs.json` and the latest provider probe, then emits decisions like `skip_provider_health_degraded`, `retry_allowed_by_provider_health`, and `run_with_degraded_provider_exclusions`. It must not mutate cron jobs or rerun anything; actual cron wrapper rollout is a later opt-in phase.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
