@@ -227,6 +227,21 @@ HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 python3 ~/.hermes/scripts/multi-mod
 
 Expected calibrated readback: Xiaomi `classification=reachable`, `status_code=401` on `*/v1/models`, health gate `degraded_endpoints=[]`, and every-4h plan returns base args only. This proves edge reachability, not credential validity, quota, or successful generation.
 
+For Phase 31 architecture switching, do not jump to global scheduler rewrite. Move the already-proven opt-in wrapper gate logic into a kernel compatibility shim while preserving cron entrypoints:
+
+```bash
+python3 -m py_compile workflow_kernel/cron_wrappers.py \
+  ~/.hermes/scripts/multi-model-smoke-daily-full-wrapper.py \
+  ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+./scripts/run_tests.sh tests/workflow_kernel/test_cron_wrapper_kernel_shim.py \
+  tests/scripts/test_multi_model_smoke_every4h_wrapper_gate.py \
+  tests/scripts/test_multi_model_smoke_daily_wrapper_gate.py \
+  tests/workflow_kernel/test_runtime_switch_readiness.py
+HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 python3 ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+```
+
+Expected readback: wrapper payload includes `kernel_shim=true`, `model_generation_attempted=false`, and `cron_state_mutated=false`. Keep `workflow_kernel.RUNTIME_SWITCH_ENABLED=false`, do not edit `cron/jobs.json`, and do not broaden to all wrappers in this slice.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.

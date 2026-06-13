@@ -1,35 +1,41 @@
 #!/usr/bin/env python3
 """No-argument cron wrapper for the 4h multi-model smoke check.
 
-Hermes cron script injection treats the `script` field as a path, not a shell
-command. Keep all arguments here so cron does not try to open
-`multi-model-smoke-safe.py --flag ...` as a single filename.
-
-Phase 29: this multi-provider wrapper consumes the local provider-health gate
-and converts `run_with_degraded_provider_exclusions` into concrete model
-selection args. It does not mutate cron state; it only excludes currently
-degraded providers from this wrapper invocation.
+Phase 31: provider-health gate consumption has moved into the workflow kernel
+compatibility shim. This wrapper remains the opt-in cron entrypoint and keeps
+all arguments explicit so Hermes cron treats `script` as a path, not a shell
+command.
 """
 from __future__ import annotations
 
-import glob
 import importlib.util
 import json
 import os
+import sys
 from pathlib import Path
-from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SAFE = SCRIPT_DIR / "multi-model-smoke-safe.py"
-JOB_ID = "2c14ca2a9bd2"
-JOB_NAME = "multi-model-smoke-every-4h"
-DEFAULT_GATE_GLOB = str(Path.home() / ".hermes" / "hermes-agent" / "docs" / "private" / "workflow-kernel-cron-provider-health-gate" / "cron_provider_health_gate_*.json")
-MODEL_PROVIDER = {
-    "gpt-5.5": "openai",
-    "mimo-v2.5-pro": "xiaomi",
-    "deepseek-v4-pro": "deepseek",
-}
-BASE_ARGS = ["--skip-claude", "--timeout", "45"]
+HERMES_AGENT_ROOT = Path.home() / ".hermes" / "hermes-agent"
+if str(HERMES_AGENT_ROOT) not in sys.path:
+    sys.path.insert(0, str(HERMES_AGENT_ROOT))
+
+from workflow_kernel import cron_wrappers as kernel_cron  # noqa: E402
+
+JOB_ID = kernel_cron.EVERY4H_JOB_ID
+JOB_NAME = kernel_cron.EVERY4H_JOB_NAME
+DEFAULT_GATE_GLOB = kernel_cron.DEFAULT_GATE_GLOB
+MODEL_PROVIDER = kernel_cron.EVERY4H_MODEL_PROVIDER
+BASE_ARGS = kernel_cron.EVERY4H_BASE_ARGS
+latest_gate_path = kernel_cron.latest_gate_path
+
+
+def load_gate_decision(job_id: str = JOB_ID) -> dict | None:
+    return kernel_cron.load_gate_decision(job_id)
+
+
+def script_args_for_decision(decision: dict | None) -> tuple[list[str], dict]:
+    return kernel_cron.every4h_script_args_for_decision(decision)
 
 
 def load_safe():
@@ -40,42 +46,7 @@ def load_safe():
     return mod
 
 
-def latest_gate_path(pattern: str = DEFAULT_GATE_GLOB) -> Path | None:
-    override = os.environ.get("HERMES_CRON_HEALTH_GATE_REPORT")
-    if override:
-        p = Path(override)
-        return p if p.exists() else None
-    matches = [Path(p) for p in glob.glob(pattern)]
-    return max(matches, key=lambda p: p.stat().st_mtime) if matches else None
-
-
-def load_gate_decision(job_id: str = JOB_ID) -> dict[str, Any] | None:
-    path = latest_gate_path()
-    if not path:
-        return None
-    report = json.loads(path.read_text())
-    for decision in report.get("decisions", []):
-        if decision.get("job_id") == job_id:
-            return {**decision, "gate_report": str(path), "gate_report_id": report.get("report_id")}
-    return None
-
-
-def script_args_for_decision(decision: dict[str, Any] | None) -> tuple[list[str], dict[str, Any]]:
-    args = list(BASE_ARGS)
-    degraded = []
-    if decision and decision.get("decision") == "run_with_degraded_provider_exclusions":
-        degraded = [str(x) for x in decision.get("degraded_endpoints") or []]
-        allowed_models = [model for model, provider in MODEL_PROVIDER.items() if provider not in set(degraded)]
-        for model in allowed_models:
-            args.extend(["--model", model])
-    return args, {
-        "gate_decision": decision,
-        "degraded_endpoints_excluded": degraded,
-        "selected_models": [args[i + 1] for i, item in enumerate(args[:-1]) if item == "--model"],
-    }
-
-
-def run_original(script_args: list[str]) -> dict[str, Any]:
+def run_original(script_args: list[str]) -> dict:
     mod = load_safe()
     return mod.run_smoke(
         script=str(SCRIPT_DIR / "multi-model-smoke.py"),
