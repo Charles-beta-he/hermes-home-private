@@ -21,7 +21,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SAFE = SCRIPT_DIR / "multi-model-smoke-safe.py"
 JOB_ID = "42baeebb646c"
 JOB_NAME = "multi-model-smoke-daily-full"
-DEFAULT_GATE_GLOB = str(Path.home() / ".hermes" / "hermes-agent" / "docs" / "private" / "workflow-kernel-provider-health-gate" / "cron_provider_health_gate_*.json")
+DEFAULT_GATE_GLOB = str(Path.home() / ".hermes" / "hermes-agent" / "docs" / "private" / "workflow-kernel-cron-provider-health-gate" / "cron_provider_health_gate_*.json")
 DEFAULT_SKIP_LEDGER = Path.home() / ".hermes" / "state" / "cron-provider-health-gate" / "provider_health_skips.jsonl"
 
 

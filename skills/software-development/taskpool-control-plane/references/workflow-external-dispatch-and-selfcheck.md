@@ -213,6 +213,20 @@ HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 python3 ~/.hermes/scripts/multi-mod
 
 Expected plan-only readback is `provider_health_exclusion_plan`, `selected_models` excluding `mimo-v2.5-pro`, `degraded_endpoints_excluded=[xiaomi]`, `model_generation_attempted=false`, and `cron_state_mutated=false`. This phase may patch only the every-4h wrapper; it must not execute model generation during verification or mutate cron job definitions.
 
+If later evidence suggests a provider is degraded only because the probe request shape diverges from runtime, calibrate the probe before keeping cron quarantine decisions. For Xiaomi/MiMo, the probe must not use retired/stale hosts like `api.mimogpt.com`; it should resolve the runtime OpenAI-compatible base URL (`XIAOMI_BASE_URL` if set, otherwise `https://api.xiaomimimo.com/v1`) and probe `<base_url>/models`. `401` is reachable evidence. Also ensure wrappers read `docs/private/workflow-kernel-cron-provider-health-gate/cron_provider_health_gate_*.json`; stale report paths can keep old quarantine decisions alive after probe repair.
+
+```bash
+python3 scripts/provider_network_probe_ledger.py --write-report --json --timeout 8
+python3 scripts/cron_provider_health_gate.py --write-report --json
+HERMES_MULTI_MODEL_SMOKE_EVERY4H_PLAN_ONLY=1 python3 ~/.hermes/scripts/multi-model-smoke-every4h-wrapper.py
+./scripts/run_tests.sh tests/scripts/test_provider_network_probe_ledger.py \
+  tests/scripts/test_cron_provider_health_gate.py \
+  tests/scripts/test_multi_model_smoke_every4h_wrapper_gate.py \
+  tests/scripts/test_multi_model_smoke_daily_wrapper_gate.py
+```
+
+Expected calibrated readback: Xiaomi `classification=reachable`, `status_code=401` on `*/v1/models`, health gate `degraded_endpoints=[]`, and every-4h plan returns base args only. This proves edge reachability, not credential validity, quota, or successful generation.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
