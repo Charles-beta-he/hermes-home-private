@@ -323,6 +323,46 @@ python3 scripts/workflow_runtime_enablement_packet.py --write-report --json
 
 Expected readback: `RUNTIME_ENABLEMENT_HUMAN_AUTH_PACKET_READY` with options `A_READ_ONLY_CONTINUE`, `B_SINGLE_WRAPPER_RUNTIME_ENABLE_DRY_RUN`, `C_SINGLE_WRAPPER_SCHEDULER_NATIVE_ROLLOUT`, `D_WAIT_FOR_NATURAL_RECEIPTS`. Do not enable runtime switch, mutate cron, trigger jobs, call credentialed model generation, or send external messages without the specific option being authorized.
 
+For Phase 38, when asked to “梳理顺序” before continuing, compile the ordered phase/dependency map instead of crossing the enablement boundary:
+
+```bash
+python3 -m py_compile scripts/workflow_sequence_map.py \
+  scripts/workflow_runtime_enablement_packet.py \
+  scripts/workflow_runtime_readiness_summary.py
+./scripts/run_tests.sh tests/scripts/test_workflow_sequence_map.py \
+  tests/scripts/test_workflow_runtime_enablement_packet.py \
+  tests/scripts/test_workflow_runtime_readiness_summary.py
+python3 scripts/workflow_sequence_map.py --write-report --json
+```
+
+Expected readback: `WORKFLOW_SEQUENCE_MAP_READY`, `validation_errors=[]`, ordered Phase17-37 dependencies, and next ladder Phase39(A read-only runbook), Phase40(A drift watcher), Phase41(B dry-run), Phase42(C scheduler-native rollout). Continue by default into Phase39 unless the user explicitly selects B/C.
+
+For Phase 39, compile an enablement runbook and rollback drill under `A_READ_ONLY_CONTINUE`; do not execute the runbook:
+
+```bash
+python3 -m py_compile scripts/workflow_enablement_runbook.py \
+  scripts/workflow_sequence_map.py \
+  scripts/workflow_runtime_enablement_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_enablement_runbook.py \
+  tests/scripts/test_workflow_sequence_map.py \
+  tests/scripts/test_workflow_runtime_enablement_packet.py
+python3 scripts/workflow_enablement_runbook.py --write-report --json
+```
+
+Expected readback: `ENABLEMENT_RUNBOOK_READY`, preflight commands, dry-run commands using temp receipt ledger only, rollback drill, and go/no-go gates. The runbook is executable documentation, not permission to run runtime/scheduler changes.
+
+For Phase 40, add a read-only drift watcher over projection/correlation/readiness-summary artifacts and production wrapper-run receipts:
+
+```bash
+python3 -m py_compile scripts/workflow_drift_watch.py \
+  scripts/workflow_enablement_runbook.py
+./scripts/run_tests.sh tests/scripts/test_workflow_drift_watch.py \
+  tests/scripts/test_workflow_enablement_runbook.py
+python3 scripts/workflow_drift_watch.py --write-report --json
+```
+
+Expected readback may be `DRIFT_WATCH_DEGRADED_NOT_BLOCKED` with `production_receipts_not_complete` until natural scheduled wrapper runs append receipts. Do not trigger cron solely to satisfy the watcher.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
