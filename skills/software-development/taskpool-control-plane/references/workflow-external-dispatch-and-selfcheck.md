@@ -285,6 +285,16 @@ HERMES_CRON_WRAPPER_RECEIPT_LEDGER=/tmp/phase34_receipts.jsonl \
 
 Expected readback: receipt has `kernel_shim=true`, `runtime_mode`, `gate_report_id` when available, `cron_state_mutated=false`, and `external_side_effects=false`. The production ledger path is `~/.hermes/state/cron-provider-health-gate/wrapper_run_receipts.jsonl`; verification should use an override ledger to avoid polluting production receipts.
 
+For Phase 35, make run correlation receipt-aware without requiring a live cron run:
+
+```bash
+python3 -m py_compile scripts/workflow_cron_run_outcome_correlation.py
+./scripts/run_tests.sh tests/scripts/test_workflow_cron_run_outcome_correlation.py
+python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
+```
+
+Expected behavior: if production `wrapper_run_receipts.jsonl` has post-projection rows, classify `RECEIPT_AFTER_PROJECTION_CORRELATED`; otherwise fall back to wrapper JSONL log correlation such as `REAL_RUN_CORRELATION_PARTIAL_READY`. Do not trigger cron just to create receipts.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
