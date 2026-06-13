@@ -166,6 +166,17 @@ python3 scripts/workflow_architecture_migration_evaluation.py --write-report --j
 
 The safe Phase 25 recommendation is incremental strangler migration: create a `kernel.*` package scaffold, keep existing scripts as compatibility CLIs, require parity tests for Phase17-24 behavior, and stop short of cron mutation, autorun changes, external dispatch expansion, or evidence-directory deletion. Big-bang rewrite is not acceptable because taskpool/mission/cron/external-dispatch semantics are evidence-sensitive.
 
+For Phase 26, create only the package scaffold and shared helper extraction:
+
+```bash
+python3 -m py_compile workflow_kernel/__init__.py workflow_kernel/io.py
+./scripts/run_tests.sh tests/workflow_kernel/test_kernel_scaffold.py \
+  tests/scripts/test_workflow_architecture_migration_evaluation.py \
+  tests/scripts/test_cron_provider_health_gate.py
+```
+
+Keep `workflow_kernel.RUNTIME_SWITCH_ENABLED = False`. Existing scripts remain compatibility CLIs; importing shared IO helpers is allowed, but cron wrappers, external dispatch, autorun, config migration, and evidence-directory consolidation remain closed.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
