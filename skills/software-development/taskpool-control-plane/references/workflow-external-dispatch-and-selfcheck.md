@@ -442,6 +442,16 @@ python3 scripts/workflow_external_dispatch_policy_gate.py --write-report --json
 
 Expected readback: `EXTERNAL_DISPATCH_POLICY_GATE_LOCAL_OUTBOX_RECORDED`, `selected_track=P47A_LOCAL_OUTBOX_ONLY`, `selected_adapter=local_outbox_simulator`, `external_side_effects_executed=false`, `unattended_external_dispatch_enabled=false`, with local outbox and receipt artifacts under `docs/private/workflow-kernel-external-dispatch-policy-gate/`. This is the correct full-landing next step when the user authorizes continuation but does not supply a user-visible external target or payload.
 
+For Phase 49 productization, compile schema/projection-only Workflow Pack and Agent Pack manifests from the proven kernel/external-dispatch governance chain:
+
+```bash
+python3 -m py_compile scripts/workflow_pack_manifest_compiler.py
+./scripts/run_tests.sh tests/scripts/test_workflow_pack_manifest_compiler.py
+python3 scripts/workflow_pack_manifest_compiler.py --write-report --json
+```
+
+Expected readback: `WORKFLOW_AGENT_PACK_MANIFESTS_READY`, `validation_errors=[]`, workflow pack `workflow_kernel_external_dispatch_governance`, agent pack `agent.workflow_kernel_operator`, fail-closed side-effect policy, and artifacts under `docs/private/workflow-kernel-pack-manifests/`. This phase is projection-only: no cron mutation, model generation, credential access, external send, or unattended dispatch. If exact external adapter/target/payload is still absent after Phase49, continue to pack registry/control-tower projection rather than inventing a guarded send.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
 
 ## Common P1/P2 classification
