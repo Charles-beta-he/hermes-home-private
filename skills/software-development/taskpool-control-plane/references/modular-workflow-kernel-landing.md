@@ -129,7 +129,9 @@ Each boundary should write a Mission stage report with:
 
 - commits/artifact paths;
 - validator/test command outputs;
-- explicit false side-effect flags;
+- explicit false side-effect flags, except for a specifically authorized external-dispatch smoke test where the receipt must instead record `external_side_effect_executed=true` and the exact target/message id;
 - next boundary and required human choice.
+
+For taskpool evidence markers, use proof-check accepted prefixes such as `command:send_message target=telegram success=true message_id=...`, `artifact:...`, `proof:...`, or `classification:...`; avoid ad-hoc prefixes like `tool:...` because `proof-check` treats them as unstructured evidence.
 
 Avoid saying “done” for the whole architecture when the current layer is only contract/projection/acceptance/executor-preview.
