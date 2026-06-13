@@ -409,6 +409,31 @@ python3 scripts/workflow_runtime_readiness_summary.py --write-report --json
 
 Expected readback: daily plan-only receipt `runtime_mode=scheduler_native_plan_only`, daily job script `workflow-kernel-multi-model-smoke-daily-full-runner.py`, every4h still `workflow-kernel-multi-model-smoke-every4h-runner.py`, projection ready, receipt correlation partial/ready, drift clear, `RUNTIME_SWITCH_AUTO_ENABLED`, `RUNTIME_READINESS_SUMMARY_AUTO_ENABLED`, and `explicit_enable_required=false`. Auto-enable still does not authorize unrelated external dispatch expansion, credential policy broadening, or broad scheduler rewrites without scoped rollback gates.
 
+For Phase 46 after auto-enable, do not immediately broaden behavior. Observe natural scheduled runs and refresh the read-only evidence chain:
+
+```bash
+python3 scripts/workflow_cron_runtime_projection.py --write-report --json
+python3 scripts/workflow_cron_run_outcome_correlation.py --write-report --json
+python3 scripts/workflow_runtime_readiness_summary.py --write-report --json
+python3 scripts/workflow_drift_watch.py --write-report --json
+python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json
+python3 ~/.hermes/scripts/brain_task_orchestrator.py proof-check --json
+```
+
+Expected readback: both opted-in jobs remain scheduler-native, runtime summary remains `RUNTIME_READINESS_SUMMARY_AUTO_ENABLED` or `RUNTIME_READINESS_SUMMARY_DEGRADED_NOT_BLOCKED` when waiting for post-projection scheduled runs, drift remains `DRIFT_WATCH_CLEAR_READ_ONLY`, and scheduled-run receipts/logs are correlated without manually triggering cron. If no new scheduled run has occurred yet, classify it as `POST_AUTO_ENABLE_OBSERVATION_PENDING_SCHEDULED_RUN` rather than a failure.
+
+For Phase 47 after auto-enable observation, compile an external-dispatch expansion candidate packet before any external side effect:
+
+```bash
+python3 -m py_compile scripts/workflow_external_dispatch_expansion_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_external_dispatch_expansion_packet.py
+python3 scripts/workflow_external_dispatch_expansion_packet.py --write-report --json
+```
+
+Expected readback: `EXTERNAL_DISPATCH_EXPANSION_CANDIDATE_READY`, `unattended_external_dispatch_enabled=false`, `external_side_effects_executed=false`, default adapter `local_outbox_simulator`, and candidate tracks for local outbox, dry-run policy, guarded single send, and unattended policy gate. Do not call `send_message`, mutate Lark/GitHub, read credentials, or enable unattended dispatch until exact adapter/target/payload/mode/idempotency/rollback are selected.
+
+Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
