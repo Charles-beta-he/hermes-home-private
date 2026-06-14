@@ -520,9 +520,31 @@ python3 -m py_compile hermes_cli/control_tower.py plugins/control-tower/dashboar
   tests/plugins/test_control_tower_workflow_kernel_policy_api.py
 ```
 
-Expected readback: `POLICY_EDITOR_APPROVAL_UI_READY`, allowed decisions `draft|approve_dry_run_only|reject|request_changes`, local approval ledger under `docs/private/workflow-kernel-policy-editor/`, and live dashboard API exposes `workflow_kernel_control_tower.policy_editor`. The endpoint `POST /api/plugins/control-tower/workflow-kernel/policy-editor/decision` must only record intent; it must not mutate policy, enable unattended dispatch, install cron, or send messages. After Phase56, stop at the next larger authority boundary unless the user chooses: Phase57 dry-run cron rollout vs Phase58 guarded send runner activation packet.
+Expected readback: `POLICY_EDITOR_APPROVAL_UI_READY`, allowed decisions `draft|approve_dry_run_only|reject|request_changes`, local approval ledger under `docs/private/workflow-kernel-policy-editor/`, and live dashboard API exposes `workflow_kernel_control_tower.policy_editor`. The endpoint `POST /api/plugins/control-tower/workflow-kernel/policy-editor/decision` must only record intent; it must not mutate policy, enable unattended dispatch, install cron, or send messages. If the user says Phase57 and Phase58 are both required, continue in order rather than treating them as a divergence.
 
-Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
+For Phase 57, roll out exactly one no-agent/local dry-run cron job with backup/rollback evidence:
+
+```bash
+python3 -m py_compile scripts/workflow_dry_run_cron_rollout.py ~/.hermes/scripts/workflow-kernel-unattended-dry-run-runner.py
+./scripts/run_tests.sh tests/scripts/test_workflow_dry_run_cron_rollout.py tests/scripts/test_workflow_unattended_dry_run_scheduler.py
+python3 scripts/workflow_dry_run_cron_rollout.py --dry-run --write-report --json
+python3 scripts/workflow_dry_run_cron_rollout.py --write-report --json
+python3 ~/.hermes/scripts/workflow-kernel-unattended-dry-run-runner.py
+```
+
+Expected readback: `DRY_RUN_CRON_ROLLOUT_APPLIED`, job id `wk57dryrun01`, `script=workflow-kernel-unattended-dry-run-runner.py`, `no_agent=true`, `deliver=local`, `would_send=false`, `external_side_effects_executed=false`, and a rollback backup under `~/.hermes/cron/jobs.json.bak-phase57-*`. This is a scheduler mutation but still no external dispatch.
+
+For Phase 58, compile the guarded send runner activation packet/contract without implementing or activating the runner:
+
+```bash
+python3 -m py_compile scripts/workflow_guarded_send_runner_activation_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_guarded_send_runner_activation_packet.py
+python3 scripts/workflow_guarded_send_runner_activation_packet.py --write-report --json
+```
+
+Expected readback: `GUARDED_SEND_RUNNER_ACTIVATION_PACKET_READY`, `manual_send_runner_is_active_now=false`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, `send_message_called=false`, and contract artifacts under `docs/private/workflow-kernel-guarded-send-runner-activation/`. After Phase58, stop at the next authority boundary unless the user chooses: Phase59 guarded manual-send runner implementation vs Phase60 one-shot guarded send activation.
+
+Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
 
