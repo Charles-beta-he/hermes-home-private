@@ -1,0 +1,107 @@
+{
+  "status": "FAIL",
+  "checked_count": 328,
+  "failure_count": 72,
+  "warning_count": 14,
+  "classes": {
+    "other_failure": {
+      "count": 5,
+      "sample": [
+        {
+          "failure": "unstructured evidence in 2026-05-21-补齐-hermes-provider-路由的缓存亲和性与切换原因观测-2: /Users/charles/.hermes/notes/reports/aihot-daily-2026-05-21.tasks.json"
+        },
+        {
+          "failure": "unstructured evidence in 2026-05-21-评估本地代码知识图谱作为-hermes-上下文定位与工具调用降噪层-2: /Users/charles/.hermes/notes/reports/aihot-daily-2026-05-21.tasks.json"
+        },
+        {
+          "failure": "unstructured evidence in 2026-05-28-uvisa-c端-lark-2e9af3e5---用户端-点击底部导航栏u-visa点击充值输入金额然后勾选购买-u-visa-定期理财输入金额完成充值操作后返: claude_triage:CardScreen 读 card.flexibleAmount/fixedAmount 拆分活期/定期余额(CardScreen.tsx:221) | card.store 23/23 pass | online_ui_retest_pending"
+        },
+        {
+          "failure": "unstructured evidence in 2026-05-28-uvisa-c端-lark-d3066f9b---用户端-点击底部导航栏资产点击兑换或者点击法币钱包中的币种点击兑换输入金额后和选择收到币种后点击下一步点击确认: 详情页交易时间格式修复(我改,scoped)。PRD line1567 详情=YYYY/MM/DD(斜杠) vs §6.12.1 列表=YYYY-MM-DD(短横),原型 TxDetailScreen.tsx:537/676/923 replace(/-/g,/) 印证。新增 formatTxDateDetail 仅作用 4 个详情 DetailRow,列表/时间轴 formatTxDate 短横不变。TxDetailScreen 7/7 pass,TxList 无回归(其 1 red 为 pre-existing b9d0fcf8)"
+        },
+        {
+          "failure": "unstructured evidence in 2026-05-28-uvisa-c端-lark-d3066f9b---用户端-点击底部导航栏资产点击兑换或者点击法币钱包中的币种点击兑换输入金额后和选择收到币种后点击下一步点击确认: status:online_ui_retest_pending"
+        }
+      ]
+    },
+    "potentially_auto_normalizable_evidence_ref_if_existing_artifact_or_proof_is_present": {
+      "count": 62,
+      "sample": [
+        {
+          "task": "2026-05-25-ecchermes自强化最终架构证据链补齐禁止降级兜底成为目标架构",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-05-25-ecchermes自强化最终架构证据链补齐禁止降级兜底成为目标架构"
+        },
+        {
+          "task": "2026-05-30-feynman-开源-ai-研究代理架构分析与-hermes-吸收评估",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-05-30-feynman-开源-ai-研究代理架构分析与-hermes-吸收评估"
+        },
+        {
+          "task": "2026-06-01-为-hermes-mcp-工具健康检查设计真实-client-语义探针",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-06-01-为-hermes-mcp-工具健康检查设计真实-client-语义探针"
+        },
+        {
+          "task": "2026-06-01-分析-blueprint-网站功能并强化-manufacturing-brain-蓝图-cad-成本-bom-装配评估能力",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-06-01-分析-blueprint-网站功能并强化-manufacturing-brain-蓝图-cad-成本-bom-装配评估能力"
+        },
+        {
+          "task": "2026-06-01-学习-openai-codex-cli-开源架构并吸收执行策略-沙箱-子代理-上下文治理模式",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-06-01-学习-openai-codex-cli-开源架构并吸收执行策略-沙箱-子代理-上下文治理模式"
+        },
+        {
+          "task": "2026-06-01-技术储备评估-openbmb-voxcpm-作为-hermes-对话语音层",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-06-01-技术储备评估-openbmb-voxcpm-作为-hermes-对话语音层"
+        },
+        {
+          "task": "2026-06-01-评估-awesome-architecture-架构图谱并吸收为-hermes-架构脑-任务前置设计门",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-06-01-评估-awesome-architecture-架构图谱并吸收为-hermes-架构脑-任务前置设计门"
+        },
+        {
+          "task": "2026-06-01-评估-claude-code-harness将-ai-编程聊天转为可验证交付流程",
+          "failure": "mission envelope missing ['evidence_refs:structured_ref']: 2026-06-01-评估-claude-code-harness将-ai-编程聊天转为可验证交付流程"
+        }
+      ]
+    },
+    "requires_real_ratification_artifact_or_human_acceptance": {
+      "count": 5,
+      "sample": [
+        {
+          "task": "2026-05-30-plugin分析-find-skills--一句话自动匹配最佳插件",
+          "failure": "mission envelope missing ['certified_requires_ratification_artifact', 'ratification_artifact:structured_ref']: 2026-05-30-plugin分析-find-skills--一句话自动匹配最佳插件"
+        },
+        {
+          "task": "2026-05-30-评估cursor插件规范对hermes外部工具集成的参考价值-2",
+          "failure": "mission envelope missing ['certified_requires_ratification_artifact', 'evidence_refs:structured_ref', 'ratification_artifact:structured_ref']: 2026-05-30-评估cursor插件规范对hermes外部工具集成的参考价值-2"
+        },
+        {
+          "task": "2026-05-31-capability-based-task-routing-for-edge-devices-设计",
+          "failure": "mission envelope missing ['certified_requires_ratification_artifact', 'ratification_artifact:structured_ref']: 2026-05-31-capability-based-task-routing-for-edge-devices-设计"
+        },
+        {
+          "task": "2026-05-31-task-lease--heartbeat--idempotent-ack-协议设计",
+          "failure": "mission envelope missing ['certified_requires_ratification_artifact', 'ratification_artifact:structured_ref']: 2026-05-31-task-lease--heartbeat--idempotent-ack-协议设计"
+        },
+        {
+          "task": "2026-06-02-补证闭环task---plugin分析-find-skills--一句话自动匹配最佳插件missing-multimodel-certification",
+          "failure": "mission envelope missing ['certified_requires_ratification_artifact', 'ratification_artifact:structured_ref']: 2026-06-02-补证闭环task---plugin分析-find-skills--一句话自动匹配最佳插件missing-multimodel-certification"
+        }
+      ]
+    }
+  },
+  "warning_classes": {
+    "terminal_invalid_autorun_proof_hash_warning": {
+      "count": 14,
+      "sample": [
+        "terminal invalid autorun proof hash debt in 2026-05-28-uvisa-c端-lark-1f44b141---用户端-点击底部导航栏u-visa点击可用余额活期宝点击提现到钱包进入u-visa卡提现页面-输入金额后选择需: proof:sha256:585f3fc449cb95b78ce3e90e90e5d62b78f1e7c87e2a96e89a82d8d2cc9e7c66",
+        "terminal invalid autorun proof hash debt in 2026-05-28-uvisa-c端-lark-27060895---用户端-点击底部导航栏资产点击转入-国际银行电汇或点击兑换-点击选择收到币种后的弹框或点击转出-跨境汇款内的币: proof:sha256:2de3ed7c4d24c60d892bf67b57062b6c162966f700eb57dbbe99558378a15022",
+        "terminal invalid autorun proof hash debt in 2026-05-31-hermes-ux-9-devicetwin-diagnose-taskpool-multimodel-verifier-first-implementatio: proof:sha256:a6feb6a2aa71f8efea188f9fbe9e32aad59eb80f5135696eaca3cc7c205b23fb",
+        "terminal invalid autorun proof hash debt in 2026-05-31-hermes-ux-9-devicetwin-diagnose-taskpool-multimodel-verifier-first-implementatio: proof:sha256:e097fcd26d132b9032e3dc5816c394198ce9b4a78e3dba72ec159b1422147927",
+        "terminal invalid autorun proof hash debt in 2026-06-02-补证闭环task---hermes-ux-9-devicetwin-diagnose-taskpool-multimodel-verifier-first-im: proof:sha256:a6feb6a2aa71f8efea188f9fbe9e32aad59eb80f5135696eaca3cc7c205b23fb",
+        "terminal invalid autorun proof hash debt in 2026-06-02-补证闭环task---将-ai-记忆产品信号转化为-hermes-召回反漂移治理门评估missing-project-verification: proof:sha256:b8c804579d60fad0f6423f199c86924efe89b129ae6397f2b0a5f87d2220d2c4",
+        "terminal invalid autorun proof hash debt in 2026-06-04-补证闭环task---hermes-ux-9-devicetwin-diagnose-taskpool-multimodel-verifier-first-im: proof:sha256:e964e1e15dd71116481ce1808ac109779ece5e2ca30b4cc57f27a15737734812",
+        "terminal invalid autorun proof hash debt in 2026-06-05-评估-openjarvis-本地优先-agent-原语对-hermes-local-brain-taskpool-的可迁移治理模式: proof:sha256:94b870ff5cabc3aa92717cc39815cf2af975fa478a5c95a9484bf2582ddb451b"
+      ]
+    }
+  },
+  "safe_next_slice": "generate a dry-run supplement candidate only for tasks whose current frontmatter already contains existing local artifact:/proof:/file:/url evidence that can be canonicalized; route certified/ratification gaps to handoff unless real ratification artifacts are found",
+  "green_gate": "do not treat include-active proof-check as green while status != PASS or while these classified debts remain unresolved"
+}
