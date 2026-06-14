@@ -646,6 +646,26 @@ python3 scripts/workflow_manual_only_governance_archive.py --write-report --json
 
 Expected readback: `MANUAL_ONLY_GOVERNANCE_ARCHIVE_READY`, `archive_policy=read_only_index_closed_ladder`, indexed key phase artifacts present, `read_only=true`, `reopen_apply_enabled=false`, `unattended_dispatch_enabled=false`, and `external_side_effects_executed=false`.
 
+For Phase 69, generate a read-only periodic closure health report:
+
+```bash
+python3 -m py_compile scripts/workflow_periodic_closure_health_report.py
+./scripts/run_tests.sh tests/scripts/test_workflow_periodic_closure_health_report.py
+python3 scripts/workflow_periodic_closure_health_report.py --write-report --json
+```
+
+Expected readback: `PERIODIC_CLOSURE_HEALTH_REPORT_CLEAR`, `health=clear`, `stage_report_only=true`, `read_only=true`, `unattended_dispatch_enabled=false`, and `external_side_effects_executed=false`.
+
+For Phase 70, create a packet-only archive publication gate:
+
+```bash
+python3 -m py_compile scripts/workflow_archive_publication_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_archive_publication_packet.py
+python3 scripts/workflow_archive_publication_packet.py --write-report --json
+```
+
+Expected readback: `ARCHIVE_PUBLICATION_PACKET_READY`, default `A_KEEP_PRIVATE_NO_PUBLICATION`, `packet_only=true`, `publication_apply_enabled=false`, `external_publication_enabled=false`, and `external_side_effects_executed=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
