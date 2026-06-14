@@ -560,7 +560,29 @@ For Phase 60, execute exactly one packet-approved Telegram home send through the
 python3 scripts/workflow_guarded_manual_send_runner.py --execute --write-report --json
 ```
 
-Expected readback: `ONE_SHOT_GUARDED_SEND_VERIFIED`, exact `message_id`, `chat_id`, payload hash, idempotency key, `external_side_effects_executed=true`, `unattended_dispatch_enabled=false`, and append-only receipt ledger. This authorizes one send only; do not enable repeated, cron, unattended, or cross-adapter sends. After Phase60, stop at the next boundary unless the user chooses: Phase61 post-send correlation/compensation watch vs Phase62 unattended dispatch enablement packet.
+Expected readback: `ONE_SHOT_GUARDED_SEND_VERIFIED`, exact `message_id`, `chat_id`, payload hash, idempotency key, `external_side_effects_executed=true`, `unattended_dispatch_enabled=false`, and append-only receipt ledger. This authorizes one send only; do not enable repeated, cron, unattended, or cross-adapter sends. If the same governed Workflow Kernel sequence continues and the user says Phase61 and Phase62 are both required, continue in order rather than treating them as a divergence.
+
+Applicability: only for this Hermes-owned Workflow Kernel external-dispatch governance ladder after Phase60 one-shot guarded send evidence exists. Anti-condition: do not apply to unrelated projects, generic notification systems, or any workflow that lacks exact target/payload/receipt/compensation evidence.
+
+For Phase 61, run the post-send correlation and compensation watch without any new send:
+
+```bash
+python3 -m py_compile scripts/workflow_post_send_correlation_watch.py
+./scripts/run_tests.sh tests/scripts/test_workflow_post_send_correlation_watch.py
+python3 scripts/workflow_post_send_correlation_watch.py --write-report --json
+```
+
+Expected readback: `POST_SEND_CORRELATION_COMPENSATION_WATCH_READY`, Phase60 `message_id` correlated with the ledger, idempotency/payload hash match, compensation path present, `new_message_sent=false`, and `unattended_dispatch_enabled=false`.
+
+For Phase 62, generate the unattended dispatch enablement packet fail-closed:
+
+```bash
+python3 -m py_compile scripts/workflow_unattended_dispatch_enablement_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_unattended_dispatch_enablement_packet.py
+python3 scripts/workflow_unattended_dispatch_enablement_packet.py --write-report --json
+```
+
+Expected readback: `UNATTENDED_DISPATCH_ENABLEMENT_PACKET_READY`, options `A_KEEP_MANUAL_ONLY|B_APPROVE_DRY_RUN_ONLY_AUTOMATION|C_APPROVE_ONE_TARGET_LIMITED_UNATTENDED_SENDS`, default `A_KEEP_MANUAL_ONLY`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and `cron_state_mutated=false`. This is a packet/decision schema only; do not enable repeated sends without a future explicit decision/apply phase.
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
