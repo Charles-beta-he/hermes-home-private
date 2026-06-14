@@ -1,0 +1,39 @@
+{
+  "source_short_url": "https://v.douyin.com/J4zg9SsID24/",
+  "ies_url": "https://www.iesdouyin.com/share/note/7650913027203019880/",
+  "canonical_douyin_url": "https://www.douyin.com/note/7650913027203019880",
+  "aweme_id": "7650913027203019880",
+  "type": "note",
+  "desc": "#量化交易 #神经网络\n终于是把回撤降下来了\n这个架构和狼尊一样\n欢愉命途和技能冲突（利润和回撤）\n全自动是打不好的\n还有就是看到有关于一些\n包括质疑这些知识是怎么换来的\n（所以我放出来了与AI的对话）\n其实我就算没有量化辅助也不会亏",
+  "create_time": 1781367006,
+  "create_time_iso": "2026-06-14T00:10:06",
+  "author": {
+    "nickname": "HC",
+    "short_id": "92759303425",
+    "unique_id": "92759303425",
+    "signature": "",
+    "sec_uid": "MS4wLjABAAAAuNkwQfpxbQZpCHSNTs537jbr_gYiMkVpTFxi1Ni46KgnI2FnhLkCghyY5WAhYU3V"
+  },
+  "statistics": {
+    "aweme_id": "7650913027203019880",
+    "comment_count": 14,
+    "digg_count": 40,
+    "play_count": 0,
+    "share_count": 7,
+    "collect_count": 25
+  },
+  "image_url_count": 7,
+  "image_urls": [
+    "https://p3-sign.douyinpic.com/tos-cn-i-0813/oEAUAfr8DBBUFAOBBaEfvMI8WEEQUmHAlG7qfA~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=GLdUlHL%2FAANepLv9wz0IW7BPARc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9",
+    "https://p11-sign.douyinpic.com/tos-cn-i-0813/oIzBflAoIErOGrABvfUBaD8EWQz8EHAfAAUFB7~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=l6h6XGHJoasBNP1ScMeUZyrMgOk%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9",
+    "https://p3-sign.douyinpic.com/tos-cn-i-0813c001/ocUWBlrfQAvqEHUBIBAaxBAIA7F8FEf8QAODfE~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=%2F6ZwvgINQB9jKpEzaIBOF6L1WVs%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9",
+    "https://p11-sign.douyinpic.com/tos-cn-i-0813c001/ooAr8Bsf7UE9BEBREODaHfFvA8dWAAlIUEfAQB~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=ICdccTGzyVfgQzHOjK7C95T2b%2B8%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9",
+    "https://p26-sign.douyinpic.com/tos-cn-i-0813/owDaAEBBQEHWOIEV8f7fBFlB0fpuvAr8AUAAFU~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=6HykXzqXNB5a31CkVVXi%2FcMqUsg%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9",
+    "https://p5-ex-gddgtc-sign.douyinpic.com/tos-cn-i-0813/o4BfIEwUBDA8f8AGAvFlB7UABBHArEDWQOfbaE~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=HutSHznNIJAQiDSMGDdH08nEprw%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9",
+    "https://p26-sign.douyinpic.com/tos-cn-i-0813c001/okfUCH7BBvDWOavEFfFfBIA8ByA8QAElvrAEUA~tplv-dy-aweme-images:q75.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=UjMVNaW498bO9GnVmPs1YQZJrfw%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=202606141557180E668E0D0487A184FEB9"
+  ],
+  "video_url_candidates": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?video_id=https://sf6-cdn-tos.douyinstatic.com/obj/ies-music/7634172762424560434.mp3&ratio=720p&line=0"
+  ],
+  "downloaded_video_bytes": 0
+}

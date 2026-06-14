@@ -1,0 +1,68 @@
+{
+  "aweme_id": "7650419412096355626",
+  "desc": "AI 写的 UI 巨土？一个开源工具直接根治 自带全套设计体系，根治 AI 同质化土味界面 ，极简快捷指令，抛光、审计、评审一键搞定 。兼容 Cursor、Copilot 所有主流 AI 编码工具。#干货分享 #github #UI #网站推荐 #编程",
+  "create_time": 1781352720,
+  "author": {
+    "nickname": "Tony讲实话",
+    "short_id": "89235837752",
+    "signature": "🌐分享小白邪修软件/技巧\n📝视频里的资料，进群都可以免费获取\n💻需要项目远程部署安装或者定制请私我",
+    "uid": null,
+    "sec_uid": "MS4wLjABAAAAxjzU2dmJhZKLNtnF1JTmCGILHjH0YrgteDYgE56pM1N6DGgIWWWCuycXi9Wg4s5F"
+  },
+  "statistics": {
+    "aweme_id": "7650419412096355626",
+    "comment_count": 3,
+    "digg_count": 536,
+    "play_count": 0,
+    "share_count": 78,
+    "collect_count": 633
+  },
+  "aweme_type": 4,
+  "images_count": 0,
+  "music": "@Tony讲实话创作的原声一Tony讲实话（原声中的歌曲：Disaster（Phonk）-Vedox）",
+  "text_extra": [
+    {
+      "start": 99,
+      "end": 104,
+      "type": 1,
+      "hashtag_name": "干货分享",
+      "hashtag_id": 1591638955662429
+    },
+    {
+      "start": 105,
+      "end": 112,
+      "type": 1,
+      "hashtag_name": "github",
+      "hashtag_id": 1612596518104067
+    },
+    {
+      "start": 113,
+      "end": 116,
+      "type": 1,
+      "hashtag_name": "UI",
+      "hashtag_id": 1668908543259661
+    },
+    {
+      "start": 117,
+      "end": 122,
+      "type": 1,
+      "hashtag_name": "网站推荐",
+      "hashtag_id": 1614384633484301
+    },
+    {
+      "start": 123,
+      "end": 126,
+      "type": 1,
+      "hashtag_name": "编程",
+      "hashtag_id": 1575636255508494
+    }
+  ],
+  "images": [],
+  "video_urls": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?video_id=v0300fg10000d8lrv3vog65qkvlt1t5g&ratio=720p&line=0",
+    "https://p11-sign.douyinpic.com/tos-cn-i-dy/15ec74be1c32448cbbf5deffe133035d~tplv-dy-resize-walign-adapt-aq:540:q75.webp?lk3s=138a59ce&x-expires=1782619200&x-signature=%2BXUW9n5KrnCqGZDWBT%2FbAaLrQ6A%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=cover&biz_tag=aweme_video&l=202606141228296BC79576AD96423D0D32",
+    "https://p3-sign.douyinpic.com/tos-cn-i-dy/15ec74be1c32448cbbf5deffe133035d~tplv-dy-resize-walign-adapt-aq:540:q75.webp?lk3s=138a59ce&x-expires=1782619200&x-signature=pP01jV%2FkeDWEiZ6kwlnKa9CCZsI%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=cover&biz_tag=aweme_video&l=202606141228296BC79576AD96423D0D32",
+    "https://p9-sign.douyinpic.com/tos-cn-i-dy/15ec74be1c32448cbbf5deffe133035d~tplv-dy-resize-walign-adapt-aq:540:q75.webp?lk3s=138a59ce&x-expires=1782619200&x-signature=AmEZjSFrt%2F0TZZaspsdzWJ21kzY%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=cover&biz_tag=aweme_video&l=202606141228296BC79576AD96423D0D32",
+    "https://p11-sign.douyinpic.com/tos-cn-i-dy/15ec74be1c32448cbbf5deffe133035d~tplv-dy-resize-walign-adapt-aq:540:q75.jpeg?lk3s=138a59ce&x-expires=1782619200&x-signature=p%2F8gupJA7mKUqiwNqnY%2FZ1g%2FdlM%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=cover&biz_tag=aweme_video&l=202606141228296BC79576AD96423D0D32"
+  ]
+}

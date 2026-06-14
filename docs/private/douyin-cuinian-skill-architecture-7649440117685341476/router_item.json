@@ -1,0 +1,111 @@
+{
+  "aweme_id": "7649440117685341476",
+  "desc": "淬念阁 · SKILL 完整架构。淬念阁是我目前最喜欢的 SKILL，没有之一。公司分享后，用过的产研小伙伴都说好。它解决了一个特别痛的场景：跟 AI 协作时，如果没想清楚就开工，中途反复改，越改越差。\n这七张截图就是这个 SKILL 的完整架构。从上到下七个部分：\n功能定义：一句话说清它是干什么的、不能干什么。它不是替我做决策的——是帮我理清思路的。\n七阶段流程：定义问题 → 回溯经验 → 外部参考 → 定深度选模型 → 逐模型思考 → 综合产出 → 沉淀文件。每个阶段都有明确的输入和输出。灵感来源是外部咨询公司的工作方式——先调研、再用结构化方法论多维度分析、最后出方案供你决策。\n路由表：八个思考模型不是每次都全用。我按五类问题做了路由——决策型用六顶帽+SWOT，创意型用第一性+金字塔，分析型用批判性+苏格拉底……你需要什么场景，它就调什么组合。\n异常分支：思考类 SKILL 最怕卡住和循环。每个阶段出问题了都有兜底方案——卡住了怎么办、知识库不可用怎么办、推导出现循环怎么中断。\n自检三问 + 经验迭代：每条结论必须有可追溯的依据、标注推测项、列出待验证假设。每次执行完记录效果，积累到一定量就归档进化。\n公司那一版侧重产品分析和方案设计，家里这一版侧重创作思考和剧情推演——同样的核心架构，完全不同的两套 SKILL。这就是这套焚诀的威力。\n完整的设计思路和踩坑记录在主页合集第七集，点我头像就能找到。",
+  "create_time": 1781103900,
+  "author": {
+    "nickname": "老韩",
+    "short_id": "1218423317",
+    "signature": "在职产品经理，闲暇时间做AI探索，分享思考",
+    "uid": null,
+    "sec_uid": "MS4wLjABAAAA_3_1UhBWO6QG7fx0wwuO6bUV1YVBrVQ5ujBRk2cserc"
+  },
+  "statistics": {
+    "aweme_id": "7649440117685341476",
+    "comment_count": 19,
+    "digg_count": 928,
+    "play_count": 0,
+    "share_count": 184,
+    "collect_count": 1291
+  },
+  "aweme_type": 2,
+  "images_count": 7,
+  "music": "Starlight (氛围纯享版)一BlastW",
+  "text_extra": [
+    {
+      "start": 0,
+      "end": 16,
+      "type": 7,
+      "hashtag_name": "",
+      "hashtag_id": 0
+    },
+    {
+      "start": 16,
+      "end": 17,
+      "type": 8,
+      "hashtag_name": "",
+      "hashtag_id": 0
+    }
+  ],
+  "images": [
+    {
+      "width": 1363,
+      "height": 910,
+      "url": "https://p26-sign.douyinpic.com/tos-cn-i-dy/209b9a309dd443cdb714681ea7e4beba~tplv-dy-lqen-new:1363:910:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=3UpFFw4OxNdxQQpn%2FOJyHea2XrY%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/209b9a309dd443cdb714681ea7e4beba~tplv-dy-lqen-new:1363:910:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=3UpFFw4OxNdxQQpn%2FOJyHea2XrY%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p11-sign.douyinpic.com/tos-cn-i-dy/209b9a309dd443cdb714681ea7e4beba~tplv-dy-lqen-new:1363:910:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=b%2BL%2F6d%2BWGdnKZtZwaea467WZWpQ%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p3-sign.douyinpic.com/tos-cn-i-dy/209b9a309dd443cdb714681ea7e4beba~tplv-dy-lqen-new:1363:910:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=aRZGUOWAmdL9b%2BCKgRiBD5ZDS7Y%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    },
+    {
+      "width": 1379,
+      "height": 702,
+      "url": "https://p11-sign.douyinpic.com/tos-cn-i-dy/f9dd5e390ca64816bbc769c1bdf299b6~tplv-dy-lqen-new:1379:702:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=7eRCubGILXp70oXY%2FLn6JlJvqSg%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p11-sign.douyinpic.com/tos-cn-i-dy/f9dd5e390ca64816bbc769c1bdf299b6~tplv-dy-lqen-new:1379:702:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=7eRCubGILXp70oXY%2FLn6JlJvqSg%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/f9dd5e390ca64816bbc769c1bdf299b6~tplv-dy-lqen-new:1379:702:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=kVxFMTbGoOAqQsM%2Brn2wjZ2QLCA%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p3-sign.douyinpic.com/tos-cn-i-dy/f9dd5e390ca64816bbc769c1bdf299b6~tplv-dy-lqen-new:1379:702:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=XoHRIs3%2FzDU%2BSlsTdF3ntkDUlbc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    },
+    {
+      "width": 1367,
+      "height": 705,
+      "url": "https://p26-sign.douyinpic.com/tos-cn-i-dy/1b58a87f4f554fe5b94bf0d032c848cc~tplv-dy-lqen-new:1367:705:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=AvEddRDhKIBf%2FL7vCV8SOSuIbDc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/1b58a87f4f554fe5b94bf0d032c848cc~tplv-dy-lqen-new:1367:705:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=AvEddRDhKIBf%2FL7vCV8SOSuIbDc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p3-sign.douyinpic.com/tos-cn-i-dy/1b58a87f4f554fe5b94bf0d032c848cc~tplv-dy-lqen-new:1367:705:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=c%2FNXSzV62EGY%2FVhaWgJfjWWUsoo%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p11-sign.douyinpic.com/tos-cn-i-dy/1b58a87f4f554fe5b94bf0d032c848cc~tplv-dy-lqen-new:1367:705:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=ph8KWWzDrmCNpfdsyYYvQYbtu7o%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    },
+    {
+      "width": 1367,
+      "height": 806,
+      "url": "https://p3-sign.douyinpic.com/tos-cn-i-dy/6856facffbaf423389b9b00312f7f973~tplv-dy-lqen-new:1367:806:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=ak29Wg41ajAB%2FO0yvHaX6NuKA%2Fc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p3-sign.douyinpic.com/tos-cn-i-dy/6856facffbaf423389b9b00312f7f973~tplv-dy-lqen-new:1367:806:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=ak29Wg41ajAB%2FO0yvHaX6NuKA%2Fc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/6856facffbaf423389b9b00312f7f973~tplv-dy-lqen-new:1367:806:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=panbCf2xnzR4T6dlMbOifY0IRlQ%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p5-sign.douyinpic.com/tos-cn-i-dy/6856facffbaf423389b9b00312f7f973~tplv-dy-lqen-new:1367:806:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=9Mpdb2fQ2MgEIwbImsVDTAi0N3c%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    },
+    {
+      "width": 1365,
+      "height": 631,
+      "url": "https://p26-sign.douyinpic.com/tos-cn-i-dy/e02abf4fd2ff4e268ad2fc2fda908dc2~tplv-dy-lqen-new:1365:631:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=N0mOZe8lJaBhdgapBowjOZeebmA%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/e02abf4fd2ff4e268ad2fc2fda908dc2~tplv-dy-lqen-new:1365:631:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=N0mOZe8lJaBhdgapBowjOZeebmA%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p11-sign.douyinpic.com/tos-cn-i-dy/e02abf4fd2ff4e268ad2fc2fda908dc2~tplv-dy-lqen-new:1365:631:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=Tx91fhLdK59YIqFjwTB2yAha5Fs%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p9-sign.douyinpic.com/tos-cn-i-dy/e02abf4fd2ff4e268ad2fc2fda908dc2~tplv-dy-lqen-new:1365:631:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=q3NxtMbUN2g2dMtSTx8PeCSyiRY%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    },
+    {
+      "width": 1374,
+      "height": 849,
+      "url": "https://p11-sign.douyinpic.com/tos-cn-i-dy/4a904d63eeab4909b8015245800aa9da~tplv-dy-lqen-new:1374:849:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=LSiTn677a%2BFeQAeENZ%2BcUDnQTKc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p11-sign.douyinpic.com/tos-cn-i-dy/4a904d63eeab4909b8015245800aa9da~tplv-dy-lqen-new:1374:849:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=LSiTn677a%2BFeQAeENZ%2BcUDnQTKc%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/4a904d63eeab4909b8015245800aa9da~tplv-dy-lqen-new:1374:849:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=bl5Wy9WAays2f8z21mTZ74mmURA%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p3-sign.douyinpic.com/tos-cn-i-dy/4a904d63eeab4909b8015245800aa9da~tplv-dy-lqen-new:1374:849:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=zvsvtc6RpmQmlY4GCcEYyaBQvOs%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    },
+    {
+      "width": 1369,
+      "height": 796,
+      "url": "https://p26-sign.douyinpic.com/tos-cn-i-dy/6ca2eaa1a6b7491cba5c8116fa8fc0d1~tplv-dy-lqen-new:1369:796:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=dz364QWP83oUeFtWOUkba0%2Byl%2F0%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+      "urls": [
+        "https://p26-sign.douyinpic.com/tos-cn-i-dy/6ca2eaa1a6b7491cba5c8116fa8fc0d1~tplv-dy-lqen-new:1369:796:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=dz364QWP83oUeFtWOUkba0%2Byl%2F0%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p11-sign.douyinpic.com/tos-cn-i-dy/6ca2eaa1a6b7491cba5c8116fa8fc0d1~tplv-dy-lqen-new:1369:796:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=FnzOuLAxjPv5Wx38Vzs1EC2xq64%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58",
+        "https://p3-sign.douyinpic.com/tos-cn-i-dy/6ca2eaa1a6b7491cba5c8116fa8fc0d1~tplv-dy-lqen-new:1369:796:q80.webp?lk3s=138a59ce&x-expires=1784001600&x-signature=7%2Fg7XS7SI9eWNVQb8o1e%2Fo1%2ByXU%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=2026061412224376709864B32967390C58"
+      ]
+    }
+  ]
+}

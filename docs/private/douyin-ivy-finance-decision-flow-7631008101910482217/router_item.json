@@ -1,0 +1,31 @@
+{
+  "source_short_url": "https://v.douyin.com/13xVwJygPnw/",
+  "ies_url": "https://www.iesdouyin.com/share/video/7631008101910482217/",
+  "canonical_douyin_url": "https://www.douyin.com/video/7631008101910482217",
+  "aweme_id": "7631008101910482217",
+  "type": "video",
+  "desc": "据说这是常青藤金融毕业生决策的一套流程 #AI工具  #OpenClaw  #skill  #开源项目",
+  "create_time": 1776743400,
+  "create_time_iso": "2026-04-21T11:50:00",
+  "author": {
+    "nickname": "程序员少北晨",
+    "short_id": "348891322",
+    "unique_id": "shaobeichen",
+    "signature": "一个喜欢收集好用的 AI 工具的程序员\n不知道 AI 工具链接的，进主页群获取\n商务合作 shaobeichen01 （请备注来意）",
+    "sec_uid": "MS4wLjABAAAAGFwkGb3S8UPIB7FhtK7K6n-nCFnPbTTth4HZ2I6Wbv0"
+  },
+  "statistics": {
+    "aweme_id": "7631008101910482217",
+    "comment_count": 81,
+    "digg_count": 15232,
+    "play_count": 0,
+    "share_count": 2855,
+    "collect_count": 15495
+  },
+  "image_url_count": 0,
+  "image_urls": [],
+  "video_url_candidates": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?line=0&logo_name=aweme_diversion_search&ratio=720p&video_id=v0200fg10000d7jcfrnog65qd6ufor60"
+  ],
+  "downloaded_video_bytes": 2312090
+}

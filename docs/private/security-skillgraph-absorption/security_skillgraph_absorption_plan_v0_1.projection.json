@@ -1,0 +1,180 @@
+{
+  "schema_version": "security_skillgraph_absorption_projection_v0_1",
+  "mission_id": "msn_20260610_120149_27c88cfc",
+  "created_utc": "2026-06-14T04:40:00Z",
+  "boundary": "metadata_only_readonly_projection_no_skill_import_no_tool_execution_no_external_target_no_lifecycle_sync",
+  "status": "draft_verified_projection",
+  "source_evidence": [
+    {
+      "kind": "artifact",
+      "path": "/Users/charles/.hermes/docs/private/cybersecurity-skills-erc8126-security-skillgraph-intake.md",
+      "claims_used": [
+        "Anthropic-Cybersecurity-Skills primary repo metadata",
+        "754 structured skills and framework mappings",
+        "red lines and proposed safety classification"
+      ]
+    },
+    {
+      "kind": "task",
+      "path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-02-评估-anthropic-cybersecurity-skills-对-hermes-安全技能图谱的参考价值.md",
+      "claims_used": [
+        "completed source review",
+        "do not bulk-enable risky scripts",
+        "minimum adoption should be index/mapping/validator or defensive samples"
+      ]
+    },
+    {
+      "kind": "task",
+      "path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-14-将-erc-8126-转化为-agent-web3-安全体检自检标准.md",
+      "claims_used": [
+        "ERC-8126 dimensions adapted as internal selfcheck only",
+        "no external certification claim",
+        "hard-gate evidence schema requirement"
+      ]
+    },
+    {
+      "kind": "task",
+      "path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-14-二次吸收-anthropic-cybersecurity-skills-与-erc-8126构建-hermes-安全技能图谱自检落地方案.md",
+      "claims_used": [
+        "landing objective",
+        "acceptance evidence",
+        "task lifecycle currently records proof-gated closeout"
+      ]
+    }
+  ],
+  "skill_index_schema": {
+    "required_fields": [
+      "id",
+      "name",
+      "description",
+      "domain",
+      "source_path",
+      "source_repo",
+      "framework_mappings",
+      "erc8126_dimensions",
+      "risk_class",
+      "execution_policy",
+      "allowed_surfaces",
+      "evidence_refs",
+      "provenance_hash"
+    ],
+    "framework_mappings": ["MITRE_ATTACK", "NIST_CSF_2_0", "MITRE_ATLAS", "D3FEND", "NIST_AI_RMF"],
+    "risk_class_enum": [
+      "safe_readonly",
+      "defensive_allowed",
+      "lab_only",
+      "human_approval_required",
+      "deny_auto_execute"
+    ],
+    "execution_policy_enum": [
+      "metadata_only",
+      "local_report_only",
+      "lab_artifact_only",
+      "human_gate_before_any_tool",
+      "blocked_autonomous_execution"
+    ]
+  },
+  "risk_policy": {
+    "safe_readonly": {
+      "allowed": ["indexing", "taxonomy mapping", "report templates", "coverage matrices"],
+      "blocked": ["network calls", "target interaction", "credential handling", "code execution from third-party repo"]
+    },
+    "defensive_allowed": {
+      "allowed": ["incident runbooks", "detection engineering design", "guardrail design", "prompt-injection methodology"],
+      "blocked": ["active exploitation", "real-target scanning", "credential access", "production changes without human gate"]
+    },
+    "lab_only": {
+      "allowed": ["analysis of user-provided local artifacts", "offline forensic templates"],
+      "blocked": ["malware execution", "untrusted binary execution", "live endpoint acquisition", "external upload"]
+    },
+    "human_approval_required": {
+      "allowed_after_gate": ["bounded dependency review", "authorized local project scanning", "authorized cloud/web/API checks"],
+      "gate_requires": ["target scope", "authorization", "data handling boundary", "rollback/stop condition"]
+    },
+    "deny_auto_execute": {
+      "blocked": ["C2", "phishing/social engineering", "credential theft", "persistence/evasion", "post-exploitation", "real-target exploit chains", "chain transaction/signing"]
+    }
+  },
+  "erc8126_crosswalk": [
+    {
+      "erc8126_dimension": "ETV_entity_trust_verification",
+      "security_skillgraph_focus": ["identity provenance", "agent/operator authorization", "attestation evidence"],
+      "framework_alignment": ["NIST_CSF_GV", "NIST_AI_RMF_GOVERN", "MITRE_ATLAS_supply_chain"],
+      "hard_gates": ["no external certification claim", "must record identity/provenance evidence"]
+    },
+    {
+      "erc8126_dimension": "MCV_model_code_verification",
+      "security_skillgraph_focus": ["dependency and code provenance", "prompt/skill integrity", "supply-chain review"],
+      "framework_alignment": ["MITRE_ATTACK_supply_chain", "NIST_CSF_ID", "D3FEND_hardening"],
+      "hard_gates": ["no unreviewed third-party code execution", "provenance hash required"]
+    },
+    {
+      "erc8126_dimension": "SCV_smart_contract_verification",
+      "security_skillgraph_focus": ["contract/wallet interface review", "transaction-signing boundary", "read-only chain evidence"],
+      "framework_alignment": ["NIST_CSF_PR", "NIST_AI_RMF_MAP"],
+      "hard_gates": ["no signing or transaction broadcast", "human approval for live chain interaction"]
+    },
+    {
+      "erc8126_dimension": "WAV_web_api_verification",
+      "security_skillgraph_focus": ["API auth boundary", "browser/tool egress receipts", "external target authorization"],
+      "framework_alignment": ["MITRE_ATTACK_initial_access", "NIST_CSF_DE", "D3FEND_network_monitoring"],
+      "hard_gates": ["no real-target scanning without explicit scope", "egress and target receipt required"]
+    },
+    {
+      "erc8126_dimension": "WV_wallet_verification",
+      "security_skillgraph_focus": ["wallet permissions", "key custody boundary", "transaction intent review"],
+      "framework_alignment": ["NIST_CSF_PR_AC", "NIST_AI_RMF_MANAGE"],
+      "hard_gates": ["no secret write", "no wallet action without human authorization"]
+    },
+    {
+      "erc8126_dimension": "PDV_privacy_data_verification",
+      "security_skillgraph_focus": ["PII minimization", "artifact retention", "data exfiltration prevention"],
+      "framework_alignment": ["NIST_CSF_GV", "NIST_AI_RMF_MEASURE", "D3FEND_data_protection"],
+      "hard_gates": ["no external upload of sensitive artifacts", "private evidence paths must stay local"]
+    },
+    {
+      "erc8126_dimension": "QCV_quality_claim_verification",
+      "security_skillgraph_focus": ["claim-linked proof", "selfcheck report quality", "false-certification prevention"],
+      "framework_alignment": ["NIST_AI_RMF_MEASURE", "MITRE_ATLAS_evaluation"],
+      "hard_gates": ["all green states require real proof refs", "advisory/multimodel output is not certification"]
+    }
+  ],
+  "first_defensive_candidates": [
+    {
+      "candidate": "triaging-security-incident",
+      "proposed_risk_class": "defensive_allowed",
+      "landing_surface": "incident-response runbook template",
+      "auto_execution_reason_not_allowed": "could touch production logs or incident systems; template/report only by default"
+    },
+    {
+      "candidate": "implementing-mitre-attack-coverage-mapping",
+      "proposed_risk_class": "safe_readonly",
+      "landing_surface": "coverage matrix for selfcheck/reporting",
+      "auto_execution_reason_not_allowed": "metadata mapping only; no command execution needed"
+    },
+    {
+      "candidate": "detecting-ai-model-prompt-injection-attacks",
+      "proposed_risk_class": "defensive_allowed",
+      "landing_surface": "tool-output/browser/MCP prompt-injection review checklist",
+      "auto_execution_reason_not_allowed": "must not invoke untrusted external targets or bypass tool-output isolation"
+    },
+    {
+      "candidate": "implementing-llm-guardrails-for-security",
+      "proposed_risk_class": "defensive_allowed",
+      "landing_surface": "pre-tool intent-risk-review policy draft",
+      "auto_execution_reason_not_allowed": "policy gate changes require separate focused tests before activation"
+    },
+    {
+      "candidate": "performing-memory-forensics-with-volatility3",
+      "proposed_risk_class": "lab_only",
+      "landing_surface": "offline forensic knowledge template",
+      "auto_execution_reason_not_allowed": "forensic tooling and memory images are sensitive; only local user-provided artifacts after scope gate"
+    }
+  ],
+  "minimum_next_slice": {
+    "name": "read_only_adapter_fixture",
+    "description": "Create a fixture-only adapter that validates this schema against 3-5 synthetic/metadata records without importing active skills or executing third-party content.",
+    "verification": ["json schema validation", "risk policy denylist unit tests", "read-back hash artifact"],
+    "blocked_until_human_gate": ["bulk import of 754 skills", "active Hermes skill-store mutation", "external scanning", "wallet/chain actions", "production security gate activation"]
+  }
+}

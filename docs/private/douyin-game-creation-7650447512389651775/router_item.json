@@ -1,0 +1,36 @@
+{
+  "source_url": "https://www.iesdouyin.com/share/video/7650447512389651775/",
+  "canonical_douyin_url": "https://www.douyin.com/video/7650447512389651775",
+  "aweme_id": "7650447512389651775",
+  "desc": "游戏创作竟然这么简单 ",
+  "create_time": 1781344800,
+  "create_time_iso": "2026-06-13T18:00:00",
+  "author": {
+    "nickname": "老马快下班",
+    "short_id": "27449131339",
+    "unique_id": "27449131339",
+    "signature": "马哥带你深挖编程与 AI 实战技巧，干货不间断，坐稳了，全速出发！",
+    "sec_uid": "MS4wLjABAAAAeQDL03FiWaPTD_yoH8BJvPbKrkxtWrjPuOw5m8Gd5MVbuSNRAB-YGZsrdHwtXhdx"
+  },
+  "statistics": {
+    "aweme_id": "7650447512389651775",
+    "comment_count": 7,
+    "digg_count": 366,
+    "play_count": 0,
+    "share_count": 54,
+    "collect_count": 329
+  },
+  "is_note": false,
+  "video_keys": [
+    "play_addr",
+    "bit_rate"
+  ],
+  "video_url_candidates": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?video_id=v0d00fg10000d8ltilnog65i0f70irp0&ratio=720p&line=0"
+  ],
+  "downloaded_video_bytes": 2972563,
+  "image_url_count": 1,
+  "image_urls": [
+    "https://p9-sign.douyinpic.com/tos-cn-i-dy/ef1ed703622e459190e85d403b6f55f8~tplv-dy-resize-walign-adapt-aq:540:q75.webp?lk3s=138a59ce&x-expires=1782619200&x-signature=LXuxQmAUK3999%2Fc4K6H%2BAiXup40%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=cover&biz_tag=aweme_video&l=20260614124207BF923D466A4E9D3C5454"
+  ]
+}

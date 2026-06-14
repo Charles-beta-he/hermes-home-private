@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "artifact_id": "hermes-agent-builder-workflow-pack-scaffold-v0.1",
+  "status": "draft_fixture_only",
+  "source_evidence": {
+    "intake_analysis": "/Users/charles/.hermes/docs/private/douyin-agent-design-7648922443902626491/intake-analysis.md",
+    "router_item": "/Users/charles/.hermes/docs/private/douyin-agent-design-7648922443902626491/router_item.json",
+    "canonical_url": "https://www.douyin.com/note/7648922443902626491",
+    "source_weight": "social_lead_beginner_scaffold_not_canonical_framework"
+  },
+  "workflow_pack_template": {
+    "pack_id": "agent_builder_backend_to_agent_onboarding_scaffold",
+    "pack_name": "Backend-to-Agent Onboarding Scaffold",
+    "pack_version": "0.1-draft",
+    "intended_use": "Agent Builder / Workflow Pack onboarding template and checklist; not a runtime replacement",
+    "modules": [
+      {
+        "source_folder": "01_planner",
+        "hermes_surface": ["taskpool", "mission-ledger", "workflow-pack"],
+        "template_fields": ["goal", "plan", "task_breakdown", "roadmap", "success_criteria", "evidence_required"],
+        "proof_gate": "objective ledger and taskpool acceptance evidence before lifecycle advancement",
+        "safe_fixture_boundary": "markdown/JSON planning records only; no automatic task lifecycle sync"
+      },
+      {
+        "source_folder": "02_memory",
+        "hermes_surface": ["local-brain", "profile memory policy", "agent-card"],
+        "template_fields": ["short_term_context", "long_term_notes", "entity_memory_policy", "knowledge_graph_refs"],
+        "proof_gate": "memory writes require explicit scope and read-back evidence",
+        "safe_fixture_boundary": "placeholders and policy declarations only; no credential or private-memory write"
+      },
+      {
+        "source_folder": "03_tools",
+        "hermes_surface": ["tool registry", "permission gates", "workflow-pack authority_boundaries"],
+        "template_fields": ["tool_name", "tool_description", "input_schema", "risk_level", "human_gate", "side_effects"],
+        "proof_gate": "tool execution must be backed by command/artifact proof and authority boundary",
+        "safe_fixture_boundary": "toy tool declarations only; no real terminal/code/search/weather/API invocation"
+      },
+      {
+        "source_folder": "04_knowledge",
+        "hermes_surface": ["local-brain", "docs/private", "evidence refs"],
+        "template_fields": ["documents", "retrieval_policy", "index_strategy", "rag_scope", "source_weight"],
+        "proof_gate": "RAG/vector retrieval is context only, never taskpool SSOT or proof authority",
+        "safe_fixture_boundary": "metadata and fixture text only; no vector DB mutation"
+      },
+      {
+        "source_folder": "05_agent_core",
+        "hermes_surface": ["agent-card", "skill graph", "workflow kernel"],
+        "template_fields": ["role", "persona", "workflow", "system_prompt", "prompt_template", "allowed_surfaces"],
+        "proof_gate": "system/persona changes require scoped diff and verification of consuming surface",
+        "safe_fixture_boundary": "draft agent-card fields only; no active skill/persona mutation"
+      },
+      {
+        "source_folder": "06_evaluation",
+        "hermes_surface": ["tests", "proof-check", "stage-report"],
+        "template_fields": ["eval_metrics", "test_cases", "benchmarks", "result_analysis", "failure_taxonomy"],
+        "proof_gate": "focused tests or read-only verifier output must be recorded before done/review sync",
+        "safe_fixture_boundary": "schema/static checks only in this draft"
+      },
+      {
+        "source_folder": "07_observability",
+        "hermes_surface": ["logs", "mission events", "taskpool status", "dashboard projections"],
+        "template_fields": ["logs", "traces", "monitoring", "alert_rules", "dashboard_readback"],
+        "proof_gate": "dashboard/lifecycle synchronization cannot treat proof-check as green without clean proof evidence",
+        "safe_fixture_boundary": "read-only observability checklist; no cron/dashboard mutation"
+      },
+      {
+        "source_folder": "08_deployment",
+        "hermes_surface": ["release governance", "human handoff", "authority boundaries"],
+        "template_fields": ["deploy_plan", "env_example", "rollback", "release_gate", "production_risk"],
+        "proof_gate": "production deploy, remote push/merge, secrets, payment, or permission expansion require human decision",
+        "safe_fixture_boundary": "deployment checklist only; no deploy files activated"
+      },
+      {
+        "source_folder": "09_examples",
+        "hermes_surface": ["fixtures", "docs", "agent-builder examples"],
+        "template_fields": ["use_cases", "demo_flows", "toy_react_json_examples", "no_tool_fallback"],
+        "proof_gate": "examples must label side effects and cannot masquerade as production tests",
+        "safe_fixture_boundary": "deterministic toy examples only"
+      },
+      {
+        "source_folder": "10_docs",
+        "hermes_surface": ["docs/private", "workflow-pack README", "agent-card README"],
+        "template_fields": ["architecture", "best_practices", "faq", "version_history", "red_lines"],
+        "proof_gate": "documentation claims require artifact path or command proof",
+        "safe_fixture_boundary": "private draft docs; no external publish"
+      }
+    ]
+  },
+  "agent_card_template": {
+    "agent_name": "Backend-to-Agent Scaffolded Hermes Agent",
+    "agent_pack_id": "agent.backend_to_agent_scaffold",
+    "agent_version": "0.1-draft",
+    "role": "Teach and package a safe Hermes-native Agent Builder scaffold from a beginner Agent project structure.",
+    "allowed_tools": [],
+    "default_mode": "local_fixture_only",
+    "human_gate_policy": {
+      "tool_execution": "requires explicit task authority, risk classification, and proof command",
+      "rag_or_vector_write": "requires scoped local write authorization and read-back",
+      "production_deploy": "requires human handoff decision",
+      "external_dispatch": "requires exact adapter, target, payload, idempotency key, and user approval"
+    },
+    "side_effect_policy": {
+      "credential_access_enabled": false,
+      "external_side_effects_enabled": false,
+      "production_deploy_enabled": false,
+      "local_docs_write_enabled": true
+    }
+  },
+  "toy_react_fixture_boundary": {
+    "loop_shape": ["Query", "LLM thought", "Action", "Action Input", "Observation", "Final Answer"],
+    "allowed_fixture_tools": ["reverse_string_fixture", "basic_calculator_fixture", "no_tool"],
+    "forbidden_real_tools": ["terminal", "code_executor", "file_reader", "weather_api", "search_api", "db_query", "notion", "slack"],
+    "execution_policy": "documentation/static fixture only; do not run external model service or install dependencies"
+  },
+  "red_lines": [
+    "Do not treat the Douyin post as canonical Hermes architecture.",
+    "Do not replace taskpool, Mission, Workflow Kernel, proof-check, or evidence gates with a simple ReAct loop.",
+    "Do not connect toy terminal/code/search/weather/API tools to real systems without human-gated authority.",
+    "Do not use RAG/vector retrieval as source of truth or proof authority.",
+    "Do not deploy, push, publish, write secrets, purchase, or send external messages from this scaffold."
+  ],
+  "verification": {
+    "required_readbacks": ["source intake-analysis.md", "this scaffold JSON", "validator output"],
+    "status": "pending_validator"
+  }
+}

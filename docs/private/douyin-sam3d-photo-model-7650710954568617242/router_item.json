@@ -1,0 +1,34 @@
+{
+  "aweme_id": "7650710954568617242",
+  "desc": "只需上传一张照片，直接获得立体三维模型！ 还在为设计图熬秃头？还在为AI影视人物不够生动头疼？SAM 3D-只需上传一张照片，直接获得立体三维模型！结合3DGS、ComfyUI，把3D内容创作从\"手工作坊\"升级为\"自动化工厂\"。#AI#cvpr顶会",
+  "create_time": 1781403180,
+  "author": {
+    "nickname": "GitTopics项目汇",
+    "short_id": "70296238438",
+    "signature": "分享全球AI科技前沿。关注我，获得科技灵感",
+    "uid": null,
+    "sec_uid": "MS4wLjABAAAASPvBAKmvUtVpw4PTV2zUW-ehgs6lOQ9yuITaP9VCciQm-WXrj51oBcKyNWtFr65g"
+  },
+  "statistics": {
+    "aweme_id": "7650710954568617242",
+    "comment_count": 0,
+    "digg_count": 5,
+    "play_count": 0,
+    "share_count": 0,
+    "collect_count": 4
+  },
+  "aweme_type": 4,
+  "music": "@GitTopics项目汇创作的原声一GitTopics项目汇",
+  "text_extra": [
+    {
+      "start": 117,
+      "end": 124,
+      "type": 1,
+      "hashtag_name": "cvpr顶会",
+      "hashtag_id": 7426670414371228000
+    }
+  ],
+  "video_urls": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?video_id=v0200fg10000d8mci5vog65oc2e0nabg&ratio=720p&line=0"
+  ]
+}

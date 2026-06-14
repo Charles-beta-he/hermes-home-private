@@ -1,0 +1,48 @@
+{
+  "aweme_id": "7650479331671690548",
+  "desc": "达芬奇Agent自动剪辑skill分享 看不懂可私信，适合口播旅行vlog\n#ai #剪辑教程 #脱发焦虑",
+  "create_time": 1781266041,
+  "author": {
+    "nickname": "小草",
+    "short_id": "83476153115",
+    "signature": "心中有太阳，夜晚也明亮",
+    "uid": null,
+    "sec_uid": "MS4wLjABAAAAX5qs8FrmRaqGcR-40Ru0PT3kRZ70-ppRJJemaJl3sgqf59KjXuydHQbVfe6jBs0C"
+  },
+  "statistics": {
+    "aweme_id": "7650479331671690548",
+    "comment_count": 321,
+    "digg_count": 9547,
+    "play_count": 0,
+    "share_count": 3014,
+    "collect_count": 8854
+  },
+  "aweme_type": 4,
+  "music": "@小草创作的原声一小草（原声中的歌曲：得吃小曲（寂寞的人伤心的歌）X1.8变调版-杨海彪 & 龙梅子）",
+  "text_extra": [
+    {
+      "start": 38,
+      "end": 41,
+      "type": 1,
+      "hashtag_name": "ai",
+      "hashtag_id": 1582049556616206
+    },
+    {
+      "start": 42,
+      "end": 47,
+      "type": 1,
+      "hashtag_name": "剪辑教程",
+      "hashtag_id": 1615370916800515
+    },
+    {
+      "start": 48,
+      "end": 53,
+      "type": 1,
+      "hashtag_name": "脱发焦虑",
+      "hashtag_id": 1736604188575806
+    }
+  ],
+  "video_urls": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?video_id=v0200fg10000d8lv7pnog65s4ge1intg&ratio=720p&line=0"
+  ]
+}

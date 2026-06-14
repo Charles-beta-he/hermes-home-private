@@ -1,0 +1,35 @@
+{
+  "source_short_url": "https://v.douyin.com/_m3NZIQf8Dg/",
+  "ies_url": "https://www.iesdouyin.com/share/note/7650926105133583652/",
+  "canonical_douyin_url": "https://www.douyin.com/note/7650926105133583652",
+  "aweme_id": "7650926105133583652",
+  "type": "note",
+  "desc": "Agent 记忆系统（Memory）。选型 + 设计模式 + 核心分类，若有不对的地方，希望在评论区交流#备忘录文字  #实习生  #agent  #Memory  #大模型",
+  "create_time": 1781370063,
+  "create_time_iso": "2026-06-14T01:01:03",
+  "author": {
+    "nickname": "青山雨",
+    "short_id": "29062396102",
+    "unique_id": "20230620HL",
+    "signature": "每天记录一点，每天进步一点\n27 届学院本\n第一段实习🔚\n第二段进行中💪",
+    "sec_uid": "MS4wLjABAAAA2stFs9zN-Ga07LXkSusVIkcg26RGq0EHz8c_Q6dJ-xuJLtZlAAooYsa07Ugz-DAA"
+  },
+  "statistics": {
+    "aweme_id": "7650926105133583652",
+    "comment_count": 2,
+    "digg_count": 257,
+    "play_count": 0,
+    "share_count": 15,
+    "collect_count": 289
+  },
+  "image_url_count": 3,
+  "image_urls": [
+    "https://p3-sign.douyinpic.com/tos-cn-i-dy/e7da29607b3d44099b03f3f27d9b204e~tplv-dy-lqen-new:1200:1600:q80.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=Q%2Boo%2B6fSPQlBWy0dRWsIz0dNVFU%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=20260614153948BFA96E0B6C535D4F5650",
+    "https://p5-ex-gddgtc-sign.douyinpic.com/tos-cn-i-dy/6181ea6f47a24e108d72d58581a149b8~tplv-dy-lqen-new:1200:1600:q80.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=546q20cb5Lm0urd2uTuvKJ3RVaY%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=20260614153948BFA96E0B6C535D4F5650",
+    "https://p11-sign.douyinpic.com/tos-cn-i-dy/90adadae0c254f8cb052bffa4fe1fb47~tplv-dy-lqen-new:1200:1600:q80.webp?lk3s=138a59ce&x-expires=1784012400&x-signature=0h%2BCuecUOl%2FGLm7Kn5PqlMC%2BsUU%3D&from=327834062&s=PackSourceEnum_DOUYIN_REFLOW&se=false&sc=image&biz_tag=aweme_images&l=20260614153948BFA96E0B6C535D4F5650"
+  ],
+  "video_url_candidates": [
+    "https://aweme.snssdk.com/aweme/v1/playwm/?video_id=https://lf9-music-east.douyinstatic.com/obj/ies-music-hj/7636505038621494073.mp3&ratio=720p&line=0"
+  ],
+  "downloaded_video_bytes": 0
+}

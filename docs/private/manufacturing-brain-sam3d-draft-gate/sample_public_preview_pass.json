@@ -1,0 +1,23 @@
+{
+  "photo_to_3d_candidate": {
+    "source_photo_path": "samples/public-cube-reference.png",
+    "source_photo_sha256": "placeholder-public-sample-no-private-photo",
+    "consent_scope": "public_sample",
+    "provider_or_repo": "local_fixture_no_model_run",
+    "model_name_or_checkpoint": "none_fixture_only",
+    "wrapper_or_workflow": "manifest_gate_dry_run",
+    "output_format": "glb",
+    "local_output_path": "samples/public-cube-preview.glb",
+    "output_sha256": "placeholder-no-generated-asset",
+    "license_status": "known",
+    "provenance_status": "verified_source",
+    "unit_scale_assumption": "unknown",
+    "bounding_box_mm": null,
+    "preview_path": "samples/public-cube-preview.png",
+    "visual_fidelity_class": "decorative_equivalent",
+    "mesh_validity": "unknown",
+    "printability_state": "draft_only",
+    "human_approval": "pending",
+    "retrieval_before_generation": true
+  }
+}

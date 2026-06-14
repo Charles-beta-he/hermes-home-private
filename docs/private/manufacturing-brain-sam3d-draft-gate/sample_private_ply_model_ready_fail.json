@@ -1,0 +1,22 @@
+{
+  "photo_to_3d_candidate": {
+    "source_photo_path": "private/person-or-object-photo.png",
+    "source_photo_sha256": "placeholder-private-source",
+    "consent_scope": "private",
+    "provider_or_repo": "unknown_cloud_or_wrapper",
+    "model_name_or_checkpoint": "unknown",
+    "wrapper_or_workflow": "unknown",
+    "output_format": "ply",
+    "local_output_path": "outputs/preview.ply",
+    "output_sha256": "placeholder-preview",
+    "license_status": "unknown",
+    "provenance_status": "unknown",
+    "unit_scale_assumption": "unknown",
+    "bounding_box_mm": null,
+    "preview_path": null,
+    "visual_fidelity_class": "unknown",
+    "mesh_validity": "unknown",
+    "printability_state": "model_ready",
+    "human_approval": "pending"
+  }
+}
