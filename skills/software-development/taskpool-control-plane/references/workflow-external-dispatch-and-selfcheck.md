@@ -499,7 +499,28 @@ python3 -m py_compile scripts/workflow_unattended_dispatch_policy_gate.py
 python3 scripts/workflow_unattended_dispatch_policy_gate.py --write-report --json
 ```
 
-Expected readback: `UNATTENDED_DISPATCH_POLICY_GATE_READY`, `default_mode=dry_run_preview`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, plus policy/dry-run instruction artifacts under `docs/private/workflow-kernel-unattended-dispatch-policy/`. After Phase54, stop at the next larger divergence unless the user chooses: Phase55 unattended dry-run scheduler vs Phase56 Control Tower policy editor / approval UI.
+Expected readback: `UNATTENDED_DISPATCH_POLICY_GATE_READY`, `default_mode=dry_run_preview`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, plus policy/dry-run instruction artifacts under `docs/private/workflow-kernel-unattended-dispatch-policy/`. If the user says Phase55 and Phase56 are both required, continue in order rather than treating them as a divergence.
+
+For Phase 55, land the unattended dry-run scheduler runner and append-only receipt ledger without installing cron or sending messages:
+
+```bash
+python3 -m py_compile scripts/workflow_unattended_dry_run_scheduler.py
+./scripts/run_tests.sh tests/scripts/test_workflow_unattended_dry_run_scheduler.py
+python3 scripts/workflow_unattended_dry_run_scheduler.py --append-ledger --write-report --json
+```
+
+Expected readback: `UNATTENDED_DRY_RUN_SCHEDULER_READY`, `would_send=false`, `external_side_effects_executed=false`, `unattended_dispatch_enabled=false`, `cron_state_mutated=false`, and artifacts under `docs/private/workflow-kernel-unattended-dry-run-scheduler/`. This creates a cron-safe runner but does not create or edit any cron job.
+
+For Phase 56, expose Control Tower policy editor / approval UI as an approval-ledger-only surface:
+
+```bash
+python3 -m py_compile hermes_cli/control_tower.py plugins/control-tower/dashboard/plugin_api.py
+./scripts/run_tests.sh tests/hermes_cli/test_control_tower_snapshot.py \
+  tests/plugins/test_control_tower_dashboard_plugin.py \
+  tests/plugins/test_control_tower_workflow_kernel_policy_api.py
+```
+
+Expected readback: `POLICY_EDITOR_APPROVAL_UI_READY`, allowed decisions `draft|approve_dry_run_only|reject|request_changes`, local approval ledger under `docs/private/workflow-kernel-policy-editor/`, and live dashboard API exposes `workflow_kernel_control_tower.policy_editor`. The endpoint `POST /api/plugins/control-tower/workflow-kernel/policy-editor/decision` must only record intent; it must not mutate policy, enable unattended dispatch, install cron, or send messages. After Phase56, stop at the next larger authority boundary unless the user chooses: Phase57 dry-run cron rollout vs Phase58 guarded send runner activation packet.
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
 
