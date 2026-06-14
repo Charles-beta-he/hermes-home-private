@@ -666,6 +666,26 @@ python3 scripts/workflow_archive_publication_packet.py --write-report --json
 
 Expected readback: `ARCHIVE_PUBLICATION_PACKET_READY`, default `A_KEEP_PRIVATE_NO_PUBLICATION`, `packet_only=true`, `publication_apply_enabled=false`, `external_publication_enabled=false`, and `external_side_effects_executed=false`.
 
+For Phase 71, run a private archive retention/drift watch:
+
+```bash
+python3 -m py_compile scripts/workflow_private_archive_retention_watch.py
+./scripts/run_tests.sh tests/scripts/test_workflow_private_archive_retention_watch.py
+python3 scripts/workflow_private_archive_retention_watch.py --write-report --json
+```
+
+Expected readback: `PRIVATE_ARCHIVE_RETENTION_WATCH_CLEAR`, `retention_policy=private_archive_retained_no_publication`, `drift=[]`, `read_only=true`, `publication_apply_enabled=false`, and `external_side_effects_executed=false`.
+
+For Phase 72, define the exact-target publication apply gate without applying it:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_exact_target_gate.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_exact_target_gate.py
+python3 scripts/workflow_publication_exact_target_gate.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_EXACT_TARGET_GATE_READY`, `gate_only=true`, `selected_target=null`, `publication_apply_enabled=false`, `external_publication_enabled=false`, and `external_side_effects_executed=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
