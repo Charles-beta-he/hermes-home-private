@@ -582,7 +582,29 @@ python3 -m py_compile scripts/workflow_unattended_dispatch_enablement_packet.py
 python3 scripts/workflow_unattended_dispatch_enablement_packet.py --write-report --json
 ```
 
-Expected readback: `UNATTENDED_DISPATCH_ENABLEMENT_PACKET_READY`, options `A_KEEP_MANUAL_ONLY|B_APPROVE_DRY_RUN_ONLY_AUTOMATION|C_APPROVE_ONE_TARGET_LIMITED_UNATTENDED_SENDS`, default `A_KEEP_MANUAL_ONLY`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and `cron_state_mutated=false`. This is a packet/decision schema only; do not enable repeated sends without a future explicit decision/apply phase.
+Expected readback: `UNATTENDED_DISPATCH_ENABLEMENT_PACKET_READY`, options `A_KEEP_MANUAL_ONLY|B_APPROVE_DRY_RUN_ONLY_AUTOMATION|C_APPROVE_ONE_TARGET_LIMITED_UNATTENDED_SENDS`, default `A_KEEP_MANUAL_ONLY`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and `cron_state_mutated=false`. This is a packet/decision schema only; do not enable repeated sends without a future explicit decision/apply phase. If the same governed Workflow Kernel sequence continues and the user says Phase63 and Phase64 are both required, continue in order rather than treating them as a divergence.
+
+Applicability: only for the Hermes-owned Workflow Kernel external-dispatch governance ladder after Phase62 enablement packet evidence exists. Anti-condition: do not apply to generic product notification automation or any system where `keep_manual_only` is not an explicitly authorized safe default.
+
+For Phase 63, record an explicit unattended enablement decision without applying it:
+
+```bash
+python3 -m py_compile scripts/workflow_unattended_decision_record.py
+./scripts/run_tests.sh tests/scripts/test_workflow_unattended_decision_record.py
+python3 scripts/workflow_unattended_decision_record.py --decision keep_manual_only --write-report --json
+```
+
+Expected readback: `UNATTENDED_DECISION_RECORD_READY`, `decision=keep_manual_only`, `selected_option=A_KEEP_MANUAL_ONLY`, `record_only=true`, `unattended_dispatch_enabled=false`, and `external_side_effects_executed=false`.
+
+For Phase 64, close the ladder on safe-default manual-only mode:
+
+```bash
+python3 -m py_compile scripts/workflow_manual_only_closure.py
+./scripts/run_tests.sh tests/scripts/test_workflow_manual_only_closure.py
+python3 scripts/workflow_manual_only_closure.py --write-report --json
+```
+
+Expected readback: `MANUAL_ONLY_CLOSURE_READY`, `final_mode=manual_only_with_no_send_dry_run_cron`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and closed paths include repeated/unattended/cron-triggered/cross-adapter dispatch without new authorization.
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
