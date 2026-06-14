@@ -726,6 +726,26 @@ python3 scripts/workflow_publication_apply_implementation_choice.py --choice A_K
 
 Expected readback: `PUBLICATION_APPLY_IMPLEMENTATION_CHOICE_RECORDED`, `choice=A_KEEP_PRIVATE_NO_APPLY`, `record_only=true`, `exact_target_present=false`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
 
+For Phase 77, run a read-only private export retention/drift watch:
+
+```bash
+python3 -m py_compile scripts/workflow_private_export_retention_watch.py
+./scripts/run_tests.sh tests/scripts/test_workflow_private_export_retention_watch.py
+python3 scripts/workflow_private_export_retention_watch.py --write-report --json
+```
+
+Expected readback: `PRIVATE_EXPORT_RETENTION_WATCH_CLEAR`, `drift=[]`, `read_only=true`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
+
+For Phase 78, compile a packet-only publication apply reopen design:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_apply_reopen_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_apply_reopen_packet.py
+python3 scripts/workflow_publication_apply_reopen_packet.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_APPLY_REOPEN_PACKET_READY`, default `A_NO_REOPEN_KEEP_PRIVATE`, `selected_option=null`, `packet_only=true`, `reopen_apply_enabled=false`, and `publication_apply_enabled=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
