@@ -177,6 +177,31 @@ Calibration questions to answer internally before implementation:
 - Is the displayed collection raw shared state or a page-specific view model?
 - What reference-derived negative case must stay true after the change?
 
+## Medium/High Ambiguity Prethink Mode
+
+Use this heavier mode only when the request is important enough that a wrong target would waste work: product/design/strategy/creative planning, workflow or skill design, external-source absorption, cost/permission-sensitive automation, or multi-session implementation. Keep the normal light path for obvious tasks.
+
+Prethink stages:
+
+1. **Define the problem** — classify type (`decision`, `creative`, `analysis`, `planning`, `diagnosis`, `implementation`), boundary/scope, expected output, and what would count as acceptance. Ask only if competing interpretations would change the work.
+2. **Recall experience** — search session/skills/memory/project profile when relevant; state whether a past pattern is actual evidence, a reusable lesson, or merely a hint.
+3. **External reference** — for research/social/repo/product claims, verify canonical sources directly before judging value. If search is unavailable or irrelevant, mark the gap instead of filling it from intuition.
+4. **Choose depth and reasoning route** — do not use every framework by default. Match route to problem type:
+   - decision: six-hats / SWOT / trade-off matrix;
+   - creative: first principles / divergent options / pyramid synthesis;
+   - analysis: critical thinking / Socratic checks / evidence matrix;
+   - planning: pyramid / reverse planning / dependency DAG;
+   - diagnosis: 5 Whys / fault tree / counterfactuals.
+5. **Think in bounded passes** — after each substantial pass, either continue on the selected route or stop at a useful checkpoint. If the path repeats, contradictions appear, or evidence is missing, surface that instead of forcing convergence.
+6. **Synthesize with self-check** — every conclusion should identify traceable evidence, confidence, inferred assumptions, discarded alternatives, and the next verification step.
+7. **For external inspiration intake, classify landing zones before durable writes** — split the source into reusable class-level pattern, project-specific scoped fact, stable user preference, concrete engineering follow-up, or session-only narrative. Evidence notes may preserve source details; SKILL.md updates should only carry class-level procedure/pitfalls, while concrete work belongs in taskpool with redlines and acceptance evidence.
+8. **Persist process only when useful** — for complex or cross-session work, write a concise process artifact with problem definition, evidence, reasoning route, conclusions, and open assumptions. Do not create process files for trivial chat.
+
+Anti-overasking guardrails:
+- The user prefers “少问但问准”: infer safe defaults and act when the ambiguity is low.
+- `全自动` or broad authorization may suppress routine confirmations, but stuck states, permission/cost/side-effect boundaries, and mutually exclusive strategy choices still require a gate.
+- Framework names are not evidence. They structure thinking; they do not replace source verification, tests, runtime proof, or user acceptance.
+
 ## Common Pitfalls
 
 1. Keyword-trigger narrowing: only running calibration for specific phrases like "prototype states" or "missing fields". Calibration applies to all fuzzy human-language goals.

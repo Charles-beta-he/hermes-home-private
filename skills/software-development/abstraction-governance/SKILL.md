@@ -250,6 +250,47 @@ Abstraction Governance Result
 7. Confusing action repair with double-loop learning; sometimes the rule-generation process is the bug.
 8. Letting a default task schema fill missing slots without marking them as assumptions.
 
+## Memory Landing-Zone Classifier
+
+Scope: global Hermes abstraction/memory governance. Applicability: use before writing durable memory, user profile facts, project profiles, skills, ADRs, or experience-ratchet notes. Anti-conditions: do not use this section to preserve task progress, secrets, local-only project facts, or social-media claims without independent evidence.
+
+For any candidate durable memory, choose the smallest sufficient authority boundary before writing:
+
+```text
+0. Secret/credential/payment/private key? -> DO NOT SAVE; redact as [REDACTED] in evidence.
+1. Current turn/session only? -> active context / compaction only.
+2. Task progress, WIP status, PR/issue/commit, phase done, transient plan? -> taskpool proof / session transcript; not global memory.
+3. Stable user preference or red line likely true across 10+ sessions? -> compact declarative user memory.
+4. Stable project/environment fact scoped to one project? -> project profile / scoped evidence doc.
+5. Reusable procedure, workflow, checklist, or debugging approach? -> skill / skill patch.
+6. Event-specific experience or prior conversation recall? -> session_search / proof artifacts; promote only class-level lessons.
+7. Entity knowledge? -> structured project profile unless it is truly cross-project stable.
+8. Large semantic corpus? -> explicit RAG/vector project only with provenance, deletion, privacy, cost, and drift gates.
+```
+
+Map source memory classes to Hermes surfaces:
+
+- short-term memory -> active context and compaction summary;
+- long-term memory -> memory / user profile only for stable compact facts;
+- entity memory -> project profiles, scoped profiles, or structured docs;
+- episodic/contextual memory -> session_search, taskpool evidence, and proof artifacts.
+
+Before any durable write, run the anti-ghost save gate:
+
+1. Will this still be true in 10 sessions?
+2. Is it declarative rather than imperative?
+3. Is it free of task progress and artifact IDs likely stale in 7 days?
+4. Is the scope correct: user/global vs project vs session vs task?
+5. Is there a removal/replacement path if it becomes false?
+6. Did the user explicitly correct a preference, or is this inferred from one event?
+7. Would saving it cause future sessions to repeat old work or override current instructions?
+
+Use preference-drift checks when newer user behavior or scoped project facts contradict old memory: keep, scope_down, ask_confirm, replace, or remove. Do not install or trust third-party memory servers merely because they claim high recall; treat them as design references until privacy, encryption, concurrency, tests, and deletion semantics are verified.
+
+## Sanitized Experience Pack Boundary
+
+When converting a mature personal/local Hermes setup into an installable distribution for other users, package the *capability shape*, not the owner's lived state. Safe landing zones are templates, checklists, example schemas, and deterministic selfchecks; forbidden payloads include live config, `.env`, tokens, OAuth sessions, memory/session DBs, real project profiles, logs, task evidence, and local brain vaults. Installer extensions should copy missing template files without overwriting user edits and expose an opt-out such as `--skip-experience-pack`. See `references/sanitized-experience-pack-boundary.md`.
+
 ## Runtime Gate Implementation
 
 Hermes core now includes a deterministic hot-path memory gate in `agent/abstraction_governance.py`, wired through `tools/memory_tool.py`.

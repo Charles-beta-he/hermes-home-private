@@ -38,6 +38,8 @@ metadata:
 
 ## Audit Steps
 
+Reference: `references/external-workflow-marketplace-decomposition.md` documents the source-grounded pattern for analyzing external workflow/plugin marketplaces: verify the artifact directly, distinguish skills from commands/workflows, map a lifecycle, then identify evidence/state/SSOT/integration gaps before adapting it.
+
 ### Step 1: Enumerate Skills by Category
 
 ```bash

@@ -26,11 +26,17 @@ metadata:
 
 ## Recent operational references
 
+- `references/mission-progress-audit.md` — read-only audit sequence for long-running Hermes Mission progress checks: board/report/signals/doctor, missions.db ledger, cron correlation, git diff state, and interpretation of exhausted tick budget versus active cron.
+
 - `references/unified-execution-flow-framework.md` — canonical 大一统 execution-flow framework for merging Hermes, workflow orchestration, taskpool lifecycle, and harness engineering: Taskpool owns truth; Workflow owns order; Hermes owns action; Harness owns proof; Verifier owns closeout; Human gate owns permission.
+- `references/self-advancing-workflow-kernel.md` — class-level pattern for making multiple autonomous/self-advancing directions share one workflow kernel: Signal→Intake→Classify→Plan→Dispatch→Execute→Prove→Verify→Close/Retry/Block/AskHuman→Ratchet, with Mission/Taskpool/Evidence/Dashboard fact-source boundaries and per-direction workflow packs.
 - `references/control-tower-architecture-governance.md` — durable pattern for Hermes Control Tower / visual workflow control-plane design: event-driven first, one canonical Control Tower Ledger, adapters/projections instead of competing SSOTs, evidence maturity, human gates, worker boundary, ADR/schema-first implementation, and the "全盘推进至需要人工介入" stop condition.
 - `references/control-tower-command-and-schema-patterns.md` — follow-on Control Tower pattern after the read-only slice: proposal-only command registry, L2+ human-inbox requests, approval lifecycle boundary with no execution, and OpenSpec-style schema/workflow graph lessons adapted without adding a second fact source.
 - `references/control-tower-execution-policy-projection.md` — Phase 4B-style non-executing execution-policy projection pattern: review dry-run executor plans, surface `allowed_to_execute=false` / `writes_enabled=false` / rollback preview, and stop before real executor/write-through adapter authority.
 - `references/taskpool-pre-ingest-multimodel-triage.md` — pre-ingest multimodel triage for external repo/article intake so tasks enter the pool with P1/P2/P3 already decided.
+- `references/schema-first-scaffold-compiler-pattern.md` — Applicability: Hermes Workflow Pack / Agent Card / app-scaffold design; anti-condition: not an instruction to install third-party CLIs or replace taskpool/evidence-ledger authority. Pattern for compiling natural-language builder requests into explicit schema-validated configs: schema introspection, compatibility validation, dry-run/proposal, human gate, read-back verification, and reproducible lock/config.
+- `references/modular-agent-builder-workflow-kernel.md` — final architecture pattern for modular self-advancing Agent Builder systems: module registry, natural-language workflow compiler, taskpool runtime, model router, acceptance compiler, evidence ledger, run lockfiles, hot-plug lifecycle, enterprise Agent Pack delivery, and the pinned-vs-dynamic upgrade rules needed to keep running workflows reproducible.
+- `references/modular-workflow-kernel-contract-first-landing.md` — contract-first landing pattern for modular workflow kernel work: start with schema/registry/model-registry/read-only validator/tests/ADR/taskpool seed, keep runtime/write-through/external side effects disabled, and require pinned model-routing defaults before later execution integration.
 
 - `references/multimodel-certified-auto-close.md` — taskpool review→done automation pattern: missing certification triggers certification; PASS/LOOP_DONE proceeds to done; FAIL/inconclusive retries or blocks.
 - `references/workflow-patterns.md`
@@ -391,6 +397,7 @@ PY
 
 ## Common Pitfalls
 
+- In governed consoles, treating an armed capability/session as sufficient authority while the displayed projection may be stale or inconsistent with canonical runtime state. Add a first-class projection-health/runtime-selector gate before taskpool transition, executor dispatch, worker start, closeout, or external write actions; drift/unavailable must degrade mutation to read-only/draft-only and write an audit reason.
 - Omitting `capability_delta`, `anti_drift_check`, or `acceptance_evidence` when adding an `evolution` task.
 - Treating `task_added` event-hook `returncode=2` as task creation failure before checking `created` and `derived_refresh`.
 - Forgetting to verify queue placement in `list --json` or `任务池-排序.md` after batch additions.

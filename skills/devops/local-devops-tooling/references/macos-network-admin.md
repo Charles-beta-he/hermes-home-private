@@ -96,7 +96,7 @@ Quick steps:
 4. Preferences at `~/Library/Preferences/<bundle-id>.plist`
 5. Decode plist: `plutil -convert json -o - <plist>`
 
-**Shadowrocket-specific**: Config lives at `~/Library/Group Containers/group.com.liguangming.Shadowrocket/`. Active rule/config can be confirmed from `Library/Preferences/group.com.liguangming.Shadowrocket.plist` keys like `group.com.liguangming.CurrentRuleFileName` and `group.com.liguangming.GlobalRoutingMethod`; `rule.db` stores NSKeyedArchiver blobs that can be decoded with `/usr/bin/python3` + Foundation/NSKeyedUnarchiver or `plutil -p` after extracting blobs.
+**Shadowrocket-specific**: Config may live under either `~/Library/Containers/com.liguangming.Shadowrocket/Data/Documents/Databases/` (for the macOS/iPad app container; useful DBs include `shadowrocket.db`, `sub.db`, and per-config DBs) or `~/Library/Group Containers/group.com.liguangming.Shadowrocket/`. `shadowrocket.db` can expose a FTS3 `config` table where proxy rows have values like `http, <host>, <port>, <username>, <password>`. Active rule/config can also be confirmed from `Library/Preferences/group.com.liguangming.Shadowrocket.plist` keys like `group.com.liguangming.CurrentRuleFileName` and `group.com.liguangming.GlobalRoutingMethod`; `rule.db` stores NSKeyedArchiver blobs that can be decoded with `/usr/bin/python3` + Foundation/NSKeyedUnarchiver or `plutil -p` after extracting blobs. For node-level validation, see `references/shadowrocket-node-validation.md`.
 
 ### Phase 5: Subscription/Upstream Verification
 

@@ -159,6 +159,25 @@ Before starting or continuing a rebase, check for in-progress state (`.git/rebas
 
 If there are unrelated/untracked probe files, remove/ignore them or leave them unstaged intentionally; do not `git add -A` during a commit/push request in a long-lived dirty repo. On macOS, watch for Finder ` 2` duplicate files and `.tmp/` directories — they sneak into commits silently. See `references/junk-file-cleanup.md` for detection and cleanup patterns.
 
+When the user asks to create/merge a PR from a branch with unrelated local WIP, prefer a clean temporary worktree instead of pushing the dirty branch directly:
+
+```bash
+# From the dirty repo, identify only the intended commit(s)
+git fetch origin --prune
+git log --oneline origin/main..HEAD
+
+# Build a clean PR branch from the true remote base
+rm -rf /tmp/<repo>-pr-<topic>
+git worktree add -b fix/<topic> /tmp/<repo>-pr-<topic> origin/main
+git -C /tmp/<repo>-pr-<topic> cherry-pick <scoped_commit_1> <scoped_commit_2>
+
+# Verify from the clean worktree, push, create PR, and merge/auto-merge
+git -C /tmp/<repo>-pr-<topic> status -sb
+git -C /tmp/<repo>-pr-<topic> diff --check origin/main..HEAD
+```
+
+This keeps release-runtime experiments, local config edits, and other uncommitted WIP out of the PR while preserving the user's original working tree untouched. After the PR is merged and checks are verified, remove the temporary worktree with `git worktree remove /tmp/<repo>-pr-<topic>`.
+
 ### Rebase Target for an Existing PR
 
 When a feature branch already has an open PR, inspect the PR's current base before rebasing. Do not assume local `main`, the repo default branch, or an older remembered target is still correct.

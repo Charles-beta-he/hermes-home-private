@@ -200,7 +200,7 @@ When the user provides a model URL, check if the source allows automated fetch b
 
 ## 3D model studio bridge
 
-Use `~/.hermes/brains/manufacturing/protocols/3d-model-studio-bridge.md` whenever the workflow involves image-to-3D providers, GLB/GLTF import, local generated mesh drafts, or model-studio preview assets.
+Use `~/.hermes/brains/manufacturing/protocols/3d-model-studio-bridge.md` whenever the workflow involves image-to-3D providers, GLB/GLTF import, local generated mesh drafts, or model-studio preview assets. For SAM 3D / ComfyUI / single-photo-to-3D workflows, also use `references/sam3d-photo-to-3d-draft-gates.md`.
 
 Rules:
 - Treat Rodin/Tripo/Fal/Hunyuan/local-GLB outputs as `draft_only` evidence packets until proven otherwise.

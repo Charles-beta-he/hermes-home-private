@@ -75,6 +75,7 @@ Use `code-intel.py` — a pure Python stdlib tool that provides GitNexus-like an
 - `references/template-data-contract-debugging.md` — iceberg-search workflow for rendered artifact defects: trace visible placeholders/partial data back through template source, sender variable map, renderer missing-var semantics, data providers, and post-render guardrails.
 - `references/notification-system-taxonomy-analysis.md` — reusable checklist for analyzing notification/message-center systems: category taxonomy, sub-type inference, tab filtering, row rendering, impact routing. Pair with project-specific detail files.
 - `references/uvisa-notification-system.md` — UVISA notification architecture: type fields, category taxonomy, inference regexes, tab structure, i18n keys, impact router, UX gap (all transactionType badges same green color).
+- `references/uvisa-sse-notification-reconnect.md` — UVISA-scoped SSE notification stream debugging: `/notifications/stream` lifecycle vs user-visible network errors, frontend silent reconnect contract, backend timeout/disconnect semantics, and targeted regression tests.
 - `references/theoretical-framework-synthesis.md` — multi-model dispatch pattern for mapping codebase design patterns to CS/math theory, finding academic references, building formal models, and verifying properties. Use when user asks for "theoretical foundations", "abstract principles", or "academic works" for a system.
 - `references/prototype-source-to-current-codebase-mapping.md` — how to convert a cloned prototype/demo repo plus current frontend/backend repos into durable project-profile navigation and domain landing maps.
 - `references/backend-existing-frontend-unwired-analysis.md` — how to classify backend logic as already wired, directly wireable without UI change, requiring backend orchestration, requiring UI change, or out of module scope.
@@ -85,6 +86,9 @@ Use `code-intel.py` — a pure Python stdlib tool that provides GitNexus-like an
 - `references/uvisa-email-notification-templates.md` — UVISA email notification two-layer architecture: hardcoded Java title/body strings + DB HTML shell templates (Flyway seed). Key insight: message content is NOT in templates or admin config — it's in Java call sites. Covers all payout notification variants, debugging checklist.
 - `references/uvisa-i18n-audit.md` — UVISA i18n audit patterns: frontend key namespaces (order.timeline.*, order.channel.*), BizException→ErrorCode→MessageSource error flow, TransactionAggregationService hardcoded Chinese timeline descriptions, failReason untranslated upstream errors, channel translation accuracy, audit shell commands.
 - `references/uvisa-payment-pin-verify-contract.md` — UVISA-scoped mapping/checklist for C-side payment PIN verify coverage: `/auth/pin/verify` vs `/me/payment-pin/verify`, `type` scene metadata, `purpose=phone-rebind`, and TDD verification points.
+- `references/uvisa-customer-support-prototype-mapping.md` — UVISA-scoped mapping for customer-support prototype work: PRD knowledge-base vs FAQ distinction, AI assistant route as KB surface, prototype file paths, `gh api` retrieval fallback, and verification checklist.
+- `references/uvisa-customer-support-contact-channel-removal.md` — UVISA-scoped checklist for removing a C-side support contact channel without leaking backend-returned values or breaking remaining phone/email/FAQ rows; includes negative test assertions and build gate.
+- `references/uvisa-release-policy-audit.md` — UVISA-scoped backend/data-model/API review checklist for H5/APK/OTA release policy: SSOT, concurrent publish/rollback, DB constraints, version comparison, GA permissions, platform enum consistency, audit, and cache coherence.
 
 ## Workflow: backend exists but frontend/admin is not wired
 
@@ -117,7 +121,15 @@ grep -rl "@tg/core" apps/ --include="*.js" --include="*.jsx"
 
 When the user wants to improve a target system based on another repo (not integrate it), follow `references/reference-architecture-gap-analysis.md`: set a non-integration boundary, extract class-level patterns, create a gap matrix, land target-system artifacts, and verify them. Do not claim live integration or feature parity unless explicitly implemented.
 
-When the user corrects or supplies the authoritative GitHub URL, verify the exact repository before continuing: clone or query the GitHub API, record canonical repo metadata and commit hash, read repository-local agent instructions, then inspect the source files behind the claimed capabilities. If an earlier task/log used the wrong source, explicitly append corrected evidence rather than silently reusing the old analysis.
+When the user says to “借鉴 / borrow / use as reference” another implementation’s maximum capability surface, keep the target and reference strictly separate before editing:
+
+1. Reconfirm the **target repo/project** from the user’s wording and current workspace evidence.
+2. Treat the other implementation as a **reference capability ceiling**, not the edit target.
+3. Extract class-level affordances and authority boundaries from the reference (for example capability ladder, intent/review/auth/preflight/execute/rollback), then implement only target-system projections or gated slices.
+4. Make the boundary visible in the target artifact/UI: what is implemented now, what is projection-only, what remains closed, and what authority/digest/readback/rollback evidence would open the next boundary.
+5. Avoid cross-repo commits or “fixing” the reference repo unless the user explicitly changes the target.
+
+When the user corrects or supplies the authoritative GitHub URL or local target path, verify the exact repository before continuing: clone/query/read the repo or inspect `git status`/recent commits/current dirty files, record canonical repo metadata and commit hash, read repository-local agent instructions, then inspect the source files behind the claimed capabilities. If an earlier task/log used the wrong source, explicitly append corrected evidence rather than silently reusing the old analysis.
 
 Linked reference: `references/agentmemory-reference-architecture.md` captures the source-verified AgentMemory patterns for shared local memory servers, hook-driven capture, layered retrieval, supersession/versioning, retention/audit/privacy governance, and Hermes-specific cautions.
 

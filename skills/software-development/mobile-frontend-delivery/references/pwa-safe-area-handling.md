@@ -20,9 +20,18 @@ When a web app is installed as a PWA (standalone mode), `env(safe-area-inset-bot
 // In index.html <head>, before any CSS renders
 (function () {
   var root = document.documentElement;
-  var s = getComputedStyle(root);
-  var envBottom = s.getPropertyValue('env(safe-area-inset-bottom)').trim();
-  var envTop    = s.getPropertyValue('env(safe-area-inset-top)').trim();
+
+  function readEnvInset(edge) {
+    var probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;contain:strict;padding-' + edge + ':env(safe-area-inset-' + edge + ',0px)';
+    root.appendChild(probe);
+    var value = parseFloat(getComputedStyle(probe).getPropertyValue('padding-' + edge)) || 0;
+    root.removeChild(probe);
+    return value;
+  }
+
+  var envBottom = readEnvInset('bottom');
+  var envTop = readEnvInset('top');
 
   var isStandalone =
     window.navigator.standalone === true ||                       // iOS Safari
@@ -31,15 +40,22 @@ When a web app is installed as a PWA (standalone mode), `env(safe-area-inset-bot
   if (!isStandalone) return;
 
   // --- bottom (Home Indicator / gesture bar) ---
-  if (!envBottom || envBottom === '0px' || envBottom === '0') {
-    // screen.height - window.innerHeight delta is the most reliable heuristic
+  if (envBottom > 0) {
+    root.style.setProperty('--safe-bottom', envBottom + 'px');
+  } else {
+    // Only synthesize the well-known 34px fallback for iPhone.
+    // On Android standalone PWAs, screen.height - innerHeight can include
+    // system chrome and over-lift floating bottom navigation.
+    var isIPhone = /iPhone/.test(navigator.userAgent);
     var bottomInset = screen.height - window.innerHeight;
-    var safeBot = bottomInset > 20 ? '34px' : '0px';
+    var safeBot = isIPhone && bottomInset > 20 ? '34px' : '0px';
     root.style.setProperty('--safe-bottom', safeBot);
   }
 
   // --- top (notch / Dynamic Island) ---
-  if (!envTop || envTop === '0px' || envTop === '0') {
+  if (envTop > 0) {
+    root.style.setProperty('--safe-top', envTop + 'px');
+  } else {
     var isIPhone = /iPhone/.test(navigator.userAgent);
     if (isIPhone && screen.height >= 800) {
       root.style.setProperty('--safe-top', '47px');
@@ -52,8 +68,8 @@ When a web app is installed as a PWA (standalone mode), `env(safe-area-inset-bot
 
 1. **Must run in `<head>` inline `<script>`** — before CSS renders to prevent layout shift (flash of wrong position)
 2. **Only patch in standalone mode** — browser mode uses native `env()` values which are correct
-3. **Use CSS custom properties** as the injection target (`--safe-bottom`, `--safe-top`) — then reference these in your Tailwind/CSS alongside the `env()` fallback
-4. **Heuristic: `screen.height - window.innerHeight > 20`** reliably distinguishes gesture-nav devices (34px inset) from old home-button devices (0px inset)
+3. **Use CSS custom properties** as the injection target (`--safe-bottom`, `--safe-top`) — measure `env(...)` through a hidden probe element, then reference custom properties in Tailwind/CSS.
+4. **Heuristic: `screen.height - window.innerHeight > 20` only for iPhone fallback**. Do not synthesize iPhone-style 34px on Android; Android's delta can include system chrome and lift bottom bars too high.
 
 ## CSS Usage Pattern
 

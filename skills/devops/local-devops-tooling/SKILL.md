@@ -41,10 +41,11 @@ Don't use for:
 ## macOS Network Diagnosis Pattern
 
 1. Compare domestic/international reachability to distinguish physical network vs proxy/GFW class.
-2. Inspect macOS system proxy settings with `networksetup` for the active service.
-3. Check proxy process and listening ports (`lsof`, `ps`).
-4. Locate proxy app config and subscription sources.
-5. Test subscription/upstream reachability and handle proxy chicken-and-egg explicitly.
+2. **Multi-site isolation test**: If VPN is connected but a specific service fails, test 4+ sites (google, github, target service, cloudflare) to distinguish "VPN broken" from "service-specific IP blocking". See `references/shadowrocket-service-specific-blocking.md`.
+3. Inspect macOS system proxy settings with `networksetup` for the active service.
+4. Check proxy process and listening ports (`lsof`, `ps`).
+5. Locate proxy app config and subscription sources.
+6. Test subscription/upstream reachability and handle proxy chicken-and-egg explicitly.
 
 ## Common Pitfalls
 
@@ -67,3 +68,8 @@ Don't use for:
 
 - `references/cli-tool-installation.md` — install script templates, wrapper pattern, TLS fallback UX, and verification script details.
 - `references/macos-network-admin.md` — networksetup commands, proxy app discovery, Shadowrocket/Clash/Mihomo diagnostics.
+- `references/macos-ios-app-network-triage.md` — Apple Silicon iPhone/iPad app network triage: installed app variant checks, packet-tunnel/Fake-IP detection, CFNetwork 403 vs connectivity failures, and safe proxy/DIRECT testing boundaries.
+- `references/shadowrocket-node-validation.md` — extract individual Shadowrocket nodes from local SQLite config and verify TCP, HTTP/CONNECT, real egress IP/geo, and active system exit without leaking credentials.
+- `references/shadowrocket-node-validation.md` — extract individual Shadowrocket nodes from local SQLite config and verify TCP, HTTP/CONNECT, real egress IP/geo, and active system exit without leaking credentials.
+- `references/shadowrocket-webshare-qr-import.md` — generate Shadowrocket-importable QR codes from current Webshare dashboard/export rows; prefer plain proxy URL QR when `shadowrocket://add` scans do nothing; verify import success with real phone egress.
+- `references/shadowrocket-service-specific-blocking.md` — diagnose service-specific IP blocking (e.g., OpenAI blocks VPN/proxy exit IPs): TUN mode fake DNS detection, multi-site isolation testing, Webshare "Working" status unreliability, HTTP proxy vs TUN incompatibility, missing proxy group, and Webshare static proxy screening with `--interface en0`, API pool username, and replacement API pitfalls.

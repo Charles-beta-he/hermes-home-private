@@ -20,6 +20,8 @@ Do not use it for:
 
 Use this skill when the user asks Hermes to act as a personal assistant, create an assistant workflow, close a loop across tools/projects, or convert an ambiguous request into durable execution.
 
+Reference: `references/agent-productization-and-independent-delivery.md` covers the class-level path from business scenario to agent/personal-assistant deliverable: Hermes-native MVP, Hermes-incubated independent agent, or reusable agent runtime/product base, with workflow pack, evidence, human gates, and extraction mapping.
+
 ## Operating principles
 
 - Evidence first: gather local/project/session/tool context before making claims.

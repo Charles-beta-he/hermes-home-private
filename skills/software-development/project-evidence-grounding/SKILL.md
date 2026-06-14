@@ -125,6 +125,12 @@ For each finding or profile fact, capture:
 
 ## Support Files
 
+Scope/applicability note: support references in this skill are class-level patterns unless their title explicitly says project-scoped; do not turn any local project name, route, or enum found in a reference into a global rule without the abstraction-governance checks.
+
+- `references/release-policy-chain-audit.md` — class-level evidence map for release/version-flow audits where an operator control is expected to affect client runtime behavior; anti-condition: skip for ordinary deployment checklists.
+
+- `references/release-control-plane-admin-integration.md` — class-level pattern for integrating runtime release-control planes into existing admin version/maintenance surfaces without fake UI, domain overload, or unnecessary standalone navigation.
+
 - `references/product-prototype-code-audit.md` — archived detailed audit workflow and UVISA examples from the former narrow skill.
 - `references/project-profile-maintenance.md` — archived detailed profile-maintenance workflow and prototype/source profile examples from the former narrow skill.
 - `references/prd-compliance-audit-patterns.md` — recurring anti-patterns when cross-referencing code changes against PRD/product docs: input-vs-submit validation gaps, service-layer fields read but not enforced in UI, language detection for error localization.

@@ -44,7 +44,7 @@ Scope: complex implementation, workflow/control-plane, UI/API, or automation tas
 
 For these requests, the default completion target is not a plan, draft, read-only projection, mock, visual-only button, copy-only change, local-only placeholder, or test stub. Start from the target model and carry the work through the real layers that define the intended effect: UI/interaction, API/contract, SSOT/ledger, adapter or executor boundary, persistence, read-back, tests, browser/runtime verification, and scoped commit. If a lower layer is intentionally the endpoint, label it explicitly (for example “record-only; adapter apply not opened”).
 
-If the work reaches a boundary requiring human choice or authority, do not silently downgrade to a weaker layer and call it done. Also do not stop with only “cannot continue.” Switch into boundary realignment:
+If the work reaches a boundary requiring human choice or authority, do not silently downgrade to a weaker layer and call it done. Also do not stop with only “cannot continue.” For self-advancing/workflow-kernel work, the dry-run acceptance bundle is a real scheme boundary: it is safe to land contract/projection/acceptance artifacts, but local executor/runtime/taskpool write-through requires a fresh human gate. Switch into boundary realignment:
 
 1. Restate the initial objective and the full-landing target that is still in force.
 2. Identify the exact boundary class: permission/authority, evidence insufficiency, destructive or external side effect, credential/secret, value judgment, or safety/legal risk.
@@ -82,6 +82,7 @@ For complex tasks, run these steps before substantive execution:
    - Before claiming completion, attach real evidence: test output, diff, logs, HTTP responses, screenshots, readback, or source citations.
    - If verification is blocked, report the blocker and what was still completed.
    - For multi-repo work, check branch names and pre-existing dirty files before committing. If the active branch is unrelated to the task or unrelated local changes are present, stop at verified working-tree changes and report a scoped commit boundary instead of mixing them into a commit.
+   - When a task name can refer to multiple repositories, apps, dashboards, or similarly named artifacts, verify the target artifact path before editing. If the user intends one artifact but wants you to borrow patterns or authority boundaries from another, treat the latter as a reference model, not as the edit target.
 
 ## Compact Output Forms
 
@@ -116,6 +117,12 @@ When the user wants concise output, perform the gate internally and final only t
 - For software changes, combine with `test-driven-development`, `systematic-debugging`, and `project-evidence-grounding`; this skill does not replace tests.
 - For taskpool/control-plane work, combine with `taskpool-control-plane`; task records and evidence ledgers remain canonical.
 - For user-facing UI work, add visual/UI verification and avoid mock-only acceptance.
+
+## Control-plane resume verification
+
+When a governed mission/taskpool/control-plane workflow is unblocked and the user asks to “continue,” do not stop at recording the decision. Verify the canonical ledger, clear the human gate through the real decision command/API, wake the executor or scheduler, then read back fresh evidence. See `references/mission-control-resume-verification.md` for the detailed checklist and pitfalls.
+
+When a Mission is blocked by exhausted tick budget rather than an open human decision, first close and commit the current verified slice, then run bounded multi-model continuation sizing, authorize only the narrow budget delta, record the budget event + stage report, wake the governed dispatch path, and read back board/doctor/cron state. See `references/mission-budget-continuation.md` for the session-derived checklist and tick sizing heuristic.
 
 ## Runtime Prompt-Gate Landing
 

@@ -134,6 +134,12 @@ Pitfalls: do not treat certification as fact; do not let intent imply execution;
 6. Copying Overmind's tmux dependency or test-coverage gap instead of the process-control semantics.
 7. Mutating process-global env in parallel jobs without snapshot/restore and serialization.
 
+## macOS LaunchAgent local-console pattern
+
+When a Hermes-adjacent localhost console should “follow Hermes” at login, use a LaunchAgent wrapper rather than relying on a foreground `pnpm desktop` process. Keep the service helper small and testable: generate the plist, parse `launchctl list`, expose `start/status/stop`, and verify real HTTP readiness. Never persist per-session action tokens in the plist; generate them inside the supervised runner and verify the public snapshot remains no-token/unarmed by default.
+
+See `references/macos-launchagent-local-console.md` for the detailed checklist, plist contract tests, and common pitfalls.
+
 ## Verification Checklist
 
 - [ ] Instance/session/run ID is visible in state, logs, and artifacts.
@@ -141,5 +147,6 @@ Pitfalls: do not treat certification as fact; do not let intent imply execution;
 - [ ] Status is based on actual process state plus readiness when applicable.
 - [ ] Output fan-in preserves process identity and raw log access.
 - [ ] Env/profile resolution uses canonical Hermes helpers or documents deliberate isolation.
+- [ ] Resident macOS services keep secrets out of LaunchAgent plists and prove UI/API readiness with real probes.
 - [ ] Tests cover timeout/escalation and not only happy-path exit.
 - [ ] Scoped diff excludes unrelated runtime/cache/doc churn.

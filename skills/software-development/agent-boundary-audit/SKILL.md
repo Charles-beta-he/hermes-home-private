@@ -78,6 +78,20 @@ Don't use for:
 - commit: <sha or why not committed>
 ```
 
+## Dreaming / background-review landing classifier
+
+When a post-turn Dreaming-style review or self-improvement fork reviews a session, it must classify each candidate lesson before writing durable state. Use this classifier before memory or skill mutations:
+
+- Stable user preference/persona -> `memory(target="user")` in compact declarative form.
+- Stable environment/tool fact -> `memory(target="memory")`, only as an index-level fact that stays true across sessions.
+- Project-specific fact, URL, repo path, release branch, harness address, or local runtime detail -> project profile or explicitly scoped skill reference with applicability and anti-conditions; do not put the full fact in global memory.
+- Reusable procedure, debugging path, pitfall, or verification checklist -> existing class-level skill first; add `references/` only when the session detail is useful as evidence or a repeatable recipe.
+- Cross-project default-behavior or architecture-governance change -> experience-ratchet proposal unless already directly evidenced and authorized for skill/profile landing.
+- Concrete future engineering work -> taskpool candidate/proposal, not a fake memory or skill.
+- Task/session progress, PR/issue/commit status, raw transcript, raw MEMORY/USER dumps, credentials, or temporary task state -> no durable memory/skill write.
+
+If a candidate mixes several classes, split it. If the review toolset cannot write the correct landing zone, say `Nothing to save.` rather than forcing the lesson into the wrong store. This is especially important for Hermes self-optimization: project facts should become project-profile entries or scoped references, while the always-on profile should retain only user preferences, red lines, and index-level pointers.
+
 ## Common Pitfalls
 
 1. Treating multi-model consensus as permission to change global behavior. Consensus can justify a proposal; it is not a truth gate or authorization gate.

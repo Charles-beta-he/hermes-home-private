@@ -187,6 +187,11 @@ done
 
 ## Common Pitfalls
 
+### Boot health / recovery notification for Telegram Gateway
+When Telegram responsiveness is part of a startup or post-restart check, use the lightweight operational-readiness pattern in `references/boot-health-and-recovery-notification.md`. Verify both sides of the path: gateway polling logs (`Connected to Telegram`, `✓ telegram connected`, `Gateway running with ... platform(s)`) and an explicit send result with `success=true` plus `message_id`. `getMe` alone proves only token/API reachability, not that Hermes is consuming inbound updates.
+
+If `hermes gateway start` reports launchd bootstrap exit 5 but starts a fallback background process, do not call it fully fixed just because Telegram reconnects. Report current recovery separately from reboot/autostart risk, and keep the repair ladder low-risk: refresh service definition, clear stale pid/lock, restart gateway, then verify logs/send. Avoid token/provider/config rewrites during boot health.
+
 ### Errno 24 / Too many open files in Telegram gateway
 If Telegram replies with `Sorry, I encountered an error (OSError). [Errno 24] Too many open files: ~/.hermes/sessions/.sessions_*.tmp`, diagnose gateway FD exhaustion before blaming session storage:
 
@@ -251,11 +256,26 @@ hermes gateway status
 grep "Connected to Telegram\|✓ telegram connected\|Gateway running" ~/.hermes/logs/gateway.log | tail -20
 ```
 
-Verification is not just `getMe`: send an explicit message to the known DM target and check `success=true` plus `message_id`:
+If macOS launchd returns `Bootstrap failed: 5: Input/output error`, `hermes gateway start` may fall back to a tracked background gateway process. Treat that as usable only after all of these are true:
+
+```bash
+# Service definition no longer stale, and a gateway PID exists
+hermes gateway status
+pgrep -fl "hermes_cli.main gateway run"
+
+# Wait past Telegram's short getUpdates conflict window and any planned --replace takeovers.
+# The latest log segment (not old grep tail matches) must show a stable connected gateway:
+sleep 15
+tail -80 ~/.hermes/logs/gateway.log | grep -E "Connected to Telegram|✓ telegram connected|Gateway running with|Telegram polling conflict|planned --replace takeover|Gateway stopped"
+```
+
+A `Telegram polling conflict ... terminated by other getUpdates request` immediately after restart is often just the previous polling session expiring; wait and re-read the newest log lines before declaring failure. If logs keep showing repeated `planned --replace takeover` or `Gateway stopped`, there may be competing gateway starters; stop, clean stale pid/lock, then start once.
+
+Verification is not just `getMe`: `getMe` and direct Bot API sends prove token/network only, not the gateway inbound/agent pipeline. Send an explicit message to the known DM target and check `success=true` plus `message_id`, then ask the user to reply in Telegram to verify inbound processing:
 
 ```text
 send_message(action="list")
-send_message(action="send", target="telegram:he cheng", message="TG connectivity test")
+send_message(action="send", target="telegram:he cheng", message="TG connectivity test — please reply in Telegram")
 ```
 
 Do not preserve the original stuck request as WIP after a forced restart; ask the user to resend the Telegram message if it was interrupted.

@@ -25,6 +25,8 @@ metadata:
 
 Delegate coding tasks to [Claude Code](https://code.claude.com/docs/en/cli-reference) (Anthropic's autonomous coding agent CLI) via the Hermes terminal. Claude Code v2.x can read files, write code, run shell commands, spawn subagents, and manage git workflows autonomously.
 
+For Hermes-local Claude Code model migrations and multi-model certification cleanup, see `references/fable-5-migration.md`. It captures the class pattern: verify the real `claude -p` modelUsage first, update active multi-model/quorum/router/quota paths, use `--model fable` for direct CLI probes when Fable is the Claude Code default, and run both static scans and real `multi-model-smoke.py --model claude-fable-5` before claiming completion.
+
 ## When to Use
 
 - You need to delegate coding tasks to Claude Code (Anthropic's CLI agent)
@@ -747,6 +749,10 @@ Use `/context` in interactive mode to see a colored grid of context usage. Key t
 11. **Use `--no-session-persistence`** in CI to avoid accumulating saved sessions on disk.
 
 ## Troubleshooting API Errors
+
+### Claude Code default-model migrations
+
+When Claude Code announces a new default/high-end model (for example Fable 5), check Hermes-local scripts and routing configs for stale hardcoded Claude model IDs before using multi-model orchestration. See `references/fable-5-migration.md` for the scan/patch/verification pattern, including the pitfall that `hermes chat --provider claude-code ...` may still exercise the Anthropic/OAuth adapter while direct `claude -p --model fable` succeeds.
 
 ### 400 "out of extra usage" — Time-Based Quota Exhaustion
 Anthropic enforces **time-windowed** usage limits (e.g., per 5-hour window), not just total quota. A 400 error saying "out of extra usage" does NOT mean your account is empty — it means you hit the rate limit for the current time window.

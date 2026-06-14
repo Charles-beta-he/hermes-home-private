@@ -41,6 +41,7 @@ This umbrella skill is the routing surface for research. Use it to choose the mo
 - `polymarket` — you need guidance on query Polymarket prediction market data — search markets, get prices, orderbooks, and price history.
 - `travel-planning-with-personal-history` — use `references/travel-planning-with-personal-history.md` when planning trips/routes, especially motorcycle/couple travel, and the user expects current facts plus personal history/photo-location de-duplication.
 - `research-paper-writing` — you need guidance on end-to-end pipeline for writing ML/AI research papers — from experiment design through analysis, drafting, revision, and submission.
+- `references/public-evidence-solo-validation.md` — use when validating one-person-company opportunities for users with weak warm networks or social-energy constraints: public evidence → automated sample/report → landing/waitlist → inbound async paid validation.
 
 ## Selection Rules
 

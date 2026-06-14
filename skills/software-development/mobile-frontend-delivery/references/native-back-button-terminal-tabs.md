@@ -22,6 +22,10 @@ Do not infer native-back behavior from browser history alone. In hybrid apps, th
    - In-WebView edge swipe may have its own hook; Android system gesture can bypass DOM touch handlers unless surfaced by Capacitor.
 5. State the boundary precisely in the conclusion: current path, platform, native shell vs browser, and whether the route is a terminal tab.
 
+## iOS standalone PWA caveat
+
+Plain iOS Safari / Add-to-Home-Screen PWA is not the same as Capacitor native. Safari already owns the interactive left-edge back-swipe. If the SPA shell also implements a `touchstart`/`touchend` edge-swipe that calls `navigate(-1)`, one physical swipe can double-pop history and leave the standalone PWA on a white/blank snapshot while returning from deep flow pages to a main tab. For that symptom, see `references/ios-pwa-native-back-swipe-conflict.md` and prefer runtime-gating the custom swipe handler off for iOS Web/PWA while preserving Capacitor/native behavior.
+
 ## Expected UX policy for finance-style apps
 
 Primary tabs such as Home / Card / Wealth / Me should normally be terminal: Android Back from them exits/minimizes the app rather than resurrecting sensitive or stale intermediate flow pages from history. Deeper flow pages can pop one route unless the flow explicitly uses `replace` to collapse completed or invalid steps.

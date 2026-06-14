@@ -94,6 +94,7 @@ This umbrella skill is the routing surface for software development — 软件�
 - `references/multi-repo-sync-and-self-checks.md` — safe multi-repo pull verification, decomposed self-check sequence, and how to separate compile/test/package/runtime boot failures after sync.
 
 - `references/fullstack-verification-workflow.md` — 前后端一体化项目的本地全栈验证工作流（验证脚本、失败分类、taskpool 集成、项目画像配置）
+- `references/client-error-observability-governance.md` — 前端/用户端错误捕获治理：ClientError 归一、4xx 降噪、5xx/网络采样、contract error 必报、Sentry beforeSend 脱敏、全局 runtime/unhandledrejection 捕获与 TDD 验证切片。
 
 - `development-closure-consensus` — 上层开发闭环共识：闭环从任务接管开始，先解析项目画像，再编译项目化闭环共识，PR 只是后段。
 

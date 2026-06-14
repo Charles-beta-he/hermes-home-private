@@ -42,7 +42,7 @@ This umbrella skill is the routing surface for creative. Use it to choose the mo
 - `baoyu-infographic` — user asks to create "infographic", "visual summary", "信息图", "可视化", or "高密度信息大图".
 - `claude-design` — you need to design one-off HTML artifacts (landing, deck, prototype).
 - `comfyui` — you need to generate images, video, and audio with ComfyUI — install, launch, manage nodes/models, run workflows with parameter injection.
-- `ideation` — the user says 'I want to build something', 'give me a project idea', 'I'm bored', 'what should I make', 'inspire me', or any variant of 'I have tools but no direction'. Works for c....
+- `ideation` — the user says 'I want to build something', 'give me a project idea', 'I'm bored', 'what should I make', 'inspire me', or any variant of 'I have tools but no direction'. Works for code, art, hardware, writing, tools, and anything that can be made. When the idea is a startup/product/business opportunity, include failure-autopsy market validation; see `references/market-validation-failure-autopsy.md`.
 - `design-md` — building a design system, porting style rules between projects, generating UI with consistent brand, or auditing accessibility/contrast.
 - `excalidraw` — you need to create hand-drawn style diagrams using Excalidraw JSON format.
 - `humanizer` — you need guidance on humanize text: strip AI-isms and add real voice.
