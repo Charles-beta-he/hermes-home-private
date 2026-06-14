@@ -462,6 +462,26 @@ python3 scripts/workflow_pack_registry_projection.py --write-report --json
 
 Expected readback: `PACK_REGISTRY_PROJECTION_READY`, blockers `[]`, module rows with risk/gate/side-effect flags, and artifacts under `docs/private/workflow-kernel-pack-registry/`. This remains read-only: no cron mutation, task lifecycle mutation, model generation, credential access, external send, or unattended dispatch. After Phase51, stop at the larger divergence unless the user chooses: Phase50 guarded single external send (requires exact adapter/target/payload/mode/idempotency/rollback) vs Phase52 Control Tower UI/API productization.
 
+For Phase 50, execute at most one exact guarded external send only after the user selects concrete adapter/target/payload. Prefer `hermes send --to telegram --json '<message>'` for Telegram home because it reuses Hermes gateway config and emits structured receipt. If the in-process `send_message` tool fails due to missing isolated dependencies, do not loop; use the CLI path or stop honestly. Then record the receipt:
+
+```bash
+python3 -m py_compile scripts/workflow_guarded_external_send_receipt.py
+./scripts/run_tests.sh tests/scripts/test_workflow_guarded_external_send_receipt.py
+python3 scripts/workflow_guarded_external_send_receipt.py --send-result /tmp/phase50_send_result.json --write-report --json
+```
+
+Expected readback: `GUARDED_EXTERNAL_SEND_VERIFIED`, exact platform/target/message_id, `external_side_effect_executed=true`, `unattended_external_dispatch_enabled=false`, and a compensating-message correction path. This authorizes one send only; no repeated or unattended sends.
+
+For Phase 52, after Phase50 and Phase51, emit a read-only Control Tower UI/API projection:
+
+```bash
+python3 -m py_compile scripts/workflow_control_tower_projection.py
+./scripts/run_tests.sh tests/scripts/test_workflow_control_tower_projection.py
+python3 scripts/workflow_control_tower_projection.py --write-report --json
+```
+
+Expected readback: `CONTROL_TOWER_UI_API_PROJECTION_READY`, JSON API payload, static HTML dashboard artifact, browser/readback evidence, and no live server/runtime mutation/additional external send. After Phase52, stop at the next larger divergence: Phase53 durable live Control Tower runtime/API integration vs Phase54 unattended dispatch policy gate.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
 
 ## Common P1/P2 classification
