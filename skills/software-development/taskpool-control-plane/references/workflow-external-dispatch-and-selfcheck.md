@@ -706,6 +706,26 @@ python3 scripts/workflow_publication_apply_authorization_packet.py --write-repor
 
 Expected readback: `PUBLICATION_APPLY_AUTHORIZATION_PACKET_READY`, default `A_KEEP_PRIVATE_NO_PUBLICATION`, `selected_option=null`, `packet_only=true`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
 
+For Phase 75, compile a private/local export artifact manifest without publishing:
+
+```bash
+python3 -m py_compile scripts/workflow_private_export_artifact_compiler.py
+./scripts/run_tests.sh tests/scripts/test_workflow_private_export_artifact_compiler.py
+python3 scripts/workflow_private_export_artifact_compiler.py --write-report --json
+```
+
+Expected readback: `PRIVATE_EXPORT_ARTIFACT_COMPILER_READY`, `visibility=private_local_only`, `private_export_ready=true`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
+
+For Phase 76, record the safe-default implementation choice without applying it:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_apply_implementation_choice.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_apply_implementation_choice.py
+python3 scripts/workflow_publication_apply_implementation_choice.py --choice A_KEEP_PRIVATE_NO_APPLY --write-report --json
+```
+
+Expected readback: `PUBLICATION_APPLY_IMPLEMENTATION_CHOICE_RECORDED`, `choice=A_KEEP_PRIVATE_NO_APPLY`, `record_only=true`, `exact_target_present=false`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
