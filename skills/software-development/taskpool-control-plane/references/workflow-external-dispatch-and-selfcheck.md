@@ -746,6 +746,26 @@ python3 scripts/workflow_publication_apply_reopen_packet.py --write-report --jso
 
 Expected readback: `PUBLICATION_APPLY_REOPEN_PACKET_READY`, default `A_NO_REOPEN_KEEP_PRIVATE`, `selected_option=null`, `packet_only=true`, `reopen_apply_enabled=false`, and `publication_apply_enabled=false`.
 
+For Phase 79, generate a read-only publication closure health report:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_closure_health_report.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_closure_health_report.py
+python3 scripts/workflow_publication_closure_health_report.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_CLOSURE_HEALTH_REPORT_CLEAR`, `health=clear`, `unhealthy_checks=[]`, `read_only=true`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
+
+For Phase 80, update the read-only publication governance archive/index:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_governance_archive_update.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_governance_archive_update.py
+python3 scripts/workflow_publication_governance_archive_update.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_GOVERNANCE_ARCHIVE_READY`, `archive_policy=read_only_publication_governance_index`, `item_count=6`, `read_only=true`, and `publication_apply_enabled=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
