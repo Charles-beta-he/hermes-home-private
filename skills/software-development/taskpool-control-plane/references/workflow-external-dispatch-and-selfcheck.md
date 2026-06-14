@@ -890,6 +890,20 @@ Expected readback: `PUBLICATION_GOVERNANCE_TERMINAL_SUMMARY_READY`, `terminal_st
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
+## Conflicting-evidence override consumption boundary
+
+Applicability: Hermes-owned Control Tower / taskpool closeout authorization flow after positive evidence is satisfied but stale/conflicting evidence is still present. Anti-condition: do not apply this to direct task closure, external adapter writes, production deploy, publication apply, or any workflow without an evidence review hash.
+
+Approved conflicting-evidence override is now a consumable authorization input, not a direct closeout. Required invariant:
+
+```text
+request_conflicting_evidence_override_authorization -> requested, override_allowed=false, closeout_allowed=false
+decide_conflicting_evidence_override_authorization(approved) -> override_allowed=true, closeout_allowed=false
+request_closeout_authorization -> may consume the still-fresh approved override bound to the same evidence_review_id + evidence_state_hash
+```
+
+The closeout authorization remains projection-only: `closeout_allowed=false`, `execution=not_executed`, and task lifecycle/adapters are not mutated. Fail closed when positive evidence is insufficient, evidence hash drifted, override is missing/requested/rejected/expired, actor role is below admin for override, or closeout actor role is below the risk-required role. Expected audit event: `ConflictingEvidenceOverrideConsumedForCloseout`.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.
