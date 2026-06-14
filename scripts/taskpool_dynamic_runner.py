@@ -24,6 +24,12 @@ LOG = HERMES_HOME / "logs" / "taskpool_dynamic_runner.jsonl"
 LOCK = HERMES_HOME / "state" / "taskpool_dynamic_runner.pid"
 TICK = HERMES_HOME / "scripts" / "brain_task_dispatch_tick.py"
 MM_DYNAMIC = HERMES_HOME / "scripts" / "multimodel_intervention_dynamic_step.py"
+NO_MULTIMODEL_SPAWN_ENV_FLAG = "HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"
+ENV_TRUE_VALUES = {"1", "true", "yes", "on", "enabled", "force"}
+
+
+def env_flag_enabled(env: dict[str, str], name: str) -> bool:
+    return str(env.get(name, "") or "").strip().lower() in ENV_TRUE_VALUES
 
 
 def utc() -> str:
@@ -382,8 +388,22 @@ def main() -> int:
         event["signature"] = sig
         should_print = changed or tick.get("returncode") not in (0, "0") or bool((summary.get("error_count") or 0)) or bool(event["autorun"].get("advanced")) or bool(event["auto_close_review"].get("closed_count")) or bool(event["auto_close_review"].get("error_count"))
         # Start/advance multimodel worker opportunistically, but never block this tick.
-        mm = summary.get("multimodel_intervention") if isinstance(summary.get("multimodel_intervention"), dict) else {}
-        if mm.get("intervention_required") and (changed or time.time() - float(prev.get("last_mm_probe_epoch") or 0) > 1800):
+        # Event-hook mission slices can set a deterministic no-spawn gate so the
+        # runner may still observe/advance local lifecycle state without
+        # auto-starting intervention workers that reclaim/reset the target task.
+        mm_raw = summary.get("multimodel_intervention")
+        mm = mm_raw if isinstance(mm_raw, dict) else {}
+        mm_probe_due = bool(mm.get("intervention_required")) and (changed or time.time() - float(prev.get("last_mm_probe_epoch") or 0) > 1800)
+        if mm_probe_due and env_flag_enabled(env, NO_MULTIMODEL_SPAWN_ENV_FLAG):
+            event["multimodel_dynamic"] = {
+                "returncode": 0,
+                "status": "SKIP",
+                "action": "spawn_disabled_by_env",
+                "env_flag": NO_MULTIMODEL_SPAWN_ENV_FLAG,
+                "safety": "local event-hook observation only; no multimodel worker spawned",
+            }
+            should_print = True
+        elif mm_probe_due:
             mm_dynamic = run([sys.executable, str(MM_DYNAMIC), "--json"], timeout=60, env=env)
             event["multimodel_dynamic"] = compact_result(mm_dynamic)
             should_print = True if mm_dynamic.get("stdout") else should_print

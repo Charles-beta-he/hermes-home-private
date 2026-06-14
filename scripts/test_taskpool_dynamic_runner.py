@@ -5,6 +5,7 @@ import importlib.util
 import contextlib
 import io
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -233,6 +234,52 @@ def test_main_parses_large_summary_and_invokes_multimodel_probe_without_silent_n
         assert event["summary"]["status"] == "OK"
         assert event["summary"]["next_task_id"] == "task-123"
         assert event["multimodel_dynamic"]["returncode"] == 0
+
+
+def test_main_honors_no_multimodel_spawn_env_gate():
+    m = load_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        tick = root / "tick.py"
+        mm = root / "mm.py"
+        state = root / "state.json"
+        log = root / "log.jsonl"
+        lock = root / "lock.pid"
+        payload = {
+            "status": "OK",
+            "next_task_id": "task-123",
+            "dispatchable": True,
+            "error_count": 0,
+            "reconcile_action_count": 0,
+            "ingested_count": 0,
+            "multimodel_intervention": {"intervention_required": True, "task_id": "mm-task", "queued_count": 1},
+        }
+        tick.write_text("import json\nprint(json.dumps(%r))\n" % payload, encoding="utf-8")
+        mm.write_text("raise SystemExit('multimodel worker must not be invoked')\n", encoding="utf-8")
+        m.TICK = tick
+        m.MM_DYNAMIC = mm
+        m.STATE = state
+        m.LOG = log
+        m.LOCK = lock
+        old_dispatch_mode = m.load_taskpool_dispatch_mode
+        old_escape = m.human_escape_status
+        old_env = dict(os.environ)
+        try:
+            os.environ[m.NO_MULTIMODEL_SPAWN_ENV_FLAG] = "1"
+            m.load_taskpool_dispatch_mode = lambda: "single"
+            m.human_escape_status = lambda: {"status": "OK", "triggered": False, "info": {}}
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = m.main()
+        finally:
+            os.environ.clear()
+            os.environ.update(old_env)
+            m.load_taskpool_dispatch_mode = old_dispatch_mode
+            m.human_escape_status = old_escape
+        assert rc == 0
+        event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
+        assert event["multimodel_dynamic"]["status"] == "SKIP"
+        assert event["multimodel_dynamic"]["action"] == "spawn_disabled_by_env"
+        assert event["multimodel_dynamic"]["env_flag"] == m.NO_MULTIMODEL_SPAWN_ENV_FLAG
 
 
 if __name__ == "__main__":

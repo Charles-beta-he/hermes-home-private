@@ -342,7 +342,7 @@ def claim_task(task_id, actor='agent-team-controller', ttl=60):
         ['python3', str(ORCHESTRATOR), 'claim', task_id,
          '--actor', actor, '--ttl-minutes', str(ttl),
          '--reason', 'Phase 4 dynamic parallel dispatch', '--json'],
-        capture_output=True, text=True, timeout=30
+        capture_output=True, text=True, timeout=90
     )
     if r.returncode != 0:
         return {'ok': False, 'error': r.stderr[:200]}
@@ -366,7 +366,16 @@ def transition_task(task_id, to_status, actor, reason, evidence=None, ttl=60, fo
         cmd.extend(['--evidence', str(item)])
     if force:
         cmd.append('--force')
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    except subprocess.TimeoutExpired as exc:
+        return {
+            'ok': False,
+            'error': f'transition_timeout:{to_status}:{exc.timeout}s',
+            'timeout': exc.timeout,
+            'stdout': (exc.stdout or '')[:500] if isinstance(exc.stdout, str) else '',
+            'stderr': (exc.stderr or '')[:500] if isinstance(exc.stderr, str) else '',
+        }
     if r.returncode != 0:
         return {'ok': False, 'error': (r.stderr or r.stdout)[:500], 'returncode': r.returncode}
     try:
