@@ -604,7 +604,27 @@ python3 -m py_compile scripts/workflow_manual_only_closure.py
 python3 scripts/workflow_manual_only_closure.py --write-report --json
 ```
 
-Expected readback: `MANUAL_ONLY_CLOSURE_READY`, `final_mode=manual_only_with_no_send_dry_run_cron`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and closed paths include repeated/unattended/cron-triggered/cross-adapter dispatch without new authorization.
+Expected readback: `MANUAL_ONLY_CLOSURE_READY`, `final_mode=manual_only_with_no_send_dry_run_cron`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and closed paths include repeated/unattended/cron-triggered/cross-adapter dispatch without new authorization. If the same governed Workflow Kernel sequence continues, adjacent phases are sequential work, not a divergence; stop only for competing schemes at the same implementation point.
+
+For Phase 65, add read-only monitoring of the manual-only closure invariants:
+
+```bash
+python3 -m py_compile scripts/workflow_manual_only_closure_monitoring.py
+./scripts/run_tests.sh tests/scripts/test_workflow_manual_only_closure_monitoring.py
+python3 scripts/workflow_manual_only_closure_monitoring.py --write-report --json
+```
+
+Expected readback: `MANUAL_ONLY_MONITORING_CLEAR`, `drift=[]`, dry-run job `wk57dryrun01` still `no_agent=true` and `deliver=local`, `read_only=true`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, and `cron_state_mutated=false`.
+
+For Phase 66, compile a future unattended apply reopen packet without applying it:
+
+```bash
+python3 -m py_compile scripts/workflow_future_unattended_reopen_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_future_unattended_reopen_packet.py
+python3 scripts/workflow_future_unattended_reopen_packet.py --write-report --json
+```
+
+Expected readback: `FUTURE_UNATTENDED_REOPEN_PACKET_READY`, default `A_NO_REOPEN_KEEP_MANUAL_ONLY`, `selected_option=null`, `packet_only=true`, `reopen_apply_enabled=false`, `unattended_dispatch_enabled=false`, and `external_side_effects_executed=false`.
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
