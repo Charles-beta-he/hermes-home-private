@@ -422,45 +422,6 @@ def test_command_add_work_task_fails_closed_without_source_weighting_policy():
         assert not any(r["title"] == "malformed work task must not be created dispatch-dead" for r in rows)
 
 
-def test_add_repo_capability_absorption_creates_governed_capability_task():
-    td, _vault, env = make_env_and_vault()
-    with td:
-        created = json.loads(run(
-            env,
-            "add-repo-capability-absorption",
-            "--source-url",
-            "https://github.com/example/capability-tool",
-            "--capability-name",
-            "Document Extractor",
-            "--capability-claim",
-            "Convert PDFs and office docs into structured Markdown",
-            "--target-surface",
-            "cli_wrapper",
-            "--integration-level",
-            "wrap",
-            "--expires-at",
-            "2099-01-01",
-            "--json",
-        ).stdout)
-        assert created["status"] == "OK", created
-        assert created["absorption_type"] == "repo_capability_absorption"
-        assert created["target_surface"] == "cli_wrapper"
-        task_path = Path(created["created"])
-        text = task_path.read_text(encoding="utf-8")
-        assert "absorption_type: repo_capability_absorption" in text
-        assert "source_url: https://github.com/example/capability-tool" in text
-        assert "capability_name: Document Extractor" in text
-        assert "target_surface: cli_wrapper" in text
-        assert "integration_level: wrap" in text
-        assert "completion_boundary: taskpool_candidate" in text
-        assert "## Capability Intake Gates" in text
-        assert "Real reproduction" in text
-        assert "no runtime integration opened by creation command" in text
-        listed = json.loads(run(env, "list", "--json").stdout)
-        assert listed["task_count"] == 1
-        assert listed["rows"][0]["id"] == created["id"]
-
-
 def add_work_closeout_pair(env, title="Lark 修复闭环"):
     r = run(
         env,

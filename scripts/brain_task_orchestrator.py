@@ -1248,7 +1248,6 @@ def sanitize_frontmatter_value(key: str, value: Any) -> Any:
 def render_frontmatter(fm: dict[str, Any]) -> str:
     preferred = [
         "type", "lane", "layer", "status", "priority", "priority_layer", "dependency_order", "created", "updated", "expires_at", "project",
-        "absorption_type", "source_type", "source_url", "capability_name", "capability_claim", "target_surface", "integration_level", "absorption_decision",
         "work_closeout_phase", "depends_on_task", "manual_dispatch_gate", "manual_dispatch_released",
         "architecture_target", "capability_delta", "anti_drift_check", "acceptance_evidence", "workflow_contract",
         "requires_multimodel", "multimodel_reason", "expected_participants", "truth_gate", "evidence_bundle",
@@ -4549,140 +4548,6 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
     derived_refresh = refresh_derived_task_views("add")
     event_hook = maybe_fire_taskpool_event_hook("task_added", task_id=path.stem, reason="command_add")
     return {"status": "OK", "created": str(path), "id": path.stem, "link": obsidian_link(path), "derived_refresh": derived_refresh, "event_hook": event_hook}
-
-
-REPO_CAPABILITY_SURFACES = {"skill", "cli_wrapper", "mcp", "sidecar", "adapter", "core", "taskpool"}
-REPO_CAPABILITY_LEVELS = {"evaluate", "reproduce", "wrap", "integrate", "productionize"}
-
-
-def repo_capability_body_section(args: argparse.Namespace) -> str:
-    return "\n".join([
-        "| Gate | Required proof | Status |",
-        "|---|---|---|",
-        "| 1. Capability definition | source identity, license, declared capability, Hermes gap | pending |",
-        "| 2. Real reproduction | local demo / CLI / API / official test / real sample output | pending |",
-        "| 3. Boundary and risk | license, secrets, network, cost, sandbox, arbitrary execution, data egress | pending |",
-        f"| 4. Integration surface | selected target surface: `{args.target_surface}`; justify why lower coupling is insufficient | pending |",
-        "| 5. Harness acceptance | fixed input, fixed assertions, offline rerun where possible, readable failure | pending |",
-        "| 6. Maintenance strategy | version pin, upgrade owner, fallback, rollback, allowlist/autorun policy | pending |",
-        "",
-        "## Absorption Decision Log",
-        "",
-        "- Decision options: `reject`, `watch`, `skill-only`, `wrapper`, `integrated`, `taskpool-automated`.",
-        "- Current decision: `pending` until the reproduction and risk gates have evidence.",
-        "",
-        "## Source & Claim",
-        "",
-        f"- Source type: `{args.source_type}`",
-        f"- Source URL: {args.source_url}",
-        f"- Capability name: {args.capability_name}",
-        f"- Capability claim: {args.capability_claim}",
-        f"- Target surface: `{args.target_surface}`",
-        f"- Integration level: `{args.integration_level}`",
-    ])
-
-
-def command_add_repo_capability_absorption(args: argparse.Namespace) -> dict[str, Any]:
-    """Create a first-class task for absorbing an external repo's main capability."""
-    if args.target_surface not in REPO_CAPABILITY_SURFACES:
-        raise SystemExit(f"target_surface must be one of {sorted(REPO_CAPABILITY_SURFACES)}")
-    if args.integration_level not in REPO_CAPABILITY_LEVELS:
-        raise SystemExit(f"integration_level must be one of {sorted(REPO_CAPABILITY_LEVELS)}")
-    title = args.title or f"吸收 {args.capability_name} 主打能力为 Hermes 可复用能力"
-    concepts = ",".join([
-        "repo-capability-absorption",
-        "external-repo",
-        "capability-intake",
-        args.target_surface,
-        args.integration_level,
-    ])
-    objective = args.objective or (
-        f"评估并推进外部来源 {args.source_url} 的主打能力 `{args.capability_name}`。"
-        f"先用真实复现证明 `{args.capability_claim}`，再按最低耦合原则判断是否落到 "
-        f"Hermes `{args.target_surface}` 表面；未过证据门则只做 watch/reject/skill-only。"
-    )
-    accept = args.accept or (
-        "完成 capability intake 决策包：source/license/claim 证据、真实复现日志或阻塞证据、"
-        "Hermes gap mapping、风险边界、选定接入面、最小 harness 验收、维护/回滚策略；"
-        "如果进入实现，产出后续 bounded implementation task。"
-    )
-    truth_gate = args.truth_gate or (
-        "不能只读 README 或凭宣传语吸收；至少完成 live source inspection。若进入 wrap/integrate/productionize，"
-        "必须有本地 demo/CLI/API/官方测试/真实样本输出之一；未跑通只能标记 watch/reject/skill-only。"
-    )
-    required_artifacts = args.required_artifacts or ",".join([
-        "repo_review_note",
-        "license_or_terms_check",
-        "reproduction_log_or_blocker",
-        "sample_input_output_or_official_test",
-        "risk_assessment",
-        "integration_decision",
-        "harness_acceptance",
-        "rollback_or_fallback_plan",
-    ])
-    add_args = argparse.Namespace(
-        title=title,
-        priority=args.priority,
-        project=args.project,
-        status="pending",
-        expires_at=args.expires_at,
-        expires_days=args.expires_days,
-        concepts=concepts,
-        lane="evolution",
-        architecture_target=args.architecture_target,
-        capability_delta=f"repo_capability_absorption:{args.capability_name}->{args.target_surface}:{args.integration_level}",
-        anti_drift_check="capability claim must be linked to source proof and reproduction evidence before integration",
-        acceptance_evidence=accept,
-        priority_layer=args.priority,
-        dependency_order=args.dependency_order,
-        multimodel_triage_result=args.multimodel_triage_result or f"{args.priority}:repo_capability_absorption:advisory-before-implementation",
-        requires_multimodel=args.requires_multimodel,
-        multimodel_reason=args.multimodel_reason,
-        expected_participants=args.expected_participants,
-        truth_gate=truth_gate,
-        evidence_bundle=f"source_type={args.source_type}; source_url={args.source_url}; capability={args.capability_name}; target_surface={args.target_surface}; integration_level={args.integration_level}",
-        workflow_stage="evidence",
-        completion_boundary="implementation_ready" if args.integration_level in {"integrate", "productionize"} else "taskpool_candidate",
-        harness_surfaces="source_inspection,reproduction,risk_gate,harness",
-        required_artifacts=required_artifacts,
-        external_side_effects=False,
-        layer=args.layer,
-        workflow_contract=args.workflow_contract,
-        workspace=args.workspace,
-        parallel_boundary=args.parallel_boundary or f"repo-capability:{args.source_url}:{args.capability_name}",
-        objective=objective,
-        accept=accept,
-        red_line=args.red_line,
-        non_goal=args.non_goal,
-        evidence_ref=args.evidence_ref,
-    )
-    if args.dry_run:
-        return {"status": "OK", "dry_run": True, "delegated_add_args": vars(add_args)}
-    result = command_add(add_args)
-    path = Path(result["created"])
-    fm, body = split_frontmatter(path.read_text(encoding="utf-8"))
-    fm.update({
-        "absorption_type": "repo_capability_absorption",
-        "source_type": args.source_type,
-        "source_url": args.source_url,
-        "capability_name": args.capability_name,
-        "capability_claim": args.capability_claim,
-        "target_surface": args.target_surface,
-        "integration_level": args.integration_level,
-        "absorption_decision": "pending",
-    })
-    body = replace_markdown_section(body, "Capability Intake Gates", repo_capability_body_section(args))
-    body = append_markdown_section_lines_unique(body, "Proof Log", [
-        f"- {iso()}: Repo capability absorption task standardized; no runtime integration opened by creation command.",
-    ])
-    atomic_write(path, render_frontmatter(fm) + "\n" + body)
-    result["derived_refresh_after_standardization"] = refresh_derived_task_views("add-repo-capability-absorption")
-    result["absorption_type"] = "repo_capability_absorption"
-    result["source_url"] = args.source_url
-    result["capability_name"] = args.capability_name
-    result["target_surface"] = args.target_surface
-    result["integration_level"] = args.integration_level
-    return result
 
 
 def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
@@ -10222,38 +10087,6 @@ def build_parser() -> argparse.ArgumentParser:
     wcp.add_argument("--accept", default="")
     wcp.add_argument("--json", action="store_true")
 
-    rcap = sub.add_parser("add-repo-capability-absorption", help="Create a governed task for absorbing an external repo/source capability")
-    rcap.add_argument("--source-url", required=True)
-    rcap.add_argument("--source-type", default="repo", choices=["repo", "docs", "article", "video", "demo", "package", "other"])
-    rcap.add_argument("--capability-name", required=True)
-    rcap.add_argument("--capability-claim", required=True)
-    rcap.add_argument("--target-surface", default="cli_wrapper", choices=sorted(REPO_CAPABILITY_SURFACES))
-    rcap.add_argument("--integration-level", default="evaluate", choices=sorted(REPO_CAPABILITY_LEVELS))
-    rcap.add_argument("--title", default="")
-    rcap.add_argument("--priority", default="P2", choices=list(PRIORITY_WEIGHT))
-    rcap.add_argument("--project", default="hermes-agent")
-    rcap.add_argument("--architecture-target", default="local-brain", choices=["", *sorted(ARCHITECTURE_TARGETS)])
-    rcap.add_argument("--dependency-order", default="0")
-    rcap.add_argument("--multimodel-triage-result", default="")
-    rcap.add_argument("--requires-multimodel", action="store_true")
-    rcap.add_argument("--multimodel-reason", default="")
-    rcap.add_argument("--expected-participants", default="")
-    rcap.add_argument("--truth-gate", default="")
-    rcap.add_argument("--required-artifacts", default="")
-    rcap.add_argument("--layer", default="L3")
-    rcap.add_argument("--workflow-contract", default=DEFAULT_WORKFLOW)
-    rcap.add_argument("--workspace", default="")
-    rcap.add_argument("--parallel-boundary", default="")
-    rcap.add_argument("--objective", default="")
-    rcap.add_argument("--accept", default="")
-    rcap.add_argument("--red-line", action="append", default=[])
-    rcap.add_argument("--non-goal", action="append", default=[])
-    rcap.add_argument("--evidence-ref", action="append", default=[])
-    rcap.add_argument("--expires-at", default="")
-    rcap.add_argument("--expires-days", type=int, default=30)
-    rcap.add_argument("--dry-run", action="store_true")
-    rcap.add_argument("--json", action="store_true")
-
     adp = sub.add_parser("authorize-dispatch")
     adp.add_argument("task")
     adp.add_argument("--actor", default="hermes")
@@ -10511,8 +10344,6 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_add(args), args.json)
     if args.cmd == "add-work-closeout-pair":
         return print_result(command_add_work_closeout_pair(args), args.json)
-    if args.cmd == "add-repo-capability-absorption":
-        return print_result(command_add_repo_capability_absorption(args), args.json)
     if args.cmd == "authorize-dispatch":
         return print_result(command_authorize_dispatch(args), args.json)
     if args.cmd == "authorize-railway-deploy":

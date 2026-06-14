@@ -107,23 +107,6 @@ Those are local-brain / memory-system concerns, not provider-quota concerns.
 
 ## Taskpool-native adoption lifecycle
 
-When the external material claims a runnable **main capability** (not only an idea), prefer the dedicated capability intake command instead of a vague analysis task:
-
-```bash
-python3 ~/.hermes/scripts/brain_task_orchestrator.py add-repo-capability-absorption \
-  --source-url "https://github.com/org/repo" \
-  --source-type repo \
-  --capability-name "Short capability name" \
-  --capability-claim "What the source claims it can do" \
-  --target-surface cli_wrapper \
-  --integration-level evaluate \
-  --json
-```
-
-Use `--target-surface` to encode the lowest-coupling landing surface: `skill`, `cli_wrapper`, `mcp`, `sidecar`, `adapter`, `core`, or `taskpool`. Use `--integration-level` to encode the current ambition: `evaluate`, `reproduce`, `wrap`, `integrate`, or `productionize`.
-
-The command creates `absorption_type: repo_capability_absorption` tasks with evidence gates for capability definition, real reproduction, risk boundary, integration surface, harness acceptance, and maintenance/rollback strategy. Creation itself **does not** authorize vendoring, external side effects, runtime integration, or taskpool automation; later workers must pass the reproduction and risk gates first.
-
 This workflow is generic for external repositories/docs, not a one-off chat plan. After intake, the remaining work must live in taskpool tasks with explicit progress and evidence.
 
 Use these stage gates when the material may be absorbed into Hermes:
