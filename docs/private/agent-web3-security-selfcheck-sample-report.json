@@ -1,0 +1,57 @@
+{
+  "schema": "agent_web3_security_selfcheck_v0_1",
+  "metadata": {
+    "project": "No-side-effect sample Agent/Web3 project",
+    "scope": "internal self-check sample only; no external certification; no network scans",
+    "internal_only": true,
+    "claims_external_certification": false
+  },
+  "dimensions": {
+    "identity": {
+      "score": 15,
+      "status": "pass",
+      "evidence": ["Sample declares official domain/repo/wallet mapping but no live verification was performed."],
+      "assumptions": ["No external lookup in sample mode."]
+    },
+    "web_api": {
+      "score": 35,
+      "status": "warn",
+      "evidence": ["Sample has HTTPS/auth/rate-limit checklist items but no live endpoint probe."],
+      "assumptions": ["Network checks intentionally omitted."]
+    },
+    "contract_wallet": {
+      "score": 45,
+      "status": "warn",
+      "evidence": ["Sample records contract/wallet review required before production."],
+      "assumptions": ["No chain read/write in sample mode."]
+    },
+    "code_supply_chain": {
+      "score": 30,
+      "status": "warn",
+      "evidence": ["Sample requires dependency/build provenance review before release."]
+    },
+    "agent_permissions": {
+      "score": 55,
+      "status": "warn",
+      "evidence": ["Sample agent would require human gate for fund/system actions; no real tools connected."],
+      "assumptions": ["No live tools available in this sample."]
+    },
+    "data_privacy": {
+      "score": 20,
+      "status": "pass",
+      "evidence": ["Sample contains no secrets; reports require redaction of exploit detail and credentials."]
+    },
+    "media_authenticity": {
+      "score": 25,
+      "status": "warn",
+      "evidence": ["Sample requires provenance for brand/media claims but does not validate external assets."]
+    },
+    "ops_incident_response": {
+      "score": 40,
+      "status": "warn",
+      "evidence": ["Sample requires kill switch, rollback owner, and next-review trigger before production."]
+    }
+  },
+  "kill_switch_findings": [],
+  "report_template_filled": true
+}
