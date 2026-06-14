@@ -480,7 +480,26 @@ python3 -m py_compile scripts/workflow_control_tower_projection.py
 python3 scripts/workflow_control_tower_projection.py --write-report --json
 ```
 
-Expected readback: `CONTROL_TOWER_UI_API_PROJECTION_READY`, JSON API payload, static HTML dashboard artifact, browser/readback evidence, and no live server/runtime mutation/additional external send. After Phase52, stop at the next larger divergence: Phase53 durable live Control Tower runtime/API integration vs Phase54 unattended dispatch policy gate.
+Expected readback: `CONTROL_TOWER_UI_API_PROJECTION_READY`, JSON API payload, static HTML dashboard artifact, browser/readback evidence, and no live server/runtime mutation/additional external send. If the user says both Phase53 and Phase54 are required, continue in order rather than treating them as a divergence.
+
+For Phase 53, integrate the Workflow Kernel projection into the existing live Control Tower dashboard/API snapshot instead of creating a parallel server:
+
+```bash
+python3 -m py_compile hermes_cli/control_tower.py
+./scripts/run_tests.sh tests/hermes_cli/test_control_tower_snapshot.py tests/plugins/test_control_tower_dashboard_plugin.py
+```
+
+Expected readback: `control_tower.build_snapshot()["workflow_kernel_control_tower"].status == "ready"`, latest guarded send message id present, dashboard plugin renders the Workflow Kernel panel, and authenticated dashboard API `/api/plugins/control-tower/snapshot` exposes the same read-only projection. If a running dashboard process was started before the code change, restart only the dashboard process to load the new backend module; do not restart gateway/message delivery casually.
+
+For Phase 54, compile the unattended dispatch policy gate fail-closed:
+
+```bash
+python3 -m py_compile scripts/workflow_unattended_dispatch_policy_gate.py
+./scripts/run_tests.sh tests/scripts/test_workflow_unattended_dispatch_policy_gate.py
+python3 scripts/workflow_unattended_dispatch_policy_gate.py --write-report --json
+```
+
+Expected readback: `UNATTENDED_DISPATCH_POLICY_GATE_READY`, `default_mode=dry_run_preview`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, plus policy/dry-run instruction artifacts under `docs/private/workflow-kernel-unattended-dispatch-policy/`. After Phase54, stop at the next larger divergence unless the user chooses: Phase55 unattended dry-run scheduler vs Phase56 Control Tower policy editor / approval UI.
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime state such as `cron/jobs.json` and rollback backups on disk unless the intended durable policy explicitly says to commit them.
 
