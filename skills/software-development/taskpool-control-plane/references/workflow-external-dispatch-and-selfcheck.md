@@ -542,7 +542,25 @@ python3 -m py_compile scripts/workflow_guarded_send_runner_activation_packet.py
 python3 scripts/workflow_guarded_send_runner_activation_packet.py --write-report --json
 ```
 
-Expected readback: `GUARDED_SEND_RUNNER_ACTIVATION_PACKET_READY`, `manual_send_runner_is_active_now=false`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, `send_message_called=false`, and contract artifacts under `docs/private/workflow-kernel-guarded-send-runner-activation/`. After Phase58, stop at the next authority boundary unless the user chooses: Phase59 guarded manual-send runner implementation vs Phase60 one-shot guarded send activation.
+Expected readback: `GUARDED_SEND_RUNNER_ACTIVATION_PACKET_READY`, `manual_send_runner_is_active_now=false`, `unattended_dispatch_enabled=false`, `external_side_effects_executed=false`, `send_message_called=false`, and contract artifacts under `docs/private/workflow-kernel-guarded-send-runner-activation/`. If the user says Phase59 and Phase60 are both required, continue in order rather than treating them as a divergence.
+
+For Phase 59, implement the guarded manual-send runner with preview-by-default behavior:
+
+```bash
+python3 -m py_compile scripts/workflow_guarded_manual_send_runner.py
+./scripts/run_tests.sh tests/scripts/test_workflow_guarded_manual_send_runner.py
+python3 scripts/workflow_guarded_manual_send_runner.py --write-report --json
+```
+
+Expected readback: `GUARDED_MANUAL_SEND_RUNNER_READY`, target `telegram`, deterministic idempotency key, `external_side_effects_executed=false`, and artifacts under `docs/private/workflow-kernel-guarded-manual-send-runner/`. The runner must require `--execute` plus packet/policy/idempotency validation before it can call `hermes send`.
+
+For Phase 60, execute exactly one packet-approved Telegram home send through the Phase59 runner:
+
+```bash
+python3 scripts/workflow_guarded_manual_send_runner.py --execute --write-report --json
+```
+
+Expected readback: `ONE_SHOT_GUARDED_SEND_VERIFIED`, exact `message_id`, `chat_id`, payload hash, idempotency key, `external_side_effects_executed=true`, `unattended_dispatch_enabled=false`, and append-only receipt ledger. This authorizes one send only; do not enable repeated, cron, unattended, or cross-adapter sends. After Phase60, stop at the next boundary unless the user chooses: Phase61 post-send correlation/compensation watch vs Phase62 unattended dispatch enablement packet.
 
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
