@@ -18,6 +18,7 @@ secrets/
 # Conversation/session/runtime state
 sessions/
 state/
+processes.json
 task_ledger.db
 *.db-wal
 *.db-shm
