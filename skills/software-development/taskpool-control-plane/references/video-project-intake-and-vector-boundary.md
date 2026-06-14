@@ -23,6 +23,41 @@ Use when the user shares WeChat 视频号 / short-video / social-post links and 
    - Use dependency order when several projects form a sequence.
    - For social-source hype, make acceptance evidence architecture/gap analysis first; promote to implementation only after a grounded review.
 
+## Social-to-publishing pipeline boundary
+
+When the user wants a social/video lead turned into a publishing pipeline (for example 小红书/RedNote):
+
+- Split the chain into stages: content understanding → draft/publish package → login/session → browser form-fill → final publish → post metrics readback.
+- Treat draft/package generation as low-risk and immediately automatable.
+- Treat account login, cookie/session reuse, and final public posting as authority boundaries. The user must authenticate personally; default to "auto-fill then human clicks publish" unless the user explicitly authorizes full auto-publish and rollback/monitoring exists.
+- Verify local platform/tool state before claiming a publishing chain is connected: list configured Hermes targets/tools, open the creator page, identify login vs editor state, and record blockers as auth/permission boundaries rather than capability absence.
+- Prefer a durable publish package artifact (`note.md`, cover image, image set, tags, checklist, source evidence) before any browser automation.
+
+## Video-content-analysis project stack pattern
+
+For video-analysis leads that name concrete CV repos (for example Roboflow `inference`, `supervision`, `rf-detr`), classify the stack by responsibility before creating tasks:
+
+- model layer: detection/segmentation model and license/runtime constraints;
+- processing/report layer: annotation, tracking, zones, metrics, timestamps, evidence overlays;
+- serving/workflow layer: local/server inference, stream/batch inputs, event APIs, external integrations.
+
+Recommended taskpool shape: one parent architecture/gap-mapping task plus dependency-ordered child tasks for each layer. Acceptance evidence should include repo facts, license/runtime constraints, go/no-go for prototype, and a minimal smoke-test boundary. Do not install GPU drivers, download large models, start daemons, or request camera permissions during intake unless explicitly authorized.
+
+## Digital-persona / talking-avatar video leads
+
+When a social/video lead points to a digital-human, talking-avatar, photo+audio-to-video, or voice-driven avatar project (for example LongCat-Video-Avatar), classify it as a **future media adapter / digital persona capability**, not as an immediate runtime install.
+
+Required intake shape:
+
+1. Extract visible post text and OCR, but treat the social page as a lead only.
+2. Map to canonical project/page/code/model artifacts and inspect README plus demo scripts for the actual input/output schema.
+3. Check whether a prior generic evaluation task already exists. If yes, avoid duplicate generic tasks; add a narrower follow-up for the missing product surface (for example “Hermes digital persona `video_avatar_generate` adapter contract”).
+4. Keep first task boundaries design-only unless explicitly authorized: no model weight downloads, no CUDA/FlashAttention install, no GPU daemon, no real face/voice generation, no public publish.
+5. Recommended adapter contract fields: `persona_id`, `consent_ref`, `prompt`, `image_path`, `audio_path`, `mode`, `duration_policy`, `backend`, `safety.watermark`, `safety.review_required`, and provenance output paths.
+6. Prefer a remote-GPU/hosted-worker boundary for heavy avatar models. Keep large model dependencies out of Hermes core and require a separate budget/permission task before any dry-run generation.
+
+Safety red lines: explicit consent for persona image and voice/audio; provenance hashes for inputs; watermark or metadata for generated digital-human media; no third-party likeness/voice cloning without rights; generated videos default to draft/review, not public posting.
+
 ## Qdrant / vector database boundary
 
 When external projects mention Qdrant, Pinecone, Chroma, Weaviate, Milvus, pgvector, embeddings, RAG, or semantic memory, explicitly classify the role:

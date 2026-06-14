@@ -137,3 +137,5 @@ Each boundary should write a Mission stage report with:
 For taskpool evidence markers, use proof-check accepted prefixes such as `command:send_message target=telegram success=true message_id=...`, `artifact:...`, `proof:...`, or `classification:...`; avoid ad-hoc prefixes like `tool:...` because `proof-check` treats them as unstructured evidence.
 
 Avoid saying “done” for the whole architecture when the current layer is only contract/projection/acceptance/executor-preview.
+
+For the post-adapter-write-through sequence covering external apply contracts, local outbox simulation, one-shot Telegram smoke tests, governed notification policy, and post-dispatch architecture self-check, see `references/workflow-external-dispatch-and-selfcheck.md`.

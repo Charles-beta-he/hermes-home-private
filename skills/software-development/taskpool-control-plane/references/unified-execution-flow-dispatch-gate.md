@@ -62,9 +62,11 @@ Anti-condition: do not use this rule to block safe pre-closeout execution gaps; 
 `auto-claim-and-handoff` must run the execution-flow dispatch decision before write guard and before claim mutation:
 
 - If `allowed_to_dispatch=false`, return `FAIL_CLOSED` with `claimed=false`.
+- If the execution-flow dry-run/evaluator is unavailable or raises before a decision, fail closed with a structured no-mutation response; never fall through to claim/handoff just because the gate could not be computed.
 - Do not call claim, do not create handoff files, and do not append autorun proof events.
-- Return `execution_flow` and `execution_flow_dispatch_decision` so the operator can resolve the boundary.
+- Return `execution_flow` and `execution_flow_dispatch_decision` when available so the operator can resolve the boundary.
 - If allowed, preserve existing write-guard, claim, read-back, handoff, and proof-log gates.
+- Regression tests for hard-boundary claim/handoff must assert all no-mutation evidence directly: `claimed=false`, task note unchanged, no `handoff` field in the payload, no autorun proof log, and no handoff markdown files under the autorun handoff directory.
 
 ## Closeout consumption rule
 

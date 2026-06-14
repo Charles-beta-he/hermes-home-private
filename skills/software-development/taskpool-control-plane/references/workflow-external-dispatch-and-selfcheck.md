@@ -904,6 +904,14 @@ request_closeout_authorization -> may consume the still-fresh approved override 
 
 The closeout authorization remains projection-only: `closeout_allowed=false`, `execution=not_executed`, and task lifecycle/adapters are not mutated. Fail closed when positive evidence is insufficient, evidence hash drifted, override is missing/requested/rejected/expired, actor role is below admin for override, or closeout actor role is below the risk-required role. Expected audit event: `ConflictingEvidenceOverrideConsumedForCloseout`.
 
+## Long-term stable plan closeout reference
+
+When the user asks whether the final long-term Control Tower / workflow-kernel plan is complete, do not stop at a single terminal ladder. Check runtime freshness, mission state, Control Tower visibility, conflicting-evidence override consumption, broader-adapter fail-closed contracts, unattended/publication terminal gates, and Phase-G candidate backlog projection. See `references/control-tower-long-term-closeout.md` for the closeout checklist, expected final safe state, and pitfalls.
+
+## Fail-closed posture activation reference
+
+When the user asks to “开启 fail-closed” after the workflow-kernel/Control Tower ladder is otherwise stable, land an observable fail-closed posture rather than opening executors. Aggregate runtime readiness, broader-adapter contracts, remaining terminal gates, Phase-G backlog, and publication terminal summary into a read-only posture artifact exposed as `workflow_kernel_control_tower.fail_closed_posture`. Expected enabled posture: `fail_closed_enabled=true` with no forbidden true flags and with external side effects, unattended dispatch, publication apply, generic adapter write-through, taskpool enqueue, and executor enablement all still false. See `references/workflow-fail-closed-posture.md` for the reusable landing and verification checklist.
+
 ## Common P1/P2 classification
 
 - P1: cron/provider-generation errors affecting scheduled automation.

@@ -19,13 +19,14 @@ For Hermes, the first pass should usually produce a gap-analysis and governed ta
 
 1. Inspect the live source/index first.
    - For a GitHub awesome-list, confirm repo metadata, default branch, license, README claims, category structure, and whether it is only an index or actual source.
+   - For SkillClaw-style repositories, also inspect the client/proxy, evolve-server, validation, dashboard, and adapter surfaces separately; these are not just static skill bundles.
    - Capture the inspected commit or timestamp.
    - Search category files for the Garden lanes rather than reading the whole list into context.
 
 2. Classify the artifact before adding it to the pool.
    - `lane=evolution` for Hermes self-strengthening.
    - `project=hermes-agent`.
-   - `architecture_target=skill-graph` when the main work is skill routing / skill-library design.
+   - `architecture_target=skill-graph` when the main work is skill routing / skill-library design, post-session skill evolution, candidate staging, trigger deduplication, validation gates, or multi-profile skill sharing.
    - Use `local-brain` instead when the dominant work is local retrieval, memory, or taskpool runtime.
    - Default priority `P2` unless it fixes a current correctness/safety blocker.
 
@@ -57,6 +58,25 @@ For Hermes, the first pass should usually produce a gap-analysis and governed ta
    - Read back/search the created task note when possible.
    - Run `selfcheck` and `proof-check` when operating the taskpool.
    - If the add event triggers multimodel intervention and marks the task `claimed/running`, report that as real follow-through instead of adding duplicate manual work.
+
+## SkillClaw / collective skill-evolution special case
+
+When the external repo is SkillClaw-like (client proxy + post-session skill evolution + shared storage + verifier/validation worker), do **not** treat it as a request to install a proxy or let it become a parallel Hermes skill SSOT.
+
+Recommended interpretation:
+
+- Valuable pattern: session/task proof -> compact trajectory -> skill grouping -> candidate skill patch -> verifier gate -> staged publish.
+- Hermes landing zone: `skill-graph` first, `local-brain` second; provider/quota only matters for verifier/model cost gates.
+- First task: source review + gap-analysis + governed taskpool intake.
+- Follow-up task: Hermes-native `skill candidate staging` harness. The candidate writes an evidence artifact and diff, not the official skill.
+- Later roadmap: staged candidate -> deterministic checks -> human/`skill_manage` apply -> proof-check/selfcheck -> optional profile/device sync.
+
+Red lines:
+
+- Do not run `skillclaw setup`, `skillclaw start`, or an evolve server during intake.
+- Do not rewrite `~/.hermes/config.yaml` or route Hermes model traffic through a third-party proxy without explicit approval and rollback.
+- Do not upload local skills, session transcripts, taskpool notes, or private evidence to OSS/S3/Nacos/cloud storage.
+- Do not let an LLM verifier be the sole publication authority; deterministic checks and human/skill_manage gates remain required.
 
 ## Security and privacy red lines
 
