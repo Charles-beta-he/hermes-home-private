@@ -686,6 +686,26 @@ python3 scripts/workflow_publication_exact_target_gate.py --write-report --json
 
 Expected readback: `PUBLICATION_EXACT_TARGET_GATE_READY`, `gate_only=true`, `selected_target=null`, `publication_apply_enabled=false`, `external_publication_enabled=false`, and `external_side_effects_executed=false`.
 
+For Phase 73, compile an exact-target apply dry-run preview without selecting a target or publishing:
+
+```bash
+python3 -m py_compile scripts/workflow_exact_target_apply_dry_run_compiler.py
+./scripts/run_tests.sh tests/scripts/test_workflow_exact_target_apply_dry_run_compiler.py
+python3 scripts/workflow_exact_target_apply_dry_run_compiler.py --write-report --json
+```
+
+Expected readback: `EXACT_TARGET_APPLY_DRY_RUN_COMPILER_READY`, `dry_run_only=true`, `would_publish=false`, `publication_apply_enabled=false`, and `external_side_effects_executed=false`.
+
+For Phase 74, create the publication apply authorization packet fail-closed:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_apply_authorization_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_apply_authorization_packet.py
+python3 scripts/workflow_publication_apply_authorization_packet.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_APPLY_AUTHORIZATION_PACKET_READY`, default `A_KEEP_PRIVATE_NO_PUBLICATION`, `selected_option=null`, `packet_only=true`, `publication_apply_enabled=false`, and `external_publication_enabled=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
