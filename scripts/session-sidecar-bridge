@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""
+Session Sidecar Bridge CLI — shell entrypoint for the session_sidecar consumer.
+
+Usage:
+    session-sidecar-bridge aggregate [date_prefix=YYYY-MM-DD]
+    session-sidecar-bridge query [date_prefix=YYYY-MM-DD] [entrypoint=cli] [limit=10]
+    session-sidecar-bridge read run_id=<id>
+    session-sidecar-bridge selfcheck
+    session-sidecar-bridge daily-report [date_prefix=YYYY-MM-DD]
+    session-sidecar-bridge ingest-evidence [date_prefix=YYYY-MM-DD] [min_evidence=1]
+    session-sidecar-bridge inject-test-sidecar status=succeeded|degraded|failed entrypoint=cli|cron|automation|script|gateway
+"""
+
+import sys
+import os
+
+# Add Hermes agent source to path
+_HERMES_SRC = "/Users/charles/.hermes/hermes-agent"
+if _HERMES_SRC not in sys.path:
+    sys.path.insert(0, _HERMES_SRC)
+
+from session_sidecar.consumer import main
+
+if __name__ == "__main__":
+    sys.exit(main())

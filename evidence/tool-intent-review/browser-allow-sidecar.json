@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-06-12T01:28:45.691671+00:00",
+  "cron_mode": false,
+  "decision": "allow",
+  "degraded_flags": [],
+  "evidence_refs": [],
+  "intent_summary": "observe page before browser automation",
+  "missing_evidence": [],
+  "reason_codes": [
+    "read_only_or_observational"
+  ],
+  "risk_level": "low",
+  "schema_version": "tool_intent_review_v1",
+  "target_surfaces": [
+    "browser"
+  ],
+  "tool_name": "browser_snapshot"
+}

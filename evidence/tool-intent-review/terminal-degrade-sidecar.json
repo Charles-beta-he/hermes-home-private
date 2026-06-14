@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-06-12T01:28:02.783068+00:00",
+  "cron_mode": true,
+  "decision": "degrade",
+  "degraded_flags": [
+    "cron_no_user_confirmation_available"
+  ],
+  "evidence_refs": [],
+  "intent_summary": "cron cleanup without structured evidence",
+  "missing_evidence": [
+    "structured_pretool_evidence_ref"
+  ],
+  "reason_codes": [
+    "destructive_or_external_terminal_hint",
+    "missing_structured_evidence",
+    "write_or_execution_surface"
+  ],
+  "risk_level": "critical",
+  "schema_version": "tool_intent_review_v1",
+  "target_surfaces": [
+    "terminal"
+  ],
+  "tool_name": "terminal"
+}

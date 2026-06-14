@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""
+Session Sidecar Agent Proof — write a proof-log sidecar from a running agent.
+
+Designed to be called from:
+  - browser_tool.py session-end hook
+  - cron/scheduler.py run_job() completion
+  - cli.py agent termination
+  - standalone scripts that want to produce structured proof
+
+Input: JSON on stdin with keys matching the chosen producer, or env vars.
+
+Examples:
+
+    # Cron job completion sidecar
+    session-sidecar-agent-proof cron \
+      --job-id nightly-report --job-name "Nightly Report" \
+      --status succeeded --duration-s 42.5
+
+    # Browser automation sidecar
+    session-sidecar-agent-proof browser \
+      --session-key "task-123::local" --url-count 15 --status succeeded
+
+    # CLI session sidecar
+    session-sidecar-agent-proof cli \
+      --session-id "sess-abc" --model "deepseek-v4" --duration-s 120.0
+
+    # Ingest into taskpool after writing
+    session-sidecar-agent-proof cron ... --ingest
+
+    # Pipe JSON from a script
+    echo '{"entrypoint":"script","status":"succeeded"}' | session-sidecar-agent-proof
+"""
+
+import json
+import logging
+import os
+import sys
+import time
+from datetime import datetime, timezone
+# Add Hermes agent source to path
+_HERMES_SRC = "/Users/charles/.hermes/hermes-agent"
+if _HERMES_SRC not in sys.path:
+    sys.path.insert(0, _HERMES_SRC)
+
+from session_sidecar import write_sidecar
+from session_sidecar.producers import (
+    cli_producer,
+    cron_producer,
+    browser_producer,
+    script_producer,
+    gateway_producer,
+)
+from session_sidecar.consumer import sidecar_evidence_for_selfcheck
+
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
+PRODUCERS = {
+    "cli": cli_producer,
+    "cron": cron_producer,
+    "browser": browser_producer,
+    "script": script_producer,
+    "gateway": gateway_producer,
+}
+
+
+def _parse_args(argv: list[str]) -> dict:
+    """Key=value or --key value parser with type coercion and list accumulation.
+
+    List-valued keys (evidence_refs, degraded_flags, screenshot_paths):
+        Repeated --flags accumulate: --evidence-refs a --evidence-refs b → ["a","b"]
+
+    Numeric keys: float (duration_s) or int (url_count, screenshot_count, click_count, limit)
+        Coerced at parse time so the producer receives the right type.
+    """
+    _LIST_KEYS = {"evidence_refs", "degraded_flags", "screenshot_paths", "output_paths", "args"}
+    _FLOAT_KEYS = {"duration_s"}
+    _INT_KEYS = {"url_count", "screenshot_count", "click_count", "limit"}
+
+    kwargs: dict = {}
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg.startswith("--"):
+            key = arg.lstrip("-").replace("-", "_")
+            # Collect value if next arg isn't another flag
+            if i + 1 < len(argv) and not argv[i + 1].startswith("--"):
+                i += 1
+                val: str | bool = argv[i]
+            else:
+                val = True
+
+            if key in _LIST_KEYS:
+                if val is True:
+                    kwargs.setdefault(key, [])
+                else:
+                    kwargs.setdefault(key, []).append(val)
+            elif key in _FLOAT_KEYS:
+                kwargs[key] = float(val) if isinstance(val, str) else val
+            elif key in _INT_KEYS:
+                kwargs[key] = int(val) if isinstance(val, str) else val
+            else:
+                kwargs[key] = val
+        elif "=" in arg:
+            k, v = arg.split("=", 1)
+            kwargs[k] = v
+        i += 1
+    return kwargs
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = argv or sys.argv[1:]
+
+    if not argv or argv[0] in ("-h", "--help"):
+        print(__doc__.strip())
+        return 0
+
+    # Detect producer from first positional arg
+    producer_name = None
+    for name in PRODUCERS:
+        if argv[0] == name:
+            producer_name = name
+            argv = argv[1:]
+            break
+
+    # Parse remaining key=value / --key value args
+    kwargs = _parse_args(argv)
+
+    # JSON stdin overrides
+    if not sys.stdin.isatty():
+        try:
+            stdin_data = json.loads(sys.stdin.read())
+            if isinstance(stdin_data, dict):
+                kwargs.update(stdin_data)
+        except (json.JSONDecodeError, ValueError):
+            pass
+
+    # Determine producer
+    if producer_name:
+        fn = PRODUCERS[producer_name]
+    elif "entrypoint" in kwargs:
+        ep = kwargs.pop("entrypoint")
+        fn = PRODUCERS.get(ep)
+        if fn is None:
+            print(f"Unknown entrypoint {ep!r}; choices: {list(PRODUCERS)}", file=sys.stderr)
+            return 1
+    else:
+        # Default to script producer with whatever we have
+        fn = script_producer
+        producer_name = "script"
+
+    ingest = kwargs.pop("ingest", False)
+    strip_sensitive = kwargs.pop("strip_sensitive", "true") not in ("false", "False", "0")
+
+    # Build sidecar
+    sc = fn(**kwargs)
+    path = write_sidecar(sc, strip_sensitive=strip_sensitive)
+
+    result = {
+        "status": "ok",
+        "run_id": sc.run_id,
+        "path": str(path),
+        "entrypoint": sc.entrypoint,
+        "status_field": sc.status,
+    }
+
+    # Optional ingest into selfcheck-style evidence
+    if ingest:
+        evidence = sidecar_evidence_for_selfcheck()
+        result["ingested_evidence"] = evidence
+
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
