@@ -626,6 +626,26 @@ python3 scripts/workflow_future_unattended_reopen_packet.py --write-report --jso
 
 Expected readback: `FUTURE_UNATTENDED_REOPEN_PACKET_READY`, default `A_NO_REOPEN_KEEP_MANUAL_ONLY`, `selected_option=null`, `packet_only=true`, `reopen_apply_enabled=false`, `unattended_dispatch_enabled=false`, and `external_side_effects_executed=false`.
 
+For Phase 67, record the single implementation-point reopen choice using the safe default unless the user explicitly opens a competing scheme:
+
+```bash
+python3 -m py_compile scripts/workflow_single_point_reopen_choice.py
+./scripts/run_tests.sh tests/scripts/test_workflow_single_point_reopen_choice.py
+python3 scripts/workflow_single_point_reopen_choice.py --choice A_NO_REOPEN_KEEP_MANUAL_ONLY --write-report --json
+```
+
+Expected readback: `SINGLE_POINT_REOPEN_CHOICE_RECORDED`, `choice=A_NO_REOPEN_KEEP_MANUAL_ONLY`, `record_only=true`, `reopen_apply_enabled=false`, `unattended_dispatch_enabled=false`, and `message_sent=false`.
+
+For Phase 68, build the read-only governance archive/index:
+
+```bash
+python3 -m py_compile scripts/workflow_manual_only_governance_archive.py
+./scripts/run_tests.sh tests/scripts/test_workflow_manual_only_governance_archive.py
+python3 scripts/workflow_manual_only_governance_archive.py --write-report --json
+```
+
+Expected readback: `MANUAL_ONLY_GOVERNANCE_ARCHIVE_READY`, `archive_policy=read_only_index_closed_ladder`, indexed key phase artifacts present, `read_only=true`, `reopen_apply_enabled=false`, `unattended_dispatch_enabled=false`, and `external_side_effects_executed=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
