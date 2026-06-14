@@ -846,6 +846,26 @@ python3 scripts/workflow_publication_apply_reopen_human_gate_packet.py --write-r
 
 Expected readback: `PUBLICATION_APPLY_REOPEN_HUMAN_GATE_PACKET_READY`, default `A_KEEP_CLOSED_NO_REOPEN`, `selected_option=null`, `packet_only=true`, `human_gate_required_for_apply=true`, and `publication_apply_enabled=false`.
 
+For Phase 89, run a read-only retention/drift watch over the reopen human gate packet:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_human_gate_retention_watch.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_human_gate_retention_watch.py
+python3 scripts/workflow_publication_human_gate_retention_watch.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_HUMAN_GATE_RETENTION_WATCH_CLEAR`, `drift=[]`, `packet_only=true`, and `publication_apply_enabled=false`.
+
+For Phase 90, compile the read-only publication governance final index:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_governance_final_index.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_governance_final_index.py
+python3 scripts/workflow_publication_governance_final_index.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_GOVERNANCE_FINAL_INDEX_READY`, `index_policy=read_only_final_index_closed_no_apply`, `item_count=8`, `read_only=true`, and `publication_apply_enabled=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
