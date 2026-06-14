@@ -866,6 +866,28 @@ python3 scripts/workflow_publication_governance_final_index.py --write-report --
 
 Expected readback: `PUBLICATION_GOVERNANCE_FINAL_INDEX_READY`, `index_policy=read_only_final_index_closed_no_apply`, `item_count=8`, `read_only=true`, and `publication_apply_enabled=false`.
 
+Applicability: only for this Hermes-owned Workflow Kernel publication governance ladder after Phase90 final-index evidence exists. Anti-condition: do not apply this terminal pattern to unrelated projects, generic publication workflows, or any workflow where a real exact target/payload/rollback has already been human-selected.
+
+For Phase 91, run a read-only retention/drift watch over the governance final index:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_final_index_retention_watch.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_final_index_retention_watch.py
+python3 scripts/workflow_publication_final_index_retention_watch.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_FINAL_INDEX_RETENTION_WATCH_CLEAR`, `drift=[]`, `read_only=true`, and `publication_apply_enabled=false`.
+
+For Phase 92, compile the terminal read-only publication governance summary:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_governance_terminal_summary.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_governance_terminal_summary.py
+python3 scripts/workflow_publication_governance_terminal_summary.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_GOVERNANCE_TERMINAL_SUMMARY_READY`, `terminal_state=closed_no_apply_human_gated_reopen_only`, `read_only=true`, and `publication_apply_enabled=false`. This is the terminal state for this publication governance ladder; any real reopen/apply requires human exact target, payload digest, rollback plan, and blast-radius choice.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
