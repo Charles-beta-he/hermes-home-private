@@ -766,6 +766,26 @@ python3 scripts/workflow_publication_governance_archive_update.py --write-report
 
 Expected readback: `PUBLICATION_GOVERNANCE_ARCHIVE_READY`, `archive_policy=read_only_publication_governance_index`, `item_count=6`, `read_only=true`, and `publication_apply_enabled=false`.
 
+For Phase 81, run a read-only publication archive retention/drift watch:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_archive_retention_watch.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_archive_retention_watch.py
+python3 scripts/workflow_publication_archive_retention_watch.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_ARCHIVE_RETENTION_WATCH_CLEAR`, `drift=[]`, `read_only=true`, `retention_policy=publication_archive_retained_read_only_no_apply`, and `publication_apply_enabled=false`.
+
+For Phase 82, compile a packet-only publication export review packet:
+
+```bash
+python3 -m py_compile scripts/workflow_publication_export_review_packet.py
+./scripts/run_tests.sh tests/scripts/test_workflow_publication_export_review_packet.py
+python3 scripts/workflow_publication_export_review_packet.py --write-report --json
+```
+
+Expected readback: `PUBLICATION_EXPORT_REVIEW_PACKET_READY`, default `A_REVIEW_PRIVATE_ARCHIVE_ONLY`, `selected_option=null`, `packet_only=true`, `export_apply_enabled=false`, and `publication_apply_enabled=false`.
+
 Closeout pitfall: if a long turn stops after verification but before commit, resume with scoped status checks, rerun the focused validation slice, commit the child repo first, then commit the parent repo pointer/runner/skill. Keep ignored runtime rollback backups on disk unless the intended durable policy explicitly says to commit them; commit `cron/jobs.json` only when the phase intentionally mutates scheduler state.
 
 ## Common P1/P2 classification
