@@ -50,6 +50,9 @@ Fix pattern:
 - Run the narrow Vitest command and confirm the failures are atom-specific.
 - Implement minimal theme/panel changes.
 - Re-run narrow tests, then `pnpm run build`, then `git diff --check`.
+- For stale/shared Lark links, also search branch names and commits for the suite id or GUID-derived human id (for example `auto/t104260-...`, commit bodies, and PR titles). A task can be implemented even when Lark remains `todo`.
+- If the task screenshot is only a Lark `[Image]` placeholder and no native attachment is downloadable, do not block code triage. Use the title text plus current implementation/git evidence, but label the screenshot as an API evidence gap and keep final Lark closeout gated on online UI proof.
+- For Android theme-chrome fixes, remote HTML can provide a fast implementation/deploy containment check: fetch the deployed `index.html` and assert there is a single app-owned `<meta name="theme-color">`, no media-bound light/dark theme-color split, and a bootstrap path that resolves app theme before React loads. This is implementation-sendback evidence only.
 - If there are unrelated dirty files, stage only the task files and review/commit the staged diff.
 
 ## Closeout boundary

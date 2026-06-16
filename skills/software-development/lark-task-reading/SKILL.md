@@ -110,6 +110,7 @@ Keep these strengths together when changing either project.
 ## Implementation pattern
 
 1. **Token / user authorization**
+   - Prefer the unified read-only entrypoint for normal Lark task work: `python3 ~/.hermes/scripts/lark_task_flow.py --scope-mode only --summary` or `--url '<applink-with-guid>' --summary`. It runs the single-flight guard first, preserves auto-click authorization, then calls the reader with `auto_auth=False` so there is no second hidden OAuth/login path. See `references/lark-oauth-single-flight-guard.md`.
    - Run an auth preflight before any Task API call. Distinguish `CURRENT_READY`, `CURRENT_BLOCKED_NO_TOKEN`, `CLI_UNBOUND`, `HERMES_APP_CREDENTIALS_MISSING`, and `PREVIOUS_SNAPSHOT_AVAILABLE`; do not misreport a stale snapshot as a fresh live read.
    - Use a reusable token helper (`lark_auth.get_token()` where available) instead of one-off login probes.
    - If the Hermes-native reader fails with `NO_TOKEN` but older snapshots exist, classify the reader logic separately from the current auth state: the logic may be sound while live collection is blocked.
@@ -385,6 +386,7 @@ Detailed patterns:
 - `references/uvisa-cend-linked-ui-issue-implementation.md` for pasted UVISA C-end Lark UI/i18n/PWA issues where the user asks to “分析解决问题”: atomize each linked issue, TDD the UI/i18n/PWA surface, run targeted Vitest + `pnpm run build`, make a scoped local commit when unrelated dirty files/upstream-gone branch prevent safe broad cleanup, and keep final Lark completion gated on online UI evidence.
 - `references/uvisa-authenticated-endpoint-data-leak.md` for authenticated endpoints returning raw sensitive data: JWT-required ≠ safe; mask at controller layer, keep service methods raw for business logic.
 - `references/lark-task-api-v2-update-and-closeout.md` for batch task closeout via PATCH API: wrapped `task` object required, comments endpoint returns 404 on larksuite.com, use `description` field for evidence.
+- `references/lark-daily-report-evidence-sweep.md` for Lark/Feishu daily report drafting from GitHub evidence: fetch target branch, sweep all same-day merged PRs/commits by author, group by workstream, and stop before final submit when the user wants to click it.
 
 ## Multi-model routing
 

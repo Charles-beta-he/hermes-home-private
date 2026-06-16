@@ -337,6 +337,7 @@ When the user corrects the direction toward system-level or automatic triggering
 - `references/anti-self-hype-checklist.md` — Honest scoring, self-hype detection, dynamic self-check flow
 - `references/project-self-check-pipeline.md` — Project-level self-check template for non-Hermes projects
 - `references/hermes-self-improvement-pipeline.md` — Self-improvement pipeline operations, ROI debugging, signal sources, benchmark regressions, and stuck-unblocking patterns
+- `references/cron-kanban-selfcheck-repair-pattern.md` — Repair pattern for mixed cron/provider failures, Kanban projection drift, and selfcheck judgement backlog without mutating source truth or deleting ledgers
 
 ## Verification Checklist
 

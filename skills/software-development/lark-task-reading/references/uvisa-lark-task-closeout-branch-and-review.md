@@ -38,6 +38,12 @@ Session pattern extracted from UVISA Lark task loop work (remit recipient valida
    - Inject local auth state in the browser only as test-session setup; do not persist credentials/secrets in global memory/docs.
    - For copy/validation tasks, verify the exact DOM text and check browser console JS errors after the walkthrough.
 
+7. When isolating a task from a dirty UVISA worktree, do not blindly copy whole modified files onto a clean `origin/main` worktree and commit.
+   - Baseline drift can turn a small scoped patch into large unrelated deletions/additions.
+   - First generate a task-scoped patch from the dirty worktree and attempt `git apply --3way` onto the resolved target branch; if it conflicts, manually re-implement only the intended hunks against the clean baseline.
+   - Before committing, inspect `git diff --cached --stat` and `git show --stat --oneline HEAD`; if the stat shows unexpected large churn or unrelated test/file deletions, reset the clean worktree and redo the transplant.
+   - A clean worktree verification pass is useful evidence, but only the final staged diff against the target branch should be committed.
+
 ## Closeout skeleton
 
 ```bash

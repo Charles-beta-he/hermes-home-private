@@ -46,9 +46,14 @@ Don't use for:
 | Install prompt / iOS install guidance, including Android OEM launcher permission layers and HarmonyOS browsers that do not emit `beforeinstallprompt` | `references/pwa-install-prompt.md` |
 | Safe area, notch, Home Indicator, splash anti-repeat | `references/pwa-safe-area-handling.md` |
 | H5/browser is correct but installed iOS/Android PWA TabBar has inconsistent safe-area or too much bottom whitespace | `references/pwa-standalone-tab-safe-area-normalization.md` |
+| Installed PWA TabBar is correct on first render but becomes lifted after routing back from About/update/legal/settings screens | `references/pwa-route-safe-area-resettling.md` |
 | UVISA C-end bottom TabBar must match prototype iOS Liquid Glass and avoid an extra solid strip | `references/uvisa-tabbar-liquid-glass-verification.md` |
 | Android installed PWA bottom TabBar floats too high / `screen.height - innerHeight` safe-area over-offset | `references/android-pwa-safe-area-overoffset.md` |
+| Android installed PWA / WebView bottom TabBar is clipped by black system navigation bar / gesture area | `references/android-pwa-system-nav-underlap.md` |
+| Android PWA/WebView screenshot shows black/mismatched top status bar plus bottom navigation/gesture issues; need to separate system-bar theming from viewport underlap, OS dark-mode theming, app-owned theme-color, and bottom viewport clipping | `references/android-pwa-system-bars-theme-and-viewport.md` |
 | App icons, favicons, manifest icon sets, splash colors | `references/icon-asset-pipeline.md` |t - innerHeight` safe-area over-offset | `references/android-pwa-safe-area-overoffset.md` |
+| Android installed PWA / WebView bottom TabBar is clipped by black system navigation bar / gesture area | `references/android-pwa-system-nav-underlap.md` |
+| Android PWA/WebView screenshot shows black/mismatched top status bar plus bottom navigation/gesture issues; need to separate system-bar theming from viewport underlap, OS dark-mode theming, app-owned theme-color, and bottom viewport clipping | `references/android-pwa-system-bars-theme-and-viewport.md` |
 | App icons, favicons, manifest icon sets, splash colors | `references/icon-asset-pipeline.md` |
 | Android installed PWA shows wrong launcher/home-screen icon despite correct manifest paths | `references/android-pwa-launcher-icon-regression.md` |
 | Android / OnePlus / ColorOS reports install success but launches as a browser shortcut instead of standalone PWA | `references/android-pwa-webapk-vs-shortcut.md` |
@@ -111,7 +116,10 @@ When the task is long-term silent client hot-update / OTA governance, do **not**
 - When H5/browser is correct but installed iOS/Android PWA spacing differs, derive platform/display-mode data attributes and feed TabBar through normalized app tokens (`--tabbar-bottom-gap`, `--tabbar-content-reserve`) rather than raw `env(safe-area-inset-bottom)`. See `references/pwa-standalone-tab-safe-area-normalization.md`.
 - When browser H5 shows a solid strip under a floating Liquid Glass TabBar, debug placement separately from glass styling: browser mode usually wants `--tabbar-bottom-gap: 0px`, while standalone mode can opt into a bounded safe-area gap. See `references/browser-h5-tabbar-safe-area-strip.md`.
 - On Android installed PWAs, do **not** synthesize iPhone-style bottom inset from `screen.height - window.innerHeight`; that delta can include system chrome and lift the TabBar too high. See `references/android-pwa-safe-area-overoffset.md`.
-- On Android installed PWAs, do **not** synthesize iPhone-style bottom inset from `screen.height - window.innerHeight`; that delta can include system chrome and lift the TabBar too high. See `references/android-pwa-safe-area-overoffset.md`.
+- If Android screenshots show the TabBar clipped by a black system navigation bar instead of floating too high, treat it as the opposite underlap class: measure a narrow Android-only visual bottom obstruction with `visualViewport`, keep it in a separate token, and do not write it to generic `--safe-bottom` or iOS fallbacks. See `references/android-pwa-system-nav-underlap.md`.
+- If the screenshot also shows a black or mismatched **top** status bar, split the task into two acceptance atoms before coding: system-bar theming/ownership (meta `theme-color`, manifest `theme_color`, WebAPK cache, or native WebView status/navigation bar config) and bottom viewport underlap. Web CSS/layout can fix bottom in-page chrome, but a native/WebAPK system-bar color problem may require manifest freshness, reinstall/cache validation, or native shell settings. See `references/android-pwa-system-bars-theme-and-viewport.md`.
+- When fixing Android PWA/WebView dark-mode system bars, preserve the product theme model. Do **not** remove a “Follow system” option just to stop OS dark mode from overriding fixed themes. Preferred controlled model: fixed `light`/`dark` choices never read OS color-scheme; explicit `system` is the only path that reads `prefers-color-scheme`, listens for changes, and updates `data-theme` plus a single non-media-bound `theme-color` tag.
+- When a floating TabBar is correct on first render but becomes lifted after routing back from About/update/legal/settings screens, suspect delayed PWA viewport settlement rather than immediately changing TabBar CSS constants. Add a route-return multi-pass settle (`immediate`, `requestAnimationFrame`, and short delayed passes such as 150/300/600ms) that resets stray window scroll and reconciles safe-area / visual-inset tokens. See `references/pwa-route-safe-area-resettling.md`.
 
 ### Icon, splash, and installed app labels
 
@@ -165,6 +173,8 @@ When restoring a mobile screen to match a prototype, do not stop at visual parit
 5. **Using dark/mockup icon sources for production web assets.** Verify the source visually before generating every target size.
 6. **Calling WebView packaging “native complete.”** Security and platform affordances still need explicit bridge/plugin work.
 7. **Using `networkidle` for screenshots.** Long-polling apps may never become idle.
+8. **Treating a Chrome tab screenshot as installed PWA proof.** `ChromeTabbedActivity` only proves browser behavior. Installed PWA/WebAPK evidence must show standalone/WebappActivity or the actual installed/native package content; if the launched installed package is stuck on Android default splash, record it as a wrapper/runtime blocker, not theme verification.
+9. **Fixing route-return TabBar lift by changing the global gap.** If the lift appears only after navigation/update flows, avoid tuning `--tabbar-bottom-gap` or stacking `safe-bottom`; first add delayed route-return viewport resettling so stale visualViewport/window-scroll state cannot survive the route transition.
 
 ## Verification Checklist
 

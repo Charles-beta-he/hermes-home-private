@@ -21,8 +21,8 @@ Before writing durable artifacts, split the source into:
 5. OCR or visually inspect media; separate visible text from inference.
 6. If the post references a repo/tool/site, verify the canonical source directly before judging value.
 7. If the post makes a regulatory/compliance/policy claim, verify against official government/platform documentation before answering; separate “policy helps with friction” from “policy grants an exemption/license.”
-8. Write an intake note with: source facts, OCR, verified external facts, transferable pattern, risks/redlines, and recommended landing zone.
-9. Only create a taskpool follow-up when there is concrete engineering work; include evidence refs, acceptance criteria, anti-drift checks, and explicit non-goals.
+8. Write an intake note with: source facts, OCR, transcript summary when available, verified external facts, transferable pattern, risks/redlines, and recommended landing zone.
+9. Only create a taskpool follow-up when there is concrete engineering work; include evidence refs, acceptance criteria, anti-drift checks, explicit non-goals, and enough priority/dependency/triage metadata for the taskpool CLI to accept it without a second repair pass.
 
 ## Douyin SSR extraction fallback
 
@@ -32,8 +32,9 @@ When a `v.douyin.com` link redirects to `www.iesdouyin.com/share/{video|note}/{i
 2. Normalize to `https://www.iesdouyin.com/share/{video|note}/{id}/`.
 3. Fetch the share page and parse `window._ROUTER_DATA = {...}</script>` as JSON.
 4. Read `loaderData[* /page].videoInfoRes.item_list[0]` for `desc`, `author`, `statistics`, `images`, and `video.play_addr` candidates.
-5. For notes, download `images[].url_list[0]` and make a contact sheet for OCR. For videos, download only available play candidates, sample frames with `ffmpeg`, and make a contact sheet.
-6. Treat this as evidence capture, not a downloader bypass. If SSR metadata/media is absent or blocked, state the evidence gap and ask for screenshots/transcript rather than inventing content.
+5. For notes, download `images[].url_list[0]` and make a contact sheet for OCR. For videos, download only available play candidates, run `ffprobe`, sample frames with `ffmpeg`, and make a contact sheet.
+6. If local ASR is available (for example `faster_whisper`), transcribe the saved video and store both JSON and timestamped text beside the media evidence. Mark ASR text as imperfect evidence and normalize obvious recognition errors only in the intake note, not in the raw transcript.
+7. Treat this as evidence capture, not a downloader bypass. If SSR metadata/media is absent or blocked, state the evidence gap and ask for screenshots/transcript rather than inventing content.
 
 ## Standard analysis sections
 
@@ -47,6 +48,17 @@ When a `v.douyin.com` link redirects to `www.iesdouyin.com/share/{video|note}/{i
 - Risks and redlines
 - Recommended absorption path
 - Initial verdict
+
+## Agent architecture post addendum
+
+For posts about AI-agent memory systems, multi-agent collaboration, workspaces, OpenClaw/OpenAgents-style projects, or “爆火” AI tooling:
+
+1. Capture media evidence first: notes/images directly, videos via sampled frames/contact sheet when SSR exposes playable media.
+2. Verify the named or visually implied repo/package independently. Save repo metadata and README/package excerpts, not just the social post.
+3. Compare visible social-slide claims such as stars/forks/version against current GitHub/NPM/API facts. If they mismatch, mark the slide metric as unverified instead of treating it as product evidence.
+4. Read governance/source docs (`README`, `AGENTS`, `INVARIANTS`, launch plans, package manifests) before extracting patterns; landing-page slogans are usually too shallow.
+5. Extract class-level architecture only: memory graph/scoped recall/workroom/evidence/control-plane patterns. Keep source URLs and repo facts in the scoped evidence note.
+6. See `references/douyin-agent-architecture-intake-cases.md` for two reusable case lenses: graph-memory systems and agent collaboration/workroom systems.
 
 ## Redline defaults
 

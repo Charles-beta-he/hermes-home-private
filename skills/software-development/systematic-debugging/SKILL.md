@@ -104,6 +104,8 @@ pytest tests/test_module.py -v --tb=long
 - In multi-module Maven repos, `mvn -pl app/<module> spring-boot:run` can fail because sibling reactor artifacts are not installed. Run `mvn -pl app/<module> -am -DskipTests install` first, then start the app module.
 - Do not exclude an infrastructure auto-configuration just to get a local backend up if production beans constructor-require it (for example excluding RocketMQ auto-config while a controller requires `RocketMQTemplate`). That converts real-backend verification into a partial harness; either start/provide the real dependency or make the bean conditional in a proper test profile.
 - In React/Vitest suites, many unrelated text/label failures can come from a shared i18next singleton, not from the components themselves. Symptom: expected English labels but rendered DOM is Chinese (or another prior test language). Reproduce one failure and inspect the DOM language first. Fix the test harness by adding the required resource bundle in `beforeEach` with overwrite/deep merge and `await i18next.changeLanguage('<lang>')`; do not rely on `if (!i18next.isInitialized) init(...)` alone, because earlier tests may already have initialized the singleton.
+- Frontend release/version runtimes must separate pre-auth and authenticated surfaces. If a login/OTP/public auth page shows repeated 401s for a release-manifest endpoint, trace global hooks that run before auth. Pre-auth should read a static no-store artifact such as `/version.json` with `fetch(..., { cache: 'no-store', credentials: 'omit' })`; if protected release APIs are not proven login-safe, keep the whole browser runtime static-only instead of calling authenticated release endpoints after login. Verify with targeted Vitest plus build/build:release when the app generates version artifacts.
+- Public auth pages can still 401 from unrelated global widgets even after release-runtime is fixed. Applicability: SPA shells with root-mounted widgets/hooks and token refresh interceptors. Anti-condition: do not apply to deliberately protected routes. If a public auth page shows an auth-expired business error, identify the request name first and audit root-mounted widgets whose hooks run before `if (hide) return null` (for example support/session widgets, bootstraps, or heartbeats). A stale local token can make hook-level “has token” guards fire protected endpoints, which then cascade into refresh. See `references/frontend-public-auth-stale-token-global-hooks.md`.
 - Spring `Ambiguous mapping` errors are backend startup-contract bugs. If a legacy compatibility controller duplicates a canonical controller endpoint, keep the canonical route, remove/rename the duplicate compatibility mapping, and add a startup/contract test.
 - If Flyway/MySQL reports `UndeclaredThrowableException` or fails around `performance_schema.user_variables_by_thread`, inspect any JDBC `DataSource`/`Connection`/`Statement` dynamic-proxy instrumentation. `Method.invoke(...)` wraps thrown `SQLException` in `InvocationTargetException`; an `InvocationHandler` must unwrap and rethrow the original cause, otherwise Flyway cannot catch `SQLException` and degrade capability probes correctly. Add a unit regression that a proxied `PreparedStatement.executeQuery()` rethrows the original `SQLException`, not `UndeclaredThrowableException`.
 - A `Tomcat started on port ...` log line is not a Spring Boot readiness proof. The app can still fail during `ApplicationReadyEvent` listeners or seeders and immediately shut down. Treat startup as ready only after `Started <Application>` appears, the process remains alive, and `/actuator/health` (plus target smoke endpoints) returns 200/UP. If a post-ready seeder reports `Table '<schema>.<table>' doesn't exist`, check Flyway enablement/profile/schema before debugging controllers.
@@ -616,6 +618,10 @@ If you catch yourself thinking:
 
 ## Hermes Agent Integration
 
+### Pre-merge iceberg scans
+
+When the user asks to auto-merge a PR and then requests a broader “冰山扫描” or same-batch commit check, pause the merge, define the batch scope, scan adjacent commits and deployment/config surfaces, and only fold in-scope fixes into the PR. Keep unrelated findings as follow-up work. See `references/pre-merge-iceberg-scan.md`.
+
 ### Investigation Tools
 
 Use these Hermes tools during Phase 1:
@@ -667,10 +673,12 @@ From debugging sessions:
 
 ## Related references
 
+- `references/frontend-release-auth-iceberg.md` — generic checklist for browser apps where app-wide runtime hooks interact with public routes, static version manifests, auth telemetry, and post-auth verification locks; anti-condition: use only for frontend/auth/release-runtime flows, not as a project fact store.
 - `references/text-assertion-mismatch.md` — diagnosing and fixing `assert "X" in CONSTANT` failures (substring, singular/plural, synonym patterns)
 - `references/react-aria-role-migration.md` — cascading test selector failures when swapping interactive components (Link→Button, a→button); role grep checklist
 - `references/pytest-override-flags.md` — clearing xdist `addopts` from pyproject.toml when running serially (`-o "addopts="`)
 - `references/runtime-overlay-sensitive-test-fix.md` — fix pattern for tests that depend on runtime overlay/OAuth/provider discovery and need deterministic seeding
+- `references/spa-global-runtime-public-auth-401.md` — debugging path for SPA root-level runtime hooks that call protected endpoints on public unauthenticated auth routes, producing repeated 401s and auth-refresh noise
 
 ## Common Pitfalls
 

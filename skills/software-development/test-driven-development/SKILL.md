@@ -379,6 +379,7 @@ When changing Hermes taskpool/control-plane scripts or any stateful CLI/orchestr
 - **Testing mock behavior instead of real behavior** — mocks should verify interactions, not replace the system under test
 - **Testing implementation details** — test behavior/results, not internal method calls
 - **Happy path only** — always test edge cases, errors, and boundaries
+- **Post-success boundary not tested** — for flows that verify/authenticate first and then run a downstream business action, add a RED test where verification succeeds but the downstream action throws/rejects. Assert the verified/consumed credential is not re-submitted and the failure is classified at the downstream boundary, not as a verification failure.
 - **Brittle tests** — tests should verify behavior, not structure; refactoring shouldn't break them
 
 ## Final Rule

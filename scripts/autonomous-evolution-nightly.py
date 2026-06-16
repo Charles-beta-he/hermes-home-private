@@ -213,6 +213,12 @@ def main():
             "confidence_db": resolved_to_dict(DB_RESOLUTION),
             "darwin_results": resolved_to_dict(RESULTS_RESOLUTION),
         })
+        log_event("discussion_result", {
+            "skill_audited": None,
+            "run_type": "nightly_autonomous_evolution",
+            "status": "skipped",
+            "reason": "no_skill_selected"
+        })
         return
     
     skill_name, priority, old_score, days = selected
@@ -306,6 +312,17 @@ def main():
             "fixes": fixes
         })
     
+    # 7. Emit closure event for usage-score self_evolution_closure component
+    log_event("discussion_result", {
+        "skill_audited": skill_name,
+        "old_score": old_score,
+        "new_score": new_score,
+        "issues_found": len(issues),
+        "fixes_applied": len(fixes),
+        "test_result": test_result,
+        "run_type": "nightly_autonomous_evolution"
+    })
+
     print("\n" + "=" * 60)
 
 if __name__ == "__main__":

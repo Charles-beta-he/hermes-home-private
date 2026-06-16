@@ -321,6 +321,11 @@ In this user's setup, the DM target has been observed as `telegram:he cheng`. Us
 ```bash
 hermes config set TELEGRAM_HOME_CHANNEL <channel_id>
 ```
+
+### Cron report generated but Telegram delivery failed
+For scheduled reports/reminders that “did not send”, use `references/cron-telegram-delivery-debugging.md`.
+
+Key rule: separate generation from delivery. A job may show `last_status: ok` and still have `last_delivery_error`; read the saved cron output/report artifact before concluding the report failed. If the delivery error says `python-telegram-bot not installed`, verify imports in the Hermes venv with `~/.hermes/.env` loaded and run a short standalone Telegram send smoke. If those pass, treat the message as a potentially over-broad ImportError/stale-runtime symptom, not proof that the dependency is missing. Also check live Telegram adapter pool pressure (`Pool timeout: All connections in the connection pool are occupied`) as a separate transient delivery-path issue.
 1. Skipping prerequisite checks and assuming the environment already matches the workflow.
 2. Applying the workflow mechanically without confirming that the request still matches this skill's trigger class.
 3. Reporting success before reading back the actual outputs, files, or external side-effects.

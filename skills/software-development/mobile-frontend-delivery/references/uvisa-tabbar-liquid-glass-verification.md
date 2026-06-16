@@ -6,7 +6,8 @@ Use for UVISA C-end tasks where Lark/prototype evidence says the bottom navigati
 
 - Target routes: `/home` (资产首页), `/card` (U-VISA 首页), `/me` (我的首页). Include `/wealth` if the task names the wealth tab.
 - TabBar is a floating rounded pill, not an edge-to-edge bottom plate.
-- Match the prototype's visible geometry before declaring parity: 64px pill height (`h-16`), 32px radius, 18px browser-H5 visual bottom gap, `left-4 right-4`, and prototype `shadow-tab`.
+- Match the prototype's visible geometry before declaring done.
+- When screenshots mention phone dark/night mode, explicitly reproduce Android system dark + app light before concluding. For the detailed matrix and theme-color pitfall, see `references/android-pwa-app-theme-vs-system-dark.md`.
 - Background is translucent glass: content underneath can visually bleed through.
 - CSS/computed style matches the current accepted translucent-glass contract, not merely the old prototype blur contract:
   - Light mode `.glass`: `background: rgba(255, 255, 255, 0.58)` and `border: .5px solid rgba(255, 255, 255, 0.7)`.
@@ -40,7 +41,7 @@ Prototype pattern:
 }
 ```
 
-Do not copy blindly: preserve current safe-area fixes such as `--tabbar-height`, `--tabbar-bottom-gap`, and `--tabbar-content-reserve` if they were introduced to prevent iOS/Android gesture-bar regressions. For this product's accepted visual, also remove stale inline `backdropFilter` / `WebkitBackdropFilter` from `TabBar.tsx`; an inline filter overrides CSS tuning and makes the translucent surface look wrong.
+- Do not copy blindly: preserve current geometry tokens such as `--tabbar-height`, `--tabbar-bottom-gap`, and `--tabbar-content-reserve` if they were introduced to prevent iOS/Android gesture-bar regressions. For UVISA C-end, do **not** make the TabBar bottom gap additive with synthesized iOS standalone bottom safe-area height (`--system-safe-bottom` / `--app-safe-bottom`). First login or cold PWA relaunch can synthesize/report a large bottom inset and lift the pill too high, leaving a large blank band under it. Keep the base TabBar gap as the fixed product geometry token (for example 18px), let only non-tab full-screen flows use `--safe-bottom` when needed, and handle Android system navigation overlap with a separate bounded `visualViewport`-derived token (for example `--android-visual-bottom-inset` from `innerHeight - visualViewport.height - offsetTop`) scoped to `[data-display-mode="standalone"][data-platform="android"]`. Never reintroduce `screen.height - innerHeight` as a generic bottom inset. For this product's accepted visual, also remove stale inline `backdropFilter` / `WebkitBackdropFilter` from `TabBar.tsx`; an inline filter overrides CSS tuning and makes the translucent surface look wrong.
 
 ## Workflow
 

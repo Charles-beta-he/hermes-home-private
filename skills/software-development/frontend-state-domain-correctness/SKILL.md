@@ -104,6 +104,27 @@ Falsifier: if the backend contract explicitly guarantees the endpoint returns on
 6. **Changing backend field names without frontend fallback audit.** Optimistic objects, DTOs, and detail screens often read different fields.
 7. **Reducing raw shared collections directly in page components.** A shared collection must pass through page eligibility, feature gates, and semantic conversion before display.
 8. **Treating UI wording as data-source authorization.** "Show these labels/sections" usually means preserve current business source and change presentation unless acceptance explicitly changes source, eligibility, or aggregation semantics.
+9. **Letting page-local transaction titles drift from shared list semantics.** When one surface (home/recent transactions, full transaction list, wallet-account detail) already has a shared transaction-row label priority, do not re-encode a different title ladder in a page component without a documented product exception. Prefer extracting/reusing the shared label helper, or at minimum lock parity tests across representative surfaces.
+
+## Cross-Surface Transaction Wording Parity Pattern
+
+Use this when a wallet/account/transaction page displays the same logical transaction rows as a home or global transaction list, but has page-specific filtering, tabs, icons, or amount-direction semantics.
+
+1. Identify the canonical row-title priority already used by the shared transaction row. Common financial-app priority is: backend `description` / scene text first, then explicit `displayType`, then type/i18n fallback, then counterparty/channel suffix if the canonical component does that.
+2. Keep page-specific domain semantics outside the title-source priority unless product explicitly requires a different label.
+   - Good page-specific logic: wallet tab eligibility, CNY scope parameters, ledger-leg amount sign, exchange “兑入/兑出” fallback when no description exists, internal badges, route targets.
+   - Risky page-specific logic: hardcoding “定期申购” / “U-VISA 卡充值” ahead of backend `description`, or using `displayType` ahead of scene-specific `description` on only one surface.
+3. If a page cannot reuse the shared component because layout differs, mirror the same helper/priority and document why the layout is custom.
+4. Add parity tests, not just page-local screenshots:
+   - A shared-row test proving `description` wins over generic type/display labels.
+   - A page test for the affected wallet/account surface proving the same `description` priority.
+   - A fallback test proving page-specific labels still work when `description` is absent.
+5. Compare screenshots against both the target surface and the canonical surface when the user asks “是否一致 / same as home / same as transaction list”.
+
+Anti-conditions:
+- If the product document explicitly says a wallet page must show a normalized product label instead of backend scene text, record that exception near the helper and test the exception.
+8. **Treating UI wording as data-source authorization.** "Show these labels/sections" usually means preserve current business source and change presentation unless acceptance explicitly changes source, eligibility, or aggregation semantics.
+9. **Fixing one surface without comparing sibling renderers.** When a list/detail wording bug mentions "same as home", inspect the sibling component/helper that already renders the same entity before adding page-local logic. Prefer reusing or mirroring the same priority order (for example backend `description` > derived display label > generic type fallback) and add regression tests for both the canonical renderer and the page-specific renderer.
 
 ## Verification Checklist
 
@@ -113,6 +134,7 @@ Falsifier: if the backend contract explicitly guarantees the endpoint returns on
 - [ ] Store merge/dedup handles optimistic replacement, not duplicate append.
 - [ ] Async guard success and error paths both resync pending triggers.
 - [ ] Regression tests cover rapid events and representative domain edge cases.
+- [ ] Cross-surface transaction title tests prove backend `description` priority matches the canonical list row unless a product exception is documented.
 - [ ] Wrapper safety: any side effect is followed by target-state read-back before reporting completion.
 ## Support Files
 

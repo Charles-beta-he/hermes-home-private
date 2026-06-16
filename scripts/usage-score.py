@@ -291,11 +291,24 @@ def compute() -> Dict[str, Any]:
             "self_evolution_closure": {"score": round(closure_score, 2), "max": 10, "closure_events_14d": closure_events},
         },
         "thresholds": {"A": 85, "B": 70, "C": 55},
+        "freshness_window_hours": 25,
     }
 
 
 def main() -> int:
     data = compute()
+    # Compute staleness of previous run before overwriting
+    if OUT.exists():
+        try:
+            prev = json.loads(OUT.read_text(errors="ignore"))
+            prev_ts = parse_ts(prev.get("ts"))
+            if prev_ts:
+                age_h = (NOW - prev_ts).total_seconds() / 3600
+                data["previous_score_age_hours"] = round(age_h, 2)
+                data["previous_score_fresh"] = age_h < 25
+        except Exception:
+            data["previous_score_age_hours"] = None
+            data["previous_score_fresh"] = None
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, indent=2, ensure_ascii=False))
     print(json.dumps(data, indent=2, ensure_ascii=False))

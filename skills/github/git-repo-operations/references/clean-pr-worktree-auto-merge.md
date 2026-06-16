@@ -10,20 +10,34 @@ Use this pattern when the working repo already has unrelated dirty files, runtim
    ```bash
    git -C /path/to/source diff -- path/a path/b > /tmp/task.patch
    ```
-2. Create a fresh PR worktree from the actual base branch:
+2. Create a fresh PR worktree from the actual base branch named by the requested PR target, not from habit. If the user says "PR to test", use `origin/test`; if they say release/main, use that resolved ref:
    ```bash
    git -C /path/to/source fetch origin --prune
-   git -C /path/to/source worktree add -b fix/name /tmp/repo-pr origin/main
-   git -C /tmp/repo-pr apply /tmp/task.patch
+   git -C /path/to/source worktree add -b fix/name /tmp/repo-pr origin/<base>
+   git -C /tmp/repo-pr apply --index /tmp/task.patch
    ```
-3. If the patch fails, do not force it blindly. Inspect the base files and reapply the semantic changes manually.
-4. Verify scope before committing:
+3. If a patch was produced from a different branch family and does not apply to the target base, retry with semantic 3-way apply, then resolve conflicts by preserving the target-base behavior and layering only the scoped task addition:
    ```bash
-   git diff --check
-   git diff --stat
-   git diff -- path/a path/b
+   git -C /tmp/repo-pr reset --hard
+   git -C /tmp/repo-pr apply --3way --index /tmp/task.patch || true
+   git -C /tmp/repo-pr diff --name-only --diff-filter=U
+   # edit conflicted files; search only line-start markers to avoid matching decorative ===== comments
+   grep -R -n -E '^(<<<<<<<|=======|>>>>>>>)' /tmp/repo-pr --exclude-dir=.git
+   git -C /tmp/repo-pr add -u
    ```
-5. Run the relevant targeted tests and production build from the clean PR worktree.
+   Do not force an old patch over the target branch. Inspect the base files and reapply the semantic changes manually where needed.
+4. Verify scope before committing. In conflict cases, inspect the staged diff because `git apply --index`/`--3way` can leave a partially staged index:
+   ```bash
+   git -C /tmp/repo-pr diff --cached --check
+   git -C /tmp/repo-pr diff --cached --stat
+   git -C /tmp/repo-pr diff --cached --name-only
+   ```
+5. Run the relevant targeted tests and production build from the clean PR worktree. For Maven multi-module targeted tests, prefer the reactor form with dependencies and disable no-test failure in upstream modules:
+   ```bash
+   JAVA_HOME="$(/opt/homebrew/bin/brew --prefix openjdk@21)/libexec/openjdk.jdk/Contents/Home" \
+   mvn -pl <module> -am -Dtest=<TestClass> -Dsurefire.failIfNoSpecifiedTests=false test
+   ```
+   If `mvn -pl <module> -Dtest=... test` fails with missing dependent classes, that usually means the reactor dependencies were not included; add `-am` before diagnosing the product code. If upstream modules fail only because they do not contain the named test, add `-Dsurefire.failIfNoSpecifiedTests=false`.
 6. Commit exact files only, push, create PR.
 
 ## Auto-merge collision

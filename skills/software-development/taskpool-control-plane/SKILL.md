@@ -5,7 +5,17 @@ description: "Use when diagnose and operate the local brain/taskpool control pla
 
 # Taskpool Control Plane
 
+## Dynamic runner human-escape preclaim pitfall
+
+When `taskpool_dynamic_runner.py` reports `human_escape_active_preclaim`, treat the correct control-plane behavior as a successful no-op at the preclaim boundary: do not claim tasks, do not run autorun, and do not let downstream proof-check warnings turn the cron tick into `last_status=error`. The runner should emit an OK summary with `claimed=false` and a safety note, then return 0. Verify with the focused runner test and a live no-op run before declaring cron health fixed.
+
 ## New / important references
+
+## Task creation CLI guardrails
+
+When creating a task with `brain_task_orchestrator.py add`, include the required governance metadata on the first attempt: `--priority-layer`, `--dependency-order`, and `--multimodel-triage-result`. For social/video intake follow-ups, also include `--evidence-ref`, `--acceptance-evidence`, `--anti-drift-check`, explicit `--accept` criteria, `--red-line`, and `--non-goal`. If the CLI accepts the task but drops or compresses repeated acceptance items into the body/frontmatter, immediately read the created task and patch the acceptance criteria before reporting success.
+
+For `brain_task_orchestrator.py add-repo-capability-absorption`, do **not** pass `--priority-layer`: that subcommand does not accept it. Still pass `--dependency-order`, `--multimodel-triage-result`, `--required-artifacts`, explicit `--accept`, `--red-line`, `--non-goal`, and multiple `--evidence-ref` values. After creation, read the generated task because capability absorption standardization can compress repeated `--accept` fields into a single `acceptance_criteria` / `acceptance_evidence` item; patch the frontmatter and body checklist so all acceptance gates are preserved.
 
 - `references/external-repo-doc-intake.md` — external repo/doc intake procedure. When the source claims a runnable main capability, use `brain_task_orchestrator.py add-repo-capability-absorption` to create a first-class `repo_capability_absorption` task with source/claim metadata, target surface, integration level, reproduction/risk/harness gates, and no implicit runtime integration. This is a workflow/agent selection rule, not a parser rewrite: direct CLI `add` remains ordinary task creation, while agents should choose the capability command when the user asks to absorb/evaluate a source's runnable main capability.
 - `references/terminal-ladder-vs-whole-program-completion.md` — review procedure for reconciling a terminal workflow ladder (`next_ladder=[]` or equivalent) with the broader long-term plan, mission health, runtime/scheduler evidence, and authority boundaries before claiming everything is complete.
