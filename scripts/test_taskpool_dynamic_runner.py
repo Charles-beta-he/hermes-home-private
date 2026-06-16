@@ -183,11 +183,12 @@ def test_main_skips_autorun_preclaim_when_human_escape_active():
             m.compute_parallel_max_agents = old_compute
 
         assert rc == 0
-        assert len(calls) == 1
-        assert calls[0][-2:] == ["--summary", "--no-state"], calls[0]
+        assert len(calls) == 0
         event = json.loads(log.read_text(encoding="utf-8").splitlines()[-1])
         assert event["autorun_skipped_reason"] == "human_escape_active_preclaim"
         assert event["human_escape"]["triggered"] is True
+        assert event["summary"]["status"] == "OK"
+        assert event["autorun"]["claimed"] is False
 
 
 def test_main_parses_large_summary_and_invokes_multimodel_probe_without_silent_nulls():

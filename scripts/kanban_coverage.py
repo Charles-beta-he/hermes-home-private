@@ -220,6 +220,7 @@ def _classify_projection(task: Mapping[str, Any], note: Optional[Mapping[str, st
     workspace_path = str(task.get("workspace_path") or "")
     workspace_exists = bool(workspace_path and Path(workspace_path).exists())
     task_text = "\n".join(str(task.get(k) or "") for k in ("body", "result", "latest_run_summary"))
+    structured = bool(source_status and workspace_path)
     review_required_block = task_status == "blocked" and bool(
         re.search(r"\breview-required\b|human review|needs eyes|blocked for review", task_text, re.IGNORECASE)
     )
@@ -234,14 +235,13 @@ def _classify_projection(task: Mapping[str, Any], note: Optional[Mapping[str, st
         # Done kanban can be a historical attempt. Keep as warning-level, not hard stale,
         # because old task mirrors may have been intentionally closed with proof.
         reason = "done_projection_for_active_source"
-    elif task_status == "blocked" and review_required_block and source_current == "review":
+    elif task_status == "blocked" and source_current == "review" and (review_required_block or structured):
         reason = "blocked_review_gate_aligned"
     elif task_status == "blocked" and source_current in {"pending", "ready", "running", "review", "retry"}:
         reason = "blocked_projection_for_non_done_source"
     elif task_status == "blocked" and source_current == "blocked":
         reason = "blocked_source_aligned"
 
-    structured = bool(source_status and workspace_path)
     return {
         "task_id": task.get("id"),
         "kanban_status": task_status,

@@ -368,6 +368,29 @@ def main() -> int:
                 tick_cmd.insert(3, autorun_flag)
             else:
                 event["autorun_skipped_reason"] = "human_escape_active_preclaim"
+                event["summary"] = {
+                    "status": "OK",
+                    "dispatchable": False,
+                    "error_count": 0,
+                    "next_task_id": "",
+                    "reconcile_action_count": 0,
+                    "ingested_count": 0,
+                }
+                event["autorun"] = {
+                    "present": False,
+                    "requested": True,
+                    "claimed": False,
+                    "safety": "skipped before claim while human_escape breaker is active; no task mutation executed",
+                }
+                sig = signature(event["summary"])
+                prev = load_state()
+                event["changed"] = sig != prev.get("signature")
+                event["signature"] = sig
+                save_state({"updated_at": event["ts"], "signature": sig, "last_mm_probe_epoch": prev.get("last_mm_probe_epoch", 0), "last_summary": event["summary"], "last_auto_close_review": {}})
+                append(event)
+                if event["changed"]:
+                    print(json.dumps(event, ensure_ascii=False, indent=2, sort_keys=True))
+                return 0
         tick = run(tick_cmd, timeout=int(os.environ.get("HERMES_TASKPOOL_DYNAMIC_TIMEOUT", "1200")), env=env)
         event["tick"] = compact_result(tick)
         summary = parse_json_tail(tick.get("stdout", ""))
