@@ -83,7 +83,7 @@ def classify_platform_body(source: str, final_url: str, body: str) -> tuple[str,
         return "blocked_verification", text[:220], "Use user app screenshot/OCR or explicit browser login; do not bypass verification."
     if any(k in lower for k in ["login", "登录", "smslogin", "pclogin", "扫码"]):
         return "needs_login", text[:220], "Use user app screenshot/OCR or explicit temporary login if user authorizes."
-    if len(body.strip()) < 500 and source in {"douyin"}:
+    if len(body.strip()) < 500 and source in {"douyin", "douyin_web"}:
         return "blocked_or_js_shell", text[:220], "Web shell returned no readable results; use app screenshot/OCR."
     if any(k in body for k in ["品伊阁", "宽巷子", "烧麦", "羊肉", "评价", "推荐菜"]):
         return "readable_partial", text[:300], "Parse visible text manually or with browser/OCR; verify freshness in app."

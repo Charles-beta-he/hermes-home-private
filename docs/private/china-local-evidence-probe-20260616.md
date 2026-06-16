@@ -97,10 +97,17 @@ Verified with GitHub search / repo readme checks:
 
 ## Recommended next landing path
 
-1. Add official map API mode if keys are available:
+Completed in the next slice:
+
+- `china_local_evidence_pipeline.py` now composes bounded platform/POI probes plus optional app screenshot OCR into a practical verdict (`worth_trying`, `try_small_order`, `insufficient_evidence`).
+- `scripts/test_china_local_evidence.py` covers OCR extraction, platform boundary classification, recommendation scoring, and CLI JSON composition.
+
+Remaining forward path:
+
+1. Add official map API keys if available:
    - `AMAP_WEB_SERVICE_KEY` or `GAODE_MAP_KEY`
    - `BAIDU_MAP_AK`
-2. Add screenshot OCR path for Dianping/Meituan/XHS/Douyin app pages.
+2. Use screenshot OCR path for Dianping/Meituan/XHS/Douyin app pages by default.
 3. Only after explicit authorization, run a temporary-login XHS experiment using a scoped Playwright profile; default cleanup after run.
 4. Treat Dianping/Meituan crawlers as research spikes, not default travel-path dependencies.
 
