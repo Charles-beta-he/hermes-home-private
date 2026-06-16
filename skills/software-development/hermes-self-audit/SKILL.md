@@ -53,8 +53,13 @@ When the user asks for 根因 / 长期稳定方案 after a self-check, use `refe
 ### Step 1: Gather Current State
 
 ```bash
-# Memory status
-python3 ~/.hermes/scripts/brainctl.py --json memory list 2>/dev/null
+# Memory status (current profile)
+python3 - <<'PY'
+from pathlib import Path
+p = Path.home() / '.hermes/memories/MEMORY.md'
+s = p.read_text() if p.exists() else ''
+print({'chars': len(s), 'max': 2200, 'ratio': round(len(s)/2200, 3)})
+PY
 
 # Skill count
 ls ~/.hermes/skills/ | wc -l
