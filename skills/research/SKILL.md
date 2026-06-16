@@ -42,6 +42,7 @@ This umbrella skill is the routing surface for research. Use it to choose the mo
 - `travel-planning-with-personal-history` — use `references/travel-planning-with-personal-history.md` when planning trips/routes, especially motorcycle/couple travel, and the user expects current facts plus personal history/photo-location de-duplication.
 - `research-paper-writing` — you need guidance on end-to-end pipeline for writing ML/AI research papers — from experiment design through analysis, drafting, revision, and submission.
 - `references/public-evidence-solo-validation.md` — use when validating one-person-company opportunities for users with weak warm networks or social-energy constraints: public evidence → automated sample/report → landing/waitlist → inbound async paid validation.
+- `references/social-pain-insight-loop.md` — use when doing public-source customer pain / opportunity research from social posts, forums, reviews, or comments: raw-source collection → pain clustering → trend judgment → opportunity scoring → traceable Markdown/CSV export. Anti-condition: no logged-in/private scraping, stealth bypass, or model-only summaries without raw URLs/excerpts.
 
 ## Selection Rules
 
@@ -53,11 +54,11 @@ This umbrella skill is the routing surface for research. Use it to choose the mo
 
 These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
 
-- `arxiv` → `references/absorbed/arxiv/SKILL.md`: Use when you need to search and retrieve academic papers from arXiv using their free REST API.
-- `blogwatcher` → `references/absorbed/blogwatcher/SKILL.md`: Use when you need to monitor blogs and RSS/Atom feeds for updates using the blogwatcher-cli tool.
-- `llm-wiki` → `references/absorbed/llm-wiki/SKILL.md`: Use when you need guidance on karpathy's LLM Wiki — build and maintain a persistent, interlinked markdown knowledge base.
-- `polymarket` → `references/absorbed/polymarket/SKILL.md`: Use when you need guidance on query Polymarket prediction market data — search markets, get prices, orderbooks, and price history.
-- `research-paper-writing` → `references/absorbed/research-paper-writing/SKILL.md`: Use when you need guidance on end-to-end pipeline for writing ML/AI research papers — from experiment design through analysis, drafting, revision, and submission.
+- `arxiv` → `references/arxiv.md`: Use when you need to search and retrieve academic papers from arXiv using their free REST API.
+- `blogwatcher` → `references/blogwatcher.md`: Use when you need to monitor blogs and RSS/Atom feeds for updates using the blogwatcher-cli tool.
+- `llm-wiki` → `references/llm-wiki.md`: Use when you need guidance on karpathy's LLM Wiki — build and maintain a persistent, interlinked markdown knowledge base.
+- `polymarket` → `references/polymarket.md`: Use when you need guidance on query Polymarket prediction market data — search markets, get prices, orderbooks, and price history.
+- `research-paper-writing` → `references/research-paper-writing.md`: Use when you need guidance on end-to-end pipeline for writing ML/AI research papers — from experiment design through analysis, drafting, revision, and submission.
 
 
 ## Common Pitfalls

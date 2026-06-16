@@ -67,11 +67,11 @@ When organizing `~/Desktop`, use `references/desktop-safe-organization.md`: inve
 
 These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
 
-- `apple-notes` → `references/absorbed/apple-notes/SKILL.md`: Use when you need to manage Apple Notes via the memo CLI on macOS (create, view, search, edit).
-- `apple-reminders` → `references/absorbed/apple-reminders/SKILL.md`: Use when you need to manage Apple Reminders via remindctl CLI (list, add, complete, delete).
-- `findmy` → `references/absorbed/findmy/SKILL.md`: Use when you need to track Apple devices and AirTags via FindMy.app on macOS using AppleScript and screen capture.
-- `imessage` → `references/absorbed/imessage/SKILL.md`: Use when you need to send and receive iMessages/SMS via the imsg CLI on macOS.
-- `macos-computer-use` → `references/absorbed/macos-computer-use/SKILL.md`: Use when you need to drive the macOS desktop in the background — screenshots, mouse, keyboard, scroll, drag — without stealing the user's cursor, keyboard focus, or Space.
+- `apple-notes` → `references/apple-notes.md`: Use when you need to manage Apple Notes via the memo CLI on macOS (create, view, search, edit).
+- `apple-reminders` → `references/apple-reminders.md`: Use when you need to manage Apple Reminders via remindctl CLI (list, add, complete, delete).
+- `findmy` → `references/findmy.md`: Use when you need to track Apple devices and AirTags via FindMy.app on macOS using AppleScript and screen capture.
+- `imessage` → `references/imessage.md`: Use when you need to send and receive iMessages/SMS via the imsg CLI on macOS.
+- `macos-computer-use` → `references/macos-computer-use.md`: Use when you need to drive the macOS desktop in the background — screenshots, mouse, keyboard, scroll, drag — without stealing the user's cursor, keyboard focus, or Space.
 
 
 ## Common Pitfalls

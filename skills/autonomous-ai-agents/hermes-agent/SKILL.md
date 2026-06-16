@@ -48,6 +48,15 @@ Use this skill when the user asks to:
 - troubleshoot Hermes-specific regressions after upstream pulls or self-updates
 - run Hermes-local benchmarking, post-update validation, or self-evolution workflows
 
+## Absorbed Hermes operations lanes
+
+These former narrow Hermes skills are now references under this umbrella. Load only the relevant reference after the request is known to be Hermes-specific:
+
+- `references/hermes-tool-availability.md` — diagnose or repair Hermes `hermes doctor` Tool Availability warnings, system dependency prompts, and tool readiness drift.
+- `references/hermes-voice-console-integration.md` — integrate or troubleshoot Hermes voice conversation, custom TTS providers, desktop notification sounds, and console audio UX.
+
+Applicability: Hermes Agent setup/operation/extension work. Anti-condition: do not use these lanes for generic OS audio, non-Hermes dependency checks, or unrelated app troubleshooting.
+
 ## Conductor / async multi-model orchestration
 
 When adding Sakana/Fugu/Conductor-inspired behavior to Hermes, use the default-off scaffold pattern in `references/hermes-conductor-runtime-scaffold.md`: land isolated router calls, durable task ledger, optional Fugu fail-soft adapter, model profile placeholders, and post-update regression before mainline conversation-loop wiring. Critical invariant: a default-main-model bootstrap/router call never counts as a later planner/implementer/arbiter participant. For the evidence-based Sakana pattern and model profile sketches, see `references/sakana-conductor-pattern.md`.

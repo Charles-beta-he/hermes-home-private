@@ -76,6 +76,17 @@ See [references/cascade-cleanup.md](references/cascade-cleanup.md) for the full 
 - "Simplify by removing comments" — only if code is self-documenting
 - "Simplify by merging configs" — separation may be intentional
 
+## Parallel Review Cleanup Subroutine
+
+Use `references/parallel-review-cleanup.md` when a simplification request is explicitly about recent changes or asks for `/simplify`, "review my changes", or "clean this diff up". Treat it as a code-simplification subroutine, not a separate routing root:
+
+- capture the relevant git diff and scope it before delegating;
+- run up to three focused reviewers in parallel for reuse, quality, and efficiency;
+- aggregate findings, discard weak suggestions, and apply only scoped behavior-preserving simplifications;
+- verify with targeted tests/lint/typecheck before reporting completion.
+
+Anti-condition: do not spend three subagents on tiny edits, unrelated whole-repo refactors, or user requests that only need ordinary local simplification.
+
 ## Verification Checklist
 - [ ] All existing tests pass without modification
 - [ ] No behavior changes (input/output/side-effects identical)
