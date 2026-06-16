@@ -1,0 +1,355 @@
+{
+  "schema": "china_local_evidence_probe_v1",
+  "generated_at": "2026-06-16T23:29:29+0800",
+  "query": "品伊阁烧麦",
+  "city": "呼和浩特",
+  "location": {
+    "lat": 40.811341,
+    "lon": 111.654969
+  },
+  "safety_boundary": "read-only bounded probe; no CAPTCHA/login bypass; no private account data; official map APIs only if user-provided environment keys exist",
+  "platform_reachability": [
+    {
+      "source": "dianping_pc",
+      "status": "needs_login",
+      "url": "https://www.dianping.com/search/keyword/5/0_%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6",
+      "final_url": "https://account.dianping.com/pclogin?redir=https%3A%2F%2Fwww.dianping.com%2Fsearch%2Fkeyword%2F5%2F0_%25E5%2593%2581%25E4%25BC%258A%25E9%2598%2581%25E7%2583%25A7%25E9%25BA%25A6",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "evidence": "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"><title>大众点评网</title><meta name=\"keyword\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"for\" content=\"meit",
+      "action": "Use user app screenshot/OCR or explicit temporary login if user authorizes."
+    },
+    {
+      "source": "dianping_mobile",
+      "status": "needs_login",
+      "url": "https://m.dianping.com/search/keyword/5/0_%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6",
+      "final_url": "https://mlogin.dianping.com/mlogin/smslogin?redir=https%3A%2F%2Fm.dianping.com%2Fsearch%2Fkeyword%2F5%2F0_%25E5%2593%2581%25E4%25BC%258A%25E9%2598%2581%25E7%2583%25A7%25E9%25BA%25A6",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "evidence": "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"><title>大众点评网</title><meta name=\"keyword\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"for\" content=\"meit",
+      "action": "Use user app screenshot/OCR or explicit temporary login if user authorizes."
+    },
+    {
+      "source": "meituan_mobile",
+      "status": "blocked_verification",
+      "url": "https://i.meituan.com/s/%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6/",
+      "final_url": "https://verify.meituan.com/v2/app/general_page?requestCode=c4972ad7bec54d859fc18f16d32cddb5&adaptor=auto&action=spiderindefence&succCallbackUrl=https%3A%2F%2Foptimus-mtsi.meituan.com%2Foptimus%2FverifyResult%3ForiginUrl%3Dhttps%253A%252F%252Fi.meituan.com%252Fs%252F%2525E5%252593%252581%2525E4%2525BC%25258A%2525E9%252598%252581%2525E7%252583%2525A7%2525E9%2525BA%2525A6%252F",
+      "http_status": 200,
+      "content_type": "text/html;charset=utf-8",
+      "evidence": "<!DOCTYPE html> <html> <head> <meta charset=\"utf-8\"> <meta name=\"url_set_id\" content=\"k200300414a7dc8cf772febb9ba33df1,t2002004141e59b29662fe1957874421\"> <meta name=\"apple-mobile-web-app-capable\" content=\"no\"> <meta cont",
+      "action": "Use user app screenshot/OCR or explicit browser login; do not bypass verification."
+    },
+    {
+      "source": "xiaohongshu_web",
+      "status": "reachable_no_result_text",
+      "url": "https://www.xiaohongshu.com/search_result?keyword=%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6%20%E5%91%BC%E5%92%8C%E6%B5%A9%E7%89%B9",
+      "final_url": "https://www.xiaohongshu.com/search_result/?keyword=%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6%20%E5%91%BC%E5%92%8C%E6%B5%A9%E7%89%B9",
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "evidence": "<!doctype html><html><script formula-runtime >function e(e){for(var r=1;r<arguments.length;r++){var t=null!=arguments[r]?arguments[r]:{},n=Object.keys(t);\"function\"==typeof Object.getOwnPropertySymbols&&(n=n.concat(Objec",
+      "action": "Reachable but no useful result text in bounded probe."
+    },
+    {
+      "source": "douyin_web",
+      "status": "reachable_no_result_text",
+      "url": "https://www.douyin.com/search/%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6%20%E5%91%BC%E5%92%8C%E6%B5%A9%E7%89%B9",
+      "final_url": "https://www.douyin.com/search/%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6%20%E5%91%BC%E5%92%8C%E6%B5%A9%E7%89%B9",
+      "http_status": 200,
+      "content_type": "text/html",
+      "evidence": "<html><head><meta charset=\"UTF-8\" /></head><body></body> <script> var glb;(glb=\"undefined\"==typeof window?global:window)._$jsvmprt=function(b,e,f){function a(){if(\"undefined\"==typeof Reflect||!Reflect.construct)return!1;",
+      "action": "Reachable but no useful result text in bounded probe."
+    },
+    {
+      "source": "amap_web",
+      "status": "reachable_no_result_text",
+      "url": "https://ditu.amap.com/search?query=%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6&city=150100",
+      "final_url": "https://ditu.amap.com/search?query=%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6&city=150100",
+      "http_status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "evidence": "<!DOCTYPE html> <html lang=\"zh-CN\"> <head> <meta name=\"aplus-core\" content=\"aplus.js\"> <meta name=\"aplus-waiting\" content=\"MAN\"> <meta charset=\"UTF-8\"/> <meta name=\"data-spm\" content=\"a2l02\" /> <meta name=\"renderer\" cont",
+      "action": "Reachable but no useful result text in bounded probe."
+    },
+    {
+      "source": "baidu_map_web",
+      "status": "reachable_no_result_text",
+      "url": "https://map.baidu.com/search/%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6",
+      "final_url": "https://map.baidu.com/search/%E5%93%81%E4%BC%8A%E9%98%81%E7%83%A7%E9%BA%A6",
+      "http_status": 200,
+      "content_type": "text/html;charset=utf-8",
+      "evidence": "<!DOCTYPE HTML> <html> <head> <!--STATUS OK--> <meta charset=\"utf-8\" /> <meta name=\"description\" content=\"浏览地图、搜索地点、查询公交驾车线路、查看实时路况，您的出行指南、生活助手。提供地铁线路图浏览，乘车方案查询，以及准确的票价和时间信息。\" /> <meta name=\"keywords\" content=\"景区热力图,景区人流",
+      "action": "Reachable but no useful result text in bounded probe."
+    }
+  ],
+  "poi_candidates": [
+    {
+      "source": "overpass",
+      "name": "麦当劳",
+      "kind": "fast_food",
+      "distance_m": 284.3548338647568,
+      "address": "",
+      "lat": 40.8100516,
+      "lon": 111.6578868,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "麦当劳",
+        "brand:en": "McDonald's",
+        "brand:wikidata": "Q38076",
+        "brand:zh": "麦当劳",
+        "brand:zh-Hans": "麦当劳",
+        "cuisine": "burger",
+        "name": "麦当劳",
+        "name:en": "McDonald's",
+        "name:zh": "麦当劳",
+        "name:zh-Hans": "麦当劳",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "肯德基",
+      "kind": "fast_food",
+      "distance_m": 374.64624337025265,
+      "address": "",
+      "lat": 40.8120971,
+      "lon": 111.6593071,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "肯德基",
+        "brand:en": "KFC",
+        "brand:wikidata": "Q524757",
+        "brand:zh": "肯德基",
+        "cuisine": "chicken",
+        "name": "肯德基",
+        "name:en": "KFC",
+        "name:zh": "肯德基",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "额尔敦传统涮",
+      "kind": "restaurant",
+      "distance_m": 415.9329896579462,
+      "address": "",
+      "lat": 40.8076008,
+      "lon": 111.655039,
+      "tags": {
+        "amenity": "restaurant",
+        "name": "额尔敦传统涮"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "星巴克",
+      "kind": "cafe",
+      "distance_m": 511.3316692762941,
+      "address": "",
+      "lat": 40.8131828,
+      "lon": 111.6605362,
+      "tags": {
+        "amenity": "cafe",
+        "brand": "星巴克",
+        "brand:en": "Starbucks",
+        "brand:wikidata": "Q37158",
+        "brand:zh": "星巴克",
+        "cuisine": "coffee_shop",
+        "name": "星巴克",
+        "name:en": "Starbucks",
+        "name:zh": "星巴克",
+        "opening_hours": "Mo-Su 08:30-21:00",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "麦当劳",
+      "kind": "fast_food",
+      "distance_m": 538.7678101063634,
+      "address": "",
+      "lat": 40.8129238,
+      "lon": 111.6610196,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "麦当劳",
+        "brand:en": "McDonald's",
+        "brand:wikidata": "Q38076",
+        "brand:zh": "麦当劳",
+        "brand:zh-Hans": "麦当劳",
+        "cuisine": "burger",
+        "name": "麦当劳",
+        "name:en": "McDonald's",
+        "name:zh": "麦当劳",
+        "name:zh-Hans": "麦当劳",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "麦当劳",
+      "kind": "fast_food",
+      "distance_m": 697.9115394391272,
+      "address": "",
+      "lat": 40.8144609,
+      "lon": 111.6621648,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "麦当劳",
+        "brand:en": "McDonald's",
+        "brand:wikidata": "Q38076",
+        "brand:zh": "麦当劳",
+        "brand:zh-Hans": "麦当劳",
+        "cuisine": "burger",
+        "name": "麦当劳",
+        "name:en": "McDonald's",
+        "name:zh": "麦当劳",
+        "name:zh-Hans": "麦当劳",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "星巴克",
+      "kind": "cafe",
+      "distance_m": 715.2954118000465,
+      "address": "",
+      "lat": 40.814239,
+      "lon": 111.6625571,
+      "tags": {
+        "amenity": "cafe",
+        "brand": "星巴克",
+        "brand:en": "Starbucks",
+        "brand:wikidata": "Q37158",
+        "brand:zh": "星巴克",
+        "cuisine": "coffee_shop",
+        "name": "星巴克",
+        "name:en": "Starbucks",
+        "name:zh": "星巴克",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "达美乐披萨（振华广场店）",
+      "kind": "restaurant",
+      "distance_m": 795.8545192063789,
+      "address": "",
+      "lat": 40.8167284,
+      "lon": 111.6611949,
+      "tags": {
+        "amenity": "restaurant",
+        "cuisine": "pizza",
+        "name": "达美乐披萨（振华广场店）"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "汉堡王",
+      "kind": "fast_food",
+      "distance_m": 798.2645595658662,
+      "address": "",
+      "lat": 40.8143638,
+      "lon": 111.6635725,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "汉堡王",
+        "brand:en": "Burger King",
+        "brand:wikidata": "Q177054",
+        "brand:zh": "汉堡王",
+        "cuisine": "burger",
+        "name": "汉堡王",
+        "name:en": "Burger King",
+        "name:zh": "汉堡王",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "肯德基",
+      "kind": "fast_food",
+      "distance_m": 943.4934002507698,
+      "address": "",
+      "lat": 40.8157042,
+      "lon": 111.6645843,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "肯德基",
+        "brand:en": "KFC",
+        "brand:wikidata": "Q524757",
+        "brand:zh": "肯德基",
+        "cuisine": "chicken",
+        "name": "肯德基",
+        "name:en": "KFC",
+        "name:zh": "肯德基",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "汉堡王",
+      "kind": "fast_food",
+      "distance_m": 1016.8298026128585,
+      "address": "",
+      "lat": 40.8023375,
+      "lon": 111.6570829,
+      "tags": {
+        "amenity": "fast_food",
+        "brand": "汉堡王",
+        "brand:en": "Burger King",
+        "brand:wikidata": "Q177054",
+        "brand:zh": "汉堡王",
+        "cuisine": "burger",
+        "name": "汉堡王",
+        "name:en": "Burger King",
+        "name:zh": "汉堡王",
+        "takeaway": "yes"
+      }
+    },
+    {
+      "source": "overpass",
+      "name": "炎天下火锅",
+      "kind": "restaurant",
+      "distance_m": 1167.7417250808296,
+      "address": "",
+      "lat": 40.8039225,
+      "lon": 111.6451485,
+      "tags": {
+        "amenity": "restaurant",
+        "cuisine": "hotpot",
+        "name": "炎天下火锅"
+      }
+    }
+  ],
+  "github_support_candidates": [
+    {
+      "repo": "NanmiCoder/MediaCrawler",
+      "stars": 51295,
+      "fit": "multi-platform xhs/douyin keyword search via Playwright login-state; high capability, high governance risk"
+    },
+    {
+      "repo": "Sniper970119/dianping_spider",
+      "stars": 1234,
+      "fit": "Dianping search/detail/comment crawler; requires cookies/proxies/font handling; spike only"
+    },
+    {
+      "repo": "Mocha-Pudding/DPspider",
+      "stars": 37,
+      "fit": "Dianping API-like city/keyword/shop search; low stars, useful design reference"
+    },
+    {
+      "repo": "yangsijie666/xiaohongshu-crawler",
+      "stars": 8,
+      "fit": "Playwright + MCP Xiaohongshu search/detail/comments; Hermes-shaped experiment candidate"
+    },
+    {
+      "repo": "Civitasv/AMapPoi",
+      "stars": 551,
+      "fit": "AMap POI/geocoding reference; prefer official AMap Web Service API"
+    },
+    {
+      "repo": "soaringsoul/easypoi",
+      "stars": 122,
+      "fit": "Baidu map POI collection reference; prefer official Baidu Place API"
+    }
+  ],
+  "recommended_next_channel": "For Dianping/Meituan/XHS/Douyin, use user app screenshots + OCR unless explicit temporary login is authorized."
+}
