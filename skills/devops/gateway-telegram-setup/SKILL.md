@@ -187,6 +187,9 @@ done
 
 ## Common Pitfalls
 
+### Telegram live-location updates are edited location messages
+When inspecting or extending inbound location support, remember that Telegram live-location updates arrive as edited message updates while still matching `filters.LOCATION` through `Update.effective_message`. Do not treat `filters.LOCATION` as normal `message`-only. For the verified PTB fixture, state key (`chat_id + message_id`), throttling model, privacy constraints, and test checklist, see `references/telegram-live-location-handling.md`.
+
 ### Boot health / recovery notification for Telegram Gateway
 When Telegram responsiveness is part of a startup or post-restart check, use the lightweight operational-readiness pattern in `references/boot-health-and-recovery-notification.md`. Verify both sides of the path: gateway polling logs (`Connected to Telegram`, `✓ telegram connected`, `Gateway running with ... platform(s)`) and an explicit send result with `success=true` plus `message_id`. `getMe` alone proves only token/API reachability, not that Hermes is consuming inbound updates.
 
@@ -224,6 +227,34 @@ After crashes, `gateway.pid` and `gateway.lock` may contain dead PIDs:
 ```bash
 rm -f ~/.hermes/gateway.pid ~/.hermes/gateway.lock
 hermes gateway restart
+```
+
+### Telegram live location sharing
+Hermes Telegram adapter treats live location as sensitive high-frequency ingress. Current long-term-safe pattern: keep live-location state process-local only, keyed by `(chat_id, message_id)`; never persist live coordinates into memory, skills, docs, config, or session summaries beyond the actual user-facing event text needed for the current turn. First `location.live_period` update should dispatch one agent event with `live_period_seconds`, `horizontal_accuracy_m`, `heading_degrees`, coordinates, and map link. Subsequent `edited_message` live-location updates should update in-memory state and only wake the agent when the configured time or distance threshold is crossed. Defaults in code: `HERMES_TELEGRAM_LIVE_LOCATION_MIN_INTERVAL_SECONDS` (clamped 10..3600, default 120) and `HERMES_TELEGRAM_LIVE_LOCATION_MIN_DISTANCE_METERS` (clamped 10..10000, default 250). Preserve ordinary location pins, venue handling, group mention gating, observe attribution, forum/topic routing, and channel post behavior.
+
+Focused verification after changes:
+```bash
+cd ~/.hermes/hermes-agent
+./venv/bin/python -m pytest -o addopts='' \
+  tests/gateway/test_telegram_live_location.py \
+  tests/gateway/test_telegram_group_gating.py::test_unmentioned_location_message_observed_in_group \
+  tests/gateway/test_telegram_group_gating.py::test_triggered_location_message_uses_shared_session_in_observe_mode -q
+./venv/bin/python -m py_compile gateway/platforms/telegram.py tests/gateway/test_telegram_live_location.py
+```
+If bare pytest fails with `unrecognized arguments: --timeout=30 --timeout-method=signal`, the active venv lacks `pytest-timeout`; use `-o addopts=''` for focused local verification or install the dev extra before claiming full-suite parity.
+
+### Telegram polling recovers but replies still fail with `send_path_degraded`
+When logs show `Telegram polling resumed after network error` followed soon after by `Send failed ... send_path_degraded` or `Failed to deliver response after 2 retries: send_path_degraded`, separate inbound polling recovery from outbound send-path recovery. `start_polling()` may have succeeded while `_send_path_degraded` is still true until the delayed heartbeat clears it; final replies generated during that window can be dropped by short retries. The durable code pattern is: after `start_polling()` succeeds, immediately run a tight Bot API `get_me()` probe and clear `_send_path_degraded` on success; in `send()`, if `_send_path_degraded` is still true, run one bounded preflight `get_me()` probe before returning the retryable fallback error; in the base retry wrapper, treat `send_path_degraded` as a recovery-window signal with longer bounded waits (10s, 30s, 60s) before notifying failure. Keep the slower 60s heartbeat for wedged long-poll detection.
+
+Enterprise UX hardening: Hermes has a plaintext-local delivery outbox (`gateway/delivery_outbox.py`) for generated gateway replies. It records pending/sent/dead_letter delivery state plus the reply body for bounded redelivery after a send-path flap or gateway restart. Default TTL is 24h (`HERMES_GATEWAY_DELIVERY_OUTBOX_TTL_SECONDS`); disable the whole outbox with `HERMES_GATEWAY_DELIVERY_OUTBOX=0`; force metadata-only mode with `HERMES_GATEWAY_DELIVERY_OUTBOX_CONTENT_STORAGE=none`. Startup drains pending plaintext-local rows after adapters connect and before lifecycle notifications, then marks rows sent/dead_letter. The file is compacted on new writes/drains so expired plaintext is removed.
+
+Verification:
+```bash
+cd ~/.hermes/hermes-agent
+./venv/bin/python -m pytest -o addopts='' tests/gateway/test_delivery_outbox.py tests/gateway/test_send_retry.py tests/gateway/test_telegram_send_path_health.py tests/gateway/test_telegram_network_reconnect.py tests/gateway/test_telegram_network.py -q
+./venv/bin/python -m py_compile gateway/delivery_outbox.py gateway/platforms/base.py gateway/platforms/telegram.py gateway/run.py tests/gateway/test_delivery_outbox.py tests/gateway/test_send_retry.py tests/gateway/test_telegram_send_path_health.py
+# Operational smoke: seed DeliveryOutbox.default().create_pending(...), hermes gateway restart, then verify
+# `Delivery outbox startup drain: {'claimed': 1, 'sent': 1, 'failed': 0, 'skipped': 0}` and outbox status=sent.
 ```
 
 ### Telegram receives but does not respond after a tool/browser hang
