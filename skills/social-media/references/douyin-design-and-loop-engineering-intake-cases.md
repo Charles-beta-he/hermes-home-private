@@ -55,7 +55,8 @@ Map the terms as:
 
 Recommended landing zone:
 
-- Add/patch an architecture or workflow maturity checklist.
+- For automation/task-worker absorption, load `harness-intake-contract` and land the lesson as a map → goal → acceptance → division → evidence → gates contract.
+- Add/patch an architecture or workflow maturity checklist when the post only contributes vocabulary or a review lens.
 - Create an advisory task only when there is concrete follow-up to write the checklist.
 - Do not create a runtime module from a short vocabulary clip alone.
 

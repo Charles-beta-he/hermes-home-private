@@ -19,6 +19,7 @@ metadata:
     - requesting-code-review
     - router
     - software-development
+    - harness-intake-contract
 ---
 
 # Hermes Pipeline — Agent 执行引擎
@@ -33,6 +34,10 @@ metadata:
 - 构建无人值守任务调度系统（Lark/Jira/GitHub Issues → 自动执行 → 结果写回）
 - 需要多阶段验证的自动化流程（确认 → 执行 → 审查 → 报告）
 - 用 hermes skills 作为 pipeline 组件（如 requesting-code-review 做 validator）
+
+## Harness Intake Contract bridge
+
+When a pipeline envelope, taskpool row, Lark task, social-video workflow lesson, or mission slice lacks enough structure for safe worker execution, load `harness-intake-contract` before confirmer/executor handoff. The confirmer should complete the map → goal → acceptance → division → evidence → gates contract, then derive executor and validator prompts from that contract. Missing acceptance or proof requirements should keep the item in intake/confirmation rather than letting a worker guess and later produce advisory-only `DONE`.
 
 ## 核心模式：Envelope Bus + Hermes Executor
 
