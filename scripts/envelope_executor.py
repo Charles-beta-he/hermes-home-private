@@ -140,6 +140,116 @@ def _first_json_object(text):
     return None
 
 
+def _as_list(value):
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(v).strip() for v in value if str(v).strip()]
+    if isinstance(value, tuple):
+        return [str(v).strip() for v in value if str(v).strip()]
+    if isinstance(value, str):
+        text = value.strip()
+        return [text] if text else []
+    return []
+
+
+def _payload_harness_contract(payload):
+    if not isinstance(payload, dict):
+        return {}
+    for key in ('harness_contract', 'intake_contract', 'contract'):
+        contract = payload.get(key)
+        if isinstance(contract, dict):
+            return contract
+    confirm_plan = payload.get('confirm_plan')
+    if isinstance(confirm_plan, dict) and isinstance(confirm_plan.get('contract'), dict):
+        return confirm_plan['contract']
+    return {}
+
+
+def _contract_acceptance_items(contract):
+    if not isinstance(contract, dict):
+        return []
+    raw_acceptance = contract.get('acceptance')
+    raw_evidence = contract.get('evidence')
+    acceptance = raw_acceptance if isinstance(raw_acceptance, dict) else {}
+    evidence = raw_evidence if isinstance(raw_evidence, dict) else {}
+    items = []
+    for key in ('observable_results', 'required_commands', 'required_artifacts', 'screenshots_or_logs', 'precision_rules', 'regression_boundaries'):
+        items.extend(_as_list(acceptance.get(key)))
+    items.extend(_as_list(evidence.get('minimum_done_proof')))
+    return items
+
+
+def _payload_acceptance_items(payload):
+    if not isinstance(payload, dict):
+        return []
+    items = []
+    items.extend(_as_list(payload.get('acceptance_criteria')))
+    items.extend(_as_list(payload.get('acceptance_evidence')))
+    items.extend(_contract_acceptance_items(_payload_harness_contract(payload)))
+    # Stable de-duplication keeps prompts compact while preserving order.
+    seen = set()
+    unique = []
+    for item in items:
+        if item not in seen:
+            seen.add(item)
+            unique.append(item)
+    return unique
+
+
+def _proof_acceptance_entries(proof):
+    entries = proof.get('acceptance_criteria_covered') if isinstance(proof, dict) else None
+    return entries if isinstance(entries, list) else []
+
+
+def validate_done_proof_against_payload(proof, payload):
+    """Fail closed when a task declared acceptance but proof did not cover it."""
+    if not isinstance(proof, dict) or proof.get('status') != 'done':
+        return None
+    expected = _payload_acceptance_items(payload)
+    if not expected:
+        return None
+    entries = _proof_acceptance_entries(proof)
+    if len(entries) < len(expected):
+        return f'acceptance_criteria_covered_incomplete:{len(entries)}<{len(expected)}'
+    missing_evidence = []
+    for idx, entry in enumerate(entries[:len(expected)]):
+        if not isinstance(entry, dict):
+            missing_evidence.append(str(idx))
+            continue
+        status = entry.get('status')
+        evidence = entry.get('evidence')
+        if status not in ('covered', 'blocked') or not isinstance(evidence, list) or not evidence:
+            missing_evidence.append(str(idx))
+    if missing_evidence:
+        return 'acceptance_criteria_covered_missing_evidence:' + ','.join(missing_evidence)
+    return None
+
+
+def build_harness_contract_section(payload, contract_path=''):
+    """Build a compact intake-contract section for the worker prompt."""
+    contract = _payload_harness_contract(payload)
+    acceptance_items = _payload_acceptance_items(payload)
+    lines = [
+        'HARNESS INTAKE CONTRACT:',
+        '- Use map → goal → acceptance → division → evidence → gates as the execution contract.',
+        '- If required map/acceptance/proof facts are missing, stop at status=blocked and name the missing contract fields.',
+        '- Do not invent acceptance; satisfy only stated acceptance and produce deterministic evidence.',
+    ]
+    if contract_path:
+        lines.append(f'- External acceptance contract path, if present: {contract_path}')
+    if contract:
+        compact = json.dumps(contract, ensure_ascii=False, sort_keys=True)
+        lines.append(f'- Inline contract JSON: {compact[:3000]}')
+    if acceptance_items:
+        lines.append('- Acceptance/proof items that must be covered in PROOF_JSON.acceptance_criteria_covered:')
+        for i, item in enumerate(acceptance_items, 1):
+            lines.append(f'  {i}. {item}')
+    else:
+        lines.append('- No explicit acceptance items found in the envelope payload; derive only from task text and external contract path if it exists, and use status=blocked if insufficient.')
+    return '\n'.join(lines)
+
+
 def extract_proof(output):
     """Extract and validate the last PROOF_JSON marker from worker output.
 
@@ -203,6 +313,7 @@ def delegate_to_worker(envelope, timeout=None):
     evidence_dir = f"/Users/charles/.hermes/evidence/envelopes/{eid}"
     contract_dir = '/Users/charles/.hermes/state/uvisa_lark_contracts/current'
     contract_path = str(Path(contract_dir) / f"{brain_id}.json") if brain_id else ''
+    harness_section = build_harness_contract_section(payload, contract_path)
 
     # Build prompt
     prompt = f"""Execute this task to the highest safe boundary and output a PROOF_JSON on the last line.
@@ -215,6 +326,8 @@ BOUNDARY: {boundary}
 ACCEPTANCE_CONTRACT: {contract_path}
 EVIDENCE_DIR: {evidence_dir}
 
+{harness_section}
+
 UVISA ADMIN WORKFLOW RULES:
 1. Before editing, run git fetch and verify the current branch/status in WORKSPACE.
 2. Stay within PROJECT/BOUNDARY. Do not touch unrelated repos or unrelated product surfaces.
@@ -226,7 +339,7 @@ UVISA ADMIN WORKFLOW RULES:
 8. Output PROOF_JSON on the LAST line exactly.
 
 PROOF_JSON schema:
-{{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0,"evidence_dir":"{evidence_dir}","pr_url":"","merged":false,"lark_guid":"{brain_id}"}}
+{{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0,"evidence_dir":"{evidence_dir}","pr_url":"","merged":false,"lark_guid":"{brain_id}","acceptance_criteria_covered":[{{"criterion":"...","status":"covered|blocked","evidence":["command:...|file:...|artifact:..."],"blocker":""}}]}}
 
 If blocked, still output PROOF_JSON with status=blocked and a concise summary of the concrete blocker.
 """
@@ -268,6 +381,11 @@ If blocked, still output PROOF_JSON with status=blocked and a concise summary of
         # Check for structured proof before allowing terminal completion.
         proof, proof_sha, proof_error = extract_proof(output)
         if proof:
+            proof_contract_error = validate_done_proof_against_payload(proof, payload)
+            if proof_contract_error:
+                update_status(eid, 'FAILED', error=proof_contract_error)
+                append_trace(eid, {'event': proof_contract_error, 'output_len': len(output), 'proof_sha': proof_sha, 'proof': proof})
+                return {'status': 'failed', 'reason': proof_contract_error, 'output': output[:500]}
             if proof.get('status') == 'done':
                 update_status(eid, 'DONE', proof_sha=proof_sha)
                 append_trace(eid, {'event': 'completed', 'output_len': len(output), 'proof_sha': proof_sha, 'proof': proof})

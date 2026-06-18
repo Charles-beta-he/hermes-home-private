@@ -79,6 +79,68 @@ class EnvelopeExecutorSafetyTest(unittest.TestCase):
         self.assertEqual(env["status"], "DONE")
         self.assertTrue(env["proof_sha"])
 
+    def test_prompt_includes_harness_intake_contract(self):
+        calls = []
+
+        def fake_run(cmd, timeout=600, cwd=None):
+            calls.append(cmd)
+            output = 'work\nPROOF_JSON: {"status":"blocked","summary":"needs acceptance"}\n'
+            return FakeCompleted(output)
+
+        eid = self.bus.create(
+            type="TASK",
+            title="contract task",
+            payload={
+                "brain_id": "brain-2",
+                "harness_contract": {
+                    "goal": {"desired_state": "done state"},
+                    "acceptance": {"observable_results": ["observable result"]},
+                    "evidence": {"minimum_done_proof": ["command:pytest"]},
+                },
+            },
+        )
+        with patch.object(self.exec, "can_continue", return_value=(False, 0)):
+            with patch.object(self.exec, "run_worker_command", side_effect=fake_run):
+                self.exec.delegate_to_worker(self.exec.get(eid))
+
+        prompt = calls[0][3]
+        self.assertIn("HARNESS INTAKE CONTRACT", prompt)
+        self.assertIn("observable result", prompt)
+        self.assertIn("command:pytest", prompt)
+        self.assertIn("acceptance_criteria_covered", prompt)
+
+    def test_declared_acceptance_requires_covered_evidence(self):
+        eid = self.bus.create(
+            type="TASK",
+            title="acceptance task",
+            payload={"brain_id": "brain-3", "acceptance_criteria": ["criterion must be evidenced"]},
+        )
+        output = 'work\nPROOF_JSON: {"status":"done","summary":"ok","files_changed":[],"tests_passed":1}\n'
+        with patch.object(self.exec, "can_continue", return_value=(False, 0)):
+            with patch.object(self.exec, "run_worker_command", return_value=FakeCompleted(output)):
+                result = self.exec.delegate_to_worker(self.exec.get(eid))
+
+        self.assertEqual(result["status"], "failed")
+        self.assertTrue(result["reason"].startswith("acceptance_criteria_covered_incomplete"))
+        self.assertEqual(self.exec.get(eid)["status"], "FAILED")
+
+    def test_declared_acceptance_with_covered_evidence_marks_done(self):
+        eid = self.bus.create(
+            type="TASK",
+            title="acceptance task",
+            payload={"brain_id": "brain-4", "acceptance_criteria": ["criterion must be evidenced"]},
+        )
+        output = (
+            'work\nPROOF_JSON: {"status":"done","summary":"ok","files_changed":[],"tests_passed":1,'
+            '"acceptance_criteria_covered":[{"criterion":"criterion must be evidenced","status":"covered","evidence":["command:pytest"]}]}\n'
+        )
+        with patch.object(self.exec, "can_continue", return_value=(False, 0)):
+            with patch.object(self.exec, "run_worker_command", return_value=FakeCompleted(output)):
+                result = self.exec.delegate_to_worker(self.exec.get(eid))
+
+        self.assertEqual(result["status"], "done")
+        self.assertEqual(self.exec.get(eid)["status"], "DONE")
+
 
 if __name__ == "__main__":
     unittest.main()
