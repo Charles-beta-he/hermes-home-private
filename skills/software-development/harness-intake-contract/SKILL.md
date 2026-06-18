@@ -177,6 +177,8 @@ gates.*                   -> human escape / risk tier / dry-run / side-effect po
 
 For pipeline execution, the confirmer should output the contract JSON and only then build the executor prompt. For taskpool execution, missing acceptance or proof requirements should block direct autorun and trigger contract completion rather than letting a worker guess.
 
+When implementing this contract in a real envelope executor or pipeline, use `references/runtime-envelope-landing.md`: land in layers (contract/schema → executor prompt and proof gate → producer payload preservation), verify with focused tests, and stop before live `tick`/`run` unless the user explicitly authorizes control-plane side effects.
+
 ## Social-Video / External-Workflow Absorption
 
 When the source is a short video or social post:
