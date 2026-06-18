@@ -287,12 +287,18 @@ hermes gateway status
 grep "Connected to Telegram\|✓ telegram connected\|Gateway running" ~/.hermes/logs/gateway.log | tail -20
 ```
 
-If macOS launchd returns `Bootstrap failed: 5: Input/output error`, `hermes gateway start` may fall back to a tracked background gateway process. Treat that as usable only after all of these are true:
+If macOS launchd returns `Bootstrap failed: 5: Input/output error`, `hermes gateway start` may fall back to a tracked background gateway process. First separate true domain-unsupported from domain mismatch/race. In this setup the generated helper may target `user/<uid>` while the existing LaunchAgent is actually loaded under `gui/<uid>`; evidence is `launchctl print user/$(id -u)/ai.hermes.gateway` → not found, while `launchctl print gui/$(id -u)/ai.hermes.gateway` shows the running job. `launchctl kickstart -k user/...` then returns 113 and the subsequent bootstrap can emit exit 5/`Operation already in progress` while the `gui` job is still tearing down. A delayed `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.hermes.gateway.plist` can succeed, proving launchd itself is not permanently unsupported. Root fix is to resolve/control the loaded domain consistently (prefer the domain where the label is already loaded, or install/start/status all on the same domain) and avoid classifying transient bootstrap exit 5 as permanent launchd incapability without checking the other domain and teardown state.
+
+Treat fallback as usable only after all of these are true:
 
 ```bash
 # Service definition no longer stale, and a gateway PID exists
 hermes gateway status
 pgrep -fl "hermes_cli.main gateway run"
+
+# Check both domains before concluding launchd is unsupported
+launchctl print user/$(id -u)/ai.hermes.gateway 2>&1 | head
+launchctl print gui/$(id -u)/ai.hermes.gateway 2>&1 | head
 
 # Wait past Telegram's short getUpdates conflict window and any planned --replace takeovers.
 # The latest log segment (not old grep tail matches) must show a stable connected gateway:
