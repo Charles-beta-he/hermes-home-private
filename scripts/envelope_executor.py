@@ -234,6 +234,7 @@ def build_harness_contract_section(payload, contract_path=''):
         'HARNESS INTAKE CONTRACT:',
         '- Use map → goal → acceptance → division → evidence → gates as the execution contract.',
         '- If required map/acceptance/proof facts are missing, stop at status=blocked and name the missing contract fields.',
+        '- If an external acceptance contract path is missing but inline contract JSON or payload acceptance exists, continue from the inline/payload contract instead of blocking on the missing file.',
         '- Do not invent acceptance; satisfy only stated acceptance and produce deterministic evidence.',
     ]
     if contract_path:
@@ -337,6 +338,14 @@ UVISA ADMIN WORKFLOW RULES:
 6. Do not paste or persist secrets. Redact credentials as [REDACTED].
 7. Do NOT mark brain/Lark task done yourself unless you have also produced verifiable evidence; the executor will collect PROOF_JSON.
 8. Output PROOF_JSON on the LAST line exactly.
+9. For proof-only validation tasks, no tool call or file edit is required; immediately return the final PROOF_JSON if the acceptance can be covered by the final proof itself.
+10. Do not write explanatory text after PROOF_JSON. The final line must begin with `PROOF_JSON:` and contain parseable JSON.
+
+FINAL OUTPUT CONTRACT:
+- The final answer MUST contain a line starting exactly with `PROOF_JSON:`.
+- For status=done, include acceptance_criteria_covered with one entry per stated acceptance/proof item.
+- Each covered entry needs non-empty evidence such as `artifact:worker-final-proof-json`, `command:...`, `file:...`, or `log:...`.
+- If you cannot satisfy the contract, output status=blocked with blockers; do not omit PROOF_JSON.
 
 PROOF_JSON schema:
 {{"status":"done|blocked","summary":"<=200 chars","files_changed":[],"tests_passed":0,"evidence_dir":"{evidence_dir}","pr_url":"","merged":false,"lark_guid":"{brain_id}","acceptance_criteria_covered":[{{"criterion":"...","status":"covered|blocked","evidence":["command:...|file:...|artifact:..."],"blocker":""}}]}}
