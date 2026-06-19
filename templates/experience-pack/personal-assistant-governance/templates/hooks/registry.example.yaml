@@ -1,0 +1,31 @@
+schema: hermes_hook_registry_template_v1
+
+# Template only. Installers must copy this as an example and require user approval
+# before enabling any command.
+
+gates:
+  pre_task_done:
+    description: Require structured proof before done transition
+    hook_class: gate
+    fail_policy: fail-closed
+    enabled: false
+    checks:
+      - proof_artifact_exists
+      - acceptance_evidence_present
+
+shell_hooks:
+  post_tool_call:
+    - name: trace-observer-example
+      command: $HERMES_HOME/agent-hooks/record-trace.sh
+      hook_class: observer
+      fail_policy: fail-open
+      enabled: false
+      matcher: read_file|write_file|patch|search_files|terminal
+      timeout: 5
+
+plugin_hooks:
+  pre_llm_call:
+    - name: git-branch-inject
+      hook_class: advisor
+      fail_policy: fail-open
+      enabled: false

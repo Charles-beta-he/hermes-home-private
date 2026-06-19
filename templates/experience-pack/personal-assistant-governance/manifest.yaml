@@ -1,0 +1,64 @@
+schema: hermes_experience_pack_v1
+name: personal-assistant-governance
+version: 0.1.0
+status: template_only
+principle:
+  package: capability_shape
+  exclude: lived_state
+copy_policy:
+  overwrite_existing: false
+  default_enabled: false
+  install_mode: templates_only
+allowed_payloads:
+  - templates
+  - sanitized_skills
+  - example_configs
+  - deterministic_selfchecks
+  - anonymized_examples
+forbidden_payloads:
+  - .env
+  - auth
+  - oauth_sessions
+  - private_login_material
+  - state.db
+  - contextcards.db
+  - logs
+  - docs/private
+  - memory
+  - user_profile
+  - project_profiles
+  - taskpool_evidence
+  - shell_hook_approvals
+  - owner_absolute_paths
+activation_gates:
+  cron: manual_enable
+  gateway_delivery: manual_configure
+  shell_hooks: user_approval_required
+  contextcard_promotion: explicit_promote_flag
+  taskpool_mutation: explicit_authority
+modules:
+  core_governance:
+    default: true
+    contents:
+      - open-source capability absorption gate
+      - shadow promotion gate
+      - taskpool proof boundary
+  context_projection:
+    default: false
+    contents:
+      - ContextCard schema/config template
+      - staging to production promotion checklist
+  gateway_delivery:
+    default: false
+    contents:
+      - delivery reliability checklist
+      - no hardcoded channel target
+  local_codegraph:
+    default: false
+    contents:
+      - codebase-memory-mcp MCP config template
+      - local codegraph adoption and smoke-test checklist
+      - advisory-evidence rule for graph outputs
+verification:
+  sanitizer: $HERMES_HOME/scripts/experience_pack_sanitize.py
+  required_before_distribution: true

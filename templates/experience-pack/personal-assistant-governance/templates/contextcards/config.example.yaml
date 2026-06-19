@@ -1,0 +1,21 @@
+schema: contextcard_projection_config_template_v1
+
+# Template only. The installer must not create or copy runtime databases.
+paths:
+  source_state_db: $HERMES_HOME/state.db
+  deterministic_cache_db: $HERMES_HOME/contextcards.deterministic.db
+  staging_cache_db: $HERMES_HOME/contextcards.rich.staging.db
+  production_cache_db: $HERMES_HOME/contextcards.db
+
+allowed_sources:
+  - cli
+  - telegram
+
+promotion:
+  default_mode: dry_run
+  require_explicit_promote_flag: true
+  create_backup_before_replace: true
+  verify_reader_after_promote: true
+
+cron:
+  enabled_by_default: false

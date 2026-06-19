@@ -1,0 +1,27 @@
+schema: hermes_mcp_server_template_v1
+
+# Template only. Installers should copy this into the experience pack namespace;
+# the user or a future activator may merge it into $HERMES_HOME/config.yaml after
+# verifying the binary and selecting project roots.
+
+mcp_servers:
+  codebase_memory:
+    command: codebase-memory-mcp
+    args: []
+    timeout: 30
+    env:
+      # Keep graph databases local to the user's Hermes home. Do not commit this cache.
+      CBM_CACHE_DIR: $HERMES_HOME/cache/codebase-memory-mcp
+
+activation:
+  default_enabled: false
+  reason: requires local binary trust + per-project indexing authority
+
+recommended_first_project:
+  size: small_or_medium
+  mode: fast
+  required_smoke_tools:
+    - index_repository
+    - list_projects
+    - search_graph
+    - trace_path
