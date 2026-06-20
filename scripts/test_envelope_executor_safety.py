@@ -141,6 +141,45 @@ class EnvelopeExecutorSafetyTest(unittest.TestCase):
         self.assertEqual(result["status"], "done")
         self.assertEqual(self.exec.get(eid)["status"], "DONE")
 
+    def test_extract_proof_accepts_fenced_json(self):
+        output = 'work\nPROOF_JSON:\n```json\n{"status":"blocked","summary":"need auth"}\n```\n'
+        proof, proof_sha, error = self.exec.extract_proof(output)
+
+        self.assertIsNone(error)
+        self.assertEqual(proof["status"], "blocked")
+        self.assertTrue(proof_sha)
+
+    def test_extract_proof_accepts_multiline_json(self):
+        output = 'work\nPROOF_JSON:\n{\n  "status": "done",\n  "summary": "multi"\n}\n'
+        proof, proof_sha, error = self.exec.extract_proof(output)
+
+        self.assertIsNone(error)
+        self.assertEqual(proof["status"], "done")
+        self.assertTrue(proof_sha)
+
+    def test_run_executor_defers_when_wall_budget_too_low(self):
+        with patch.object(self.exec, "WALL_BUDGET_SECONDS", 20), patch.object(self.exec, "delegate_to_worker") as delegate:
+            result = self.exec.run_executor(1)
+
+        self.assertEqual(result["status"], "deferred_budget")
+        delegate.assert_not_called()
+        self.assertEqual(self.exec.get(self.eid)["status"], "PENDING")
+
+    def test_run_executor_caps_worker_timeout_to_remaining_budget(self):
+        seen_timeouts = []
+
+        def fake_delegate(envelope, timeout=None):
+            seen_timeouts.append(timeout)
+            self.exec.update_status(envelope["id"], "DONE", proof_sha="sha")
+            return {"status": "done"}
+
+        with patch.object(self.exec, "WALL_BUDGET_SECONDS", 45), patch.object(self.exec, "WORKER_TIMEOUT_SECONDS", 90):
+            with patch.object(self.exec, "delegate_to_worker", side_effect=fake_delegate):
+                result = self.exec.run_executor(1)
+
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(seen_timeouts, [34])
+
 
 if __name__ == "__main__":
     unittest.main()
