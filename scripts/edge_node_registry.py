@@ -265,6 +265,8 @@ def classify_node(node: dict[str, Any], *, now: float, probe: bool, registry_dis
         probe_result = probe_endpoint(endpoint)
         if probe_result.get("probe_status") == "ok":
             status = "healthy" if status in {"unknown", "registered", "offline"} else status
+            warnings = [w for w in warnings if not w.startswith("heartbeat stale:")]
+            heartbeat_age_s = 0
             info = probe_result.get("info") or {}
             if isinstance(info, dict) and info.get("capabilities"):
                 capabilities = list(info.get("capabilities") or capabilities)

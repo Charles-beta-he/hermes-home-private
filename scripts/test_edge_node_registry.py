@@ -143,6 +143,24 @@ security:
         self.assertTrue(checked["dispatch_eligible"])
         self.assertFalse(checked["warnings"])
 
+    def test_successful_probe_clears_stale_heartbeat_warning(self):
+        node = {
+            "worker_id": "w1",
+            "name": "node-a",
+            "endpoint": "http://127.0.0.1:9001",
+            "bind_host": "127.0.0.1",
+            "brain_url": "http://brain",
+            "capabilities": ["read_file"],
+            "token_configured": True,
+            "allowed_commands_configured": True,
+            "dispatch_enabled": True,
+            "last_seen_at": "2026-01-01T00:00:00+00:00",
+        }
+        with patch.object(edge_node_registry, "probe_endpoint", return_value={"probe_status": "ok", "health": {"status": "ok"}, "info": {}}):
+            checked = edge_node_registry.classify_node(node, now=__import__("time").time(), probe=True, registry_dispatch_enabled=True)
+        self.assertEqual(checked["heartbeat_age_s"], 0)
+        self.assertFalse(any("heartbeat stale" in item for item in checked["warnings"]))
+
 
 if __name__ == "__main__":
     unittest.main()
