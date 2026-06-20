@@ -65,6 +65,26 @@ class HandoffGcReportTest(unittest.TestCase):
         self.assertEqual(report["total_count"], 0)
         self.assertFalse(report["dirs"][0]["exists"])
 
+    def test_archive_plan_keeps_newest_and_apply_moves_with_manifest(self) -> None:
+        files = []
+        for i in range(5):
+            path = self.dir_a / f"handoff-{i}.md"
+            path.write_text(f"handoff {i}", encoding="utf-8")
+            files.append(path)
+
+        plan = self.gc.plan_archive(self.dir_a, keep_newest=2)
+        self.assertEqual(plan["current_count"], 5)
+        self.assertEqual(plan["archive_count"], 3)
+
+        dry = self.gc.apply_archive(plan, dry_run=True)
+        self.assertEqual(dry["planned_count"], 3)
+        self.assertTrue(all(path.exists() for path in files))
+
+        applied = self.gc.apply_archive(plan, dry_run=False)
+        self.assertEqual(applied["moved_count"], 3)
+        self.assertTrue(Path(applied["manifest_path"]).exists())
+        self.assertEqual(len(list(self.dir_a.glob("*.md"))), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
