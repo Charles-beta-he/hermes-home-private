@@ -1468,6 +1468,37 @@ def test_done_closeout_allows_work_task_with_execution_flow_harness_proof():
         assert done["to_status"] == "done"
 
 
+def test_done_closeout_allows_tui_ui_surface_proof_without_browser():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, _task_path = add_task(env, title="Implement backend API and TUI surface", priority="P1", project="hermes")
+        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: implementation build test PASS", "--json")
+
+        done = json.loads(
+            run(
+                env,
+                "transition",
+                task_id,
+                "--to",
+                "done",
+                "--actor",
+                "tester",
+                "--evidence",
+                "command: final build test commit verification PASS",
+                "--evidence",
+                "proof:ui_surface tui voice.toggle status readback PASS",
+                "--evidence",
+                "proof:api_readback endpoint=tui_gateway.voice.toggle status=200 fields=record_key",
+                "--json",
+            ).stdout
+        )
+
+        assert done["from_status"] == "review"
+        assert done["to_status"] == "done"
+
+
 def test_done_closeout_ignores_body_placeholders_for_execution_flow_proof():
     td, _vault, env = make_env_and_vault()
     with td:

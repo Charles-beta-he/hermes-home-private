@@ -1,0 +1,89 @@
+{
+  "backend_api_readback": {
+    "blockers": [],
+    "capabilities": {
+      "audible_state_cues": "Start/stop beeps and status callbacks provide operator-visible state",
+      "feedback_guard": "TTS playback pauses/re-arms capture to prevent self-listening feedback loops",
+      "local_first_stt": "Local faster-whisper STT when configured, with cloud STT as explicit fallback",
+      "no_interaction_change": "No always-on wake-word listener or new command grammar is enabled by this profile",
+      "spoken_reply": "TTS reply path through the configured Hermes TTS provider",
+      "tool_governance": "Hermes tool approval and side-effect gates remain outside the voice layer",
+      "vad_conversation_loop": "VAD-driven listen/transcribe/reply loop behind the existing /voice controls"
+    },
+    "interaction_logic": "unchanged:/voice on + record_key + VAD continuous loop",
+    "missing_capabilities": [],
+    "notices": [
+      "platform:tui",
+      "voice_config_present"
+    ],
+    "providers": {
+      "stt": "local",
+      "tts": "edge"
+    },
+    "ready": true,
+    "required_capabilities": [
+      "vad_conversation_loop",
+      "local_first_stt",
+      "spoken_reply",
+      "feedback_guard",
+      "tool_governance",
+      "no_interaction_change"
+    ],
+    "status": "ready",
+    "warnings": [
+      "spoken_reply_requires_/voice_tts_or_config_auto_tts"
+    ]
+  },
+  "generated_at": "2026-06-20T14:31:08Z",
+  "safety_assertions": [
+    "No always-on microphone enabled by this proof.",
+    "Voice interaction logic remains explicit /voice on + record_key + VAD continuous loop.",
+    "Tool governance remains outside voice layer; yolo false in backend readback.",
+    "UI surface proof is TUI gateway voice.toggle status readback, not browser-specific."
+  ],
+  "scope": "HoloJarvis enterprise voice closeout proof",
+  "task_id": "2026-06-19-全盘落地-holojarvis-1-1-语音交互体验到-hermes",
+  "ui_surface_readback": {
+    "id": "voice-status",
+    "jsonrpc": "2.0",
+    "result": {
+      "audio_available": false,
+      "available": true,
+      "details": "",
+      "enabled": false,
+      "record_key": "ctrl+o",
+      "stt_available": false,
+      "tts": false
+    }
+  },
+  "verification_commands": [
+    {
+      "command": "./venv/bin/python -m pytest -o addopts='' tests/tools/test_voice_cli_integration.py tests/gateway/test_voice_command.py tests/hermes_cli/test_voice_wrapper.py tests/test_tui_gateway_server.py -k 'voice' -q",
+      "result": "317 passed, 232 deselected"
+    },
+    {
+      "command": "python3 -m py_compile ~/.hermes/scripts/brain_task_orchestrator.py ~/.hermes/scripts/test_brain_task_orchestrator.py",
+      "result": "PASS"
+    },
+    {
+      "command": "PYTHONPATH=~/.hermes/scripts python3 -m pytest -q ~/.hermes/scripts/test_brain_task_orchestrator.py -k 'execution_flow_harness_proof or tui_ui_surface'",
+      "result": "3 passed, 79 deselected"
+    },
+    {
+      "command": "TUI gateway voice.toggle status readback",
+      "result": {
+        "id": "voice-status",
+        "jsonrpc": "2.0",
+        "result": {
+          "audio_available": false,
+          "available": true,
+          "details": "",
+          "enabled": false,
+          "record_key": "ctrl+o",
+          "stt_available": false,
+          "tts": false
+        }
+      }
+    }
+  ]
+}

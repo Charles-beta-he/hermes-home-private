@@ -1,0 +1,162 @@
+{
+  "backend_api_readback": {
+    "convention": "vercel-eve-file-as-architecture",
+    "optional_counts": {
+      "channels": 0,
+      "schedules": 0,
+      "skills": 1,
+      "tools": 1
+    },
+    "paths": {
+      "agent_config": {
+        "exists": true,
+        "relative": "agent/agent.ts",
+        "type": "file"
+      },
+      "channels": {
+        "children": [],
+        "exists": true,
+        "relative": "agent/channels",
+        "type": "dir"
+      },
+      "instructions": {
+        "exists": true,
+        "relative": "agent/instructions.md",
+        "type": "file"
+      },
+      "schedules": {
+        "children": [],
+        "exists": true,
+        "relative": "agent/schedules",
+        "type": "dir"
+      },
+      "skills": {
+        "children": [
+          "plan_a_trip.md"
+        ],
+        "exists": true,
+        "relative": "agent/skills",
+        "type": "dir"
+      },
+      "tools": {
+        "children": [
+          "get_weather.ts"
+        ],
+        "exists": true,
+        "relative": "agent/tools",
+        "type": "dir"
+      }
+    },
+    "read_only": true,
+    "red_lines": {
+      "does_not_replace_hermes_skills": true,
+      "does_not_replace_project_profiles": true,
+      "does_not_require_global_filename_gate": true
+    },
+    "required": {
+      "instructions": true
+    },
+    "root": "/private/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/vercel-eve-file-arch-proof-0ocl2km7",
+    "schema": "file_arch_adapter_v1",
+    "status": "pass"
+  },
+  "decision": "absorb as read-only convention/adapter harness; do not replace existing Hermes skills/project-profiles/AGENTS.md mechanisms",
+  "generated_at": "2026-06-20T14:40:55Z",
+  "red_lines": {
+    "does_not_replace_hermes_skills": true,
+    "does_not_replace_project_profiles": true,
+    "does_not_require_global_filename_gate": true
+  },
+  "scope": "Vercel/eve file-as-architecture capability absorption closeout proof",
+  "source_readback": {
+    "observed_claims": [
+      "eve is a filesystem-first framework for durable AI agents",
+      "agent/instructions.md is Required: the always-on system prompt",
+      "agent/tools, agent/skills, agent/channels, agent/schedules are conventional optional surfaces"
+    ],
+    "url": "https://raw.githubusercontent.com/vercel/eve/main/README.md"
+  },
+  "task_id": "2026-06-19-分析吸收-vercel-文件即架构图式-agent-配置体验",
+  "ui_surface_readback": {
+    "optional_counts": {
+      "channels": 0,
+      "schedules": 0,
+      "skills": 1,
+      "tools": 1
+    },
+    "required_instructions": true,
+    "sample_root": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/vercel-eve-file-arch-proof-0ocl2km7",
+    "status": "pass",
+    "surface": "file_architecture_convention_report"
+  },
+  "verification_commands": [
+    {
+      "command": "PYTHONPATH=/Users/charles/.hermes/scripts python3 -m unittest discover -s /Users/charles/.hermes/scripts -p 'test_file_arch_adapter.py'",
+      "result": "Ran 3 tests, OK"
+    },
+    {
+      "command": "file_arch_adapter.inspect_project(sample)",
+      "result": {
+        "convention": "vercel-eve-file-as-architecture",
+        "optional_counts": {
+          "channels": 0,
+          "schedules": 0,
+          "skills": 1,
+          "tools": 1
+        },
+        "paths": {
+          "agent_config": {
+            "exists": true,
+            "relative": "agent/agent.ts",
+            "type": "file"
+          },
+          "channels": {
+            "children": [],
+            "exists": true,
+            "relative": "agent/channels",
+            "type": "dir"
+          },
+          "instructions": {
+            "exists": true,
+            "relative": "agent/instructions.md",
+            "type": "file"
+          },
+          "schedules": {
+            "children": [],
+            "exists": true,
+            "relative": "agent/schedules",
+            "type": "dir"
+          },
+          "skills": {
+            "children": [
+              "plan_a_trip.md"
+            ],
+            "exists": true,
+            "relative": "agent/skills",
+            "type": "dir"
+          },
+          "tools": {
+            "children": [
+              "get_weather.ts"
+            ],
+            "exists": true,
+            "relative": "agent/tools",
+            "type": "dir"
+          }
+        },
+        "read_only": true,
+        "red_lines": {
+          "does_not_replace_hermes_skills": true,
+          "does_not_replace_project_profiles": true,
+          "does_not_require_global_filename_gate": true
+        },
+        "required": {
+          "instructions": true
+        },
+        "root": "/private/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/vercel-eve-file-arch-proof-0ocl2km7",
+        "schema": "file_arch_adapter_v1",
+        "status": "pass"
+      }
+    }
+  ]
+}

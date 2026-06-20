@@ -4081,7 +4081,20 @@ def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[
     missing: list[str] = []
     if is_impl and not any(marker in blob for marker in ("command:", "artifact:", "proof:")):
         missing.append("feature_specific_structured_evidence")
-    if needs_ui and not any(marker in blob for marker in ("proof:browser", "screenshot", "playwright", "browser")):
+    if needs_ui and not any(
+        marker in blob
+        for marker in (
+            "proof:browser",
+            "screenshot",
+            "playwright",
+            "browser",
+            "ui_surface",
+            "ui surface",
+            "proof:ui",
+            "tui",
+            "desktop",
+        )
+    ):
         missing.append("browser_or_ui_surface_proof")
     if needs_api and not any(marker in blob for marker in ("proof:api", "curl", "readback", "read-back")):
         missing.append("api_or_backend_readback_proof")
@@ -4565,6 +4578,7 @@ def repo_capability_body_section(args: argparse.Namespace) -> str:
         f"| 4. Integration surface | selected target surface: `{args.target_surface}`; justify why lower coupling is insufficient | pending |",
         "| 5. Harness acceptance | fixed input, fixed assertions, offline rerun where possible, readable failure | pending |",
         "| 6. Maintenance strategy | version pin, upgrade owner, fallback, rollback, allowlist/autorun policy | pending |",
+        "| 7. Mainline promotion | evidence verified, rollback exercised/described, maintenance owner/path clear; feature flag or fallback preserves old capability | pending |",
         "",
         "## Absorption Decision Log",
         "",
@@ -4604,11 +4618,13 @@ def command_add_repo_capability_absorption(args: argparse.Namespace) -> dict[str
     accept = args.accept or (
         "完成 capability intake 决策包：source/license/claim 证据、真实复现日志或阻塞证据、"
         "Hermes gap mapping、风险边界、选定接入面、最小 harness 验收、维护/回滚策略；"
+        "只有证据验证、可回滚、可维护三项均满足后，才允许把能力提升为主链能力；"
         "如果进入实现，产出后续 bounded implementation task。"
     )
     truth_gate = args.truth_gate or (
         "不能只读 README 或凭宣传语吸收；至少完成 live source inspection。若进入 wrap/integrate/productionize，"
         "必须有本地 demo/CLI/API/官方测试/真实样本输出之一；未跑通只能标记 watch/reject/skill-only。"
+        "主链提升前必须有 promotion gate：证据可复验、rollback/fallback 可执行、维护/升级路径明确。"
     )
     required_artifacts = args.required_artifacts or ",".join([
         "repo_review_note",
@@ -4619,6 +4635,8 @@ def command_add_repo_capability_absorption(args: argparse.Namespace) -> dict[str
         "integration_decision",
         "harness_acceptance",
         "rollback_or_fallback_plan",
+        "promotion_readiness_evidence",
+        "maintenance_plan",
     ])
     add_args = argparse.Namespace(
         title=title,
@@ -4631,7 +4649,7 @@ def command_add_repo_capability_absorption(args: argparse.Namespace) -> dict[str
         lane="evolution",
         architecture_target=args.architecture_target,
         capability_delta=f"repo_capability_absorption:{args.capability_name}->{args.target_surface}:{args.integration_level}",
-        anti_drift_check="capability claim must be linked to source proof and reproduction evidence before integration",
+        anti_drift_check="capability claim must be linked to source proof and reproduction evidence before integration; mainline promotion requires evidence verification, rollback/fallback, and maintenance readiness",
         acceptance_evidence=accept,
         priority_layer=args.priority,
         dependency_order=args.dependency_order,
