@@ -11,9 +11,44 @@ When `taskpool_dynamic_runner.py` reports `human_escape_active_preclaim`, treat 
 
 ## New / important references
 
+## Review/done lifecycle proof pitfall
+
+Taskpool `done` is not a direct closure shortcut for ordinary `pending` or `claimed` work. For implementation tasks, close through the governed lifecycle path and provide evidence in the accepted shapes:
+
+1. Move `pending -> claimed -> running -> review` before `done` unless the command explicitly allows another audited route.
+2. Evidence refs should use accepted prefixes such as `command:`, `artifact:`, `proof:`, `url:`, `file:`, or `brainctl:`. Bare prose like “tests passed” is not enough.
+3. For `review -> done`, advisory-only/model-consensus evidence is insufficient. Include deterministic implementation evidence such as a real test/build command, selfcheck/proof result, and the artifact path or commit reference that contains the change.
+4. If a batched transition times out mid-loop, do not rerun the whole batch blindly. First list/read the target task statuses, resume only the unfinished task(s), then rerun selfcheck.
+
+Anti-condition: do not force-close merely to make the dashboard clean; if evidence shape is rejected, fix the proof bundle or leave the task in `review`.
+
+## Task creation retry / duplicate cleanup
+
+Applicability: local-brain/taskpool task creation retries where the `add` command succeeds but an event hook reports a non-zero return code, times out, or a later retry creates a duplicate task. Anti-condition: do not use this to delete real work or override another active worker's legitimate claim; first identify the canonical task and the duplicate.
+
+Procedure:
+1. Treat `add` output with `status: OK` and a created path as a successful task creation even if `event_hook.status` is `ERROR`; inspect the task file/selfcheck before retrying.
+2. Before re-running a failed-looking `add`, search/list existing task files for the title or mission title to avoid duplicate creation.
+3. If a retry already produced a duplicate, keep the earliest/canonical task unless the duplicate has newer unique evidence.
+4. If the duplicate is claimed/running by an automated route but contains no unique work, release it with the orchestrator `release` command to `archived`, using `--force` only after confirming the canonical task path and reason.
+5. Run taskpool selfcheck after cleanup and record any remaining warnings (parallel-boundary conflicts, stale edge nodes, handoff buildup) as non-blocking unless `invalid_count` or active gate failures are nonzero.
+
 ## Task creation CLI guardrails
 
-When creating a task with `brain_task_orchestrator.py add`, include the required governance metadata on the first attempt: `--priority-layer`, `--dependency-order`, and `--multimodel-triage-result`. For social/video intake follow-ups, also include `--evidence-ref`, `--acceptance-evidence`, `--anti-drift-check`, explicit `--accept` criteria, `--red-line`, and `--non-goal`. If the CLI accepts the task but drops or compresses repeated acceptance items into the body/frontmatter, immediately read the created task and patch the acceptance criteria before reporting success.
+When creating a task with `brain_task_orchestrator.py add`, include the required governance metadata on the first attempt: `--priority-layer`, `--dependency-order`, and `--multimodel-triage-result`.
+
+### Retry and duplicate-control pattern
+
+Applicability: local-brain/taskpool task creation through `brain_task_orchestrator.py add`, especially when the command returns a JSON `status: OK` with a `created` path but also reports hook errors or the shell call times out after partial output. Anti-condition: do not use this as permission to force-release unrelated active tasks; only archive a duplicate after confirming a canonical equivalent task exists.
+
+If an `add` command partially succeeds, treat the created task as real before retrying:
+
+1. Search/read the task pool for the intended title or slug before issuing another `add`.
+2. If a duplicate was created, identify the canonical task (usually the first matching pending task with the intended slug).
+3. Read both task files to confirm same objective and acceptance criteria.
+4. If the duplicate is already claimed/running, release/archive the duplicate only after confirming the canonical task exists and recording the reason.
+5. Use structured evidence prefixes in lifecycle commands (`artifact:/...`, `proof:...`, `command:...`); bare absolute paths are rejected by transition/proof gates.
+6. Run the taskpool selfcheck afterward and distinguish blocking active-task invalidity from non-blocking terminal backlog debt or warnings. For social/video intake follow-ups, also include `--evidence-ref`, `--acceptance-evidence`, `--anti-drift-check`, explicit `--accept` criteria, `--red-line`, and `--non-goal`. If the CLI accepts the task but drops or compresses repeated acceptance items into the body/frontmatter, immediately read the created task and patch the acceptance criteria before reporting success.
 
 For `brain_task_orchestrator.py add-repo-capability-absorption`, do **not** pass `--priority-layer`: that subcommand does not accept it. Still pass `--dependency-order`, `--multimodel-triage-result`, `--required-artifacts`, explicit `--accept`, `--red-line`, `--non-goal`, and multiple `--evidence-ref` values. After creation, read the generated task because capability absorption standardization can compress repeated `--accept` fields into a single `acceptance_criteria` / `acceptance_evidence` item; patch the frontmatter and body checklist so all acceptance gates are preserved.
 

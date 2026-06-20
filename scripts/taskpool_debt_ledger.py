@@ -164,11 +164,172 @@ def handoff_summary() -> dict[str, Any]:
     return {"total_count": total, "dirs": dirs}
 
 
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    return bool(value)
+
+
+def _as_int(value: Any) -> int:
+    try:
+        return int(value or 0)
+    except Exception:
+        return 0
+
+
+def active_task_rows() -> list[dict[str, Any]]:
+    data = run_json(["python3", str(SCRIPTS / "brain_task_orchestrator.py"), "list", "--json"], timeout=180)
+    if not isinstance(data, dict):
+        return []
+    rows = data.get("rows") or data.get("tasks") or []
+    return [r for r in rows if isinstance(r, dict)]
+
+
+def multimodel_jobs_summary() -> dict[str, Any]:
+    data = run_json(["python3", str(SCRIPTS / "brain_task_orchestrator.py"), "multimodel-intervention-jobs", "--json"], timeout=180)
+    jobs = data.get("jobs", []) if isinstance(data, dict) else []
+    alive = [j for j in jobs if isinstance(j, dict) and j.get("alive")]
+    return {
+        "status": data.get("status") if isinstance(data, dict) else None,
+        "job_count": data.get("job_count") if isinstance(data, dict) else None,
+        "alive_count": data.get("alive_count", len(alive)) if isinstance(data, dict) else len(alive),
+        "alive_tasks": sorted({str(j.get("task_id") or "") for j in alive if j.get("task_id")}),
+    }
+
+
+def infer_completion_profile(task: dict[str, Any]) -> str:
+    explicit = str(task.get("completion_profile") or task.get("completion_boundary") or "").strip()
+    if explicit in {"static_intake", "design_only", "implementation_cli", "implementation_api", "implementation_browser", "implementation_desktop", "deployment"}:
+        return explicit
+    haystack = "\n".join(str(task.get(k) or "") for k in (
+        "title", "objective", "mission_objective", "workflow_contract", "required_artifacts",
+        "acceptance_evidence", "evidence_bundle", "target_surface", "integration_level",
+    )).lower()
+    if any(token in haystack for token in ("desktop", "tui", "voice", "mic", "hud", "语音", "麦克风")):
+        return "implementation_desktop"
+    if any(token in haystack for token in ("browser", "dom", "playwright", "网页", "页面", "前端", "ui")):
+        return "implementation_browser"
+    if any(token in haystack for token in ("api", "backend", "curl", "接口", "后端", "readback")):
+        return "implementation_api"
+    if any(token in haystack for token in ("deploy", "railway", "production", "live readback")):
+        return "deployment"
+    if any(token in haystack for token in ("repo", "intake", "evaluate", "watch", "gap map", "source inspection", "静态", "评估", "吸收")):
+        return "static_intake"
+    return "design_only" if task.get("lane") == "evolution" else "implementation_cli"
+
+
+def evidence_gate_risks(task: dict[str, Any]) -> list[dict[str, Any]]:
+    risks: list[dict[str, Any]] = []
+    joined = "\n".join(str(x) for x in (task.get("evidence_refs") or []))
+    joined += "\n" + str(task.get("body") or "")
+    lower = joined.lower()
+    diagnostic_phrases = (
+        "requires_test-build-browser-curl-commit-verification",
+        "multimodel_advisory_or_failed_not_completion",
+        "advisory_or_failed_not_completion",
+        "not_completion",
+        "taskpool-review-gap",
+    )
+    impl_tokens = ("test", "build", "browser", "curl", "commit", "pytest", "vitest")
+    if any(p in lower for p in diagnostic_phrases) and any(t in lower for t in impl_tokens):
+        risks.append({
+            "kind": "token_based_evidence_false_positive_risk",
+            "severity": "high",
+            "reason": "diagnostic/negative text contains implementation-proof tokens",
+        })
+    if str(task.get("multimodel_last_gate_status") or "") == "PASS_ADVISORY_ONLY":
+        risks.append({
+            "kind": "advisory_only_not_completion",
+            "severity": "high",
+            "reason": "PASS_ADVISORY_ONLY must not satisfy implementation closeout",
+        })
+    return risks
+
+
+def flow_health_summary() -> dict[str, Any]:
+    rows = active_task_rows()
+    status_counts = Counter(str(r.get("status") or "unknown") for r in rows)
+    by_id: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        by_id.setdefault(str(row.get("id") or row.get("task_id") or ""), []).append(row)
+    duplicate_projection = []
+    for task_id, variants in by_id.items():
+        if not task_id or len(variants) <= 1:
+            continue
+        statuses = sorted({str(v.get("status") or "") for v in variants})
+        claimed_by = sorted({str(v.get("claimed_by") or "") for v in variants if v.get("claimed_by")})
+        if len(statuses) > 1 or len(variants) > 1:
+            duplicate_projection.append({
+                "task_id": task_id,
+                "row_count": len(variants),
+                "statuses": statuses,
+                "claimed_by": claimed_by,
+                "severity": "high" if len(statuses) > 1 else "medium",
+            })
+    review_gaps = run_json(["python3", str(SCRIPTS / "brain_task_orchestrator.py"), "review-gap-scan", "--json"], timeout=180)
+    gaps = review_gaps.get("gaps", []) if isinstance(review_gaps, dict) else []
+    retry_circuit_breakers = []
+    completion_profiles = []
+    evidence_risks = []
+    for row in rows:
+        task_id = str(row.get("id") or row.get("task_id") or "")
+        status = str(row.get("status") or "")
+        retry_count = _as_int(row.get("retry_count"))
+        profile = infer_completion_profile(row)
+        completion_profiles.append({
+            "task_id": task_id,
+            "status": status,
+            "priority": row.get("priority"),
+            "inferred_profile": profile,
+            "explicit_profile": row.get("completion_profile") or row.get("completion_boundary") or "",
+            "requires_multimodel": _as_bool(row.get("requires_multimodel")),
+            "multimodel_gate": row.get("multimodel_last_gate_status") or "",
+        })
+        if status in {"retry", "running", "pending"} and retry_count >= 3:
+            retry_circuit_breakers.append({
+                "task_id": task_id,
+                "status": status,
+                "retry_count": retry_count,
+                "severity": "high",
+                "recommendation": "stop blind redispatch; classify root cause and create repair/human-required packet",
+            })
+        for risk in evidence_gate_risks(row):
+            risk["task_id"] = task_id
+            evidence_risks.append(risk)
+    return {
+        "schema": "taskpool_flow_health_v1",
+        "active_count": len(rows),
+        "status_counts": dict(status_counts),
+        "dispatchable_count": sum(1 for r in rows if _as_bool(r.get("dispatchable"))),
+        "duplicate_projection_count": len(duplicate_projection),
+        "duplicate_projection": duplicate_projection,
+        "review_gap_count": review_gaps.get("gap_count") if isinstance(review_gaps, dict) else None,
+        "review_gaps": [
+            {
+                "task_id": g.get("task_id"),
+                "gap_types": g.get("gap_types"),
+                "failures": g.get("failures"),
+                "repairable": g.get("repairable"),
+            }
+            for g in gaps
+        ],
+        "retry_circuit_breaker_count": len(retry_circuit_breakers),
+        "retry_circuit_breakers": retry_circuit_breakers,
+        "completion_profiles": completion_profiles,
+        "evidence_gate_risk_count": len(evidence_risks),
+        "evidence_gate_risks": evidence_risks,
+        "multimodel_jobs": multimodel_jobs_summary(),
+    }
+
+
 def classify(report: dict[str, Any]) -> dict[str, Any]:
     envelope = report["envelope"]
     proof = report["proof_debt"]
     taskpool = report["taskpool"]
     continuation = report["continuation"]
+    flow = report.get("flow_health", {})
     actions = []
     if envelope.get("human_escape_triggered"):
         actions.append({"priority": "P0", "class": "runtime_blocker", "action": "triage human_escape before dispatch"})
@@ -178,6 +339,14 @@ def classify(report: dict[str, Any]) -> dict[str, Any]:
     counts = taskpool.get("counts") or {}
     if int(counts.get("dispatchable") or 0) == 0:
         actions.append({"priority": "P1", "class": "idle_boundary", "action": "do not tune concurrency; close review/retry/blocked queues first"})
+    if int(flow.get("duplicate_projection_count") or 0) > 0:
+        actions.append({"priority": "P1", "class": "projection_drift", "action": "reconcile duplicate task projections before lifecycle mutation"})
+    if int(flow.get("review_gap_count") or 0) > 0:
+        actions.append({"priority": "P1", "class": "review_closeout_gap", "action": "create deterministic evidence repair packet; do not close from model agreement alone"})
+    if int(flow.get("retry_circuit_breaker_count") or 0) > 0:
+        actions.append({"priority": "P1", "class": "retry_circuit_breaker", "action": "stop blind redispatch for retry_count>=3; classify root cause first"})
+    if int(flow.get("evidence_gate_risk_count") or 0) > 0:
+        actions.append({"priority": "P1", "class": "evidence_gate_type_risk", "action": "treat advisory/diagnostic text as non-completion evidence until typed bundle exists"})
     if proof.get("warning_count", 0) > 0:
         actions.append({"priority": "P2", "class": "historical_proof_debt", "action": "migrate existing proof in small batches; keep warnings visible"})
     if continuation.get("active_count", 0) >= 100:
@@ -194,6 +363,7 @@ def main() -> None:
     report["envelope"] = envelope_summary()
     report["proof_debt"] = proof_debt_summary()
     report["taskpool"] = taskpool_summary()
+    report["flow_health"] = flow_health_summary()
     report["continuation"] = continuation_summary()
     report["handoff"] = handoff_summary()
     report["classification"] = classify(report)

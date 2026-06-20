@@ -65,14 +65,15 @@ Key lesson: solve the first durable failure mode (unstructured cron timeout / br
 
 ### Phase 1 — Debt ledger, read-only
 
-Add a script such as `taskpool_debt_ledger.py` before changing state. It should summarize:
+Add or run `taskpool_debt_ledger.py` before changing state. It should summarize:
 - envelope status totals and top terminal errors from `~/.hermes/state/envelope_bus.db`;
 - proof-check warning categories, especially terminal mission envelope debt and invalid autorun proof hash debt;
+- active task flow health: status distribution, review-gap count, retry circuit-breaker candidates (`retry_count >= 3`), duplicate/projection drift rows, inferred completion profiles, and advisory/diagnostic evidence-type risks;
 - continuation active/archived counts and duplicate active packets by task;
 - handoff artifact backlog counts;
 - `v_state.py --json` result.
 
-This gives a stable before/after scorecard and prevents confusing historical debt with live blockers.
+This gives a stable before/after scorecard and prevents confusing historical debt, control-plane liveness, flow debt (`review`/`blocked`/`retry`), and projection drift. Treat this ledger as read-only evidence: it may recommend repair packets or circuit breakers, but it must not mutate task lifecycle by itself.
 
 ### Phase 2 — Legacy envelope executor hardening
 
@@ -159,6 +160,12 @@ Only after the debt ledger exists should `v_state.py` scoring be adjusted. The e
 - active human_escape.
 
 Historical FAILED/BLOCKED counts should remain visible in diagnostics as historical debt, but should not permanently make a drained, since-ack-safe pool look unhealthy.
+
+## Governed slice interruption / blocked readback
+
+If a taskpool/control-plane slice has already passed focused tests, py_compile, and control-plane checks but a final readback or JSON summarizer command is blocked by the runtime safety layer, do not retry the same command shape, rephrase it, or route around it. Freeze the slice boundary and emit an intervention packet before commit or next-slice work.
+
+See `references/governed-slice-interruption-and-readback.md` for the reusable procedure, pitfalls, and evidence bundle shape.
 
 ## Anti-patterns
 
