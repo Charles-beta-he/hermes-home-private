@@ -60,6 +60,38 @@ class ProofDebtMigrationDryRunTest(unittest.TestCase):
 
         self.assertEqual(report["items"][0]["recommended_action"], "needs_source_artifact")
 
+    def test_apply_plan_normalizes_existing_refs_without_fabricating(self) -> None:
+        task = self.tasks / "task-three.md"
+        task.write_text(
+            "---\n"
+            "evidence_refs:\n"
+            "  - /tmp/evidence.json\n"
+            "  - proof:already-structured\n"
+            "ratification_artifact: review-result.json\n"
+            "---\n"
+            "body\n",
+            encoding="utf-8",
+        )
+        plan = {
+            "items": [
+                {
+                    "task": "task-three",
+                    "task_file": str(task),
+                    "recommended_action": "candidate_migratable_existing_evidence",
+                }
+            ]
+        }
+
+        dry = self.plan.apply_plan(plan, dry_run=True)
+        self.assertEqual(dry["result_counts"], {"changed": 1})
+        self.assertIn("/tmp/evidence.json", task.read_text(encoding="utf-8"))
+
+        applied = self.plan.apply_plan(plan, dry_run=False)
+        body = task.read_text(encoding="utf-8")
+        self.assertEqual(applied["result_counts"], {"changed": 1})
+        self.assertIn("artifact:/tmp/evidence.json", body)
+        self.assertIn("ratification_artifact: proof:review-result.json", body)
+
 
 if __name__ == "__main__":
     unittest.main()
