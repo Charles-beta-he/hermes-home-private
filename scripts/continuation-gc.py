@@ -238,8 +238,7 @@ def main() -> int:
         keep_per_task=_positive_int(args.keep_per_task),
     )
 
-    if report["archived_count"] or report["deleted_count"]:
-        print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+    print(json.dumps(report, ensure_ascii=False, sort_keys=True))
     return 0
 
 
