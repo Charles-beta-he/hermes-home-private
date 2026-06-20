@@ -170,11 +170,13 @@ def local_config_node(config: dict[str, Any]) -> dict[str, Any] | None:
         "bind_host": host,
         "port": port,
         "brain_url": str(worker.get("brain_url") or ""),
+        "standalone_mode": bool(worker.get("standalone_mode") or worker.get("standalone")),
         "heartbeat_interval_s": int(worker.get("heartbeat_interval") or 30),
         "capabilities": capabilities,
         "trust_level": "local_configured",
         "token_configured": bool(security.get("token_configured")),
         "allowed_commands_configured": bool(security.get("allowed_commands")),
+        "lease_policy": str(security.get("lease_policy") or ""),
         "max_timeout_s": int(security.get("max_timeout") or 300),
     }
 
@@ -246,7 +248,7 @@ def classify_node(node: dict[str, Any], *, now: float, probe: bool, registry_dis
     elif heartbeat_age_s is not None and status in {"registered", "unknown"}:
         status = "healthy"
 
-    if not node.get("brain_url"):
+    if not node.get("brain_url") and not node.get("standalone_mode"):
         warnings.append("brain_url missing; node is standalone")
     if not node.get("token_configured"):
         warnings.append("token not configured")
@@ -255,7 +257,7 @@ def classify_node(node: dict[str, Any], *, now: float, probe: bool, registry_dis
     if "run_command" in capabilities and not node.get("allowed_commands_configured"):
         warnings.append("run_command has no command allowlist; remote auto-dispatch must stay disabled")
     risky = sorted(DANGEROUS_REMOTE_CAPABILITIES.intersection(capabilities))
-    if risky:
+    if risky and not node.get("lease_policy"):
         warnings.append(f"dangerous capabilities present: {','.join(risky)}; require explicit lease policy")
 
     probe_result = None

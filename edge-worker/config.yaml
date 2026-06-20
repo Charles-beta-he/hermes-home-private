@@ -6,6 +6,7 @@ worker:
   host: "0.0.0.0"  # 监听所有接口
   port: 9001
   brain_url: ""
+  standalone_mode: true  # local read-only smoke node; no remote brain callback
   auto_discover: true
   discover_interval: 30
   heartbeat_interval: 30
@@ -15,6 +16,7 @@ security:
   access_key: ""
   access_env: "HERMES_EDGE_WORKER_ACCESS"
   allowed_commands: ["date", "uname", "pwd"]  # Phase 2 read-only smoke allowlist
+  lease_policy: "local-readonly-smoke-allowlist-v1"
   max_timeout: 30
   read_only: true
 

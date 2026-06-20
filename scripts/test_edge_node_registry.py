@@ -131,15 +131,17 @@ security:
             "endpoint": "http://127.0.0.1:9001",
             "bind_host": "127.0.0.1",
             "brain_url": "",
+            "standalone_mode": True,
             "capabilities": ["run_command", "read_file", "list_dir"],
             "token_configured": True,
             "allowed_commands_configured": True,
+            "lease_policy": "local-readonly-smoke-allowlist",
             "dispatch_enabled": True,
             "last_seen_at": edge_node_registry.utc_now_iso(),
         }
         checked = edge_node_registry.classify_node(node, now=__import__("time").time(), probe=False, registry_dispatch_enabled=True)
         self.assertTrue(checked["dispatch_eligible"])
-        self.assertTrue(any("standalone" in item for item in checked["warnings"]))
+        self.assertFalse(checked["warnings"])
 
 
 if __name__ == "__main__":
