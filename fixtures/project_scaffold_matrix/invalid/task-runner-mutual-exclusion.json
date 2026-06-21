@@ -1,0 +1,16 @@
+{
+  "project_name": "bad-runner-stack",
+  "target": "greenfield",
+  "surfaces": ["web_frontend"],
+  "frontend": {
+    "framework": "react",
+    "language": "typescript",
+    "task_runner": ["vite", "turborepo"]
+  },
+  "addons": [],
+  "proof_gate": {
+    "required": true,
+    "commands": ["npm run build"],
+    "evidence": ["validator_json"]
+  }
+}

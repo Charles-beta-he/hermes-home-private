@@ -1,0 +1,37 @@
+{
+  "project_name": "portfolio-pwa",
+  "target": "greenfield",
+  "surfaces": ["web_frontend", "mobile_pwa", "backend_api"],
+  "frontend": {
+    "framework": "react",
+    "language": "typescript",
+    "task_runner": "vite",
+    "pwa": true
+  },
+  "backend": {
+    "kind": "api",
+    "framework": "hono",
+    "runtime": "workers",
+    "api": "rest"
+  },
+  "cloudflare": {
+    "pages": true,
+    "workers": true
+  },
+  "addons": ["mcp", "skills", "browser_harness"],
+  "mcp": {
+    "servers": ["filesystem"]
+  },
+  "skills": {
+    "names": ["baseline-ui"]
+  },
+  "browser_harness": {
+    "viewports": ["desktop_1280", "mobile_375"]
+  },
+  "proof_gate": {
+    "required": true,
+    "commands": ["python3 -m py_compile"],
+    "evidence": ["validator_json", "build_log", "browser_smoke", "workers_smoke"],
+    "review_required": true
+  }
+}

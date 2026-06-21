@@ -1,0 +1,22 @@
+{
+  "project_name": "bad-proof-stack",
+  "target": "greenfield",
+  "surfaces": ["web_frontend", "backend_api"],
+  "frontend": {
+    "framework": "react",
+    "language": "typescript",
+    "task_runner": "vite"
+  },
+  "backend": {
+    "kind": "api",
+    "framework": "hono",
+    "runtime": "node",
+    "api": "rest"
+  },
+  "addons": [],
+  "proof_gate": {
+    "required": true,
+    "commands": [],
+    "evidence": []
+  }
+}

@@ -1,0 +1,177 @@
+Verification for t_1ad1d3d1 — Hermes project scaffold matrix v0
+UTC: 2026-06-21T22:21:04Z
+
+$ python3 -m py_compile /Users/charles/.hermes/scripts/project_scaffold_matrix_validator.py
+exit=0
+
+$ python3 /Users/charles/.hermes/scripts/project_scaffold_matrix_validator.py /Users/charles/.hermes/fixtures/project_scaffold_matrix/valid/fullstack-cloudflare-pages.json --pretty
+{
+  "errors": [],
+  "proof_plan": [
+    {
+      "evidence": [
+        "validator_json"
+      ],
+      "name": "schema_and_matrix_validation",
+      "required": true,
+      "tier": 0
+    },
+    {
+      "evidence": [
+        "file_manifest",
+        "reproducible_spec"
+      ],
+      "name": "dry_run_manifest_review",
+      "required": true,
+      "tier": 0
+    },
+    {
+      "commands": [
+        "python3 -m py_compile"
+      ],
+      "name": "declared_verification_commands",
+      "required": true,
+      "tier": 1
+    },
+    {
+      "evidence": [
+        "browser_smoke"
+      ],
+      "name": "browser_harness_smoke",
+      "required": true,
+      "tier": 1
+    },
+    {
+      "evidence": [
+        "workers_smoke"
+      ],
+      "name": "cloudflare_workers_smoke",
+      "required": true,
+      "tier": 1
+    },
+    {
+      "evidence": [
+        "review_comment_or_approval"
+      ],
+      "name": "human_review_gate",
+      "required": true,
+      "tier": 2
+    },
+    {
+      "evidence": [
+        "browser_smoke",
+        "build_log",
+        "validator_json",
+        "workers_smoke"
+      ],
+      "name": "evidence_bundle",
+      "required": true,
+      "tier": 2
+    }
+  ],
+  "valid": true,
+  "warnings": []
+}
+exit=0
+
+$ python3 /Users/charles/.hermes/scripts/project_scaffold_matrix_validator.py --check-fixtures /Users/charles/.hermes/fixtures/project_scaffold_matrix --pretty
+{
+  "errors": [],
+  "fixtures": [
+    {
+      "actual_valid": true,
+      "errors": [],
+      "expected_valid": true,
+      "fixture": "/Users/charles/.hermes/fixtures/project_scaffold_matrix/valid/fullstack-cloudflare-pages.json",
+      "passed": true,
+      "warnings": []
+    },
+    {
+      "actual_valid": false,
+      "errors": [
+        {
+          "message": "mcp addon requires mcp.servers with at least one server id",
+          "path": "$.mcp.servers",
+          "rule_id": "addon.mcp.servers_required"
+        },
+        {
+          "message": "skills addon requires skills.names with at least one skill",
+          "path": "$.skills.names",
+          "rule_id": "addon.skills.names_required"
+        },
+        {
+          "message": "browser_harness addon requires browser_harness.viewports",
+          "path": "$.browser_harness.viewports",
+          "rule_id": "addon.browser_harness.viewports_required"
+        }
+      ],
+      "expected_valid": false,
+      "fixture": "/Users/charles/.hermes/fixtures/project_scaffold_matrix/invalid/addon-prerequisites.json",
+      "passed": true,
+      "warnings": []
+    },
+    {
+      "actual_valid": false,
+      "errors": [
+        {
+          "message": "proof_gate.commands must include at least one verification command",
+          "path": "$.proof_gate.commands",
+          "rule_id": "proof_gate.commands.required"
+        },
+        {
+          "message": "proof_gate.evidence must include at least one evidence artifact",
+          "path": "$.proof_gate.evidence",
+          "rule_id": "proof_gate.evidence.required"
+        }
+      ],
+      "expected_valid": false,
+      "fixture": "/Users/charles/.hermes/fixtures/project_scaffold_matrix/invalid/proof-gate-required-fields.json",
+      "passed": true,
+      "warnings": [
+        {
+          "message": "include validator_json so downstream taskpool/kanban can consume structured proof",
+          "path": "$.proof_gate.evidence",
+          "rule_id": "proof_gate.validator_json.recommended"
+        }
+      ]
+    },
+    {
+      "actual_valid": false,
+      "errors": [
+        {
+          "message": "choose at most one orchestration/build task runner from: nx, turborepo, vite",
+          "path": "$.frontend.task_runner",
+          "rule_id": "frontend.task_runner.mutual_exclusion"
+        }
+      ],
+      "expected_valid": false,
+      "fixture": "/Users/charles/.hermes/fixtures/project_scaffold_matrix/invalid/task-runner-mutual-exclusion.json",
+      "passed": true,
+      "warnings": []
+    },
+    {
+      "actual_valid": false,
+      "errors": [
+        {
+          "message": "Cloudflare Workers runtime v0 supports only Hono/no custom backend; got framework=express",
+          "path": "$.backend.framework",
+          "rule_id": "cloudflare.workers.backend_runtime"
+        }
+      ],
+      "expected_valid": false,
+      "fixture": "/Users/charles/.hermes/fixtures/project_scaffold_matrix/invalid/workers-runtime-backend.json",
+      "passed": true,
+      "warnings": [
+        {
+          "message": "Cloudflare Workers stacks should include workers_smoke evidence before write/merge",
+          "path": "$.proof_gate.evidence",
+          "rule_id": "proof_gate.workers_smoke.recommended"
+        }
+      ]
+    }
+  ],
+  "proof_plan": [],
+  "valid": true,
+  "warnings": []
+}
+exit=0

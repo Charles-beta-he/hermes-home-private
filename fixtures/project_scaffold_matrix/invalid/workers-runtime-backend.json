@@ -1,0 +1,20 @@
+{
+  "project_name": "bad-workers-stack",
+  "target": "greenfield",
+  "surfaces": ["backend_api"],
+  "backend": {
+    "kind": "api",
+    "framework": "express",
+    "runtime": "workers",
+    "api": "rest"
+  },
+  "cloudflare": {
+    "workers": true
+  },
+  "addons": [],
+  "proof_gate": {
+    "required": true,
+    "commands": ["npm test"],
+    "evidence": ["validator_json"]
+  }
+}

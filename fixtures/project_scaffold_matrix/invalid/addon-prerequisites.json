@@ -1,0 +1,16 @@
+{
+  "project_name": "bad-addon-stack",
+  "target": "greenfield",
+  "surfaces": ["web_frontend"],
+  "frontend": {
+    "framework": "next",
+    "language": "typescript",
+    "task_runner": "pnpm"
+  },
+  "addons": ["mcp", "skills", "browser_harness"],
+  "proof_gate": {
+    "required": true,
+    "commands": ["npm run build"],
+    "evidence": ["validator_json"]
+  }
+}
