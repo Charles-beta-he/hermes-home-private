@@ -94,7 +94,7 @@ SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES = {
     "certification_required_pending",
     "recursive_evidence_spine_self_lock",
 }
-VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "blocked", "done", "archived", "expired"]
+VALID_STATUSES = ["proposed", "pending", "claimed", "running", "retry", "review", "certified", "blocked", "done", "archived", "expired"]
 WORK_CLOSEOUT_PHASES = {"generic", "implementation", "online_ui_retest"}
 MANUAL_UI_RETEST_GATE = "awaiting_user_ui_retest_dispatch"
 RAILWAY_DEPLOY_GATE = "awaiting_railway_deploy_green"
@@ -112,10 +112,10 @@ PROJECT_RAILWAY_SERVICE_DEFAULTS = {
 }
 DEPENDENCY_COMPLETE_STATUSES = {"done", "archived"}
 STATUS_ALIASES = {"completed": "done"}  # legacy notes may use completed; normalize as terminal done.
-ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review", "blocked"}
+ACTIVE_STATUSES = {"proposed", "pending", "claimed", "running", "retry", "review", "certified", "blocked"}
 TERMINAL_STATUSES = {"done", "archived", "expired"}
 PRIORITY_WEIGHT = {"P0": 400, "P1": 300, "P2": 200, "P3": 100}
-STATUS_WEIGHT = {"retry": 60, "running": 50, "claimed": 45, "blocked": 40, "review": 35, "pending": 30, "proposed": 10, "done": -100, "archived": -120, "expired": -130}
+STATUS_WEIGHT = {"retry": 60, "running": 50, "claimed": 45, "blocked": 40, "review": 35, "certified": 34, "pending": 30, "proposed": 10, "done": -100, "archived": -120, "expired": -130}
 VALID_LANES = ["work", "evolution", "advisory"]
 DEFAULT_TASKPOOL_PRIORITY_MODE = "work-first"
 VALID_TASKPOOL_PRIORITY_MODES = {"work-first", "evolution-first"}
@@ -245,7 +245,8 @@ LIFECYCLE_TRANSITIONS: dict[str, list[str]] = {
     "pending": ["claimed", "blocked", "archived", "expired"],
     "claimed": ["running", "pending", "retry", "blocked", "archived", "expired"],
     "running": ["review", "retry", "blocked", "expired"],
-    "review": ["done", "retry", "blocked", "pending", "archived", "expired"],
+    "review": ["certified", "done", "retry", "blocked", "pending", "archived", "expired"],
+    "certified": ["done", "retry", "blocked", "archived", "expired"],
     "retry": ["pending", "claimed", "blocked", "archived", "expired"],
     "blocked": ["pending", "retry", "review", "archived", "expired"],
     "done": ["archived"],
@@ -253,9 +254,9 @@ LIFECYCLE_TRANSITIONS: dict[str, list[str]] = {
     "expired": ["archived"],
 }
 REASON_REQUIRED_TO = {"retry", "blocked"}
-EVIDENCE_REQUIRED_TO = {"review", "done"}
+EVIDENCE_REQUIRED_TO = {"review", "certified", "done"}
 CLAIM_BOUND_STATUSES = {"claimed", "running"}
-PROFILE_GATED_STATUSES = CLAIM_BOUND_STATUSES | {"review", "done"}
+PROFILE_GATED_STATUSES = CLAIM_BOUND_STATUSES | {"review", "certified", "done"}
 INITIAL_TASK_STATUSES = {"proposed", "pending"}
 RECONCILE_STALE_CLAIM_STATUSES = {"pending", "blocked", "expired"}
 RECONCILE_OVER_RETRY_STATUSES = {"blocked", "expired"}
@@ -4388,9 +4389,9 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
             failures.append("autorun closure requires proof:<sha256:...> evidence from the append-only autorun proof log")
         elif not any(verify_autorun_proof_hash(h) for h in proof_hashes):
             failures.append("autorun proof hash not found or chain verification failed")
-    if to_status == "done" and from_status != "review" and not force:
-        failures.append("done must be entered from review; use --force --reason only for audited manual closure")
-    elif to_status == "done" and from_status != "review":
+    if to_status == "done" and from_status not in {"review", "certified"} and not force:
+        failures.append("done must be entered from review or certified; use --force --reason only for audited manual closure")
+    elif to_status == "done" and from_status not in {"review", "certified"}:
         warnings.append("forced done outside review; preferred path is running -> review -> done")
     return failures, warnings
 
@@ -6109,8 +6110,8 @@ def command_lifecycle(args: argparse.Namespace) -> dict[str, Any]:
             forced = "Force: true" in line
             if to_status not in allowed_next_statuses(from_status) and not forced:
                 invalid.append({"task": t.id, "from_status": from_status, "to_status": to_status, "reason": "illegal_recorded_lifecycle_transition"})
-            if to_status == "done" and from_status != "review" and not forced:
-                invalid.append({"task": t.id, "from_status": from_status, "to_status": to_status, "reason": "done_recorded_outside_review_without_force"})
+            if to_status == "done" and from_status not in {"review", "certified"} and not forced:
+                invalid.append({"task": t.id, "from_status": from_status, "to_status": to_status, "reason": "done_recorded_outside_review_or_certified_without_force"})
     status = "PASS" if not invalid else "FAIL"
     return {
         "status": status,

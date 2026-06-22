@@ -1407,6 +1407,51 @@ def test_lifecycle_transition_gate_and_audit():
         assert proof["status"] == "PASS", proof
 
 
+def test_certified_lifecycle_state_can_close_to_done_without_dispatch():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="认证后关闭任务", project="test-harness")
+        note = task_path.read_text(encoding="utf-8")
+        task_path.write_text(
+            note.replace("status: pending", "status: certified", 1).replace(
+                "multimodel_status: ", "multimodel_status: certified", 1
+            ).replace(
+                "multimodel_ratification_artifact: ", "multimodel_ratification_artifact: artifact:/tmp/certification.json", 1
+            ).replace(
+                "multimodel_last_gate_status: ", "multimodel_last_gate_status: PASS", 1
+            ).replace(
+                "multimodel_last_decision: ", "multimodel_last_decision: LOOP_DONE", 1
+            ),
+            encoding="utf-8",
+        )
+
+        rows = json.loads(run(env, "list", "--json").stdout)["rows"]
+        row = next(r for r in rows if r["id"] == task_id)
+        assert row["status"] == "certified"
+        assert row["dispatchable"] is False
+
+        done = json.loads(
+            run(
+                env,
+                "transition",
+                task_id,
+                "--to",
+                "done",
+                "--actor",
+                "tester",
+                "--evidence",
+                "command: final lifecycle PASS test build commit verification",
+                "--json",
+            ).stdout
+        )
+        assert done["from_status"] == "certified"
+        assert done["to_status"] == "done"
+        assert done["next_allowed"] == ["archived"]
+
+        lifecycle = json.loads(run(env, "lifecycle", "--json").stdout)
+        assert lifecycle["status"] == "PASS", lifecycle
+
+
 def test_done_closeout_blocks_work_task_missing_execution_flow_harness_proof():
     td, _vault, env = make_env_and_vault()
     with td:
