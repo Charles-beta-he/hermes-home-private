@@ -30,10 +30,21 @@ class FakeCompleted:
 class AgentTeamControllerSafetyTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
+        self.env_patcher = patch.dict(
+            "os.environ",
+            {
+                "HERMES_AGENT_CARD_ROUTING_MODE": "off",
+                "HERMES_ENABLE_AGENT_CARD_CONTEXT": "0",
+                "HERMES_MULTIMODEL_CONDUCTOR_MODE": "off",
+            },
+            clear=False,
+        )
+        self.env_patcher.start()
         self.ctrl = load_module()
         self.ctrl.PROOF_DIR = Path(self.tmp.name) / "proofs"
 
     def tearDown(self):
+        self.env_patcher.stop()
         self.tmp.cleanup()
 
     def test_verify_with_models_rejects_non_string_worker_output_without_crashing(self):

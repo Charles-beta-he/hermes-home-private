@@ -1948,6 +1948,28 @@ Forbidden: {chr(10).join('- ' + f for f in profile.get('forbidden', []))}
                 'dropped': dropped_providers,
                 'remaining_providers': [provider for _, provider, *_ in model_chain],
             })
+
+    # Cron/no-agent wrappers must return within the scheduler budget.  Keep the
+    # default interactive worker chain unchanged, but allow wrappers to cap each
+    # provider timeout and the number of providers attempted in one tick.
+    try:
+        timeout_ceiling = int(os.environ.get('HERMES_AGENT_TEAM_WORKER_TIMEOUT_CEILING', '0') or 0)
+    except Exception:
+        timeout_ceiling = 0
+    if timeout_ceiling > 0:
+        model_chain = [
+            (model, provider, max_turns, min(timeout_s, max(1, timeout_ceiling)))
+            for model, provider, max_turns, timeout_s in model_chain
+        ]
+        append_trace(eid, {'event': 'worker_timeout_ceiling_applied', 'timeout_ceiling_s': timeout_ceiling})
+    try:
+        chain_limit = int(os.environ.get('HERMES_AGENT_TEAM_MODEL_CHAIN_LIMIT', '0') or 0)
+    except Exception:
+        chain_limit = 0
+    if chain_limit > 0:
+        model_chain = model_chain[:max(1, chain_limit)]
+        append_trace(eid, {'event': 'worker_model_chain_limited', 'chain_limit': chain_limit, 'remaining_providers': [provider for _, provider, *_ in model_chain]})
+
     chain_idx = 0
     model, provider, max_turns, timeout_s = model_chain[chain_idx]
 
@@ -2387,6 +2409,25 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
             skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'claimed_by_mismatch', 'payload_actor': payload_actor, 'row_actor': row_actor})
             continue
         actor = row_actor or payload_actor or 'agent-team-controller'
+        if str(os.environ.get('HERMES_AGENT_TEAM_EXECUTE_ASYNC') or '').strip().lower() in {'1', 'true', 'yes', 'on'}:
+            async_result = start_consume_claimed_background(
+                [{'task_id': task_id, 'handoff': payload.get('handoff', '')}],
+                max_agents=1,
+                batch_id=f'execute-cycle-{eid}',
+            )
+            results.append({
+                'task_id': task_id,
+                'envelope_id': eid,
+                'worker_result': 'async_spawned' if async_result.get('status') == 'OK' else 'async_spawn_failed',
+                'async_worker': async_result,
+                'to_status': row.get('status'),
+            })
+            processed += 1
+            if async_result.get('status') == 'OK':
+                update_status(eid, 'SKIPPED', error='async_worker_spawned')
+            else:
+                update_status(eid, 'FAILED', error=str(async_result)[:200])
+            continue
         running = transition_task(task_id, 'running', actor, 'execute-cycle worker trigger after queued claim')
         if not running.get('ok'):
             if _is_stale_claim_transition_error(running):
