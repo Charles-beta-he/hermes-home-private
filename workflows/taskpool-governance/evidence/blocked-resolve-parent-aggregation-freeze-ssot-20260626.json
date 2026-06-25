@@ -1,0 +1,103 @@
+{
+  "axis_rationale": {
+    "framing": [
+      "no_claims",
+      "model_vote_missing"
+    ],
+    "quota_observability": [
+      "no_claims"
+    ]
+  },
+  "checked_count": 1,
+  "derived_refresh": {
+    "control_center": "/Users/charles/Documents/brain/07-仪表盘/待完成任务控制台.md",
+    "dashboard": "/Users/charles/Documents/brain/07-仪表盘/待完成任务运行态.md",
+    "generated_at": "2026-06-26T00:37:55+08:00",
+    "reason": "blocked_resolve_step",
+    "sorted_pool": "/Users/charles/Documents/brain/05-实践与项目/tasks/任务池-排序.md",
+    "status": "OK"
+  },
+  "error_count": 0,
+  "errors": [],
+  "kept_blocked": [
+    {
+      "action": "keep_blocked",
+      "axis_rationale": {
+        "framing": [
+          "no_claims",
+          "model_vote_missing"
+        ],
+        "quota_observability": [
+          "no_claims"
+        ]
+      },
+      "evidence_count": 36,
+      "multimodel_passed": false,
+      "multimodel_required": true,
+      "parent_aggregation": {
+        "action": "keep_blocked_certification_required",
+        "axis_summary": {
+          "framing": "done",
+          "patch_normalization": "done",
+          "quota_observability": "done"
+        },
+        "child_count": 3,
+        "done_count": 3,
+        "missing_children": [],
+        "open_children": [],
+        "ready_for_parent": true,
+        "safety": "read-only aggregation; does not mutate parent lifecycle state",
+        "schema": "taskpool_parent_evidence_aggregation_v1",
+        "stale_evidence": [
+          {
+            "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+            "current_status": "done",
+            "evidence_status": "pending"
+          },
+          {
+            "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-patch-normalization-收敛",
+            "current_status": "done",
+            "evidence_status": "pending"
+          },
+          {
+            "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-quota-observability-收敛",
+            "current_status": "done",
+            "evidence_status": "pending"
+          },
+          {
+            "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+            "current_status": "done",
+            "evidence_status": "claimed"
+          },
+          {
+            "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+            "current_status": "done",
+            "evidence_status": "running"
+          },
+          {
+            "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+            "current_status": "done",
+            "evidence_status": "review"
+          }
+        ],
+        "stale_evidence_count": 6,
+        "suggested_next": "parent_ratification_refresh"
+      },
+      "reason": "blocked resolver: multimodel certification still not PASS (gate=FAIL, decision=CONTINUE_LOOP, cert_reasons=['explicit_requires_multimodel', 'loop_non_convergence'])",
+      "task": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot",
+      "taxonomy_axes": [
+        "quota_observability",
+        "framing"
+      ],
+      "taxonomy_warning": "discussion artifact missing: /Users/charles/.hermes/tick-20260624-152533-311040-p65260-fe9d0e26-a5e34c19/discussion_result.json"
+    }
+  ],
+  "kept_blocked_count": 1,
+  "resolved": [],
+  "resolved_count": 0,
+  "status": "OK",
+  "taxonomy_axes": [
+    "quota_observability",
+    "framing"
+  ]
+}

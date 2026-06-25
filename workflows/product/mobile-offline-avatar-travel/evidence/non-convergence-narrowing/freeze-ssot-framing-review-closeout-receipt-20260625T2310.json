@@ -1,0 +1,32 @@
+{
+  "schema": "moat_review_closeout_receipt_v1",
+  "generated_at": "2026-06-25T15:06:22.710516+00:00",
+  "task_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+  "project": "mobile-offline-avatar-travel",
+  "checks": [
+    {
+      "path": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/non-convergence-narrowing/freeze-ssot-framing-20260625.md",
+      "exists": true,
+      "bytes": 2921,
+      "sha256": "5f835e3d81fcbe349ac1f69d250f5375d97292caa5dacb4fcd3cbdc99e585a2e"
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+      "exists": true,
+      "bytes": 63490,
+      "sha256": "6f96248f05e102216499550a3a8ef0db233bb7c93d40dd35b44a9a0c42f4720b"
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/08-shipping/acceptance-matrix.md",
+      "exists": true,
+      "bytes": 2168,
+      "sha256": "d7437aa5b00e2ef7aae7d8a76337c6578eb3060120c114e22390a25775d64fbb"
+    }
+  ],
+  "artifact_sha256_matches_frontmatter": true,
+  "artifact_contains_empty_unresolved_issue_map": true,
+  "profile_project_matches_task": true,
+  "acceptance_matrix_readable": true,
+  "safe_boundary": "read-only project verification; no code, deploy, push, secrets, or external side effects",
+  "status": "PASS"
+}

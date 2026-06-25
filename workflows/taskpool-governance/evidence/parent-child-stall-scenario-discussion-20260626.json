@@ -1,0 +1,1000 @@
+{
+  "status": "degraded_not_certified",
+  "models_consulted": [
+    "claude-opus-4-8",
+    "mimo-v2.5-pro",
+    "deepseek-v4-pro"
+  ],
+  "expected_participants": [
+    "claude-opus-4-8",
+    "mimo-v2.5-pro",
+    "deepseek-v4-pro"
+  ],
+  "rounds_used": 2,
+  "agreement_matrix": {
+    "framing": 0.65,
+    "approach": 0.65,
+    "implementation_order": 0.65
+  },
+  "final_design": {
+    "meta": {
+      "planner_model": "ensemble:3",
+      "planner_role": "merged",
+      "state_hash": "1e65def2af38e16f4a6cf969896017cfb554f1d516e652edbaeedf04340c3e12",
+      "tier_target": "T2",
+      "confidence": 0.6463,
+      "source_plans": 3
+    },
+    "diagnosis": {
+      "root_cause_class": "no_action",
+      "summary": "Merged from 3 planners, consensus score=0.646"
+    },
+    "patches": [],
+    "merge_info": {
+      "strategy": "intersection_first",
+      "planners": 3,
+      "quorum": 2,
+      "unanimous_count": 0,
+      "majority_count": 0,
+      "minority_count": 6,
+      "arbitration_needed": true,
+      "minority_patches": [
+        "P-backfill-detector",
+        "P-hidden-blocked-child",
+        "P-stale-claim-detector",
+        "P-missing-child-file",
+        "P-stale-child-evidence",
+        "PATCH-SCENARIO-PRIORITY"
+      ],
+      "consensus_score": 0.6463,
+      "consensus_verdict": "weak_consensus",
+      "max_blast_radius": "single_tier"
+    },
+    "verification": {
+      "expected_metric_delta": {
+        "main_pass_rate": 0.01
+      },
+      "guard_metrics": [
+        "main_pass_rate"
+      ],
+      "tier_eval_plan": "T0_T1"
+    },
+    "rollback_signal": {
+      "auto_rollback_if": "main_pass_rate < pre - 0.05",
+      "kill_switch_inc": false
+    },
+    "quota_snapshot": {
+      "claude-code::claude-opus-4-8": {
+        "model": "claude-opus-4-8",
+        "provider": "claude-code",
+        "status": "unobservable",
+        "observability": "unobservable",
+        "quota_type": "subscription_cap",
+        "remaining_units": null,
+        "remaining_requests": null,
+        "remaining_usd": null,
+        "reset_at": null,
+        "source": "response_headers",
+        "confidence": 0.2,
+        "stale_after_seconds": 300,
+        "last_updated": "2026-06-25T17:06:58.439464Z",
+        "usage": {}
+      },
+      "xiaomi::mimo-v2.5-pro": {
+        "model": "mimo-v2.5-pro",
+        "provider": "xiaomi",
+        "status": "unobservable",
+        "observability": "unobservable",
+        "quota_type": "documented_no_quota_header_policy",
+        "remaining_units": null,
+        "remaining_requests": null,
+        "remaining_usd": null,
+        "reset_at": null,
+        "source": "subprocess_success_no_quota_headers",
+        "confidence": 0.49,
+        "stale_after_seconds": 300,
+        "last_updated": "2026-06-25T17:02:52.256897Z",
+        "evidence_note": "multimodel_autonomy_certify successful minimal probe; provider exposes no safe quota headers through this route",
+        "header_names": [],
+        "policy_scope": "low_risk_routing_only; not_budget_handoff_certification",
+        "usage": {}
+      },
+      "deepseek::deepseek-v4-pro": {
+        "model": "deepseek-v4-pro",
+        "provider": "deepseek",
+        "status": "unknown",
+        "observability": "unknown",
+        "quota_type": "unknown",
+        "remaining_units": null,
+        "remaining_requests": null,
+        "remaining_usd": null,
+        "reset_at": null,
+        "source": "response_headers",
+        "confidence": 0.1,
+        "stale_after_seconds": 300,
+        "last_updated": "2026-06-25T17:17:11.748840Z",
+        "usage": {}
+      }
+    },
+    "quota_confidence": {
+      "schema_version": 1,
+      "exact_count": 0,
+      "estimated_count": 0,
+      "unknown_count": 1,
+      "unobservable_count": 2,
+      "exhausted_count": 0,
+      "has_low_confidence_quota": true,
+      "low_confidence_models": [
+        "claude-opus-4-8",
+        "deepseek-v4-pro",
+        "mimo-v2.5-pro"
+      ]
+    },
+    "skipped_due_to_quota": [],
+    "fanout_certification": {
+      "schema_version": 1,
+      "status": "degraded_not_certified",
+      "certified": false,
+      "multi_model_certified": false,
+      "certification_scope": "single_model",
+      "below_min_quorum": true,
+      "success_count": 2,
+      "fail_count": 1,
+      "planner_count": 3,
+      "min_quorum": 3,
+      "reason": "planner fan-out below min_quorum: 2/3"
+    },
+    "planner_patch_summary": {
+      "schema_version": 1,
+      "planner_count": 3,
+      "total_patch_count": 6,
+      "noop_patch_count": 1,
+      "conditional_advisory_patch_count": 0,
+      "doc_only_advisory_patch_count": 0,
+      "concrete_patch_count": 5,
+      "malformed_plan_count": 0,
+      "plans_missing_patches_count": 0,
+      "plans_non_list_patches_count": 0,
+      "non_dict_patch_count": 0,
+      "models_with_concrete_patches": [
+        "claude-opus-4-8"
+      ],
+      "models_with_noop_only_patches": [
+        "deepseek-v4-pro"
+      ],
+      "models_with_doc_only_advisory_patches": [],
+      "concrete_model_count": 1,
+      "noop_only_model_count": 1,
+      "doc_only_advisory_model_count": 0,
+      "certification_intent": "unresolved_noop_vs_change"
+    },
+    "certification_classification": {
+      "fanout_quorum": "degraded_not_certified",
+      "fanout_scope": "planner_fanout_quorum_only",
+      "truth_grounded": false,
+      "planner_patch_intent": "unresolved_noop_vs_change",
+      "no_action_certification": false,
+      "doc_only_advisory": false,
+      "concrete_patch_permission": false,
+      "final_certification_requires_discussion": true,
+      "final_discussion_status": "pending"
+    },
+    "evidence_bundle": {
+      "schema_version": 1,
+      "created_at": "2026-06-25T17:17:41.385422+00:00",
+      "claims": [],
+      "evidence": [],
+      "grounding": {},
+      "evidence_coverage": 1.0,
+      "verified_claim_count": 0,
+      "claim_count": 0
+    },
+    "truth_assessment": {
+      "schema_version": 1,
+      "truth_status": "no_claims",
+      "can_certify_truth": true,
+      "claim_count": 0,
+      "verified_claim_count": 0,
+      "evidence_coverage": 1.0,
+      "unsupported_claim_ids": [],
+      "unsupported_high_severity_claim_ids": [],
+      "needs_link_review_claim_ids": [],
+      "needs_link_review_high_severity_claim_ids": [],
+      "contradicted_claim_ids": [],
+      "contradicted_high_severity_claim_ids": [],
+      "reasons": []
+    },
+    "certification_status": "degraded_not_certified",
+    "degradation_reasons": [
+      "planner fan-out below min_quorum: 2/3"
+    ]
+  },
+  "issue_ledger": [
+    {
+      "id": "I-001",
+      "status": "unresolved",
+      "severity": 3,
+      "target_file": "/Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "models": [
+        "claude-opus-4-8"
+      ],
+      "missing_models": [
+        "deepseek-v4-pro",
+        "mimo-v2.5-pro"
+      ],
+      "claim": "Models disagree on patches for /Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "evidence": [
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-stale-claim-detector",
+          "op": "add_verifier",
+          "rationale": "Scenario 2: claim past TTL not released makes step appear owned. Read-only check claim_ts + ttl < now -> action=stale_claim_detected, suggested_next=claim_refresh_or_release. No auto-release (lifecycle mutation forbidden by constraints)."
+        }
+      ],
+      "resolution": ""
+    },
+    {
+      "id": "I-002",
+      "status": "unresolved",
+      "severity": 3,
+      "target_file": "/Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "models": [
+        "claude-opus-4-8"
+      ],
+      "missing_models": [
+        "deepseek-v4-pro",
+        "mimo-v2.5-pro"
+      ],
+      "claim": "Models disagree on patches for /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "evidence": [
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-backfill-detector",
+          "op": "add_verifier",
+          "rationale": "Scenario 5: detect children done but parent evidence not backfilled. Read-only diagnostic emits action=parent_evidence_backfill_required + suggested_next, never mutates. Natural extension of parent_aggregation already in this file."
+        },
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-hidden-blocked-child",
+          "op": "add_verifier",
+          "rationale": "Scenario 7: parent shows ready while a descendant is blocked. Recursive read-only scan of child statuses; if any descendant blocked, report keep_blocked_hidden_child_required instead of ready. Fail-closed (treat unknown child status as blocking)."
+        },
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-missing-child-file",
+          "op": "add_verifier",
+          "rationale": "Scenario 4: child id in parent manifest but file absent on disk. Deterministic existence check -> action=missing_child_file, keep parent blocked (fail-closed) rather than counting absent child as done."
+        },
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-stale-child-evidence",
+          "op": "add_verifier",
+          "rationale": "Scenario 3: child evidence mtime older than child source mtime -> evidence stale. Read-only mtime compare -> action=stale_child_evidence, do not certify parent on stale child. Fail-closed."
+        }
+      ],
+      "resolution": ""
+    },
+    {
+      "id": "I-003",
+      "status": "unresolved",
+      "severity": 3,
+      "target_file": "<mixed-noop-vs-change>",
+      "models": [
+        "claude-opus-4-8",
+        "mimo-v2.5-pro"
+      ],
+      "missing_models": [
+        "deepseek-v4-pro"
+      ],
+      "claim": "Some models voted noop/no-change while others proposed implementation patches",
+      "evidence": [
+        {
+          "model": "deepseek-v4-pro",
+          "patch_id": "noop",
+          "op": "noop",
+          "rationale": "noop/no-change vote"
+        }
+      ],
+      "resolution": ""
+    },
+    {
+      "id": "I-004",
+      "status": "unresolved",
+      "severity": 3,
+      "models": [
+        "claude-opus-4-8"
+      ],
+      "target_model": "claude-opus-4-8",
+      "claim": "I-003 noop-vs-change unresolved with single-model support: opus is the ONLY model producing concrete patches (concrete_model_count=1) for I-001 (brain_task_orchestrator.py) and I-002 (taskpool_parent_evidence_aggregator.py); deepseek-v4-pro voted noop; mimo-v2.5-pro absent on both.",
+      "evidence": "I-001, I-002, I-003; planner_patch_summary.concrete_model_count=1; fanout_certification.below_min_quorum=true (2/3, min=3)",
+      "resolution": "Do not multi-model-certify. Either (a) re-run fan-out to reach min_quorum=3 so mimo+deepseek weigh in on the two target files, or (b) downgrade opus's 5 patches to advisory."
+    },
+    {
+      "id": "I-005",
+      "status": "unresolved",
+      "severity": 3,
+      "models": [
+        "deepseek-v4-pro"
+      ],
+      "target_model": "deepseek-v4-pro",
+      "claim": "Some models voted noop/no-change while others proposed implementation patches",
+      "evidence": "I-003 evidence",
+      "resolution": "Evidence shows deepseek-v4-pro voted noop, but no other model's vote is provided. The claim of disagreement is unsupported."
+    },
+    {
+      "id": "I-006",
+      "status": "unresolved",
+      "severity": 3,
+      "models": [
+        "deepseek-v4-pro"
+      ],
+      "target_model": "deepseek-v4-pro",
+      "claim": "Some models voted noop/no-change while others proposed implementation patches",
+      "evidence": "I-003 evidence",
+      "resolution": "The claim in I-003 is unsupported because only deepseek-v4-pro's noop vote is provided; no other model's vote is shown to confirm disagreement. I-005 correctly identifies this as unsupported."
+    }
+  ],
+  "ratification_votes": [
+    {
+      "model": "claude-opus-4-8",
+      "vote": "amend",
+      "best_within_constraints": false,
+      "reasoning": "Amend. below_min_quorum (2/3<3) + concrete_model_count=1 forbid multi-model cert (I-004). Empty current_best.patches NOT noop exception: concrete_patch_count=5. Remedy: re-run fan-out to quorum=3 so mimo/deepseek weigh I-001/I-002, else downgrade opus 5 patches to advisory. I-003/I-005 = quorum gap, not real disagreement (only deepseek noop shown, mimo missing). truth_gate no_claims so no truth blocker, but cert blocked on quorum. Not best_within_constraints: clear better state reachable via fan-out."
+    },
+    {
+      "model": "mimo-v2.5-pro",
+      "vote": "amend",
+      "best_within_constraints": true,
+      "reasoning": "I-004 flags concrete_model_count=1 (opus only) below min_quorum=3; truth_gate=no_claims so no truth to certify. Opus's 5 read-only verifiers are sound in design but must be downgraded to advisory until mimo+deepseek weigh in (I-004 resolution path b). I-005 correctly notes deepseek noop is not disagreement without counter-evidence. Recommend advisory-only merge of opus patches with mandatory re-fan-out for certification."
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "vote": "amend",
+      "best_within_constraints": true,
+      "reasoning": "I-003 claim is unsupported per I-005 (only deepseek noop shown, no other model vote). I-004 conflates missing models with disagreement. Evidence requests needed to resolve. Approve not possible due to unsupported claims; reject too harsh as patches are valid. Amend: require re-fanout to get missing model votes before certification."
+    }
+  ],
+  "discussion_transcript": [
+    {
+      "round": 1,
+      "unresolved_issue_ids": [
+        "I-001",
+        "I-002",
+        "I-003"
+      ],
+      "votes": [
+        {
+          "model": "claude-opus-4-8",
+          "vote": "amend",
+          "best_within_constraints": false,
+          "reasoning": "Reject certification: fanout below_min_quorum (2/3, need 3) and I-003 noop-vs-change unresolved — opus is sole concrete-patch source (concrete_model_count=1), deepseek=noop, mimo absent on I-001/I-002. Truth gate clean (no_claims, coverage 1.0) but scope=single_model; cannot multi-model-certify. Not best_within_constraints because re-running to reach quorum (or seating mimo) would change the result. Patches are read-only add_verifiers (low risk) so acceptable path = downgrade to advisory; certification path = re-fan-out to quorum first. Do not claim current_best dropped patches — empty patches list matches the explicit noop/advisory classification."
+        },
+        {
+          "model": "mimo-v2.5-pro",
+          "vote": "amend",
+          "best_within_constraints": true,
+          "reasoning": "I-001/I-002 lack 2-of-3 model quorum (deepseek-v4-pro and mimo-v2.5-pro missing). I-003 has unexplained noop from deepseek. All claude-opus patches are read-only verifiers with fail-closed semantics — architecturally sound — but cannot certify without quorum. Need missing model votes and codebase verification before approval."
+        },
+        {
+          "model": "deepseek-v4-pro",
+          "vote": "amend",
+          "best_within_constraints": true,
+          "reasoning": "All three issues (I-001, I-002, I-003) claim model disagreement but only show evidence from one model each, making the claims unsupported. I-003 has contradictory evidence (deepseek-v4-pro noop listed but marked missing). Truth gate shows no verified claims. Recommend amending to correct these unsupported disagreement claims or gather missing evidence before approval."
+        }
+      ],
+      "status": {
+        "status": "not_certified",
+        "approval_count": 0,
+        "reject_count": 0,
+        "reasons": [
+          "approval_count 0/3 below N-1",
+          "missing best_within_constraints signatures: ['claude-opus-4-8']",
+          "agreement.framing below 0.85",
+          "agreement.approach below 0.85",
+          "agreement.implementation_order below 0.85",
+          "novel severity>=3 red-team blocker",
+          "unresolved blockers: ['I-001', 'I-002', 'I-003', 'I-004', 'I-005']"
+        ]
+      },
+      "prompt_chars": 19914,
+      "prompt_chars_by_model": {
+        "claude-opus-4-8": 6638,
+        "mimo-v2.5-pro": 6638,
+        "deepseek-v4-pro": 6638
+      },
+      "parse_status_by_model": {
+        "claude-opus-4-8": "ok",
+        "mimo-v2.5-pro": "retried",
+        "deepseek-v4-pro": "retried"
+      },
+      "estimated_chars_saved": 5094
+    },
+    {
+      "round": 2,
+      "unresolved_issue_ids": [
+        "I-001",
+        "I-002",
+        "I-003",
+        "I-004",
+        "I-005"
+      ],
+      "votes": [
+        {
+          "model": "claude-opus-4-8",
+          "vote": "amend",
+          "best_within_constraints": false,
+          "reasoning": "Amend. below_min_quorum (2/3<3) + concrete_model_count=1 forbid multi-model cert (I-004). Empty current_best.patches NOT noop exception: concrete_patch_count=5. Remedy: re-run fan-out to quorum=3 so mimo/deepseek weigh I-001/I-002, else downgrade opus 5 patches to advisory. I-003/I-005 = quorum gap, not real disagreement (only deepseek noop shown, mimo missing). truth_gate no_claims so no truth blocker, but cert blocked on quorum. Not best_within_constraints: clear better state reachable via fan-out."
+        },
+        {
+          "model": "mimo-v2.5-pro",
+          "vote": "amend",
+          "best_within_constraints": true,
+          "reasoning": "I-004 flags concrete_model_count=1 (opus only) below min_quorum=3; truth_gate=no_claims so no truth to certify. Opus's 5 read-only verifiers are sound in design but must be downgraded to advisory until mimo+deepseek weigh in (I-004 resolution path b). I-005 correctly notes deepseek noop is not disagreement without counter-evidence. Recommend advisory-only merge of opus patches with mandatory re-fan-out for certification."
+        },
+        {
+          "model": "deepseek-v4-pro",
+          "vote": "amend",
+          "best_within_constraints": true,
+          "reasoning": "I-003 claim is unsupported per I-005 (only deepseek noop shown, no other model vote). I-004 conflates missing models with disagreement. Evidence requests needed to resolve. Approve not possible due to unsupported claims; reject too harsh as patches are valid. Amend: require re-fanout to get missing model votes before certification."
+        }
+      ],
+      "status": {
+        "status": "not_certified",
+        "approval_count": 0,
+        "reject_count": 0,
+        "reasons": [
+          "approval_count 0/3 below N-1",
+          "missing best_within_constraints signatures: ['claude-opus-4-8']",
+          "agreement.framing below 0.85",
+          "agreement.approach below 0.85",
+          "agreement.implementation_order below 0.85",
+          "novel severity>=3 red-team blocker",
+          "unresolved blockers: ['I-001', 'I-002', 'I-003', 'I-004', 'I-005', 'I-006']",
+          "planner fan-out below min_quorum: 2/3"
+        ]
+      },
+      "prompt_chars": 25377,
+      "prompt_chars_by_model": {
+        "claude-opus-4-8": 8459,
+        "mimo-v2.5-pro": 8459,
+        "deepseek-v4-pro": 8459
+      },
+      "parse_status_by_model": {
+        "claude-opus-4-8": "ok",
+        "mimo-v2.5-pro": "retried",
+        "deepseek-v4-pro": "retried"
+      },
+      "estimated_chars_saved": 10194
+    }
+  ],
+  "communication": {
+    "schema": "multi_model_comm_packet_v1",
+    "mode": "manifest_delta",
+    "rounds": [
+      {
+        "round": 1,
+        "mode": "manifest_delta",
+        "prompt_chars_by_model": {
+          "claude-opus-4-8": 6638,
+          "mimo-v2.5-pro": 6638,
+          "deepseek-v4-pro": 6638
+        },
+        "prompt_chars": 19914,
+        "raw_context_chars_per_model": 8336,
+        "packet_chars_per_model": 6638,
+        "estimated_chars_saved": 5094,
+        "estimated_units_saved": 1275,
+        "compression_ratio": 0.7963
+      },
+      {
+        "round": 2,
+        "mode": "manifest_delta",
+        "prompt_chars_by_model": {
+          "claude-opus-4-8": 8459,
+          "mimo-v2.5-pro": 8459,
+          "deepseek-v4-pro": 8459
+        },
+        "prompt_chars": 25377,
+        "raw_context_chars_per_model": 11857,
+        "packet_chars_per_model": 8459,
+        "estimated_chars_saved": 10194,
+        "estimated_units_saved": 2550,
+        "compression_ratio": 0.7134
+      }
+    ],
+    "total_prompt_chars": 45291,
+    "estimated_chars_saved": 15288,
+    "estimated_units_saved": 3825,
+    "policy": "send manifest+delta packets; keep full artifacts in tick files; request omitted evidence explicitly"
+  },
+  "remaining_risks": [
+    {
+      "id": "I-001",
+      "status": "unresolved",
+      "severity": 3,
+      "target_file": "/Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "models": [
+        "claude-opus-4-8"
+      ],
+      "missing_models": [
+        "deepseek-v4-pro",
+        "mimo-v2.5-pro"
+      ],
+      "claim": "Models disagree on patches for /Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "evidence": [
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-stale-claim-detector",
+          "op": "add_verifier",
+          "rationale": "Scenario 2: claim past TTL not released makes step appear owned. Read-only check claim_ts + ttl < now -> action=stale_claim_detected, suggested_next=claim_refresh_or_release. No auto-release (lifecycle mutation forbidden by constraints)."
+        }
+      ],
+      "resolution": ""
+    },
+    {
+      "id": "I-002",
+      "status": "unresolved",
+      "severity": 3,
+      "target_file": "/Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "models": [
+        "claude-opus-4-8"
+      ],
+      "missing_models": [
+        "deepseek-v4-pro",
+        "mimo-v2.5-pro"
+      ],
+      "claim": "Models disagree on patches for /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "evidence": [
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-backfill-detector",
+          "op": "add_verifier",
+          "rationale": "Scenario 5: detect children done but parent evidence not backfilled. Read-only diagnostic emits action=parent_evidence_backfill_required + suggested_next, never mutates. Natural extension of parent_aggregation already in this file."
+        },
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-hidden-blocked-child",
+          "op": "add_verifier",
+          "rationale": "Scenario 7: parent shows ready while a descendant is blocked. Recursive read-only scan of child statuses; if any descendant blocked, report keep_blocked_hidden_child_required instead of ready. Fail-closed (treat unknown child status as blocking)."
+        },
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-missing-child-file",
+          "op": "add_verifier",
+          "rationale": "Scenario 4: child id in parent manifest but file absent on disk. Deterministic existence check -> action=missing_child_file, keep parent blocked (fail-closed) rather than counting absent child as done."
+        },
+        {
+          "model": "claude-opus-4-8",
+          "patch_id": "P-stale-child-evidence",
+          "op": "add_verifier",
+          "rationale": "Scenario 3: child evidence mtime older than child source mtime -> evidence stale. Read-only mtime compare -> action=stale_child_evidence, do not certify parent on stale child. Fail-closed."
+        }
+      ],
+      "resolution": ""
+    },
+    {
+      "id": "I-003",
+      "status": "unresolved",
+      "severity": 3,
+      "target_file": "<mixed-noop-vs-change>",
+      "models": [
+        "claude-opus-4-8",
+        "mimo-v2.5-pro"
+      ],
+      "missing_models": [
+        "deepseek-v4-pro"
+      ],
+      "claim": "Some models voted noop/no-change while others proposed implementation patches",
+      "evidence": [
+        {
+          "model": "deepseek-v4-pro",
+          "patch_id": "noop",
+          "op": "noop",
+          "rationale": "noop/no-change vote"
+        }
+      ],
+      "resolution": ""
+    },
+    {
+      "id": "I-004",
+      "status": "unresolved",
+      "severity": 3,
+      "models": [
+        "claude-opus-4-8"
+      ],
+      "target_model": "claude-opus-4-8",
+      "claim": "I-003 noop-vs-change unresolved with single-model support: opus is the ONLY model producing concrete patches (concrete_model_count=1) for I-001 (brain_task_orchestrator.py) and I-002 (taskpool_parent_evidence_aggregator.py); deepseek-v4-pro voted noop; mimo-v2.5-pro absent on both.",
+      "evidence": "I-001, I-002, I-003; planner_patch_summary.concrete_model_count=1; fanout_certification.below_min_quorum=true (2/3, min=3)",
+      "resolution": "Do not multi-model-certify. Either (a) re-run fan-out to reach min_quorum=3 so mimo+deepseek weigh in on the two target files, or (b) downgrade opus's 5 patches to advisory."
+    },
+    {
+      "id": "I-005",
+      "status": "unresolved",
+      "severity": 3,
+      "models": [
+        "deepseek-v4-pro"
+      ],
+      "target_model": "deepseek-v4-pro",
+      "claim": "Some models voted noop/no-change while others proposed implementation patches",
+      "evidence": "I-003 evidence",
+      "resolution": "Evidence shows deepseek-v4-pro voted noop, but no other model's vote is provided. The claim of disagreement is unsupported."
+    },
+    {
+      "id": "I-006",
+      "status": "unresolved",
+      "severity": 3,
+      "models": [
+        "deepseek-v4-pro"
+      ],
+      "target_model": "deepseek-v4-pro",
+      "claim": "Some models voted noop/no-change while others proposed implementation patches",
+      "evidence": "I-003 evidence",
+      "resolution": "The claim in I-003 is unsupported because only deepseek-v4-pro's noop vote is provided; no other model's vote is shown to confirm disagreement. I-005 correctly identifies this as unsupported."
+    }
+  ],
+  "truth_assessment": {
+    "schema_version": 1,
+    "truth_status": "no_claims",
+    "can_certify_truth": true,
+    "claim_count": 0,
+    "verified_claim_count": 0,
+    "evidence_coverage": 1.0,
+    "unsupported_claim_ids": [],
+    "unsupported_high_severity_claim_ids": [],
+    "needs_link_review_claim_ids": [],
+    "needs_link_review_high_severity_claim_ids": [],
+    "contradicted_claim_ids": [],
+    "contradicted_high_severity_claim_ids": [],
+    "reasons": []
+  },
+  "evidence_bundle": {
+    "schema_version": 1,
+    "created_at": "2026-06-25T17:17:41.385422+00:00",
+    "claims": [],
+    "evidence": [],
+    "grounding": {},
+    "evidence_coverage": 1.0,
+    "verified_claim_count": 0,
+    "claim_count": 0
+  },
+  "evidence_requests": [
+    {
+      "id": "ER-001",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "E-read-aggregator",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "cat /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "why": "Verify current parent_aggregation structure, status enums, and where backfill/recursive-child/mtime hooks attach before adding detectors P-backfill-detector, P-hidden-blocked-child, P-missing-child-file, P-stale-child-evidence.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-002",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "E-read-orchestrator",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "cat /Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "why": "Verify claim model (claim_ts, ttl fields) and blocked-resolve-step path exist before adding P-stale-claim-detector; confirm no existing stale-claim detector.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-003",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "E-read-tests",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "cat /Users/charles/.hermes/scripts/test_taskpool_parent_evidence_aggregator.py /Users/charles/.hermes/scripts/test_brain_task_orchestrator.py",
+      "why": "Determine existing test fixtures/harness so each scenario gets a TDD test slice (per acceptance criteria) matching style; avoid duplicate detectors.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-004",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "E-concurrency-model",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "rg -n \"lock|claim|contention|owner|ttl\" /Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "why": "Scenario 1 (false contention) detection signal undefined until concurrency/lock representation is known; needed before any patch for it.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-005",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "E-decomp-depth",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "rg -n \"depth|split|decompos|child|parent_id\" /Users/charles/.hermes/scripts/brain_task_orchestrator.py /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "why": "Scenarios 6 (cyclic/too-deep splits) needs depth-bound and parent-link representation before adding a cycle/depth guard.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-006",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "E-dashboard-source",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "rg -n \"dashboard|health-history|derived\" /Users/charles/.hermes/scripts/*.py",
+      "why": "Scenario 8 (stale derived views) needs authoritative-vs-derived source mapping (evolution-dashboard.md, health-history.jsonl) before a deterministic mismatch diagnostic.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-007",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "C-001",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "cat /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py | head -200",
+      "why": "Need to understand current parent_aggregation implementation to identify gaps for new scenarios",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-008",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "C-002",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "cat /Users/charles/.hermes/scripts/brain_task_orchestrator.py | grep -n 'def resolve_blocked_parent\\|def check_child_completion\\|def aggregate_evidence\\|def detect_stall'",
+      "why": "Find relevant resolver functions to understand where stall detection hooks can be added",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-009",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "C-003",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "ls -la /Users/charles/.hermes/workflows/taskpool-governance/evidence/ | tail -20",
+      "why": "Check existing evidence files to understand naming conventions and what diagnostic evidence already exists",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-010",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "C-004",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "find /Users/charles/.hermes -name '*.py' -path '*/test*' | grep -i 'parent\\|child\\|stall\\|blocked'",
+      "why": "Find existing test files to understand test patterns and avoid duplication",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-011",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "C-005",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "cat /Users/charles/.hermes/scripts/test_taskpool_parent_evidence_aggregator.py | head -100",
+      "why": "Review existing test patterns for parent aggregation to model new test cases",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-001",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "C-001",
+      "claim": "",
+      "tool_needed": "file",
+      "command": "show full patch bodies for P-stale-claim-detector, P-backfill-detector, P-hidden-blocked-child, P-missing-child-file, P-stale-child-evidence (truncated in packet)",
+      "why": "Confirm every patch is genuinely read-only/add_verifier with no state mutation before downgrading to advisory adoption.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-002",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "C-002",
+      "claim": "",
+      "tool_needed": "brainctl",
+      "command": "re-dispatch planner fan-out for mimo-v2.5-pro on I-001 and I-002 target files",
+      "why": "mimo-v2.5-pro is missing on both issues; its vote is needed to reach min_quorum=3 and resolve I-003 noop-vs-change.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-001",
+      "requested_by": "mimo-v2.5-pro",
+      "claim_id": "I-001",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "cat /Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+      "why": "Verify existing claim lifecycle code to confirm stale-claim-detector would not duplicate existing checks",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-002",
+      "requested_by": "mimo-v2.5-pro",
+      "claim_id": "I-002",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "cat /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "why": "Verify existing parent aggregation logic to confirm the four proposed verifiers (backfill, hidden-blocked, missing-child, stale-evidence) are not already implemented",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-001",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "I-003",
+      "claim": "",
+      "tool_needed": "brainctl",
+      "command": "brainctl get patches --model mimo-v2.5-pro --target /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py",
+      "why": "Verify whether mimo-v2.5-pro actually proposed a patch or voted noop, to confirm or refute the claimed disagreement.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-001",
+      "requested_by": "claude-opus-4-8",
+      "claim_id": "C-001",
+      "claim": "",
+      "tool_needed": "brainctl",
+      "command": "fanout status --round 2 --target mimo-v2.5-pro,deepseek-v4-pro --files brain_task_orchestrator.py,taskpool_parent_evidence_aggregator.py",
+      "why": "Confirm whether mimo/deepseek can produce concrete votes on I-001/I-002 to lift concrete_model_count above 1 and reach min_quorum=3.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-001",
+      "requested_by": "mimo-v2.5-pro",
+      "claim_id": "I-001",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "head -50 /Users/charles/.hermes/scripts/brain_task_orchestrator.py 2>/dev/null || echo FILE_MISSING",
+      "why": "Verify target file exists and has expected structure before accepting patch rationale",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-002",
+      "requested_by": "mimo-v2.5-pro",
+      "claim_id": "I-002",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "head -50 /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py 2>/dev/null || echo FILE_MISSING",
+      "why": "Verify target file exists and has expected structure before accepting patch rationale",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-003",
+      "requested_by": "mimo-v2.5-pro",
+      "claim_id": "I-004",
+      "claim": "",
+      "tool_needed": "terminal",
+      "command": "grep -c 'min_quorum' /Users/charles/.hermes/scripts/brain_task_orchestrator.py /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py 2>/dev/null",
+      "why": "Check if quorum thresholds are defined in target files to validate the 2/3 vs min=3 claim",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-001",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "I-003",
+      "claim": "",
+      "tool_needed": "brainctl",
+      "command": "brainctl query votes --target-file /Users/charles/.hermes/scripts/brain_task_orchestrator.py --models mimo-v2.5-pro,deepseek-v4-pro",
+      "why": "Verify whether mimo-v2.5-pro and deepseek-v4-pro actually voted noop or proposed patches for I-001 target file to resolve the noop-vs-change claim.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    },
+    {
+      "id": "ER-002",
+      "requested_by": "deepseek-v4-pro",
+      "claim_id": "I-003",
+      "claim": "",
+      "tool_needed": "brainctl",
+      "command": "brainctl query votes --target-file /Users/charles/.hermes/scripts/taskpool_parent_evidence_aggregator.py --models mimo-v2.5-pro,deepseek-v4-pro",
+      "why": "Verify whether mimo-v2.5-pro and deepseek-v4-pro actually voted noop or proposed patches for I-002 target file to resolve the noop-vs-change claim.",
+      "status": "requested",
+      "safety": "read_only_or_orchestrator_approved"
+    }
+  ],
+  "provenance": [
+    "claude-opus-4-8 contributed seed proposal",
+    "mimo-v2.5-pro contributed seed proposal",
+    "deepseek-v4-pro contributed seed proposal"
+  ],
+  "reasons": [
+    "approval_count 0/3 below N-1",
+    "missing best_within_constraints signatures: ['claude-opus-4-8']",
+    "agreement.framing below 0.85",
+    "agreement.approach below 0.85",
+    "agreement.implementation_order below 0.85",
+    "novel severity>=3 red-team blocker",
+    "unresolved blockers: ['I-001', 'I-002', 'I-003', 'I-004', 'I-005', 'I-006']",
+    "planner fan-out below min_quorum: 2/3"
+  ],
+  "quota_snapshot": {
+    "claude-code::claude-opus-4-8": {
+      "model": "claude-opus-4-8",
+      "provider": "claude-code",
+      "status": "unobservable",
+      "observability": "unobservable",
+      "quota_type": "subscription_cap",
+      "remaining_units": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "response_headers",
+      "confidence": 0.2,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-06-25T17:06:58.439464Z",
+      "usage": {}
+    },
+    "xiaomi::mimo-v2.5-pro": {
+      "model": "mimo-v2.5-pro",
+      "provider": "xiaomi",
+      "status": "unobservable",
+      "observability": "unobservable",
+      "quota_type": "documented_no_quota_header_policy",
+      "remaining_units": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "subprocess_success_no_quota_headers",
+      "confidence": 0.49,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-06-25T17:02:52.256897Z",
+      "evidence_note": "multimodel_autonomy_certify successful minimal probe; provider exposes no safe quota headers through this route",
+      "header_names": [],
+      "policy_scope": "low_risk_routing_only; not_budget_handoff_certification",
+      "usage": {}
+    },
+    "deepseek::deepseek-v4-pro": {
+      "model": "deepseek-v4-pro",
+      "provider": "deepseek",
+      "status": "unknown",
+      "observability": "unknown",
+      "quota_type": "unknown",
+      "remaining_units": null,
+      "remaining_requests": null,
+      "remaining_usd": null,
+      "reset_at": null,
+      "source": "response_headers",
+      "confidence": 0.1,
+      "stale_after_seconds": 300,
+      "last_updated": "2026-06-25T17:17:11.748840Z",
+      "usage": {}
+    }
+  },
+  "quota_confidence": {
+    "schema_version": 1,
+    "exact_count": 0,
+    "estimated_count": 0,
+    "unknown_count": 1,
+    "unobservable_count": 2,
+    "exhausted_count": 0,
+    "has_low_confidence_quota": true,
+    "low_confidence_models": [
+      "claude-opus-4-8",
+      "deepseek-v4-pro",
+      "mimo-v2.5-pro"
+    ]
+  },
+  "skipped_due_to_quota": [],
+  "fanout_certification": {
+    "schema_version": 1,
+    "status": "degraded_not_certified",
+    "certified": false,
+    "multi_model_certified": false,
+    "certification_scope": "single_model",
+    "below_min_quorum": true,
+    "success_count": 2,
+    "fail_count": 1,
+    "planner_count": 3,
+    "min_quorum": 3,
+    "reason": "planner fan-out below min_quorum: 2/3"
+  }
+}

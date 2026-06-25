@@ -1,0 +1,136 @@
+{
+  "action": "keep_blocked_certification_required",
+  "axis_summary": {
+    "framing": "done",
+    "patch_normalization": "done",
+    "quota_observability": "done"
+  },
+  "bibliography": [
+    {
+      "argument": "coordination overhead grows nonlinearly with people and interfaces",
+      "author": "Frederick P. Brooks Jr.",
+      "title": "The Mythical Man-Month"
+    },
+    {
+      "argument": "optimize the system bottleneck, not local activity",
+      "author": "Eliyahu M. Goldratt",
+      "title": "The Goal"
+    },
+    {
+      "argument": "shared resource contention and hidden buffers delay project flow",
+      "author": "Eliyahu M. Goldratt",
+      "title": "Critical Chain"
+    },
+    {
+      "argument": "limit WIP and expose blocked flow",
+      "author": "Donald G. Reinertsen",
+      "title": "Managing the Design Factory"
+    },
+    {
+      "argument": "small batches, queues, and economic WIP limits control latency",
+      "author": "Donald G. Reinertsen",
+      "title": "The Principles of Product Development Flow"
+    },
+    {
+      "argument": "dependency structure predicts iteration, rework, and coordination loops",
+      "author": "Steven D. Eppinger and Tyson R. Browning",
+      "title": "Design Structure Matrix Methods and Applications"
+    },
+    {
+      "argument": "separate essential state/complexity from accidental control complexity",
+      "author": "Ben Moseley and Peter Marks",
+      "title": "Out of the Tar Pit"
+    },
+    {
+      "argument": "cognitive load and team/API boundaries constrain sustainable flow",
+      "author": "Matthew Skelton and Manuel Pais",
+      "title": "Team Topologies"
+    },
+    {
+      "argument": "automation needs explicit SLOs, error budgets, and safe rollback",
+      "author": "Betsy Beyer et al.",
+      "title": "Site Reliability Engineering"
+    },
+    {
+      "argument": "fast flow requires deployment safety, feedback loops, and low-friction recovery",
+      "author": "Nicole Forsgren, Jez Humble, and Gene Kim",
+      "title": "Accelerate"
+    }
+  ],
+  "child_count": 3,
+  "children": [
+    {
+      "axis": "framing",
+      "id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+      "path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务.md",
+      "status": "done"
+    },
+    {
+      "axis": "patch_normalization",
+      "id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-patch-normalization-收敛",
+      "path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-patch-normalization-收敛.md",
+      "status": "done"
+    },
+    {
+      "axis": "quota_observability",
+      "id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-quota-observability-收敛",
+      "path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-quota-observability-收敛.md",
+      "status": "done"
+    }
+  ],
+  "done_count": 3,
+  "missing_children": [],
+  "open_children": [],
+  "parent_status": "blocked",
+  "ready_for_parent": true,
+  "remaining_gate_reasons": [
+    "architecture_target",
+    "evidence_bundle_contract",
+    "expected_participants_contract",
+    "explicit_multimodel_reason",
+    "explicit_requires_multimodel",
+    "loop_non_convergence",
+    "missing_required_model_consulted:mimo-v2.5-pro",
+    "missing_required_model_vote:mimo-v2.5-pro",
+    "mission_envelope",
+    "model_count_below_required:2/3",
+    "models_consulted_below_required:2/3",
+    "multimodel_gate:FAIL",
+    "truth_gate_contract"
+  ],
+  "safety": "read-only aggregation; does not mutate parent lifecycle state",
+  "schema": "taskpool_parent_evidence_aggregation_v1",
+  "stale_evidence": [
+    {
+      "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+      "current_status": "done",
+      "evidence_status": "pending"
+    },
+    {
+      "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-patch-normalization-收敛",
+      "current_status": "done",
+      "evidence_status": "pending"
+    },
+    {
+      "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-quota-observability-收敛",
+      "current_status": "done",
+      "evidence_status": "pending"
+    },
+    {
+      "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+      "current_status": "done",
+      "evidence_status": "claimed"
+    },
+    {
+      "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+      "current_status": "done",
+      "evidence_status": "running"
+    },
+    {
+      "child_id": "2026-06-25-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-framing-收敛前置任务",
+      "current_status": "done",
+      "evidence_status": "review"
+    }
+  ],
+  "task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot"
+}

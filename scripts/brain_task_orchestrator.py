@@ -2917,7 +2917,18 @@ def iter_tasks(include_generated: bool = False) -> list[Task]:
     for path in sorted(TASKS_DIR.glob("*.md")):
         if not include_generated and path.name in skip:
             continue
-        text = path.read_text(encoding="utf-8")
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            # macOS/iCloud can leave duplicate Markdown files in a compressed,
+            # dataless placeholder state. Reading them raises Errno 11
+            # (Resource deadlock avoided). These files are not usable task
+            # records, and letting one placeholder crash the whole control plane
+            # blocks unrelated task lifecycle operations. Skip them fail-soft;
+            # the canonical/original task file remains readable and authoritative.
+            if getattr(exc, "errno", None) == 11:
+                continue
+            raise
         fm, body = split_frontmatter(text)
         if fm.get("type") == "task":
             tasks.append(Task(path, fm, body))
@@ -3577,6 +3588,55 @@ def auto_subtask_children(parent: Task) -> list[Task]:
         return []
     task_map = {task.id: task for task in iter_tasks()}
     return [task_map[cid] for cid in child_ids if cid in task_map]
+
+
+def build_auto_subtask_parent_aggregation(task: Task, *, cert_reasons: list[str] | None = None) -> dict[str, Any] | None:
+    """Return read-only parent/child aggregation diagnostics for blocked resolver rows."""
+    if str(task.fm.get("auto_subtask_kind") or "") != "non_convergence_narrowing":
+        return None
+    child_ids = [str(x) for x in list_value(task.fm.get("auto_subtask_children"))]
+    children = auto_subtask_children(task)
+    child_map = {child.id: child for child in children}
+    missing = [cid for cid in child_ids if cid not in child_map]
+    open_children = [child.id for child in children if child.status not in TERMINAL_STATUSES]
+    done_children = [child.id for child in children if child.status == "done"]
+    ready = bool(child_ids) and not missing and not open_children and len(done_children) == len(child_ids)
+    current_status = {child.id: child.status for child in children}
+    stale: list[dict[str, str]] = []
+    for item in list_value(task.fm.get("evidence")):
+        match = re.search(r"proof:child-task:([^:]+):status:([^\s]+)", str(item))
+        if not match:
+            continue
+        child_id, evidence_status = match.group(1), match.group(2)
+        status = current_status.get(child_id)
+        if status and evidence_status != status:
+            stale.append({"child_id": child_id, "evidence_status": evidence_status, "current_status": status})
+    reasons = [str(x) for x in (cert_reasons or [])]
+    action = "aggregate_only"
+    suggested_next = "parent_ratification_refresh" if ready else "complete_or_recover_children"
+    if not child_ids:
+        action = "no_children_found"
+        suggested_next = "inspect_parent_split_contract"
+    elif not ready:
+        action = "keep_blocked_children_open"
+    elif any(reason in {"explicit_requires_multimodel", "loop_non_convergence", "truth_gate_contract"} for reason in reasons):
+        action = "keep_blocked_certification_required"
+    elif task.status == "blocked":
+        action = "reopen_for_parent_ratification"
+    return {
+        "schema": "taskpool_parent_evidence_aggregation_v1",
+        "ready_for_parent": ready,
+        "action": action,
+        "suggested_next": suggested_next,
+        "child_count": len(child_ids),
+        "done_count": len(done_children),
+        "open_children": open_children,
+        "missing_children": missing,
+        "axis_summary": {str(child.fm.get("auto_subtask_axis") or "unknown"): child.status for child in children},
+        "stale_evidence_count": len(stale),
+        "stale_evidence": stale,
+        "safety": "read-only aggregation; does not mutate parent lifecycle state",
+    }
 
 
 def build_auto_subtask_backfill(children: list[Task]) -> tuple[list[str], list[str]]:
@@ -5874,8 +5934,30 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
             task.fm["blocked_resolve_axis_rationale"] = taxonomy_payload.get("axis_rationale") or {}
 
             auto_subtask_sync = None
+            parent_aggregation = build_auto_subtask_parent_aggregation(task, cert_reasons=cert_reasons)
             if str(task.fm.get("auto_subtask_kind") or "") == "non_convergence_narrowing":
                 auto_subtask_sync = sync_auto_subtask_parent(task, actor=actor, write=False)
+                if (
+                    auto_subtask_sync
+                    and auto_subtask_sync.get("action") == "auto_subtask_parent_reopened"
+                    and parent_aggregation
+                    and parent_aggregation.get("action") == "keep_blocked_certification_required"
+                ):
+                    keep_reason = "blocked resolver: child evidence aggregated, but parent certification is still required before reopening"
+                    task.fm["status"] = "blocked"
+                    task.fm["blocked_resolve_last_action"] = "keep_blocked_certification_required"
+                    task.fm["blocked_resolve_reason"] = keep_reason
+                    task.fm["blocker_status"] = "unresolved"
+                    task.fm["blocker_summary"] = keep_reason
+                    save_task(task)
+                    kept_blocked.append({
+                        "task": task.id,
+                        "action": "keep_blocked",
+                        "reason": keep_reason,
+                        "parent_aggregation": parent_aggregation,
+                        **taxonomy_payload,
+                    })
+                    continue
                 if auto_subtask_sync and auto_subtask_sync.get("action") == "auto_subtask_parent_reopened":
                     task.fm["blocked_resolve_last_action"] = "auto_subtask_parent_reopened"
                     task.fm["blocked_resolve_reason"] = "blocked resolver: all narrowed convergence subtasks are done; parent reopened for ratification rerun"
@@ -5907,7 +5989,8 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                     })
                     continue
 
-            if mm_required and not mm_passed and "loop_non_convergence" in cert_reasons and decision.upper() == "CONTINUE_LOOP" and not list_value(task.fm.get("auto_subtask_children")):
+            non_convergence_reasons = set(cert_reasons) | set(reasons) | set(list_value(task.fm.get("multimodel_last_failures")))
+            if mm_required and not mm_passed and "loop_non_convergence" in non_convergence_reasons and decision.upper() == "CONTINUE_LOOP" and not list_value(task.fm.get("auto_subtask_children")):
                 if taxonomy_payload.get("taxonomy_warning"):
                     keep_reason = "blocked resolver: loop_non_convergence needs taxonomy artifact for auto-split, but historical discussion artifact is unavailable"
                     task.fm["blocked_resolve_last_action"] = "keep_blocked_missing_taxonomy_artifact"
@@ -6006,6 +6089,7 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                 "multimodel_required": mm_required,
                 "multimodel_passed": mm_passed,
                 "evidence_count": len(evidence),
+                **({"parent_aggregation": parent_aggregation} if parent_aggregation else {}),
                 **taxonomy_payload,
             })
         except Exception as exc:

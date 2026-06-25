@@ -2997,6 +2997,54 @@ def test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_chi
 
 
 
+def test_blocked_resolve_reports_parent_aggregation_when_children_done_but_certification_still_required():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["self-improvement"])
+        parent_id, parent_path = add_evolution_task(env, title="Blocked parent has finished children but needs cert", priority="P1")
+        child_id, child_path = add_evolution_task(env, title="Finished child with evidence", priority="P1")
+        mark_task_done_directly(child_path)
+        child_text = child_path.read_text(encoding="utf-8")
+        child_text = child_text.replace("evidence:\n  - command: fixture done PASS", "auto_subtask_parent: " + parent_id + "\nauto_subtask_axis: framing\nevidence:\n  - command: fixture done PASS", 1)
+        child_path.write_text(child_text, encoding="utf-8")
+
+        parent_text = parent_path.read_text(encoding="utf-8")
+        parent_text = parent_text.replace("status: pending", "status: blocked", 1)
+        parent_text = parent_text.replace(
+            "evidence: []",
+            "requires_multimodel: true\n"
+            "multimodel_status: not_certified\n"
+            "multimodel_last_gate_status: FAIL\n"
+            "multimodel_last_decision: CONTINUE_LOOP\n"
+            "multimodel_last_failures:\n"
+            "  - loop_non_convergence\n"
+            "  - missing_required_model_vote:mimo-v2.5-pro\n"
+            f"auto_subtask_kind: non_convergence_narrowing\n"
+            f"auto_subtask_children: [\"{child_id}\"]\n"
+            "auto_subtask_open_children: []\n"
+            "auto_subtask_missing_children: []\n"
+            "auto_subtask_ready_for_parent: true\n"
+            "evidence:\n"
+            f"  - proof:child-task:{child_id}:status:pending\n"
+            f"  - proof:child-task:{child_id}:status:done",
+            1,
+        )
+        parent_path.write_text(parent_text, encoding="utf-8")
+
+        result = json.loads(run(env, "blocked-resolve-step", "--task", parent_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["resolved_count"] == 0, result
+        row = result["kept_blocked"][0]
+        assert row["action"] == "keep_blocked", result
+        aggregation = row["parent_aggregation"]
+        assert aggregation["ready_for_parent"] is True, aggregation
+        assert aggregation["action"] == "keep_blocked_certification_required", aggregation
+        assert aggregation["done_count"] == aggregation["child_count"] == 1, aggregation
+        assert aggregation["axis_summary"] == {"framing": "done"}, aggregation
+        assert aggregation["stale_evidence_count"] == 1, aggregation
+        assert aggregation["suggested_next"] == "parent_ratification_refresh", aggregation
+
+
 def test_loop_non_convergence_parent_uses_targeted_evidence_refresh_plan_after_children_finish():
     td, _vault, env = make_env_and_vault()
     with td:
