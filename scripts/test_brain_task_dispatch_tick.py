@@ -1535,6 +1535,83 @@ def test_batch_executor_requires_headroom_and_caps_claims():
     assert claim_calls == ["t1", "t2"], claim_calls
 
 
+def test_boundary_readiness_summary_reports_selected_vs_dispatchable():
+    spec = importlib.util.spec_from_file_location("brain_task_orchestrator_for_boundary_readiness", ORCH)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["brain_task_orchestrator_for_boundary_readiness"] = module
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    readiness = module.boundary_readiness_summary(
+        requested_agents=4,
+        selected=[{"id": "t1", "lane": "work"}],
+        skipped=[
+            {"id": "t2", "lane": "advisory", "reason": "lane_preempted_by_work"},
+            {"id": "t3", "lane": "work", "reason": "parallel_boundary_conflict", "boundary_key": "repo:a"},
+            {"id": "t4", "lane": "work", "reason": "parallel_boundary_conflict", "boundary_key": "repo:a"},
+        ],
+        dispatchable_count=4,
+    )
+    assert readiness["status"] == "FAIL_CLOSED", readiness
+    assert readiness["dispatchable_count"] == 4, readiness
+    assert readiness["selected_count"] == 1, readiness
+    assert readiness["skipped_reason_counts"]["parallel_boundary_conflict"] == 2, readiness
+    assert readiness["blocking_boundaries"][0]["boundary_key"] == "repo:a", readiness
+
+
+def test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only():
+    module = load_tick_module()
+    runtime_cfg = {"max_parallel_agents": 2, "dynamic_max_parallel_agents": 4}
+    runtime_before = dict(runtime_cfg)
+    readiness = module.concurrency_readiness_snapshot(
+        requested_agents=6,
+        selected_count=2,
+        active_count=0,
+        resource_probe={
+            "effective_resource_ceiling": 2,
+            "quality_slots": 2,
+            "api_probe": {"confidence_gate_status": "FAIL_CLOSED", "soft_unknown_count": 3},
+            "quality_probe": {"failure_rate": 1.188},
+        },
+        claim_state={"stale_claim_count": 0, "handoff_backlog_count": 115, "review_total": 0},
+        boundary_warning_count=5,
+        runtime_cfg=runtime_cfg,
+    )
+    assert runtime_cfg == runtime_before
+    assert readiness["status"] == "FAIL_CLOSED", readiness
+    assert readiness["raise_allowed"] is False, readiness
+    reasons = {b["reason"] for b in readiness["blockers"]}
+    assert "selected_count_below_requested" in reasons, reasons
+    assert "resource_ceiling_below_requested" in reasons, reasons
+    assert "quality_slots_below_requested" in reasons, reasons
+    assert "api_confidence_fail_closed" in reasons, reasons
+    assert "provider_soft_unknowns_present" in reasons, reasons
+    assert "boundary_warnings_present" in reasons, reasons
+    assert "handoff_backlog_high" in reasons, reasons
+
+
+def test_concurrency_readiness_passes_for_clean_synthetic_snapshot():
+    module = load_tick_module()
+    readiness = module.concurrency_readiness_snapshot(
+        requested_agents=4,
+        selected_count=4,
+        active_count=0,
+        resource_probe={
+            "effective_resource_ceiling": 4,
+            "quality_slots": 4,
+            "api_probe": {"confidence_gate_status": "PASS", "soft_unknown_count": 0},
+            "quality_probe": {"failure_rate": 0.0},
+        },
+        claim_state={"stale_claim_count": 0, "handoff_backlog_count": 0, "review_total": 0},
+        boundary_warning_count=0,
+        runtime_cfg={"max_parallel_agents": 2, "dynamic_max_parallel_agents": 4},
+    )
+    assert readiness["status"] == "PASS", readiness
+    assert readiness["raise_allowed"] is True, readiness
+    assert readiness["blockers"] == [], readiness
+    assert readiness["safe_now_ceiling"] == 4, readiness
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
@@ -1566,6 +1643,9 @@ if __name__ == "__main__":
     test_batch_executor_worker_skip_after_claim_triggers_cleanup()
     test_batch_executor_apply_claims_existing_single_task_worker_path_only()
     test_batch_executor_requires_headroom_and_caps_claims()
+    test_boundary_readiness_summary_reports_selected_vs_dispatchable()
+    test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only()
+    test_concurrency_readiness_passes_for_clean_synthetic_snapshot()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
     test_drain_first_consumes_only_uncovered_claimed_tasks()
     test_event_next_tick_refill_is_bounded_and_explicit()

@@ -300,6 +300,119 @@ def append_log(event: dict[str, Any]) -> None:
         f.write(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def _safe_int(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except Exception:
+        return default
+
+
+def _add_readiness_blocker(blockers: list[dict[str, Any]], reason: str, *, actual: Any = None, required: Any = None, severity: str = "blocker") -> None:
+    item: dict[str, Any] = {"reason": reason, "severity": severity}
+    if actual is not None:
+        item["actual"] = actual
+    if required is not None:
+        item["required"] = required
+    blockers.append(item)
+
+
+def concurrency_readiness_snapshot(
+    *,
+    requested_agents: int,
+    selected_count: int,
+    active_count: int,
+    resource_probe: dict[str, Any],
+    claim_state: dict[str, Any] | None = None,
+    boundary_warning_count: int = 0,
+    runtime_cfg: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Return a read-only fail-closed verdict for future concurrency raises.
+
+    This is an observability/guard contract only.  It does not mutate config,
+    task lifecycle state, dispatch selection, or provider cache.  It answers:
+    "would it be safe to consider a persistent cap raise to requested_agents?"
+    """
+    requested = max(1, _safe_int(requested_agents, 1))
+    selected = max(0, _safe_int(selected_count, 0))
+    active = max(0, _safe_int(active_count, 0))
+    rp: dict[str, Any] = resource_probe if isinstance(resource_probe, dict) else {}
+    api_probe_raw = rp.get("api_probe")
+    api_probe: dict[str, Any] = api_probe_raw if isinstance(api_probe_raw, dict) else {}
+    quality_probe_raw = rp.get("quality_probe")
+    quality_probe: dict[str, Any] = quality_probe_raw if isinstance(quality_probe_raw, dict) else {}
+    claims: dict[str, Any] = claim_state if isinstance(claim_state, dict) else {}
+    cfg: dict[str, Any] = dict(runtime_cfg or {})
+
+    resource_ceiling = max(1, _safe_int(rp.get("effective_resource_ceiling") or cfg.get("dynamic_max_parallel_agents") or cfg.get("max_parallel_agents"), 1))
+    quality_slots = max(1, _safe_int(rp.get("quality_slots") or quality_probe.get("quality_slots") or resource_ceiling, resource_ceiling))
+    api_slots = max(1, _safe_int(rp.get("api_slots") or api_probe.get("api_slots") or resource_ceiling, resource_ceiling))
+    soft_unknown_count = max(0, _safe_int(api_probe.get("soft_unknown_count"), 0))
+    hard_blocker_count = max(0, _safe_int(api_probe.get("hard_blocker_count"), 0))
+    stale_claim_count = max(0, _safe_int(claims.get("stale_claim_count"), 0))
+    handoff_backlog_count = max(0, _safe_int(claims.get("handoff_backlog_count"), 0))
+    review_total = max(0, _safe_int(claims.get("review_total"), 0))
+    boundary_warnings = max(0, _safe_int(boundary_warning_count, 0))
+    confidence = str(api_probe.get("confidence_gate_status") or "").strip().upper()
+
+    handoff_threshold = max(1, _safe_int(cfg.get("concurrency_handoff_backlog_threshold") or cfg.get("handoff_archive_threshold"), 100))
+    review_threshold = max(1, _safe_int(cfg.get("concurrency_review_backlog_threshold"), 10))
+    blockers: list[dict[str, Any]] = []
+    if selected < requested:
+        _add_readiness_blocker(blockers, "selected_count_below_requested", actual=selected, required=requested)
+    if resource_ceiling < requested:
+        _add_readiness_blocker(blockers, "resource_ceiling_below_requested", actual=resource_ceiling, required=requested)
+    if quality_slots < requested:
+        _add_readiness_blocker(blockers, "quality_slots_below_requested", actual=quality_slots, required=requested)
+    if api_slots < requested:
+        _add_readiness_blocker(blockers, "api_slots_below_requested", actual=api_slots, required=requested)
+    if confidence == "FAIL_CLOSED":
+        _add_readiness_blocker(blockers, "api_confidence_fail_closed", actual=confidence, required="PASS")
+    if hard_blocker_count > 0:
+        _add_readiness_blocker(blockers, "provider_hard_blockers_present", actual=hard_blocker_count, required=0)
+    if requested >= 6 and soft_unknown_count > 0:
+        _add_readiness_blocker(blockers, "provider_soft_unknowns_present", actual=soft_unknown_count, required=0)
+    if stale_claim_count > 0:
+        _add_readiness_blocker(blockers, "stale_claims_present", actual=stale_claim_count, required=0)
+    if boundary_warnings > 0:
+        _add_readiness_blocker(blockers, "boundary_warnings_present", actual=boundary_warnings, required=0)
+    if handoff_backlog_count > handoff_threshold:
+        _add_readiness_blocker(blockers, "handoff_backlog_high", actual=handoff_backlog_count, required=f"<={handoff_threshold}")
+    if review_total > review_threshold:
+        _add_readiness_blocker(blockers, "review_backlog_high", actual=review_total, required=f"<={review_threshold}")
+
+    safe_now_ceiling = max(1, min(selected or 1, resource_ceiling, quality_slots, api_slots))
+    return {
+        "schema": "taskpool_concurrency_readiness_v1",
+        "status": "PASS" if not blockers else "FAIL_CLOSED",
+        "raise_allowed": not blockers,
+        "read_only": True,
+        "requested_agents": requested,
+        "safe_now_ceiling": safe_now_ceiling,
+        "blocker_count": len(blockers),
+        "blockers": blockers,
+        "inputs": {
+            "selected_count": selected,
+            "active_count": active,
+            "resource_ceiling": resource_ceiling,
+            "quality_slots": quality_slots,
+            "api_slots": api_slots,
+            "api_confidence_gate_status": confidence,
+            "soft_unknown_count": soft_unknown_count,
+            "hard_blocker_count": hard_blocker_count,
+            "stale_claim_count": stale_claim_count,
+            "handoff_backlog_count": handoff_backlog_count,
+            "handoff_backlog_threshold": handoff_threshold,
+            "review_total": review_total,
+            "review_threshold": review_threshold,
+            "boundary_warning_count": boundary_warnings,
+            "max_parallel_agents": cfg.get("max_parallel_agents"),
+            "dynamic_max_parallel_agents": cfg.get("dynamic_max_parallel_agents"),
+            "failure_rate": quality_probe.get("failure_rate"),
+        },
+        "safety": "read-only pre-raise gate; does not mutate config, task lifecycle, provider cache, or dispatch selection",
+    }
+
+
 def build_claim_state_telemetry(event: dict[str, Any], *, requested_event_next_tick_depth: int = 0) -> dict[str, Any]:
     task_list_raw = event.get("task_list")
     task_list: dict[str, Any] = task_list_raw if isinstance(task_list_raw, dict) else {}
@@ -1826,6 +1939,19 @@ def main() -> int:
         event,
         requested_event_next_tick_depth=int(getattr(args, "event_next_tick_depth", 0) or 0),
     )
+    skipped_counts_for_readiness = _count_skipped_reasons((event.get("parallel_dispatch") or {}).get("skipped") or []) if isinstance(event.get("parallel_dispatch"), dict) else {}
+    event["concurrency_readiness"] = {
+        str(target): concurrency_readiness_snapshot(
+            requested_agents=target,
+            selected_count=int((event.get("scheduler_decision") or {}).get("selected_count") or 0),
+            active_count=int((event.get("scheduler_decision") or {}).get("active_count") or 0),
+            resource_probe=parallel_cap.get("resource_probe", {}) if isinstance(parallel_cap.get("resource_probe"), dict) else {},
+            claim_state=event.get("claim_state", {}) if isinstance(event.get("claim_state"), dict) else {},
+            boundary_warning_count=int(skipped_counts_for_readiness.get("parallel_boundary_conflict") or 0),
+            runtime_cfg=taskpool_cfg,
+        )
+        for target in (4, 6, 8)
+    }
     event["next_task_id"] = next_id
     event["dispatchable"] = bool((event.get("dispatch") or {}).get("dispatchable"))
     event["reconcile_action_count"] = int((event.get("reconcile") or {}).get("action_count") or 0)
@@ -1926,6 +2052,7 @@ def main() -> int:
         "handoff_backlog": event.get("handoff_backlog", {}),
         "continuation": event.get("continuation", {}),
         "claim_state": event.get("claim_state", {}),
+        "concurrency_readiness": event.get("concurrency_readiness", {}),
         "scheduler_decision": event.get("scheduler_decision", {}),
         "batch_merge_manifest": event.get("batch_merge_manifest", {}),
         "batch_executor": event.get("batch_executor", {}),

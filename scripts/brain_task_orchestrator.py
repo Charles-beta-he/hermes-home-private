@@ -7455,6 +7455,52 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
     return selected, skipped
 
 
+def boundary_readiness_summary(*, requested_agents: int, selected: list[Any], skipped: list[dict[str, Any]], dispatchable_count: int) -> dict[str, Any]:
+    """Read-only explanation of selected concurrency after lane/boundary filtering."""
+    requested = max(1, int(requested_agents or 1))
+    selected_rows = [x for x in selected if isinstance(x, dict)]
+    skipped_rows = [x for x in skipped if isinstance(x, dict)]
+    skipped_reason_counts: dict[str, int] = {}
+    lane_counts_selected: dict[str, int] = {}
+    lane_counts_skipped: dict[str, int] = {}
+    boundary_counts: dict[str, int] = {}
+    for row in selected_rows:
+        lane = str(row.get("lane") or "unknown")
+        lane_counts_selected[lane] = lane_counts_selected.get(lane, 0) + 1
+    for row in skipped_rows:
+        reason = str(row.get("reason") or "unknown")
+        skipped_reason_counts[reason] = skipped_reason_counts.get(reason, 0) + 1
+        lane = str(row.get("lane") or "unknown")
+        lane_counts_skipped[lane] = lane_counts_skipped.get(lane, 0) + 1
+        if reason == "parallel_boundary_conflict":
+            key = str(row.get("boundary_key") or "unknown")
+            boundary_counts[key] = boundary_counts.get(key, 0) + 1
+    blocking_boundaries = [
+        {"boundary_key": key, "skipped_count": count}
+        for key, count in sorted(boundary_counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    ]
+    blockers: list[dict[str, Any]] = []
+    if len(selected_rows) < requested:
+        blockers.append({"reason": "selected_count_below_requested", "actual": len(selected_rows), "required": requested})
+    if blocking_boundaries:
+        blockers.append({"reason": "parallel_boundary_conflicts_present", "actual": len(blocking_boundaries), "required": 0})
+    return {
+        "schema": "taskpool_boundary_readiness_v1",
+        "status": "PASS" if not blockers else "FAIL_CLOSED",
+        "read_only": True,
+        "requested_agents": requested,
+        "dispatchable_count": max(0, int(dispatchable_count or 0)),
+        "selected_count": len(selected_rows),
+        "skipped_count": len(skipped_rows),
+        "skipped_reason_counts": skipped_reason_counts,
+        "lane_counts_selected": lane_counts_selected,
+        "lane_counts_skipped": lane_counts_skipped,
+        "blocking_boundaries": blocking_boundaries,
+        "blockers": blockers,
+        "safety": "dry-run readiness only; does not claim, execute, or mark tasks done",
+    }
+
+
 def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     max_agents = int(getattr(args, "max_agents", 0) or 0)
     if max_agents < 1:
@@ -7491,6 +7537,7 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
             "execution_prompt": dispatch_prompt_for_row(row),
             "agent_card_routing": agent_card_routing,
         })
+    selected_rows = [dict(t.row(), retry_lane=retry_lane_for_task(t).get("lane"), retry_lane_reason=retry_lane_for_task(t).get("reason")) for t in selected]
     return {
         "status": "OK",
         "dry_run": True,
@@ -7498,8 +7545,14 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
         "max_agents": max_agents,
         "priority_mode": taskpool_priority_mode(),
         "selected_count": len(selected),
-        "selected": [dict(t.row(), retry_lane=retry_lane_for_task(t).get("lane"), retry_lane_reason=retry_lane_for_task(t).get("reason")) for t in selected],
+        "selected": selected_rows,
         "skipped": skipped,
+        "boundary_readiness": boundary_readiness_summary(
+            requested_agents=max_agents,
+            selected=selected_rows,
+            skipped=skipped,
+            dispatchable_count=len(dispatchable_tasks()),
+        ),
         "retry_lane_caps": retry_lane_caps(max_agents),
         "active_accounting": {
             "mode": "sanitized_active_excludes_stale_claims",
