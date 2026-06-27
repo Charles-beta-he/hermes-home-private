@@ -161,7 +161,7 @@ MISSION_ENVELOPE_LIST_FIELDS = {
     "proof_artifacts",
 }
 MISSION_STRUCTURED_REF_FIELDS = {"evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact"}
-MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "certified_with_minor_risks", "certified"}
+MISSION_CERTIFICATION_STATUSES = {"advisory", "not_certified", "multimodel_ratified_advisory", "certified_with_minor_risks", "certified"}
 MULTIMODEL_AUTORUN_ENV_FLAG = "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL"
 EVENT_HOOK_NO_MULTIMODEL_SPAWN_ENV_FLAG = "HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"
 MULTIMODEL_ALLOWLIST = AUTORUN_STATE_DIR / "multimodel_intervention_allowlist.json"
