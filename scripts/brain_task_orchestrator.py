@@ -7474,9 +7474,13 @@ def boundary_readiness_summary(*, requested_agents: int, selected: list[Any], sk
     lane_counts_selected: dict[str, int] = {}
     lane_counts_skipped: dict[str, int] = {}
     boundary_counts: dict[str, int] = {}
+    selected_boundary_counts: dict[str, int] = {}
     for row in selected_rows:
         lane = str(row.get("lane") or "unknown")
         lane_counts_selected[lane] = lane_counts_selected.get(lane, 0) + 1
+        key = str(row.get("boundary_key") or "")
+        if key:
+            selected_boundary_counts[key] = selected_boundary_counts.get(key, 0) + 1
     for row in skipped_rows:
         reason = str(row.get("reason") or "unknown")
         skipped_reason_counts[reason] = skipped_reason_counts.get(reason, 0) + 1
@@ -7491,6 +7495,20 @@ def boundary_readiness_summary(*, requested_agents: int, selected: list[Any], sk
     ]
     active = max(0, int(active_count or 0))
     projected_active_count = active + len(selected_rows)
+    slot_deficit = max(0, requested - projected_active_count)
+    capacity_diagnostics = {
+        "slot_deficit": slot_deficit,
+        "unique_selected_boundary_count": len(selected_boundary_counts) or len(selected_rows),
+        "unique_blocking_boundary_count": len(blocking_boundaries),
+        "top_limiting_boundaries": blocking_boundaries[:5],
+        "recommended_actions": [],
+    }
+    if slot_deficit:
+        capacity_diagnostics["recommended_actions"].append("add_dispatchable_tasks_or_wait_for_active_workers")
+    if blocking_boundaries and slot_deficit:
+        capacity_diagnostics["recommended_actions"].append("increase_boundary_diversity_or_split_conflict_group")
+    if not skipped_rows and slot_deficit:
+        capacity_diagnostics["recommended_actions"].append("refill_or_unblock_lane_supply")
     blockers: list[dict[str, Any]] = []
     if projected_active_count < requested:
         blockers.append({"reason": "projected_active_count_below_requested", "actual": projected_active_count, "required": requested})
@@ -7510,6 +7528,7 @@ def boundary_readiness_summary(*, requested_agents: int, selected: list[Any], sk
         "lane_counts_selected": lane_counts_selected,
         "lane_counts_skipped": lane_counts_skipped,
         "blocking_boundaries": blocking_boundaries,
+        "capacity_diagnostics": capacity_diagnostics,
         "blockers": blockers,
         "safety": "dry-run readiness only; does not claim, execute, or mark tasks done",
     }

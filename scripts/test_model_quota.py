@@ -128,6 +128,57 @@ class TestModelQuota(unittest.TestCase):
             self.assertEqual(skipped[0]["model"], "claude-fable-5")
             self.assertEqual(skipped[0]["reason"], "quota_exhausted")
 
+    def test_record_call_success_without_quota_headers_for_documented_provider_is_budget_usable(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            snap = mq.record_call(
+                model="gpt-5.5",
+                provider="openai-codex",
+                ok=True,
+                headers={},
+                usage={"input_tokens": 1, "output_tokens": 1},
+            )
+            self.assertEqual(snap["status"], "ok")
+            self.assertEqual(snap["observability"], "estimated_subscription_window")
+            self.assertEqual(snap["quota_type"], "documented_no_quota_header_policy")
+            self.assertEqual(snap["source"], "direct_api_no_quota_headers")
+            self.assertGreaterEqual(snap["confidence"], 0.55)
+            self.assertEqual(snap["documented_policy_evidence"]["evidence_state"], "usable_under_documented_no_header_policy")
+
+            gate = mq.assess_quota_confidence(["gpt-5.5"], providers={"gpt-5.5": "openai-codex"})
+            self.assertEqual(gate["status"], "PASS", gate)
+            self.assertEqual(gate["pass_count"], 1)
+            self.assertEqual(gate["failure_count"], 0)
+
+    def test_record_call_success_without_quota_headers_does_not_downgrade_fresh_documented_budget_evidence(self):
+        with tempfile.TemporaryDirectory() as td:
+            mq = load_model_quota(td)
+            state_path = Path(td) / "state" / "model_quota_state.json"
+            log_path = Path(td) / "logs" / "model-quota.jsonl"
+            first = mq.record_call(
+                model="mimo-v2.5-pro",
+                provider="xiaomi",
+                ok=True,
+                headers={},
+                state_path=str(state_path),
+                log_path=str(log_path),
+            )
+            second = mq.record_call(
+                model="mimo-v2.5-pro",
+                provider="xiaomi",
+                ok=True,
+                headers={},
+                usage={"input_tokens": 2},
+                state_path=str(state_path),
+                log_path=str(log_path),
+            )
+            self.assertEqual(first["status"], "ok")
+            self.assertEqual(second["status"], "ok")
+            self.assertEqual(second["source"], "direct_api_no_quota_headers")
+            persisted = json.loads(state_path.read_text())["xiaomi::mimo-v2.5-pro"]
+            self.assertEqual(persisted["status"], "ok")
+            self.assertEqual(persisted["documented_policy_evidence"]["policy"], "documented_no_quota_header_provider")
+
     def test_record_call_persists_headers_snapshot_and_jsonl(self):
         with tempfile.TemporaryDirectory() as td:
             mq = load_model_quota(td)

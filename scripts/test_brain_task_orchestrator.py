@@ -3711,6 +3711,30 @@ def test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes
         os.environ.update(old_env)
 
 
+def test_boundary_readiness_exposes_diversity_diagnostics_for_advisory_8_deficit():
+    mod = load_orchestrator_module()
+    readiness = mod.boundary_readiness_summary(
+        requested_agents=8,
+        selected=[
+            {"id": "a1", "lane": "advisory", "boundary_key": "repo:a"},
+            {"id": "b1", "lane": "advisory", "boundary_key": "repo:b"},
+            {"id": "c1", "lane": "advisory", "boundary_key": "repo:c"},
+            {"id": "d1", "lane": "advisory", "boundary_key": "repo:d"},
+        ],
+        skipped=[
+            {"id": "a2", "lane": "advisory", "reason": "parallel_boundary_conflict", "boundary_key": "repo:a"},
+            {"id": "a3", "lane": "advisory", "reason": "parallel_boundary_conflict", "boundary_key": "repo:a"},
+            {"id": "b2", "lane": "advisory", "reason": "parallel_boundary_conflict", "boundary_key": "repo:b"},
+        ],
+        dispatchable_count=7,
+    )
+    diagnostics = readiness["capacity_diagnostics"]
+    assert diagnostics["slot_deficit"] == 4, readiness
+    assert diagnostics["unique_selected_boundary_count"] == 4, readiness
+    assert diagnostics["top_limiting_boundaries"][0]["boundary_key"] == "repo:a", readiness
+    assert "increase_boundary_diversity_or_split_conflict_group" in diagnostics["recommended_actions"], readiness
+
+
 def main():
     test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
     test_railway_deploy_gate_evaluate_uses_ancestor_relation()
@@ -3752,6 +3776,7 @@ def main():
     test_auto_close_review_fails_closed_on_negative_closeout_proof_marker()
     test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task()
     test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes()
+    test_boundary_readiness_exposes_diversity_diagnostics_for_advisory_8_deficit()
     print("PASS")
 
 

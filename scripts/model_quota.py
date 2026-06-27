@@ -500,6 +500,60 @@ def snapshot_unobservable_success(
     return snap
 
 
+def documented_no_header_success_snapshot(
+    model: str,
+    provider: str,
+    *,
+    source: str = "direct_api_no_quota_headers",
+    header_names: Optional[List[str]] = None,
+    usage: Optional[dict] = None,
+    evidence_note: str = "successful_call_without_quota_headers",
+) -> dict:
+    """Normalize a successful no-quota-header call for documented providers.
+
+    Some local/OAuth/subscription providers prove recent budget availability by
+    a successful call but expose no safe quota headers.  Treat that evidence as
+    a bounded documented-policy estimate for taskpool budget handoff rather than
+    downgrading the provider to unknown/unobservable on every success.
+    """
+    raw = snapshot_unobservable_success(
+        model,
+        provider,
+        source=source,
+        quota_type="documented_no_quota_header_policy",
+        header_names=header_names,
+        usage=usage,
+        evidence_note=evidence_note,
+        confidence=0.49,
+    )
+    evidence = {
+        "policy": "documented_no_quota_header_provider",
+        "provider": provider,
+        "source": source,
+        "freshness_seconds": DOCUMENTED_NO_HEADER_BUDGET_FRESHNESS_SECONDS,
+        "age_seconds": 0,
+        "confidence": round(DOCUMENTED_NO_HEADER_BUDGET_CONFIDENCE, 4),
+        "evidence_state": "usable_under_documented_no_header_policy",
+        "constraints": [
+            "requires_recent_real_success",
+            "does_not_claim_exact_remaining_quota",
+            "revoked_by_exhausted_rate_limited_or_malformed_snapshot",
+        ],
+    }
+    raw.update({
+        "status": "ok",
+        "observability": "estimated_subscription_window",
+        "quota_type": "documented_no_quota_header_policy",
+        "confidence": round(DOCUMENTED_NO_HEADER_BUDGET_CONFIDENCE, 4),
+        "original_status": "unobservable",
+        "original_observability": "unobservable",
+        "original_quota_type": "documented_no_quota_header_policy",
+        "documented_policy_evidence": evidence,
+        "policy_scope": "budget_handoff_estimate_for_documented_no_header_provider",
+    })
+    return raw
+
+
 def load_state(path: str = STATE_FILE) -> dict:
     try:
         with open(path) as f:
@@ -641,7 +695,19 @@ def record_call(
 ) -> dict:
     provider = provider or provider_for_model(model)
     if ok:
-        snapshot = snapshot_from_headers(model, provider, headers or {}, usage=usage)
+        clean_headers = headers or {}
+        if provider in DOCUMENTED_NO_HEADER_BUDGET_PROVIDERS and not any(
+            _first_header(clean_headers, keys) for keys in (HEADER_TOKEN_KEYS, HEADER_REQUEST_KEYS, HEADER_RESET_KEYS)
+        ):
+            snapshot = documented_no_header_success_snapshot(
+                model,
+                provider,
+                header_names=list(clean_headers.keys()),
+                usage=usage,
+                evidence_note="record_call_success_without_quota_headers",
+            )
+        else:
+            snapshot = snapshot_from_headers(model, provider, clean_headers, usage=usage)
     else:
         retry_after = _first_header(headers or {}, ("retry-after", "x-ratelimit-reset-requests", "x-ratelimit-reset-tokens"))
         snapshot = snapshot_from_error(model, provider, error, retry_after=retry_after)
