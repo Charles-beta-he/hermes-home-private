@@ -698,6 +698,32 @@ def test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns():
     assert probe["soft_unknown_count"] == 2, probe
 
 
+def test_api_quota_capacity_probe_passes_configured_model_subset_to_confidence_gate():
+    module = load_tick_module()
+    old_run_cmd_json = module.run_cmd_json
+    old_cache_env = os.environ.get("HERMES_TASKPOOL_API_CACHE")
+    seen = {}
+    try:
+        os.environ["HERMES_TASKPOOL_API_CACHE"] = "0"
+        def fake_run_cmd_json(cmd, timeout=None):
+            seen["cmd"] = list(map(str, cmd))
+            return {"status": "PASS", "pass_count": 3, "failure_count": 0, "failures": []}
+        module.run_cmd_json = fake_run_cmd_json
+        probe = module.api_quota_capacity_probe(dynamic_ceiling=8, models=["gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"])
+    finally:
+        module.run_cmd_json = old_run_cmd_json
+        if old_cache_env is None:
+            os.environ.pop("HERMES_TASKPOOL_API_CACHE", None)
+        else:
+            os.environ["HERMES_TASKPOOL_API_CACHE"] = old_cache_env
+    cmd = seen.get("cmd") or []
+    assert cmd.count("--model") == 3, cmd
+    assert "gpt-5.5" in cmd and "deepseek-v4-pro" in cmd and "mimo-v2.5-pro" in cmd, cmd
+    assert probe["status"] == "OK", probe
+    assert probe["api_slots"] == 8, probe
+    assert probe["models_checked"] == ["gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro"], probe
+
+
 def test_api_quota_capacity_probe_unavailable_error_does_not_echo_stdout_stderr():
     module = load_tick_module()
     old_run_cmd_json = module.run_cmd_json
@@ -1278,7 +1304,7 @@ def test_resource_capacity_probe_quality_can_be_disabled_and_api_ttl_config_used
     old_quality = module.quality_capacity_probe
     calls = []
     try:
-        module.api_quota_capacity_probe = lambda *, dynamic_ceiling, cache_ttl_seconds=None: calls.append((dynamic_ceiling, cache_ttl_seconds)) or {"status": "OK", "api_slots": dynamic_ceiling}
+        module.api_quota_capacity_probe = lambda *, dynamic_ceiling, cache_ttl_seconds=None, models=None: calls.append((dynamic_ceiling, cache_ttl_seconds, models)) or {"status": "OK", "api_slots": dynamic_ceiling}
         module.worker_jobs_status = lambda: {"status": "OK", "jobs": []}
         module.quality_capacity_probe = lambda **kwargs: (_ for _ in ()).throw(AssertionError("quality probe should be disabled"))
         probe = module.resource_capacity_probe(dynamic_ceiling=7, quality_enabled=False, api_cache_ttl_seconds=12)
@@ -1286,7 +1312,7 @@ def test_resource_capacity_probe_quality_can_be_disabled_and_api_ttl_config_used
         module.api_quota_capacity_probe = old_api
         module.worker_jobs_status = old_worker
         module.quality_capacity_probe = old_quality
-    assert calls == [(7, 12)], calls
+    assert calls == [(7, 12, None)], calls
     assert probe["quality_probe"]["status"] == "DISABLED", probe
     assert probe["quality_slots"] == 7, probe
 
@@ -1778,6 +1804,7 @@ if __name__ == "__main__":
     test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
     test_event_next_tick_not_requested_skips_without_side_effects()
     test_api_quota_capacity_probe_caps_on_hard_blockers_not_unknowns()
+    test_api_quota_capacity_probe_passes_configured_model_subset_to_confidence_gate()
     test_api_quota_capacity_probe_unavailable_error_does_not_echo_stdout_stderr()
     test_api_quota_capacity_probe_env_cap_overrides_slots()
     test_api_quota_capacity_probe_uses_sanitized_ttl_cache()

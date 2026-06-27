@@ -565,6 +565,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         "batch_executor_skip_when_regular_selected": True,
         "batch_executor_require_headroom": True,
         "parallel_dispatch_lane": "all",
+        "api_quota_models": [],
     }
     try:
         import yaml  # type: ignore
@@ -597,6 +598,13 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
     defaults["parallel_dispatch_lane"] = str(defaults.get("parallel_dispatch_lane") or "all").strip().lower()
     if defaults["parallel_dispatch_lane"] not in {"all", "work", "evolution", "advisory"}:
         defaults["parallel_dispatch_lane"] = "all"
+    raw_api_quota_models = defaults.get("api_quota_models")
+    if isinstance(raw_api_quota_models, str):
+        defaults["api_quota_models"] = [m.strip() for m in raw_api_quota_models.split(",") if m.strip()]
+    elif isinstance(raw_api_quota_models, list):
+        defaults["api_quota_models"] = [str(m).strip() for m in raw_api_quota_models if str(m).strip()]
+    else:
+        defaults["api_quota_models"] = []
     defaults["drain_claimed_first"] = str(defaults.get("drain_claimed_first", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["event_refill_enabled"] = str(defaults.get("event_refill_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
     defaults["quality_slots_enabled"] = str(defaults.get("quality_slots_enabled", "true")).strip().lower() not in {"0", "false", "no", "off"}
@@ -649,6 +657,7 @@ def resolve_parallel_agent_cap(*, requested_max_agents: int, taskpool_cfg: dict[
         quality_window=int(taskpool_cfg.get("quality_slots_window") or 80),
         quality_min_samples=int(taskpool_cfg.get("quality_slots_min_samples") or 3),
         api_cache_ttl_seconds=int(taskpool_cfg.get("api_quota_cache_ttl_seconds") or 45),
+        api_models=taskpool_cfg.get("api_quota_models") if isinstance(taskpool_cfg.get("api_quota_models"), list) else None,
     )
     resource_ceiling = int(resource_probe.get("effective_resource_ceiling") or dynamic_ceiling)
     # Resource pressure is a safety cap, not merely telemetry.  It may lower
@@ -764,11 +773,16 @@ def _safe_api_probe_for_cache(payload: dict[str, Any]) -> dict[str, Any]:
     return {k: payload.get(k) for k in allowed if k in payload}
 
 
-def load_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds: int) -> dict[str, Any] | None:
+def load_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds: int, model_key: str = "") -> dict[str, Any] | None:
     if ttl_seconds <= 0 or os.environ.get("HERMES_TASKPOOL_API_CACHE", "1").strip().lower() in {"0", "false", "no", "off"}:
         return None
     cache = _read_json_file(API_QUOTA_CACHE_FILE)
-    if not cache or int(cache.get("dynamic_ceiling") or 0) != int(dynamic_ceiling or 0) or int(cache.get("env_api_cap") or 0) != int(env_api_cap or 0):
+    if (
+        not cache
+        or int(cache.get("dynamic_ceiling") or 0) != int(dynamic_ceiling or 0)
+        or int(cache.get("env_api_cap") or 0) != int(env_api_cap or 0)
+        or str(cache.get("model_key") or "") != str(model_key or "")
+    ):
         return None
     expires_at = parse_ts(cache.get("expires_at"))
     if not expires_at or expires_at <= utc_now():
@@ -781,7 +795,7 @@ def load_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds:
     return payload
 
 
-def save_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds: int, payload: dict[str, Any]) -> None:
+def save_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds: int, payload: dict[str, Any], model_key: str = "") -> None:
     if ttl_seconds <= 0 or os.environ.get("HERMES_TASKPOOL_API_CACHE", "1").strip().lower() in {"0", "false", "no", "off"}:
         return
     now = utc_now()
@@ -793,6 +807,7 @@ def save_api_quota_cache(*, dynamic_ceiling: int, env_api_cap: int, ttl_seconds:
             "expires_at": (now + timedelta(seconds=ttl_seconds)).isoformat().replace("+00:00", "Z"),
             "dynamic_ceiling": int(dynamic_ceiling or 0),
             "env_api_cap": int(env_api_cap or 0),
+            "model_key": str(model_key or ""),
             "payload": safe,
             "safety": "sanitized api quota cache; raw command output and environment never persisted",
         })
@@ -896,7 +911,7 @@ def quality_capacity_probe(*, dynamic_ceiling: int, worker_jobs: dict[str, Any] 
     }
 
 
-def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | None = None) -> dict[str, Any]:
+def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | None = None, models: list[str] | None = None) -> dict[str, Any]:
     """Return a conservative API/provider quota slot cap.
 
     The model_quota confidence gate is strict for budget handoff, but taskpool
@@ -914,7 +929,9 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | N
         except Exception:
             env_api_cap = 0
     ttl_seconds = api_quota_cache_ttl_seconds(int(cache_ttl_seconds if cache_ttl_seconds is not None else 45))
-    cached = load_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds)
+    quota_models = [str(m).strip() for m in (models or []) if str(m).strip()]
+    model_key = ",".join(quota_models)
+    cached = load_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, model_key=model_key)
     if cached is not None:
         return cached
     payload: dict[str, Any] = {
@@ -927,14 +944,18 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | N
         "hard_blockers": [],
         "soft_unknowns": [],
         "cache": {"hit": False, "ttl_seconds": ttl_seconds},
+        "models_checked": quota_models,
         "safety": "only hard quota/provider blockers reduce taskpool concurrency; unknown/unobservable is telemetry",
     }
     if not MODEL_QUOTA_SCRIPT.exists():
         payload["status"] = "SKIP"
         payload["reason"] = "model_quota_script_missing"
-        save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload)
+        save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload, model_key=model_key)
         return payload
-    gate = run_cmd_json([sys.executable, str(MODEL_QUOTA_SCRIPT), "confidence-gate", "--json"], timeout=min(command_timeout_seconds(), 30.0))
+    gate_cmd = [sys.executable, str(MODEL_QUOTA_SCRIPT), "confidence-gate", "--json"]
+    for model in quota_models:
+        gate_cmd.extend(["--model", model])
+    gate = run_cmd_json(gate_cmd, timeout=min(command_timeout_seconds(), 30.0))
     payload["confidence_gate_status"] = gate.get("status")
     if gate.get("status") not in {"PASS", "FAIL_CLOSED"}:
         payload["status"] = "SKIP"
@@ -942,7 +963,7 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | N
         # Do not echo stdout/stderr here: provider errors may include sensitive
         # environment or auth context. Keep only controlled machine fields.
         payload["confidence_gate_error"] = {k: gate.get(k) for k in ["status", "reason", "returncode"] if gate.get(k)}
-        save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload)
+        save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload, model_key=model_key)
         return payload
     hard_statuses = {"exhausted", "rate_limited", "malformed", "unavailable"}
     hard: list[dict[str, Any]] = []
@@ -977,11 +998,11 @@ def api_quota_capacity_probe(*, dynamic_ceiling: int, cache_ttl_seconds: int | N
         "pass_count": gate.get("pass_count"),
         "failure_count": gate.get("failure_count"),
     })
-    save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload)
+    save_api_quota_cache(dynamic_ceiling=int(dynamic_ceiling or 1), env_api_cap=env_api_cap, ttl_seconds=ttl_seconds, payload=payload, model_key=model_key)
     return payload
 
 
-def resource_capacity_probe(*, dynamic_ceiling: int, quality_enabled: bool = True, quality_window: int = 80, quality_min_samples: int = 3, api_cache_ttl_seconds: int | None = None) -> dict[str, Any]:
+def resource_capacity_probe(*, dynamic_ceiling: int, quality_enabled: bool = True, quality_window: int = 80, quality_min_samples: int = 3, api_cache_ttl_seconds: int | None = None, api_models: list[str] | None = None) -> dict[str, Any]:
     """Return an advisory resource ceiling for dynamic taskpool dispatch.
 
     Boundary/quality gates still decide which tasks may run together.  This
@@ -1005,7 +1026,7 @@ def resource_capacity_probe(*, dynamic_ceiling: int, quality_enabled: bool = Tru
             env_cap = max(1, int(env_cap_raw))
         except Exception:
             env_cap = 0
-    api_probe = api_quota_capacity_probe(dynamic_ceiling=int(dynamic_ceiling or 1), cache_ttl_seconds=api_cache_ttl_seconds)
+    api_probe = api_quota_capacity_probe(dynamic_ceiling=int(dynamic_ceiling or 1), cache_ttl_seconds=api_cache_ttl_seconds, models=api_models)
     worker_jobs = worker_jobs_status()
     if quality_enabled:
         quality_probe = quality_capacity_probe(

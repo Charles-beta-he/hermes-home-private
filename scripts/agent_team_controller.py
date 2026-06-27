@@ -367,7 +367,15 @@ def transition_task(task_id, to_status, actor, reason, evidence=None, ttl=60, fo
     if force:
         cmd.append('--force')
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        transition_env = os.environ.copy()
+        # Agent-team workers already own the event-driven follow-through loop.
+        # Letting each lifecycle transition run the taskpool event hook recursively
+        # can serialize/timeout a parallel batch before all claimed items reach
+        # `running`, leaving the pool with one running task and one claimed task.
+        # Disable nested hooks only for these worker-owned transitions; cron and
+        # top-level operator transitions keep their normal hook behavior.
+        transition_env.setdefault('HERMES_TASKPOOL_EVENT_HOOK_DISABLED', '1')
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180, env=transition_env)
     except subprocess.TimeoutExpired as exc:
         return {
             'ok': False,
@@ -1374,7 +1382,8 @@ JSON: {{"verified":true|false,"issues":[],"reasoning":"<=80 chars"}}"""
         return _extract(r.stdout)
 
     def _call_claude():
-        cmd = ['claude', '-p', verify_prompt, '--model', 'claude-fable-5', '--max-turns', '1', '--output-format', 'json']
+        claude_model = os.environ.get('HERMES_TASKPOOL_CLAUDE_VERIFY_MODEL', 'claude-opus-4-8')
+        cmd = ['claude', '-p', verify_prompt, '--model', claude_model, '--max-turns', '1', '--output-format', 'json']
         r = _sp.run(cmd, capture_output=True, text=True, timeout=60)
         raw = r.stdout
         try:
@@ -2822,7 +2831,8 @@ Rules: approve ONLY if ALL criteria have concrete evidence. "looks ok" is NOT en
     
     # Claude
     try:
-        r = _sp.run(['claude','-p',prompt,'--model','claude-fable-5','--max-turns','1','--output-format','json'],
+        claude_model = os.environ.get('HERMES_TASKPOOL_CLAUDE_VERIFY_MODEL', 'claude-opus-4-8')
+        r = _sp.run(['claude','-p',prompt,'--model',claude_model,'--max-turns','1','--output-format','json'],
                     capture_output=True, text=True, timeout=90)
         raw = r.stdout
         try:
