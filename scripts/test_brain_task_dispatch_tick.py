@@ -1659,7 +1659,7 @@ def test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only
     assert readiness["status"] == "FAIL_CLOSED", readiness
     assert readiness["raise_allowed"] is False, readiness
     reasons = {b["reason"] for b in readiness["blockers"]}
-    assert "selected_count_below_requested" in reasons, reasons
+    assert "projected_active_count_below_requested" in reasons, reasons
     assert "resource_ceiling_below_requested" in reasons, reasons
     assert "quality_slots_below_requested" in reasons, reasons
     assert "api_confidence_fail_closed" in reasons, reasons
@@ -1686,6 +1686,30 @@ def test_concurrency_readiness_allows_low_concurrency_soft_provider_unknowns():
     )
     assert readiness["status"] == "PASS", readiness
     assert all(b["reason"] != "api_confidence_fail_closed" for b in readiness["blockers"]), readiness
+
+
+def test_concurrency_readiness_uses_projected_active_count_for_slot_sufficiency():
+    module = load_tick_module()
+    readiness = module.concurrency_readiness_snapshot(
+        requested_agents=4,
+        selected_count=2,
+        active_count=2,
+        resource_probe={
+            "effective_resource_ceiling": 4,
+            "quality_slots": 4,
+            "api_slots": 4,
+            "api_probe": {"confidence_gate_status": "FAIL_CLOSED", "soft_unknown_count": 2, "hard_blocker_count": 0},
+        },
+        claim_state={"stale_claim_count": 0, "handoff_backlog_gate_count": 0, "review_total": 0},
+        boundary_warning_count=0,
+        runtime_cfg={"max_parallel_agents": 2, "dynamic_max_parallel_agents": 4},
+    )
+    assert readiness["inputs"]["selected_count"] == 2, readiness
+    assert readiness["inputs"]["active_count"] == 2, readiness
+    assert readiness["inputs"]["projected_active_count"] == 4, readiness
+    assert readiness["safe_now_ceiling"] == 4, readiness
+    assert readiness["status"] == "PASS", readiness
+    assert all(b["reason"] != "projected_active_count_below_requested" for b in readiness["blockers"]), readiness
 
 
 def test_concurrency_readiness_uses_per_directory_handoff_gate_count():
@@ -1774,6 +1798,8 @@ if __name__ == "__main__":
     test_boundary_readiness_summary_reports_selected_vs_dispatchable()
     test_boundary_readiness_allows_residual_conflicts_after_requested_selection_met()
     test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only()
+    test_concurrency_readiness_allows_low_concurrency_soft_provider_unknowns()
+    test_concurrency_readiness_uses_projected_active_count_for_slot_sufficiency()
     test_concurrency_readiness_uses_per_directory_handoff_gate_count()
     test_concurrency_readiness_passes_for_clean_synthetic_snapshot()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()

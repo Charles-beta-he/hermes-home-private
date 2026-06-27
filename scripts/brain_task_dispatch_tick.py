@@ -378,11 +378,12 @@ def concurrency_readiness_snapshot(
     boundary_warnings = max(0, _safe_int(boundary_warning_count, 0))
     confidence = str(api_probe.get("confidence_gate_status") or "").strip().upper()
 
+    projected_active = active + selected
     handoff_threshold = max(1, _safe_int(cfg.get("concurrency_handoff_backlog_threshold") or cfg.get("handoff_archive_threshold"), 100))
     review_threshold = max(1, _safe_int(cfg.get("concurrency_review_backlog_threshold"), 10))
     blockers: list[dict[str, Any]] = []
-    if selected < requested:
-        _add_readiness_blocker(blockers, "selected_count_below_requested", actual=selected, required=requested)
+    if projected_active < requested:
+        _add_readiness_blocker(blockers, "projected_active_count_below_requested", actual=projected_active, required=requested)
     if resource_ceiling < requested:
         _add_readiness_blocker(blockers, "resource_ceiling_below_requested", actual=resource_ceiling, required=requested)
     if quality_slots < requested:
@@ -404,7 +405,7 @@ def concurrency_readiness_snapshot(
     if review_total > review_threshold:
         _add_readiness_blocker(blockers, "review_backlog_high", actual=review_total, required=f"<={review_threshold}")
 
-    safe_now_ceiling = max(1, min(selected or 1, resource_ceiling, quality_slots, api_slots))
+    safe_now_ceiling = max(1, min(projected_active or 1, resource_ceiling, quality_slots, api_slots))
     return {
         "schema": "taskpool_concurrency_readiness_v1",
         "status": "PASS" if not blockers else "FAIL_CLOSED",
@@ -417,6 +418,7 @@ def concurrency_readiness_snapshot(
         "inputs": {
             "selected_count": selected,
             "active_count": active,
+            "projected_active_count": projected_active,
             "resource_ceiling": resource_ceiling,
             "quality_slots": quality_slots,
             "api_slots": api_slots,
@@ -1969,7 +1971,12 @@ def main() -> int:
         event,
         requested_event_next_tick_depth=int(getattr(args, "event_next_tick_depth", 0) or 0),
     )
-    skipped_counts_for_readiness = _count_skipped_reasons((event.get("parallel_dispatch") or {}).get("skipped") or []) if isinstance(event.get("parallel_dispatch"), dict) else {}
+    parallel_dispatch_raw_for_readiness = event.get("parallel_dispatch")
+    parallel_dispatch_for_readiness = parallel_dispatch_raw_for_readiness if isinstance(parallel_dispatch_raw_for_readiness, dict) else {}
+    boundary_readiness_raw_for_readiness = parallel_dispatch_for_readiness.get("boundary_readiness")
+    boundary_readiness_for_readiness = boundary_readiness_raw_for_readiness if isinstance(boundary_readiness_raw_for_readiness, dict) else {}
+    boundary_blockers_raw_for_readiness = boundary_readiness_for_readiness.get("blockers")
+    boundary_blocker_count_for_readiness = len(boundary_blockers_raw_for_readiness) if isinstance(boundary_blockers_raw_for_readiness, list) else 0
     event["concurrency_readiness"] = {
         str(target): concurrency_readiness_snapshot(
             requested_agents=target,
@@ -1977,7 +1984,7 @@ def main() -> int:
             active_count=int((event.get("scheduler_decision") or {}).get("active_count") or 0),
             resource_probe=parallel_cap.get("resource_probe", {}) if isinstance(parallel_cap.get("resource_probe"), dict) else {},
             claim_state=event.get("claim_state", {}) if isinstance(event.get("claim_state"), dict) else {},
-            boundary_warning_count=int(skipped_counts_for_readiness.get("parallel_boundary_conflict") or 0),
+            boundary_warning_count=boundary_blocker_count_for_readiness,
             runtime_cfg=taskpool_cfg,
         )
         for target in (4, 6, 8)
