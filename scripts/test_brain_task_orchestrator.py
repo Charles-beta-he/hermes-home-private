@@ -3735,6 +3735,65 @@ def test_boundary_readiness_exposes_diversity_diagnostics_for_advisory_8_deficit
     assert "increase_boundary_diversity_or_split_conflict_group" in diagnostics["recommended_actions"], readiness
 
 
+def test_boundary_reclassification_groups_repair_by_parent_and_gap():
+    mod = load_orchestrator_module()
+    task = mod.Task(
+        Path("/tmp/repair.md"),
+        {
+            "type": "task",
+            "id": "repair-1",
+            "title": "Task - 补证闭环 missing_advisory_artifact",
+            "status": "pending",
+            "lane": "advisory",
+            "project": "hermes-agent-infrastructure",
+            "parallel_boundary": "hermes-agent-infrastructure",
+            "objective": "For parent review task `parent-task-1`, repair the done-gate gap `missing_advisory_artifact` without marking the parent done.",
+            "acceptance_evidence": "artifact:/file:/url evidence artifact; does not directly transition the parent to done",
+        },
+        "body says evidence artifact and does not directly transition the parent to done",
+    )
+    prop = mod.boundary_reclassification_proposal(task)
+    assert prop is not None
+    assert prop["basis"] == "parent_gap_repair"
+    assert prop["proposed_parallel_boundary"] == "advisory-repair:parent-task-1:missing-advisory-artifact"
+    assert prop["rollback"]["parallel_boundary"] == "hermes-agent-infrastructure"
+
+
+def test_boundary_reclassification_refuses_workspace_or_non_advisory_tasks():
+    mod = load_orchestrator_module()
+    workspace_task = mod.Task(
+        Path("/tmp/write.md"),
+        {
+            "type": "task",
+            "id": "write-1",
+            "title": "Task - code write",
+            "status": "pending",
+            "lane": "advisory",
+            "project": "hermes-agent-infrastructure",
+            "parallel_boundary": "hermes-agent-infrastructure",
+            "workspace": "/tmp/repo",
+            "objective": "read-only advisory evidence artifact without marking the parent done",
+        },
+        "does not directly transition",
+    )
+    work_task = mod.Task(
+        Path("/tmp/work.md"),
+        {
+            "type": "task",
+            "id": "work-1",
+            "title": "Task - work",
+            "status": "pending",
+            "lane": "work",
+            "project": "hermes-agent-infrastructure",
+            "parallel_boundary": "hermes-agent-infrastructure",
+            "objective": "read-only advisory evidence artifact without marking the parent done",
+        },
+        "does not directly transition",
+    )
+    assert mod.boundary_reclassification_proposal(workspace_task) is None
+    assert mod.boundary_reclassification_proposal(work_task) is None
+
+
 def main():
     test_railway_deploy_gate_accepts_exact_prefix_and_ancestor_commits()
     test_railway_deploy_gate_evaluate_uses_ancestor_relation()
@@ -3777,6 +3836,8 @@ def main():
     test_review_gap_scan_write_creates_idempotent_bounded_repair_child_task()
     test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes()
     test_boundary_readiness_exposes_diversity_diagnostics_for_advisory_8_deficit()
+    test_boundary_reclassification_groups_repair_by_parent_and_gap()
+    test_boundary_reclassification_refuses_workspace_or_non_advisory_tasks()
     print("PASS")
 
 

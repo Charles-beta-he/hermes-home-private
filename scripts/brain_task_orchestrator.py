@@ -7300,6 +7300,161 @@ def command_boundary_diff_check(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def _boundary_reclass_extract_parent_id(task: Task) -> str:
+    text = "\n".join([
+        str(task.fm.get("parent") or ""),
+        str(task.fm.get("parent_task") or ""),
+        str(task.fm.get("parent_id") or ""),
+        str(task.fm.get("objective") or ""),
+        task.body or "",
+    ])
+    match = re.search(r"parent review task [`']([^`']+)[`']", text, re.IGNORECASE)
+    if match:
+        return slugify(match.group(1))
+    for key in ("parent", "parent_task", "parent_id"):
+        value = str(task.fm.get(key) or "").strip()
+        if value:
+            return slugify(value)
+    return ""
+
+
+def _boundary_reclass_gap_key(task: Task) -> str:
+    text = f"{task.id}\n{task.title}\n{task.fm.get('objective') or ''}\n{task.body}".lower()
+    if "missing_multimodel_certification" in text:
+        return "missing-multimodel-certification"
+    if "missing_advisory_artifact" in text:
+        return "missing-advisory-artifact"
+    if "advisory" in text and "artifact" in text:
+        return "advisory-artifact"
+    return "advisory-analysis"
+
+
+def boundary_reclassification_proposal(task: Task) -> dict[str, Any] | None:
+    """Return a bounded advisory boundary split proposal for one task.
+
+    This never proves the task is done and never weakens lifecycle gates.  It only
+    narrows over-coarse advisory dispatch boundaries when the task text says the
+    work is read-only/evidence repair/analysis and no workspace write boundary is
+    declared.  Parent repair tasks are grouped by parent+gap so two children that
+    may write the same parent evidence still conflict.
+    """
+    if task.status not in {"pending", "retry"}:
+        return None
+    if task.lane != "advisory":
+        return None
+    if str(task.fm.get("workspace") or "").strip():
+        return None
+    if str(task.fm.get("workspace_isolation") or "").strip() in {"worktree", "copy"}:
+        return None
+    original = str(task.fm.get("parallel_boundary") or "").strip()
+    current_key = task_parallel_boundary_key(task)
+    if not (original or current_key.startswith("project:")):
+        return None
+    text = f"{task.id}\n{task.title}\n{task.fm.get('objective') or ''}\n{task.fm.get('acceptance_evidence') or ''}\n{task.body}".lower()
+    safety_hits = [
+        token for token in (
+            "without marking the parent done",
+            "does not directly transition",
+            "read-only",
+            "no code change",
+            "advisory",
+            "分析",
+            "evidence artifact",
+            "artifact:/file:/url",
+        )
+        if token.lower() in text
+    ]
+    if len(safety_hits) < 2:
+        return None
+    parent_key = _boundary_reclass_extract_parent_id(task)
+    gap_key = _boundary_reclass_gap_key(task)
+    if parent_key:
+        proposed = f"advisory-repair:{parent_key}:{gap_key}"
+        basis = "parent_gap_repair"
+    else:
+        proposed = f"advisory-analysis:{slugify(task.title)[:80]}"
+        basis = "read_only_analysis"
+    if proposed == original:
+        return None
+    return {
+        "task": task.id,
+        "path": str(task.path),
+        "status": task.status,
+        "lane": task.lane,
+        "project": task.project,
+        "original_parallel_boundary": original,
+        "current_boundary_key": current_key,
+        "proposed_parallel_boundary": proposed,
+        "basis": basis,
+        "safety_hits": safety_hits,
+        "rollback": {
+            "parallel_boundary": original,
+            "remove_fields": [
+                "boundary_governance_original_parallel_boundary",
+                "boundary_governance_reason",
+                "boundary_governance_applied_at",
+            ],
+        },
+    }
+
+
+def boundary_reclassification_plan(*, lane_filter: str = "advisory", max_tasks: int = 20) -> dict[str, Any]:
+    tasks = [t for t in dispatchable_tasks() if (not lane_filter or lane_filter == "all" or t.lane == lane_filter)]
+    proposals: list[dict[str, Any]] = []
+    for task in tasks:
+        prop = boundary_reclassification_proposal(task)
+        if prop:
+            proposals.append(prop)
+        if len(proposals) >= max_tasks:
+            break
+    return {
+        "status": "OK",
+        "schema": "taskpool_boundary_reclassification_plan_v1",
+        "generated_at": iso(),
+        "lane_filter": lane_filter,
+        "proposal_count": len(proposals),
+        "proposals": proposals,
+        "safety": "read-only plan unless --write; parent repair tasks stay grouped by parent+gap; lifecycle/proof gates unchanged",
+    }
+
+
+def command_boundary_reclassify_step(args: argparse.Namespace) -> dict[str, Any]:
+    plan = boundary_reclassification_plan(lane_filter=args.lane, max_tasks=args.max_tasks)
+    if not getattr(args, "write", False):
+        plan["dry_run"] = True
+        return plan
+    applied: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    by_id = {t.id: t for t in iter_tasks()}
+    for prop in plan.get("proposals", []):
+        task = by_id.get(str(prop.get("task") or ""))
+        if not task:
+            errors.append({"task": prop.get("task"), "error": "task_not_found"})
+            continue
+        # Recompute to avoid stale proposal application.
+        fresh = boundary_reclassification_proposal(task)
+        if not fresh or fresh.get("proposed_parallel_boundary") != prop.get("proposed_parallel_boundary"):
+            errors.append({"task": task.id, "error": "proposal_stale_or_no_longer_safe"})
+            continue
+        original = str(task.fm.get("parallel_boundary") or "").strip()
+        task.fm["boundary_governance_original_parallel_boundary"] = original
+        task.fm["boundary_governance_reason"] = "advisory_readonly_parent_gap_or_analysis_split"
+        task.fm["boundary_governance_applied_at"] = iso()
+        task.fm["parallel_boundary"] = str(fresh["proposed_parallel_boundary"])
+        save_task(task)
+        applied.append(fresh)
+    return {
+        "status": "OK" if not errors else "WARN",
+        "schema": "taskpool_boundary_reclassification_apply_v1",
+        "dry_run": False,
+        "applied_count": len(applied),
+        "error_count": len(errors),
+        "applied": applied,
+        "errors": errors,
+        "safety": "only pending/retry advisory read-only/evidence tasks were rewritten; rollback stored per task",
+    }
+
+
 def _task_retry_text(task: "Task") -> str:
     parts: list[str] = []
     fm = getattr(task, "fm", {}) or {}
@@ -10607,6 +10762,12 @@ def build_parser() -> argparse.ArgumentParser:
     bdcp.add_argument("--diff-lines", type=int, default=0, help="Added/removed diff line count for loc_budget")
     bdcp.add_argument("--json", action="store_true")
 
+    brcp = sub.add_parser("boundary-reclassify-step")
+    brcp.add_argument("--lane", default="advisory", choices=["all", *VALID_LANES])
+    brcp.add_argument("--max-tasks", type=int, default=20)
+    brcp.add_argument("--write", action="store_true", help="Apply safe pending/retry advisory boundary splits; default is dry-run")
+    brcp.add_argument("--json", action="store_true")
+
     pdp = sub.add_parser("parallel-dispatch-dry-run")
     pdp.add_argument("--max-agents", type=int, default=3)
     pdp.add_argument("--lane", default="all", choices=["all", *VALID_LANES], help="Optional dry-run lane pool filter; read-only and does not change priority mode")
@@ -10759,6 +10920,8 @@ def main(argv: list[str] | None = None) -> int:
         return print_result(command_boundary_check(args), args.json)
     if args.cmd == "boundary-diff-check":
         return print_result(command_boundary_diff_check(args), args.json)
+    if args.cmd == "boundary-reclassify-step":
+        return print_result(command_boundary_reclassify_step(args), args.json)
     if args.cmd == "parallel-dispatch-dry-run":
         return print_result(command_parallel_dispatch_dry_run(args), args.json)
     if args.cmd == "parallel-claim-and-handoff":
