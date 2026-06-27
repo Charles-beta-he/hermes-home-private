@@ -11,6 +11,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import yaml
+
 
 SCRIPT = Path(__file__).parent / "model-router.py"
 
@@ -61,6 +63,24 @@ def quota_pass_payload(models=None):
 
 
 class TestModelRouterQuota(unittest.TestCase):
+    def test_model_available_honors_runtime_unavailable_snapshot_before_oauth_assumption(self):
+        with tempfile.TemporaryDirectory() as td:
+            state_dir = Path(td) / "state"
+            state_dir.mkdir(parents=True)
+            (state_dir / "provider_availability.json").write_text(json.dumps({
+                "google-gemini-cli::gemini-3-flash-preview": {
+                    "provider": "google-gemini-cli",
+                    "model": "gemini-3-flash-preview",
+                    "status": "unavailable",
+                    "last_reason": "runtime_provider_error",
+                }
+            }))
+            router = load_router(td)
+            available = router._model_available("gemini-3-flash-preview", config={"pricing": {"models": {
+                "gemini-3-flash-preview": {"provider": "google-gemini-cli"},
+            }}})
+            self.assertFalse(available)
+
     def test_select_model_excludes_exhausted_quota_candidate(self):
         with tempfile.TemporaryDirectory() as td:
             state_dir = Path(td) / "state"
@@ -142,6 +162,164 @@ class TestModelRouterQuota(unittest.TestCase):
             )
             self.assertEqual(decision["model"], "code-model")
             self.assertIn("chat-only", decision["capability_skipped_candidates"])
+
+    def test_select_model_prefers_specialist_primary_for_ui_visual(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._model_available = lambda model, config=None: True
+            router._get_pricing = lambda: None
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "gpt-5.5", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+                {"model": "gemini-3.1-pro-preview", "count": 0, "pass_rate": 0.0, "score": 0.0, "avg_dur": 10},
+            ]
+            decision = router.select_model(
+                config={
+                    "enabled": True,
+                    "default_model": "gpt-5.5",
+                    "candidate_models": ["gpt-5.5", "gemini-3.1-pro-preview"],
+                    "min_traces_per_model": 1,
+                    "epsilon": 0.0,
+                    "pricing": {"models": {
+                        "gpt-5.5": {"provider": "openai-codex", "capabilities": ["code", "reasoning", "chat"]},
+                        "gemini-3.1-pro-preview": {"provider": "google-gemini-cli", "capabilities": ["chat", "vision", "design"]},
+                    }},
+                },
+                task_class="ui_visual screenshot 美感",
+                task_tier="chat",
+                candidate_override=["gpt-5.5", "gemini-3.1-pro-preview"],
+                epsilon=0.0,
+            )
+            self.assertEqual(decision["model"], "gemini-3.1-pro-preview")
+            self.assertEqual(decision["specialist_rule_id"], "ui_visual_gemini_primary")
+            self.assertIn("specialist_primary", decision["reason"])
+
+    def test_select_model_prefers_claude_code_for_review(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            router._model_available = lambda model, config=None: True
+            router._get_pricing = lambda: None
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "deepseek-v4-pro", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+                {"model": "claude-opus-4-8", "count": 0, "pass_rate": 0.0, "score": 0.0, "avg_dur": 10},
+            ]
+            decision = router.select_model(
+                config={
+                    "enabled": True,
+                    "default_model": "gpt-5.5",
+                    "candidate_models": ["deepseek-v4-pro", "claude-opus-4-8"],
+                    "min_traces_per_model": 1,
+                    "epsilon": 0.0,
+                    "pricing": {"models": {
+                        "deepseek-v4-pro": {"provider": "deepseek", "capabilities": ["code", "reasoning"]},
+                        "claude-opus-4-8": {"provider": "claude-code", "capabilities": ["code", "reasoning", "analysis"]},
+                    }},
+                },
+                task_class="code_review 架构审查",
+                task_tier="reviewer",
+                candidate_override=["deepseek-v4-pro", "claude-opus-4-8"],
+                epsilon=0.0,
+            )
+            self.assertEqual(decision["model"], "claude-opus-4-8")
+            self.assertEqual(decision["specialist_rule_id"], "review_claude_code_primary")
+
+    def test_profile_surface_routing_covers_all_declared_surfaces_with_required_evidence(self):
+        profile = {
+            "version": 1,
+            "surfaces": {
+                "code_correctness": {"implementers": ["gpt-5.5"], "verifiers": ["deepseek-v4-pro"], "final_evidence": ["test_output"]},
+                "security": {"implementers": ["gpt-5.5"], "verifiers": ["deepseek-v4-pro"], "final_evidence": ["negative_case", "readback"]},
+                "factual_claim": {"implementers": [], "verifiers": ["deepseek-v4-pro"], "final_evidence": ["fresh_tool_output", "source_ref"]},
+                "completion_claim": {"implementers": [], "verifiers": ["hermes_evidence_gate"], "final_evidence": ["fresh_tool_output"]},
+                "hermes_self_modification": {"implementers": ["gpt-5.5"], "verifiers": ["deepseek-v4-pro"], "final_evidence": ["focused_pytest", "git_status"]},
+            },
+        }
+        with tempfile.TemporaryDirectory() as td:
+            config_dir = Path(td) / "config"
+            config_dir.mkdir(parents=True)
+            (config_dir / "model_capability_profiles.yaml").write_text(yaml.safe_dump(profile), encoding="utf-8")
+            router = load_router(td)
+            router._model_available = lambda model, config=None: True
+            router._get_pricing = lambda: None
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "gpt-5.5", "count": 100, "pass_rate": 0.9, "score": 0.9, "avg_dur": 1},
+                {"model": "deepseek-v4-pro", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+            ]
+            config = {
+                "enabled": True,
+                "default_model": "gpt-5.5",
+                "candidate_models": ["gpt-5.5", "deepseek-v4-pro"],
+                "min_traces_per_model": 1,
+                "epsilon": 0.0,
+                "pricing": {"models": {
+                    "gpt-5.5": {"provider": "openai-codex", "capabilities": ["code", "reasoning"]},
+                    "deepseek-v4-pro": {"provider": "deepseek", "capabilities": ["code", "reasoning", "security"]},
+                }},
+            }
+            for surface, spec in profile["surfaces"].items():
+                declared = [m for role in ("implementers", "verifiers", "fallback_verifiers", "arbiters") for m in spec.get(role, [])]
+                candidates = [m for m in declared if m != "hermes_evidence_gate"] or ["gpt-5.5", "deepseek-v4-pro"]
+                decision = router.select_model(
+                    config=config,
+                    task_class=surface,
+                    task_tier="codegen",
+                    candidate_override=candidates,
+                    epsilon=0.0,
+                )
+                self.assertEqual(decision.get("profile_surface"), surface)
+                self.assertEqual(decision.get("required_evidence"), spec["final_evidence"])
+                self.assertEqual(decision.get("routing_scope"), "profile_surface")
+                self.assertIn("profile_surface", decision.get("reason", ""))
+                if surface == "completion_claim":
+                    self.assertIsNone(decision.get("model"))
+                    self.assertEqual(decision.get("non_model_gate"), "hermes_evidence_gate")
+                else:
+                    self.assertIn(decision.get("model"), candidates)
+
+    def test_select_pair_uses_profile_verifier_for_surface_review_lane(self):
+        profile = {
+            "version": 1,
+            "surfaces": {
+                "security": {
+                    "implementers": ["gpt-5.5"],
+                    "verifiers": ["deepseek-v4-pro"],
+                    "arbiters": ["claude-opus-4-8"],
+                    "final_evidence": ["negative_case", "readback"],
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as td:
+            config_dir = Path(td) / "config"
+            config_dir.mkdir(parents=True)
+            (config_dir / "model_capability_profiles.yaml").write_text(yaml.safe_dump(profile), encoding="utf-8")
+            router = load_router(td)
+            router._model_available = lambda model, config=None: True
+            router._get_pricing = lambda: None
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "gpt-5.5", "count": 100, "pass_rate": 0.9, "score": 0.9, "avg_dur": 1},
+                {"model": "deepseek-v4-pro", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+                {"model": "claude-opus-4-8", "count": 100, "pass_rate": 0.8, "score": 0.8, "avg_dur": 1},
+            ]
+            pair = router.select_pair(
+                task_class="security",
+                task_tier="codegen",
+                config={
+                    "enabled": True,
+                    "default_model": "gpt-5.5",
+                    "candidate_models": ["gpt-5.5", "deepseek-v4-pro", "claude-opus-4-8"],
+                    "min_traces_per_model": 1,
+                    "epsilon": 0.0,
+                    "pricing": {"models": {
+                        "gpt-5.5": {"provider": "openai-codex", "capabilities": ["code", "reasoning"]},
+                        "deepseek-v4-pro": {"provider": "deepseek", "capabilities": ["code", "reasoning", "security"]},
+                        "claude-opus-4-8": {"provider": "claude-code", "capabilities": ["code", "reasoning", "analysis"]},
+                    }},
+                },
+            )
+            self.assertEqual(pair["producer"].get("profile_surface"), "security")
+            self.assertEqual(pair["producer"]["model"], "gpt-5.5")
+            self.assertEqual(pair["reviewer"].get("profile_surface"), "security")
+            self.assertEqual(pair["reviewer"]["model"], "deepseek-v4-pro")
+            self.assertEqual(pair.get("required_evidence"), ["negative_case", "readback"])
 
     def test_select_model_fails_closed_when_all_candidates_explicitly_lack_required_capability(self):
         with tempfile.TemporaryDirectory() as td:

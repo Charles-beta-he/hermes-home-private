@@ -113,6 +113,29 @@ _OAUTH_PROVIDERS = _oauth_provider_set()
 OVERLAY_SUPPORTED_PROVIDERS = _load_overlay_supported_providers()
 
 
+def _runtime_unavailable_snapshot(provider: str, model: str) -> Optional[dict]:
+    """Return a current runtime-unavailable snapshot for provider/model if present.
+
+    OAuth/external providers can have valid credentials while the underlying
+    product is suspended or otherwise fails at runtime.  Treat explicit runtime
+    failure snapshots as stronger evidence than the generic OAuth assumption so
+    routers fail closed until a real recovery path updates the snapshot.
+    """
+    snapshot_path = os.path.join(HERMES_HOME, "state", "provider_availability.json")
+    try:
+        with open(snapshot_path) as f:
+            snapshot = json.load(f) or {}
+    except (json.JSONDecodeError, OSError):
+        return None
+    entry = snapshot.get(f"{provider}::{model}")
+    if not isinstance(entry, dict) or entry.get("status") != "unavailable":
+        return None
+    reason = str(entry.get("last_reason") or "")
+    if reason and reason != "missing_env_var":
+        return entry
+    return None
+
+
 def _model_available(model: str, config: Optional[dict] = None, log_unavailable: bool = True) -> bool:
     """Check if a model's provider likely has credentials configured.
     Returns True if: (a) no env var known, (b) env var set, (c) OAuth-based provider.
@@ -126,6 +149,8 @@ def _model_available(model: str, config: Optional[dict] = None, log_unavailable:
         provider = pt.get_provider(model)
     if not provider:
         return True  # no provider info, assume available
+    if _runtime_unavailable_snapshot(provider, model):
+        return False
     # OAuth/session-based providers are always considered available
     if provider in _OAUTH_PROVIDERS:
         return True
@@ -423,6 +448,130 @@ def _capability_filter_candidates(
     return [], skipped
 
 
+def _load_capability_profile() -> dict:
+    """Load the optional profile-driven surface routing contract.
+
+    This keeps specialist routing data-driven: the profile owns surfaces,
+    implementers, verifiers, arbiters, and required evidence.  Missing or invalid
+    profiles are fail-soft because the older pricing/capability router remains a
+    valid fallback.
+    """
+    profile_path = os.path.join(HERMES_HOME, "config", "model_capability_profiles.yaml")
+    try:
+        with open(profile_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+    except (OSError, yaml.YAMLError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _surface_spec_from_profile(task_class: Optional[str], profile: Optional[dict] = None) -> Tuple[Optional[str], dict]:
+    profile = profile if isinstance(profile, dict) else _load_capability_profile()
+    surfaces = profile.get("surfaces") if isinstance(profile.get("surfaces"), dict) else {}
+    if not surfaces:
+        return None, {}
+    text = str(task_class or "").lower()
+    for surface, spec in surfaces.items():
+        if not isinstance(spec, dict):
+            continue
+        surface_text = str(surface).lower()
+        aliases = [surface_text, surface_text.replace("_", " "), surface_text.replace("_", "-")]
+        aliases.extend(str(a).lower() for a in spec.get("aliases", []) if isinstance(a, str))
+        if any(alias and alias in text for alias in aliases):
+            return str(surface), spec
+    return None, {}
+
+
+def _profile_role_order(task_tier: str) -> List[str]:
+    tier = str(task_tier or "").lower()
+    if tier in {"reviewer", "review", "arbiter"}:
+        return ["verifiers", "fallback_verifiers", "arbiters", "implementers"]
+    if tier in {"arbiter", "arbitration"}:
+        return ["arbiters", "verifiers", "fallback_verifiers", "implementers"]
+    return ["implementers", "verifiers", "fallback_verifiers", "arbiters"]
+
+
+def _profile_surface_match(task_tier: str, task_class: Optional[str], candidates: List[str]) -> Optional[dict]:
+    surface, spec = _surface_spec_from_profile(task_class)
+    if not surface:
+        return None
+    evidence = list(spec.get("final_evidence") or [])
+    role_order = _profile_role_order(task_tier)
+    declared_all: List[str] = []
+    for role in role_order:
+        for model in spec.get(role, []) or []:
+            if isinstance(model, str) and model not in declared_all:
+                declared_all.append(model)
+    non_model_gates = [m for m in declared_all if m == "hermes_evidence_gate"]
+    for role in role_order:
+        for model in spec.get(role, []) or []:
+            if model == "hermes_evidence_gate":
+                continue
+            if model in candidates:
+                return {
+                    "model": model,
+                    "surface": surface,
+                    "role": role,
+                    "required_evidence": evidence,
+                    "declared_models": declared_all,
+                }
+    if non_model_gates:
+        return {
+            "model": None,
+            "surface": surface,
+            "role": "non_model_gate",
+            "required_evidence": evidence,
+            "declared_models": declared_all,
+            "non_model_gate": non_model_gates[0],
+        }
+    return {
+        "model": None,
+        "surface": surface,
+        "role": "no_candidate",
+        "required_evidence": evidence,
+        "declared_models": declared_all,
+    }
+
+
+_SPECIALIST_PRIMARY_RULES = [
+    {
+        "id": "ui_visual_gemini_primary",
+        "keywords": ("ui", "visual", "美感", "审美", "截图", "screenshot", "design", "aesthetic", "画图", "image_prompt", "poster", "banner"),
+        "preferred_models": ("gemini-3.1-pro-preview", "gemini-3-flash-preview"),
+        "reason": "ui_visual/design tasks route to Gemini primary before risk-layer reviewers",
+    },
+    {
+        "id": "review_claude_code_primary",
+        "keywords": ("code_review", "review", "审查", "代码审查", "架构审查", "architecture_review"),
+        "preferred_models": ("claude-opus-4-8",),
+        "reason": "review/architecture review tasks route to Claude Code primary",
+    },
+    {
+        "id": "architecture_claude_primary",
+        "keywords": ("architecture", "架构", "system_design", "p10", "boundary"),
+        "preferred_models": ("claude-opus-4-8",),
+        "reason": "architecture/boundary tasks route to Claude primary",
+    },
+    {
+        "id": "low_cost_mimo_primary",
+        "keywords": ("triage", "classify", "classification", "quick", "低成本", "分类", "轻量"),
+        "preferred_models": ("mimo-v2.5-pro",),
+        "reason": "low-cost triage routes to MiMo primary",
+    },
+]
+
+
+def _specialist_primary_match(task_tier: str, task_class: Optional[str], candidates: List[str]) -> Optional[dict]:
+    text = f"{task_tier or ''} {task_class or ''}".lower()
+    for rule in _SPECIALIST_PRIMARY_RULES:
+        if not any(str(keyword).lower() in text for keyword in rule["keywords"]):
+            continue
+        for model in rule["preferred_models"]:
+            if model in candidates:
+                return {"model": model, "rule_id": rule["id"], "reason": rule["reason"]}
+    return None
+
+
 def _sticky_scope(sticky_key: str, task_class: Optional[str], task_tier: str) -> str:
     return f"{task_tier or ''}::{task_class or ''}::{sticky_key}"
 
@@ -570,6 +719,69 @@ def select_model(
             "effective_cost_est": 0,
             "model_scores": {},
         }
+    profile_match = _profile_surface_match(task_tier, task_class, candidates)
+    if profile_match:
+        chosen = profile_match.get("model")
+        if chosen is None:
+            return {
+                "model": None,
+                "reason": f"profile_surface({profile_match['surface']}: {profile_match['role']})",
+                "epsilon_used": 0.0,
+                "candidates": candidates,
+                "unavailable_candidates": unavailable if _log_unavailable else [],
+                "quota_exhausted_candidates": quota_exhausted,
+                "capability_skipped_candidates": capability_skipped,
+                "quota_snapshot": quota_snapshot,
+                "task_tier": task_tier,
+                "schedule_label": "unknown",
+                "effective_cost_est": 0,
+                "model_scores": {},
+                "profile_surface": profile_match["surface"],
+                "profile_role": profile_match["role"],
+                "routing_scope": "profile_surface",
+                "required_evidence": profile_match.get("required_evidence", []),
+                "declared_profile_models": profile_match.get("declared_models", []),
+                "non_model_gate": profile_match.get("non_model_gate"),
+            }
+        return {
+            "model": chosen,
+            "reason": f"profile_surface({profile_match['surface']}: {profile_match['role']})",
+            "epsilon_used": 0.0,
+            "candidates": candidates,
+            "unavailable_candidates": unavailable if _log_unavailable else [],
+            "quota_exhausted_candidates": quota_exhausted,
+            "capability_skipped_candidates": capability_skipped,
+            "quota_snapshot": quota_snapshot,
+            "task_tier": task_tier,
+            "schedule_label": _schedule_label(chosen, now_utc),
+            "effective_cost_est": _effective_cost(chosen, 2000, now_utc),
+            "model_scores": {},
+            "profile_surface": profile_match["surface"],
+            "profile_role": profile_match["role"],
+            "routing_scope": "profile_surface",
+            "required_evidence": profile_match.get("required_evidence", []),
+            "declared_profile_models": profile_match.get("declared_models", []),
+        }
+
+    specialist_match = _specialist_primary_match(task_tier, task_class, candidates)
+    if specialist_match:
+        chosen = specialist_match["model"]
+        return {
+            "model": chosen,
+            "reason": f"specialist_primary({specialist_match['rule_id']}: {specialist_match['reason']})",
+            "epsilon_used": 0.0,
+            "candidates": candidates,
+            "unavailable_candidates": unavailable if _log_unavailable else [],
+            "quota_exhausted_candidates": quota_exhausted,
+            "capability_skipped_candidates": capability_skipped,
+            "quota_snapshot": quota_snapshot,
+            "task_tier": task_tier,
+            "schedule_label": _schedule_label(chosen, now_utc),
+            "effective_cost_est": _effective_cost(chosen, 2000, now_utc),
+            "model_scores": {},
+            "specialist_rule_id": specialist_match["rule_id"],
+        }
+
     sticky_key = sticky_key or os.environ.get("HERMES_ROUTER_STICKY_KEY")
     sticky_model = _sticky_candidate(sticky_key, task_class, task_tier, candidates)
     if sticky_model:
@@ -756,7 +968,7 @@ def select_pair(
                     reviewer = dict(reviewer)
                     reviewer["reason"] = "same_provider_offpeak_highconf"
 
-    return {
+    pair = {
         "producer": prod,
         "reviewer": reviewer,
         "diversity_rule": diversity_rule,
@@ -766,6 +978,11 @@ def select_pair(
             else False
         ),
     }
+    if prod.get("profile_surface") or reviewer.get("profile_surface"):
+        pair["profile_surface"] = prod.get("profile_surface") or reviewer.get("profile_surface")
+        pair["required_evidence"] = prod.get("required_evidence") or reviewer.get("required_evidence") or []
+        pair["routing_scope"] = "profile_surface"
+    return pair
 
 
 def _safe_quota_status(quota_snapshot: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:

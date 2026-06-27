@@ -1,0 +1,117 @@
+# Hermes model capability boundaries and acceptance governance.
+# Active project-level contract: this file routes specialist review and required
+# evidence. Completion claims still require objective evidence-gate approval.
+version: 1
+updated_at: "2026-06-24"
+
+mainloop_verification:
+  enabled: true
+  advisory_only: false
+  blocking_tiers: [T3]
+  background_certification: true
+  auto_start_background_certification: true
+  max_sync_ms: 2000
+  recursion_guard: true
+  trigger_tiers: [T2, T3]
+  external_side_effects: project_authorized_evidence_first
+
+role_separation:
+  enabled: true
+  forbid_self_certification: true
+  same_provider_verification: discouraged
+  implementer_vote_policy: self_report_only
+
+overlap_voting:
+  enabled: true
+  trigger_when_surface_count_gte: 2
+  trigger_when_risk_gte: T2
+  require_independent_verifier: true
+  require_surface_owner_vote: true
+  arbiter_model: claude-opus-4-8
+
+acceptance_governance:
+  model_judgment_policy: advisory_only_without_evidence
+  require_objective_evidence: true
+  require_evidence_refs_for_votes: true
+  require_independent_verifier_vote: true
+  forbid_model_only_certification: true
+  forbid_self_certification: true
+
+models:
+  gpt-5.5:
+    provider: openai-codex
+    strengths: [code_generation, multi_file_refactor, tests_and_build_fix, terminal_driven_debugging]
+    weak_spots: [visual_ui_judgment_without_screenshot, over_claiming_completion_if_not_gated]
+    preferred_roles: [implementer, code_planner]
+  claude-opus-4-8:
+    provider: claude-code
+    strengths: [architecture, long_context_reasoning, tradeoff_analysis, boundary_detection, arbitration, code_review]
+    weak_spots: [slow_for_small_turns, advisory_not_truth_without_evidence]
+    preferred_roles: [architect, arbiter, code_reviewer]
+  gemini-3.1-pro-preview:
+    provider: google-gemini-cli
+    strengths: [screenshot_review, visual_layout_assessment, ui_acceptance, design_consistency, multimodal_reasoning, image_prompting]
+    weak_spots: [provider_availability_can_degrade, visual_acceptance_not_runtime_functionality]
+    preferred_roles: [visual_primary, design_primary, visual_verifier, ui_reviewer]
+  deepseek-v4-pro:
+    provider: deepseek
+    strengths: [adversarial_review, contradiction_detection, code_review, logic_check, spec_gap_detection]
+    weak_spots: [not_final_truth_source, should_not_primary_implement_by_default]
+    preferred_roles: [critic, verifier, security_reviewer]
+  mimo-v2.5-pro:
+    provider: xiaomi
+    strengths: [low_cost_triage, quick_summary, first_pass_classification, lightweight_task_routing]
+    weak_spots: [not_final_certifier, not_for_high_risk_closeout]
+    preferred_roles: [scout, triage]
+
+surfaces:
+  code_correctness:
+    implementers: [gpt-5.5]
+    verifiers: [claude-opus-4-8, deepseek-v4-pro]
+    fallback_verifiers: [deepseek-v4-pro]
+    arbiters: [claude-opus-4-8]
+    final_evidence: [git_diff, test_output, build_output, runtime_smoke]
+  code_review:
+    implementers: [claude-opus-4-8]
+    verifiers: [deepseek-v4-pro]
+    fallback_verifiers: [gpt-5.5]
+    arbiters: [claude-opus-4-8]
+    final_evidence: [review_report, diff_refs, test_output]
+  ui_visual:
+    implementers: [gemini-3.1-pro-preview, gemini-3-flash-preview]
+    verifiers: [claude-opus-4-8]
+    fallback_verifiers: [gpt-5.5]
+    final_evidence: [screenshot_matrix, browser_snapshot, console_network_check, interaction_smoke]
+  design_aesthetic:
+    implementers: [gemini-3.1-pro-preview, gemini-3-flash-preview]
+    verifiers: [claude-opus-4-8]
+    fallback_verifiers: [gpt-5.5]
+    final_evidence: [source_visual_ref, screenshot_matrix, visual_diff_or_audit]
+  image_prompt:
+    implementers: [gemini-3.1-pro-preview]
+    verifiers: [gpt-5.5]
+    fallback_verifiers: [claude-opus-4-8]
+    final_evidence: [prompt_text, source_constraints, generated_or_preview_artifact]
+  architecture_boundary:
+    implementers: [claude-opus-4-8, gpt-5.5]
+    verifiers: [deepseek-v4-pro]
+    arbiters: [claude-opus-4-8]
+    final_evidence: [repo_refs, config_refs, risk_matrix, rollback_plan]
+  security:
+    implementers: [gpt-5.5]
+    verifiers: [deepseek-v4-pro]
+    arbiters: [claude-opus-4-8]
+    final_evidence: [source_refs, policy_refs, negative_case, readback]
+  factual_claim:
+    implementers: []
+    verifiers: [deepseek-v4-pro]
+    final_evidence: [fresh_tool_output, source_ref]
+  completion_claim:
+    implementers: []
+    verifiers: [hermes_evidence_gate]
+    final_evidence: [fresh_tool_output]
+  hermes_self_modification:
+    implementers: [gpt-5.5]
+    verifiers: [deepseek-v4-pro]
+    arbiters: [claude-opus-4-8]
+    final_evidence: [focused_pytest, py_compile, post_update_check, config_readback, git_status]
