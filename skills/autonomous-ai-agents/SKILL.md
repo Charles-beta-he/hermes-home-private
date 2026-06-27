@@ -81,6 +81,16 @@ Applicability: for class-level analysis of autonomous coding-agent control loops
 
 Anti-conditions: do not apply this as a project-specific rule, do not claim `/goal` itself verifies correctness without surfaced command/output evidence, do not treat npm distribution details as proof that the agent core is JavaScript-based, and do not treat Ultracode-style orchestration as permission to bypass authority gates.
 
+## Claude Code PostToolUse Hook Reference
+
+Applicability: for class-level analysis of post-tool evidence hooks, especially Claude Code `PostToolUse`, `PostToolUseFailure`, and `PostToolBatch` patterns.
+
+- See `references/claude-code-posttooluse-hook.md` for the durable pattern: `PostToolUse` is post-execution observation and feedback, not prevention. Tool effects have already happened.
+- Transferable Hermes lesson: use post-tool events to capture evidence, derive risk/latency/context, steer the next step, and feed verification ledgers while keeping permission prevention in pre-tool gates.
+- For parallel tools, prefer batch/turn-level aggregation before claiming “all checks passed.”
+
+Anti-conditions: do not treat output replacement/redaction as a privacy boundary for already-recorded telemetry, do not store raw tool payloads in hot ledgers, and do not claim a runtime hook exists without implementation/readback/tests.
+
 ## Verification Checklist
 
 - [ ] The request was mapped to the best-fitting child skill or explicitly kept at umbrella level for routing only.

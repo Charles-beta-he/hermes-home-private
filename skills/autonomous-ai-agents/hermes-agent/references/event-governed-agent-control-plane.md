@@ -80,4 +80,10 @@ Before adding any new Hermes-owned agent/worker/hook:
 6. Keep first landing report-only/proposal-only unless the user explicitly approves a bounded write path.
 7. Add tests proving worker outputs cannot bypass the gate.
 
+## Post-tool evidence hook lesson
+
+Scope: Hermes-owned agent-control-plane and workflow-control-plane design. Applicability: use when designing or auditing post-tool observation, evidence capture, repair steering, and local observability after a tool has already produced output. Anti-condition: do not use this as permission to prevent, undo, publish, deploy, delete, send, mutate lifecycle, store raw payloads, or handle secrets after execution.
+
+Claude Code `PostToolUse` is a useful reference pattern for post-tool observability, but only with the correct boundary: it fires after successful tool execution, so it can capture evidence, latency, derived risk, redacted presentation, and next-step context; it cannot prevent the already-executed effect. Prevention belongs in PreToolUse/permission gates; aggregate “all checks passed” claims belong in batch/turn-level gates; lifecycle advancement belongs in verifier/certifier gates. Store only derived facts, hashes, summaries, IDs, metrics, and artifact pointers in hot ledgers rather than raw tool payloads. See the class-level autonomous-agent reference `references/claude-code-posttooluse-hook.md`.
+
 Falsifier/demotion rule: if a future Hermes implementation proves a narrower deterministic gate already enforces these invariants at runtime, keep this reference as background and prefer the runtime gate/test suite as the operational authority.
