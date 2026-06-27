@@ -1622,6 +1622,34 @@ def test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only
     assert "handoff_backlog_high" in reasons, reasons
 
 
+def test_concurrency_readiness_uses_per_directory_handoff_gate_count():
+    module = load_tick_module()
+    readiness = module.concurrency_readiness_snapshot(
+        requested_agents=4,
+        selected_count=4,
+        active_count=0,
+        resource_probe={
+            "effective_resource_ceiling": 4,
+            "quality_slots": 4,
+            "api_slots": 4,
+            "api_probe": {"confidence_gate_status": "PASS", "soft_unknown_count": 0},
+        },
+        claim_state={
+            "stale_claim_count": 0,
+            "handoff_backlog_count": 115,
+            "handoff_backlog_max_dir_count": 62,
+            "handoff_backlog_gate_count": 62,
+            "review_total": 0,
+        },
+        boundary_warning_count=0,
+        runtime_cfg={"max_parallel_agents": 2, "dynamic_max_parallel_agents": 4, "handoff_archive_threshold": 100},
+    )
+    assert readiness["status"] == "PASS", readiness
+    assert readiness["inputs"]["handoff_backlog_count"] == 115, readiness
+    assert readiness["inputs"]["handoff_backlog_gate_count"] == 62, readiness
+    assert all(b["reason"] != "handoff_backlog_high" for b in readiness["blockers"]), readiness
+
+
 def test_concurrency_readiness_passes_for_clean_synthetic_snapshot():
     module = load_tick_module()
     readiness = module.concurrency_readiness_snapshot(
@@ -1678,6 +1706,7 @@ if __name__ == "__main__":
     test_batch_executor_requires_headroom_and_caps_claims()
     test_boundary_readiness_summary_reports_selected_vs_dispatchable()
     test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only()
+    test_concurrency_readiness_uses_per_directory_handoff_gate_count()
     test_concurrency_readiness_passes_for_clean_synthetic_snapshot()
     test_scheduler_decision_classifies_boundary_headroom_and_batch_candidates()
     test_drain_first_consumes_only_uncovered_claimed_tasks()

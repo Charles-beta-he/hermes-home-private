@@ -371,7 +371,9 @@ def concurrency_readiness_snapshot(
     soft_unknown_count = max(0, _safe_int(api_probe.get("soft_unknown_count"), 0))
     hard_blocker_count = max(0, _safe_int(api_probe.get("hard_blocker_count"), 0))
     stale_claim_count = max(0, _safe_int(claims.get("stale_claim_count"), 0))
-    handoff_backlog_count = max(0, _safe_int(claims.get("handoff_backlog_count"), 0))
+    handoff_backlog_gate_count = max(0, _safe_int(claims.get("handoff_backlog_gate_count") if claims.get("handoff_backlog_gate_count") is not None else claims.get("handoff_backlog_count"), 0))
+    handoff_backlog_count = max(0, _safe_int(claims.get("handoff_backlog_count"), handoff_backlog_gate_count))
+    handoff_backlog_max_dir_count = max(0, _safe_int(claims.get("handoff_backlog_max_dir_count"), handoff_backlog_gate_count))
     review_total = max(0, _safe_int(claims.get("review_total"), 0))
     boundary_warnings = max(0, _safe_int(boundary_warning_count, 0))
     confidence = str(api_probe.get("confidence_gate_status") or "").strip().upper()
@@ -397,8 +399,8 @@ def concurrency_readiness_snapshot(
         _add_readiness_blocker(blockers, "stale_claims_present", actual=stale_claim_count, required=0)
     if boundary_warnings > 0:
         _add_readiness_blocker(blockers, "boundary_warnings_present", actual=boundary_warnings, required=0)
-    if handoff_backlog_count > handoff_threshold:
-        _add_readiness_blocker(blockers, "handoff_backlog_high", actual=handoff_backlog_count, required=f"<={handoff_threshold}")
+    if handoff_backlog_gate_count > handoff_threshold:
+        _add_readiness_blocker(blockers, "handoff_backlog_high", actual=handoff_backlog_gate_count, required=f"<={handoff_threshold}")
     if review_total > review_threshold:
         _add_readiness_blocker(blockers, "review_backlog_high", actual=review_total, required=f"<={review_threshold}")
 
@@ -423,6 +425,8 @@ def concurrency_readiness_snapshot(
             "hard_blocker_count": hard_blocker_count,
             "stale_claim_count": stale_claim_count,
             "handoff_backlog_count": handoff_backlog_count,
+            "handoff_backlog_max_dir_count": handoff_backlog_max_dir_count,
+            "handoff_backlog_gate_count": handoff_backlog_gate_count,
             "handoff_backlog_threshold": handoff_threshold,
             "review_total": review_total,
             "review_threshold": review_threshold,
@@ -464,11 +468,13 @@ def build_claim_state_telemetry(event: dict[str, Any], *, requested_event_next_t
     )
     claimed_running_ratio = round(claimed_total / max(running_total, 1), 2) if claimed_total else 0.0
     parallel_selected_count = int(parallel_dispatch.get("selected_count") or 0)
-    handoff_backlog_count = sum(
+    backlog_counts = [
         int(entry.get("count") or 0)
         for entry in backlog_dirs.values()
         if isinstance(entry, dict)
-    )
+    ]
+    handoff_backlog_count = sum(backlog_counts)
+    handoff_backlog_max_dir_count = max(backlog_counts) if backlog_counts else 0
     proof_gate_status = str(evidence_spine.get("gate_status") or "")
     execution_starvation = bool(
         claimed_total > 0
@@ -508,6 +514,8 @@ def build_claim_state_telemetry(event: dict[str, Any], *, requested_event_next_t
         "execution_starvation": execution_starvation,
         "parallel_selected_count": parallel_selected_count,
         "handoff_backlog_count": handoff_backlog_count,
+        "handoff_backlog_max_dir_count": handoff_backlog_max_dir_count,
+        "handoff_backlog_gate_count": handoff_backlog_max_dir_count,
         "proof_gate_status": proof_gate_status,
         "concurrency_raise_gate": {
             "status": gate_status,
