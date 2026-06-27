@@ -1622,6 +1622,26 @@ def test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only
     assert "handoff_backlog_high" in reasons, reasons
 
 
+def test_concurrency_readiness_allows_low_concurrency_soft_provider_unknowns():
+    module = load_tick_module()
+    readiness = module.concurrency_readiness_snapshot(
+        requested_agents=4,
+        selected_count=4,
+        active_count=0,
+        resource_probe={
+            "effective_resource_ceiling": 4,
+            "quality_slots": 4,
+            "api_slots": 4,
+            "api_probe": {"confidence_gate_status": "FAIL_CLOSED", "soft_unknown_count": 2, "hard_blocker_count": 0},
+        },
+        claim_state={"stale_claim_count": 0, "handoff_backlog_gate_count": 0, "review_total": 0},
+        boundary_warning_count=0,
+        runtime_cfg={"max_parallel_agents": 2, "dynamic_max_parallel_agents": 4},
+    )
+    assert readiness["status"] == "PASS", readiness
+    assert all(b["reason"] != "api_confidence_fail_closed" for b in readiness["blockers"]), readiness
+
+
 def test_concurrency_readiness_uses_per_directory_handoff_gate_count():
     module = load_tick_module()
     readiness = module.concurrency_readiness_snapshot(

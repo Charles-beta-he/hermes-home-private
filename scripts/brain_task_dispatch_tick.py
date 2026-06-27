@@ -389,8 +389,8 @@ def concurrency_readiness_snapshot(
         _add_readiness_blocker(blockers, "quality_slots_below_requested", actual=quality_slots, required=requested)
     if api_slots < requested:
         _add_readiness_blocker(blockers, "api_slots_below_requested", actual=api_slots, required=requested)
-    if confidence == "FAIL_CLOSED":
-        _add_readiness_blocker(blockers, "api_confidence_fail_closed", actual=confidence, required="PASS")
+    if confidence == "FAIL_CLOSED" and requested >= 6:
+        _add_readiness_blocker(blockers, "api_confidence_fail_closed", actual=confidence, required="PASS_OR_DEGRADED_FOR_LOW_CONCURRENCY")
     if hard_blocker_count > 0:
         _add_readiness_blocker(blockers, "provider_hard_blockers_present", actual=hard_blocker_count, required=0)
     if requested >= 6 and soft_unknown_count > 0:
