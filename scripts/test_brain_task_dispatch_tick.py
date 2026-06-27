@@ -1619,6 +1619,24 @@ def test_boundary_readiness_summary_reports_selected_vs_dispatchable():
     assert readiness["blocking_boundaries"][0]["boundary_key"] == "repo:a", readiness
 
 
+def test_boundary_readiness_allows_residual_conflicts_after_requested_selection_met():
+    spec = importlib.util.spec_from_file_location("brain_task_orchestrator_for_boundary_residual", ORCH)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["brain_task_orchestrator_for_boundary_residual"] = module
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    readiness = module.boundary_readiness_summary(
+        requested_agents=2,
+        selected=[{"id": "a", "lane": "advisory"}, {"id": "b", "lane": "advisory"}],
+        skipped=[{"id": "c", "lane": "advisory", "reason": "parallel_boundary_conflict", "boundary_key": "boundary:x"}],
+        dispatchable_count=3,
+    )
+    assert readiness["status"] == "PASS", readiness
+    assert readiness["blocking_boundaries"], readiness
+    assert not readiness["blockers"], readiness
+
+
 def test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only():
     module = load_tick_module()
     runtime_cfg = {"max_parallel_agents": 2, "dynamic_max_parallel_agents": 4}
@@ -1754,6 +1772,7 @@ if __name__ == "__main__":
     test_batch_executor_requires_headroom_and_caps_claims()
     test_parallel_dispatch_lane_filter_bypasses_work_first_for_read_only_pool()
     test_boundary_readiness_summary_reports_selected_vs_dispatchable()
+    test_boundary_readiness_allows_residual_conflicts_after_requested_selection_met()
     test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only()
     test_concurrency_readiness_uses_per_directory_handoff_gate_count()
     test_concurrency_readiness_passes_for_clean_synthetic_snapshot()
