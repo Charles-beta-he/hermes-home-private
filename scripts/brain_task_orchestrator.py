@@ -7353,7 +7353,7 @@ def retry_lane_caps(max_agents: int) -> dict[str, int]:
     }
 
 
-def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str, Any]]]:
+def select_parallel_dispatch(max_agents: int, *, lane_filter: str = "") -> tuple[list[Task], list[dict[str, Any]]]:
     """Select tasks for parallel dispatch with boundary isolation.
 
     Isolation rules (fail-closed):
@@ -7364,6 +7364,16 @@ def select_parallel_dispatch(max_agents: int) -> tuple[list[Task], list[dict[str
       boundary keys, so they naturally pass the boundary check.
     """
     candidates = dispatchable_tasks()
+    lane_filter = str(lane_filter or "").strip()
+    if lane_filter and lane_filter != "all":
+        filtered: list[Task] = []
+        for t in candidates:
+            if t.lane == lane_filter:
+                filtered.append(t)
+            else:
+                # Keep lane-filter exclusion visible in dry-run/claim diagnostics.
+                pass
+        candidates = filtered
     priority_mode = taskpool_priority_mode()
     work_available = any(t.lane == "work" for t in candidates)
     evolution_available = any(t.lane == "evolution" for t in candidates)
@@ -7503,9 +7513,12 @@ def boundary_readiness_summary(*, requested_agents: int, selected: list[Any], sk
 
 def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     max_agents = int(getattr(args, "max_agents", 0) or 0)
+    lane_filter = str(getattr(args, "lane", "all") or "all").strip()
     if max_agents < 1:
         # Dynamic N: use get_smoothed_n based on actual dispatchable count
         candidates = dispatchable_tasks()
+        if lane_filter and lane_filter != "all":
+            candidates = [t for t in candidates if t.lane == lane_filter]
         groups = set()
         for t in candidates:
             bk = task_parallel_boundary_key(t)
@@ -7519,7 +7532,7 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
     boundary = command_boundary_check(args)
     if boundary.get("status") != "PASS":
         return {"status": "FAIL", "dry_run": True, "dispatchable": False, "reason": "boundary_check_failed", "boundary": boundary, "safety": "dry-run only; no claim or execution"}
-    selected, skipped = select_parallel_dispatch(max_agents)
+    selected, skipped = select_parallel_dispatch(max_agents, lane_filter=lane_filter)
     dispatch_plan = []
     for t in selected:
         row = t.row()
@@ -7544,6 +7557,7 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
         "dispatchable": bool(selected),
         "max_agents": max_agents,
         "priority_mode": taskpool_priority_mode(),
+        "lane_filter": lane_filter or "all",
         "selected_count": len(selected),
         "selected": selected_rows,
         "skipped": skipped,
@@ -7551,7 +7565,7 @@ def command_parallel_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any
             requested_agents=max_agents,
             selected=selected_rows,
             skipped=skipped,
-            dispatchable_count=len(dispatchable_tasks()),
+            dispatchable_count=len([t for t in dispatchable_tasks() if not lane_filter or lane_filter == "all" or t.lane == lane_filter]),
         ),
         "retry_lane_caps": retry_lane_caps(max_agents),
         "active_accounting": {
@@ -10567,6 +10581,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pdp = sub.add_parser("parallel-dispatch-dry-run")
     pdp.add_argument("--max-agents", type=int, default=3)
+    pdp.add_argument("--lane", default="all", choices=["all", *VALID_LANES], help="Optional dry-run lane pool filter; read-only and does not change priority mode")
     pdp.add_argument("--json", action="store_true")
 
     pchp = sub.add_parser("parallel-claim-and-handoff")

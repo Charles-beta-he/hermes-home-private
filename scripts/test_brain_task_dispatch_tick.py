@@ -1567,6 +1567,34 @@ def test_batch_executor_requires_headroom_and_caps_claims():
     assert claim_calls == ["t1", "t2"], claim_calls
 
 
+def test_parallel_dispatch_lane_filter_bypasses_work_first_for_read_only_pool():
+    spec = importlib.util.spec_from_file_location("brain_task_orchestrator_lane_filter", ORCH)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["brain_task_orchestrator_lane_filter"] = module
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    tasks = [
+        module.Task(Path(f"/tmp/work-{i}.md"), {"status": "pending", "lane": "work", "project": f"work-{i}", "priority": "P2"}, f"# Work {i}\n")
+        for i in range(2)
+    ] + [
+        module.Task(Path(f"/tmp/advisory-{i}.md"), {"status": "pending", "lane": "advisory", "project": f"advisory-{i}", "priority": "P2"}, f"# Advisory {i}\n")
+        for i in range(6)
+    ]
+    old_dispatchable = getattr(module, "dispatchable_tasks")
+    old_iter = getattr(module, "iter_tasks")
+    try:
+        setattr(module, "dispatchable_tasks", lambda: tasks)
+        setattr(module, "iter_tasks", lambda: [])
+        selected, skipped = module.select_parallel_dispatch(6, lane_filter="advisory")
+    finally:
+        setattr(module, "dispatchable_tasks", old_dispatchable)
+        setattr(module, "iter_tasks", old_iter)
+    assert len(selected) == 6, [t.id for t in selected]
+    assert {t.lane for t in selected} == {"advisory"}
+    assert not any(row.get("reason") == "lane_preempted_by_work" for row in skipped), skipped
+
+
 def test_boundary_readiness_summary_reports_selected_vs_dispatchable():
     spec = importlib.util.spec_from_file_location("brain_task_orchestrator_for_boundary_readiness", ORCH)
     assert spec is not None
@@ -1724,6 +1752,7 @@ if __name__ == "__main__":
     test_batch_executor_worker_skip_after_claim_triggers_cleanup()
     test_batch_executor_apply_claims_existing_single_task_worker_path_only()
     test_batch_executor_requires_headroom_and_caps_claims()
+    test_parallel_dispatch_lane_filter_bypasses_work_first_for_read_only_pool()
     test_boundary_readiness_summary_reports_selected_vs_dispatchable()
     test_concurrency_readiness_fails_closed_on_current_blockers_and_is_read_only()
     test_concurrency_readiness_uses_per_directory_handoff_gate_count()
