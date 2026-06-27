@@ -35,6 +35,19 @@ For complex work, translate `/goal` + Ultracode into this Hermes-safe sequence:
 6. **Authority gates** — workflow sophistication does not grant external-write, publish/deploy, destructive, credential, payment, or broad-fanout authority. Stop at the smallest exact gate.
 7. **Reusable landing** — if the orchestration repeats, save it as a skill, script, project workflow, or taskpool harness rather than re-prompting from scratch.
 
+## Hermes runtime landing
+
+Scope: Hermes Agent implementations of goal-control and dynamic-workflow patterns. Applicability: use when evaluating or extending `/goal`, completion-condition loops, or default-safe dynamic workflow harnesses in an agent runtime. Anti-conditions: do not apply this as permission to dispatch workers, execute node commands, mutate taskpool/mission/cron state, or create external side effects without a later governed adapter and explicit authority.
+
+Runtime landing pattern:
+
+- Keep the cross-turn completion loop in the session goal manager: persist goal text, `goal_spec_v1`, route projection, subgoals, proof refs, and checkpoint sidecar state.
+- Add a separate dynamic-workflow dry-run harness that compiles the active goal into a plan DAG plus run-state packet. The run packet should hold ready/blocked/human-gated node status, evidence contracts, permission boundaries, progress/cost counters, and next actions with `execute: false`.
+- Preserve script-held state across resume/compression by storing the run packet in the goal state/checkpoint, not only in the hot conversation.
+- Treat execution as a later adapter boundary: the dry-run harness proves structure and readiness only.
+
+Verification pattern: add RED tests for plan/run packet shape, persistence across manager reload, command dispatch, and no-execution markers; then run focused goal suites, syntax checks, temp-home smoke, diff/secret scan, and independent review before claiming runtime landing.
+
 ## Workflow implication
 
 Future JS work should be framed as verifiable goals rather than vague edit requests:
