@@ -119,6 +119,28 @@ def run_json(args: list[str]) -> dict[str, Any]:
     return run_cmd_json(cmd)
 
 
+def run_orchestrator_json(args: list[str], *, timeout: float | None = None) -> dict[str, Any]:
+    cmd = [sys.executable, str(SCRIPT), *args]
+    return run_cmd_json(cmd, timeout=timeout)
+
+
+def parallel_claim_timeout_seconds() -> float:
+    return positive_float_env("HERMES_BRAIN_DISPATCH_TICK_PARALLEL_CLAIM_TIMEOUT_SECONDS", 300.0)
+
+
+def run_parallel_claim_and_handoff(args: list[str]) -> dict[str, Any]:
+    """Run the mutating parallel claim bridge with a claim-specific timeout.
+
+    `parallel-claim-and-handoff --write` rewrites task notes and emits handoff
+    artifacts. Large, repeatedly retried task notes can legitimately take longer
+    than the generic per-subcommand tick timeout; timing out here is especially
+    bad because the subprocess can be killed after some claims have already been
+    written. Keep the timeout bounded but large enough for the claim phase, while
+    worker consumption remains separately bounded/backgrounded.
+    """
+    return run_orchestrator_json(args, timeout=max(command_timeout_seconds(), parallel_claim_timeout_seconds()))
+
+
 def run_agent_team_json(args: list[str], *, timeout: float | None = None) -> dict[str, Any]:
     cmd = [sys.executable, str(AGENT_TEAM_SCRIPT), *args]
     return run_cmd_json(cmd, timeout=timeout)
@@ -1855,7 +1877,7 @@ def main() -> int:
         if errors:
             event["autorun"] = {"status": "SKIP", "reason": "drain_first_failed", "claimed": False}
         else:
-            event["autorun"] = run_json([
+            event["autorun"] = run_parallel_claim_and_handoff([
                 "parallel-claim-and-handoff",
                 "--max-agents",
                 str(max_parallel_agents),

@@ -428,6 +428,32 @@ def test_tick_multimodel_task_argument_routes_to_targeted_step():
     assert ["multimodel-intervention-step", "--task", "task-1", "--background", "--json"] in calls, calls
 
 
+def test_parallel_claim_bridge_uses_claim_specific_timeout():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_cmd_json(cmd, timeout=None):
+        calls.append((list(cmd), timeout))
+        return {"status": "OK", "claimed": False}
+
+    old_run_cmd_json = getattr(module, "run_cmd_json")
+    old_env = os.environ.get("HERMES_BRAIN_DISPATCH_TICK_PARALLEL_CLAIM_TIMEOUT_SECONDS")
+    try:
+        setattr(module, "run_cmd_json", fake_run_cmd_json)
+        os.environ["HERMES_BRAIN_DISPATCH_TICK_PARALLEL_CLAIM_TIMEOUT_SECONDS"] = "321"
+        result = module.run_parallel_claim_and_handoff(["parallel-claim-and-handoff", "--max-agents", "2", "--write", "--json"])
+    finally:
+        setattr(module, "run_cmd_json", old_run_cmd_json)
+        if old_env is None:
+            os.environ.pop("HERMES_BRAIN_DISPATCH_TICK_PARALLEL_CLAIM_TIMEOUT_SECONDS", None)
+        else:
+            os.environ["HERMES_BRAIN_DISPATCH_TICK_PARALLEL_CLAIM_TIMEOUT_SECONDS"] = old_env
+
+    assert result["status"] == "OK"
+    assert calls and calls[0][1] == 321.0, calls
+    assert "brain_task_orchestrator.py" in " ".join(map(str, calls[0][0])), calls
+
+
 def test_parallel_autorun_spawns_async_worker_consumer_summary_without_foreground_wait():
     module = load_tick_module()
     calls = []
@@ -482,11 +508,13 @@ def test_parallel_autorun_spawns_async_worker_consumer_summary_without_foregroun
     old_argv = sys.argv[:]
     old_run_json = module.run_json
     old_run_cmd_json = module.run_cmd_json
+    old_run_parallel_claim = getattr(module, "run_parallel_claim_and_handoff")
     old_append_log = module.append_log
     old_save_state = module.save_state
     old_load_state = module.load_state
     try:
         module.run_json = fake_run_json
+        setattr(module, "run_parallel_claim_and_handoff", fake_run_json)
         module.run_cmd_json = fake_run_cmd_json
         module.append_log = lambda event: None
         module.save_state = lambda state: None
@@ -502,6 +530,7 @@ def test_parallel_autorun_spawns_async_worker_consumer_summary_without_foregroun
     finally:
         sys.argv = old_argv
         module.run_json = old_run_json
+        setattr(module, "run_parallel_claim_and_handoff", old_run_parallel_claim)
         module.run_cmd_json = old_run_cmd_json
         module.append_log = old_append_log
         module.save_state = old_save_state
@@ -558,11 +587,13 @@ def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
     old_argv = sys.argv[:]
     old_run_json = module.run_json
     old_run_cmd_json = module.run_cmd_json
+    old_run_parallel_claim = getattr(module, "run_parallel_claim_and_handoff")
     old_append_log = module.append_log
     old_save_state = module.save_state
     old_load_state = module.load_state
     try:
         module.run_json = fake_run_json
+        setattr(module, "run_parallel_claim_and_handoff", fake_run_json)
         module.run_cmd_json = fake_run_cmd_json
         module.append_log = lambda event: None
         module.save_state = lambda state: None
@@ -578,6 +609,7 @@ def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
     finally:
         sys.argv = old_argv
         module.run_json = old_run_json
+        setattr(module, "run_parallel_claim_and_handoff", old_run_parallel_claim)
         module.run_cmd_json = old_run_cmd_json
         module.append_log = old_append_log
         module.save_state = old_save_state
@@ -1622,6 +1654,7 @@ if __name__ == "__main__":
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()
     test_tick_multimodel_task_argument_routes_to_targeted_step()
+    test_parallel_claim_bridge_uses_claim_specific_timeout()
     test_parallel_autorun_spawns_async_worker_consumer_summary_without_foreground_wait()
     test_parallel_autorun_timeout_releases_claimed_batch_to_retry()
     test_event_next_tick_depth_zero_skips_without_claiming_or_closing()
