@@ -9377,6 +9377,7 @@ def command_parallel_claim_and_handoff(args: argparse.Namespace) -> dict[str, An
         else:
             max_agents = 3
     dry_run = not getattr(args, "write", False)
+    lane_filter = str(getattr(args, "lane", "all") or "all").strip()
     actor = getattr(args, "actor", "hermes-parallel")
     ttl_minutes = int(getattr(args, "ttl_minutes", 60) or 60)
     prepare_worktrees = getattr(args, "prepare_worktrees", False)
@@ -9394,13 +9395,14 @@ def command_parallel_claim_and_handoff(args: argparse.Namespace) -> dict[str, An
         }
 
     # Step 2: select non-conflicting parallel batch
-    selected, skipped = select_parallel_dispatch(max_agents)
+    selected, skipped = select_parallel_dispatch(max_agents, lane_filter=lane_filter)
     if not selected:
         return {
             "status": "OK",
             "dry_run": dry_run,
             "claimed": False,
             "selected_count": 0,
+            "lane_filter": lane_filter or "all",
             "selected": [],
             "skipped": skipped,
             "reason": "no_eligible_tasks",
@@ -9430,6 +9432,7 @@ def command_parallel_claim_and_handoff(args: argparse.Namespace) -> dict[str, An
             "dry_run": True,
             "claimed": False,
             "max_agents": max_agents,
+            "lane_filter": lane_filter or "all",
             "selected_count": len(selected),
             "selected": [t.row() for t in selected],
             "skipped": skipped,
@@ -9585,6 +9588,7 @@ def command_parallel_claim_and_handoff(args: argparse.Namespace) -> dict[str, An
         "claimed": True,
         "batch_id": batch_id,
         "max_agents": max_agents,
+        "lane_filter": lane_filter or "all",
         "claimed_count": len(claimed_tasks),
         "claimed_tasks": claimed_tasks,
         "skipped": skipped,
@@ -10591,6 +10595,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pchp = sub.add_parser("parallel-claim-and-handoff")
     pchp.add_argument("--max-agents", type=int, default=3)
+    pchp.add_argument("--lane", default="all", choices=["all", *VALID_LANES], help="Optional lane pool filter for dry-run/write claim; preserves boundary checks")
     pchp.add_argument("--write", action="store_true", help="Actually claim tasks (default is dry-run)")
     pchp.add_argument("--actor", default="hermes-parallel")
     pchp.add_argument("--ttl-minutes", type=int, default=60)

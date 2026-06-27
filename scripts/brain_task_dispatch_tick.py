@@ -564,6 +564,7 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         "batch_executor_per_batch_parallelism": 1,
         "batch_executor_skip_when_regular_selected": True,
         "batch_executor_require_headroom": True,
+        "parallel_dispatch_lane": "all",
     }
     try:
         import yaml  # type: ignore
@@ -593,6 +594,9 @@ def load_taskpool_runtime_config() -> dict[str, Any]:
         except Exception:
             defaults[key] = fallback
     defaults["dispatch_mode"] = str(defaults.get("dispatch_mode") or "single").strip().lower()
+    defaults["parallel_dispatch_lane"] = str(defaults.get("parallel_dispatch_lane") or "all").strip().lower()
+    if defaults["parallel_dispatch_lane"] not in {"all", "work", "evolution", "advisory"}:
+        defaults["parallel_dispatch_lane"] = "all"
     defaults["drain_claimed_first"] = str(defaults.get("drain_claimed_first", "true")).strip().lower() not in {"0", "false", "no", "off"}
     defaults["event_refill_enabled"] = str(defaults.get("event_refill_enabled", "false")).strip().lower() in {"1", "true", "yes", "on"}
     defaults["quality_slots_enabled"] = str(defaults.get("quality_slots_enabled", "true")).strip().lower() not in {"0", "false", "no", "off"}
@@ -664,9 +668,15 @@ def resolve_parallel_agent_cap(*, requested_max_agents: int, taskpool_cfg: dict[
     }
     if str(taskpool_cfg.get("dispatch_mode") or "").strip().lower() != "parallel":
         return payload
-    probe = run_json(["parallel-dispatch-dry-run", "--max-agents", str(probe_ceiling), "--json"])
+    probe_cmd = ["parallel-dispatch-dry-run", "--max-agents", str(probe_ceiling)]
+    lane_filter = str(taskpool_cfg.get("parallel_dispatch_lane") or "all").strip().lower()
+    if lane_filter and lane_filter != "all":
+        probe_cmd.extend(["--lane", lane_filter])
+    probe_cmd.append("--json")
+    probe = run_json(probe_cmd)
     payload["probe"] = {
         "status": probe.get("status"),
+        "lane_filter": probe.get("lane_filter") or lane_filter or "all",
         "max_agents": probe.get("max_agents"),
         "selected_count": probe.get("selected_count"),
         "dispatchable": probe.get("dispatchable"),
@@ -1816,12 +1826,16 @@ def main() -> int:
             "safety": "set HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 to enable",
         }
     event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
-    event["parallel_dispatch"] = run_json([
+    parallel_dispatch_cmd = [
         "parallel-dispatch-dry-run",
         "--max-agents",
         str(max_parallel_agents),
-        "--json",
-    ])
+    ]
+    parallel_lane = str(taskpool_cfg.get("parallel_dispatch_lane") or "all").strip().lower()
+    if parallel_lane and parallel_lane != "all":
+        parallel_dispatch_cmd.extend(["--lane", parallel_lane])
+    parallel_dispatch_cmd.append("--json")
+    event["parallel_dispatch"] = run_json(parallel_dispatch_cmd)
 
     event["scheduler_decision"] = scheduler_decision_snapshot(
         event=event,
@@ -1887,15 +1901,20 @@ def main() -> int:
         if errors:
             event["autorun"] = {"status": "SKIP", "reason": "drain_first_failed", "claimed": False}
         else:
-            event["autorun"] = run_parallel_claim_and_handoff([
+            autorun_cmd = [
                 "parallel-claim-and-handoff",
                 "--max-agents",
                 str(max_parallel_agents),
+            ]
+            if parallel_lane and parallel_lane != "all":
+                autorun_cmd.extend(["--lane", parallel_lane])
+            autorun_cmd.extend([
                 "--write",
                 "--actor",
                 "hermes-parallel",
                 "--json",
             ])
+            event["autorun"] = run_parallel_claim_and_handoff(autorun_cmd)
         if event["autorun"].get("status") not in {"OK", "PASS"}:
             errors.append({"step": "parallel_autorun", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout"), "reason": event["autorun"].get("reason")})
             event["status"] = "ERROR"
@@ -1944,7 +1963,11 @@ def main() -> int:
                     errors.append({"step": "event_next_tick", "status": event["event_next_tick"].get("status"), "reason": event["event_next_tick"].get("reason")})
                     event["status"] = "ERROR"
                     event["errors"] = errors
-        event["post_autorun_dispatch"] = run_json(["parallel-dispatch-dry-run", "--max-agents", str(max_parallel_agents), "--json"])
+        post_autorun_dispatch_cmd = ["parallel-dispatch-dry-run", "--max-agents", str(max_parallel_agents)]
+        if parallel_lane and parallel_lane != "all":
+            post_autorun_dispatch_cmd.extend(["--lane", parallel_lane])
+        post_autorun_dispatch_cmd.append("--json")
+        event["post_autorun_dispatch"] = run_json(post_autorun_dispatch_cmd)
     elif args.autorun_step and not errors:
         event["autorun"] = run_cmd_json([sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"])
         if event["autorun"].get("status") not in {"OK", "PASS"}:
