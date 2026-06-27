@@ -71,6 +71,16 @@ These former narrow child skills are now treated as subsections/reference packag
 5. Treating local canonical fact mutation as permission to write external systems. A local `done` fact is necessary but insufficient; external adapters still need intent projection, elevated write-through authorization, exact adapter/target binding, readback verification, and rollback/escape design. Notifications also need their own outbox and delivery gates; do not collapse adapter write success into Lark/Telegram send authority.
 6. Putting evidence or message payloads into the hot ledger path. For outbox/sender boundaries, store only hashes, summaries, IDs, and artifact pointers; reject secret-like keys and keep raw platform payloads out of canonical records.
 
+## Claude Code Goal + Ultracode Control Loop Reference
+
+Applicability: for class-level analysis of autonomous coding-agent control loops, especially Claude Code `/goal`, Ultracode/dynamic workflows, and similar “continue until verifiable condition holds” workflows.
+
+- See `references/claude-code-goal-control-loop.md` for the durable pattern: `/goal` is not a JavaScript feature; it is a session-scoped completion-condition loop whose evaluator can only judge evidence surfaced in the transcript.
+- Ultracode adds a reusable orchestration lesson: combine higher reasoning with script-held dynamic workflows, producer/verifier subagents, progress/cost visibility, and saved commands for repeatable work.
+- For JS/TS/frontend work, frame goals around verifiable project commands and evidence (`test`, `lint`, `typecheck`, `build`, e2e, visual regression) plus anti-regression constraints.
+
+Anti-conditions: do not apply this as a project-specific rule, do not claim `/goal` itself verifies correctness without surfaced command/output evidence, do not treat npm distribution details as proof that the agent core is JavaScript-based, and do not treat Ultracode-style orchestration as permission to bypass authority gates.
+
 ## Verification Checklist
 
 - [ ] The request was mapped to the best-fitting child skill or explicitly kept at umbrella level for routing only.
