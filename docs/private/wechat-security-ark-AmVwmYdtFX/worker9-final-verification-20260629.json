@@ -1,0 +1,327 @@
+{
+  "worker": "kanban-worker-9",
+  "generated_at_cst": "2026-06-29T00:46:19.146595+08:00",
+  "boundary": [
+    "public preview only",
+    "no QR/App gate bypass",
+    "no install",
+    "no execution of external project/tool",
+    "no private-code scan",
+    "no SaaS upload",
+    "no hook enablement",
+    "no copying external code/assets"
+  ],
+  "public_preview": {
+    "ok": true,
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "bytes": 2595,
+    "sha256_prefix": "0883376acab96257",
+    "text": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta\n      name=\"viewport\"\n      content=\"width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover\"\n    />\n    <link rel=\"icon\" type=\"image/svg+xml\" href=\"//res.wx.qq.com/t/wx_fed/finder/web/finder-preview/res/favicon.svg\" />\n    <link\n      rel=\"stylesheet\"\n      href=\"https://res.wx.qq.com/t/wx_fed/weui-source/res/2.6.22/weui.min.css\"\n    />\n    <title>视频号</title>\n    <script type=\"module\" crossorigin src=\"//res.wx.qq.com/t/wx_fed/finder/web/finder-preview/res/assets/feed.9c135e64.js\"></script>\n    <link rel=\"modulepreload\" crossorigin href=\"//res.wx.qq.com/t/wx_fed/finder/web/finder-preview/res/assets/mmfinderopenwebapisvr.0fb5ed5d.js\">\n    <link rel=\"modulepreload\" crossorigin href=\"//res.wx.qq.com/t/wx_fed/finder/web/finder-preview/res/assets/merlin.b35739a2.js\">\n    <link rel=\"stylesheet\" href=\"//res.wx.qq.com/t/wx_fed/finder/w"
+  },
+  "github_repo_search": [
+    {
+      "query": "\"安全方舟\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "安全方舟 AI security",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"安全方舟\" \"易创一站式AI\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"一人手写29万行代码\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"安全方舟\" \"29万行\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"Security Ark\" \"AI security\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"SafeArk\" \"AI security\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"ArkSec\" \"AI\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"AI Safety Ark\" security",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    },
+    {
+      "query": "\"安全方舟\" \"代码安全\"",
+      "http_status": 200,
+      "ok": true,
+      "total_count": 0,
+      "items": []
+    }
+  ],
+  "gitee_search": [
+    {
+      "query": "安全方舟",
+      "http_status": 200,
+      "ok": true,
+      "count_returned": 0,
+      "items": []
+    },
+    {
+      "query": "易创一站式AI",
+      "http_status": 200,
+      "ok": true,
+      "count_returned": 0,
+      "items": []
+    },
+    {
+      "query": "一人手写29万行代码",
+      "http_status": 200,
+      "ok": true,
+      "count_returned": 0,
+      "items": []
+    },
+    {
+      "query": "security-ark",
+      "http_status": 200,
+      "ok": true,
+      "count_returned": 0,
+      "items": []
+    },
+    {
+      "query": "safety-ark",
+      "http_status": 200,
+      "ok": true,
+      "count_returned": 0,
+      "items": []
+    },
+    {
+      "query": "代码安全 方舟",
+      "http_status": 200,
+      "ok": true,
+      "count_returned": 0,
+      "items": []
+    }
+  ],
+  "npm_search": [
+    {
+      "query": "safeark",
+      "http_status": 200,
+      "ok": true,
+      "total": 0,
+      "items": []
+    },
+    {
+      "query": "SecurityArk",
+      "http_status": 200,
+      "ok": true,
+      "total": 0,
+      "items": []
+    },
+    {
+      "query": "arksec",
+      "http_status": 200,
+      "ok": true,
+      "total": 0,
+      "items": []
+    },
+    {
+      "query": "security-ark",
+      "http_status": 200,
+      "ok": true,
+      "total": 52727,
+      "items": [
+        {
+          "name": "@ark-ui/react",
+          "description": "A collection of unstyled, accessible UI components for React, utilizing state machines for seamless interaction."
+        },
+        {
+          "name": "@ark-ui/solid",
+          "description": "A collection of unstyled, accessible UI components for Solid, utilizing state machines for seamless interaction."
+        },
+        {
+          "name": "@nosplatform/crypto",
+          "description": "Crypto utilities for the ARK Blockchain"
+        },
+        {
+          "name": "@ark/schema",
+          "description": "Underlying schema language parsed from arktype syntax."
+        },
+        {
+          "name": "@ark-ui/vue",
+          "description": "A collection of unstyled, accessible UI components for Vue, utilizing state machines for seamless interaction."
+        }
+      ]
+    },
+    {
+      "query": "安全方舟",
+      "http_status": 200,
+      "ok": true,
+      "total": 139752,
+      "items": [
+        {
+          "name": "tencentcloud-sdk-nodejs",
+          "description": "腾讯云 API NODEJS SDK"
+        },
+        {
+          "name": "tencentcloud-sdk-nodejs-common",
+          "description": "腾讯云 API NODEJS SDK"
+        },
+        {
+          "name": "@tarojs/components-react",
+          "description": "Taro 组件库（React 版本）。"
+        },
+        {
+          "name": "upath2",
+          "description": "A proxy to `path`, replacing `\\` with `/` for all results"
+        },
+        {
+          "name": "safecheck-client",
+          "description": "安检模块 前端组件"
+        }
+      ]
+    },
+    {
+      "query": "ai-safety-ark",
+      "http_status": 200,
+      "ok": true,
+      "total": 134387,
+      "items": [
+        {
+          "name": "@ark-ui/react",
+          "description": "A collection of unstyled, accessible UI components for React, utilizing state machines for seamless interaction."
+        },
+        {
+          "name": "@ark/json-schema",
+          "description": "`@ark/json-schema` is a package that allows converting from a JSON Schema schema to an ArkType Type. For example:"
+        },
+        {
+          "name": "@ark-ui/solid",
+          "description": "A collection of unstyled, accessible UI components for Solid, utilizing state machines for seamless interaction."
+        },
+        {
+          "name": "@azure-rest/ai-content-safety",
+          "description": "ContentSafety Service"
+        },
+        {
+          "name": "@ark/schema",
+          "description": "Underlying schema language parsed from arktype syntax."
+        }
+      ]
+    }
+  ],
+  "pypi_exact_probes": [
+    {
+      "name": "safeark",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "security-ark",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "securityark",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "safe-ark",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "ai-safety-ark",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "arksec",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "anquan-fangzhou",
+      "http_status": 404,
+      "ok": false,
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "local_artifact_hashes": [
+    {
+      "path": "/Users/charles/.hermes/docs/private/wechat-security-ark-AmVwmYdtFX/analysis.md",
+      "bytes": 49151,
+      "sha256": "c5e0fa8353d5085f3ae182858ec1f728a0fc5ee504b953a9d927b48bb29e6129"
+    },
+    {
+      "path": "/Users/charles/.hermes/docs/private/wechat-security-ark-AmVwmYdtFX/media-index.json",
+      "bytes": 1516,
+      "sha256": "9d9226154256a57485dc347275e6562a647d8cdc9a835255b8df64f807926507"
+    },
+    {
+      "path": "/Users/charles/.hermes/docs/private/wechat-security-ark-AmVwmYdtFX/cover.jpg",
+      "bytes": 19574,
+      "sha256": "5db98e75ad8d29cf7c978385a89d0fcdb74d12819decbb0de3aad5fc29f18c24"
+    },
+    {
+      "path": "/Users/charles/.hermes/docs/private/wechat-security-ark-AmVwmYdtFX/worker8-final-verification-20260629.json",
+      "bytes": 4024,
+      "sha256": "317f261cd9e645434942163309f80dc563b70e25b71db0fb2bf6a477c2ff9cd8"
+    },
+    {
+      "path": "/Users/charles/.hermes/docs/private/wechat-security-ark-AmVwmYdtFX/worker7-verification-20260629.json",
+      "bytes": 4571,
+      "sha256": "7bffbacc4ff15cf8a0a5ff834800444b2afd8f45487aafe95212bab0aec1eeb9"
+    },
+    {
+      "path": "/Users/charles/.hermes/docs/private/wechat-security-ark-AmVwmYdtFX/worker6-final-verification-20260628.json",
+      "bytes": 11947,
+      "sha256": "66be9d70678e82c712af7f53720dd921c9166a5b0d64ab6430d1d8c13ba01ade"
+    }
+  ],
+  "conclusion": {
+    "authoritative_source": "not found",
+    "metadata_license_readme": "not applicable because no credible candidate source/repo/site/package was identified",
+    "marketing_claims": "unverified",
+    "recommendation": "reject adoption now; adapt later only after authoritative source/license verification and explicit human authorization"
+  }
+}
