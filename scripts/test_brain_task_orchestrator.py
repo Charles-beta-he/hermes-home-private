@@ -3296,6 +3296,24 @@ def test_proof_check_include_active_does_not_fail_historical_autorun_hashes():
         assert proof["status"] == "PASS", proof
 
 
+def test_proof_check_does_not_warn_for_non_autorun_done_hash_artifact_labels():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="验证 non-autorun labeled proof hash artifact")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: done", 1)
+        text = text.replace(
+            "evidence: []",
+            "evidence:\n  - proof:sha256:artifact_bundle=deadbeef\n  - command: deterministic closeout PASS",
+            1,
+        )
+        text += "\n## Proof Log\n- non-autorun deterministic artifact bundle hash retained.\n\n## Final Handoff\n- closed by bounded non-autorun worker.\n"
+        task_path.write_text(text, encoding="utf-8")
+        proof = json.loads(run(env, "proof-check", "--json").stdout)
+        assert proof["status"] == "PASS", proof
+        assert not any("terminal invalid autorun proof hash debt" in w for w in proof["warnings"]), proof
+
+
 def test_multimodel_step_marks_task_running_while_external_process_is_inflight_then_review():
     td, _vault, env = make_env_and_vault()
     with td:

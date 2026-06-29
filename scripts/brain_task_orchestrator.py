@@ -4454,11 +4454,9 @@ def task_has_autorun_audit(task: Task) -> bool:
     Historical auto-claim/handoff lines may contain `hermes-autorun` even when a
     later human or bounded non-autorun worker closes the task. The proof hash
     gate is for autorun-originated `review -> done` closure, not for any task
-    that ever had an autorun claim attempt in its audit log.
+    that merely carries a `proof:sha256:` artifact label from another proof
+    system.
     """
-    evidence = task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []
-    if any(str(e).startswith("proof:sha256:") for e in evidence):
-        return True
     return any(
         "Lifecycle transition `review` -> `done`" in line and "by `hermes-autorun" in line
         for line in task.body.splitlines()
