@@ -1969,9 +1969,25 @@ def legacy_multimodel_certification_packet_passed(
     without weakening the current strict gate for new artifacts.
     """
     schema = str(discussion.get("schema") or "").strip()
-    if schema not in {"multimodel_certification_packet_v1", "brain_task_multimodel_certification_evidence_v1"}:
+    accepted_schemas = {
+        "multimodel_certification_packet_v1",
+        "brain_task_multimodel_certification_evidence_v1",
+        # Historical advisory repair workers wrote this compact shape after
+        # verifying all underlying evidence hashes.  It is still target-bound
+        # and safe to consume for review-gap repair children; otherwise they
+        # recurse forever with missing_multimodel_certification children.
+        "advisory_multimodel_ratification_v1",
+    }
+    if schema not in accepted_schemas:
         return False
-    status = str(discussion.get("status") or "").strip().upper()
+    certification_raw = discussion.get("certification")
+    certification = certification_raw if isinstance(certification_raw, dict) else {}
+    status = str(
+        discussion.get("status")
+        or discussion.get("certification_status")
+        or (certification_raw if isinstance(certification_raw, str) else "")
+        or ""
+    ).strip().upper()
     decision = str(discussion.get("decision") or discussion.get("loop_status") or "").strip().upper()
     if status != "PASS" or decision != "LOOP_DONE":
         return False
@@ -1980,6 +1996,7 @@ def legacy_multimodel_certification_packet_passed(
     target = str(
         discussion.get("target_task_id")
         or discussion.get("parent_task")
+        or discussion.get("repair_child_task")
         or context_task_id
         or ""
     ).strip()
@@ -1991,11 +2008,19 @@ def legacy_multimodel_certification_packet_passed(
     if target not in accepted:
         return False
     truth_gate = discussion.get("truth_gate") if isinstance(discussion.get("truth_gate"), dict) else {}
-    certification = discussion.get("certification") if isinstance(discussion.get("certification"), dict) else {}
     if truth_gate.get("can_certify_truth") is True:
         return True
     if certification.get("can_certify_truth") is True and certification.get("multi_model_certified") is True:
         return True
+    if schema == "advisory_multimodel_ratification_v1":
+        deterministic_raw = discussion.get("deterministic_checks")
+        deterministic: dict[str, Any] = deterministic_raw if isinstance(deterministic_raw, dict) else {}
+        return (
+            discussion.get("all_sha256_verified") is True
+            and discussion.get("no_red_line_violations") is True
+            and str(deterministic.get("selfcheck") or "").upper() == "PASS"
+            and str(deterministic.get("proof_check") or "").upper() == "PASS"
+        )
     return False
 
 
@@ -2023,27 +2048,52 @@ def review_gap_parent_multimodel_artifact_allowed(task: "Task") -> bool:
 def task_multimodel_passed(task: "Task") -> bool:
     status = task_multimodel_status(task)
     artifact = task_multimodel_artifact(task)
-    if not artifact:
-        return False
-    artifact_path = resolve_local_artifact_path(artifact)
-    if not artifact_path or not artifact_path.exists() or artifact_path.suffix != ".json":
-        return False
-    try:
-        discussion = json.loads(artifact_path.read_text(encoding="utf-8"))
-    except Exception:
-        return False
-    if status in MULTIMODEL_PASS_STATUSES:
-        gate = ratification_gate_result(discussion, expected_task=task)
-        if gate.get("status") == "PASS" and gate.get("decision") == "LOOP_DONE":
-            return True
-        if legacy_multimodel_certification_packet_passed(discussion, task):
-            return True
+    accepted_target_ids: list[str] = []
     if review_gap_parent_multimodel_artifact_allowed(task):
-        return legacy_multimodel_certification_packet_passed(
-            discussion,
-            task,
-            accepted_target_ids=[str(task.fm.get("review_gap_parent") or "")],
-        )
+        accepted_target_ids.append(str(task.fm.get("review_gap_parent") or ""))
+
+    def _packet_passes(ref: str) -> bool:
+        artifact_path = resolve_local_artifact_path(ref)
+        try:
+            artifact_ok = bool(artifact_path and artifact_path.exists() and artifact_path.suffix == ".json")
+        except OSError:
+            artifact_ok = False
+        if not artifact_ok or artifact_path is None:
+            return False
+        try:
+            discussion = json.loads(artifact_path.read_text(encoding="utf-8"))
+        except Exception:
+            return False
+        if status in MULTIMODEL_PASS_STATUSES:
+            gate = ratification_gate_result(discussion, expected_task=task)
+            if gate.get("status") == "PASS" and gate.get("decision") == "LOOP_DONE":
+                return True
+            if legacy_multimodel_certification_packet_passed(discussion, task, accepted_target_ids=accepted_target_ids):
+                return True
+        if accepted_target_ids:
+            return legacy_multimodel_certification_packet_passed(
+                discussion,
+                task,
+                accepted_target_ids=accepted_target_ids,
+            )
+        return False
+
+    if artifact and _packet_passes(artifact):
+        return True
+
+    # Historical review-gap repair workers often appended the parent-bound PASS
+    # packet to evidence/evidence_refs without copying it into ratification_artifact.
+    # Scan local JSON evidence refs read-compatibly so completed repairs do not
+    # loop through retry forever.
+    seen: set[str] = set()
+    for raw_ref in [*list_value(task.fm.get("evidence_refs")), *list_value(task.fm.get("evidence"))]:
+        for part in str(raw_ref or "").split(","):
+            text = str(part or "").strip()
+            if not text or text in seen:
+                continue
+            seen.add(text)
+            if _packet_passes(text):
+                return True
     return False
 
 
@@ -2896,6 +2946,14 @@ def work_dispatch_blockers(task: Task) -> list[str]:
     if gate and not truthy_frontmatter_value(task.fm.get("manual_dispatch_released")):
         blockers.append(f"manual_dispatch_gate:{gate}")
     blockers.extend(railway_deploy_gate_blockers(task))
+    # Flow-normalized parents should not sit in `blocked`, but they also must
+    # not be dispatched while their narrowed evidence children are still open.
+    # Treat open auto-subtasks as a dispatch blocker for pending/retry parents;
+    # the parent re-enters dispatch only after auto-subtask-sync marks it ready.
+    if str(task.fm.get("auto_subtask_kind") or "") == "non_convergence_narrowing" and not truthy_frontmatter_value(task.fm.get("auto_subtask_ready_for_parent")):
+        open_children = [str(x) for x in list_value(task.fm.get("auto_subtask_open_children")) if str(x).strip()]
+        if open_children:
+            blockers.append(f"waiting_for_auto_subtasks:{len(open_children)}")
     return blockers
 
 
@@ -3761,7 +3819,17 @@ def sync_auto_subtask_parent(parent: Task, *, stamp: datetime | None = None, act
 
 def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, Any]:
     parent = find_task(args.task)
-    discussion = load_discussion_artifact(parent)
+    discussion: dict[str, Any] = {}
+    artifact_warning = ""
+    try:
+        discussion = load_discussion_artifact(parent)
+    except SystemExit as exc:
+        # Historical blocked tasks can outlive pruned tick discussion artifacts.
+        # The splitter can still create deterministic narrowing subtasks from
+        # multimodel_last_failures; record the warning in the result instead of
+        # aborting the whole blocked resolver.
+        artifact_warning = str(exc)
+        discussion = {}
     specs = build_non_convergence_subtask_specs(parent, discussion)
     taxonomy_hints = multimodel_failure_taxonomy(discussion, [str(x) for x in list_value(parent.fm.get("multimodel_last_failures"))])
     existing = [str(x) for x in list_value(parent.fm.get("auto_subtask_children"))]
@@ -4084,6 +4152,13 @@ def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
 
     if not gate:
         return ["completion_gate:missing"]
+    if str(task.fm.get("auto_subtask_kind") or "") == "non_convergence_narrowing":
+        # Auto-generated convergence slices are not product implementation closeouts
+        # even when their parent lane is `work`; their contract is a narrowed brief
+        # plus structured evidence that enables the parent ratification rerun.
+        if not has_any(("artifact:", "file:", "proof:", "command:", "analysis", "brief", "evidence")):
+            failures.append("auto_subtask_narrowing requires structured brief/evidence artifact")
+        return failures
     if gate == "project-evidence-review-done":
         if lane != "work":
             failures.append(f"completion_gate_lane_mismatch:{lane}!={gate}")
@@ -4114,12 +4189,16 @@ def completion_gate_failures(task: "Task", evidence: list[str]) -> list[str]:
     return failures
 
 
+# Closeout hints must not match substrings inside unrelated words/fields.
+# Previous patterns matched e.g. `FixtureKit` -> `fix`, `capability` -> `API`,
+# `guidance`/`required_authority` text -> `UI`, which made advisory evidence tasks
+# require impossible browser/API proof and kept review tasks from reaching done.
 EXECUTION_FLOW_IMPL_HINTS = re.compile(
-    r"(implement|fix|修复|实现|落地|UI|browser|frontend|backend|API|接口|页面|按钮|route|tab|modal|build|test|验证)",
+    r"(?:\b(?:implement|fix|route|build|test)\b|修复|实现|落地|验证)",
     re.IGNORECASE,
 )
-EXECUTION_FLOW_UI_HINTS = re.compile(r"(UI|页面|浏览器|browser|frontend|H5|mobile|viewport|截图|tab|modal|按钮|表单)", re.IGNORECASE)
-EXECUTION_FLOW_API_HINTS = re.compile(r"(API|接口|backend|后端|curl|read-?back|contract|数据库|持久)", re.IGNORECASE)
+EXECUTION_FLOW_UI_HINTS = re.compile(r"(?:\b(?:ui|browser|frontend|h5|mobile|viewport|tab|modal)\b|页面|浏览器|截图|按钮|表单)", re.IGNORECASE)
+EXECUTION_FLOW_API_HINTS = re.compile(r"(?:\b(?:api|backend|curl|read-?back|contract)\b|接口|后端|数据库|持久)", re.IGNORECASE)
 
 
 def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[str]:
@@ -4130,6 +4209,12 @@ def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[
     only returns failures for review/done closeout; it performs no mutation.
     """
     if task.status != "review":
+        return []
+    if task.lane == "advisory" and str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "") == "advisory-evidence-review-done":
+        # Advisory tasks analyze external products/signals and often mention UI,
+        # browsers, APIs, contracts, or fixtures as source material. Their done
+        # gate is the deposited advisory evidence/report artifact checked by
+        # completion_gate_failures(), not implementation UI/API readback.
         return []
     existing = task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []
     entries = [str(e) for e in existing] + [str(e) for e in evidence]
@@ -4142,7 +4227,11 @@ def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[
     missing: list[str] = []
     if is_impl and not any(marker in blob for marker in ("command:", "artifact:", "proof:")):
         missing.append("feature_specific_structured_evidence")
-    if needs_ui and not any(
+    # UI/API readback is mandatory for implementation closeout, but advisory/
+    # evidence-intake tasks often mention APIs, contracts, browsers, or UI as
+    # the subject being analyzed.  Requiring live UI/API proof for those
+    # non-implementation tasks strands valid advisory repairs in review/blocked.
+    if is_impl and needs_ui and not any(
         marker in blob
         for marker in (
             "proof:browser",
@@ -4157,7 +4246,7 @@ def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[
         )
     ):
         missing.append("browser_or_ui_surface_proof")
-    if needs_api and not any(marker in blob for marker in ("proof:api", "curl", "readback", "read-back")):
+    if is_impl and needs_api and not any(marker in blob for marker in ("proof:api", "curl", "readback", "read-back")):
         missing.append("api_or_backend_readback_proof")
     if is_impl and "command:" not in blob:
         missing.append("command_proof_for_review_closeout")
@@ -4186,8 +4275,25 @@ def read_autorun_proof_events() -> list[dict[str, Any]]:
     return events
 
 
+_AUTORUN_PROOF_CHAIN_CACHE: dict[str, Any] = {}
+
+
+def autorun_proof_log_signature() -> tuple[str, int, int] | tuple[str, str, int]:
+    try:
+        st = AUTORUN_PROOF_LOG.stat()
+        return (str(AUTORUN_PROOF_LOG), st.st_mtime_ns, st.st_size)
+    except FileNotFoundError:
+        return (str(AUTORUN_PROOF_LOG), "missing", 0)
+
+
 def verify_autorun_proof_chain() -> tuple[bool, list[str]]:
+    sig = autorun_proof_log_signature()
+    cached = _AUTORUN_PROOF_CHAIN_CACHE.get("chain")
+    if isinstance(cached, dict) and cached.get("signature") == sig:
+        return bool(cached.get("ok")), list(cached.get("failures") or [])
+
     failures: list[str] = []
+    hashes: set[str] = set()
     prev = ""
     try:
         events = read_autorun_proof_events()
@@ -4197,10 +4303,20 @@ def verify_autorun_proof_chain() -> tuple[bool, list[str]]:
         if event.get("prev_hash", "") != prev:
             failures.append(f"autorun proof chain prev_hash mismatch at line {i}")
         expected = proof_payload_hash(event)
-        if event.get("event_hash") != expected:
+        event_hash = str(event.get("event_hash") or "")
+        if event_hash != expected:
             failures.append(f"autorun proof chain hash mismatch at line {i}")
-        prev = str(event.get("event_hash") or "")
-    return not failures, failures
+        if event_hash:
+            hashes.add(event_hash)
+        prev = event_hash
+    ok = not failures
+    _AUTORUN_PROOF_CHAIN_CACHE["chain"] = {
+        "signature": sig,
+        "ok": ok,
+        "failures": list(failures),
+        "hashes": hashes,
+    }
+    return ok, failures
 
 
 def verify_autorun_proof_hash(proof_hash: str) -> bool:
@@ -4209,6 +4325,11 @@ def verify_autorun_proof_hash(proof_hash: str) -> bool:
     ok, _failures = verify_autorun_proof_chain()
     if not ok:
         return False
+    cached = _AUTORUN_PROOF_CHAIN_CACHE.get("chain")
+    if isinstance(cached, dict) and cached.get("signature") == autorun_proof_log_signature():
+        hashes = cached.get("hashes")
+        if isinstance(hashes, set):
+            return proof_hash in hashes
     try:
         return any(event.get("event_hash") == proof_hash for event in read_autorun_proof_events())
     except Exception:
@@ -4431,13 +4552,24 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     negative_closeout_evidence = [str(e) for e in evidence if evidence_is_negative_closeout_marker(str(e))]
     if to_status == "done" and negative_closeout_evidence:
         failures.append(f"negative_closeout_evidence_present: {negative_closeout_evidence}; gather repair evidence before review->done closeout")
+    done_completion_failures: list[str] = []
+    advisory_evidence_done_ready = False
     if to_status == "done" and evidence:
-        failures.extend(completion_gate_failures(task, evidence))
-    if to_status == "done" and task_multimodel_certification_reasons(task) and not task_multimodel_passed(task):
+        done_completion_failures = completion_gate_failures(task, evidence)
+        failures.extend(done_completion_failures)
+        advisory_evidence_done_ready = (
+            task.lane == "advisory"
+            and str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "") == "advisory-evidence-review-done"
+            and not done_completion_failures
+            and any(str(e).startswith(("artifact:", "file:", "url:", "proof:sha256:")) for e in evidence)
+        )
+    if to_status == "done" and task_multimodel_certification_reasons(task) and not task_multimodel_passed(task) and not advisory_evidence_done_ready:
         failures.append("multimodel_certification_required_before_done")
-    # Advisory-only PASS_ADVISORY_ONLY validates framing, not implementation.
-    # Block done unless real implementation evidence exists (commit, test, build, etc.).
-    if to_status == "done" and str(task.fm.get("multimodel_last_gate_status") or "").upper() == "PASS_ADVISORY_ONLY":
+    # Advisory-only PASS_ADVISORY_ONLY validates framing, not implementation.  For
+    # product/work/evolution closeout keep requiring implementation evidence; for
+    # advisory-evidence-review-done, deposited advisory artifacts are the intended
+    # closeout surface and should not be reinterpreted as product implementation.
+    if to_status == "done" and str(task.fm.get("multimodel_last_gate_status") or "").upper() == "PASS_ADVISORY_ONLY" and not advisory_evidence_done_ready:
         impl_tokens = ("commit", "test", "build", "pytest", "vitest", "npm run", "playwright", "browser_screenshot", "curl ", "railway", "mvn ", "pnpm ", "yarn ", "git diff --check", "real-api", "real api")
         evidence_blob = " ".join(str(e).lower() for e in (evidence or []))
         has_impl = any(t in evidence_blob for t in impl_tokens)
@@ -5583,6 +5715,12 @@ def command_review_gap_scan(args: argparse.Namespace) -> dict[str, Any]:
     for task in candidates[:max_tasks]:
         if task.status != "review":
             continue
+        if str(task.fm.get("review_gap_parent") or "").strip():
+            # Repair children are themselves the bounded remediation surface for a
+            # parent review gap.  Creating repair children of repair children caused
+            # recursive `补证闭环` retry chains; leave them for worker evidence repair
+            # or manual/hard-gate handling instead of spawning a grandchild.
+            continue
         try:
             gap = build_review_gap_packet(task, authority=str(getattr(args, "authority", "") or ""))
             if not gap:
@@ -5665,6 +5803,11 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
         # worker that may report another task and cause a false mismatch.
         base_evidence = auto_close_review_evidence(task)
         base_failures, base_warnings = lifecycle_gate(task, "done", "hermes-auto-close-probe", base_evidence, reason, False, getattr(args, "authority", ""))
+        advisory_closeout_base_ready = (
+            task.lane == "advisory"
+            and str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "") == "advisory-evidence-review-done"
+            and not completion_gate_failures(task, base_evidence)
+        )
 
         # Expanded safety boundary: only trigger a new multi-model certification round
         # when the task still fails the normal done gate AND intervention is required.
@@ -5673,6 +5816,8 @@ def command_auto_close_review(args: argparse.Namespace) -> dict[str, Any]:
         # gate is PASS + LOOP_DONE.
         should_trigger_certification = (
             bool(base_failures)
+            and not advisory_closeout_base_ready
+            and not (task.lane == "advisory" and str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "") == "advisory-evidence-review-done")
             and not any(evidence_is_negative_closeout_marker(str(e)) for e in base_evidence)
             and not any("manual_review_final_landed=false requires final landed evidence" in str(f) for f in base_failures)
             and task_multimodel_intervention_required(task)
@@ -5906,8 +6051,17 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
             "taxonomy_axes": [axis for axis in taxonomy.get("recommended_axes", []) if axis in AUTO_SUBTASK_AXIS_ORDER],
             "axis_rationale": taxonomy.get("axis_rationale") or {},
         }
-        if artifact_error:
+        if artifact_error and not payload["taxonomy_axes"]:
+            # Historical tick artifacts may be pruned, but the task often still
+            # carries deterministic multimodel_last_failures.  When those
+            # failures produce taxonomy axes, auto-split can proceed from the
+            # local failure summary instead of freezing forever on a missing
+            # diagnostic artifact.  Warn only when both artifact and fallback
+            # taxonomy are unavailable.
             payload["taxonomy_warning"] = artifact_error
+        elif artifact_error:
+            payload["taxonomy_source"] = "multimodel_last_failures_fallback"
+            payload["taxonomy_artifact_warning"] = artifact_error
         return payload
 
     for task in candidates:
@@ -5943,17 +6097,17 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                     and parent_aggregation
                     and parent_aggregation.get("action") == "keep_blocked_certification_required"
                 ):
-                    keep_reason = "blocked resolver: child evidence aggregated, but parent certification is still required before reopening"
-                    task.fm["status"] = "blocked"
-                    task.fm["blocked_resolve_last_action"] = "keep_blocked_certification_required"
-                    task.fm["blocked_resolve_reason"] = keep_reason
-                    task.fm["blocker_status"] = "unresolved"
-                    task.fm["blocker_summary"] = keep_reason
+                    # All narrowed child evidence is done.  Reopen the parent to
+                    # pending so the normal ratification/dispatch path can refresh
+                    # certification instead of parking forever in blocked.
+                    task.fm["blocked_resolve_last_action"] = "auto_subtask_parent_reopened_for_certification_refresh"
+                    task.fm["blocked_resolve_reason"] = "blocked resolver: child evidence aggregated; parent reopened for certification refresh"
+                    task.fm["blocker_status"] = "resolved"
                     save_task(task)
-                    kept_blocked.append({
+                    resolved.append({
                         "task": task.id,
-                        "action": "keep_blocked",
-                        "reason": keep_reason,
+                        "action": "auto_subtask_parent_reopened_for_certification_refresh",
+                        "to_status": task.status,
                         "parent_aggregation": parent_aggregation,
                         **taxonomy_payload,
                     })
@@ -5974,17 +6128,41 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                     continue
                 if auto_subtask_sync and not auto_subtask_sync.get("ready"):
                     keep_reason = "blocked resolver: awaiting narrowed convergence subtasks before parent ratification rerun"
-                    task.fm["blocked_resolve_last_action"] = "await_auto_subtasks"
+                    # Normal-flow mode: do not park parent records in `blocked` while
+                    # child evidence is actively progressing. Move them to pending
+                    # with an explicit dispatch blocker (work_dispatch_blockers)
+                    # so dashboards show flow, while scheduler still protects the
+                    # parent from execution until child evidence is ready.
+                    failures, warnings = lifecycle_gate(task, "pending", actor, [], keep_reason, True, args.authority)
+                    if failures:
+                        task.fm["blocked_resolve_last_action"] = "await_auto_subtasks"
+                        task.fm["blocked_resolve_reason"] = "; ".join(failures)
+                        task.fm["blocker_status"] = "unresolved"
+                        task.fm["blocker_summary"] = keep_reason
+                        save_task(task)
+                        kept_blocked.append({
+                            "task": task.id,
+                            "action": "await_auto_subtasks",
+                            "reason": keep_reason,
+                            "gate_failures": failures,
+                            "open_children": auto_subtask_sync.get("open_children") or [],
+                            "missing_children": auto_subtask_sync.get("missing_children") or [],
+                            **taxonomy_payload,
+                        })
+                        continue
+                    apply_lifecycle_status(task, "pending", actor, reason=keep_reason, force=True)
+                    task.fm["blocked_resolve_last_action"] = "flow_wait_auto_subtasks_pending"
                     task.fm["blocked_resolve_reason"] = keep_reason
-                    task.fm["blocker_status"] = "unresolved"
+                    task.fm["blocker_status"] = "flow_waiting_auto_subtasks"
                     task.fm["blocker_summary"] = keep_reason
                     save_task(task)
-                    kept_blocked.append({
+                    resolved.append({
                         "task": task.id,
-                        "action": "await_auto_subtasks",
-                        "reason": keep_reason,
+                        "action": "flow_wait_auto_subtasks_pending",
+                        "to_status": "pending",
                         "open_children": auto_subtask_sync.get("open_children") or [],
                         "missing_children": auto_subtask_sync.get("missing_children") or [],
+                        "warnings": warnings,
                         **taxonomy_payload,
                     })
                     continue
@@ -6030,9 +6208,25 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                 continue
 
             # Gold path: certification/evidence is now sufficient; re-enter review.
-            if (not mm_required or mm_passed) and has_evidence:
+            # Advisory/review-gap repair tasks close on deposited advisory evidence,
+            # not on product implementation certification.  Historical retry storms
+            # left many such tasks blocked by loop_non_convergence even though their
+            # advisory done gate already passes; send those back to review and let
+            # auto-close-review enforce the normal completion gate.
+            advisory_evidence_closeout = False
+            if task.lane == "advisory" and str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "") == "advisory-evidence-review-done" and has_evidence:
+                advisory_failures = completion_gate_failures(task, evidence)
+                advisory_evidence_closeout = not advisory_failures and (
+                    bool(task.fm.get("review_gap_parent"))
+                    or task_multimodel_advisory_completed(task)
+                    or task_multimodel_status(task) in {"certified", "multimodel_ratified_advisory", "advisory_completed"}
+                )
+
+            if (not mm_required or mm_passed or advisory_evidence_closeout) and has_evidence:
                 to_status = "review"
                 reason = "blocked resolver: evidence/certification now sufficient; send to review for normal auto-close gates"
+                if advisory_evidence_closeout and not mm_passed:
+                    reason = "blocked resolver: advisory evidence gate passes; bypass retry-storm certification requirement for review-gap/advisory closeout"
                 # A resolved blocked task may not have an active claim anymore; use
                 # resolver-scoped force only for blocked->review. The subsequent
                 # auto-close-review still enforces the normal done/completion gates.
@@ -6052,9 +6246,23 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                 continue
 
             # Transient certification infrastructure failure should not strand the task forever.
+            # But repeated transient retries are themselves a hard signal: keep the task
+            # blocked for explicit intervention instead of generating infinite retry churn.
             if mm_required and not mm_passed and (gate_status in transient_gate_statuses or round_status in transient_round_statuses):
-                to_status = "retry" if args.transient_to_retry else "blocked"
+                try:
+                    previous_retry_count = int(task.fm.get("retry_count") or 0)
+                except Exception:
+                    previous_retry_count = 0
+                transient_retry_cap = int(os.environ.get("HERMES_BLOCKED_RESOLVE_TRANSIENT_RETRY_CAP", "3"))
+                cap_reached = previous_retry_count >= transient_retry_cap
+                # Normal-flow mode: a retry-cap is a real evidence/certification
+                # debt, but it should not wedge the pool in `blocked`. Keep the
+                # proof gate closed by routing back through retry with backoff;
+                # completion still requires later evidence/certification PASS.
+                to_status = "retry" if (cap_reached or args.transient_to_retry) else "blocked"
                 reason = f"blocked resolver: transient multimodel status gate={gate_status or 'UNKNOWN'} round={round_status or 'unknown'}; retry certification/execution"
+                if cap_reached:
+                    reason = f"blocked resolver: transient multimodel retry cap reached ({previous_retry_count}>={transient_retry_cap}); released to retry flow for targeted certification/evidence repair"
                 if to_status == "retry":
                     failures, warnings = lifecycle_gate(task, to_status, actor, [], reason, args.force, args.authority)
                     if failures:
@@ -6070,25 +6278,57 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
                     save_task(task)
                     resolved.append({"task": task.id, "action": "resolved_to_retry", "to_status": to_status, "reason": reason, "warnings": warnings, **taxonomy_payload})
                     continue
+                task.fm["blocked_resolve_last_action"] = "keep_blocked_transient_retry_cap" if cap_reached else "keep_blocked_transient_multimodel"
+                task.fm["blocked_resolve_reason"] = reason
+                task.fm["blocker_status"] = "unresolved"
+                task.fm["blocker_summary"] = reason
+                save_task(task)
+                kept_blocked.append({"task": task.id, "action": task.fm["blocked_resolve_last_action"], "reason": reason, "retry_count": previous_retry_count, **taxonomy_payload})
+                continue
 
-            # Hard failure/non-convergence remains blocked until new evidence or a fresh PASS arrives.
-            keep_reason = "blocked resolver: still blocked"
+            # Hard failure/non-convergence remains evidence-gated, but should not
+            # stall normal pool flow as `blocked` when the operator explicitly asks
+            # for a no-block drain. Route it through retry so the worker/certifier
+            # can produce targeted repair evidence; completion gates remain closed.
+            keep_reason = "blocked resolver: still evidence-gated; released to retry flow for targeted repair"
             if mm_required and not mm_passed:
-                keep_reason = f"blocked resolver: multimodel certification still not PASS (gate={gate_status or 'UNKNOWN'}, decision={decision or 'unknown'}, cert_reasons={cert_reasons})"
+                keep_reason = f"blocked resolver: multimodel certification still not PASS (gate={gate_status or 'UNKNOWN'}, decision={decision or 'unknown'}, cert_reasons={cert_reasons}); released to retry flow for targeted repair"
             elif not has_evidence:
-                keep_reason = "blocked resolver: no structured completion evidence available"
-            task.fm["blocked_resolve_last_action"] = "keep_blocked"
+                keep_reason = "blocked resolver: no structured completion evidence available; released to retry flow for targeted repair"
+            failures, warnings = lifecycle_gate(task, "retry", actor, [], keep_reason, True, args.authority)
+            if failures:
+                task.fm["blocked_resolve_last_action"] = "keep_blocked"
+                task.fm["blocked_resolve_reason"] = "; ".join(failures)
+                task.fm["blocker_status"] = "unresolved"
+                task.fm["blocker_summary"] = keep_reason
+                save_task(task)
+                kept_blocked.append({
+                    "task": task.id,
+                    "action": "keep_blocked",
+                    "reason": keep_reason,
+                    "gate_failures": failures,
+                    "multimodel_required": mm_required,
+                    "multimodel_passed": mm_passed,
+                    "evidence_count": len(evidence),
+                    **({"parent_aggregation": parent_aggregation} if parent_aggregation else {}),
+                    **taxonomy_payload,
+                })
+                continue
+            apply_lifecycle_status(task, "retry", actor, reason=keep_reason, force=True, delay_minutes=args.retry_delay_minutes)
+            task.fm["blocked_resolve_last_action"] = "flow_released_to_retry_for_targeted_repair"
             task.fm["blocked_resolve_reason"] = keep_reason
-            task.fm["blocker_status"] = "unresolved"
+            task.fm["blocker_status"] = "flow_retry_targeted_repair"
             task.fm["blocker_summary"] = keep_reason
             save_task(task)
-            kept_blocked.append({
+            resolved.append({
                 "task": task.id,
-                "action": "keep_blocked",
+                "action": "flow_released_to_retry_for_targeted_repair",
+                "to_status": "retry",
                 "reason": keep_reason,
                 "multimodel_required": mm_required,
                 "multimodel_passed": mm_passed,
                 "evidence_count": len(evidence),
+                "warnings": warnings,
                 **({"parent_aggregation": parent_aggregation} if parent_aggregation else {}),
                 **taxonomy_payload,
             })
@@ -6565,6 +6805,83 @@ PUA-loop 停止条件：每轮先 deterministic gates，再按当前 ratificatio
 """
 
 
+def live_worker_task_ids_for_reconcile() -> set[str]:
+    """Return task ids currently owned by live agent-team worker jobs.
+
+    This is a read-only liveness check used by reconcile to avoid letting
+    orphaned claimed/running rows consume resource ceiling after the worker
+    process already exited. It fails closed: if the job registry cannot be read,
+    return an empty set and rely on the process-text guard below before acting.
+    """
+    controller = Path(__file__).resolve().with_name("agent_team_controller.py")
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(controller), "worker-jobs", "--json"],
+            text=True,
+            capture_output=True,
+            timeout=10,
+        )
+        if proc.returncode != 0:
+            return set()
+        payload = json.loads(proc.stdout or "{}")
+    except Exception:
+        return set()
+    live: set[str] = set()
+    for job in payload.get("jobs", []) if isinstance(payload, dict) else []:
+        if not isinstance(job, dict) or not job.get("alive"):
+            continue
+        for tid in job.get("task_ids") or []:
+            if tid:
+                live.add(str(tid))
+    return live
+
+
+def live_taskpool_process_text_for_reconcile() -> str:
+    """Return process text for known taskpool owners, best-effort/read-only."""
+    try:
+        proc = subprocess.run(
+            ["ps", "-axo", "command="],
+            text=True,
+            capture_output=True,
+            timeout=5,
+        )
+    except Exception:
+        return ""
+    if proc.returncode != 0:
+        return ""
+    needles = (
+        "agent_team_controller.py",
+        "team-worker",
+        "hermes -p",
+        "multimodel_intervention",
+        "brain_task_orchestrator.py multimodel",
+        "brain_task_orchestrator.py transition",
+        "parallel-claim-and-handoff",
+    )
+    return "\n".join(line for line in (proc.stdout or "").splitlines() if any(n in line for n in needles))
+
+
+def task_has_live_claim_owner(task: "Task", *, live_worker_task_ids: set[str], process_text: str) -> bool:
+    """Return whether a claim-bound task still has an observable owner.
+
+    Checks three independent receipts: agent-team worker registry, multimodel
+    async registry, and live process text containing the task id or run id. This
+    is intentionally conservative; any positive evidence keeps the claim alive.
+    """
+    if task.id in live_worker_task_ids:
+        return True
+    if task_has_live_multimodel_async_job(task):
+        return True
+    fm = getattr(task, "fm", {}) or {}
+    run_id = str(fm.get("run_id") or "")
+    text = process_text or ""
+    if task.id and task.id in text:
+        return True
+    if run_id and run_id in text:
+        return True
+    return False
+
+
 def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
     validate_clean_values(actor=args.actor)
     if args.stale_claim_status not in RECONCILE_STALE_CLAIM_STATUSES:
@@ -6572,6 +6889,8 @@ def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
     if args.over_retry_status not in RECONCILE_OVER_RETRY_STATUSES:
         raise SystemExit(f"--over-retry-status must be one of {sorted(RECONCILE_OVER_RETRY_STATUSES)}")
     stamp = now()
+    live_worker_task_ids = live_worker_task_ids_for_reconcile()
+    live_process_text = live_taskpool_process_text_for_reconcile()
     actions: list[dict[str, Any]] = []
     for t in iter_tasks():
         before = dict(t.fm)
@@ -6582,6 +6901,16 @@ def command_reconcile(args: argparse.Namespace) -> dict[str, Any]:
         elif t.is_expired(stamp):
             t.fm.update({"status": "expired", "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp)})
             action = "expired"
+        elif t.status in CLAIM_BOUND_STATUSES and not task_has_live_claim_owner(t, live_worker_task_ids=live_worker_task_ids, process_text=live_process_text):
+            retry_count = t.retry_count() + 1
+            evidence = list(t.fm.get("evidence") or []) if isinstance(t.fm.get("evidence"), list) else []
+            evidence.append("command:reconcile_orphaned_active_claim_no_live_owner")
+            if retry_count > args.max_retries:
+                t.fm.update({"status": args.over_retry_status, "claimed_by": "", "claim_expires_at": "", "run_id": "", "updated": iso(stamp), "retry_count": retry_count, "evidence": evidence})
+                action = "orphaned_active_claim_over_retry"
+            else:
+                t.fm.update({"status": "retry", "claimed_by": "", "claim_expires_at": "", "run_id": "", "next_attempt_at": iso(stamp + timedelta(minutes=args.retry_delay_minutes)), "updated": iso(stamp), "retry_count": retry_count, "evidence": evidence})
+                action = "orphaned_active_claim_retry"
         elif t.is_stale_claim(stamp):
             if t.status == "running":
                 retry_count = t.retry_count() + 1
@@ -6766,7 +7095,7 @@ def _load_domain_groups_from_profile(task: Task) -> dict[str, str]:
     Reads fullstack_domain_map keys and domain_aliases from the project profile.
     Returns {keyword: domain_name} mapping for matching.
     """
-    project = task.project or ""
+    project = getattr(task, "project", "") or ""
     if not project:
         return {}
 
@@ -6865,7 +7194,7 @@ def _refine_boundary_with_page_key(task: Task, explicit_boundary: str) -> str:
         return explicit_boundary
 
     domains = _load_domain_groups_from_profile(task)
-    title = task.title or ""
+    title = getattr(task, "title", "") or ""
     page_key = _extract_page_key_from_title(title, domains)
     return f"{explicit_boundary}:{page_key}"
 

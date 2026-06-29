@@ -54,6 +54,15 @@ def run_json(cmd: list[str], timeout: int = 120) -> tuple[dict[str, Any] | None,
 
 
 def check_p10() -> dict[str, Any]:
+    fixture = os.environ.get("HERMES_AUTONOMY_PRECONDITION_P10_FIXTURE")
+    if fixture:
+        path = Path(fixture).expanduser()
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            return {"name": "p10_health", "ok": False, "data": None, "meta": {"fixture": str(path), "error": repr(exc)}}
+        ok = bool(data and data.get("components", {}).get("self_test") == 1.0 and data.get("grade") in {"A", "B"})
+        return {"name": "p10_health", "ok": ok, "data": data, "meta": {"fixture": str(path), "ok": True}}
     data, meta = run_json(["bash", str(SCRIPTS / "p10-health.sh"), "--json"], timeout=180)
     ok = bool(data and data.get("components", {}).get("self_test") == 1.0 and data.get("grade") in {"A", "B"})
     return {"name": "p10_health", "ok": ok, "data": data, "meta": meta}

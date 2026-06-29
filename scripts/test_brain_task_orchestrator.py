@@ -27,17 +27,26 @@ def load_railway_gate_module():
 
 
 def load_orchestrator_module():
+    old_quorum = os.environ.get("HERMES_QUORUM_CONFIG")
+    if old_quorum is None:
+        os.environ["HERMES_QUORUM_CONFIG"] = str(Path(tempfile.gettempdir()) / "hermes-test-no-quorum.yaml")
     spec = importlib.util.spec_from_file_location("brain_task_orchestrator_under_test", SCRIPT)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        if old_quorum is None:
+            os.environ.pop("HERMES_QUORUM_CONFIG", None)
+        else:
+            os.environ["HERMES_QUORUM_CONFIG"] = old_quorum
     return mod
 
 
 def run(env, *args, check=True):
     args = list(args)
-    if check and args and args[0] == "add":
+    if args and args[0] == "add":
         defaults = [
             ("--priority-layer", "P2"),
             ("--dependency-order", "1"),
@@ -168,6 +177,10 @@ def make_env_and_vault():
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(Path(td.name) / "autonomy-write-allowlist.json")
     env["HERMES_CRON_JOBS_PATH"] = str(Path(td.name) / "cron" / "jobs.json")
     env["HERMES_PROJECT_PROFILES_DIR"] = str(Path(td.name) / "project-profiles")
+    env.setdefault("HERMES_QUORUM_CONFIG", str(Path(td.name) / "missing-quorum.yaml"))
+    p10_fixture = Path(td.name) / "p10-health-pass.json"
+    p10_fixture.write_text(json.dumps({"grade": "A", "components": {"self_test": 1.0}}, ensure_ascii=False), encoding="utf-8")
+    env["HERMES_AUTONOMY_PRECONDITION_P10_FIXTURE"] = str(p10_fixture)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL", None)
     seed_project_profile(env)
@@ -223,6 +236,49 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
         text = text.replace("workflow_contract:", f"source_weighting_policy_ref: project-profile:{project}:test\nworkflow_contract:", 1)
         created_path.write_text(text, encoding="utf-8")
     return created["id"], created_path
+
+
+def _autorun_proof_record(mod, *, prev_hash="", **event):
+    record = {
+        "schema": "local_brain_autorun_proof_v1",
+        "generated_at": "2099-01-01T00:00:00+08:00",
+        "prev_hash": prev_hash,
+        **event,
+    }
+    record["event_hash"] = mod.proof_payload_hash(record)
+    return record
+
+
+def test_verify_autorun_proof_hash_reuses_chain_readback_for_multiple_hashes():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        proof_log = Path(td) / "auto_run_proof.jsonl"
+        prev = ""
+        events = []
+        for i in range(20):
+            record = _autorun_proof_record(mod, prev_hash=prev, event="proof", seq=i)
+            prev = record["event_hash"]
+            events.append(record)
+        proof_log.write_text("\n".join(json.dumps(e, ensure_ascii=False, sort_keys=True) for e in events) + "\n", encoding="utf-8")
+
+        old_log = getattr(mod, "AUTORUN_PROOF_LOG")
+        original_read = getattr(mod, "read_autorun_proof_events")
+        reads = {"count": 0}
+
+        def counted_read():
+            reads["count"] += 1
+            return original_read()
+
+        try:
+            setattr(mod, "AUTORUN_PROOF_LOG", proof_log)
+            setattr(mod, "read_autorun_proof_events", counted_read)
+            for event in events[:5]:
+                assert mod.verify_autorun_proof_hash(str(event["event_hash"])) is True
+        finally:
+            setattr(mod, "AUTORUN_PROOF_LOG", old_log)
+            setattr(mod, "read_autorun_proof_events", original_read)
+
+        assert reads["count"] <= 2
 
 
 def test_execution_flow_dry_run_cli_projects_enterprise_gate_without_mutating_task():
@@ -2898,8 +2954,9 @@ def test_blocked_resolve_missing_discussion_artifact_is_taxonomy_warning_not_fat
         assert result["error_count"] == 0, result
         assert result["kept_blocked_count"] == 1, result
         row = result["kept_blocked"][0]
-        assert row["action"] == "keep_blocked_missing_taxonomy_artifact", result
-        assert "discussion artifact missing" in row.get("taxonomy_warning", ""), result
+        assert row["action"] == "auto_split_non_convergence", result
+        assert row["created_count"] >= 1, result
+        assert "framing" in set(row.get("taxonomy_axes") or []), result
 
 
 def test_auto_split_non_convergence_creates_axis_specific_narrowed_briefs():
@@ -3033,9 +3090,10 @@ def test_blocked_resolve_reports_parent_aggregation_when_children_done_but_certi
 
         result = json.loads(run(env, "blocked-resolve-step", "--task", parent_id, "--json").stdout)
         assert result["status"] == "OK", result
-        assert result["resolved_count"] == 0, result
-        row = result["kept_blocked"][0]
-        assert row["action"] == "keep_blocked", result
+        assert result["resolved_count"] == 1, result
+        row = result["resolved"][0]
+        assert row["action"] == "auto_subtask_parent_reopened_for_certification_refresh", result
+        assert row["to_status"] == "pending", result
         aggregation = row["parent_aggregation"]
         assert aggregation["ready_for_parent"] is True, aggregation
         assert aggregation["action"] == "keep_blocked_certification_required", aggregation
