@@ -1538,6 +1538,39 @@ def test_done_closeout_blocks_work_task_missing_execution_flow_harness_proof():
         assert task_path.read_text(encoding="utf-8") == before
 
 
+def test_done_closeout_allows_no_execution_evidence_intake_that_mentions_browser_source():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Analyze public browser preview and verify source", priority="P2", project="hermes")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("lane: work", "lane: evolution", 1)
+        text = text.replace("completion_gate: project-evidence-review-done", "completion_gate: ratification-or-selfcheck-review-done", 1)
+        text = text.replace("workflow_contract:", "architecture_target: taskpool\ncapability_delta: read-only source identification\nanti_drift_check: no install or UI implementation\nacceptance_evidence: source-identification note and recommendation matrix\nworkflow_stage: evidence\ncompletion_boundary: taskpool_candidate\nharness_surfaces: [\"public-preview\", \"browser\", \"no-execution\"]\nrequired_artifacts: [\"source-identification-note\", \"recommendation-matrix\"]\nworkflow_contract:", 1)
+        text += "\n## Objective\nVerify source from public browser preview only; no install, execution, UI build, or scanning.\n"
+        task_path.write_text(text, encoding="utf-8")
+        run(env, "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json")
+        run(env, "transition", task_id, "--to", "running", "--actor", "tester", "--json")
+        run(env, "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "artifact:/tmp/source-identification.md", "--json")
+
+        done = json.loads(
+            run(
+                env,
+                "transition",
+                task_id,
+                "--to",
+                "done",
+                "--actor",
+                "tester",
+                "--evidence",
+                "artifact:/tmp/source-identification.md recommendation matrix complete no-execution boundary preserved proof-check PASS",
+                "--json",
+            ).stdout
+        )
+
+        assert done["from_status"] == "review"
+        assert done["to_status"] == "done"
+
+
 def test_done_closeout_allows_work_task_with_execution_flow_harness_proof():
     td, _vault, env = make_env_and_vault()
     with td:

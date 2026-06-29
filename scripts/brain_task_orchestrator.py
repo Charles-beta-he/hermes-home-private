@@ -4226,6 +4226,20 @@ def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[
         # gate is the deposited advisory evidence/report artifact checked by
         # completion_gate_failures(), not implementation UI/API readback.
         return []
+    harness_surfaces = {str(v or "").strip().lower() for v in list_value(task.fm.get("harness_surfaces"))}
+    workflow_stage = str(task.fm.get("workflow_stage") or "").strip().lower()
+    completion_boundary = str(task.fm.get("completion_boundary") or "").strip().lower()
+    if task.lane != "work" and (
+        "no-execution" in harness_surfaces
+        or "no execution" in harness_surfaces
+        or workflow_stage in {"evidence", "intake", "source-identification", "source_identification"}
+        or completion_boundary in {"taskpool_candidate", "source-identification", "source_identification"}
+    ):
+        # Read-only intake/evidence tasks may mention browser/API/UI terms as
+        # source surfaces, and may say "verify" as part of source validation.
+        # They explicitly prohibit implementation/execution, so execution-flow
+        # UI/API closeout proof would be a false requirement.
+        return []
     existing = task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []
     entries = [str(e) for e in existing] + [str(e) for e in evidence]
     blob = "\n".join(entries).lower()
