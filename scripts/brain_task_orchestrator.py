@@ -4211,6 +4211,96 @@ EXECUTION_FLOW_UI_HINTS = re.compile(r"(?:\b(?:ui|browser|frontend|h5|mobile|vie
 EXECUTION_FLOW_API_HINTS = re.compile(r"(?:\b(?:api|backend|curl|read-?back|contract)\b|接口|后端|数据库|持久)", re.IGNORECASE)
 
 
+def closeout_surface_obligation(task: "Task") -> dict[str, Any]:
+    """Classify whether closeout needs implementation UI/API proof.
+
+    This is deliberately a small deterministic judgement model rather than a
+    hard exemption.  It separates *input/source surfaces* (public preview,
+    external search, source-identification) from *output/implementation
+    surfaces* (a built UI/API that must be smoke-tested).  Ambiguous work-lane
+    tasks remain fail-closed.
+    """
+    contract = task_permission_contract_for_fm(task.fm)
+    gate = str(contract.get("completion_gate") or "").strip()
+    lane = task.lane
+    reasons: list[str] = []
+    harness_surfaces = {str(v or "").strip().lower() for v in list_value(task.fm.get("harness_surfaces"))}
+    workflow_stage = str(task.fm.get("workflow_stage") or "").strip().lower()
+    completion_boundary = str(task.fm.get("completion_boundary") or "").strip().lower()
+    hint_fm = {k: v for k, v in task.fm.items() if k != "evidence"}
+    combined = "\n".join([task.title, task.body, json.dumps(hint_fm, ensure_ascii=False)]).lower()
+
+    no_execution_markers = (
+        "no-execution",
+        "no execution",
+        "no install",
+        "no-install",
+        "no scanning",
+        "no private-code scan",
+        "no external install",
+        "read-only",
+        "只读",
+    )
+    source_surface_markers = {"public-preview", "external-search", "source-identification", "source_identification", "repo-or-site-readback-if-found"}
+    output_surface_markers = {"ui", "frontend", "h5", "mobile", "modal", "form", "api", "backend", "service", "browser-automation"}
+    output_verb_markers = (
+        "implement",
+        "build",
+        "ship",
+        "deploy",
+        "route",
+        "wire",
+        "integrate",
+        "fix",
+        "实现",
+        "修复",
+        "落地",
+        "接入",
+        "上线",
+    )
+
+    no_execution = any(marker in combined for marker in no_execution_markers) or "no-execution" in harness_surfaces
+    source_intake = (
+        workflow_stage in {"evidence", "intake", "source-identification", "source_identification"}
+        or completion_boundary in {"taskpool_candidate", "source-identification", "source_identification"}
+        or bool(harness_surfaces & source_surface_markers)
+    )
+    explicit_output_surface = bool(harness_surfaces & output_surface_markers)
+    output_verb = any(marker in combined for marker in output_verb_markers)
+    ui_mention = bool(EXECUTION_FLOW_UI_HINTS.search(combined))
+    api_mention = bool(EXECUTION_FLOW_API_HINTS.search(combined))
+
+    if lane == "advisory" and gate == "advisory-evidence-review-done":
+        return {"class": "advisory_evidence", "requires_execution_flow_proof": False, "reasons": ["advisory_evidence_gate"]}
+    if str(task.fm.get("manual_review_approval_action") or "").strip() == "approve_close_as_partial":
+        return {"class": "manual_partial_closeout", "requires_execution_flow_proof": False, "reasons": ["manual_review_close_as_partial"]}
+    if lane == "work":
+        reasons.append("lane_work_fail_closed")
+        return {
+            "class": "implementation",
+            "requires_execution_flow_proof": True,
+            "requires_ui_proof": ui_mention,
+            "requires_api_proof": api_mention,
+            "reasons": reasons,
+        }
+    if no_execution and source_intake and not (explicit_output_surface and output_verb):
+        reasons.extend(["no_execution_boundary", "source_intake_surface"])
+        return {"class": "source_intake_no_execution", "requires_execution_flow_proof": False, "reasons": reasons}
+    if source_intake and not output_verb and not explicit_output_surface:
+        reasons.append("source_intake_without_output_obligation")
+        return {"class": "source_intake", "requires_execution_flow_proof": False, "reasons": reasons}
+    if output_verb or explicit_output_surface:
+        reasons.append("non_work_but_output_obligation")
+        return {
+            "class": "implementation",
+            "requires_execution_flow_proof": True,
+            "requires_ui_proof": ui_mention or explicit_output_surface,
+            "requires_api_proof": api_mention or "api" in harness_surfaces or "backend" in harness_surfaces,
+            "reasons": reasons,
+        }
+    return {"class": "non_implementation", "requires_execution_flow_proof": False, "reasons": ["no_output_obligation_detected"]}
+
+
 def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[str]:
     """Fail closeout when unified execution-flow proof requirements are missing.
 
@@ -4220,41 +4310,22 @@ def execution_flow_closeout_failures(task: "Task", evidence: list[str]) -> list[
     """
     if task.status != "review":
         return []
-    if task.lane == "advisory" and str(task_permission_contract_for_fm(task.fm).get("completion_gate") or "") == "advisory-evidence-review-done":
-        # Advisory tasks analyze external products/signals and often mention UI,
-        # browsers, APIs, contracts, or fixtures as source material. Their done
-        # gate is the deposited advisory evidence/report artifact checked by
-        # completion_gate_failures(), not implementation UI/API readback.
-        return []
-    harness_surfaces = {str(v or "").strip().lower() for v in list_value(task.fm.get("harness_surfaces"))}
-    workflow_stage = str(task.fm.get("workflow_stage") or "").strip().lower()
-    completion_boundary = str(task.fm.get("completion_boundary") or "").strip().lower()
-    if task.lane != "work" and (
-        "no-execution" in harness_surfaces
-        or "no execution" in harness_surfaces
-        or workflow_stage in {"evidence", "intake", "source-identification", "source_identification"}
-        or completion_boundary in {"taskpool_candidate", "source-identification", "source_identification"}
-    ):
-        # Read-only intake/evidence tasks may mention browser/API/UI terms as
-        # source surfaces, and may say "verify" as part of source validation.
-        # They explicitly prohibit implementation/execution, so execution-flow
-        # UI/API closeout proof would be a false requirement.
+    obligation = closeout_surface_obligation(task)
+    if not obligation.get("requires_execution_flow_proof"):
         return []
     existing = task.fm.get("evidence") if isinstance(task.fm.get("evidence"), list) else []
     entries = [str(e) for e in existing] + [str(e) for e in evidence]
     blob = "\n".join(entries).lower()
     hint_fm = {k: v for k, v in task.fm.items() if k != "evidence"}
     combined = "\n".join([task.title, task.body, json.dumps(hint_fm, ensure_ascii=False)])
-    is_impl = task.lane == "work" or bool(EXECUTION_FLOW_IMPL_HINTS.search(combined))
-    needs_ui = bool(EXECUTION_FLOW_UI_HINTS.search(combined))
-    needs_api = bool(EXECUTION_FLOW_API_HINTS.search(combined))
+    is_impl = True
+    needs_ui = bool(obligation.get("requires_ui_proof", EXECUTION_FLOW_UI_HINTS.search(combined)))
+    needs_api = bool(obligation.get("requires_api_proof", EXECUTION_FLOW_API_HINTS.search(combined)))
     missing: list[str] = []
     if is_impl and not any(marker in blob for marker in ("command:", "artifact:", "proof:")):
         missing.append("feature_specific_structured_evidence")
-    # UI/API readback is mandatory for implementation closeout, but advisory/
-    # evidence-intake tasks often mention APIs, contracts, browsers, or UI as
-    # the subject being analyzed.  Requiring live UI/API proof for those
-    # non-implementation tasks strands valid advisory repairs in review/blocked.
+    # UI/API readback is mandatory for implementation closeout. Source/input
+    # surface mentions are filtered by closeout_surface_obligation() above.
     if is_impl and needs_ui and not any(
         marker in blob
         for marker in (

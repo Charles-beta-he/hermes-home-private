@@ -1538,6 +1538,45 @@ def test_done_closeout_blocks_work_task_missing_execution_flow_harness_proof():
         assert task_path.read_text(encoding="utf-8") == before
 
 
+def test_closeout_surface_obligation_classifies_source_vs_implementation():
+    mod = load_orchestrator_module()
+
+    class FakeTask:
+        def __init__(self, *, lane, title, body="", fm=None, status="review"):
+            self.lane = lane
+            self.title = title
+            self.body = body
+            self.status = status
+            self.fm = fm or {}
+
+    source_task = FakeTask(
+        lane="evolution",
+        title="Analyze public browser preview and verify source",
+        body="No install, execution, scanning, SaaS upload. Source-identification only.",
+        fm={
+            "workflow_stage": "evidence",
+            "completion_boundary": "taskpool_candidate",
+            "harness_surfaces": ["public-preview", "browser", "no-execution"],
+            "completion_gate": "ratification-or-selfcheck-review-done",
+        },
+    )
+    source_obligation = mod.closeout_surface_obligation(source_task)
+    assert source_obligation["class"] == "source_intake_no_execution"
+    assert source_obligation["requires_execution_flow_proof"] is False
+    assert source_obligation["reasons"]
+
+    work_task = FakeTask(
+        lane="work",
+        title="Implement backend API and browser UI",
+        fm={"completion_gate": "project-evidence-review-done"},
+    )
+    work_obligation = mod.closeout_surface_obligation(work_task)
+    assert work_obligation["class"] == "implementation"
+    assert work_obligation["requires_execution_flow_proof"] is True
+    assert work_obligation["requires_ui_proof"] is True
+    assert work_obligation["requires_api_proof"] is True
+
+
 def test_done_closeout_allows_no_execution_evidence_intake_that_mentions_browser_source():
     td, _vault, env = make_env_and_vault()
     with td:
