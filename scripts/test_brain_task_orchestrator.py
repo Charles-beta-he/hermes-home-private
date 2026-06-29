@@ -2053,6 +2053,24 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert repair_child_row["multimodel_passed"] is True, repair_child_row
         assert repair_child_row["multimodel_intervention_required"] is False, repair_child_row
 
+        ratification_v1 = task_path.parent / "multimodel-ratification-v1.json"
+        ratification_v1.write_text(json.dumps({
+            "schema": "multimodel_ratification_v1",
+            "parent_task_id": task_id,
+            "repair_child_task_id": repair_child_id,
+            "certification_result": "PASS",
+            "loop_done": True,
+            "certification_status": "certified",
+            "vote": "approve",
+            "truth_gate": {"can_certify_truth": True},
+            "no_red_line_violations": True,
+            "acceptance_criteria_coverage": [{"status": "covered"}],
+        }, ensure_ascii=False), encoding="utf-8")
+        repair_child.write_text(repair_child.read_text(encoding="utf-8").replace(str(legacy_packet), str(ratification_v1), 1), encoding="utf-8")
+        repair_child_v1_row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == repair_child_id)
+        assert repair_child_v1_row["multimodel_passed"] is True, repair_child_v1_row
+        assert repair_child_v1_row["multimodel_intervention_required"] is False, repair_child_v1_row
+
         task_path.write_text(task_path.read_text(encoding="utf-8").replace(str(legacy_packet), str(good), 1), encoding="utf-8")
 
         mismatched_target = task_path.parent / "discussion-mismatched-target.json"

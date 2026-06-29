@@ -1977,6 +1977,11 @@ def legacy_multimodel_certification_packet_passed(
         # and safe to consume for review-gap repair children; otherwise they
         # recurse forever with missing_multimodel_certification children.
         "advisory_multimodel_ratification_v1",
+        # Review-gap repair packets produced by bounded evidence repair workers:
+        # parent-bound, deterministic, and explicitly PASS + LOOP_DONE.  Keep
+        # this in the legacy/read-compatible path so the strict ratification
+        # gate remains unchanged for new discussion_result artifacts.
+        "multimodel_ratification_v1",
     }
     if schema not in accepted_schemas:
         return False
@@ -1984,18 +1989,23 @@ def legacy_multimodel_certification_packet_passed(
     certification = certification_raw if isinstance(certification_raw, dict) else {}
     status = str(
         discussion.get("status")
+        or discussion.get("certification_result")
         or discussion.get("certification_status")
         or (certification_raw if isinstance(certification_raw, str) else "")
         or ""
     ).strip().upper()
     decision = str(discussion.get("decision") or discussion.get("loop_status") or "").strip().upper()
+    if not decision and discussion.get("loop_done") is True:
+        decision = "LOOP_DONE"
     if status != "PASS" or decision != "LOOP_DONE":
         return False
     context = discussion.get("context") if isinstance(discussion.get("context"), dict) else {}
     context_task_id = context.get("task_id") if isinstance(context, dict) else ""
     target = str(
         discussion.get("target_task_id")
+        or discussion.get("parent_task_id")
         or discussion.get("parent_task")
+        or discussion.get("repair_child_task_id")
         or discussion.get("repair_child_task")
         or context_task_id
         or ""
