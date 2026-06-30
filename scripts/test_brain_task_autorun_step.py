@@ -152,9 +152,91 @@ def test_autorun_step_failure_moves_to_retry_not_claimed():
         assert row["claimed_by"] == "", row
 
 
+def test_autorun_step_fails_closed_when_eligibility_unavailable():
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    calls = []
+    old_run_json = module.run_json
+    try:
+        def fake_run_json(cmd, timeout=120):
+            calls.append(list(cmd))
+            return {"status": "ERROR", "reason": "subprocess_timeout", "returncode": "timeout"}
+        module.run_json = fake_run_json
+        payload = module.command_autorun_step(argparse.Namespace(actor="tester", task="", profile="test", ttl_minutes=10))
+    finally:
+        module.run_json = old_run_json
+
+    assert payload["status"] == "PASS", payload
+    assert payload["claimed"] is False, payload
+    assert payload["advanced"] is False, payload
+    assert "eligibility_unavailable" in payload["reasons"], payload
+    assert any("eligibility-check" in cmd and "--no-reconcile" in cmd for cmd in calls), calls
+
+
+def test_run_json_timeout_returns_structured_error():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    payload = module.run_json([sys.executable, "-c", "import time; print('partial out'); time.sleep(10)"], timeout=1)
+
+    assert payload["status"] == "ERROR", payload
+    assert payload["returncode"] == "timeout", payload
+    assert payload["reason"] == "subprocess_timeout", payload
+    assert payload["timeout_seconds"] == 1, payload
+
+
+def test_run_json_uses_configurable_default_timeout():
+    import importlib.util
+    import subprocess as subprocess_module
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    old_popen = module.subprocess.Popen
+    old_env = os.environ.get("HERMES_BRAIN_AUTORUN_STEP_COMMAND_TIMEOUT_SECONDS")
+    try:
+        seen = {}
+        class FakeProc:
+            pid = 999999
+            returncode = 0
+            def __init__(self, *args, **kwargs):
+                seen["kwargs"] = kwargs
+            def communicate(self, timeout=None):
+                seen["timeout"] = timeout
+                return '{"status":"OK"}', ""
+        module.subprocess.Popen = FakeProc
+        os.environ["HERMES_BRAIN_AUTORUN_STEP_COMMAND_TIMEOUT_SECONDS"] = "345"
+        payload = module.run_json(["ok"])
+    finally:
+        module.subprocess.Popen = old_popen
+        if old_env is None:
+            os.environ.pop("HERMES_BRAIN_AUTORUN_STEP_COMMAND_TIMEOUT_SECONDS", None)
+        else:
+            os.environ["HERMES_BRAIN_AUTORUN_STEP_COMMAND_TIMEOUT_SECONDS"] = old_env
+
+    assert payload["status"] == "OK", payload
+    assert seen["timeout"] == 345, seen
+    assert seen["kwargs"].get("start_new_session") is True, seen
+
+
 if __name__ == "__main__":
     test_autorun_step_default_disabled_returns_summary_without_claiming()
     test_autorun_step_requires_policy_before_claiming()
     test_autorun_step_does_not_execute_markdown_body_and_advances_to_review()
     test_autorun_step_failure_moves_to_retry_not_claimed()
+    test_autorun_step_fails_closed_when_eligibility_unavailable()
+    test_run_json_timeout_returns_structured_error()
+    test_run_json_uses_configurable_default_timeout()
     print("PASS")

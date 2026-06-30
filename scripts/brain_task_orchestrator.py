@@ -9671,10 +9671,11 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
     if not proof_ok:
         reasons.append("proof_chain_invalid")
         warnings.extend(proof_failures)
-    selfcheck = command_selfcheck(argparse.Namespace(json=True))
-    if selfcheck.get("status") != "PASS":
-        reasons.append("selfcheck_failed")
-        warnings.extend(str(x) for x in selfcheck.get("failures", []))
+    if task and not reasons:
+        selfcheck = command_selfcheck(argparse.Namespace(json=True))
+        if selfcheck.get("status") != "PASS":
+            reasons.append("selfcheck_failed")
+            warnings.extend(str(x) for x in selfcheck.get("failures", []))
     eligible = bool(task and not reasons)
     row = task.row() if task else None
     return {

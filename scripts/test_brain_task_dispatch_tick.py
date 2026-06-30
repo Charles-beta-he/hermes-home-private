@@ -1788,6 +1788,63 @@ def test_concurrency_readiness_passes_for_clean_synthetic_snapshot():
     assert readiness["safe_now_ceiling"] == 4, readiness
 
 
+def test_autorun_step_summary_uses_lightweight_governance_projections():
+    module = load_tick_module()
+    calls = []
+
+    def fake_run_json(args):
+        calls.append(("run_json", list(args)))
+        step = args[0]
+        if step == "ingest-inbox":
+            return {"status": "OK", "created_count": 0}
+        if step == "reconcile":
+            return {"status": "OK", "action_count": 0}
+        if step == "dispatch-dry-run":
+            return {"status": "OK", "dispatchable": False, "next": None}
+        if step == "auto-close-review":
+            return {"status": "OK", "closed_count": 0, "skipped_count": 0, "error_count": 0}
+        raise AssertionError(f"autorun-step light tick should not call heavyweight run_json step: {args}")
+
+    def fake_run_cmd_json(cmd, timeout=None):
+        calls.append(("run_cmd_json", list(cmd), timeout))
+        assert "brain_task_autorun_step.py" in " ".join(map(str, cmd)), cmd
+        return {"status": "OK", "claimed": False, "advanced": False, "reasons": ["no_dispatchable_task"]}
+
+    old_argv = sys.argv[:]
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_append_log = module.append_log
+    old_save_state = module.save_state
+    old_load_state = module.load_state
+    try:
+        module.run_json = fake_run_json
+        module.run_cmd_json = fake_run_cmd_json
+        module.append_log = lambda event: None
+        module.save_state = lambda state: None
+        module.load_state = lambda: {}
+        sys.argv = [str(TICK), "--summary", "--no-state", "--autorun-step"]
+        import io
+        import contextlib
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = module.main()
+        assert rc == 0
+        payload = json.loads(buf.getvalue())
+    finally:
+        sys.argv = old_argv
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.append_log = old_append_log
+        module.save_state = old_save_state
+        module.load_state = old_load_state
+
+    called_steps = [call[1][0] for call in calls if call[0] == "run_json"]
+    assert called_steps == ["ingest-inbox", "auto-close-review"], calls
+    assert payload["parallel_dispatch"]["status"] == "SKIP", payload
+    assert payload["multimodel_intervention"]["recommended_tier"] == "T1_advisory", payload
+    assert payload["autorun"]["status"] == "OK", payload
+
+
 if __name__ == "__main__":
     test_tick_autorun_bridge_is_opt_in_and_fail_closed()
     test_tick_print_always_records_no_agent_observability_policy()
@@ -1839,6 +1896,7 @@ if __name__ == "__main__":
     test_run_cmd_json_forces_nonzero_ok_stdout_to_error()
     test_run_cmd_json_timeout_is_structured_and_kills_process_group()
     test_agent_team_background_worker_job_records_and_dedupes_alive_batches()
+    test_autorun_step_summary_uses_lightweight_governance_projections()
     print("PASS")
 
 def test_scheduler_decision_uses_sanitized_active_accounting_from_parallel_dispatch():

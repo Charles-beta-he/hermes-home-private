@@ -1741,8 +1741,21 @@ def main() -> int:
     parser.add_argument("--multimodel-task", default="", help="Optional task id to scope --multimodel-step; used by task_added event hooks")
     args = parser.parse_args()
     taskpool_cfg = load_taskpool_runtime_config()
-    parallel_cap = resolve_parallel_agent_cap(requested_max_agents=int(args.max_agents or 0), taskpool_cfg=taskpool_cfg)
-    max_parallel_agents = int(parallel_cap.get("effective") or taskpool_cfg.get("max_parallel_agents") or 3)
+    light_autorun_step = bool(args.autorun_step and not args.parallel_autorun and not args.multimodel_step)
+    if light_autorun_step:
+        max_parallel_agents = int(args.max_agents or taskpool_cfg.get("max_parallel_agents") or 3)
+        parallel_cap = {
+            "effective": max_parallel_agents,
+            "configured": taskpool_cfg.get("max_parallel_agents"),
+            "dynamic_ceiling": max_parallel_agents,
+            "resource_ceiling": max_parallel_agents,
+            "resource_probe": {"status": "SKIP", "reason": "single_autorun_light_tick"},
+            "source": "single_autorun_light_tick",
+            "probe": {"status": "SKIP", "reason": "single_autorun_light_tick"},
+        }
+    else:
+        parallel_cap = resolve_parallel_agent_cap(requested_max_agents=int(args.max_agents or 0), taskpool_cfg=taskpool_cfg)
+        max_parallel_agents = int(parallel_cap.get("effective") or taskpool_cfg.get("max_parallel_agents") or 3)
     review_close_max_tasks = int(args.review_close_max_tasks or taskpool_cfg.get("review_close_max_tasks") or 50)
 
     event: dict[str, Any] = {"status": "OK", "generated_at": iso(), "script": str(Path(__file__).expanduser())}
@@ -1781,13 +1794,28 @@ def main() -> int:
         backlog_warning_threshold=int(taskpool_cfg.get("continuation_backlog_threshold") or 100),
     )
     event["ingest"] = run_json(["ingest-inbox", "--write", "--json"])
-    event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
-    event["dashboard"] = run_json(["dashboard", "--write", "--json"])
-    event["task_list"] = run_json(["list", "--json"])
-    event["proof_check"] = run_json(["proof-check", "--json"])
-    event["evidence_spine"] = run_json(["evidence-spine", "--json"])
-    event["railway_published_retests"] = run_json(["release-railway-published-retests", "--max-tasks", "5", "--json"])
-    event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
+    if light_autorun_step:
+        event["reconcile"] = {"status": "SKIP", "reason": "single_autorun_light_tick", "action_count": 0}
+    else:
+        event["reconcile"] = run_json(["reconcile", "--write", "--promote-due-retry", "--json"])
+    if light_autorun_step:
+        event["dashboard"] = {"status": "SKIP", "reason": "single_autorun_light_tick"}
+        event["task_list"] = {"status": "SKIP", "reason": "single_autorun_light_tick", "rows": []}
+        event["proof_check"] = {"status": "SKIP", "reason": "single_autorun_light_tick"}
+        event["evidence_spine"] = {"status": "SKIP", "gate_status": "SKIP", "reason": "single_autorun_light_tick", "summary": {}}
+        event["railway_published_retests"] = {"status": "SKIP", "reason": "single_autorun_light_tick", "released_count": 0}
+        event["multimodel_intervention"] = {
+            "status": "SKIP",
+            "reason": "single_autorun_light_tick",
+            "safety": "bounded single autorun does not block on expensive multimodel dry-run; dedicated multimodel cron remains responsible for certification work",
+        }
+    else:
+        event["dashboard"] = run_json(["dashboard", "--write", "--json"])
+        event["task_list"] = run_json(["list", "--json"])
+        event["proof_check"] = run_json(["proof-check", "--json"])
+        event["evidence_spine"] = run_orchestrator_json(["evidence-spine", "--json"], timeout=positive_float_env("HERMES_BRAIN_DISPATCH_TICK_EVIDENCE_SPINE_TIMEOUT_SECONDS", 60.0))
+        event["railway_published_retests"] = run_json(["release-railway-published-retests", "--max-tasks", "5", "--json"])
+        event["multimodel_intervention"] = run_json(["multimodel-intervention-dry-run", "--json"])
 
     errors = []
     warnings = []
@@ -1846,7 +1874,10 @@ def main() -> int:
             "env_flag": "HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL",
             "safety": "set HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL=1 to enable",
         }
-    event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
+    if light_autorun_step:
+        event["dispatch"] = {"status": "SKIP", "reason": "single_autorun_light_tick", "dispatchable": False, "next": None}
+    else:
+        event["dispatch"] = run_json(["dispatch-dry-run", "--json"])
     parallel_dispatch_cmd = [
         "parallel-dispatch-dry-run",
         "--max-agents",
@@ -1856,7 +1887,16 @@ def main() -> int:
     if parallel_lane and parallel_lane != "all":
         parallel_dispatch_cmd.extend(["--lane", parallel_lane])
     parallel_dispatch_cmd.append("--json")
-    event["parallel_dispatch"] = run_json(parallel_dispatch_cmd)
+    if args.parallel_autorun:
+        event["parallel_dispatch"] = run_json(parallel_dispatch_cmd)
+    else:
+        event["parallel_dispatch"] = {
+            "status": "SKIP",
+            "reason": "single_autorun_mode",
+            "dispatchable": False,
+            "selected_count": 0,
+            "safety": "single autorun tick skips expensive parallel dry-run; dispatch-dry-run remains the single-lane gate",
+        }
 
     event["scheduler_decision"] = scheduler_decision_snapshot(
         event=event,
@@ -1867,7 +1907,7 @@ def main() -> int:
         event["batch_merge_manifest"] = write_batch_merge_manifest(decision=event["scheduler_decision"], event=event)
     else:
         event["batch_merge_manifest"] = {"status": "SKIP", "reason": "disabled", "written": False}
-    if args.parallel_autorun or bool(taskpool_cfg.get("stale_claim_reclaim_enabled")):
+    if (args.parallel_autorun or bool(taskpool_cfg.get("stale_claim_reclaim_enabled"))) and not light_autorun_step:
         reclaim_enabled = bool(taskpool_cfg.get("stale_claim_reclaim_enabled"))
         event["stale_claim_reclaim"] = reclaim_stale_hermes_claims(
             task_list=event.get("task_list", {}) if isinstance(event.get("task_list"), dict) else {},
@@ -1990,7 +2030,10 @@ def main() -> int:
         post_autorun_dispatch_cmd.append("--json")
         event["post_autorun_dispatch"] = run_json(post_autorun_dispatch_cmd)
     elif args.autorun_step and not errors:
-        event["autorun"] = run_cmd_json([sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"])
+        event["autorun"] = run_cmd_json(
+            [sys.executable, str(AUTORUN_STEP_SCRIPT), "--json"],
+            timeout=max(command_timeout_seconds(), positive_float_env("HERMES_BRAIN_DISPATCH_TICK_AUTORUN_STEP_TIMEOUT_SECONDS", 540.0)),
+        )
         if event["autorun"].get("status") not in {"OK", "PASS"}:
             errors.append({"step": "autorun_step", "status": event["autorun"].get("status"), "stderr": event["autorun"].get("stderr"), "stdout": event["autorun"].get("stdout")})
             event["status"] = "ERROR"
@@ -2001,7 +2044,10 @@ def main() -> int:
                 errors.append({"step": "auto_close_review", "status": event["auto_close_review"].get("status"), "stderr": event["auto_close_review"].get("stderr"), "stdout": event["auto_close_review"].get("stdout")})
                 event["status"] = "ERROR"
                 event["errors"] = errors
-        event["post_autorun_dispatch"] = run_json(["dispatch-dry-run", "--json"])
+        if light_autorun_step:
+            event["post_autorun_dispatch"] = {"status": "SKIP", "reason": "single_autorun_light_tick", "dispatchable": False, "next": None}
+        else:
+            event["post_autorun_dispatch"] = run_json(["dispatch-dry-run", "--json"])
     elif args.autorun and not errors:
         event["autorun"] = run_json(["auto-claim-and-handoff", "--json"])
         if event["autorun"].get("status") not in {"OK", "PASS"}:
