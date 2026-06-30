@@ -22,6 +22,7 @@ LOG_FILE="${HERMES_CONTEXTCARD_RICH_PRODUCTION_LOG:-$HOME/.hermes/logs/contextca
 
 mkdir -p "$(dirname "$LOG_FILE")"
 
+set +e
 REFRESH_OUTPUT="$(python3 "$RICH_WRITER" \
   --state-db "$STATE_DB" \
   --cache-db "$INCREMENTAL_DB" \
@@ -29,6 +30,19 @@ REFRESH_OUTPUT="$(python3 "$RICH_WRITER" \
   --allowed-sources "$ALLOWED_SOURCES" \
   --llm-command "$LLM_COMMAND" \
   --write-cache)"
+REFRESH_RC=$?
+set -e
+if [[ "$REFRESH_RC" -ne 0 ]]; then
+  # No new valid sessions is a steady-state no-op, not a production refresh failure.
+  # Keep the existing incremental/staging cache and let merge/quality/promote gates
+  # read back the current production DB. Other writer failures still fail closed.
+  if python3 -c 'import json,sys; p=json.load(sys.stdin); sys.exit(0 if p.get("status")=="error" and "no valid richer ContextCard candidates" in str(p.get("error","")) else 1)' <<< "$REFRESH_OUTPUT"; then
+    REFRESH_OUTPUT='{"status":"ok","mode":"noop","reason":"no_valid_richer_contextcard_candidates"}'
+  else
+    printf '%s\n' "$REFRESH_OUTPUT"
+    exit "$REFRESH_RC"
+  fi
+fi
 
 MERGE_OUTPUT="$(python3 "$MERGE_STAGING" \
   --production-db "$PRODUCTION_DB" \
