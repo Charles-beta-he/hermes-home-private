@@ -18,6 +18,7 @@ import math
 import os
 import random
 import sys
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 import subprocess
@@ -59,6 +60,7 @@ def _get_pricing():
 
 # Known provider -> env var mapping for availability check
 _DEFAULT_PROVIDER_ENV = {
+    "openai": "OPENAI_API_KEY",
     "openai-codex": "OPENAI_API_KEY",  # or OAuth session
     "anthropic": "ANTHROPIC_API_KEY",
     "xiaomi": "XIAOMI_API_KEY",
@@ -113,6 +115,46 @@ _OAUTH_PROVIDERS = _oauth_provider_set()
 OVERLAY_SUPPORTED_PROVIDERS = _load_overlay_supported_providers()
 
 
+def _model_health_unavailable_snapshot(provider: str, model: str) -> Optional[dict]:
+    """Return a current model-health circuit-breaker snapshot if present.
+
+    ``provider_availability.json`` captures credential/runtime availability by
+    provider+model, while ``model-health.json`` is written by real fan-out/probe
+    execution.  Smart routing must honor both: auth/OAuth presence is weaker
+    evidence than a fresh runtime failure circuit breaker.
+    """
+    snapshot_path = os.path.join(HERMES_HOME, "state", "model-health.json")
+    try:
+        with open(snapshot_path, encoding="utf-8") as f:
+            snapshot = json.load(f) or {}
+    except (json.JSONDecodeError, OSError):
+        return None
+    models = snapshot.get("models") if isinstance(snapshot, dict) else None
+    if not isinstance(models, dict):
+        return None
+    entry = models.get(model)
+    if not isinstance(entry, dict) or entry.get("status") != "unhealthy":
+        return None
+    try:
+        unhealthy_until = float(entry.get("unhealthy_until") or 0)
+    except (TypeError, ValueError):
+        unhealthy_until = 0.0
+    if unhealthy_until <= time.time():
+        return None
+    entry_provider = str(entry.get("provider") or provider or "")
+    return {
+        "provider": provider or entry_provider,
+        "model": model,
+        "status": "unavailable",
+        "last_reason": entry.get("last_reason") or entry.get("last_error") or "model_health_unhealthy",
+        "runtime_error": entry.get("last_error") or "",
+        "unhealthy_until": unhealthy_until,
+        "source": "model-health.json",
+        "adapter": entry.get("adapter") or "",
+        "entry_provider": entry_provider,
+    }
+
+
 def _runtime_unavailable_snapshot(provider: str, model: str) -> Optional[dict]:
     """Return a current runtime-unavailable snapshot for provider/model if present.
 
@@ -126,14 +168,13 @@ def _runtime_unavailable_snapshot(provider: str, model: str) -> Optional[dict]:
         with open(snapshot_path) as f:
             snapshot = json.load(f) or {}
     except (json.JSONDecodeError, OSError):
-        return None
-    entry = snapshot.get(f"{provider}::{model}")
-    if not isinstance(entry, dict) or entry.get("status") != "unavailable":
-        return None
-    reason = str(entry.get("last_reason") or "")
-    if reason and reason != "missing_env_var":
-        return entry
-    return None
+        snapshot = {}
+    entry = snapshot.get(f"{provider}::{model}") if isinstance(snapshot, dict) else None
+    if isinstance(entry, dict) and entry.get("status") == "unavailable":
+        reason = str(entry.get("last_reason") or "")
+        if reason and reason != "missing_env_var":
+            return entry
+    return _model_health_unavailable_snapshot(provider, model)
 
 
 def _model_available(model: str, config: Optional[dict] = None, log_unavailable: bool = True) -> bool:
@@ -244,6 +285,14 @@ def _log_unavailable_provider(provider: str, model: str, env_var: str):
         pass  # non-critical, don't fail routing
 
 
+def _provider_unavailable_reason(provider: str, model: str, env_var: Optional[str]) -> str:
+    snapshot = _runtime_unavailable_snapshot(provider, model)
+    if isinstance(snapshot, dict):
+        reason = snapshot.get("last_reason") or snapshot.get("runtime_error") or snapshot.get("source") or "runtime_unavailable"
+        return f"runtime unavailable: {str(reason)[:160]}"
+    return f"missing {env_var or 'auth'}"
+
+
 def probe_all_providers(verbose: bool = False) -> dict:
     """Probe every model in pricing.models and report availability state.
 
@@ -263,7 +312,7 @@ def probe_all_providers(verbose: bool = False) -> dict:
         if ok:
             available.append(entry)
         else:
-            entry["reason"] = f"missing {env_var or 'auth'}"
+            entry["reason"] = _provider_unavailable_reason(provider, model, env_var)
             unavailable.append(entry)
     # Mark previously-unavailable models that are now available as transitioned
     snapshot_path = os.path.join(HERMES_HOME, "state", "provider_availability.json")

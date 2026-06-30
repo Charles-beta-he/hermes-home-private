@@ -81,6 +81,60 @@ class TestModelRouterQuota(unittest.TestCase):
             }}})
             self.assertFalse(available)
 
+    def test_model_available_honors_active_model_health_circuit_breaker(self):
+        with tempfile.TemporaryDirectory() as td:
+            state_dir = Path(td) / "state"
+            state_dir.mkdir(parents=True)
+            (state_dir / "model-health.json").write_text(json.dumps({
+                "models": {
+                    "gpt-5.5": {
+                        "model": "gpt-5.5",
+                        "provider": "openai-codex",
+                        "status": "unhealthy",
+                        "unhealthy_until": 9999999999,
+                        "last_reason": "timeout",
+                        "last_error": "timeout after 90s",
+                    }
+                }
+            }))
+            router = load_router(td)
+            available = router._model_available("gpt-5.5", config={"pricing": {"models": {
+                "gpt-5.5": {"provider": "openai-codex"},
+            }}}, log_unavailable=False)
+            self.assertFalse(available)
+
+    def test_model_available_ignores_expired_model_health_circuit_breaker(self):
+        with tempfile.TemporaryDirectory() as td:
+            state_dir = Path(td) / "state"
+            state_dir.mkdir(parents=True)
+            (state_dir / "model-health.json").write_text(json.dumps({
+                "models": {
+                    "gpt-5.5": {
+                        "model": "gpt-5.5",
+                        "provider": "openai-codex",
+                        "status": "unhealthy",
+                        "unhealthy_until": 1,
+                        "last_reason": "timeout",
+                    }
+                }
+            }))
+            router = load_router(td)
+            available = router._model_available("gpt-5.5", config={"pricing": {"models": {
+                "gpt-5.5": {"provider": "openai-codex"},
+            }}}, log_unavailable=False)
+            self.assertTrue(available)
+
+    def test_plain_openai_provider_requires_openai_api_key(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+            config = {"pricing": {"models": {"gpt-5.4": {"provider": "openai"}}}}
+            old_key = os.environ.pop("OPENAI_API_KEY", None)
+            try:
+                self.assertFalse(router._model_available("gpt-5.4", config=config, log_unavailable=False))
+            finally:
+                if old_key is not None:
+                    os.environ["OPENAI_API_KEY"] = old_key
+
     def test_select_model_excludes_exhausted_quota_candidate(self):
         with tempfile.TemporaryDirectory() as td:
             state_dir = Path(td) / "state"
