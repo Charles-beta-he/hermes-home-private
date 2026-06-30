@@ -76,6 +76,7 @@ def run_json(cmd: list[str], timeout: int | None = None) -> dict[str, Any]:
     timeout = int(timeout if timeout is not None else command_timeout_seconds())
     child_env = os.environ.copy()
     child_env.setdefault("HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN", "1")
+    child_env.setdefault("HERMES_TASKPOOL_EVENT_HOOK_DISABLED", "1")
     proc = subprocess.Popen(
         cmd,
         cwd=str(HERMES_HOME),

@@ -34,6 +34,9 @@ def make_env_and_vault():
     env["HERMES_BRAIN_VAULT"] = str(vault)
     env["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(root / "autorun-state")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(root / "autonomy-write-allowlist.json")
+    p10_fixture = root / "p10-health-pass.json"
+    p10_fixture.write_text(json.dumps({"grade": "A", "components": {"self_test": 1.0}}, ensure_ascii=False), encoding="utf-8")
+    env["HERMES_AUTONOMY_PRECONDITION_P10_FIXTURE"] = str(p10_fixture)
     env.pop("HERMES_LOCAL_BRAIN_AUTORUN", None)
     return td, vault, env
 
@@ -236,6 +239,7 @@ def test_run_json_uses_configurable_default_timeout():
     assert seen["timeout"] == 345, seen
     assert seen["kwargs"].get("start_new_session") is True, seen
     assert seen["kwargs"].get("env", {}).get("HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN") == "1", seen
+    assert seen["kwargs"].get("env", {}).get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED") == "1", seen
 
 
 def test_autorun_step_skips_selfcheck_until_policy_allows_claim():
