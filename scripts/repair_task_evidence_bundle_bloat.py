@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Repair task markdown evidence_bundle YAML escape explosions.
+"""Repair task markdown frontmatter YAML escape explosions.
 
 Moves original bloated files to an evidence quarantine directory, then rewrites a
 sanitized copy at the original task path. The rewrite is streaming-safe for
-multi-GB single-line evidence_bundle fields.
+multi-GB single-line frontmatter fields.
 """
 from __future__ import annotations
 
@@ -19,12 +19,17 @@ EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
 
 MAX_SIZE = 100 * 1024
 MAX_BACKSLASHES_HEAD = 1000
-PREFIX = b'evidence_bundle:'
-REPLACEMENT = (
-    b'evidence_bundle:\n'
-    b'  - "proof:evidence_bundle_sanitized_due_yaml_escape_bloat; '
-    b'original preserved in ~/taskpool-bloat-quarantine manifest"\n'
-)
+FIELD_REPLACEMENTS = {
+    b'evidence_bundle:': (
+        b'evidence_bundle:\n'
+        b'  - "proof:evidence_bundle_sanitized_due_yaml_escape_bloat; '
+        b'original preserved in ~/taskpool-bloat-quarantine manifest"\n'
+    ),
+    b'dependency_order:': b'dependency_order: []\n',
+    b'parallel_group:': b'parallel_group: ""\n',
+    b'conflict_group:': b'conflict_group: ""\n',
+    b'workspace_isolation:': b'workspace_isolation: ""\n',
+}
 
 
 def head_backslashes(path: Path, limit: int = 200_000) -> int:
@@ -36,7 +41,8 @@ def head_backslashes(path: Path, limit: int = 200_000) -> int:
 
 def has_evidence_bundle_head(path: Path, limit: int = 200_000) -> bool:
     with path.open('rb') as f:
-        return PREFIX in f.read(limit)
+        head = f.read(limit)
+    return any(prefix in head for prefix in FIELD_REPLACEMENTS)
 
 
 def candidate(path: Path) -> bool:
@@ -50,18 +56,14 @@ def candidate(path: Path) -> bool:
 
 def sanitize_from_quarantine(src: Path, dst: Path) -> dict:
     tmp = dst.with_suffix(dst.suffix + '.repair-tmp')
-    replaced = False
+    replaced_fields: list[str] = []
     skipped_bytes = 0
     line_start = True
-    matching = b''
     skipping = False
     with src.open('rb') as fin, tmp.open('wb') as fout:
         while True:
             chunk = fin.read(1024 * 1024)
             if not chunk:
-                # If EOF while partially matching, flush those bytes.
-                if matching and not replaced:
-                    fout.write(matching)
                 break
             i = 0
             n = len(chunk)
@@ -75,36 +77,27 @@ def sanitize_from_quarantine(src: Path, dst: Path) -> dict:
                     i += 1
                     continue
 
-                if line_start and not replaced:
-                    # Incrementally match PREFIX at beginning of line without
-                    # buffering the full line.
-                    expected = PREFIX[len(matching):len(matching)+1]
-                    if b == expected:
-                        matching += b
-                        i += 1
-                        if matching == PREFIX:
-                            fout.write(REPLACEMENT)
-                            replaced = True
-                            skipping = True
-                            matching = b''
-                        continue
-                    else:
-                        if matching:
-                            fout.write(matching)
-                            matching = b''
-                        fout.write(b)
-                        line_start = (b == b'\n')
-                        i += 1
+                if line_start:
+                    hit = None
+                    for prefix in FIELD_REPLACEMENTS:
+                        if chunk[i:].startswith(prefix):
+                            hit = prefix
+                            break
+                    if hit is not None:
+                        fout.write(FIELD_REPLACEMENTS[hit])
+                        replaced_fields.append(hit.decode('utf-8').rstrip(':'))
+                        skipping = True
+                        i += len(hit)
                         continue
 
                 fout.write(b)
                 line_start = (b == b'\n')
                 i += 1
-    if not replaced:
+    if not replaced_fields:
         tmp.unlink(missing_ok=True)
-        raise RuntimeError(f'No evidence_bundle line replaced in {src}')
+        raise RuntimeError(f'No bloat-prone frontmatter field replaced in {src}')
     os.replace(tmp, dst)
-    return {'replaced': replaced, 'skipped_bytes': skipped_bytes, 'new_size': dst.stat().st_size}
+    return {'replaced_fields': sorted(set(replaced_fields)), 'skipped_bytes': skipped_bytes, 'new_size': dst.stat().st_size}
 
 
 def main() -> int:
