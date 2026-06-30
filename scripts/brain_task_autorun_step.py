@@ -74,6 +74,8 @@ def command_timeout_seconds() -> int:
 
 def run_json(cmd: list[str], timeout: int | None = None) -> dict[str, Any]:
     timeout = int(timeout if timeout is not None else command_timeout_seconds())
+    child_env = os.environ.copy()
+    child_env.setdefault("HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN", "1")
     proc = subprocess.Popen(
         cmd,
         cwd=str(HERMES_HOME),
@@ -81,6 +83,7 @@ def run_json(cmd: list[str], timeout: int | None = None) -> dict[str, Any]:
         stderr=subprocess.PIPE,
         text=True,
         start_new_session=True,
+        env=child_env,
     )
     try:
         out, err = proc.communicate(timeout=timeout)
@@ -229,6 +232,28 @@ def validate_policy_for_task(policy: dict[str, Any], row: dict[str, Any]) -> tup
     return not reasons, reasons, workspace.expanduser().resolve(), command_ids, max_seconds
 
 
+def find_policy_allowed_dispatchable(policy: dict[str, Any], orch_module: Any, *, exclude_task_id: str = "") -> tuple[dict[str, Any] | None, list[str]]:
+    try:
+        candidates = orch_module.dispatchable_tasks()
+    except Exception as exc:
+        return None, ["policy_fallback_unavailable", type(exc).__name__]
+    denied: list[str] = []
+    for candidate in candidates:
+        candidate_id = str(getattr(candidate, "id", "") or "")
+        if exclude_task_id and candidate_id == exclude_task_id:
+            continue
+        try:
+            row = candidate.row()
+        except Exception:
+            continue
+        ok, reasons, _workspace, _command_ids, _max_seconds = validate_policy_for_task(policy, row)
+        if ok:
+            return row, denied
+        if reasons:
+            denied.append(f"{candidate_id}:{','.join(reasons)}")
+    return None, denied
+
+
 def transition(task_id: str, to_status: str, actor: str, *, evidence: list[str] | None = None, reason: str = "", delay_minutes: int = 60) -> dict[str, Any]:
     cmd = [sys.executable, str(ORCH), "transition", task_id, "--to", to_status, "--actor", actor, "--json"]
     for e in evidence or []:
@@ -277,12 +302,28 @@ def command_autorun_step(args: argparse.Namespace) -> dict[str, Any]:
     if policy is None:
         return {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": policy_reasons, "policy": str(AUTORUN_POLICY), "safety": "fail-closed; policy required before claim"}
     ok, policy_reasons, workspace, command_ids, max_seconds = validate_policy_for_task(policy, row)
+    selected_after_policy_skip = ""
+    if not ok and not args.task:
+        fallback_row, fallback_denials = find_policy_allowed_dispatchable(policy, orch, exclude_task_id=task_id)
+        if fallback_row is not None:
+            selected_after_policy_skip = task_id
+            row = fallback_row
+            task_id = str(row.get("id") or "")
+            ok, policy_reasons, workspace, command_ids, max_seconds = validate_policy_for_task(policy, row)
+        elif fallback_denials:
+            policy_reasons = policy_reasons + ["no_policy_allowed_dispatchable_task"]
     if not ok:
-        return {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": policy_reasons, "policy": str(AUTORUN_POLICY), "safety": "fail-closed; policy denied before claim"}
+        payload = {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": policy_reasons, "policy": str(AUTORUN_POLICY), "safety": "fail-closed; policy denied before claim"}
+        if selected_after_policy_skip:
+            payload["selected_after_policy_skip"] = selected_after_policy_skip
+        return payload
 
     selfcheck = run_json([sys.executable, str(ORCH), "selfcheck", "--json"])
     if selfcheck.get("status") not in {"OK", "PASS"}:
-        return {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": ["selfcheck_failed"], "warnings": selfcheck.get("failures", []), "selfcheck": selfcheck, "safety": "fail-closed; selfcheck failed before claim"}
+        payload = {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": ["selfcheck_failed"], "warnings": selfcheck.get("failures", []), "selfcheck": selfcheck, "safety": "fail-closed; selfcheck failed before claim"}
+        if selected_after_policy_skip:
+            payload["selected_after_policy_skip"] = selected_after_policy_skip
+        return payload
 
     claim_cmd = [sys.executable, str(ORCH), "auto-claim-and-handoff", "--task", task_id, "--actor", actor, "--ttl-minutes", str(args.ttl_minutes), "--no-reconcile", "--skip-selfcheck", "--json"]
     claim = run_json(claim_cmd)

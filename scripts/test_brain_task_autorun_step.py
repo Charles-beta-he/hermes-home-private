@@ -235,6 +235,7 @@ def test_run_json_uses_configurable_default_timeout():
     assert payload["status"] == "OK", payload
     assert seen["timeout"] == 345, seen
     assert seen["kwargs"].get("start_new_session") is True, seen
+    assert seen["kwargs"].get("env", {}).get("HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN") == "1", seen
 
 
 def test_autorun_step_skips_selfcheck_until_policy_allows_claim():
@@ -285,6 +286,65 @@ def test_autorun_step_skips_selfcheck_until_policy_allows_claim():
     assert any("eligibility-check" in cmd and "--skip-selfcheck" in cmd for cmd in calls), calls
     assert not any("selfcheck" in cmd for cmd in calls), calls
     assert not any("auto-claim-and-handoff" in cmd for cmd in calls), calls
+
+
+def test_autorun_step_falls_back_to_policy_allowed_dispatchable_when_default_lane_denied():
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    calls = []
+    old_run_json = module.run_json
+    old_load_orchestrator = module.load_orchestrator
+    old_find_row = module.find_row
+    old_load_policy = module.load_policy
+    try:
+        class FakeTask:
+            def __init__(self, task_id, lane):
+                self.id = task_id
+                self.lane = lane
+            def row(self):
+                return {"id": self.id, "lane": self.lane, "project": "hermes", "architecture_target": "", "brain": ""}
+        class FakeOrchestrator:
+            @staticmethod
+            def dispatchable_tasks():
+                return [FakeTask("task-advisory", "advisory"), FakeTask("task-work", "work")]
+        def fake_run_json(cmd, timeout=None):
+            calls.append(list(cmd))
+            if "eligibility-check" in cmd:
+                return {"status": "PASS", "eligible": True, "task_id": "task-advisory", "reasons": []}
+            if "selfcheck" in cmd:
+                return {"status": "ERROR", "failures": ["stop_before_claim"]}
+            raise AssertionError(f"unexpected command: {cmd}")
+        module.load_orchestrator = lambda: FakeOrchestrator()
+        module.run_json = fake_run_json
+        module.find_row = lambda task_id, orch_module=None: {"id": task_id, "lane": "advisory", "project": "hermes", "architecture_target": "", "brain": ""}
+        module.load_policy = lambda profile: ({
+            "projects": ["project:hermes"],
+            "lanes": ["work"],
+            "workspace": str(HOME / ".hermes"),
+            "workspace_roots": [str(HOME / ".hermes")],
+            "command_ids": ["noop"],
+            "close_mode": "review_only",
+        }, [])
+
+        payload = module.command_autorun_step(argparse.Namespace(actor="tester", task="", profile="test", ttl_minutes=10, retry_delay_minutes=10))
+    finally:
+        module.run_json = old_run_json
+        module.load_orchestrator = old_load_orchestrator
+        module.find_row = old_find_row
+        module.load_policy = old_load_policy
+
+    assert payload["task_id"] == "task-work", payload
+    assert payload.get("selected_after_policy_skip") == "task-advisory", payload
+    assert payload["reasons"] == ["selfcheck_failed"], payload
+    assert any("selfcheck" in cmd for cmd in calls), calls
+    assert not any("auto-claim-and-handoff" in cmd for cmd in calls), calls
+
 
 
 def test_autorun_step_runs_selfcheck_after_policy_before_claiming():
@@ -401,6 +461,7 @@ if __name__ == "__main__":
     test_run_json_timeout_returns_structured_error()
     test_run_json_uses_configurable_default_timeout()
     test_autorun_step_skips_selfcheck_until_policy_allows_claim()
+    test_autorun_step_falls_back_to_policy_allowed_dispatchable_when_default_lane_denied()
     test_autorun_step_runs_selfcheck_after_policy_before_claiming()
     test_autorun_step_claim_uses_prechecked_fast_gate_flags()
     print("PASS")
