@@ -122,6 +122,26 @@ class BrainctlTestCase(unittest.TestCase):
         for key in ["path", "heading", "line_start", "line_end", "content_hash", "excerpt", "score"]:
             self.assertIn(key, hits[0])
 
+    def test_search_demotes_stale_project_experience_below_current_knowledge(self):
+        self.write_note(
+            "05-实践与项目/projects/Old/旧项目经验.md",
+            "---\nstatus: stale\n---\n\n# 旧项目经验\n\n索引筛选 项目经验 知识库 覆盖 使用。" * 6 + "\n旧结论，completed without tests。\n",
+        )
+        self.write_note(
+            "03-知识库/索引筛选当前准则.md",
+            "---\nstatus: current\n---\n\n# 索引筛选当前准则\n\nCurrent source: 索引筛选 项目经验 知识库 覆盖 使用必须优先当前SSOT和证据边界，旧项目经验只能作为参考。\n",
+        )
+        brainctl.reindex(json_mode=True)
+
+        hits = brainctl.search("索引筛选 项目经验 知识库 覆盖 使用", limit=2, json_mode=True)
+
+        self.assertGreaterEqual(len(hits), 2)
+        self.assertEqual(hits[0]["path"], "03-知识库/索引筛选当前准则.md")
+        self.assertEqual(hits[0]["selection_status"], "accepted")
+        stale_hit = [hit for hit in hits if hit["path"] == "05-实践与项目/projects/Old/旧项目经验.md"][0]
+        self.assertEqual(stale_hit["selection_status"], "filtered")
+        self.assertIn("stale_temporal_state", stale_hit["filter_reasons"])
+
     def test_parser_does_not_expose_destructive_or_executable_commands(self):
         parser = brainctl.build_parser()
         subparsers = next(action for action in parser._actions if action.dest == "cmd")

@@ -352,6 +352,54 @@ def fts_query(query: str) -> str:
     return " ".join('"' + token.replace('"', '""') + '"' for token in tokens)
 
 
+STALE_STATUSES = {"stale", "archived", "archive", "deprecated", "superseded", "inactive", "obsolete", "过期", "废弃", "归档"}
+CURRENT_STATUSES = {"current", "active", "canonical", "ssot", "accepted", "当前", "有效"}
+STALE_MARKERS = ["stale: true", "status: stale", "status: archived", "status: deprecated", "completed without tests", "旧结论", "过期", "已废弃", "废弃", "归档"]
+CURRENT_MARKERS = ["current source", "current snapshot", "canonical source", "source of truth", "ssot", "证据边界", "当前准则", "canonical"]
+
+
+def classify_memory_source(path: str, body: str) -> str:
+    low_path = path.lower()
+    if "05-实践与项目" in path or "/projects/" in low_path or "project" in low_path:
+        return "project_experience"
+    if "03-知识库" in path or "knowledge" in low_path or "知识库" in body:
+        return "knowledge_base"
+    if "06-治理与评审" in path or "review" in low_path:
+        return "governance_review"
+    if "07-仪表盘" in path or "dashboard" in low_path:
+        return "derived_dashboard"
+    return "general_note"
+
+
+def selection_filter(path: str, heading: str, body: str, base_score: float) -> dict:
+    meta, _ = parse_frontmatter(body)
+    status = str(meta.get("status") or "").strip().lower()
+    low = f"{path}\n{heading}\n{body}".lower()
+    source_class = classify_memory_source(path, body)
+    reasons: list[str] = []
+    bonus = 0.0
+    if status in STALE_STATUSES or any(marker in low for marker in STALE_MARKERS):
+        reasons.append("stale_temporal_state")
+        bonus -= 3.0
+    if "without tests" in low or "no proof" in low or "无证据" in low:
+        reasons.append("weak_or_missing_evidence")
+        bonus -= 1.0
+    if status in CURRENT_STATUSES or any(marker in low for marker in CURRENT_MARKERS):
+        bonus += 0.75
+    if source_class == "knowledge_base":
+        bonus += 0.15
+    elif source_class == "governance_review":
+        bonus += 0.05
+    adjusted_score = base_score + bonus
+    return {
+        "source_class": source_class,
+        "selection_status": "filtered" if reasons else "accepted",
+        "filter_reasons": reasons,
+        "rank_adjustment": bonus,
+        "adjusted_score": adjusted_score,
+    }
+
+
 def search(query: str, *, limit: int = 10, json_mode: bool = False) -> list[dict]:
     paths = resolve_paths()
     if not paths.index.exists():
@@ -360,20 +408,48 @@ def search(query: str, *, limit: int = 10, json_mode: bool = False) -> list[dict
     results: list[dict] = []
     try:
         init_schema(con)
-        rows = con.execute(
+        candidate_limit = max(limit * 5, limit + 20)
+        query_terms = re.findall(r"[\w\u4e00-\u9fff]+", query, flags=re.UNICODE)
+        fts_rows = con.execute(
             """
             select b.path, b.heading, b.line_start, b.line_end, b.content_hash, b.excerpt,
-                   bm25(blocks_fts) as rank
+                   b.body, bm25(blocks_fts) as rank
             from blocks_fts
             join blocks b on b.id = blocks_fts.rowid
             where blocks_fts match ?
             order by rank
             limit ?
             """,
-            (fts_query(query), limit),
+            (fts_query(query), candidate_limit),
         ).fetchall()
+        rows = [dict(row) for row in fts_rows]
+        seen_hashes = {str(row["content_hash"]) for row in rows}
+        if query_terms:
+            first = f"%{query_terms[0]}%"
+            fallback_rows = con.execute(
+                """
+                select path, heading, line_start, line_end, content_hash, excerpt, body, 0.0 as rank
+                from blocks
+                where path like ? or heading like ? or body like ?
+                limit 500
+                """,
+                (first, first, first),
+            ).fetchall()
+            for row in fallback_rows:
+                item = dict(row)
+                if str(item["content_hash"]) in seen_hashes:
+                    continue
+                haystack = f"{item['path']}\n{item['heading']}\n{item['body']}".lower()
+                if all(term.lower() in haystack for term in query_terms):
+                    rows.append(item)
+                    seen_hashes.add(str(item["content_hash"]))
+                    if len(rows) >= candidate_limit:
+                        break
+        ranked_results: list[dict] = []
         for row in rows:
-            results.append(
+            base_score = float(-row["rank"])
+            filter_info = selection_filter(row["path"], row["heading"], row["body"], base_score)
+            ranked_results.append(
                 {
                     "path": row["path"],
                     "heading": row["heading"],
@@ -381,9 +457,23 @@ def search(query: str, *, limit: int = 10, json_mode: bool = False) -> list[dict
                     "line_end": int(row["line_end"]),
                     "content_hash": row["content_hash"],
                     "excerpt": row["excerpt"],
-                    "score": float(-row["rank"]),
+                    "score": float(filter_info["adjusted_score"]),
+                    "base_score": base_score,
+                    "source_class": filter_info["source_class"],
+                    "selection_status": filter_info["selection_status"],
+                    "filter_reasons": filter_info["filter_reasons"],
+                    "rank_adjustment": filter_info["rank_adjustment"],
                 }
             )
+        ranked_results.sort(
+            key=lambda item: (
+                item["selection_status"] == "filtered",
+                -float(item["score"]),
+                str(item["path"]),
+                int(item["line_start"]),
+            )
+        )
+        results.extend(ranked_results[:limit])
     finally:
         con.close()
     append_wal(
