@@ -1812,6 +1812,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_memory_gate.add_argument("--out", default=None, help="optional JSON report path")
     p_memory_gate.add_argument("--top-k", type=int, default=5)
 
+    p_preflight = sub.add_parser("preflight", help="run local-brain BrainConstraintGate dry-run")
+    p_preflight.add_argument("--summary", required=True)
+    p_preflight.add_argument("--file", action="append", default=[])
+    p_preflight.add_argument("--vault", action="append", default=[])
+    p_preflight.add_argument("--memory-root", default=None)
+    p_preflight.add_argument("--evidence", action="append", default=[])
+    p_preflight.add_argument("--limit", type=int, default=8)
+
     sub.add_parser("sync", help="run existing sync-brain.py")
 
     p_open = sub.add_parser("open", help="print or launch Obsidian URI for a note")
@@ -1885,6 +1893,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         result = memory_replay_gate(fixtures=args.fixtures, out=args.out, top_k=args.top_k, json_mode=True)
         emit_cli(result, args.json)
         return 0 if result.get("status") == "PASS" and result.get("fixture_class_gate") == "PASS" else 2
+    elif args.cmd == "preflight":
+        from local_brain_change_preflight import run_preflight, default_vaults
+        result = run_preflight(
+            summary=args.summary,
+            files=args.file,
+            vaults=[Path(v).expanduser() for v in args.vault] if args.vault else default_vaults(),
+            memory_root=Path(args.memory_root).expanduser() if args.memory_root else None,
+            evidence=args.evidence,
+            limit=args.limit,
+        )
+        emit_cli(result, args.json)
+        verdict = result.get("brain_constraint_record", {}).get("verdict", {}).get("status")
+        return 2 if verdict == "block" else 0
     elif args.cmd == "sync":
         result = sync(json_mode=True)
         emit_cli(result, args.json)

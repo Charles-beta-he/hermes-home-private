@@ -156,12 +156,51 @@ class BrainctlTestCase(unittest.TestCase):
         self.assertEqual(hits[0]["selection_status"], "accepted")
         self.assertEqual(hits[0]["filter_reasons"], [])
 
+    def test_brainctl_preflight_subcommand_wraps_local_brain_constraint_gate(self):
+        self.write_note(
+            "05-实践与项目/实践方案/Current Policy.md",
+            "---\nstatus: active-stable\nstability_class: long_term_canonical_plan\n---\n\n# Current Policy\n\nCurrent source: RouteReviewGate BrainConstraintRecord route_required_evidence。\n",
+        )
+        code = brainctl.main([
+            "--json",
+            "preflight",
+            "--summary",
+            "本地大脑全量自动约束层 RouteReviewGate",
+            "--file",
+            "scripts/local_brain_change_preflight.py",
+            "--vault",
+            str(self.vault),
+            "--memory-root",
+            str(self.memory),
+            "--evidence",
+            "diff:test fixture",
+            "--evidence",
+            "tests:test fixture",
+            "--evidence",
+            "py_compile_or_build:test fixture",
+            "--evidence",
+            "search_output:test fixture",
+            "--evidence",
+            "fixture_replay:test fixture",
+            "--evidence",
+            "reindex_readback:test fixture",
+            "--evidence",
+            "provider_status:test fixture",
+            "--evidence",
+            "health_snapshot:test fixture",
+            "--evidence",
+            "deterministic_gate:test fixture",
+            "--evidence",
+            "route_review_record:test fixture",
+        ])
+        self.assertEqual(code, 0)
+
     def test_parser_does_not_expose_destructive_or_executable_commands(self):
         parser = brainctl.build_parser()
         subparsers = next(action for action in parser._actions if action.dest == "cmd")
         commands = set(subparsers.choices)
         self.assertFalse({"delete", "eval", "command", "plugin"} & commands)
-        self.assertTrue({"status", "reindex", "search", "evidence", "wal", "sync", "open"} <= commands)
+        self.assertTrue({"status", "reindex", "search", "evidence", "wal", "sync", "open", "preflight"} <= commands)
 
     def test_status_cli_json_prints_parseable_json(self):
         import contextlib
