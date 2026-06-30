@@ -432,6 +432,21 @@ def build_brain_constraint_record(
     }
 
 
+def high_risk_gate_status() -> dict:
+    """Read high-risk gate enablement if available.
+
+    This is read-only: it reports whether live side-effect classes are opened as
+    fail-closed exact-target boundaries, but does not execute them.
+    """
+    try:
+        import high_risk_gate_control  # type: ignore
+
+        home = Path(os.environ.get("HERMES_HIGH_RISK_GATE_HOME", str(Path.home() / ".hermes"))).expanduser()
+        return high_risk_gate_control.status(home)
+    except Exception as exc:  # pragma: no cover - defensive runtime reporting
+        return {"ok": False, "error": f"high_risk_gate_status_unavailable:{type(exc).__name__}:{exc}"}
+
+
 def run_preflight(
     *,
     summary: str,
@@ -469,6 +484,7 @@ def run_preflight(
                 "destructive": False,
                 "credential_payment": False,
             },
+            "side_effect_gate_status": high_risk_gate_status(),
             "brain_constraint_record": brain,
             "route_review_record": route,
         }
