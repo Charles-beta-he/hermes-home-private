@@ -38,7 +38,7 @@ LOG_FILE = LOG_DIR / "brain_task_dispatch_tick.jsonl"
 API_QUOTA_CACHE_FILE = STATE_DIR / "taskpool-api-quota-cache.json"
 BATCH_MERGE_PLAN_DIR = STATE_DIR / "taskpool-batch-merge-plans"
 BATCH_EXECUTOR_STATE_DIR = STATE_DIR / "taskpool-batch-executor"
-DEFAULT_COMMAND_TIMEOUT_SECONDS = 120.0
+DEFAULT_COMMAND_TIMEOUT_SECONDS = 300.0
 DEFAULT_TERMINATE_GRACE_SECONDS = 5.0
 
 
