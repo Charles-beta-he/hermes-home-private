@@ -9671,7 +9671,7 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
     if not proof_ok:
         reasons.append("proof_chain_invalid")
         warnings.extend(proof_failures)
-    if task and not reasons:
+    if task and not reasons and not bool(getattr(args, "skip_selfcheck", False)):
         selfcheck = command_selfcheck(argparse.Namespace(json=True))
         if selfcheck.get("status") != "PASS":
             reasons.append("selfcheck_failed")
@@ -11242,6 +11242,7 @@ def build_parser() -> argparse.ArgumentParser:
     ecp.add_argument("--task", default="")
     ecp.add_argument("--actor", default="hermes-autorun")
     ecp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
+    ecp.add_argument("--skip-selfcheck", action="store_true", help="skip heavyweight selfcheck; caller must run it before claim/execution")
     ecp.add_argument("--json", action="store_true")
 
     ahp = sub.add_parser("auto-claim-and-handoff")
@@ -11249,6 +11250,7 @@ def build_parser() -> argparse.ArgumentParser:
     ahp.add_argument("--actor", default="hermes-autorun")
     ahp.add_argument("--ttl-minutes", type=int, default=60)
     ahp.add_argument("--no-reconcile", action="store_true", help="skip reconcile preflight")
+    ahp.add_argument("--skip-selfcheck", action="store_true", help="skip heavyweight selfcheck; caller must have run it before claim")
     ahp.add_argument("--json", action="store_true")
 
     arp = sub.add_parser("autorun-runner")

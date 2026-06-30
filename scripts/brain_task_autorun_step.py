@@ -131,7 +131,15 @@ def list_rows() -> list[dict[str, Any]]:
     return data.get("rows", []) if isinstance(data.get("rows"), list) else []
 
 
-def find_row(task_id: str) -> dict[str, Any] | None:
+def find_row(task_id: str, orch_module: Any | None = None) -> dict[str, Any] | None:
+    if orch_module is not None:
+        try:
+            task = orch_module.find_task(task_id)
+            return task.row()
+        except SystemExit:
+            return None
+        except Exception:
+            pass
     for row in list_rows():
         if row.get("id") == task_id:
             return row
@@ -235,7 +243,7 @@ def transition(task_id: str, to_status: str, actor: str, *, evidence: list[str] 
 def command_autorun_step(args: argparse.Namespace) -> dict[str, Any]:
     orch = load_orchestrator()
     actor = args.actor
-    eligibility_cmd = [sys.executable, str(ORCH), "eligibility-check", "--actor", actor, "--no-reconcile", "--json"]
+    eligibility_cmd = [sys.executable, str(ORCH), "eligibility-check", "--actor", actor, "--no-reconcile", "--skip-selfcheck", "--json"]
     if args.task:
         eligibility_cmd.extend(["--task", args.task])
     eligibility = run_json(eligibility_cmd)
@@ -262,7 +270,7 @@ def command_autorun_step(args: argparse.Namespace) -> dict[str, Any]:
             "safety": "fail-closed; no claim and no execution",
         }
     task_id = str(eligibility.get("task_id") or "")
-    row = find_row(task_id)
+    row = find_row(task_id, orch)
     if not row:
         return {"status": "PASS", "claimed": False, "advanced": False, "eligible": False, "task_id": task_id, "reasons": ["task_row_unavailable"], "safety": "fail-closed; no claim and no execution"}
     policy, policy_reasons = load_policy(args.profile)
@@ -272,12 +280,16 @@ def command_autorun_step(args: argparse.Namespace) -> dict[str, Any]:
     if not ok:
         return {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": policy_reasons, "policy": str(AUTORUN_POLICY), "safety": "fail-closed; policy denied before claim"}
 
-    claim_cmd = [sys.executable, str(ORCH), "auto-claim-and-handoff", "--task", task_id, "--actor", actor, "--ttl-minutes", str(args.ttl_minutes), "--json"]
+    selfcheck = run_json([sys.executable, str(ORCH), "selfcheck", "--json"])
+    if selfcheck.get("status") not in {"OK", "PASS"}:
+        return {"status": "PASS", "claimed": False, "advanced": False, "eligible": True, "task_id": task_id, "reasons": ["selfcheck_failed"], "warnings": selfcheck.get("failures", []), "selfcheck": selfcheck, "safety": "fail-closed; selfcheck failed before claim"}
+
+    claim_cmd = [sys.executable, str(ORCH), "auto-claim-and-handoff", "--task", task_id, "--actor", actor, "--ttl-minutes", str(args.ttl_minutes), "--no-reconcile", "--skip-selfcheck", "--json"]
     claim = run_json(claim_cmd)
     if not claim.get("claimed"):
         return {"status": "PASS", "claimed": False, "advanced": False, "eligible": bool(claim.get("eligible")), "task_id": task_id, "reasons": claim.get("reasons", []) or ["claim_denied"], "warnings": claim.get("warnings", []), "claim": claim, "safety": "fail-closed; no execution"}
 
-    row_after_claim = find_row(task_id) or {}
+    row_after_claim = find_row(task_id, orch) or {}
     readback_failures = []
     if row_after_claim.get("status") != "claimed":
         readback_failures.append("claim_readback_status_mismatch")

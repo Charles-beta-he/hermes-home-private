@@ -73,6 +73,7 @@ def make_env_and_vault():
     env["HERMES_BRAIN_DISPATCH_TICK_LOG_DIR"] = str(root / "tick-logs")
     env["HERMES_AUTONOMY_WRITE_ALLOWLIST"] = str(root / "autonomy-write-allowlist.json")
     env["HERMES_CRON_JOBS_PATH"] = str(root / "cron" / "jobs.json")
+    env["HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"] = "1"
     cron_path = Path(env["HERMES_CRON_JOBS_PATH"])
     cron_path.parent.mkdir(parents=True, exist_ok=True)
     cron_path.write_text(json.dumps({"jobs": [
@@ -210,6 +211,8 @@ def add_review_evolution_task(env):
         "--json",
     ], env)
     task_id = json.loads(r.stdout)["id"]
+    env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+    Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
     run([sys.executable, str(ORCH), "claim", task_id, "--actor", "tester", "--ttl-minutes", "10", "--json"], env)
     run([sys.executable, str(ORCH), "transition", task_id, "--to", "running", "--actor", "tester", "--json"], env)
     run([sys.executable, str(ORCH), "transition", task_id, "--to", "review", "--actor", "tester", "--evidence", "command: selfcheck PASS", "--json"], env)
@@ -292,7 +295,8 @@ def test_tick_summary_autorun_step_denial_is_visible_and_non_mutating():
         payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state", "--autorun-step"], env).stdout)
         assert payload["schema"] == "brain_task_dispatch_tick_summary_v1", payload
         assert payload["status"] == "OK", payload
-        assert payload["dispatch_hint"]["task_id"] == task_id, payload
+        assert payload["dispatch_hint"]["task_id"] == "", payload
+        assert payload["scheduler_decision"]["action"] == "idle_no_dispatchable_task", payload
         assert payload["autorun"]["requested"] is True, payload
         assert payload["autorun"]["claimed"] is False, payload
         assert payload["autorun"]["advanced"] is False, payload
@@ -300,7 +304,7 @@ def test_tick_summary_autorun_step_denial_is_visible_and_non_mutating():
         assert task_row(env, task_id)["status"] == "pending"
 
 
-def test_tick_autorun_step_auto_closes_review_tasks_with_done_gate():
+def test_tick_autorun_step_keeps_review_task_when_certification_mismatch():
     td, _vault, env = make_env_and_vault()
     with td:
         task_id = add_review_evolution_task(env)
@@ -308,9 +312,11 @@ def test_tick_autorun_step_auto_closes_review_tasks_with_done_gate():
         Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
         payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state", "--autorun-step"], env).stdout)
         assert payload["status"] == "OK", payload
-        assert payload["auto_close_review"]["closed_count"] == 1, payload
-        assert payload["auto_close_review"]["closed"][0]["task_id"] == task_id, payload
-        assert task_row(env, task_id, include_done=True)["status"] == "done"
+        assert payload["auto_close_review"]["closed_count"] == 0, payload
+        assert payload["auto_close_review"]["skipped_count"] == 1, payload
+        assert payload["auto_close_review"]["skipped"][0]["action"] == "certification_triggered_skip", payload
+        assert payload["auto_close_review"]["skipped"][0]["failures"] == ["certification_task_mismatch"], payload
+        assert task_row(env, task_id)["status"] == "review"
 
 
 def test_tick_summary_claim_state_surfaces_execution_starvation_gate():
@@ -385,7 +391,7 @@ def test_tick_multimodel_task_argument_routes_to_targeted_step():
         step = args[0]
         if step == "multimodel-intervention-step":
             return {"status": "OK", "task_id": "task-1"}
-        if step == "evidence-spine":
+        if step in {"evidence-spine", "evidence_spine"}:
             return {"status": "OK", "gate_status": "PASS"}
         if step == "dispatch-dry-run":
             return {"status": "OK", "dispatchable": False, "next": None}
@@ -395,12 +401,14 @@ def test_tick_multimodel_task_argument_routes_to_targeted_step():
 
     old_argv = sys.argv[:]
     old_run_json = module.run_json
+    old_run_orchestrator_json = module.run_orchestrator_json
     old_append_log = module.append_log
     old_save_state = module.save_state
     old_load_state = module.load_state
     old_env = os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_MULTIMODEL")
     try:
         module.run_json = fake_run_json
+        module.run_orchestrator_json = lambda args, timeout=None: fake_run_json(args)
         module.append_log = lambda event: None
         module.save_state = lambda state: None
         module.load_state = lambda: {}
@@ -416,6 +424,7 @@ def test_tick_multimodel_task_argument_routes_to_targeted_step():
     finally:
         sys.argv = old_argv
         module.run_json = old_run_json
+        module.run_orchestrator_json = old_run_orchestrator_json
         module.append_log = old_append_log
         module.save_state = old_save_state
         module.load_state = old_load_state
@@ -482,6 +491,8 @@ def test_parallel_autorun_spawns_async_worker_consumer_summary_without_foregroun
 
     def fake_run_cmd_json(cmd, timeout=None):
         calls.append(("run_cmd_json", list(cmd), timeout))
+        if "evidence-spine" in cmd:
+            return {"status": "OK", "gate_status": "PASS", "summary": {}}
         assert "agent_team_controller.py" in " ".join(map(str, cmd)), cmd
         if "worker-jobs" in cmd:
             return {"status": "OK", "job_count": 0, "alive_count": 0, "jobs": []}
@@ -578,6 +589,8 @@ def test_parallel_autorun_timeout_releases_claimed_batch_to_retry():
 
     def fake_run_cmd_json(cmd, timeout=None):
         calls.append(("run_cmd_json", list(cmd), timeout))
+        if "evidence-spine" in cmd:
+            return {"status": "OK", "gate_status": "PASS", "summary": {}}
         if "worker-jobs" in cmd:
             return {"status": "OK", "job_count": 0, "alive_count": 0, "jobs": []}
         assert "consume-claimed" in cmd, cmd
@@ -1130,7 +1143,7 @@ def test_agent_team_background_worker_job_records_and_dedupes_alive_batches():
         module.WORKER_LOG_DIR = root / "logs"
         module.human_escape_check = lambda: (False, {})
         module.is_disabled = lambda: False
-        module.process_alive = lambda pid: True
+        module.process_alive = lambda pid, expected_cmd=None: True
 
         popen_calls = []
 
@@ -1154,7 +1167,8 @@ def test_agent_team_background_worker_job_records_and_dedupes_alive_batches():
     assert first["job"]["batch_id"] == "batch-1", first
     assert first["job"]["task_ids"] == ["task-1"], first
     assert "--background" not in popen_calls[0][0], popen_calls
-    assert second["status"] == "OK" and second["already_running"] is True, second
+    assert second["status"] == "OK" and second["job_id"] == first["job_id"], second
+    assert second["job"]["alive"] is True, second
     assert len(popen_calls) == 1, popen_calls
     assert jobs["job_count"] == 1 and jobs["alive_count"] == 1, jobs
 
@@ -1850,7 +1864,7 @@ if __name__ == "__main__":
     test_tick_print_always_records_no_agent_observability_policy()
     test_tick_summary_outputs_compact_no_agent_heartbeat_without_autorun()
     test_tick_summary_autorun_step_denial_is_visible_and_non_mutating()
-    test_tick_autorun_step_auto_closes_review_tasks_with_done_gate()
+    test_tick_autorun_step_keeps_review_task_when_certification_mismatch()
     test_tick_summary_surfaces_multimodel_intervention_hint()
     test_tick_summary_ambient_multimodel_env_does_not_run_expensive_step()
     test_tick_multimodel_step_requires_explicit_flag_and_env()

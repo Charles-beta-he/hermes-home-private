@@ -84,6 +84,43 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.assertEqual(verdict["status"], "block")
         self.assertIn("missing_required_evidence", verdict["reasons"])
 
+    def test_t3_precommit_with_full_deterministic_evidence_gets_local_certification_not_multimodel(self):
+        evidence = [
+            "diff:git diff --cached --name-only readback",
+            "tests:targeted local-brain pre-commit tests OK",
+            "py_compile_or_build:staged python py_compile OK",
+            "search_output:brainctl preflight performs search",
+            "fixture_replay:pre-commit hook smoke",
+            "reindex_readback:brainctl preflight performs reindex",
+            "task_record:local git staged taskpool change record includes exact touched files and rollback target",
+            "proof_log:targeted taskpool regression tests and py_compile completed under pre-commit hook",
+            "lifecycle_readback:focused tests cover fail-closed eligibility, claim precheck, review close gating, cron wrapper dedupe, and no force-done path",
+            "deterministic_gate:pre-commit local deterministic checks completed",
+            "route_review_record:embedded RouteReviewRecord emitted",
+            "exact_target:local git repository staged files only",
+            "rollback:git reset staged changes or git revert resulting commit",
+            "post_action_readback:pre-commit hook exits zero only after local preflight verdict is non-blocking",
+        ]
+        result = preflight.run_preflight(
+            summary="git pre-commit staged files: scripts/brain_task_autorun_step.py, scripts/taskpool_dynamic_runner_cron.py",
+            files=["scripts/brain_task_autorun_step.py", "scripts/taskpool_dynamic_runner_cron.py"],
+            vaults=[self.notes_vault],
+            memory_root=self.memory_root,
+            evidence=evidence,
+            limit=5,
+        )
+
+        route = result["route_review_record"]
+        verdict = result["brain_constraint_record"]["verdict"]
+        self.assertEqual(route["classification"]["risk_tier"], "T3")
+        self.assertEqual(route["evidence_state"]["missing_evidence"], [])
+        self.assertEqual(route["verdict"]["status"], "local_deterministic_certified")
+        self.assertTrue(route["verdict"]["certified"])
+        self.assertFalse(route["verdict"]["multi_model_certified"])
+        self.assertEqual(verdict["status"], "pass")
+        self.assertNotIn("degraded_not_certified", verdict["reasons"])
+
+
     def test_cli_json_emits_parseable_record_and_never_executes_side_effects(self):
         proc = subprocess.run(
             [

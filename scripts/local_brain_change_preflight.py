@@ -239,6 +239,19 @@ def aggregate_hits(search_results: Sequence[dict]) -> tuple[list[dict], list[dic
     return accepted, filtered, quarantine
 
 
+def has_local_deterministic_precommit_certification(evidence: Sequence[str]) -> bool:
+    blob = "\n".join(evidence).lower()
+    return (
+        "deterministic_gate:pre-commit local deterministic checks completed" in blob
+        and "tests:" in blob
+        and "py_compile_or_build:" in blob
+        and "task_record:" in blob
+        and "proof_log:" in blob
+        and "lifecycle_readback:" in blob
+        and "post_action_readback:" in blob
+    )
+
+
 def build_route_review_record(summary: str, files: Sequence[str], evidence: Sequence[str]) -> dict:
     surfaces = classify_surfaces(summary, files)
     side_effect = classify_side_effect(summary, files)
@@ -262,7 +275,17 @@ def build_route_review_record(summary: str, files: Sequence[str], evidence: Sequ
     else:
         mode, quorum, min_quorum = "ratification", 5, 3
 
-    if truth_status == "grounded" and risk in {"T0", "T1"}:
+    local_deterministic_certified = (
+        truth_status == "grounded"
+        and coverage >= 1.0
+        and risk in {"T2", "T3"}
+        and has_local_deterministic_precommit_certification(evidence)
+    )
+    if local_deterministic_certified:
+        status = "local_deterministic_certified"
+        certified = True
+        multi_model_certified = False
+    elif truth_status == "grounded" and risk in {"T0", "T1"}:
         status = "pass"
         certified = risk == "T0"
         multi_model_certified = False

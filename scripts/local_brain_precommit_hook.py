@@ -38,15 +38,41 @@ def staged_files(root: Path) -> list[str]:
     return [line.strip() for line in proc.stdout.splitlines() if line.strip()]
 
 
+def is_taskpool_control_plane_change(files: Sequence[str]) -> bool:
+    markers = (
+        "scripts/brain_task_",
+        "scripts/task_pool_guardian",
+        "scripts/taskpool_",
+        "scripts/agent_team_controller.py",
+    )
+    return any(f.startswith(markers) for f in files)
+
+
 def relevant_tests(files: Sequence[str]) -> list[Path]:
     wanted: list[Path] = []
     if any(f.startswith("scripts/brainctl.py") or f.startswith("scripts/test_brainctl.py") for f in files):
         wanted.append(SCRIPTS_DIR / "test_brainctl.py")
     if any("local_brain_change_preflight" in f for f in files):
         wanted.append(SCRIPTS_DIR / "test_local_brain_change_preflight.py")
+    if any(f.startswith("scripts/local_brain_precommit_hook.py") or f.startswith("scripts/test_local_brain_precommit_hook.py") for f in files):
+        wanted.append(SCRIPTS_DIR / "test_local_brain_precommit_hook.py")
     if any(f.startswith("scripts/task_preflight.py") or f.startswith("scripts/test_task_preflight_local_brain.py") for f in files):
         wanted.append(SCRIPTS_DIR / "test_task_preflight_local_brain.py")
-    return [p for p in wanted if p.exists()]
+    if is_taskpool_control_plane_change(files):
+        wanted.extend([
+            SCRIPTS_DIR / "test_brain_task_autorun_step.py",
+            SCRIPTS_DIR / "test_brain_task_dispatch_tick.py",
+            SCRIPTS_DIR / "test_task_pool_guardian.py",
+            SCRIPTS_DIR / "test_task_pool_guardian_silent.py",
+            SCRIPTS_DIR / "test_taskpool_dynamic_runner_cron.py",
+        ])
+    seen: set[Path] = set()
+    deduped: list[Path] = []
+    for path in wanted:
+        if path.exists() and path not in seen:
+            seen.add(path)
+            deduped.append(path)
+    return deduped
 
 
 def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str]]:
@@ -81,6 +107,12 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
                 errors.append(f"test failed: {test}\n{proc.stdout}\n{proc.stderr}")
         if not errors:
             evidence.append("tests:targeted local-brain pre-commit tests OK")
+            if is_taskpool_control_plane_change(files):
+                evidence.extend([
+                    "task_record:local git staged taskpool change record includes exact touched files and rollback target",
+                    "proof_log:targeted taskpool regression tests and py_compile completed under pre-commit hook",
+                    "lifecycle_readback:focused tests cover fail-closed eligibility, claim precheck, review close gating, cron wrapper dedupe, and no force-done path",
+                ])
     else:
         evidence.append("tests:not_applicable_no_local_brain_code_surface")
     if not any(e.startswith("deterministic_gate:") for e in evidence):

@@ -50,6 +50,12 @@ def add_task(env, title="bounded autorun task"):
         "local-brain-task-orchestration",
         "--expires-at",
         "2099-01-01",
+        "--priority-layer",
+        "P1",
+        "--dependency-order",
+        "[]",
+        "--multimodel-triage-result",
+        "not_required",
         "--json",
     ], env)
     data = json.loads(r.stdout)
@@ -176,7 +182,7 @@ def test_autorun_step_fails_closed_when_eligibility_unavailable():
     assert payload["claimed"] is False, payload
     assert payload["advanced"] is False, payload
     assert "eligibility_unavailable" in payload["reasons"], payload
-    assert any("eligibility-check" in cmd and "--no-reconcile" in cmd for cmd in calls), calls
+    assert any("eligibility-check" in cmd and "--no-reconcile" in cmd and "--skip-selfcheck" in cmd for cmd in calls), calls
 
 
 def test_run_json_timeout_returns_structured_error():
@@ -231,6 +237,161 @@ def test_run_json_uses_configurable_default_timeout():
     assert seen["kwargs"].get("start_new_session") is True, seen
 
 
+def test_autorun_step_skips_selfcheck_until_policy_allows_claim():
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    calls = []
+    old_run_json = module.run_json
+    old_load_orchestrator = module.load_orchestrator
+    old_find_row = module.find_row
+    old_load_policy = module.load_policy
+    try:
+        class FakeOrchestrator:
+            pass
+        def fake_run_json(cmd, timeout=None):
+            calls.append(list(cmd))
+            if "eligibility-check" in cmd:
+                return {"status": "PASS", "eligible": True, "task_id": "task-1", "reasons": []}
+            raise AssertionError(f"unexpected run_json call after policy denial: {cmd}")
+        module.load_orchestrator = lambda: FakeOrchestrator()
+        module.run_json = fake_run_json
+        module.find_row = lambda task_id, orch_module=None: {"id": task_id, "lane": "evolution", "project": "", "architecture_target": "", "brain": ""}
+        module.load_policy = lambda profile: ({
+            "task_ids": ["task-1"],
+            "lanes": ["work"],
+            "workspace": str(HOME / ".hermes"),
+            "workspace_roots": [str(HOME / ".hermes")],
+            "command_ids": ["noop"],
+            "close_mode": "review_only",
+        }, [])
+
+        payload = module.command_autorun_step(argparse.Namespace(actor="tester", task="", profile="test", ttl_minutes=10, retry_delay_minutes=10))
+    finally:
+        module.run_json = old_run_json
+        module.load_orchestrator = old_load_orchestrator
+        module.find_row = old_find_row
+        module.load_policy = old_load_policy
+
+    assert payload["status"] == "PASS", payload
+    assert payload["claimed"] is False, payload
+    assert payload["advanced"] is False, payload
+    assert "policy_lane_miss" in payload["reasons"], payload
+    assert any("eligibility-check" in cmd and "--skip-selfcheck" in cmd for cmd in calls), calls
+    assert not any("selfcheck" in cmd for cmd in calls), calls
+    assert not any("auto-claim-and-handoff" in cmd for cmd in calls), calls
+
+
+def test_autorun_step_runs_selfcheck_after_policy_before_claiming():
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    calls = []
+    old_run_json = module.run_json
+    old_load_orchestrator = module.load_orchestrator
+    old_find_row = module.find_row
+    old_load_policy = module.load_policy
+    try:
+        class FakeOrchestrator:
+            pass
+        def fake_run_json(cmd, timeout=None):
+            calls.append(list(cmd))
+            if "eligibility-check" in cmd:
+                return {"status": "PASS", "eligible": True, "task_id": "task-1", "reasons": []}
+            if "selfcheck" in cmd:
+                return {"status": "ERROR", "failures": ["synthetic_selfcheck_failure"]}
+            raise AssertionError(f"claim/transition must not run when selfcheck fails: {cmd}")
+        module.load_orchestrator = lambda: FakeOrchestrator()
+        module.run_json = fake_run_json
+        module.find_row = lambda task_id, orch_module=None: {"id": task_id, "lane": "work", "project": "", "architecture_target": "", "brain": ""}
+        module.load_policy = lambda profile: ({
+            "task_ids": ["task-1"],
+            "lanes": ["work"],
+            "workspace": str(HOME / ".hermes"),
+            "workspace_roots": [str(HOME / ".hermes")],
+            "command_ids": ["noop"],
+            "close_mode": "review_only",
+        }, [])
+
+        payload = module.command_autorun_step(argparse.Namespace(actor="tester", task="", profile="test", ttl_minutes=10, retry_delay_minutes=10))
+    finally:
+        module.run_json = old_run_json
+        module.load_orchestrator = old_load_orchestrator
+        module.find_row = old_find_row
+        module.load_policy = old_load_policy
+
+    assert payload["status"] == "PASS", payload
+    assert payload["claimed"] is False, payload
+    assert payload["advanced"] is False, payload
+    assert payload["reasons"] == ["selfcheck_failed"], payload
+    assert calls[0].count("eligibility-check") == 1 and "--skip-selfcheck" in calls[0], calls
+    assert any("selfcheck" in cmd for cmd in calls), calls
+    assert not any("auto-claim-and-handoff" in cmd for cmd in calls), calls
+
+
+def test_autorun_step_claim_uses_prechecked_fast_gate_flags():
+    import argparse
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("brain_task_autorun_step", STEP)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    calls = []
+    old_run_json = module.run_json
+    old_load_orchestrator = module.load_orchestrator
+    old_find_row = module.find_row
+    old_load_policy = module.load_policy
+    try:
+        class FakeOrchestrator:
+            pass
+        def fake_run_json(cmd, timeout=None):
+            calls.append(list(cmd))
+            if "eligibility-check" in cmd:
+                return {"status": "PASS", "eligible": True, "task_id": "task-1", "reasons": []}
+            if "selfcheck" in cmd:
+                return {"status": "PASS", "failures": []}
+            if "auto-claim-and-handoff" in cmd:
+                return {"status": "PASS", "claimed": False, "eligible": False, "reasons": ["synthetic_claim_denied"]}
+            raise AssertionError(f"unexpected command before claim denial: {cmd}")
+        module.load_orchestrator = lambda: FakeOrchestrator()
+        module.run_json = fake_run_json
+        module.find_row = lambda task_id, orch_module=None: {"id": task_id, "lane": "work", "project": "", "architecture_target": "", "brain": ""}
+        module.load_policy = lambda profile: ({
+            "task_ids": ["task-1"],
+            "lanes": ["work"],
+            "workspace": str(HOME / ".hermes"),
+            "workspace_roots": [str(HOME / ".hermes")],
+            "command_ids": ["noop"],
+            "close_mode": "review_only",
+        }, [])
+
+        payload = module.command_autorun_step(argparse.Namespace(actor="tester", task="", profile="test", ttl_minutes=10, retry_delay_minutes=10))
+    finally:
+        module.run_json = old_run_json
+        module.load_orchestrator = old_load_orchestrator
+        module.find_row = old_find_row
+        module.load_policy = old_load_policy
+
+    assert payload["claimed"] is False, payload
+    claim_calls = [cmd for cmd in calls if "auto-claim-and-handoff" in cmd]
+    assert len(claim_calls) == 1, calls
+    assert "--no-reconcile" in claim_calls[0], claim_calls
+    assert "--skip-selfcheck" in claim_calls[0], claim_calls
+
+
 if __name__ == "__main__":
     test_autorun_step_default_disabled_returns_summary_without_claiming()
     test_autorun_step_requires_policy_before_claiming()
@@ -239,4 +400,7 @@ if __name__ == "__main__":
     test_autorun_step_fails_closed_when_eligibility_unavailable()
     test_run_json_timeout_returns_structured_error()
     test_run_json_uses_configurable_default_timeout()
+    test_autorun_step_skips_selfcheck_until_policy_allows_claim()
+    test_autorun_step_runs_selfcheck_after_policy_before_claiming()
+    test_autorun_step_claim_uses_prechecked_fast_gate_flags()
     print("PASS")
