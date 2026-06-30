@@ -280,9 +280,10 @@ def compute_parallel_max_agents(env: dict[str, str]) -> dict[str, Any]:
     recovery_cap = recovery_cap_from_escape(cfg=cfg, escape_status=escape_status, env=env)
     ceiling = positive_int(recovery_cap.get("ceiling"), configured)
     ceiling = max(configured, ceiling)
+    probe_timeout = positive_int(env.get("HERMES_TASKPOOL_PARALLEL_PROBE_TIMEOUT"), 300, minimum=30)
     probe = run(
         [sys.executable, str(HERMES_HOME / "scripts" / "brain_task_orchestrator.py"), "parallel-dispatch-dry-run", "--max-agents", str(ceiling), "--json"],
-        timeout=90,
+        timeout=probe_timeout,
         env=env,
     )
     result: dict[str, Any] = {
