@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -10,6 +11,16 @@ from pathlib import Path
 
 INGEST = Path("/Users/charles/.hermes/scripts/daily_report_task_ingest.py")
 ORCH = Path("/Users/charles/.hermes/scripts/brain_task_orchestrator.py")
+PH_DIGEST = Path("/Users/charles/.hermes/scripts/producthunt_daily_digest.py")
+
+
+def load_ph_digest_module():
+    spec = importlib.util.spec_from_file_location("producthunt_daily_digest_test", PH_DIGEST)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def make_vault(root: Path) -> Path:
@@ -307,6 +318,81 @@ def test_ingest_carries_product_workflow_execution_flow_fields():
         assert "external_side_effects: true" in created_text
 
 
+def test_producthunt_supplemental_landing_repo_scan_upgrades_blocked_redirect():
+    ph = load_ph_digest_module()
+    original_audit = ph._candidate_link_audit
+    original_enrich = ph.enrich_repo
+    try:
+        def fake_audit(link_type: str, url: str, *, resolve_redirects: bool):
+            audit = ph.ExternalLinkAudit(source_url=url, link_type=link_type)
+            if "producthunt.com/r/blocked" in url:
+                audit.resolved_url = url
+                audit.http_status = 403
+                audit.state = "ph_redirect_cloudflare_blocked"
+                audit.ingest_decision = "needs_supplemental_repo_link"
+                audit.detail = "http_403:cloudflare"
+            elif url == "https://example.test/landing":
+                audit.resolved_url = url
+                audit.github_urls = ["https://github.com/acme/clinepass"]
+            return audit
+
+        setattr(ph, "_candidate_link_audit", fake_audit)
+        setattr(ph, "enrich_repo", lambda repo, url: ph.RepoMeta(repo=repo, url=url, stars=7, license="MIT"))
+        item = ph.ProductItem(
+            name="ClinePass",
+            url="https://www.producthunt.com/products/clinepass",
+            links=[
+                {"type": "Github", "url": "https://www.producthunt.com/r/blocked"},
+                {"type": "Website", "url": "https://example.test/landing"},
+            ],
+        )
+        ph.detect_and_enrich([item], resolve_redirects=True)
+        assert item.open_source_status == "github_repo_verified"
+        assert item.taskpool_ingest_judgement == "poolable_only_after_hermes_mapping"
+        assert [repo.repo for repo in item.repos] == ["acme/clinepass"]
+        assert any(a.link_type == "supplemental:Website" and a.state == "github_repo_verified" for a in item.external_link_audit)
+    finally:
+        setattr(ph, "_candidate_link_audit", original_audit)
+        setattr(ph, "enrich_repo", original_enrich)
+
+
+def test_producthunt_supplemental_landing_scan_stays_fail_closed_without_repo():
+    ph = load_ph_digest_module()
+    original_audit = ph._candidate_link_audit
+    try:
+        def fake_audit(link_type: str, url: str, *, resolve_redirects: bool):
+            audit = ph.ExternalLinkAudit(source_url=url, link_type=link_type)
+            if "producthunt.com/r/blocked" in url:
+                audit.resolved_url = url
+                audit.http_status = 403
+                audit.state = "ph_redirect_cloudflare_blocked"
+                audit.ingest_decision = "needs_supplemental_repo_link"
+                audit.detail = "http_403:cloudflare"
+            elif url == "https://example.test/landing":
+                audit.resolved_url = url
+                audit.state = "github_link_detected_redirect_to_landing"
+                audit.ingest_decision = "needs_supplemental_repo_link"
+                audit.detail = "landing_page_no_repo"
+            return audit
+
+        setattr(ph, "_candidate_link_audit", fake_audit)
+        item = ph.ProductItem(
+            name="PMB",
+            url="https://www.producthunt.com/products/pmb",
+            links=[
+                {"type": "Github", "url": "https://www.producthunt.com/r/blocked"},
+                {"type": "Website", "url": "https://example.test/landing"},
+            ],
+        )
+        ph.detect_and_enrich([item], resolve_redirects=True)
+        assert item.open_source_status == "ph_redirect_cloudflare_blocked"
+        assert item.taskpool_ingest_judgement == "not_poolable_needs_repo_link"
+        assert item.repos == []
+        assert any(a.state == "supplemental_landing_no_repo" for a in item.external_link_audit)
+    finally:
+        setattr(ph, "_candidate_link_audit", original_audit)
+
+
 def main() -> int:
     test_ingest_creates_task_and_is_idempotent_per_report()
     test_ingest_fail_closed_on_missing_governance_fields()
@@ -316,6 +402,8 @@ def main() -> int:
     test_ingest_accepts_list_and_object_fields_from_browser_sidecar()
     test_ingest_dedupes_same_repo_signal_across_reports()
     test_ingest_carries_product_workflow_execution_flow_fields()
+    test_producthunt_supplemental_landing_repo_scan_upgrades_blocked_redirect()
+    test_producthunt_supplemental_landing_scan_stays_fail_closed_without_repo()
     print("PASS")
     return 0
 
