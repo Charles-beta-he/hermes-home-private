@@ -142,6 +142,20 @@ class BrainctlTestCase(unittest.TestCase):
         self.assertEqual(stale_hit["selection_status"], "filtered")
         self.assertIn("stale_temporal_state", stale_hit["filter_reasons"])
 
+    def test_active_stable_canonical_policy_is_not_filtered_for_mentioning_weak_markers(self):
+        self.write_note(
+            "05-实践与项目/实践方案/Current Policy.md",
+            "---\nstatus: active-stable\nstability_class: long_term_canonical_plan\n---\n\n# Current Policy\n\nCurrent source: RouteReviewGate 说明 stale without tests no proof 这些旧经验必须降权，但本文是 canonical policy。\n",
+        )
+        brainctl.reindex(json_mode=True)
+
+        hits = brainctl.search("RouteReviewGate", limit=3, json_mode=True)
+
+        self.assertGreaterEqual(len(hits), 1)
+        self.assertEqual(hits[0]["path"], "05-实践与项目/实践方案/Current Policy.md")
+        self.assertEqual(hits[0]["selection_status"], "accepted")
+        self.assertEqual(hits[0]["filter_reasons"], [])
+
     def test_parser_does_not_expose_destructive_or_executable_commands(self):
         parser = brainctl.build_parser()
         subparsers = next(action for action in parser._actions if action.dest == "cmd")

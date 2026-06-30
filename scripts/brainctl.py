@@ -353,7 +353,7 @@ def fts_query(query: str) -> str:
 
 
 STALE_STATUSES = {"stale", "archived", "archive", "deprecated", "superseded", "inactive", "obsolete", "过期", "废弃", "归档"}
-CURRENT_STATUSES = {"current", "active", "canonical", "ssot", "accepted", "当前", "有效"}
+CURRENT_STATUSES = {"current", "active", "active-stable", "canonical", "ssot", "accepted", "当前", "有效"}
 STALE_MARKERS = ["stale: true", "status: stale", "status: archived", "status: deprecated", "completed without tests", "旧结论", "过期", "已废弃", "废弃", "归档"]
 CURRENT_MARKERS = ["current source", "current snapshot", "canonical source", "source of truth", "ssot", "证据边界", "当前准则", "canonical"]
 
@@ -374,17 +374,24 @@ def classify_memory_source(path: str, body: str) -> str:
 def selection_filter(path: str, heading: str, body: str, base_score: float) -> dict:
     meta, _ = parse_frontmatter(body)
     status = str(meta.get("status") or "").strip().lower()
+    stability_class = str(meta.get("stability_class") or "").strip().lower()
     low = f"{path}\n{heading}\n{body}".lower()
     source_class = classify_memory_source(path, body)
     reasons: list[str] = []
     bonus = 0.0
-    if status in STALE_STATUSES or any(marker in low for marker in STALE_MARKERS):
+    current_like = status in CURRENT_STATUSES or any(marker in low for marker in CURRENT_MARKERS) or stability_class in {"long_term_canonical_plan", "canonical"}
+    stale_by_status = status in STALE_STATUSES
+    stale_by_marker = any(marker in low for marker in STALE_MARKERS)
+    # A current/canonical policy note may mention stale/weak markers as filter
+    # criteria. Do not demote the policy itself unless its frontmatter status is
+    # stale. Non-canonical notes still get marker-based demotion.
+    if stale_by_status or (stale_by_marker and not current_like):
         reasons.append("stale_temporal_state")
         bonus -= 3.0
-    if "without tests" in low or "no proof" in low or "无证据" in low:
+    if ("without tests" in low or "no proof" in low or "无证据" in low) and not current_like:
         reasons.append("weak_or_missing_evidence")
         bonus -= 1.0
-    if status in CURRENT_STATUSES or any(marker in low for marker in CURRENT_MARKERS):
+    if current_like:
         bonus += 0.75
     if source_class == "knowledge_base":
         bonus += 0.15
