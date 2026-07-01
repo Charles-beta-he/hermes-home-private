@@ -979,3 +979,22 @@ Boundaries: no physical device, no TestFlight/App Store, no push/deploy/external
   - `curl /sw.js` => HTTP 200 `application/javascript`, `Cache-Control: no-store`, includes `SKIP_WAITING`.
   - Browser smoke on the public URL rendered Hermes Pocket; typed `检查一下版本`; PWA replied `当前已经是最新版本 0.1.0。`.
 - Boundary: this is a public PWA frontend deployment only. Gateway/backend production deployment and live Hermes sync remain separate targets.
+
+
+## 2026-07-01 — Live PWA connected to local Hermes Gateway
+
+- Public PWA URL: https://dist-blue-eight-82.vercel.app
+- Local Pocket Gateway: http://127.0.0.1:8791
+- Public Gateway tunnel: https://sep-expertise-theta-commit.trycloudflare.com
+- Vercel deployment: https://dist-7t6ymwrzz-onerous-projects.vercel.app
+- Vercel inspect: https://vercel.com/onerous-projects/dist/Gd4dhDXceAGL5BDnV6h2BHKHKNPP
+- Runtime sessions kept alive for direct use:
+  - Gateway session `proc_c6741c0d9a78`: `HOST=127.0.0.1 PORT=8791 ... npm run dev --workspace @hermes-pocket/gateway`
+  - Cloudflared session `proc_af373265bea6`: quick tunnel to local Gateway
+- Verification:
+  - Local Gateway `/health` => HTTP 200.
+  - Public tunnel `/health` and `/v1/sync/bootstrap` => HTTP 200.
+  - Public tunnel `/v1/mobile/dialog/turn` => HTTP 200 with Hermes CLI-backed answer.
+  - Production PWA asset contains `sep-expertise-theta-commit.trycloudflare.com` Gateway base URL.
+  - Browser smoke on PWA: after SW refresh, page shows `Gateway 已接入` and `版本已就绪`; typed `ping`; received `pong`.
+- Boundary: this is directly usable while the Mac, Gateway process, and quick Cloudflare tunnel remain running. Quick tunnel has no uptime guarantee; durable production needs a named tunnel/custom domain or hosted Gateway.

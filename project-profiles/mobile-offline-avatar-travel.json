@@ -774,6 +774,27 @@
         "browser smoke on public URL rendered Hermes Pocket and dialog 检查一下版本 returned 当前已经是最新版本 0.1.0。"
       ],
       "boundary": "PWA frontend is public. Gateway is not deployed/configured, so live Hermes sync/dialog backend is absent unless a Gateway URL is configured in a future deployment."
+    },
+    "pwa_live_local_gateway_deploy_20260701": {
+      "status": "live_verified_with_local_hermes_backend",
+      "updated_at": "2026-07-01T23:38:00+08:00",
+      "pwa_url": "https://dist-blue-eight-82.vercel.app",
+      "gateway_tunnel_url": "https://sep-expertise-theta-commit.trycloudflare.com",
+      "local_gateway": "http://127.0.0.1:8791",
+      "vercel_deployment": "https://dist-7t6ymwrzz-onerous-projects.vercel.app",
+      "vercel_inspect": "https://vercel.com/onerous-projects/dist/Gd4dhDXceAGL5BDnV6h2BHKHKNPP",
+      "processes": {
+        "gateway_session_id": "proc_c6741c0d9a78",
+        "cloudflared_session_id": "proc_af373265bea6"
+      },
+      "verification": [
+        "local gateway /health HTTP 200 on 127.0.0.1:8791",
+        "trycloudflare tunnel /health HTTP 200 and /v1/sync/bootstrap HTTP 200 latestRevision 10",
+        "trycloudflare /v1/mobile/dialog/turn HTTP 200 with Hermes CLI response",
+        "PWA production alias assets contain the trycloudflare Gateway URL",
+        "PWA browser smoke after service-worker refresh: Gateway 已接入, 版本已就绪, typed ping, received pong"
+      ],
+      "boundary": "Directly usable while this Mac is online and the two background processes stay running. Quick trycloudflare tunnels are temporary/non-SLA; for durable production, replace with a named Cloudflare Tunnel/custom domain or deploy Gateway to a managed host with Hermes access."
     }
   },
   "project_type": "mobile-platform/edge-runtime",
