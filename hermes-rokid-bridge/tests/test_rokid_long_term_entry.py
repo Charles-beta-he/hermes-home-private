@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -146,8 +147,12 @@ class LongTermGlassesUxTests(unittest.IsolatedAsyncioTestCase):
         self.old_budget = app.ROKID_MODEL_BUDGET_SECONDS
         self.old_sessions = dict(app.TASK_SESSIONS)
         self.old_bg_sessions = dict(app.BACKGROUND_CONTROL_SESSIONS)
+        self.old_sensor_jobs = os.environ.get("ROKID_SENSOR_JOBS_DIR")
+        self.old_sensor_results = os.environ.get("ROKID_SENSOR_RESULTS_DIR")
         app.ROKID_UPGRADE_QUEUE_PATH = str(Path(self.tmpdir.name) / "pending_upgrades.jsonl")
         app.ROKID_MANUFACTURING_STATUS_CACHE = str(Path(self.tmpdir.name) / "manufacturing_status_cache.json")
+        os.environ["ROKID_SENSOR_JOBS_DIR"] = str(Path(self.tmpdir.name) / "sensor_jobs")
+        os.environ["ROKID_SENSOR_RESULTS_DIR"] = str(Path(self.tmpdir.name) / "sensor_results")
         app.ROKID_MODEL_BUDGET_SECONDS = 0.2
         app.TASK_SESSIONS.clear()
         app.BACKGROUND_CONTROL_SESSIONS.clear()
@@ -155,6 +160,14 @@ class LongTermGlassesUxTests(unittest.IsolatedAsyncioTestCase):
     def tearDown(self):
         app.ROKID_UPGRADE_QUEUE_PATH = self.old_queue
         app.ROKID_MANUFACTURING_STATUS_CACHE = self.old_manufacturing_cache
+        if self.old_sensor_jobs is None:
+            os.environ.pop("ROKID_SENSOR_JOBS_DIR", None)
+        else:
+            os.environ["ROKID_SENSOR_JOBS_DIR"] = self.old_sensor_jobs
+        if self.old_sensor_results is None:
+            os.environ.pop("ROKID_SENSOR_RESULTS_DIR", None)
+        else:
+            os.environ["ROKID_SENSOR_RESULTS_DIR"] = self.old_sensor_results
         app.ROKID_MODEL_BUDGET_SECONDS = self.old_budget
         app.TASK_SESSIONS.clear()
         app.TASK_SESSIONS.update(self.old_sessions)
@@ -173,6 +186,17 @@ class LongTermGlassesUxTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("设备适配层", answer)
         self.assertIn("确认门", answer)
         self.assertFalse(Path(app.ROKID_UPGRADE_QUEUE_PATH).exists(), "access-layer naming query must not enqueue L2 work")
+
+    async def test_developer_resource_entry_is_l0_read_only_and_voice_safe(self):
+        chunks = [chunk async for chunk in app.stream_answer(_text_payload("Rokid开发资源入口有哪些？", user_id="resource-user", message_id="resource-msg-1"))]
+        answer = _visible_answer(_decode_sse(chunks))
+
+        self.assertIn("Rokid开放平台", answer)
+        self.assertIn("YodaOS-Sprite", answer)
+        self.assertIn("SDK文档", answer)
+        self.assertIn("open.rokid.com", answer)
+        self.assertLessEqual(len(answer), 220)
+        self.assertFalse(Path(app.ROKID_UPGRADE_QUEUE_PATH).exists(), "developer resource lookup must be read-only and must not create L2 work")
 
     async def test_location_status_query_returns_l0_answer_and_does_not_enqueue(self):
         payload = _text_payload(
@@ -330,6 +354,110 @@ class LongTermGlassesUxTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("未执行控制", answer)
         self.assertNotIn("未连接打印机", answer)
         self.assertFalse(Path(app.ROKID_UPGRADE_QUEUE_PATH).exists(), "read-only manufacturing status query must not enqueue L2 work")
+
+    async def test_image_background_analysis_closes_with_evidence_result(self):
+        payload = app.RokidRequest(
+            message_id="vision-job-1",
+            agent_id="hermes-rokid",
+            user_id="vision-user",
+            message=[
+                app.Message(role="user", type="image", image_url="https://example.com/private-scene.jpg"),
+                app.Message(role="user", type="text", text="后台分析图片"),
+            ],
+            metadata={"context": {"location": "西安", "battery": "80%"}},
+        )
+
+        chunks = [chunk async for chunk in app.stream_answer(payload)]
+        answer = _visible_answer(_decode_sse(chunks))
+        jobs = list(Path(os.environ["ROKID_SENSOR_JOBS_DIR"]).glob("vision_*.json"))
+
+        self.assertIn("收到，我在处理", answer)
+        self.assertIn("后台视觉分析已排队", answer)
+        self.assertEqual(len(jobs), 1)
+        job = json.loads(jobs[0].read_text(encoding="utf-8"))
+        self.assertEqual(job["schema"], "vision_analysis_job_v1")
+        self.assertEqual(job["status"], "queued")
+        self.assertEqual(job["sensor_context"]["image"]["count"], 1)
+        self.assertFalse(job["privacy"]["persist_raw"])
+
+        result_chunks = [chunk async for chunk in app.stream_answer(_text_payload("视觉分析结果", user_id="vision-user", message_id="vision-result-1"))]
+        result_answer = _visible_answer(_decode_sse(result_chunks))
+        results = list(Path(os.environ["ROKID_SENSOR_RESULTS_DIR"]).glob("vision_result_*.json"))
+
+        self.assertEqual(len(results), 1)
+        result = json.loads(results[0].read_text(encoding="utf-8"))
+        self.assertEqual(result["schema"], "vision_analysis_result_v1")
+        self.assertEqual(result["status"], "adapter_unavailable")
+        self.assertEqual(result["image_count"], 1)
+        self.assertEqual(result["output_path"], str(results[0]))
+        self.assertRegex(result["artifact_sha256"], r"^[0-9a-f]{64}$")
+        self.assertIn("证据", result_answer)
+        self.assertIn(results[0].name, result_answer)
+        self.assertNotIn("private-scene.jpg", result_answer)
+        self.assertIn("不描述画面内容", result_answer)
+
+    async def test_sensor_worker_hashes_accessible_local_image_and_keeps_vlm_fail_closed(self):
+        image_path = Path(self.tmpdir.name) / "local-evidence.jpg"
+        image_bytes = b"fake-image-bytes-for-evidence"
+        image_path.write_bytes(image_bytes)
+        payload = app.RokidRequest(
+            message_id="vision-local-proof-1",
+            agent_id="hermes-rokid",
+            user_id="vision-user",
+            message=[
+                app.Message(role="user", type="image", image_url=f"file://{image_path}"),
+                app.Message(role="user", type="text", text="后台分析图片"),
+            ],
+        )
+
+        [chunk async for chunk in app.stream_answer(payload)]
+        [chunk async for chunk in app.stream_answer(_text_payload("视觉分析结果", user_id="vision-user", message_id="vision-local-result-1"))]
+        results = list(Path(os.environ["ROKID_SENSOR_RESULTS_DIR"]).glob("vision_result_*.json"))
+
+        self.assertEqual(len(results), 1)
+        result = json.loads(results[0].read_text(encoding="utf-8"))
+        self.assertEqual(result["adapter_status"]["vlm"], "unavailable")
+        self.assertTrue(result["adapter_status"]["no_stub_fallback"])
+        self.assertEqual(result["visual_facts"], [])
+        self.assertEqual(result["image_refs"][0]["uri_hash"], result["image_access_proofs"][0]["uri_hash"])
+        self.assertNotIn("uri", result["image_refs"][0])
+        proof = result["image_access_proofs"][0]
+        self.assertEqual(proof["access_status"], "accessible")
+        self.assertEqual(proof["byte_count"], len(image_bytes))
+        self.assertEqual(proof["sha256"], "32e88311ff6f1a62c949ea8eab77c236c302fafb9140b3a843c5144a21c07274")
+        self.assertFalse(result["privacy"]["persist_raw"])
+
+    async def test_intent_board_reads_done_failed_and_artifact_receipts(self):
+        session_key = app.session_key_for(_text_payload("后台进度", user_id="board-user", message_id="board-msg-0"))
+        queue_dir = Path(app.ROKID_UPGRADE_QUEUE_PATH).parent / "queue"
+        queue_dir.mkdir(parents=True, exist_ok=True)
+        done_path = queue_dir / "commit_done123.done.json"
+        failed_path = queue_dir / "commit_failed123.failed.json"
+        done_path.write_text(json.dumps({
+            "commit_id": "commit_done123",
+            "session_key": session_key,
+            "title": "后台分析图片",
+            "status": "done",
+            "output_path": "/tmp/rokid-vision-result.json",
+            "artifact_sha256": "a" * 64,
+        }, ensure_ascii=False), encoding="utf-8")
+        failed_path.write_text(json.dumps({
+            "commit_id": "commit_failed123",
+            "session_key": session_key,
+            "title": "导航任务",
+            "status": "failed",
+            "error": "missing_receipt",
+        }, ensure_ascii=False), encoding="utf-8")
+
+        chunks = [chunk async for chunk in app.stream_answer(_text_payload("眼镜后台进度", user_id="board-user", message_id="board-msg-1"))]
+        answer = _visible_answer(_decode_sse(chunks))
+
+        self.assertIn("队列 0", answer)
+        self.assertIn("完成 1", answer)
+        self.assertIn("失败 1", answer)
+        self.assertIn("最近完成：后台分析图片", answer)
+        self.assertIn("回执：/tmp/rokid-vision-result.json", answer)
+        self.assertIn("最近失败：导航任务", answer)
 
     async def test_image_only_does_not_let_text_model_hallucinate_vision(self):
         async def hallucinating_model(_prompt: str) -> str:

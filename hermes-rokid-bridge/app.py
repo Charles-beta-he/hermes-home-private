@@ -36,6 +36,7 @@ from l0_routes import (
     CAPABILITY_QUERY_PATTERNS,
     DAILY_BRIEF_PATTERNS,
     MANUFACTURING_STATUS_PATTERNS,
+    ROKID_DEVELOPER_RESOURCE_PATTERNS,
     L0_TEXT_ROUTE_REGISTRY,
     match_text_route,
 )
@@ -111,6 +112,7 @@ ROKID_UPGRADE_QUEUE_PATH = os.getenv("ROKID_UPGRADE_QUEUE_PATH", "~/.hermes/brai
 ROKID_BRAIN_STATS_CACHE = os.getenv("ROKID_BRAIN_STATS_CACHE", "~/.hermes/brains/rokid-glasses/local_brain_stats.json")
 ROKID_DAILY_BRIEF_CACHE = os.getenv("ROKID_DAILY_BRIEF_CACHE", "~/.hermes/brains/rokid-glasses/daily_brief_cache.json")
 ROKID_MANUFACTURING_STATUS_CACHE = os.getenv("ROKID_MANUFACTURING_STATUS_CACHE", "~/.hermes/brains/rokid-glasses/manufacturing_status_cache.json")
+ROKID_DEVELOPER_RESOURCE_ENTRY = os.getenv("ROKID_DEVELOPER_RESOURCE_ENTRY", "~/.hermes/brains/rokid-glasses/entrypoints/developer-resource-nav-cn.md")
 ROKID_PRINT_INTENT_DIR = os.getenv("ROKID_PRINT_INTENT_DIR", "~/.hermes/brains/rokid-glasses/print_intents")
 LOCAL_BRAIN_ROOT = os.getenv("LOCAL_BRAIN_ROOT", "/Users/charles/Documents/brain")
 HERMES_BRAINS_ROOT = os.getenv("HERMES_BRAINS_ROOT", "/Users/charles/.hermes/brains")
@@ -492,7 +494,8 @@ def _read_commit_events_from_store(root: Path) -> List[Dict[str, Any]]:
     queue_dir = root / "queue"
     if not queue_dir.exists():
         return events
-    for path in sorted(queue_dir.glob("commit_*.json")):
+    paths = sorted({*queue_dir.glob("commit_*.json"), *queue_dir.glob("commit_*.*.json")})
+    for path in paths:
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
@@ -501,16 +504,22 @@ def _read_commit_events_from_store(root: Path) -> List[Dict[str, Any]]:
             continue
         event_obj = data.get("source_event")
         event: Dict[str, Any] = event_obj if isinstance(event_obj, dict) else {}
+        suffix_match = re.search(r"\.([a-z_]+)\.json$", path.name)
+        suffix_status = suffix_match.group(1) if suffix_match else ""
         merged: Dict[str, Any] = dict(event)
         merged.update({
             "type": event.get("type") or "rokid_commit_request",
             "session_key": data.get("session_key") or event.get("session_key"),
             "title": data.get("title") or event.get("title"),
-            "status": _event_to_l2_status(data),
+            "status": data.get("status") or _event_to_l2_status(data) or suffix_status,
             "commit_id": data.get("commit_id"),
             "output_path": data.get("output_path") or event.get("output_path"),
+            "artifact_sha256": data.get("artifact_sha256") or event.get("artifact_sha256"),
+            "error": data.get("error") or event.get("error"),
             "processed_at": data.get("processed_at") or event.get("processed_at"),
         })
+        if suffix_status and merged.get("status") in {"queued", ""}:
+            merged["status"] = _event_to_l2_status({"status": suffix_status})
         events.append(merged)
     return events
 
@@ -621,15 +630,31 @@ def build_rokid_kanban_text(session_key: str) -> str:
     """Return a voice-friendly mini-kanban view for this Rokid session."""
     draft = TASK_SESSIONS.get(session_key)
     events = [e for e in _read_l2_events() if (e.get("session_key") or "") == session_key]
-    queued = sum(1 for e in events if e.get("status") == "pending_l2_upgrade")
+    queued = sum(1 for e in events if e.get("status") in {"pending_l2_upgrade", "queued"})
+    committing = sum(1 for e in events if e.get("status") == "committing")
     retry = sum(1 for e in events if e.get("status") == "retry")
     done = sum(1 for e in events if e.get("status") == "done")
+    failed = sum(1 for e in events if e.get("status") == "failed")
     draft_text = "没有草稿"
     if draft:
         draft_text = f"草稿 v{int(draft.get('revision') or 1)}：{draft.get('title') or '未命名任务'}"
-    done_titles = [str(e.get("title") or "未命名任务") for e in events if e.get("status") == "done"]
-    recent_done = f"最近完成：{done_titles[-1]}。" if done_titles else ""
-    return f"眼镜任务看板：{draft_text}。队列 {queued}，重试 {retry}，完成 {done}。{recent_done}"
+    done_events = [e for e in events if e.get("status") == "done"]
+    failed_events = [e for e in events if e.get("status") == "failed"]
+    extras: List[str] = []
+    if done_events:
+        latest = done_events[-1]
+        done_text = f"最近完成：{latest.get('title') or '未命名任务'}"
+        if latest.get("output_path"):
+            done_text += f"，回执：{latest.get('output_path')}"
+        extras.append(done_text)
+    if failed_events:
+        latest = failed_events[-1]
+        failed_text = f"最近失败：{latest.get('title') or '未命名任务'}"
+        if latest.get("error"):
+            failed_text += f"，原因：{latest.get('error')}"
+        extras.append(failed_text)
+    extra_text = "。" + "。".join(extras) if extras else ""
+    return f"眼镜任务看板：{draft_text}。队列 {queued}，执行中 {committing}，重试 {retry}，完成 {done}，失败 {failed}{extra_text}。"
 
 
 def handle_rokid_kanban_query(user_text: str, session_key: str) -> tuple[bool, str]:
@@ -812,7 +837,7 @@ def handle_image_placeholder(payload: RokidRequest, user_text: str) -> tuple[boo
 def handle_sensor_analysis_request(payload: RokidRequest, user_text: str) -> tuple[bool, str]:
     """Create background-only sensor jobs for image analysis or Whisper ASR review."""
     text = user_text.strip()
-    if not text or not _contains_any(text, SENSOR_ANALYSIS_PATTERNS):
+    if not text or _contains_any(text, SENSOR_RESULT_STATUS_PATTERNS) or not _contains_any(text, SENSOR_ANALYSIS_PATTERNS):
         return False, ""
     sensor_context = build_sensor_context(payload)
     pieces = []
@@ -1021,6 +1046,32 @@ def build_daily_brief_text() -> str:
     return build_daily_brief_text_from_cache(_load_daily_brief_cache())
 
 
+def _extract_resource_url(resource_text: str, label: str, fallback: str) -> str:
+    for line in resource_text.splitlines():
+        if label in line and "http" in line:
+            match = re.search(r"https?://[^\s｜|]+", line)
+            if match:
+                return match.group(0).rstrip("。。，,")
+    return fallback
+
+
+def build_rokid_developer_resource_text() -> str:
+    """Return a short read-only developer-resource entry answer for glasses."""
+    text = load_text_file(ROKID_DEVELOPER_RESOURCE_ENTRY, max_chars=8000)
+    open_platform = _extract_resource_url(text, "Rokid开放平台", "https://open.rokid.com/")
+    sprite = _extract_resource_url(text, "YodaOS-Sprite", "https://open.rokid.com/sprite?lang=zh")
+    sdk = _extract_resource_url(text, "SDK开放文档", "https://open.rokid.com/sdk?lang=zh")
+    agent = _extract_resource_url(text, "灵珠Agent", "https://rizon.rokid.com/space/home")
+    return f"Rokid开发入口：Rokid开放平台 {open_platform}；YodaOS-Sprite {sprite}；SDK文档 {sdk}；灵珠Agent {agent}。只读导航，未写后台。"
+
+
+def handle_rokid_developer_resource_query(user_text: str) -> tuple[bool, str]:
+    text = user_text.strip()
+    if not text or not _contains_any(text, ROKID_DEVELOPER_RESOURCE_PATTERNS):
+        return False, ""
+    return True, build_rokid_developer_resource_text()
+
+
 def _load_manufacturing_status_cache() -> Dict[str, Any]:
     path = Path(os.path.expanduser(ROKID_MANUFACTURING_STATUS_CACHE))
     try:
@@ -1148,6 +1199,8 @@ def handle_l0_query(user_text: str) -> tuple[bool, str]:
         return True, build_manufacturing_status_text()
     if route.route_id == "daily_brief":
         return True, build_daily_brief_text()
+    if route.route_id == "rokid_developer_resources":
+        return True, build_rokid_developer_resource_text()
     if route.route_id == "local_brain_stats":
         return True, build_brain_stats_text()
     return False, ""
