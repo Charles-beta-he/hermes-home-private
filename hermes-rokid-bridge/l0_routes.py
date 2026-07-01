@@ -88,6 +88,11 @@ ROKID_DEVELOPER_RESOURCE_PATTERNS = (
     "YodaOS-Sprite",
     "Sprite文档",
     "开放平台入口",
+    "眼镜端怎么开发",
+    "眼镜端怎么完善",
+    "根据文档眼镜端",
+    "Glasses开发",
+    "Rokid Glasses开发",
 )
 
 

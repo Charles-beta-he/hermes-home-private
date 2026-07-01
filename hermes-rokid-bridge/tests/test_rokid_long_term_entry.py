@@ -198,6 +198,18 @@ class LongTermGlassesUxTests(unittest.IsolatedAsyncioTestCase):
         self.assertLessEqual(len(answer), 220)
         self.assertFalse(Path(app.ROKID_UPGRADE_QUEUE_PATH).exists(), "developer resource lookup must be read-only and must not create L2 work")
 
+    async def test_glasses_development_map_is_l0_read_only_and_doc_grounded(self):
+        chunks = [chunk async for chunk in app.stream_answer(_text_payload("根据文档，眼镜端怎么完善？", user_id="glasses-map-user", message_id="glasses-map-msg-1"))]
+        answer = _visible_answer(_decode_sse(chunks))
+
+        self.assertIn("YodaOS-Sprite", answer)
+        self.assertIn("SDK", answer)
+        self.assertIn("灵珠Agent", answer)
+        self.assertIn("眼镜端", answer)
+        self.assertIn("未写后台", answer)
+        self.assertLessEqual(len(answer), 260)
+        self.assertFalse(Path(app.ROKID_UPGRADE_QUEUE_PATH).exists(), "glasses development map must be read-only and must not create L2 work")
+
     async def test_location_status_query_returns_l0_answer_and_does_not_enqueue(self):
         payload = _text_payload(
             "我现在在哪？",

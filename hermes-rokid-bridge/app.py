@@ -1065,10 +1065,26 @@ def build_rokid_developer_resource_text() -> str:
     return f"Rokid开发入口：Rokid开放平台 {open_platform}；YodaOS-Sprite {sprite}；SDK文档 {sdk}；灵珠Agent {agent}。只读导航，未写后台。"
 
 
+def _is_glasses_development_map_query(user_text: str) -> bool:
+    text = user_text.strip()
+    if not text:
+        return False
+    glasses_terms = ("眼镜端", "Rokid Glasses", "Glasses", "眼镜开发", "AI眼镜")
+    map_terms = ("怎么", "完善", "路线", "路径", "根据文档", "开发", "对接", "梳理")
+    return _contains_any(text, glasses_terms) and _contains_any(text, map_terms)
+
+
+def build_rokid_glasses_development_map_text() -> str:
+    """Return a voice-safe, document-grounded next-step map for Rokid Glasses."""
+    return "眼镜端按文档走三层：YodaOS-Sprite做系统入口，SDK接设备能力，灵珠Agent/AIUI接语音智能体；Hermes侧保留L0快答、后台视觉证据、Intent回执三条闭环。只读梳理，未写后台。"
+
+
 def handle_rokid_developer_resource_query(user_text: str) -> tuple[bool, str]:
     text = user_text.strip()
     if not text or not _contains_any(text, ROKID_DEVELOPER_RESOURCE_PATTERNS):
         return False, ""
+    if _is_glasses_development_map_query(text):
+        return True, build_rokid_glasses_development_map_text()
     return True, build_rokid_developer_resource_text()
 
 
@@ -1200,7 +1216,7 @@ def handle_l0_query(user_text: str) -> tuple[bool, str]:
     if route.route_id == "daily_brief":
         return True, build_daily_brief_text()
     if route.route_id == "rokid_developer_resources":
-        return True, build_rokid_developer_resource_text()
+        return handle_rokid_developer_resource_query(user_text)
     if route.route_id == "local_brain_stats":
         return True, build_brain_stats_text()
     return False, ""
