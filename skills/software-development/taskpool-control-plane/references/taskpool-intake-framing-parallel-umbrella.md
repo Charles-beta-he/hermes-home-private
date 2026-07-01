@@ -1,0 +1,15 @@
+# Taskpool Intake, Framing, and Parallel Execution Umbrella
+
+Extracted from `/Users/charles/.hermes/skills/software-development/taskpool-control-plane/SKILL.md` on 2026-07-01T08:24:04.829872+00:00 to reduce root SKILL.md load while preserving detailed workflow content. The root skill keeps a progressive-loading pointer to this reference.
+
+## Taskpool Intake, Framing, and Parallel Execution Umbrella
+
+This skill is the umbrella for the taskpool lifecycle, not only stalled-pool diagnosis. It now absorbs three former narrow skills:
+
+- `taskpool-ingest-triage` → governed repo/article/link/task creation, P1/P2/P3 priority, dependency-order metadata, multimodel intake contracts, and duplicate/source-overlap handling. Load `references/taskpool-ingest-triage.md` when the work is specifically about adding external sources or decomposed tasks into the pool.
+- `task-framing-governance` → long-term maintainable mainline framing for repo/article ingestion, memory/local-brain work, and taskpool architecture follow-ups. Load `references/task-framing-governance.md` when wording drifts toward minimal-slice patches and needs systemic generator/template correction.
+- `agent-team-parallel` → parallel dispatch controller, envelope bus, proof-gated workers, worktree isolation, timeout diagnostics, and human escape guardrails. Load `references/agent-team-parallel.md` when operating or debugging the parallel agent-team lane.
+
+Default class rule: do not treat taskpool work as raw capture or ad hoc execution. Every item should have a governed lane, priority, dependency/parallel boundary, proof expectation, and automation status appropriate to its lifecycle phase.
+
+For `lane=work` project/product tasks, attach the project profile contract at intake/claim time when a profile exists under `~/.hermes/project-profiles/<project>.json` (or an equivalent resolved project profile). The task **must** carry `source_weighting_policy_ref` when the project profile defines a source weighting policy — this is a **hard fail-closed gate** in `is_dispatchable()` (line ~2396), not advisory. Missing `source_weighting_policy_ref` silently makes `eligibility-check` return `eligible=false` with `no_dispatchable_task` even when all other fields are correct. Format: `~/.hermes/project-profiles/<project>.json#source_weighting_policy`. See `references/project-profile-dispatchability-gates.md`. Default evidence authority order: (1) newest product doc / PRD / canonical project profile for business semantics and acceptance, (2) prototype / PM screenshot / comment image for UI layout, interaction, and visual parity, (3) live task source such as Lark title/body/comments for symptom/scope/reproduction, (4) current implementation/runtime for landing and regression proof. If these sources conflict, record the conflict and block for product confirmation unless the rank-1 source clearly resolves it; do not let generated taskpool summaries or prototypes override product-doc business rules. PRD extracts must be persisted under `~/.hermes/evidence/<project>/prd-extracts/` — never only in `/tmp/`. See `references/prd-evidence-persistence.md`.

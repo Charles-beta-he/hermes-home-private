@@ -32,6 +32,8 @@ metadata:
 - 响应式布局验证（375px/768px/1280px）
 - 用户说「截图对比」「视觉回归」「UI diff」
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Workflow
 
 ### Phase 1: 建立基线截图
@@ -239,4 +241,3 @@ For mobile apps with fixed/floating TabBar or bottom navigation, use `references
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

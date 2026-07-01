@@ -27,6 +27,8 @@ metadata:
 
 - User says 'P9模式', 'tech-lead', '帮我管理这个项目', '任务拆解', or when coordinating 3+ parallel agents. Produces: Task Prompts (六要素) + P8 team delivery
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 输入 (Input)
 
 | 字段 | 类型 | 必需 | 说明 |

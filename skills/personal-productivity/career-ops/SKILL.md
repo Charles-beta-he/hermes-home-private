@@ -28,6 +28,8 @@ Do not use it for:
 
 This skill ports source-verified patterns from `santifer/career-ops` into a Hermes-native career assistant workflow. It is a workflow contract, not a repository clone and not a license to store private resume data in global skills or memory.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Source-grounded patterns
 
 Use these patterns from the Career-Ops reference review:
@@ -125,3 +127,9 @@ For a JD/CV evaluation, produce:
 1. Producing a plausible artifact without checking the requested output contract.
 2. Skipping prerequisite checks and assuming the environment already matches the workflow.
 3. Reporting success before reading back the actual outputs, files, or external side effects.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

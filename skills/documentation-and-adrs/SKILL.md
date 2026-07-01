@@ -28,6 +28,8 @@ Code tells WHAT. ADRs tell WHY. Every non-obvious technical decision deserves a 
 
 - Recording significant technical decisions, rationale, and consequences as Architecture Decision Records (ADRs)
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## ADR Template
 ```markdown
 # ADR-{NNN}: {Title}
@@ -71,6 +73,15 @@ What becomes easier? What becomes harder? What new risks exist?
 
 Store in: `docs/adr/` or `.hermes/notes/adr/`
 
+## Multi-model or certification boundary in ADRs
+
+When an architecture decision uses a multi-model review, record the certification status explicitly:
+- `full_certified` only when quorum, truth/evidence gates, and discussion/ratification all pass;
+- `degraded_review` when useful model outputs exist but planner quorum, provider auth, timeout, or discussion certification failed;
+- include which recommendations were accepted, which amendments changed the plan, and which claims remain non-certified.
+
+Do not phrase degraded multi-model output as full certification. Use it as design input plus local evidence, and make the next implementation slice evidence-gated.
+
 ## Verification Checklist
 - [ ] ADR number is sequential (check existing ADRs)
 - [ ] Context clearly describes the problem
@@ -80,7 +91,9 @@ Store in: `docs/adr/` or `.hermes/notes/adr/`
 
 ## Common Pitfalls
 
+0. **Certification laundering.** If an ADR is informed by degraded multi-model review, provider timeouts, or below-quorum fanout, record that status explicitly. Do not phrase it as full certification; separate local evidence, model recommendations, and unresolved certification limits.
+
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
-
+4. When an ADR is informed by a degraded multi-model review, record the certification boundary explicitly. Distinguish full certification from partial/degraded advice, and avoid using degraded review alone to authorize high-blast-radius core changes.

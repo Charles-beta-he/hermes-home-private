@@ -31,6 +31,8 @@ Comprehensive guide to running ML workloads on Modal's serverless GPU cloud plat
 
 - You need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When to use Modal
 
 **Use Modal when:**
@@ -370,4 +372,3 @@ if __name__ == "__main__":
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

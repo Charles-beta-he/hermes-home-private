@@ -18,6 +18,8 @@ Do not use it for:
 - neighboring specialist workflows with a narrower matching skill;
 - durable memory or project-profile writes unless this skill explicitly governs that landing zone.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Blocked multi-model workflow diagnostics
 
 When asked why taskpool/workflow items are `blocked` or whether they will automatically complete, use `references/blocked-multimodel-diagnostics.md`.
@@ -131,70 +133,9 @@ For external repo/article ingest or high-impact architecture work:
 
 ### External repo ingest pattern
 
-For GitHub repos, do a minimum evidence pass *before* `add`:
-- fetch repo metadata (description, language, stars/forks/issues, topics)
-- read README or equivalent project positioning text
-- search the taskpool for existing mentions/duplicates
-- produce three explicit judgments before creation:
-  1. priority tier (P1/P2/P3) and why
-  2. Hermes architectural landing zone (`local-brain` / `taskpool` / `control-plane` / other) and why
-  3. anti-drift / acceptance / boundary constraints so the task does not turn into a generic industry survey
+Detailed `External repo ingest pattern` guidance moved to `references/external-repo-ingest-pattern.md`.
 
-When the repo is a coding-agent / harness / orchestration project, prefer framing the created task around **what Hermes should absorb** (gap map, leverage points, smallest closure slice, execution order) instead of a broad repo summary.
-
-#### Same-domain repo overlap rule
-
-If the new repo lands in the same mechanism class as an already-created task (for example: another memory layer, another agent orchestration harness, another skill/prompt governance system), do **not** create a second generic “analyze this repo” task with interchangeable wording.
-
-Required comparison pass before `add`:
-- identify the closest existing repo-analysis task in the same mechanism class
-- state the **net-new mechanisms** this repo adds relative to that earlier task
-- encode the title/objective around those deltas instead of broad repo analysis
-- explicitly ban repeating the prior generic survey in `anti_drift_check`
-
-Good framing examples:
-- not: “analyze another memory repo”
-- yes: “compare shared memory server / hook capture / hybrid retrieval deltas vs existing claude-mem analysis”
-- not: “analyze another multi-agent framework”
-- yes: “extract specialist orchestration / graceful degradation / deliverable-closure deltas vs existing orchestration tasks”
-
-This keeps the pool from accumulating parallel repo-reading tasks that all restate the same architecture themes.
-
-#### Exact-repo duplicate rule
-
-If taskpool search already finds the **same repository/source** (same GitHub owner/repo or obviously identical canonical subject), do **not** create another task just because the user pasted the link again or re-described the same project in different words.
-
-Required handling:
-- read back the existing canonical task before deciding anything
-- report its path plus the key governance fields that matter now (`status`, `priority`, `architecture_target`, and if useful `project`)
-- treat the default action as **no new task created**
-- only create a follow-on task when the user is actually introducing a clearly different incremental angle that the existing task does not already encode
-- when you do create such a follow-on, title it as a **second-pass / incremental absorption** task and explicitly ban re-summarizing the same repo in `anti_drift_check`
-- for a completed canonical task, also append a short `Supplemental Notes` entry to the original task pointing at the follow-on, so future duplicate checks see why the new task exists and do not re-open the old generic analysis
-
-Interpretation rule:
-- “same repo, same angle” -> reject as duplicate and point to the canonical task
-- “same repo, new mechanism slice” -> create a narrowly-scoped incremental task only if the delta is real and durable
-- “same repo, user adds a moat / layer / mechanism absent from a done task” -> create a second-pass task scoped to that mechanism, mark it as incremental, and preserve the original done task as canonical context
-
-Operational pitfall:
-- `brain_task_orchestrator.py add` may trigger event hooks or multimodel intervention and outlive a short caller timeout. If the add call times out, search the taskpool for the intended title/metadata before retrying; if the task exists, verify its frontmatter/status instead of creating a duplicate.
-
-#### Company-level multi-agent control-plane repo rule
-
-When the repo is not merely an agent runtime but a **company-level control plane** for many agents (for example: org chart, goals, tickets, heartbeats, budgets, approvals, multi-company isolation, dashboard supervision), do not file it as a generic “multi-agent” task.
-
-Required framing before `add`:
-- compare it against existing Hermes tasks on `delegate_task`, subagent orchestration, and parallel-boundary governance
-- identify the control-plane deltas explicitly: `org chart`, `goal ancestry`, `heartbeat scheduling`, `budget hard-stop`, `approval / rollback governance`, `multi-company isolation`, `agent-ops dashboard`, `portable company templates`
-- prefer `architecture_target: taskpool` or `control-plane` unless the evidence clearly shows the main delta belongs somewhere else
-- encode in `anti_drift_check` that the task must not degrade into “AI company / autonomous company” concept narration or ethics-only commentary
-- require the output to separate **absorbing the mechanism** from **endorsing the product story**
-
-Default priority guidance:
-- `P2` when the repo contributes durable control-plane mechanisms but is not an immediate P1 blocker/fix
-- escalate to `P1` only when the repo directly informs an already-active core control-plane defect or committed implementation slice
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ### External article / essay ingest pattern
 
 For strategy essays, blog posts, and architecture opinion pieces, do not add a raw “analyze this article” task without first separating **theme overlap** from **incremental mechanism gain**.
@@ -274,36 +215,9 @@ Use this recovery pattern instead:
 
 ### Automation support
 
-If the orchestrator has the `auto-split-non-convergence` command, prefer using it before hand-authoring child tasks.
+Detailed `Automation support` guidance moved to `references/automation-support.md`.
 
-When explaining taskpool decomposition or blocked-task split behavior, distinguish three layers explicitly:
-- governed ingest-time decomposition (always part of the workflow when one topic should become multiple tasks)
-- parent/child blocked-task semantics (`auto_subtask_*` fields, reopen/sync behavior)
-- productized CLI automation for generating those subtasks
-
-Do not imply the third layer exists just because the first two do. Verify the currently installed `brain_task_orchestrator.py --help` output before claiming there is a live `auto-split-non-convergence` command or other automatic split entrypoint. If the command is absent, report that decomposition exists as a workflow/pattern but may still require explicit hand-authored child tasks in this local install.
-
-Operational notes from the first implementation:
-- Read the actual discussion artifact shape before classifying splits. In real `discussion_result.json` files, the decisive fields may live under `final_design.planner_patch_summary`, `final_design.merge_info`, and `final_design.quota_snapshot`, not only at the top level.
-- Good split triggers include:
-  - `agreement_matrix` dimensions below threshold
-  - `final_design.merge_info.minority_patches` containing `quota`, `threshold`, or `relay` patches
-  - `final_design.planner_patch_summary.certification_intent=unresolved_noop_vs_change`
-  - low-confidence or `unknown`/`unobservable` entries inside `quota_snapshot`
-  - unresolved `issue_ledger` IDs
-- The automation must be **parent-preserving and idempotent**:
-  - preserve the parent objective unchanged
-  - write `auto_subtask_children` / `auto_subtask_kind` on the parent
-  - update parent `Proof Log` and `Blockers / Confusions`
-  - on rerun, create only missing subtasks instead of duplicating existing ones
-- For budget-handoff style failures, the default three-way split is:
-  1. quota observability
-  2. fallback threshold semantics
-  3. relay ordering
-
-See `references/non-convergence-auto-narrowing.md` for the concrete artifact layout and command behavior.
-See also `references/non-convergence-closure-loop.md` for the parent-reopen closure loop, taxonomy-driven axis selection, and blocked-resolve-step integration.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ### Closure-loop escalation rule
 
 When `loop_non_convergence` persists, treat it as a lifecycle problem, not just a split problem. The expected closure loop is:
@@ -365,3 +279,14 @@ When the task pool accumulates duplicates or stale tasks:
 4. **Regenerate dashboard**: `python3 scripts/brain_task_orchestrator.py dashboard --write`
 
 Pitfall: Kanban titles may differ from brain filenames — use LIKE patterns, not exact match.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

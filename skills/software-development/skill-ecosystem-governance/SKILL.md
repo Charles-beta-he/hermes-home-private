@@ -37,6 +37,8 @@ metadata:
 - 当用户说"技能太多了不知道怎么选"（Ashby 控制器多样性不足）
 - 作为新项目的初始治理设置，防止刚创建就走向熵增
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Architecture
 
 ```

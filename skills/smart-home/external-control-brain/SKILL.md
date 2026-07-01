@@ -26,6 +26,8 @@ Use this skill when the user asks to:
 - execute pause/resume/stop/start/upload/heat/move commands,
 - design safety gates for physical actuation.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Non-negotiables
 
 - Default mode is read-only.

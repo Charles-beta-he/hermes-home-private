@@ -31,6 +31,8 @@ The GGUF (GPT-Generated Unified Format) is the standard file format for llama.cp
 
 - Deploying models on consumer hardware, Apple Silicon, or when needing flexible quantization from 2-8 bit without GPU requirements
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When to use GGUF
 
 **Use GGUF when:**
@@ -456,4 +458,3 @@ python server.py --model model-q4_k_m.gguf --loader llama.cpp --n-gpu-layers 35
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

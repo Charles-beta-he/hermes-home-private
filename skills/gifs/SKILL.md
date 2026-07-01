@@ -28,6 +28,8 @@ GIF 工作流总入口：当用户要“找一个 GIF / 下载 GIF / 发 GIF / �
 
 - The user asks for GIFs, reaction GIFs, Tenor/Giphy-style search, short animated media, or GIF file handling
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Input / 输入
 
 - 用户意图：搜索、下载、推荐、发送、转换、压缩、裁剪或分析 GIF。
@@ -118,4 +120,3 @@ Agent: 检查文件大小与 ffmpeg/ImageMagick 可用性 → 通过缩放/降�
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

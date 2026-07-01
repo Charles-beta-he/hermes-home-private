@@ -29,6 +29,8 @@ When docs are stale or nonexistent, the source IS the spec. Read, trace, map, th
 
 - Documentation is stale, missing, or untrusted and you need to derive the real spec by reading existing code paths, dependencies, and side effects before making changes
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## The Golden Rule
 > The source code is the only artifact that cannot lie about what the system actually does. Docs, comments, and tribal knowledge can drift. The AST does not.
 

@@ -46,7 +46,10 @@ Use `code-intel.py` — a pure Python stdlib tool that provides GitNexus-like an
 - before modifying shared packages
 - **Theoretical framework synthesis**: user asks for "theoretical foundations", "abstract principles", "formal model", "academic references" for a system's architecture → use `references/theoretical-framework-synthesis.md`
 - **Template/data contract debugging**: rendered email/notification/PDF/SMS/push/in-app content shows raw placeholders, empty fields, or partially rendered data → use `references/template-data-contract-debugging.md` and trace screenshot/content → template source → sender vars → renderer behavior → data providers.
+- **PWA install prompt debugging/comparison**: one app shows browser native install affordances quickly while another waits, only shows custom UI, or never triggers → use `references/pwa-install-prompt-debugging.md` to separate browser-default install prompt behavior from app-controlled `beforeinstallprompt.preventDefault()` + cached `prompt()` flows, then compare manifest discovery, SW activation posture, and icon compatibility.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Quick reference
 
 | Task | Command |
@@ -73,6 +76,7 @@ Use `code-intel.py` — a pure Python stdlib tool that provides GitNexus-like an
 
 ## Linked reference
 - `references/template-data-contract-debugging.md` — iceberg-search workflow for rendered artifact defects: trace visible placeholders/partial data back through template source, sender variable map, renderer missing-var semantics, data providers, and post-render guardrails.
+- `references/pwa-install-prompt-debugging.md` — reusable checklist for comparing PWA install prompt timing: browser-default affordance vs app-controlled `beforeinstallprompt.preventDefault()` flows, manifest discovery, SW activation posture, icon compatibility, and installed-state evidence.
 - `references/notification-system-taxonomy-analysis.md` — reusable checklist for analyzing notification/message-center systems: category taxonomy, sub-type inference, tab filtering, row rendering, impact routing. Pair with project-specific detail files.
 - `references/uvisa-notification-system.md` — UVISA notification architecture: type fields, category taxonomy, inference regexes, tab structure, i18n keys, impact router, UX gap (all transactionType badges same green color).
 - `references/uvisa-sse-notification-reconnect.md` — UVISA-scoped SSE notification stream debugging: `/notifications/stream` lifecycle vs user-visible network errors, frontend silent reconnect contract, backend timeout/disconnect semantics, and targeted regression tests.
@@ -86,9 +90,14 @@ Use `code-intel.py` — a pure Python stdlib tool that provides GitNexus-like an
 - `references/uvisa-email-notification-templates.md` — UVISA email notification two-layer architecture: hardcoded Java title/body strings + DB HTML shell templates (Flyway seed). Key insight: message content is NOT in templates or admin config — it's in Java call sites. Covers all payout notification variants, debugging checklist.
 - `references/uvisa-i18n-audit.md` — UVISA i18n audit patterns: frontend key namespaces (order.timeline.*, order.channel.*), BizException→ErrorCode→MessageSource error flow, TransactionAggregationService hardcoded Chinese timeline descriptions, failReason untranslated upstream errors, channel translation accuracy, audit shell commands.
 - `references/uvisa-payment-pin-verify-contract.md` — UVISA-scoped mapping/checklist for C-side payment PIN verify coverage: `/auth/pin/verify` vs `/me/payment-pin/verify`, `type` scene metadata, `purpose=phone-rebind`, and TDD verification points.
+- `references/uvisa-payment-pin-setup-contract.md` — UVISA-scoped map for first-time payment PIN setup: current frontend calls `POST /api/auth/pin/setup` while backend also exposes ME-domain `POST /api/me/payment-pin`; includes payload shapes and answer pitfalls.
+- `references/uvisa-first-login-payment-pin-routing.md` — UVISA-scoped debug path for distinguishing first-login Payment PIN setup (`/pin-setup`) from returning-user untrusted-device PIN verification (`/verify/pin`), including auth token/profile `hasPaymentPin/paymentPinSet` contract checks and PAD onboarding `payment_pin_hash` pitfalls.
+- `references/uvisa-wallet-transaction-screenshot-to-backend.md` — UVISA-scoped checklist for tracing wallet/transaction screenshots back to backend `TransactionController` rootType whitelists, frontend displayType mapping, scope params, and whitelist-vs-visible-row mismatches.
 - `references/uvisa-customer-support-prototype-mapping.md` — UVISA-scoped mapping for customer-support prototype work: PRD knowledge-base vs FAQ distinction, AI assistant route as KB surface, prototype file paths, `gh api` retrieval fallback, and verification checklist.
 - `references/uvisa-customer-support-contact-channel-removal.md` — UVISA-scoped checklist for removing a C-side support contact channel without leaking backend-returned values or breaking remaining phone/email/FAQ rows; includes negative test assertions and build gate.
 - `references/uvisa-release-policy-audit.md` — UVISA-scoped backend/data-model/API review checklist for H5/APK/OTA release policy: SSOT, concurrent publish/rollback, DB constraints, version comparison, GA permissions, platform enum consistency, audit, and cache coherence.
+- `references/uvisa-client-version-update-audit.md` — UVISA-scoped checklist for checking whether H5/PWA clients update from any local version to the backend-selected/latest release; separates service-worker prompt flow, client-release manifest selection, and About-screen version probe, with first-boot/localStorage-loss and gray/rollback caveats.
+- `references/uvisa-ios-keyboard-flow-viewport.md` — UVISA-scoped debugging path for iOS soft-keyboard issues on non-tab FlowNav pages (remit/payout/transfer): screenshot intake, shell/scroll/CTA surfaces, git-history checks, reusable keyboard-inset fix shape, and iOS acceptance checklist.
 
 ## Workflow: backend exists but frontend/admin is not wired
 
@@ -136,6 +145,8 @@ Linked reference: `references/agentmemory-reference-architecture.md` captures th
 Linked reference: `references/bytebot-desktop-agent-reference.md` captures source-verified Bytebot patterns for containerized desktop agents, REST/MCP computer-use action spaces, takeover traces, explicit NEEDS_HELP/NEEDS_REVIEW task states, and safety gates before Hermes adoption.
 
 Linked reference: `references/local-codegraph-advisory-evaluation.md` captures the local code-graph/indexer spike pattern: source pinning, isolated cache, runtime compatibility notes, fixed retrieval-case comparison against `search_files`/direct reads, multi-root caveats, cleanup, and the rule that graph output is advisory rather than truth evidence.
+
+Linked reference: `references/codebase-memory-mcp-adoption.md` captures source-verified notes for DeusData/codebase-memory-mcp adoption: MCP tools, `CBM_CACHE_DIR` cache boundary, smoke-test ladder, default-off Hermes MCP template, open-box automation requirement, safety gates, and the observed libgit2 source-build workaround.
 
 ## Cross-Repo Architecture Reconnaissance
 

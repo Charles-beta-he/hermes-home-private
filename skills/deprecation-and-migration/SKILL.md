@@ -28,6 +28,8 @@ Don't just delete. Announce → wait → migrate → verify → remove.
 
 - Deprecating old APIs, scripts, configs, or patterns and migrating consumers to a replacement safely
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## The 5-Phase Process
 
 ### Phase 1: Announce
@@ -85,4 +87,3 @@ Don't just delete. Announce → wait → migrate → verify → remove.
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
-

@@ -31,6 +31,8 @@ Production pipeline for mathematical and technical animations using Manim Commun
 
 - Users request: animated explanations, math animations, concept visualizations, algorithm walkthroughs, technical explainers, 3Blue1Brown style videos, or any programmatic animation with geometric/mathematical content
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Creative Standard
 
 This is educational cinema. Every frame teaches. Every animation reveals structure.

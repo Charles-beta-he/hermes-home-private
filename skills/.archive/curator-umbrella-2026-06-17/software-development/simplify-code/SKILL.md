@@ -1,6 +1,6 @@
 ---
 name: simplify-code
-description: "Parallel 3-agent cleanup of recent code changes."
+description: "Use when parallel 3-agent cleanup of recent code changes."
 version: 1.0.0
 author: Hermes Agent (inspired by Claude Code /simplify)
 license: MIT
@@ -42,6 +42,8 @@ Optional modifiers the user may add — honor them:
 Do NOT auto-run this after every edit. It costs three subagents' worth of
 tokens — invoke it only when the user explicitly asks.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## The Process
 
 ### Phase 1 — Identify the changes
@@ -173,3 +175,14 @@ If your install has the `subagent-driven-development` skill (optional), it
 covers the complementary case: parallel review *during* implementation, per
 task. This skill is the standalone *after-the-fact* cleanup pass. Use
 `requesting-code-review` for the pre-commit security/quality gate.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

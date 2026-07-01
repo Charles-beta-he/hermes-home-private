@@ -26,6 +26,8 @@ Analyze articles, identify illustration positions, generate images with **Type �
 
 Trigger this skill when the user asks to illustrate an article, add images to an article, generate illustrations for content, or uses phrases like "为文章配图", "illustrate article", or "add images". The user provides an article (file path or pasted content) and optionally specifies type, style, palette, or density.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Three Dimensions
 
 | Dimension | Controls | Examples |
@@ -209,6 +211,13 @@ Images: X/N generated
 5. **`image_generate` aspect ratios** — the tool supports `landscape`, `portrait`, and `square`. Custom ratios map to the nearest option.
 6. **`image_generate` returns a URL, not a local file** — always download via `terminal` (`curl`) before inserting local image paths into the article.
 7. **No backend selection from the agent** — `image_generate` uses whatever model the user configured (default: FAL FLUX 2 Klein 9B). Don't write `"use <model> to generate this"` into prompts expecting it to route.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

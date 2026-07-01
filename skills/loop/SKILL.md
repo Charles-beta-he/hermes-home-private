@@ -28,6 +28,8 @@ metadata:
 
 - The user explicitly requests autonomous loop execution with no interactive questioning and wants repeated implement→verify→fix iterations until completion or a hard stop condition
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 核心规则
 
 1. **加载 `pua:pua` 核心 skill 的全部行为协议** — 三条红线、方法论、压力升级照常执行

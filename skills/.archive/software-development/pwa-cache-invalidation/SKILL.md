@@ -32,6 +32,8 @@ Coordinate package version, HTML cache-bust params, and SW cache names so
 deployed updates actually reach end users — especially iOS where icon caching
 is OS-level, not browser-level.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## The Three-Layer Problem
 
 | Layer | What caches | Invalidation mechanism |
@@ -245,6 +247,13 @@ For the user-facing update notification pattern (Toast with action button, swipe
    div — tests that query `[data-tone="error"]` will silently fail if the
    attribute isn't forwarded. Always check test files for attribute-based
    selectors after a component extraction refactor.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

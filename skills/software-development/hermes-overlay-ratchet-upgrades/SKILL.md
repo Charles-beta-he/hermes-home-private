@@ -29,6 +29,8 @@ Do not use it for:
 
 Use this when Hermes is running from a local source checkout plus editable install, especially when local enhancements live in run_agent.py, agent/, or tools/ and may drift from upstream.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Source-State and Snapshot Drift
 
 This skill also absorbs the former `git-state-aware-debugging` workflow as a support pattern for overlay work. Before blaming dependencies, upstream, or runtime routing, prove which source snapshot the failing consumer is reading:
@@ -202,3 +204,14 @@ See `references/lost-retired-capability-audit.md` for the detailed workflow and 
 
 - See references/local-overlay-drift-and-ratchet.md for a concrete Hermes case covering Codex circuit-breaker drift, venv-vs-system version checks, and partial OpenClaw landing signals.
 - See references/mainline-review-package-then-guarded-landing.md for the pattern of certifying a risky mainline seam as a no-action review package first, then landing it with default-off, advisory-only, fail-soft wiring.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

@@ -21,6 +21,8 @@ Do not use it for:
 
 When a web app is installed as a PWA (standalone mode), `env(safe-area-inset-bottom)` and `env(safe-area-inset-top)` may return **0** even when the Home Indicator or notch is physically present. This is a known WebKit/iOS behavior in certain versions.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Root Cause
 
 - Safari browser mode: `env(safe-area-inset-bottom)` = ~34px (Home Indicator) ✅
@@ -191,3 +193,14 @@ After deploying, verify on a real iOS device in standalone mode:
 4. In Safari browser mode, layout should be identical (JS doesn't run)
 5. On Android PWA: back gesture → forward → splash should NOT replay
 - [ ] Wrapper safety: any side effect is followed by target-state read-back before reporting completion.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

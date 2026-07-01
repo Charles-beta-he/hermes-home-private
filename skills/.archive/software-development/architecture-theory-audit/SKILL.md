@@ -24,6 +24,8 @@ Systematic methodology for mapping a software architecture's theoretical foundat
 - Finding missing theories that should ground existing components
 - Proposing improvements ranked by theoretical rigor and practical impact
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Methodology
 
 ### Step 1: Enumerate Architectural Components
@@ -129,6 +131,13 @@ A good theory audit:
 3. Proposes improvements that are concrete enough to implement
 4. Prioritizes by practical impact, not theoretical elegance
 5. References seminal works, not just textbooks or blog posts
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

@@ -72,6 +72,8 @@ Evidence: session `9b1a3181-4f1f-43bc-a2a1-416825953666` — wasted 5+ tool call
 - Any React/Vue frontend project with TypeScript
 - When token cost per task matters (daily development workflow)
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Common Pitfalls
 
 1. Advancing stages without a gate, evidence artifact, or closure-state check.

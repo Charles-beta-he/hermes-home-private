@@ -29,6 +29,8 @@ Complete guide for managing the PR lifecycle. Each section shows the `gh` way fi
 
 - You need guidance on full pull request lifecycle — create branches, commit changes, open PRs, monitor CI status, auto-fix failures, and merge
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Authenticated with GitHub (see `github-auth` skill)
@@ -119,46 +121,9 @@ Types: `feat`, `fix`, `refactor`, `docs`, `test`, `ci`, `chore`, `perf`
 
 ### Push the Branch (same either way)
 
-```bash
-git push -u origin HEAD
-```
+Detailed `Push the Branch (same either way)` guidance moved to `references/push-the-branch-same-either-way.md`.
 
-For existing tracked branches or dual-repo work, push each repo explicitly and verify HEAD equals the remote-tracking ref before reporting success:
-
-```bash
-# Existing tracked branch
-git push origin $(git branch --show-current)
-
-# Verify clean + remote parity
-git status -sb
-git rev-parse HEAD
-git rev-parse @{u}
-```
-
-If the branch was rebased or history was rewritten, use lease-protected force push, not plain force:
-
-```bash
-git push --force-with-lease origin $(git branch --show-current)
-git fetch origin $(git branch --show-current) --prune
-git status -sb
-git rev-parse --short HEAD
-git rev-parse --short @{u}
-```
-
-**Pitfall: `--force-with-lease` fails on first push of a new branch.** When pushing a branch for the first time (no remote tracking ref exists), `--force-with-lease` is rejected with `stale info` because there's no upstream ref to lease against. Detect this case and fall back to `--force`:
-
-```bash
-if git ls-remote --exit-code --heads origin "$(git branch --show-current)" &>/dev/null; then
-  git push --force-with-lease origin "$(git branch --show-current)"
-else
-  git push --force origin "$(git branch --show-current)"
-fi
-```
-
-Before starting or continuing a rebase, check for in-progress state (`.git/rebase-merge`, `.git/rebase-apply`, detached `HEAD`) and resolve/continue the existing rebase rather than nesting another one. When rebasing a feature branch that already has a PR, do not assume the target is local `main` or the repo default branch: fetch first, inspect the PR's current `baseRefName` (`gh pr list/view --head <branch>` or equivalent), and rebase onto the fetched remote base ref such as `origin/main`. This avoids accidentally rebasing onto a stale local branch or the wrong target after the PR base changed. See `references/dual-repo-rebase-push.md` for the coordinated frontend/backend rebase + push closeout pattern.
-
-If there are unrelated/untracked probe files, remove/ignore them or leave them unstaged intentionally; do not `git add -A` during a commit/push request in a long-lived dirty repo. On macOS, watch for Finder ` 2` duplicate files and `.tmp/` directories — they sneak into commits silently. See `references/junk-file-cleanup.md` for detection and cleanup patterns.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ### Rebase Target for an Existing PR
 
 When a feature branch already has an open PR, inspect the PR's current base before rebasing. Do not assume local `main`, the repo default branch, or an older remembered target is still correct.
@@ -222,44 +187,10 @@ gh pr create \
 - JWT token generation and validation
 
 ## Test Plan
-- [ ] Unit tests pass
 
-Closes #42"
-```
+Detailed `Test Plan` guidance moved to `references/test-plan.md`.
 
-Options: `--draft`, `--reviewer user1,user2`, `--label "enhancement"`, `--base develop`
-
-For integration/release branches, never assume GitHub's default base is correct. Pass `--base <target>` and `--head <working-branch>`, then verify the PR direction:
-
-```bash
-gh pr view --json number,state,url,baseRefName,headRefName,mergeStateStatus --jq .
-```
-
-Before creating or merging a PR in a named project/repo, first resolve git branch management from the active project profile (or repo AGENTS.md) and treat it as the source of truth over generic branch habits. Interpret branches by role, not by their literal names: trunk, integration baseline, release baseline, environment target, task branch, hotfix branch, and backport branch have different allowed operations. For ordinary task work, create/rebase the task branch from the repo's profile-resolved remote target branch, then open `base=<resolved-target-branch> head=<task-branch>`. Cross-environment, release-sync, hotfix, and backport operations are separate action types and require profile permission plus explicit user intent.
-
-If `baseRefName`/`headRefName` are inverted or violate the project profile branch-management policy, stop before merge: close/supersede the PR or recreate it in the correct direction. See `multi-repo-branch-orchestration` for profile-driven branch target resolution and `references/dual-repo-rebase-push.md` for dual-repo closeout details.
-
-**With git + curl:**
-
-```bash
-BRANCH=$(git branch --show-current)
-
-curl -s -X POST \
-  -H "Authorization: token $GITHUB_TOKEN" \
-  -H "Accept: application/vnd.github.v3+json" \
-  https://api.github.com/repos/$OWNER/$REPO/pulls \
-  -d "{
-    \"title\": \"feat: add JWT-based user authentication\",
-    \"body\": \"## Summary\nAdds login and register API endpoints.\n\nCloses #42\",
-    \"head\": \"$BRANCH\",
-    \"base\": \"main\"
-  }"
-```
-
-The response JSON includes the PR `number` — save it for later commands.
-
-To create as a draft, add `"draft": true` to the JSON body.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## 4. Monitoring CI Status
 
 ### Check CI Status
@@ -322,33 +253,9 @@ done
 
 ### Distinguish “failing CI” from “no CI configured”
 
-Before entering an auto-fix loop, verify whether the repository actually has checks configured. A PR with no workflows or required statuses is not a failing CI situation.
+Detailed `Distinguish “failing CI” from “no CI configured”` guidance moved to `references/distinguish-failing-ci-from-no-ci-configured.md`.
 
-Symptoms of the no-CI case:
-- `gh pr checks` prints `no checks reported on the '<branch>' branch`
-- `gh pr view --json statusCheckRollup` returns `[]`
-- GraphQL `statusCheckRollup` is `null`
-- `gh api repos/$OWNER/$REPO/actions/workflows` returns `total_count: 0`
-- Commit status API shows `state: pending` with `total_count: 0` and empty `statuses`
-
-Useful verification commands:
-
-```bash
-# PR rollup from REST/gh
-gh pr view <PR_NUMBER> --json number,state,mergeStateStatus,statusCheckRollup --jq .
-
-# Workflows configured in the repo
-gh api repos/$OWNER/$REPO/actions/workflows
-
-# Commit-level status payload
-SHA=$(git rev-parse HEAD)
-gh api repos/$OWNER/$REPO/commits/$SHA/status
-```
-
-Interpretation:
-- If workflows/checks are absent, report that the PR is not blocked by CI; do not claim there are failing checks to fix.
-- In that case, remaining blockers are usually review requirements, branch protection, rulesets, or external/non-GitHub checks.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ### Check Presence vs Check Failure
 
 If `gh pr checks` reports `no checks reported on the '<branch>' branch`, do not treat that as a failing CI run. Confirm whether the repository actually has any configured checks before starting a fix loop.
@@ -432,45 +339,9 @@ When asked to auto-fix CI, follow this loop:
 
 ## 6. Merging
 
-**With gh:**
+Detailed `6. Merging` guidance moved to `references/6-merging.md`.
 
-```bash
-# Squash merge + delete branch (cleanest for feature branches)
-gh pr merge --squash --delete-branch
-
-# Enable auto-merge (merges when all checks pass)
-gh pr merge --auto --squash --delete-branch
-```
-
-**Pitfall: `gh pr merge --auto` may merge instantly.** If the repo has no branch protection rules or CI checks configured, `--auto` doesn't wait — the PR merges immediately. This is correct behavior but can be surprising. If you need the PR to stay open for review, do not use `--auto`; use plain `gh pr merge --squash` only after approval.
-
-**Pitfall: local worktree checkout errors can mask a successful remote merge.** `gh pr merge --auto --squash --delete-branch` may perform the GitHub-side merge and then fail locally while fetching/checking out the base branch, for example `fatal: 'main' is already used by worktree ...`. Do not assume the merge failed from the local exit code alone. Immediately verify remote truth with `gh pr view <n> --json state,mergedAt,mergeCommit,statusCheckRollup`, then watch/check CI if present and `git fetch origin --prune` to confirm branch deletion/base containment.
-
-**With git + curl:**
-
-```bash
-PR_NUMBER=<number>
-
-# Merge the PR via API (squash)
-curl -s -X PUT \
-  -H "Authorization: token $GITHUB_TOKEN" \
-  https://api.github.com/repos/$OWNER/$REPO/pulls/$PR_NUMBER/merge \
-  -d "{
-    \"merge_method\": \"squash\",
-    \"commit_title\": \"feat: add user authentication (#$PR_NUMBER)\"
-  }"
-
-# Delete the remote branch after merge
-BRANCH=$(git branch --show-current)
-git push origin --delete $BRANCH
-
-# Switch back to main locally
-git checkout main && git pull origin main
-git branch -d $BRANCH
-```
-
-Merge methods: `"merge"` (merge commit), `"squash"`, `"rebase"`
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ### Enable Auto-Merge (curl)
 
 ```bash
@@ -576,4 +447,3 @@ Do NOT force-push or retry `gh pr create`. Instead:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

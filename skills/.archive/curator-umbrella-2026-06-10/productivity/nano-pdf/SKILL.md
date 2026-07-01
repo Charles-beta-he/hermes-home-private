@@ -28,6 +28,8 @@ Edit PDFs using natural-language instructions. Point it at a page and describe w
 
 - You need guidance on edit PDFs with natural-language instructions using the nano-pdf CLI
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 ```bash
@@ -75,4 +77,3 @@ nano-pdf edit contract.pdf 2 "Change the client name from 'Acme Corp' to 'Acme I
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

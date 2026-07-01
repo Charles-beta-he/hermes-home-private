@@ -24,6 +24,8 @@ Use Playwright with the user's existing Chrome profile to take authenticated scr
 - Documenting app state for PRDs or reviews
 - Mobile viewport screenshots (375×812 @3x DPR)
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - `@playwright/test` installed in the target project (pnpm/npm)
@@ -128,6 +130,13 @@ See `references/playwright-pitfalls.md` for detailed troubleshooting. Key ones:
 
 - **Hermes browser tools**: Use when you need to interact with a page (click, type) without a custom script. Does NOT share Chrome profile — needs its own auth.
 - **Playwright codegen**: Use `npx playwright codegen --device="iPhone 14"` to record interactions, then adapt the script.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

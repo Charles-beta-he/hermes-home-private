@@ -39,6 +39,8 @@ Use this skill when:
 - Consistent quality checks across all tasks
 - Subagents can ask questions before starting work
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## The Process
 
 ### 1. Read and Parse Plan
@@ -417,4 +419,3 @@ Each task included: research context (academic frameworks), exact file paths, ex
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

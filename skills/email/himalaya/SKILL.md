@@ -31,6 +31,8 @@ Himalaya is a CLI email client that lets you manage emails from the terminal usi
 
 - You need guidance on cLI to manage emails via IMAP/SMTP
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## References
 
 - `references/configuration.md` (config file setup + IMAP/SMTP authentication)
@@ -303,4 +305,3 @@ RUST_LOG=trace RUST_BACKTRACE=1 himalaya envelope list
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

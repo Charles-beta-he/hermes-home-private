@@ -53,6 +53,8 @@ functionality is covered by the `nearby` command below, with the same
 - User wants timezone information for a location → `timezone`
 - User wants to search for POIs within a geographic area → `area` + `bbox`
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 Python 3.8+ (stdlib only — no pip installs needed).

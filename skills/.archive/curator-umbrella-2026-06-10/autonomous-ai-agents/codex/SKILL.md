@@ -28,6 +28,8 @@ Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes
 - You need to delegate coding tasks to OpenAI Codex CLI agent
 - You need to evaluate, install, or route work through Codex plugins/skills. For plugin triage and permission tiers, see `references/codex-plugin-evaluation.md`.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Codex installed: `npm install -g @openai/codex`
@@ -142,4 +144,3 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

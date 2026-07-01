@@ -35,6 +35,8 @@ Systematic diagnosis and resolution of macOS network/proxy/VPN issues. Covers th
 - DNS resolution failures for proxied domains
 - The "chicken-and-egg" problem: need proxy to fetch subscription, need subscription to start proxy
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Diagnostic Flow (5-Phase)
 
 ### Phase 1: Connectivity Triage

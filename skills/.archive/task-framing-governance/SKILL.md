@@ -24,6 +24,8 @@ Use this when:
 - Auditing recently created tasks for duplication, weak framing, or bad default wording
 - Designing memory/local-brain work where short-term patches would create long-term maintenance drag
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core rule
 
 Default to **long-term maintainable mainline architecture** framing, not "smallest verifiable slice" framing, when the task is about:
@@ -116,6 +118,13 @@ If the user says tasks/solutions should not be framed as minimal landing slices:
 2. Update the governing task-framing skill.
 3. Check whether a generator/template/checklist caused the wording.
 4. If yes, create a dedicated source-fix task so the correction persists.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

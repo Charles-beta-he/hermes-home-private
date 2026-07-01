@@ -33,6 +33,8 @@ Manage Linear issues, projects, and teams directly via the GraphQL API using `cu
 
 - You need to manage Linear issues, projects, and teams via the GraphQL API
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Setup
 
 1. Get a personal API key from **Linear Settings > API > Personal API keys**
@@ -324,4 +326,3 @@ Combine filters with `or: [...]` for OR logic (default is AND within a filter ob
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

@@ -21,6 +21,12 @@ Generate and maintain app icon assets for PWA, iOS, Android, and favicon targets
 
 Generate production icon assets for web (PWA/manifest), iOS, Android, and favicon targets from source artwork.
 
+
+## When to Use
+
+- Use when the user's request explicitly matches `icon-asset-pipeline` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
 ## When to use
 
 - Updating PWA manifest icons from new design source files
@@ -195,6 +201,13 @@ Also verify `icon-maskable.png` vs `icon-512.png` — when both derive from the 
 9. **Stale workspace artifacts after icon work**: Icon updates often leave behind design reference directories (`branding/`, `install-promo/`, `tmp/`, screenshot PNGs). These are NOT code artifacts — check with `grep -rn 'dirname' src/ vite.config.ts index.html public/` to confirm no code references. If no references exist, they're safe to delete. Do NOT commit them — they bloat the repo and are design-team-local.
 
 10. **Splash screen color mismatch**: `background_color` and `theme_color` in manifest control the PWA system splash screen, NOT the app's internal UI. Don't set them to app surface colors (`#F2F3F5`) — use the design spec values (e.g. `#FFFFFF` / `#1326FD`). The app TopBar/TabBar uses independent Tailwind tokens; Chrome handles the transition. TWO files must be updated together: `vite.config.ts` manifest AND `index.html` `<meta name="theme-color">` — they serve different purposes (system splash vs browser chrome). See `references/pwa-splash-screen-config.md` for full details and `references/splash-animation-implementation.md` for the animated splash component pattern.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

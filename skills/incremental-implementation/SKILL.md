@@ -46,6 +46,19 @@ FOR each slice:
   5. Next: only proceed if all tests green
 ```
 
+For autonomous/self-advance chains, checkpoint summaries are continuation points, not terminal completion, while safe local next slices remain. Close each slice with verification, ledger/SSOT update, scoped commit, clean-tree readback, then continue; stop only at a real authority/safety boundary. See `references/autonomous-continuation-checkpoints.md`.
+
+### Sequential tracks are not a decision gate
+
+When the user has already approved multiple tracks (for example “A、B、C 可以并行/顺序推进”), do not reframe them as a mutually exclusive implementation decision or stop for human selection. Treat them as an ordered backlog:
+
+1. choose the safest dependency order;
+2. execute the first independently verifiable slice;
+3. verify and commit/prove it;
+4. proceed to the next slice unless there is a real authority boundary, destructive side effect, permission/credential gap, or same-implementation mutually exclusive choice.
+
+Stage reports may mention the current ordering, but they are not permission prompts unless one of those gates is actually present.
+
 ## Slice Sizing
 
 | Task Type | Ideal Slice Size |
@@ -55,128 +68,61 @@ FOR each slice:
 | Refactor | 1 function extracted → 1 test adjusted |
 | Bug fix | 1 failing test → 1 fix → test passes |
 
+## Operator status projection vertical slice
+
+When a local operator/mobile/status UI must surface real lifecycle state without opening executor or external adapter writes, use `references/operator-status-projection-slice.md`: test-first read-only source contract, project lifecycle counts/blocked cards, prioritize blocked items over warning noise, keep oversized control-plane lists behind bounded summary helpers instead of raw UI-service reads, live-smoke the endpoint with real headers and low process buffers, and verify no residual process before committing.
+
 ## Mock-to-Real-API Vertical Slice Pattern
 
-Use this when a prototype or mock-heavy page must be converted to production data without destabilizing the surrounding app.
+Detailed `Mock-to-Real-API Vertical Slice Pattern` guidance moved to `references/mock-to-real-api-vertical-slice-pattern.md`.
 
-1. Start with the narrowest end-to-end slice that already has a clear backend truth source.
-   - Prefer pages where the backend controller / DTO / domain fields already exist.
-   - Avoid starting with the visually biggest page if its data contract is still ambiguous.
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
+## Mobile keyboard-stable input shell slice
 
-2. Land the service-layer contract first.
-   - Extend the existing frontend service module instead of inventing page-local fetch code.
-   - Normalize backend shapes once in the service layer so multiple pages can reuse them.
+When a mobile H5/PWA/RN-web input page must keep its FlowNav/header/branding stable while the soft keyboard opens, do not fix only the observed page. Scan sibling input/search/composer routes, add them to an explicit route-level preserve-header classifier, wrap each stable route in `data-keyboard-preserve-header="true"`, pin the header, and move content into an inner scroller. Verify with classifier + component shell tests and TypeScript/build; visual/A+ claims still require real browser/device screenshot evidence. See `references/mobile-keyboard-stable-input-shell.md`.
 
-3. Wire one page at a time.
-   - Replace mock data on a single page.
-   - Keep the page layout mostly stable; change the data source before redesigning UI structure.
+## Mobile keyboard-stable input propagation slice pattern
 
-4. Add backend bridging only when needed.
-   - If the raw integration client is not suitable for admin/UI use, add a thin admin-facing controller/facade that preserves permission checks and existing response conventions.
-   - Prefer reusing existing config storage / audit / GA flows over introducing new schema or ad hoc endpoints.
+Use when fixing a soft-keyboard / viewport stability issue on one mobile-web or PWA input page and the user asks to propagate the effect to other input pages.
 
-5. Adapt real backend shapes at the edge, not deep in the UI.
-   - If the page already renders against a prototype/mock type, add one adapter function from API DTO → page contract.
-   - Preserve existing table/detail rendering first; migrate field truth sources before redesigning component structure.
-   - When a placeholder field is derivable but not explicitly returned (for example purpose/source derived from wallet keys, pair presence, or linked journal IDs), centralize that derivation in the adapter instead of scattering heuristics across the page.
-   - Treat empty API responses as real state: explicitly clear lists/totals instead of only updating state on non-empty responses.
+1. Separate shared input primitives from page-local hand-written inputs.
+   - First patch the shared primitive (for example a reusable amount input) so every consumer inherits the keyboard/viewport marker or wrapper behavior.
+   - Then search for raw native inputs/textareas with the same behavior class (for example `inputMode="decimal"`, search fields, bottom composers) and patch only the matching page-local variants.
+2. Distinguish shell-level preservation from field-level focus detection.
+   - Full-height composer/search pages may need an outer fixed-header + inner-scroll shell.
+   - Simple amount fields can often use the existing global focus detector by marking the field/nearest wrapper with the preservation attribute, without restructuring the page.
+3. Preserve domain-specific input logic.
+   - Do not replace money sanitization, precision caps, max-length guards, currency metadata, or bidirectional amount calculations while adding viewport behavior.
+   - For money fields, keep decimal precision and string handling intact; the viewport fix should be additive.
+4. Verify both coverage and representative behavior.
+   - Add/extend a shared primitive test proving all primitive instances carry the marker.
+   - Add a static or focused contract test that page-local raw amount inputs are covered, especially where there are multiple fields on one page.
+   - Run representative existing behavior tests for amount sanitization/capping and affected product cards, plus TypeScript/build checks.
+5. Avoid false visual acceptance.
+   - Static tests prove propagation coverage, not final mobile pixel acceptance. For A+/UI acceptance, still capture real mobile/PWA screenshots or run the project’s visual acceptance path.
 
-6. Extract reusable reference components when replacing placeholders across multiple surfaces.
-   - If the same placeholder logic appears in both table rows and detail drawers (for example counterparty resolution), factor it into a reusable reference component/helper instead of duplicating click/match heuristics.
-   - Prefer a single matching function that checks multiple durable identifiers (name/code/userId/account/address/external payee id) over fragile substring-only matching.
+## Legacy frontend static-contract MR slice pattern
 
-7. Verify both sides immediately after each vertical slice.
-   - Run the frontend build/typecheck for the touched app.
-   - Run the narrowest backend compile/test command that exercises the changed module graph.
-   - If the repo requires a pinned runtime, invoke the build with the repo-declared runtime rather than assuming the shell default is correct.
+Applicability: older frontend/mobile-web repositories with noisy global lint baselines and small route/style/DOM fixes that can be proven by focused file-level contracts. Anti-conditions: do not use this when the user explicitly asks for visual acceptance, device proof, uIMax/A+ certification, animation quality, or safe-area pixel parity; those still require rendered screenshot/device/browser evidence.
 
-8. Only then move to the next page.
-   - Typical order: service contract → page A → dashboard/summary consumers → neighboring detail pages.
+Use a fresh worktree from the remote base, add focused JS/static contract tests for each touched behavior or style invariant, run targeted lint on touched files, run `git diff --check` and the project build, then create a reviewable MR without enabling auto-merge unless separately authorized. See `references/legacy-frontend-static-contract-mr-slices.md`.
 
-See also: `references/mock-to-real-api-vertical-slices.md` and `references/admin-prototype-to-real-api-page-conversion.md`.
+## Frontend global error-toast backend-message slice pattern
+
+Applicability: browser or mobile-web clients with a central HTTP interceptor and top-level network/server-error toast. Anti-conditions: do not use for page-local validation/business errors, cancellations, aborts, or any flow where the backend message is not already intended for end users.
+
+When a global network/server-error toast currently uses fixed generic copy, preserve backend-provided error text for server responses while keeping the generic network copy as fallback for true no-response failures. Extend the error event detail with optional message, extract only non-blank response-body message fields, keep cancellation/abort excluded, and render backend-message-or-generic-fallback in the top-level listener. Verify with focused interceptor tests for server error with message, server error without message, pure network failure, and cancellation/abort, plus frontend typecheck/build. See `references/frontend-global-error-toast-backend-message.md`.
 
 ## Template-variable hydration bugfix slice pattern
 
-Scope: any templated outbound artifact (email, notification, PDF, SMS, in-app message) where delivered output exposes raw placeholder syntax or a field renders in one channel but not another.
+Detailed `Template-variable hydration bugfix slice pattern` guidance moved to `references/template-variable-hydration-bugfix-slice-pattern.md`.
 
-Applicability:
-- The template is persisted or editable separately from the code that supplies variables.
-- The same business event can fan out through multiple renderers or channels.
-- Missing-variable behavior may leave placeholders visible instead of failing closed.
-
-Anti-conditions:
-- Do not encode one product's exact template codes, branch names, or migration file names in this global skill.
-- Do not treat this as a license to weaken template text; preserve user-facing meaning and security intent while adding fallbacks.
-- Do not expose PII as a fallback; mask identity fields before adding shared defaults.
-
-Process:
-
-1. Treat the screenshot/UI symptom as a contract bug, not just copy or CSS.
-   - Trace the chain: template definition → event/caller vars → dispatcher/enricher → renderer missing-variable behavior → delivered artifact.
-   - Compare sibling channels for the same event; one channel may pass the full variable set while another passes only a subset.
-
-2. Fix the narrow caller first.
-   - Build an explicit variable map for the affected event containing every variable used by the template.
-   - Add null/blank fallbacks before insertion; avoid null-rejecting map factories when any value can be absent.
-   - Prefer stable subject/body wording that does not depend on unreliable enrichments such as IP geolocation.
-
-3. Add a shared enrichment layer only for truly common user-context variables.
-   - Good defaults include a generic display-name fallback and a masked email fallback when the user object is available.
-   - Calling code should still own event-specific fields such as address, location, device, amount, timestamp, or reference id.
-   - Caller-provided values must win over dispatcher defaults.
-
-4. Test both levels.
-   - Caller test captures the map passed to the dispatcher and asserts template-required event variables plus fallbacks.
-   - Dispatcher test captures the map passed to the renderer and asserts shared identity fallbacks/masking.
-   - If available, keep or add renderer-level tests that fail when final output still contains raw placeholder syntax.
-
-See also: `references/template-variable-hydration-bugfix.md`.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Ledger-only executor consumer slice pattern
 
-Scope: domain-level pattern for workflow/control-plane systems that are adding their first bounded executor after a separate eligibility or policy-review projection.
+Detailed `Ledger-only executor consumer slice pattern` guidance moved to `references/ledger-only-executor-consumer-slice-pattern.md`.
 
-Applicability:
-- The executor is intentionally limited to read-only or no-external-side-effect actions.
-- A durable ledger stores command, plan, policy-review, run, and audit-event state.
-- The next authority boundary would be adapter write-through, lifecycle mutation, shell execution, or closeout.
-
-Anti-conditions:
-- Do not use this as permission to execute arbitrary commands or mutate external systems.
-- Do not apply exact tuple matching blindly if the reviewed action does not depend on payload/target identity; choose the tuple fields that define the reviewed authority.
-- Do not turn project-specific command names into global requirements; keep whitelist names in the local reference or project docs.
-
-Falsifier:
-- If later architecture uses cryptographic plan digests or immutable command snapshots, replace exact tuple re-checks with the stronger digest/snapshot contract.
-
-Process:
-
-1. Keep the first consumer ledger-only.
-   - It may insert run rows and audit events in the control-plane ledger.
-   - It must not write adapters, close tasks, mutate external task lifecycle state, or run arbitrary shell.
-
-2. Gate execution on durable plan + policy state.
-   - Require the executor plan to still be planned/not-executed and write-disabled.
-   - Require a policy review that is explicitly read-only eligible, allowed, and write-disabled.
-   - Require the command to still be in the expected pre-execution ledger state.
-
-3. Treat policy freshness as exact tuple matching, not just class eligibility.
-   - Persist the reviewed/generated command tuple in the plan, including the fields that define authority, typically command type, risk level, and payload.
-   - Before execution, re-read the current command and require exact tuple equality with the generated plan.
-   - Recompute read-only eligibility from the current tuple.
-   - Fail closed even if a stale command changed from one allowed low-risk type to another allowed low-risk type.
-
-4. Make idempotency concurrency-safe.
-   - Use a unique run key such as `plan_id`.
-   - Return an existing run on ordinary retry.
-   - Catch unique-constraint races and re-read the existing run before raising.
-
-5. Verify the boundary explicitly.
-   - Tests must assert no task rows/lifecycle state and no adapter observations/writes changed.
-   - Smoke tests should create command → plan → policy review → read-only run → repeated run, then inspect ledger rows/events.
-
-See also: `references/control-plane-read-only-executor-consumer.md` for the session-specific command whitelist and verification bundle that motivated this pattern.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Evidence-bound ledger closeout consumer slice pattern
 
 Scope: workflow/control-plane systems that promote a previously non-executing evidence/authorization projection into the first lifecycle-affecting action while keeping external adapters disabled.
@@ -228,51 +174,9 @@ When agent/control-plane contract slices are complete and the user explicitly au
 
 ## Agent runtime executor ratchet after ledger-only start
 
-When an agent/control-plane architecture has already landed contract validations and a ledger-only runtime start, promote runtime capability one authority boundary at a time. Each step must have RED tests, focused smoke, hot-path bounded evidence, and a scoped commit before the next boundary opens.
+Detailed `Agent runtime executor ratchet after ledger-only start` guidance moved to `references/agent-runtime-executor-ratchet-after-ledger-only-start.md`.
 
-1. First consume a started run with a governed builtin read-only executor.
-   - Re-read the run ledger and require a matching `run_status="started"` row.
-   - Allow only named builtin executor/action pairs; reject unknown executors without appending ledger rows.
-   - Append a completed run result with `external_executor_invoked=false`, lifecycle mutation disabled, adapter write-through disabled, and evidence refs preserved.
-
-2. Then probe external agent binaries without task prompts.
-   - Maintain an executor-type to binary-basename allowlist (for example `claude_code -> claude`, `codex -> codex`, `opencode -> opencode`).
-   - Invoke only a fixed benign command such as `--version`; never accept arbitrary command strings.
-   - Append a probe receipt to the ledger, but keep `task_prompt_sent=false`, tools disabled, lifecycle unchanged, and adapter write-through disabled.
-
-3. Then allow no-tool/no-write external prompt dry-runs.
-   - Require a previously started run, executor allowlist match, non-empty prompt, artifact path, and evidence refs.
-   - Force the external agent into constrained/no-write mode (`--permission-mode plan`, empty tools list, no session persistence, structured output where available).
-   - Reject prompt requests that smuggle authority fields such as lifecycle status, mark-done, external writes, memory/skill writes, outbound messages, provider config, or tools/write mode flags.
-   - Capture full stdout/stderr into an external artifact; the hot ledger stores only `artifact_uri`, sha256, size, bounded summary, and evidence refs.
-
-4. Then allow readonly context artifact packets.
-   - Require a previously started run, executor allowlist match, non-empty instruction, `context_artifact_uri`, `context_sha256`, output artifact path, and evidence refs.
-   - Pass only the context artifact URI/hash into the agent prompt; reject inline context so large evidence never enters the hot ledger or prompt builder by accident.
-   - Recompute and verify the context artifact SHA-256 before invoking the agent.
-   - Keep the same no-tool/no-write invocation constraints as prompt dry-run; capture stdout/stderr into an output artifact and append only context/output pointers, hashes, bounded summary, and evidence refs to the ledger.
-   - Reject tool/write flags and authority-smuggling keys before process invocation.
-
-5. Then accept external proposal artifacts, not facts.
-   - Require a previously started run and a proposal artifact URI/hash; recompute SHA-256 before appending.
-   - Accept only review proposals (`proposal_type="worker_review_proposal"`, `lifecycle_target="review_proposed"`) with non-empty summary, failure classification, top-level evidence refs, and claim-level evidence refs.
-   - Reject `done`, lifecycle status, mark-done flags, external writes, memory/skill writes, outbound messages, provider/config changes, and any tool/write authority smuggling.
-   - Append only proposal artifact pointer/hash/summary/counts to the ledger; preserve `allowed_to_mark_done=false`, lifecycle mutation disabled, adapter write-through disabled, and persistent learning disabled.
-
-6. Then accept multi-model certification promotion packets, still not done.
-   - Require a started run plus an already recorded proposal artifact.
-   - Require certification artifact URI/hash and verify it binds to the recorded proposal artifact URI/SHA-256.
-   - Require at least two reviewers, `quorum >= 2`, `quorum <= reviewer_count`, `truth_gate=true`, reviewer evidence refs, and claim evidence refs.
-   - Allow only `lifecycle_target="certification_passed_for_review"`; preserve `model_consensus_is_fact=false`, `allowed_to_mark_done=false`, and lifecycle mutation disabled.
-   - Append only certification pointer/hash/summary/reviewer_count/quorum/truth_gate/claim_count to the hot ledger.
-
-7. Keep the next unopened boundary explicit.
-   - After certification promotion, the still-closed boundary is human/elevated policy done authorization, lifecycle mutation, external tools, workspace file reads/edits, shell execution, adapter write-through, rollback/reopen, and automatic done.
-   - Do not open readonly tools, writes, rollback/reopen, or automatic done in the same slice as proposal or certification promotion.
-
-See also: `references/agent-runtime-boundary-ratchet.md` for the Claude Code/Codex/OpenCode runtime progression and smoke-verification bundle that motivated this pattern.
-See also: `references/agent-runtime-proposal-certification-ratchet.md` for proposal artifact intake and multi-model certification promotion packet requirements.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## External adapter write intent before write-through
 
 When the next boundary is an external adapter mutation, add an intermediate intent projection rather than writing the adapter immediately:
@@ -297,20 +201,9 @@ When an intent exists but real adapter writes/rollback are still unsafe, add a s
 
 ## External adapter write authorization before write-through
 
-When a readiness review exists but real adapter mutation is still unsafe, add a separate non-executing authorization projection rather than enabling writes:
+Detailed `External adapter write authorization before write-through` guidance moved to `references/external-adapter-write-authorization-before-write-through.md`.
 
-1. Bind authorization rows to review id, intent id, adapter contract version, and mutation digest.
-2. Require admin role (or stronger local policy) for request and decision.
-3. Add TTL and revalidate freshness on both request and decision: current canonical payload digest must still match the review-bound and authorization-bound digest.
-4. Enforce disabled behavior with DB checks: `writes_enabled=0`, `external_adapter_write_through_enabled=0`, `rollback_available=0`, and `write_through_allowed=0`.
-6. If adding external write authorization before real write-through, make it a second ledger-only projection after readiness review: bind authorization to review id + adapter contract version + mutation_digest, require admin role, add TTL, keep `write_through_allowed=false`, `writes_enabled=false`, `external_adapter_write_through_enabled=false`, `rollback_available=false`, and add tests for expired duplicate requests so stale requested rows are not returned after TTL.
-7. If adding command execution preflight before real external write-through, persist a canonical command execution payload + digest but keep executor/write-through disabled by DB CHECK (`external_write_executor_enabled=0`, `write_through_allowed=0`, `rollback_available=0`). Runtime gates must re-check all source rows, not just the new table: authorization flags, readiness-review flags, intent flags, TTL/status, and mutation digest. Add a drift test that bypasses DB CHECKs (e.g. SQLite `PRAGMA ignore_check_constraints = ON`) to prove source intent flag drift fails closed.
-8. If enabling the first real external write executor, keep it adapter/operation-specific (for example Kanban closeout only), consume an approved preflight by exact `command_execution_digest`, and before mutation compare every digest-bound payload field back to the mutable preflight/run columns (`external_ref`, adapter, operation, ids, contract version, mutation digest). Add an adversarial target-drift test with a second valid adapter target to prove the executor cannot close the wrong target while preserving the old digest. Store rollback snapshots if useful, but keep rollback/reopen disabled until a separate governed slice.
-9. If enabling rollback/reopen after a real write-through slice, do it as its own governed consumer slice. Bind rollback to the completed write run and exact command execution digest; require the same or stronger actor role; restrict adapter/operation explicitly; validate rollback snapshot target identity (`adapter_name`, `external_ref`) against the write run before touching the external target; make rollback idempotent with a UNIQUE write-run key; and read back the external target state before reporting success. Update the previous write-run metadata/events/snapshots from “rollback disabled” to “rollback available” in the same slice so ledger/API/UI/docs do not disagree.
-10. Verification: focused tests + plugin tests + coverage gate + smoke path. For preflight-only slices prove closeout → intent → readiness review → auth → preflight and `adapter_observations`/external adapter writes stay zero. For first write-through slices prove the narrow adapter target changes, exactly one execution run and adapter observation are recorded, retries are idempotent, and rollback/reopen remains disabled. For rollback slices prove write-through target changes, rollback restores the prior external state, exactly one rollback run/event/observation is recorded, retries are idempotent, target drift fails closed, and no broader adapter/taskpool/evidence override boundary was opened.
-
-See also: `references/control-plane-external-write-rollback.md` for the Phase 14 rollback/reopen verification pattern and metadata-consistency pitfall.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Anti-patterns
 - Building the "framework" first with nothing working
 - Waiting to test until "everything is done"

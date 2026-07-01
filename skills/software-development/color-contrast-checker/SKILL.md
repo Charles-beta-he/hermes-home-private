@@ -30,6 +30,8 @@ metadata:
 - 新增组件时检查文字可读性
 - 用户说「对比度」「可读性」「WCAG」
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## WCAG 对比率标准
 
 | 级别 | 普通文字 (<18px) | 大文字 (≥18px bold / ≥24px) |

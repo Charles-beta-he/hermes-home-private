@@ -42,6 +42,8 @@ Use this skill for local GGUF inference, quant selection, or Hugging Face repo d
 - Enumerate available `.gguf` files and sizes for a repo
 - Decide between Q4/Q5/Q6/IQ variants for the user's RAM or VRAM
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Model Discovery workflow
 
 Prefer URL workflows before asking for `hf`, Python, or custom scripts.
@@ -277,4 +279,3 @@ Source URLs:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

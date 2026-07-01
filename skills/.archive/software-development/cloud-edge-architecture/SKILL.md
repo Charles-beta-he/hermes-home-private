@@ -33,6 +33,8 @@ Do not use it for:
 
 Brain-tentacle separation model: cloud handles intelligence, local handles execution.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Model
 
 ```
@@ -129,49 +131,14 @@ class EdgeWorker:
 
 ## References
 
-- `references/local-cloud-prototype.md` — validated Brain API + Edge Worker prototype design, endpoints, test results, and LAN expansion
-- `references/multi-brain-architecture.md` — multi-brain routing pattern, inter-brain communication, shared vs isolated data, hot-plug brain registration, cloud deployment
-- `references/production-deployment.md` — production install (local/remote/CI), service management (launchd/systemd), config schema, LAN discovery protocol, auto-connect FSM, Cloudflare Pages deployment, zero-dependency design
-- `references/edge-worker-update-management.md` — multi-source update fallback chain (local → GitHub → proxy → Cloudflare), version management with backups and rollback, launchd auto-update scheduling, diagnostic commands for network issues
-- `references/lan-cross-device-deployment.md` — one-liner curl deploy pattern for adding edge workers on other LAN computers, self-contained install script, HTTP serving, verification steps, firewall/port pitfalls
-- `references/master-slave-connection-testing.md` — master-slave connection testing workflow, config.yaml `main_node` pattern, health check/command execution verification
-- `references/remote-multi-repo-git-operations.md` — using Edge Worker API for remote git operations (browse, status, pull, checkout, push) across multiple repos; batch patterns, common pitfalls (divergent branches, tracking branch gone), integration with project profiles
-- `references/distributed-management-patterns.md` — complete workflow patterns for multi-node deployments: install-final.sh (atomic install), update-all-nodes.sh (distributed update), monitor-performance.sh (health checks), config-performance.yaml (optimization)
-- `references/multi-site-management.md` — Multi-site management architecture: site registration, heartbeat monitoring, load balancing strategies (round-robin/weighted/min-connections/performance), fault detection and task redistribution, architecture link verification pattern, multi-service deployment pitfalls
-- `references/agent-team-multi-node.md` — Agent Team multi-node architecture: task pool manager, tree-structured KV cache, agent team manager, multi-model analyzer; includes usage patterns, performance metrics, and integration points
-- `references/unified-architecture-pattern.md` — Unified gateway + manager + components pattern for integrating TaskScheduler, KnowledgeManager, ExperienceRatchet, RAGEngine into single entry point
-- `references/architecture-refactoring-pattern.md` — Systematic approach to refactoring complex codebases: component analysis, core vs deprecated classification, feature migration, and validation. Use when simplifying architecture while preserving functionality.
+Detailed `References` guidance moved to `references/references.md`.
 
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Pitfalls
 
-- **Don't make tentacles smart**: They should be pure executors, not decision-makers
-- **Don't store state locally**: All persistent state goes to cloud brain
-- **Don't skip auth**: Even personal use, token auth prevents accidental exposure
-- **Don't forget audit**: Log all remote commands for debugging and security
-- **Don't over-engineer early**: Start with simple WebSocket, upgrade to gRPC only if needed
-- **File conflict prevention**: Use conflict_group in task scheduling to prevent two tentacles modifying same file
-- **macOS UDP broadcast**: `<broadcast>` address fails on macOS with "Can't assign requested address". Use computed broadcast address (x.x.x.255) or TCP probe fallback. See `hermes_lan.py` implementation.
-- **macOS readlink -f**: GNU-only flag. Use `readlink -f "$0" 2>/dev/null || echo "$0"` fallback in CLI wrappers.
-- **Symlink + SCRIPT_DIR**: Shell wrapper resolving SCRIPT_DIR from symlink location fails. Must use `readlink -f` to resolve real path before computing SCRIPT_DIR.
-- **curl-pipe-bash safety**: Remote installer embeds all Python inline (no downloads after initial curl). Verify checksum if hosting publicly. Use `bash -s --` for non-interactive args. Always pass MAIN_IP as argument: `bash -s -- 192.168.31.71` not just `bash`.
-- **Cloudflare SSL failures**: `curl: (35) SSL_ERROR_SYSCALL` when downloading from hermes-edge.pages.dev — common in China mainland or behind corporate firewalls. Fallback: use local install script at `~/.hermes/edge-worker/install-edge-pro.sh`, or `curl -k` (insecure), or set `https_proxy`. If `~/.hermes/edge-worker/` already exists, skip remote install entirely.
-- **GitHub Raw SSL cert SAN mismatch**: `curl: (60) SSL: no alternative certificate subject name matches target host name 'raw.githubusercontent.com'` — different from error 35. Means the SSL certificate presented doesn't match the hostname (proxy/VPN intercepting TLS, or DNS hijacking to wrong IP). Key gotcha: `--insecure` on the outer curl does NOT propagate into the piped bash script's internal curl calls. Solution: use `install-insecure.sh` (all curl calls use `-k`), or `wget --no-check-certificate`, or manual download via browser. See `references/install-troubleshooting.md`.
-- **DNS 198.18.0.x = proxy interference**: If `nslookup hermes-edge.pages.dev` resolves to 198.18.0.x (or similar 198.18.x.x), a proxy/VPN tool (Surge, ClashX, Mihomo, Shadowrocket) is hijacking DNS. This causes SSL_ERROR_SYSCALL even when the proxy itself isn't forwarding traffic correctly. Fix: disable the proxy, add the domain to proxy bypass list, or use a direct DNS resolver (`nslookup domain 8.8.8.8`).
-- **YAML quoting for `host: 0.0.0.0`**: Auto-generated config MUST quote the host value: `host: "0.0.0.0"`, NOT `host: 0.0.0.0`. Unquoted `0.0.0.0` may parse differently across YAML loaders. The symptom: service shows "running" (PID exists) but binds to `127.0.0.1` instead of all interfaces. Always quote IP addresses and special values in YAML configs generated by shell heredocs.
-- **"Running but not listening" diagnostic**: When `hermes-edge status` shows PID alive but `curl localhost:PORT/health` fails with "Connection refused", the service is binding to wrong address or crashed after PID file was written. Diagnostic sequence: (1) `cat config.yaml | grep host` — check binding address, (2) `lsof -i :PORT` — check if port is actually listened on, (3) run foreground: `cd ~/.hermes/edge-worker && python3 edge_worker.py --port PORT` — see actual errors, (4) `cat logs/edge.log | tail -20` — check startup logs. Most common cause: `host` set to `127.0.0.1` (or YAML quoting issue above) instead of `0.0.0.0`.
-- **Foreground debugging for silent failures**: When background service shows PID but doesn't work, ALWAYS run in foreground first: `python3 edge_worker.py --port 9002`. The foreground output shows actual binding address (e.g., `running on 127.0.0.1:9002` vs `running on 0.0.0.0:9002`), startup errors, and import failures that get swallowed by nohup/launchd. This was the key diagnostic breakthrough — `hermes-edge logs` may return empty but foreground mode shows the real issue immediately.
-- **GitHub Raw 404 on edge worker**: `raw.githubusercontent.com` returning 404 may mean the repo is private, deleted, or the path changed. Always verify the exact file path exists before relying on it as an update source. For private repos, use `gh api` with `--jq '.content' | base64 -d` instead (authenticated API bypasses CDN cache).
-- **Single-source update fragility**: A single `source:` URL in config.yaml creates a single point of failure. Use the multi-source update script pattern: local → GitHub raw → GitHub proxy → Cloudflare. See `references/edge-worker-update-management.md`.
-- **launchd KeepAlive**: Restarts on crash AND on exit. If worker needs clean stop, use `hermes-edge stop` which unloads the plist first, don't just kill the process.
-- **Service log rotation**: launchd doesn't rotate logs. Config max_size/max_files in config.yaml, worker handles rotation internally.
-- **One-click auto-install pattern**: For fully automated deployment (no manual config editing), the install script must: (1) auto-detect hostname via `hostname -s`, (2) generate config.yaml with proper YAML quoting (`host: "0.0.0.0"` not `host: 0.0.0.0`), (3) create CLI wrapper with symlink, (4) start service in background with PID file, (5) verify health endpoint, (6) test main node connectivity. See `references/one-click-auto-install.md` for the complete pattern.
-- **Config generation YAML quoting**: When generating YAML configs from shell heredocs, ALWAYS quote values that could be misinterpreted: `host: "0.0.0.0"`, `port: "9002"`, `token: "hermes-2024"`. Unquoted `0.0.0.0` may bind to `127.0.0.1` silently. Use `cat > config.yaml << 'EOF'` (single-quoted EOF) to prevent shell variable expansion, then substitute specific values with explicit `$VAR` references.
-- **CLI must have update command**: Any CLI tool (`hermes-edge`) MUST include an `update` case that re-runs the install script from the source URL. Without it, users on other machines have no way to update except manual re-install. Pattern: `update) echo "Updating..."; curl -sSLk "$REPO_URL/install-auto.sh" | bash ;;`. Add this to the CLI wrapper template.
-- **Bash heredoc quote corruption**: When embedding a script inside a heredoc (`cat > script.sh << 'EOF'`), long strings with special characters (especially quotes, parentheses, dollar signs) can get truncated or corrupted. Symptom: `TOKEN="herm...n` instead of full value. Prevention: (1) test the generated script with `bash -n script.sh` immediately after creation, (2) use single-quoted EOF delimiter to prevent shell expansion, (3) keep embedded values short or read them from a separate config file instead of embedding inline.
-- **Config reading with pyyaml + stdlib fallback**: Python services should read config.yaml using pyyaml if available, falling back to stdlib-based YAML parsing (regex + dict) for zero-dependency deployments. Pattern: `try: import yaml; except ImportError: yaml = None` then `if yaml: cfg = yaml.safe_load(f); else: cfg = _parse_yaml_stdlib(f)`. This ensures the service works on machines without pip while still supporting full YAML when pyyaml is installed.
-- **Test before deploy**: Always run `bash -n script.sh` to check syntax before deploying to remote nodes. Catches quoting errors, missing esac, unclosed heredocs.
-- **Main node first in distributed updates**: Update main node code before pushing updates to workers. Main node is source of truth; workers pull from it.
+Detailed `Pitfalls` guidance moved to `references/pitfalls.md`.
 
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Multi-Site Management
 
 When expanding from a single edge worker to multiple worker nodes, use the multi-site management pattern: site registration + heartbeat monitoring + load balancing + fault tolerance. This extends the basic distributed patterns with dynamic discovery and health-based routing.
@@ -354,61 +321,9 @@ curl -sSL https://hermes-edge.pages.dev/install.sh | bash -s -- --brain http://1
 
 ### LAN Cross-Device Deployment
 
-Adding edge workers on other computers in the same LAN:
+Detailed `LAN Cross-Device Deployment` guidance moved to `references/lan-cross-device-deployment-2.md`.
 
-```bash
-# On main node: serve deploy script
-cd ~/.hermes/edge-worker/deploy-package && python3 -m http.server 8080
-
-# On other computer: one-liner install
-curl -sSL http://192.168.x.x:8080/deploy-worker.sh | bash -s -- 192.168.x.x
-```
-
-The deploy script is self-contained (all Python embedded, stdlib only). It:
-1. Tests main node connectivity
-2. Installs edge_worker.py + CLI wrapper + launchd auto-start
-3. Registers with main node
-4. Verifies end-to-end connection
-
-See `references/lan-cross-device-deployment.md` for full pattern, verification, and pitfalls.
-
-**SSL/Network Failure Fallback**
-
-Remote install may fail with SSL errors — two distinct variants:
-
-| Error | Code | Meaning | Common Cause |
-|-------|------|---------|--------------|
-| `SSL_ERROR_SYSCALL` | curl 35 | TLS handshake aborted | GFW, corporate firewall, Cloudflare blocked |
-| `SSL: no alternative certificate subject name matches` | curl 60 | Certificate SAN mismatch | Proxy/VPN intercepting TLS, DNS hijacking to wrong IP |
-
-**Critical gotcha**: `curl --insecure` on the outer command does NOT propagate into the piped bash script's internal curl calls. The script itself must use `-k` on every download.
-
-**Fallback chain**:
-1. **Local install** (if `~/.hermes/scripts/` or `~/.hermes/edge-worker/install-edge-pro.sh` exists):
-   ```bash
-   bash ~/.hermes/edge-worker/install-edge-pro.sh
-   ```
-2. **Insecure install script** (all curl calls use `-k`):
-   ```bash
-   curl -sSLk https://raw.githubusercontent.com/Charles-beta-he/hermes-edge-worker/main/install-insecure.sh | bash
-   ```
-3. **wget alternative**:
-   ```bash
-   wget --no-check-certificate -qO- https://raw.githubusercontent.com/Charles-beta-he/hermes-edge-worker/main/install.sh | bash
-   ```
-4. **Proxy**: `export https_proxy=http://proxy:port` then retry
-5. **Manual download**: Use browser to download files, then follow `MANUAL-INSTALL.md` in the repo
-6. **gh CLI** (authenticated API bypasses CDN):
-   ```bash
-   gh api repos/Charles-beta-he/hermes-edge-worker/contents/install.sh --jq '.content' | base64 -d | bash
-   ```
-
-**Key insight**: If `~/.hermes/edge-worker/` already exists with working files, skip remote install entirely — just verify with `hermes-edge status`.
-
-**Auto-connect**: 7-state FSM (DISCOVERING→CONNECTING→REGISTERED→HEALTHY→DEGRADED→RECONNECTING→OFFLINE) with exponential backoff + jitter. UDP broadcast primary, TCP probe fallback.
-
-See `references/production-deployment.md` for full config schema, service files, deployment patterns, and pitfalls.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Migration Path
 
 1. **Phase 1**: Extract Protocol interfaces (no behavior change, 2-3 days)
@@ -445,6 +360,13 @@ Key gaps to address before cloud deployment:
 | HIGH | Circuit breaker | Adaptive backoff + failure cap |
 | HIGH | Schema versioning | Version all data formats |
 | HIGH | Data lifecycle/TTL | Archive old state files |
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

@@ -38,6 +38,8 @@ Do not use it for:
 
 Methodology for periodic self-knowledge audits of Hermes Agent's internal architecture: memory, skills, brains, cron, task pool.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When to Run
 
 - Memory at 90%+ capacity (check: `python3 ~/.hermes/scripts/health-check.py --json`)
@@ -49,6 +51,10 @@ Methodology for periodic self-knowledge audits of Hermes Agent's internal archit
 ## Self-Audit Methodology
 
 When the user asks for 根因 / 长期稳定方案 after a self-check, use `references/root-cause-classification-health-triage.md`: classify findings by blast radius/freshness/blocks_what, separate scheduler vs job vs provider vs delivery failures, and report P0/P1/P2 decision impact instead of a flat warning list.
+
+When a self-check shows task-file bloat, taskpool-schema timeouts, log bloat, or cron jobs stuck in historical `last_status=error`, use `references/selfcheck-bloat-and-cron-recovery.md`: inspect which frontmatter field actually exploded, quarantine originals before streaming repair, rerun taskpool/diagnostics, and rerun affected cron jobs so old error status is replaced by fresh readback.
+
+When auditing desktop/chat conversation records for ignored latest requests, secret exposure, ContextCard leakage, or stale background-process notifications, use `references/conversation-ledger-audit.md`: reconstruct true message ordering around compaction blocks, scan raw messages plus FTS/ContextCard stores with redaction, and recheck live process/port state after any async notification before reporting.
 
 ### Step 1: Gather Current State
 
@@ -147,6 +153,10 @@ Design rules:
 5. Gateway send failures, provider errors, cron delivery failures, tool failures, conversation finalization, and taskpool event hooks should all emit into the same resident selfcheck ledger/projection surface.
 6. LLM/multi-model output is proposal/review only, never fact or direct execution authority.
 7. Repeated fingerprints must debounce/coalesce to avoid self-check storms.
+
+### 4H self-scan cron runbook
+
+When a scheduled cron job asks to run the 4-hour Hermes self-scan (`~/.hermes/scripts/self-scan-4h.py`), use `references/self-scan-4h-cron.md`: run the scanner, inspect `~/.hermes/notes/engineering-cybernetics/self-scan-log.jsonl`, treat only latest/recurrent WARNING or ERROR records as actionable, refresh `evolution-dashboard.md` with `~/.hermes/scripts/refresh-dashboard.py`, and verify dashboard status/V̇/skill/Darwin fields by read-back before reporting. Historical resolved warnings are trend context, not repair work.
 
 ### Current: Modular Self-Diagnostic System (`~/.hermes/diagnostics/`)
 
@@ -343,6 +353,14 @@ When the user corrects the direction toward system-level or automatic triggering
 - `references/project-self-check-pipeline.md` — Project-level self-check template for non-Hermes projects
 - `references/hermes-self-improvement-pipeline.md` — Self-improvement pipeline operations, ROI debugging, signal sources, benchmark regressions, and stuck-unblocking patterns
 - `references/cron-kanban-selfcheck-repair-pattern.md` — Repair pattern for mixed cron/provider failures, Kanban projection drift, and selfcheck judgement backlog without mutating source truth or deleting ledgers
+- `references/conversation-ledger-audit.md` — Audit pattern for chat/session ledgers: compaction ordering, secret propagation through FTS/ContextCards, and stale async background-process notifications
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

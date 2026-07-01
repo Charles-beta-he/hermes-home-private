@@ -24,6 +24,8 @@ Use this skill when the user asks to:
 - compare a current repo against a design/prototype repo
 - audit a feature across multiple surfaces (app/admin/pad/backend)
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core principle
 
 Do not audit from filenames alone. Build evidence from three layers:
@@ -149,6 +151,13 @@ Produce:
 - See `references/uvisa-admin-users-closed-loop.md` for a PRD-to-implementation repair pattern: static closure harness, PII field permissions, pagination, bound debit-card fields/actions, and validation commands.
 - See `references/uvisa-admin-users-pii-action-closure.md` for the condensed checklist on PII exposure points plus privileged action closure: permission metadata → GA modal → service contract → backend permission/audit/state mutation → DTO refresh.
 - See `references/uvisa-admin-users-prd-secondary-filter.md` for the secondary-filter pattern used when the user asks which uvisa-admin user-list/detail gaps are actually completable without changing Admin UI/function shape: prioritize PII audit productionization, KYC case decision flow, debit-card UNBINDING semantics, and real-service/mock-fallback cleanup; reject direct CNY force-unbind, new risk tabs, global audit pages, bulk actions, and contact-user buttons under a no-UI-change constraint.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

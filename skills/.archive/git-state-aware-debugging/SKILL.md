@@ -20,6 +20,8 @@ Do not use it for:
 
 Use this when a code fix "looks correct locally" but the failure still reproduces in a task runner, patch consumer, review flow, or automation that may read the staged index instead of the worktree.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Triggers
 - The user says a local fix exists but the task/agent still fails.
 - `git status` shows staged and unstaged changes for the same file (`MM`, `AM`, etc.).
@@ -70,3 +72,14 @@ Many workflows read the index or a derived patch bundle, not the live worktree. 
 
 ## References
 - `references/hermes-run-agent-ordering.md` — Hermes-specific example of a worktree-fixed/index-broken prompt-builder reorder bug.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

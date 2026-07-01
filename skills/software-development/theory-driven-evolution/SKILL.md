@@ -34,6 +34,8 @@ metadata:
 - Need quantitative metrics for "is my Agent getting better or worse?"
 - Want automated heartbeat/cronjob to trigger self-improvement without manual prompting
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## The Pattern
 
 ### Step 1: Source Discovery & Reconstruction
@@ -278,4 +280,3 @@ Required pattern:
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] The Definition of Done items above were explicitly checked, not assumed.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

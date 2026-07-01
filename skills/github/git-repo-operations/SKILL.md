@@ -30,23 +30,19 @@ Don't use for:
 
 ## Core Workflow
 
-1. **Discover state**: `git status --short --branch`, current branch, upstream, and dirty files.
-2. **Resolve the target**: for project work, read the project profile and map repo role → target branch. Do not assume `main`/`master`/same branch for every repo.
-3. **Fetch before acting**: `git fetch origin --prune` before checkout, rebase, or branch creation.
-4. **Classify operation**:
-   - conflict resolution: merge/rebase/stash markers and semantic merge
-   - branch orchestration: sync/check/create/rebase multiple repos
-   - release/PR readiness: verify remote parity and required tests
-5. **Resolve mechanically, verify semantically**: remove markers and stage files, then run the relevant build/test/typecheck slice.
-5. **Push safely**: after rebase, use `--force-with-lease`; never blind `--force`.
-6. **Scope commits in live-state repos**: when a repository contains scheduler/runtime state files that drift during normal operation (for example cron job counters, next-run timestamps, logs, caches), do not stage the whole dirty file just because one durable config field changed. Build a staged blob from `HEAD:<file>` with only the intended semantic edit, or otherwise stage a minimal patch, then verify `git diff --cached` contains only that scoped change. Leave live runtime drift unstaged. For heavily dirty skill/docs files where one new durable line must be committed without absorbing unrelated working-tree churn, construct a clean blob from `git show HEAD:<path>` plus the intended insertion, write it with `git hash-object -w`, stage it with `git update-index --cacheinfo <mode>,<blob>,<path>`, then inspect `git diff --cached` before committing.
-7. **For user-authorized “推进到边界” work, still commit only the intended slice**: before committing, run status/diff checks, stage exact touched files only, inspect `git diff --cached --stat` and `git diff --cached --name-only`, and explicitly leave unrelated untracked/dirty files unstaged. If verification passes, make the scoped commit; if the next action would enable broad runtime execution, lifecycle mutation, external writes, or other privileged authority, stop and report the boundary instead of silently expanding the commit/task scope.
-8. **For submodule operations, verify metadata before claiming recursive health**: if recursive submodule status fails because a tracked gitlink has no mapping, restore the mapping from the tracked path, expected commit, and known remote URL when available. Do not delete backup/history directories just to make recursion pass; make the metadata repair auditable, then rerun the recursive check.
-9. **When committing scoped submodule work from a dirty child repo, separate gitlink pinning from child dirtiness and pre-existing parent index state**: commit the intended files inside the child first. In the parent, inspect `git diff --cached --name-only` *before* staging the gitlink; if unrelated files are already staged, unstage or stop rather than mixing them into the pointer commit. Then stage only the submodule pointer plus any explicitly intended parent-level files, re-check `git diff --cached --stat --submodule=short` and `git diff --cached --name-only`, and commit only if the cached diff contains the intended slice. If an accidental parent commit already mixed unrelated staged files with the gitlink, make a corrective follow-up commit that restores those unrelated paths from the previous commit while preserving the gitlink, then verify the net diff from the prior good parent contains only the submodule pointer. If `git status` still shows `m <submodule>` because unrelated child files remain dirty, disclose that as pre-existing/unrelated child dirtiness rather than trying to clean or stage it. Do not stage ignored runtime state such as cron DB/job counters or rollback backups just to make parent status clean.
-10. **When clearing mixed control-plane homes, distinguish shared policy from local overlay**: commit `.gitignore`/`git rm --cached` migrations for durable runtime/secret boundaries, but use repo-local `.git/info/exclude` for huge machine-specific overlays that should not become shared policy. A clean status can legitimately mean "tracked state clean; local overlay ignored and kept on disk" — disclose that distinction.
-10. **For PRs from dirty or shared worktrees, isolate the PR branch before commit/merge**: export the intended diff to a patch, create a clean temporary worktree from the true base (`git worktree add -b <branch> /tmp/<repo>-pr origin/<base>`), apply only the scoped patch, install/build/test there, then commit/push/PR from that clean worktree. This prevents unrelated local changes or active runtime state from leaking into the PR.
-11. **When extracting gains from a dirty stale workspace, classify before applying**: compare the dirty worktree to the freshly fetched target branch, back up tracked/untracked state, and classify changes as already-in-target, superseded-by-target, stale duplicate/junk, beneficial increment, or needs-human. Extract only the beneficial increment into a clean worktree from `origin/<target>`, preserving newer target semantics. Finder-style duplicate files such as `* 2.tsx` are evidence of copied stale snapshots, not automatic gains. See `references/dirty-workspace-gain-extraction.md`.
-12. **When enabling GitHub auto-merge from a repo with multiple worktrees, avoid implicit local checkout operations**: `gh pr merge <n> --auto ...` may try to inspect/check out the base branch and fail if that branch is already checked out in another worktree (`fatal: '<base>' is already used by worktree ...`). Retry from a neutral cwd with explicit repo targeting: `gh pr merge <n> --repo OWNER/REPO --auto --squash --delete-branch`, then verify with `gh pr view <n> --repo OWNER/REPO --json state,autoMergeRequest,mergedAt,statusCheckRollup`.
+Detailed core workflow moved to `references/core-workflow.md`.
+
+Load it when coordinating non-trivial git changes, branch hygiene, diffs, staging, commit/push/PR boundaries, or rollback.
+
+Minimum in-root rule: inspect branch/status/diff before commit/push and keep unrelated dirty work out of the change.
+
+## Git Repository Development Consensus
+
+Detailed development consensus moved to `references/development-consensus.md`.
+
+Load it when deciding commit strategy, PR/MR path, repo ownership, scope, or verification before publication.
+
+Minimum in-root rule: scoped local commits are safe only after status/diff/readback; push/publish needs exact target authority.
 
 ## Conflict Resolution Subflow
 
@@ -67,19 +63,21 @@ Don't use for:
 
 ## Common Pitfalls
 
-1. **Treating every repo as if it shares the same target branch.** Resolve per repo role.
-2. **Resolving conflicts by side instead of meaning.** Read both changes and preserve semantics.
-3. **Forgetting stash-pop semantics.** `--ours`/`--theirs` differ from rebase mental models.
-4. **Leaving conflict markers.** Search for `<<<<<<<`, not just `=======`.
-5. **Force-pushing unsafely.** Use `--force-with-lease` only after verifying the branch.
-6. **Revert can restore stale lines.** Diff reverted files and verify semantics, not just type correctness.
-7. **Auto-merge command fails because of sibling worktrees.** Do not delete or disturb the sibling worktree just to satisfy `gh`; rerun the merge command with `--repo OWNER/REPO` from a neutral directory and verify PR state afterward.
-8. **Patch application from an old dirty branch can silently omit, conflict with, or revert target-branch behavior.** If the PR target is not the source branch's base (for example user asks for PR to `test` while the local dirty branch drifted from another branch), do not build the PR from a broad `git diff origin/<target>` taken in the dirty worktree. First inspect the target tip for affected files, then create the PR worktree from the requested target ref and apply only the minimal semantic addition. Preserve target-branch behavior as SSOT and avoid replacing newer target helpers/filters with older local versions. After applying the patch, compare `git diff --stat`, `git diff --check`, and the named files against the original intent before committing; verify line-start conflict markers are gone.
-9. **Auto-merge can merge immediately, not just queue.** After `gh pr merge --auto ...`, always read back `gh pr view <n> --json state,autoMergeRequest,mergedAt,mergeCommit,statusCheckRollup`. If `state=MERGED` and `autoMergeRequest=null`, the PR met requirements and merged immediately; report merged evidence rather than saying auto-merge is merely enabled.
-10. **Maven targeted tests in multi-module repos need reactor dependencies.** If `mvn -pl <module> -Dtest=<TestClass> test` fails with missing dependent symbols or upstream modules fail because they do not contain that test, retry as `mvn -pl <module> -am -Dtest=<TestClass> -Dsurefire.failIfNoSpecifiedTests=false test` with the project-required JDK before treating it as product-code failure.
-10. **Stale local branches can fabricate a sync need.** For branch synchronization decisions, compare freshly fetched remote refs (`origin/source...origin/target`), not local `source`/`target` branches that may be behind or checked out in another worktree. Verify ancestry with `git merge-base --is-ancestor origin/<source> origin/<target>` and direct remote tips with `git ls-remote` when the user suspects new remote commits.
-10. **Do not open no-op sync PRs.** If the source branch is already an ancestor of the target branch, a clean worktree merge will be `Already up to date` and the candidate branch will be `0 0` ahead/behind the target. Stop and report the no-op evidence instead of pushing an empty branch or creating an empty PR.
-11. **Private-repo install paths must not assume a GUI, browser, or GitHub CLI.** For private source distributions, document at least three token-safe paths: GitHub CLI/device-code login when available, headless SSH/deploy-key clone for servers or containers, and an existing-checkout/offline-transfer finalizer. Never ask users to put a token in a clone URL or make `curl | bash` from a private raw URL the only primary path.
+Detailed git pitfalls moved to `references/pitfalls.md`.
+
+Load it when handling dirty trees, branch mismatch, merge/rebase ambiguity, submodules, worktrees, or accidental broad staging.
+
+Minimum in-root rule: never hide unrelated changes inside the current task commit.
+
+## Self-Managed GitLab MR Automation
+
+Applicability: use when the active repository is hosted on GitLab or a self-managed GitLab-compatible instance and the user asks for automatic MR creation, auto-merge, or merge-when-pipeline-succeeds. Anti-condition: do not encode concrete hosts, project paths, branch names, or token values in this skill; resolve them from the active repository, project profile, and live API each time.
+
+- Use the capability ladder in `references/self-managed-gitlab-mr-automation.md`: SSH push-options can create MRs but cannot verify merge state; `glab`/API auth is required for a grounded auto-merge loop; CI-owned merge bots are the production-grade path.
+- Never extract browser cookies, localStorage, session tokens, or saved browser credentials to obtain GitLab API access, even if the user is logged in and asks whether you can get a token. Ask the user to create a PAT/project token and pipe it into `glab auth login --stdin --use-keyring` so the agent never sees the token.
+- For self-managed GitLab, `glab auth login --web` may fail with a missing `client_id`; prefer PAT stdin auth unless the instance has an OAuth application configured for glab.
+- Treat `glab auth status` showing “Token found” plus `/api/v4/user` returning `401 Unauthorized` as an invalid token state, not as a partial success. Re-create the token with suitable scopes (`api`, `read_repository`, `write_repository`) and verify with `glab api user` before creating or merging MRs.
+- Before saying auto-merge is available, verify fresh refs, authenticated API access, target branch protection, approval rules, pipeline requirements, and whether the instance accepts merge-when-pipeline-succeeds / auto-merge. If API auth is unavailable, only report best-effort push-option MR creation.
 
 ## Release Branch Merge Readiness Audit
 
@@ -94,20 +92,24 @@ Applicability: use when the user asks whether a shared test/staging/release bran
 - Report per repo: source/target tips, ahead/behind, tree delta vs history delta, dry-merge result, verification commands, blockers, and whether the action is “no merge needed”, “optional topology merge”, “safe to merge”, or “blocked”.
 - Clean up temporary worktrees after the audit.
 
+## Branch-to-Branch Change Audit
+
+Applicability: use when the user asks to compare two shared branches such as test/staging vs main/release, especially in a dirty local worktree. Anti-condition: do not encode concrete project names, branch names, PR numbers, or feature names in this skill; resolve repo path and refs from the project profile or user wording each time.
+
+- Fetch/prune first and compare remote refs (`origin/<left>` / `origin/<right>`) when the user asks about shared branch state. Do not let a local dirty branch, gone upstream, or untracked files contaminate the audit.
+- Establish the objective facts before summarizing: short ref tips, merge-base, `git rev-list --left-right --count origin/<left>...origin/<right>`, unique commits on each side with dates/subjects, `git diff --stat origin/<left>..origin/<right>`, `git diff --name-status origin/<left>..origin/<right>`, and optionally `git diff --dirstat=files,0` for a product-area overview.
+- Explain two-dot vs three-dot deliberately: two-dot (`left..right`) is the current file-tree delta between branch tips; three-dot (`left...right`) is the change introduced on the right side since merge-base. Use both when history has cross-merges or reverted/reintroduced work.
+- For merge-readiness, create a clean temporary worktree from the target branch and run `git merge --no-commit --no-ff origin/<source>` there. Report the merge exit, conflict files (`git diff --name-only --diff-filter=U`), and remove the worktree. Never perform a trial merge in the user's dirty working tree.
+- In the final report, separate: branch tips/divergence counts, file-tree delta, major product/technical themes, main-only/source-only notable commits, direct-merge conflict risk, and local dirty-worktree caveat.
+- Do not run full tests/build unless the task asks for merge readiness or implementation. For a pure diff audit, `git diff --check` plus a clean-worktree dry merge is enough to ground the risk section.
+
 ## Branch-Specific Feature/Page Divergence Audit
 
-Applicability: use this only as a generic Git investigation pattern when comparing a visible feature or page between two branches. Anti-condition: do not encode concrete project names, branch names, PR numbers, or page names in this skill; resolve those from the current repository each time.
+Detailed branch/page divergence audit moved to `references/branch-specific-divergence-audit.md`.
 
-- Fetch/prune before conclusions, and compare remote refs when the user is asking about deployed or shared branch behavior.
-- Quantify both directions of divergence before inspecting files: count left/right commits and list unique commits on each side with dates and subjects.
-- Narrow the investigation to the feature's component, tests, locale files, data/config files, and services. Run path-limited logs in both directions so branch-wide drift is not mistaken for the page-specific cause.
-- Use the branches' merge-base for scoped diff stats when deciding which side introduced the behavior.
-- Inspect branch-tip file contents and diffs, not only commit subjects. For UI symptoms, tie screenshot-visible rows, labels, or controls to exact additions/removals in code and tests.
-- When reporting, separate: current branch divergence, the commit(s) that explain the visible behavior, which branch matches the screenshot/symptom, and merge/cherry-pick risk from unrelated unique commits.
-- If a single feature/fix commit is present on one remote branch but missing from the target branch, verify portability without disturbing the user's worktree: create a temporary detached worktree from `origin/<target>`, `git cherry-pick --no-commit <commit>`, inspect `git diff --cached --stat/name-status` and `git diff --cached --check`, then remove the worktree. This distinguishes "safe scoped cherry-pick" from "merge the whole divergent branch".
-- If the target branch already contains the commit but the user suspects it was reverted, do not stop at `git branch --contains` / `merge-base --is-ancestor`. Inspect path-scoped commits after the candidate (`git log <commit>..origin/<target> -- <paths>`) and compare the candidate tree to target tip for the affected paths (`git diff <commit> origin/<target> -- <paths>`). A later “restore/revert” commit may have removed the original semantics while the commit remains in ancestry.
-- To restore a reverted-contained commit, use a clean worktree from the current target tip, apply only the affected files/semantic hunks from the candidate, then re-apply or preserve later target-branch fixes in the same files before committing. Rebase/fetch once more before final verification if the remote target advanced during the work. The final diff should be against fresh `origin/<target>` and limited to the intended paths; do not overwrite newer target behavior just because the older candidate file had it absent.
-- When the commit adds its own focused test, run that test in the temporary worktree after the no-commit cherry-pick or semantic restore. If dependencies are already installed in the main worktree and the temp worktree is on the same machine, a symlinked `node_modules` can speed verification; treat it as local acceleration only, not evidence that CI has dependencies.
+Load it when deployed behavior differs by branch, page, feature flag, route, or artifact.
+
+Minimum in-root rule: compare exact commits/build artifacts before concluding code is missing or deployed.
 
 ## Deployed Behavior Not Matching a Present Commit
 
@@ -116,7 +118,16 @@ Applicability: use this generic Git + deployment investigation pattern when a fi
 1. **Branch tip semantics**: prove whether the branch still has the fix at its tip, not merely whether it contains the commit. Run path-scoped checks such as `git log <commit>..origin/<branch> -- <affected-paths>` and `git diff --exit-code <commit> origin/<branch> -- <affected-paths>` to detect later overwrites, reverts, or no-op drift.
 2. **Deployment metadata**: inspect the hosting service's active deployment branch, commit, status, and domain mapping where available. Treat similarly named environments or domains as distinct until proven otherwise.
 3. **Served artifact content**: fetch the live HTML, extract hashed JS/CSS assets, and search served bundles for robust fix markers such as the API call shape, mapping logic, route/component marker, or UI string. Do not rely only on source identifiers that minification may remove.
-4. **Diagnosis split**: if one served domain contains the fix and another does not, report a deployment/environment mismatch rather than a Git regression. If the served artifact contains the fix but behavior is still old, separate browser/PWA service-worker cache, installed-app cache, and real backend response/data issues before proposing code changes.
+4. **Dirty/local-future split**: when local source or untracked files show a new runtime path/API call but the deployed artifact does not, classify it as a future/dirty-worktree implementation path rather than current user-facing behavior. Inspect `git status --short`, `git ls-files <paths>`, and served bundle strings before saying an endpoint is currently used. Report separately: deployed behavior, tracked source behavior, and untracked/local-only behavior.
+5. **Diagnosis split**: if one served domain contains the fix and another does not, report a deployment/environment mismatch rather than a Git regression. If the served artifact contains the fix but behavior is still old, separate browser/PWA service-worker cache, installed-app cache, and real backend response/data issues before proposing code changes.
+
+## GitLab Self-Managed MR / Auto-Merge Subflow
+
+Detailed GitLab MR and auto-merge subflow moved to `references/gitlab-mr-auto-merge-subflow.md`.
+
+Load it only when operating self-managed GitLab MR automation and exact target/project authority exists.
+
+Minimum in-root rule: MR automation is an external side effect; verify target project, branch, permissions, and receipts.
 
 ## Verification Checklist
 
@@ -131,5 +142,9 @@ Applicability: use this generic Git + deployment investigation pattern when a fi
 - `references/git-conflict-resolution.md` — conflict marker, rebase, stash-pop, binary conflict, and verification details.
 - `references/multi-repo-branch-orchestration.md` — project-profile-driven branch sync and batch templates.
 - `references/control-plane-home-workspace-triage.md` — classify and safely clean mixed agent/control-plane home repos with config, runtime DBs, logs, notes, skills, task evidence, vendored checkouts, and submodules.
+- `references/control-plane-local-existing-cleanup.md` — session-derived checklist for整理 an existing Hermes/control-plane home: classify durable skills/scripts/docs vs runtime/cache/raw evidence, use repo-local excludes, handle hook false positives without bypassing hooks, and report remaining dirty boundaries.
 - `references/dirty-workspace-gain-extraction.md` — compare a stale dirty workspace against a target branch, back up state, classify changes, and extract only beneficial increments into a clean worktree.
+- `references/dirty-control-plane-scoped-commit-boundary.md` — stop before staging in broad dirty Hermes/control-plane homes; bucket status entries and emit a DecisionPacket / ContinuationPacket before any scoped commit.
+- `references/self-managed-gitlab-mr-automation.md` — self-managed GitLab MR creation/auto-merge capability ladder, safe PAT handling, glab auth pitfalls, push-option fallback, and verification evidence.
 - `references/clean-pr-worktree-auto-merge.md` — isolate scoped PRs in fresh worktrees and recover from `gh pr merge` failures caused by sibling worktrees using `--repo OWNER/REPO`.
+- `references/clean-gitlab-mr-from-dirty-stale-worktree.md` — create GitLab MRs from a clean target-based worktree when the original worktree is dirty, stale, or has ambiguous target-branch wording.

@@ -19,7 +19,9 @@ metadata:
 ## Overview
 
 
-Hermes Agent has a built-in MCP client that connects to MCP servers at startup, discovers their tools, and makes them available as first-class tools the agent can call directly. No bridge CLI needed -- tools from MCP servers appear alongside built-in tools like `terminal`, `read_file`, etc.
+Hermes Agent has a built-in MCP client that connects to MCP servers at startup, discovers their tools, and registers them as native Hermes Agent tools.
+
+Design-tool bridge note: for Stitch/Gemini → Figma → Hermes workflows, use `references/stitch-figma-document-api-bridge.md` for token safety, direct Figma Document API fallback, Figma Context MCP configuration, and browser-session pitfalls. For Stitch's own remote HTTP MCP setup panel, use `references/stitch-http-mcp-setup.md` to translate client-specific TOML into Hermes YAML (`headers`, not `http_headers`) and preserve exposed-key safety.
 
 ## When to Use
 
@@ -32,6 +34,8 @@ Use this whenever you want to:
 
 For ad-hoc, one-off MCP tool calls from the terminal without configuring anything, see the `mcporter` skill instead.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - **mcp Python package** -- optional dependency; install with `pip install mcp`. If not installed, MCP support is silently disabled.
@@ -257,6 +261,12 @@ The CLI banner can render configured MCP servers as `failed` before startup disc
 
 The client retries up to 5 times with exponential backoff (1s, 2s, 4s, 8s, 16s, capped at 60s). If the server is fundamentally unreachable, it gives up after 5 attempts. Check the server process and network connectivity.
 
+## Design-tool MCP integrations
+
+When connecting Figma, Stitch-like design generators, or HTML/code-export services, follow `references/design-tool-mcp-integration.md`: verify the package/endpoint first, keep tokens in env/secrets, treat exported design/code as evidence, derive token/screen maps, and apply product changes through reviewed patches and verification rather than direct generated overwrite. For one-off Figma imports, `scripts/figma_fetch_node.py` provides a direct REST fallback from a copied Figma frame link to raw JSON evidence without requiring MCP startup/restart.
+
+For Stitch/Gemini → Figma → MCP → HTML/product-code workflows, also follow `references/stitch-figma-html-to-product-mcp.md`: use Stitch/Gemini for visual ideation, Figma nodes as design evidence, MCP as read-only transport, generated HTML as a quarantined translation artifact, and keep runtime product logic in owned application code with screenshot-diff verification.
+
 ## Examples
 
 ### Time Server (uvx)
@@ -372,13 +382,23 @@ Disable sampling for untrusted servers with `sampling: { enabled: false }`.
 
 ## Common Pitfalls
 
+### HTTP MCP header-auth setup from Codex-style snippets
+
+When an external service shows a Codex/TOML snippet using `[mcp_servers.<name>.http_headers]`, translate it to Hermes YAML using `headers`, then verify with `hermes mcp list`, `hermes mcp test <name>`, and `hermes mcp doctor <name>` before claiming the server is connected. Redact header values in logs, and remember that CLI-level success does not add new tools to an already-started chat until Hermes reloads its tool registry. See `references/http-mcp-header-auth-hermes.md`.
+
+If the user says they have authorized a retry for a header-auth HTTP MCP whose key was shown in chat, do not print or persist the full key again. Re-test with CLI commands that redact headers (`hermes mcp test <name>`, `hermes mcp doctor <name>`) and inspect logs only for registration/tool counts. Distinguish three states in the report: config/server authentication works, agent startup registered `mcp_<server>_*` tools, and this particular chat turn's static tool namespace may still lack those tool functions until a reload/new session. Do not describe the last state as MCP failure.
+
+
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+
+## HTTP-header remote servers
+
+For remote HTTP MCP servers authenticated by custom headers, especially when upstream docs show Codex/TOML `http_headers`, see `references/http-header-mcp-servers.md`. Hermes native MCP uses YAML `headers`, verify with `hermes mcp list/test/doctor`, and reload the agent session before expecting `mcp_<server>_*` tools to appear.
 
 ## Verification Checklist
 
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

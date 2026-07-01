@@ -52,6 +52,8 @@ Merge duplicate logic and perform safe refactoring with risk assessment.
 - after finding repeated patterns across modules
 - when code review flags copy-paste
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When NOT to use
 - Code has zero duplication — don't invent abstractions
 - You don't understand the business context of both copies

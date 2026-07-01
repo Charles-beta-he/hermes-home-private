@@ -5,6 +5,21 @@ description: Use when planning personal trips, road trips, motorcycle trips, fli
 
 # Travel Planning
 
+## Overview
+
+Plan personal trips, routes, day-by-day itineraries, live on-road execution, local food/nightlife choices, booking evidence, and travel-assistant reminders with evidence-first routing.
+
+## When to Use
+
+- Planning personal trips, motorcycle/road trips, routes, hotels, scenic stops, food, parking, tickets, reservations, or live travel execution.
+- Recalling an existing travel plan, booked hotel, or scheduled travel assistant state.
+- Evaluating local recommendations with public evidence, social evidence, opening hours, route fit, and risk.
+
+Don't use for:
+- generic geography facts or visa/legal/medical advice that require a specialist source;
+- booking, payment, cancellation, or credential entry without explicit authority and human confirmation;
+- recommending already-booked hotels as alternatives unless the user asks to compare.
+
 Use this skill when the user asks for trip recommendations, itinerary design, route planning, motorcycle/road-trip planning, destination comparison, or travel logistics, including mobile connectivity/SIM decisions for travel.
 
 ## Connectivity / UK mobile porting
@@ -13,36 +28,11 @@ Reference: `references/uk-mobile-porting-and-travel-sims.md` covers UK travel SI
 
 ## Core workflow
 
-1. **Clarify only path-changing assumptions.**
-   - If the user gives a clear origin/dates/mode, proceed.
-   - Ask only when missing context materially changes feasibility, safety, budget, side effects, or booking decisions.
-   - Do not assume “depart from home by vehicle” for motorcycle trips: explicitly distinguish:
-     - ride from origin;
-     - fly/train to destination then rent locally;
-     - self-drive car;
-     - guided/chartered route.
+Detailed travel planning core workflow moved to `references/core-workflow.md`.
 
-2. **Ground current facts with tools.**
-   - Verify current date/holiday window, weather, road/season risks, and transport feasibility with tools.
-   - Treat forecasts as provisional; call out when a plan depends on rechecking T-7/T-2 days.
-   - For flights/rentals, prefer current search/official/vendor/map evidence over generic memory.
-   - When travel execution depends on dynamic booking platforms, first verify the available query paths before comparing options: public endpoint, official API, mobile app on desktop, authenticated browser, or user-provided screenshot. Stop at login, CAPTCHA, identity, or payment gates.
-   - For complex trips with route fallbacks, keep a compact local planning source of truth: objective, route branches, booking chains, deterministic probes, evidence output, open gaps, and manual intervention boundaries.
+Load it when building a full trip plan from destination, dates, route constraints, bookings, evidence, and day-by-day itinerary.
 
-3. **Use the user's prior travel history when available.**
-   - If the user asks to avoid repeats or references图库/photos, inspect photo/location metadata when accessible.
-   - Use it only to reduce repetition and improve recommendations; do not expose unnecessary personal-location details.
-   - Summarize as broad regions already visited, not raw coordinates or exhaustive private logs.
-
-4. **Optimize for the stated trip objective.**
-   - Identify whether the trip is romance, scenery, riding intensity, novelty, safety, budget, food, photography, or family comfort.
-   - Rank destinations by the objective, not by generic popularity.
-   - For couples trips, protect experience quality: avoid night riding, excessive daily mileage, and weather-driven “拉练”.
-
-5. **Produce an executable plan, not a generic list.**
-   - Give a final recommendation first.
-   - Include date-by-date route, distance bands, lodging zones, contingency branches, and decision gates.
-   - Keep output focused on choices that affect booking/routing/safety.
+Minimum in-root rule: preserve booked hotels and front-load ticket/reservation/opening-hour/parking checks.
 
 ## Motorcycle / local-rental trip planning
 
@@ -69,74 +59,155 @@ When the user will fly/train to a destination and rent a motorcycle locally:
 
 ## Weather-aware route shaping
 
-1. Put the most scenic/remote/longest segments into the best forecast window.
-2. Put rain/wind-prone days near cities, rental bases, or short-loop options.
-3. Avoid making the return/rental deadline depend on a long remote ride under rain, wind, or mountain conditions.
-4. For grassland/coastal/open roads, treat **crosswind** as a first-class hazard, not secondary to rain.
-5. For mountains, account for fog, wet leaves, gravel washout, landslide/rockfall risk, and lower temperatures.
-6. For short-holiday motorcycle trips with uncertain weather/rentals, prefer a **fixed-hub A/B contingency topology**:
-   - keep arrival city, rental pickup/return, and final pre-flight lodging fixed;
-   - design a higher-upside scenic branch and a lower-risk fallback branch from the same hub;
-   - book cancellable lodging packages for both branches;
-   - choose the branch at T-1 / D0 after checking weather, actual vehicle condition, and lodging constraints;
-   - force the penultimate day back to the hub so the final day is only return/short-loop logistics.
-7. When the user must depart in the evening but the original destination has no late direct flight, do not force the original airport. Search a larger regional hub with evening origin flights plus early next-morning feeder flights, then re-score against the trip objective, rental certainty, weather, and no-night-riding constraints. Keep “departs late” distinct from merely “arrives late”.
-7. When the user asks for concrete execution details, include a riding weather/clothing index, not only a route: min/max temperature, apparent temperature, precipitation probability/amount, wind gusts, UV, sunrise/sunset or latest safe arrival time, and gear layers.
+Detailed weather-aware route shaping moved to `references/weather-aware-route-shaping.md`.
+
+Load it when weather, seasonal scenery, closures, road safety, or alternative routes affect the itinerary.
+
+Minimum in-root rule: adjust route and timing for weather/safety before optimizing attractions.
+
+## Mobile offline travel copilot / TripState productization
+
+Detailed mobile offline travel copilot and TripState productization guidance moved to `references/mobile-offline-travel-copilot-tripstate.md`.
+
+Load it when turning travel planning into a product/workflow artifact with state, reminders, offline support, or execution checkpoints.
+
+Minimum in-root rule: keep travel plan evidence separate from productization ideas and do not imply live assistant behavior without runtime proof.
+
+## Must-go anchors vs time allocation
+
+When a user says a place is “必须去 / must visit,” treat that as a **route inclusion constraint**, not as an automatic full-day allocation. Decide duration by evidence and opportunity cost: scenery intensity, route fit, ticket/traffic friction, crowd risk, weather dependency, and what higher-value candidates would be displaced. For social-media-shaped domestic trips, first build and rank the candidate pool (required anchors + treasure spots + food/city windows + road-experience segments), then assign time bands such as quick stop / half-day / big half-day / full day.
+
+If Xiaohongshu or another domestic social platform is login-gated, blocked, or returns empty after the user helps with login, do not claim the notes were read and do not keep burning time on the same blocked UI. State the boundary, ask for mobile app screenshots for OCR when useful, and continue with accessible official/OTA/map evidence as provisional. See `references/xinjiang-ili-social-evidence-route-shaping-2026-06.md` for the session-derived Ili/Xinjiang pattern.
 
 ## Output shape
 
-Prefer:
+Detailed travel output shape moved to `references/output-shape.md`.
 
-- **Conclusion / best choice**
-- **Why this fits the user**
-- **Weather/season decision**
-- **Date-by-date itinerary**
-- **Fallback branches**
-- **Booking checklist**
-- **Safety/risk gates**
+Load it when producing a full itinerary, must-go ranking, route table, booking checklist, or risk/evidence appendix.
 
-Avoid:
+Minimum in-root rule: include route/time/booking/opening-hour/parking evidence for must-go items and avoid recommending already-booked hotels.
 
-- long generic destination lists after the user has chosen a destination;
-- pretending booking inventory is confirmed when only general search evidence exists;
-- dumping private photo metadata;
-- overfitting a one-day forecast as final truth.
+## Scheduled travel assistant drift / evidence audits
+
+When auditing or operating a scheduled travel-assistant cron/job, treat it as a stateful travel co-pilot, not a static itinerary generator. Before judging quality or sending the next briefing, verify the job config, actual run evidence, latest foreground user updates, TripState/state-file freshness, data-source coverage, and delivery evidence. Weather-only freshness is insufficient: compare outputs against confirmed seen POIs, purchased tickets, cancelled preferences, car-return/flight anchors, route/ticket/opening gates, and local food evidence boundaries. If the latest chat state is not available to the job, create/read a scoped TripState SSOT and downgrade stale/unknown cases to confirmation/checklist mode instead of guessing. See `references/scheduled-travel-assistant-drift-evidence-governance.md`.
+
+## Stateful scheduled briefs and drift prevention
+
+When supporting a multi-day live trip through scheduled briefs or repeated check-ins, treat the trip as a stateful workflow, not a fresh itinerary each time. Maintain or recover a compact TripState before giving concrete daily guidance: current phase, current/tonight location, booked hotels, pickup/return windows, flights, completed/seen POIs, booked tickets, cancelled preferences, open unknowns, and hard safety constraints.
+
+For every scheduled travel brief:
+
+1. Start with a **30-second decision card**: today’s main line, route, latest time gate, explicit do-not-do list, fallback, and the single most valuable missing screenshot/location.
+2. Separate **confirmed facts / inferred from original plan / unknowns**. Do not present placeholders such as “hotel” or previously recommended candidates as confirmed anchors.
+3. Check for drift: already-seen POIs, changed hotels/current location, route phase shift from sightseeing to return logistics, outdated ticket/food assumptions, and whether weather was updated but TripState was not.
+4. If the next hard constraint is flight/car return, switch from attraction advice to an execution checklist: fuel, car video, luggage, return point, airport buffer, and only nearby/low-risk food.
+5. For live in-trip messages, switch to short copilot mode rather than long daily-brief mode.
+
+See `references/stateful-live-travel-pa-drift-review-2026-06.md` for the session-derived TripState pattern, drift checklist, and daily-brief vs live-copilot output cards.
+
+## TripState-gated travel copilot
+
+When a trip has confirmed booking anchors or the user wants a travel-agent/copilot experience, operate from a scoped TripState and gate engine rather than chat memory alone. See `references/tripstate-gated-travel-copilot.md` for the full pattern: classify booking screenshots as confirmed anchors, keep trip-specific facts out of long-term memory, default live decisions to current conversation time + TripState unless explicitly overridden by user-provided live facts, and answer with a 30-second copilot card plus fallback.
+
+Key pitfall: if the user corrects a live-travel workflow rule, first ask whether it is a class-level gate, scoped TripState rule, or stable personal preference. Do not reflexively write it to durable memory; for most trip execution rules, land it as a TripState gate or skill procedure.
+
+## Live trip execution checkpoints
+
+Use this when the user is already moving, shares live location pins, or asks for the next place/route during a trip.
+
+### Recalling an original plan / booked hotels mid-trip
+
+When the user asks to "回顾原有计划", "我订的酒店", or similar during an active trip:
+
+1. First recover evidence from prior conversation/session context, scheduled trip brief prompts, and scoped travel references before asking the user to repeat details.
+2. Separate facts by confidence:
+   - **confirmed anchors**: flights, rental window, dates, current live location, explicit order screenshots or user-confirmed bookings;
+   - **planned route**: intended city/attraction sequence and safety constraints;
+   - **hotel candidates / decision logic**: hotels previously compared or recommended but not proven booked.
+3. Never upgrade a previously recommended/candidate hotel into "已订" unless the evidence includes an order screenshot, explicit user confirmation, or booking artifact.
+4. Return the answer in an operational shape: trip topology by date, hotel evidence by city/night, what is confirmed vs uncertain, and the immediate implication for today's route.
+5. If booking proof is missing, ask for the hotel/order screenshot only after giving the best recovered summary and marking uncertainty.
+
+1. **Confirm first, don't lecture.** Start by acknowledging the live state the user is in (already picked up car, already ate, nearing a scenic spot, blocked at gate), then give the next executable action. Avoid generic "how to search" instructions unless evidence is blocked and the user needs a field tactic.
+2. For every next attraction / scenic area / tribe / park / paid viewpoint recommendation, verify or explicitly flag the operational gate before routing: ticket/预约 channel, opening status, last entry, parking/drop-off point, route permission, and failure branch. Do not send a user to a gate with only a navigation pin.
+3. For domestic China road-trip execution, return copyable native-map links when possible: 高德 marker/navigation links with precise coordinates and name, plus a fallback keyword search if the URI fails.
+4. For couples on the road, protect continuity and mood: avoid long detours to uncertain venues, preserve sunset/return windows, and give a graceful fallback if a ticket/entry/parking check fails.
+5. Use a compact live-response shape: **current confirmation → precise next navigation/action → key gate check → fallback**. Keep it short enough to read while parked.
+
+## Live on-road travel execution
+
+Use this when the user is already moving, has shared live pins, is near a gate/parking lot, or needs the next stop. The priority is not education; it is operational confirmation.
+
+1. First confirm the next executable action: exact destination/gate/parking point, clickable navigation, ticket/entry requirement, opening/last-entry time, parking/traffic risk, and fallback if blocked.
+2. For scenic spots, treat tickets and admission gates as mandatory checks before sending the user onward: whether tickets are required, where to buy/check in, last entry, correct entrance/parking lot, and whether the user can still enter today.
+3. If live platform evidence is blocked, say the boundary and give a field-action fallback: call the scenic spot, ask gate staff/security, buy via official/Meituan/Ctrip/Trip.com if available, or choose a nearby free viewpoint/parking-safe stop.
+4. Do not respond with a how-to lecture when the user needs navigation or confirmation. Give the confirmed point first, then one short note about risk/fallback.
+
+## Live on-road execution mode
+
+Detailed live on-road execution mode moved to `references/live-on-road-execution-mode.md`.
+
+Load it during same-day road-trip execution, rerouting, fatigue/weather changes, or time-sensitive checkpoint decisions.
+
+Minimum in-root rule: preserve safety, fuel/charging/rest, weather, and parking constraints before optimizing attractions.
+
+## Local food / nightlife recommendations
+
+Detailed local food/nightlife recommendation guidance moved to `references/local-food-nightlife-recommendations.md`.
+
+Load it when selecting restaurants, cafes, bars, nightlife, or local experience stops.
+
+Minimum in-root rule: align meal timing, route fit, opening hours, booking need, and local evidence.
 
 ## App-only booking evidence
 
-Scope: use this only when a travel plan reaches concrete booking research and ordinary web pages do not provide current bookable options. Do not use it for high-level itinerary brainstorming.
+Detailed app-only booking evidence guidance moved to `references/app-only-booking-evidence.md`.
 
-For domestic social-platform travel evidence (Xiaohongshu/Douyin screenshots, login-gated searches, "马上出发" checklists, or a visual "show me" evidence board), use `references/domestic-social-travel-evidence-board.md`. It covers screenshot OCR, no-proxy temporary browser login, quote→risk→action synthesis, HTML evidence-board output, and cleanup/privacy rules.
+Load it when reservations/tickets/availability are visible only through apps or platform-specific evidence.
 
-1. Prefer current, source-attributed booking evidence over generic search snippets.
-2. If a booking web page blocks automation, switch to safer channels: official availability endpoints, official/provider apps, user-provided app screenshots, or semi-automated browsing in the user's real app session.
-3. Stop for passwords, SMS/captcha, payment, biometric checks, or other secrets.
-4. Summarize booking research as options with source, time, price, fit/risk, and next action.
+Minimum in-root rule: label app-only evidence limits and do not imply confirmed booking/payment without user authorization.
 
-See `references/china-travel-booking-evidence-2026.md` for a scoped domestic-booking evidence pattern.
+## Mainland China local food / nightlife evidence
+
+For mainland China same-day restaurant, cafe, bar, night-market, or local eat/drink/play recommendations, do **not** rely on Google/Bing/OSM as the primary evidence. Prefer, in order: Dianping / Meituan for shop rating, review count, per-capita price, current hours, packages, recommended dishes, and recent bad reviews; Xiaohongshu for recent traveler/local notes and vibe/queue signals; Douyin for current heat and dish visuals; Gaode/Baidu Maps for routing and live opening signals. If web access is blocked, ask for app screenshots and OCR them instead of filling gaps with weak overseas-map evidence. See `references/china-local-food-play-evidence-2026-06.md`.
+
+## China mainland local eat/drink/play evidence
+
+For mainland China restaurants, night markets, cafes, bars, entertainment, and date spots, generic web/map sources are only weak fallback evidence. Prefer native consumer-app evidence before recommending a specific venue:
+
+1. Ask for screenshots or screen recordings from 大众点评 / 美团 / 小红书 / 抖音 / 高德 / 百度地图 when direct web access is blocked or weak.
+2. OCR the screenshot for shop name/branch, rating, review count, per-capita price, current open status, recommended dishes, latest negative reviews, queue/wait hints, group-buy/menu prices, and ambience photos.
+3. Use 高德/百度/official POI APIs or map pages mainly for distance, route, and location identity; do not treat them as enough proof of food quality.
+4. Use Google Maps/Bing/OSM only as rough orientation or fallback for China local shops; label confidence as weak if no native-app evidence is available.
+5. Stop at password, SMS, CAPTCHA, payment, identity, or biometric gates. Do not bypass platform defenses for a one-off travel decision.
+
+If evaluating durable project support, treat open-source crawlers/reverse-engineering projects as architecture references or isolated spikes only. For live trip decisions, screenshot/OCR plus map cross-check is usually safer and faster.
 
 ## Xiaohongshu / social-media travel evidence
 
-Xiaohongshu web may block with IP-risk/login. Do not claim you read notes if blocked. Prefer, in order: user-provided app screenshots; explicit user consent for a temporary web login/QR scan; broader web snippets as weak evidence; or a provisional checklist clearly labeled as route/weather-derived.
+Detailed Xiaohongshu/social-media travel evidence guidance moved to `references/xiaohongshu-social-travel-evidence.md`.
 
-When the user consents to web login, use a no-proxy temporary browser profile to avoid system VPN/proxy ports, read only public search/note DOM, then close the browser and delete the temporary profile. Preserve the evidence chain: note title + short quote/comment → risk judgment → concrete checklist item. See `references/xiaohongshu-travel-evidence-no-proxy-2026-06.md`.
+Load it when local food/nightlife/attraction choices depend on recent social evidence or Chinese-language sources.
 
-For domestic motorcycle trips where evening flight constraints, air-rail transfers, 12306 timing, and uncertain motorcycle rental leads interact, also consult `references/domestic-motorcycle-trip-transport-rental-evidence-2026-06.md` before recommending the route.
-
-Scoped reference, not a global rule: for a short northern grassland / border-city couples self-drive itinerary where the user asks for scenic, romantic, or internet-famous hotels with date-specific room/price evidence, consult `references/hulunbuir-couples-hotel-booking-evidence-2026-06.md`. Applicability: hotel selection must balance romantic/scenic value against no-night-driving, parking, and pre-flight return logistics. Anti-conditions: do not reuse the named hotels or prices without rechecking live inventory; do not apply it to non-couples, non-driving, or unrelated regions.
-
-For Hailar / Hulunbuir self-drive car rental with airport pickup plus city or hotel return, consult `references/hailar-car-rental-platform-screening-2026-06.md`; verify exact local outlet capability, pickup/return windows, fees, route permission, insurance, rescue, and whether the evidence comes from an app/order page rather than SEO city pages.
+Minimum in-root rule: distinguish social hype from verified opening hours, location, booking, parking, and route fit.
 
 ## References
 
-- `references/domestic-travel-query-chain.md` — scoped pattern for travel source/query feasibility before price comparison; includes platform-source probing, Mac iPhone/iPad app checks, SSOT artifacts, and anti-conditions for stale route/price data.
-- `references/domestic-air-rail-intermodal-screening-2026-06.md` — session-derived pattern for domestic China flight + train transfer screening; includes 12306 station-code/query probing, transfer-buffer feasibility, and when to downgrade theoretical overnight-rail ideas.
-- `references/hulunbuir-motorcycle-rental-planning-2026-06.md` — session-derived pattern for Hangzhou→Hulunbuir flight + local motorcycle rental, weather-window route shaping, and rental-vendor screening for a desired ADV model.
-- `references/dragon-boat-hailar-arxan-weatherproof-planning-2026-06.md` — session-derived pattern for Hailar-as-hub A/B route planning: Hulunbuir north-loop scenery upside vs Arxan south-loop weather/intensity fallback, cancellable lodging packs, rental-evidence gates, and northern grassland clothing guidance.
-- `references/dragon-boat-hulunbuir-arxan-contingency-2026-06.md` — session-derived pattern for fixed-hub A/B contingency planning: Hailar north-line vs Arxan south-line, cancellable hotel packages, rental lead screening, holiday crowding, and riding weather/clothing index.
-- `references/hulunbuir-arxan-dual-route-contingency-2026-06.md` — session-derived pattern for Dragon Boat Festival sunny-weather planning where Hailar is the stable in/out + pickup/return hub and Hulunbuir north line vs Arxan/Chaihe south line are treated as switchable branches with holiday-crowd controls.
-- `references/dragon-boat-evening-departure-inner-mongolia-hub-2026-06.md` — session-derived pattern for preserving an Inner Mongolia grassland/forest trip when the user can only depart in the evening: use a larger hub such as Hohhot, overnight near the airport, then take an early feeder into Arxan or Hailar while keeping rental certainty and no-night-riding constraints explicit.
-- `references/hulunbuir-car-rental-hotel-booking-2026-06.md` — session-derived pattern for Hailar airport pickup/city hotel car return, SUV selection for Hulunbuir roads, Ctrip/Meituan vs Trip.com booking evidence, couple-friendly hotel tradeoffs, and using image URLs to explain why a hotel is worth booking.
-- `references/hulunbuir-car-rental-hotel-return-planning-2026-06.md` — session-derived pattern for Hailar afternoon arrival + local car rental: airport pickup, Hailar city/hotel return the evening before an 11:30 departure, north-line lodging topology, platform verification, and no-night-rural-driving cutoffs.
-- `references/hulunbuir-couples-self-drive-booking-weather-social-evidence-2026-06.md` — scoped pattern for Hulunbuir couples self-drive decisions that combine domestic hotel booking evidence, Ctrip/Meituan app limitations, GitHub-supported Ctrip scrape options, SUV rental comparison, Open-Meteo clothing/snow checks, and Xiaohongshu screenshot-based避坑 synthesis.
-- `references/xiaohongshu-no-proxy-search-evidence-2026-06.md` — scoped pattern for Xiaohongshu travel evidence when the user asks to avoid a VPN/proxy port: bypass system proxy for probes, use isolated no-proxy Chrome if needed, stop at login/CAPTCHA, and report evidence boundaries clearly.
+Detailed travel planning references index moved to `references/references-index.md`.
+
+Load it when locating older travel subtopic references or related project profiles.
+
+Minimum in-root rule: use the smallest relevant reference, not the whole index, for ordinary itinerary planning.
+
+## Common Pitfalls
+
+1. Recommending a hotel after the user already said lodging is booked.
+2. Omitting ticket/reservation/opening-hour/parking checks for must-go items.
+3. Optimizing for famous spots while ignoring route time, meal timing, weather, or live execution risk.
+
+## Verification Checklist
+
+- [ ] Must-go items include evidence, route fit, time cost, and risk.
+- [ ] Food stops align with meal times and local evidence.
+- [ ] Tickets/reservations/opening hours/parking are checked or explicitly marked unknown.
+- [ ] Existing bookings and user preferences are preserved.

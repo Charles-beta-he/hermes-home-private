@@ -25,6 +25,8 @@ Source boundary:
 - Last source-verified commit for this skill: `61522e103e61601c553b4544abcd53fa7ebf9f1d`
 - Treat TradingAgents as reference architecture only. Do not add it as a Hermes runtime dependency unless explicitly requested.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Patterns to reuse in Hermes
 
 1. Typed role graph before prompt writing
@@ -91,6 +93,13 @@ Before implementing a TradingAgents-inspired workflow in Hermes:
 - Do not claim LangGraph feature parity unless Hermes has actually implemented the corresponding graph/checkpoint runtime.
 - Do not let fallback free text bypass proof gates.
 - Do not promote one run's outcome into memory; durable procedures belong in skills.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

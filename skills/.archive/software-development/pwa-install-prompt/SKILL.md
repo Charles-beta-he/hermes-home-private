@@ -29,6 +29,8 @@ Do not use it for:
 Control when and how the "Add to Home Screen" prompt appears. Chrome auto-fires
 `beforeinstallprompt`; Safari iOS never does — both need explicit handling.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Chrome Install Criteria (ALL required)
 
 | # | Condition | How to verify |
@@ -138,6 +140,13 @@ Don't prompt on first visit. Show install UI at:
 6. **Standalone mode detection on iOS** — `(window.navigator as any).standalone`
    is the only reliable check; `display-mode: standalone` media query may not
    work on older iOS versions.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

@@ -20,6 +20,12 @@ Skip-and-resync dirty-bit pattern for Zustand (or similar) stores with one-at-a-
 
 When a Zustand (or similar) store has a "one-at-a-time" async guard (`syncInFlight`), rapid-fire triggers (SSE events, polling, visibility changes) get silently dropped. The **skip-and-resync dirty-bit** pattern guarantees eventual consistency without unbounded recursion.
 
+
+## When to Use
+
+- Use when the user's request explicitly matches `concurrent-async-guard` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
 ## Problem
 
 ```
@@ -178,6 +184,13 @@ Use this when:
 - You don't need to re-sync after a missed event
 
 For stores with SSE, polling, or multiple trigger sources, use the full skip-and-resync pattern above.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

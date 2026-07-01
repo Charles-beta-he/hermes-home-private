@@ -16,6 +16,12 @@ metadata:
 
 Modify, debug, or extend the s6-overlay supervision tree inside the Hermes Agent Docker image — adding new services, debugging profile gateways, understanding the Architecture B main-program pattern. It is organized as a gated workflow: advance through explicit stages, preserve evidence at each boundary, and leave neighboring domains to their own skills.
 
+
+## When to Use
+
+- Use when the user's request explicitly matches `hermes-s6-container-supervision` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
 ## When to use this skill
 
 Load this skill when you're working on:
@@ -178,6 +184,13 @@ Check whether something is invoking `s6-svscanctl -t` or `/run/s6/basedir/bin/ha
 
 - `hermes-agent-dev`: General hermes-agent codebase navigation
 - `hermes-tool-quirks`: Specific Hermes-tool workarounds (sed/grep/etc.) — load when debugging the s6 stack's interaction with hermes built-in tools.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

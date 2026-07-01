@@ -25,6 +25,8 @@ Use this skill when the user asks about:
 - thermal validation of electronics near printed plastic
 - whether a powered build is safe to assemble or leave unattended
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Architecture decision
 
 Electrical is independent from Manufacturing when the workflow includes powered hardware. Manufacturing owns printed/mechanical process semantics; Electrical owns power/electronics semantics; External Control owns physical actuation and credential/audit gates.
@@ -127,3 +129,9 @@ Before a powered lamp is approved for use:
 1. Advancing stages without a gate, evidence artifact, or closure-state check.
 2. Skipping prerequisite checks and assuming the environment already matches the workflow.
 3. Reporting success before reading back the actual outputs, files, or external side effects.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

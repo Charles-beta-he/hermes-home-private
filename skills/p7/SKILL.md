@@ -28,6 +28,8 @@ metadata:
 
 - User says 'P7模式', '方案驱动', or when spawned as sub-task executor by P8. Produces: implementation plan + code + 3-question self-review, delivered via [P7-COMPLETION]
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 输入 (Input)
 
 | 字段 | 类型 | 必需 | 说明 |

@@ -22,6 +22,8 @@ Do not use it for:
 
 > 接任务时先对齐再动手。理解错了就做错了——先对齐再动手。
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 何时使用
 
 - 收到新需求/功能请求

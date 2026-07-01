@@ -28,6 +28,8 @@ metadata:
 
 - The task falls under MCP Server From Scratch
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## MCP 协议 (最小实现)
 
 MCP (Model Context Protocol) 服务器是一个 stdio 进程, 通过 stdin/stdout 收发 JSON-RPC 2.0 消息。
@@ -247,4 +249,3 @@ proc.terminate()
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

@@ -25,6 +25,8 @@ Use this skill any time a .pptx file is involved in any way — as input, output
 
 - You need to use this skill any time a .pptx file is involved in any way — as input, output, or both
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Quick Reference
 
 | Task | Guide |

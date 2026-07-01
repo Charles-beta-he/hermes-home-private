@@ -116,83 +116,14 @@ When a user asks to analyze an external repository to improve Hermes itself, fir
 
 ## Pitfalls
 
-- `hermes update` (git pull) overwrites vendor patches — use `post-update-check.py --fix` to detect and reapply.
-- Brain task file status changes may be reverted by `dashboard --write` if multimodel state files still have FAIL — update both brain file AND kanban.db.
-- Adding evolution tasks can trigger advisory/multimodel hooks that advance newly created tasks to `review`/`done` even though the user only asked to enqueue future work. After batch-adding taskpool items, verify their actual statuses and explicitly transition them back to `pending` when they are queued work, not completed implementation. Use evidence with an accepted prefix such as `command:` when calling `transition`; free-form evidence strings are rejected.
-- Long `brain_task_orchestrator.py add` calls may time out while still creating the task file and firing hooks. Before retrying or declaring failure, search/read the taskpool for the expected titles and reconcile status; avoid duplicate task creation.
-- `build_environment_hints()` contains dynamic CWD — MUST be in `context_parts`, NOT `stable_parts` (breaks prefix cache).
-- Evolution lane certification deadloop: retry_count >= 2 triggers loop_non_convergence too aggressively. See `references/evolution-lane-cert-loop.md`.
-- Taskpool multi-model fan-out must not run as a long synchronous tick/hook step. Use `multimodel-intervention-step --background` (or dispatch tick `--multimodel-step` without `--multimodel-foreground`) so T2/T3 consult_models fan-out is represented by a durable async job under `~/.hermes/state/taskpool-multimodel/jobs/`, with logs under `~/.hermes/logs/taskpool-multimodel/`. Check `multimodel-intervention-jobs --json` before retrying to avoid duplicate certification on the same task.
-- Taskpool ordinary parallel worker execution must also avoid long synchronous tick waits. Default `brain_task_dispatch_tick.py --parallel-autorun` should start `agent_team_controller.py consume-claimed --background`, record durable worker jobs under `~/.hermes/state/taskpool-workers/jobs/`, and return quickly; use `--parallel-worker-foreground` only for manual debugging. Check `agent_team_controller.py worker-jobs` before retrying to avoid duplicate claimed-batch execution.
-- Convergence subtasks don't auto-trigger parent ratification — must manually unblock parent after children are done.
-- ContinuationPacket / auto-relay is recursive — keep max_relay_count <= 3 to avoid deep stack, and treat both `budget_exhausted` and `max_iterations_reached(...)` as relay-eligible exit reasons.
-- Dashboard `active_count` only shows evolution lane tasks with multimodel scores, not all kanban ready tasks.
-- For taskpool concurrency complaints, check `dispatchable` and `parallel_dispatch.selected_count` before tuning `max_parallel_agents`; zero dispatchable tasks means parallelism has nothing to execute.
-- `post-update-check.py --fix` can exit 0 while still reporting a specific guard as `FIX_FAILED`; read the summary instead of trusting exit code alone.
-- `post-update-check.py` includes `private_repo_governance`: verify `origin` remains the private Hermes repo, `upstream` remains official, `docs/private/` governance docs exist, and no `state.db` / source-local `.hermes/` runtime state leaks back into the code checkout.
-- When vendor/local hardening patches are expected, run `post-update-check.py --fix` after every self-update before declaring Hermes healthy.
-- Cron runtime provider/model resolution must share `hermes_cli.config.load_config()` normalization, not a parallel `yaml.safe_load(config.yaml)` path. Otherwise legacy-but-supported shapes like `model: {model: ...}` and root-level `provider:` / `base_url:` fallbacks diverge from CLI behavior. Preserve the existing no-stale-env invariant: do not pass `HERMES_INFERENCE_PROVIDER` as `requested` for unpinned cron jobs; pass `target_model` separately when the provider resolver needs model-specific API mode.
-- For "cron job / daily report / scheduled message did not send" incidents, do not stop at `cronjob list`. Also inspect scheduler logs for `missed its scheduled time` and `Fast-forwarding to next run`; if Hermes or the gateway was offline past the job's grace window, the scheduler will skip the missed fire and jump to the next schedule.
-- Historical `deliver=origin` warnings are not automatically the root cause of a current missed report. Verify the job's current `deliver` target and correlate with process start times plus the missed-run log line before concluding it is a routing problem.
-- For "conversation ended but async/background work did not happen" incidents, split the mechanism first: background process notification, main-task continuation/relay, or background memory/skill review. Do not infer continuation from config names alone; verify code paths and logs. For bg-review specifically, look for `thread=bg-review`, the review prompt turn, successful/failed `skill_manage`/`memory` tool calls, and missing `Turn ended`/`agent_close` before concluding. See `references/background-review-async-debugging.md`.
-- For completion-claim incidents, audit three boundaries together: (1) compaction/handoff must not become the newest real user request; (2) secrets pasted into chat must be redacted before transcript/FTS/ContextCard persistence; (3) UI/UX extreme, A+, uIMax, or UI acceptance claims require uIMax-style evidence, not only screenshot/smoke/copy gates. Background watch notifications require fresh process/port readback before saying no residual process.
-- For Codex/OpenAI HTTP 400 `image data ... does not represent a valid image`, inspect `agent/image_routing.py` native attachment path before blaming provider auth/model. Native image parts are only safe for real JPEG/PNG/GIF/WEBP bytes; corrupt files or unsupported formats (BMP/TIFF/HEIC/SVG/ICO) must be skipped/fallback-texted instead of filename-guessed into `data:image/jpeg`.
-- For bg-review taskpool integration, distinguish safe candidate extraction from side effects: `background_review.taskpool.mode: suggest` only records candidates in status/HTML, while `mode: enqueue` mutates the taskpool. See `references/background-review-taskpool-suggest-mode.md`.
-- For bg-review summary regressions, remember the review agent inherits the parent conversation snapshot. Both successful action summaries and failed tool-result summaries must skip tool messages already present in `messages_snapshot` by `tool_call_id`/content; otherwise resolved main-turn tool failures can be re-announced as false `Self-improvement review failed` notifications.
-- MCP server `args` containing `~` (tilde) are NOT expanded by the MCP launcher. The path `~/.hermes/scripts/foo.py` resolves relative to the hermes-agent venv directory (e.g. `/Users/charles/.hermes/hermes-agent/~/.hermes/scripts/foo.py`) instead of the user home. Always use absolute paths in MCP server `args` (e.g. `/Users/charles/.hermes/scripts/foo.py`). The error manifests as repeated `can't open file ... No such file or directory` in `~/.hermes/logs/mcp-stderr.log`, causing every worker that loads MCP to waste 7s × 3 retries on connection failure. Check with `grep '~' ~/.hermes/config.yaml` in the `mcp_servers` section.
-- Gateway config smoke tests should use the real `GatewayConfig` shape: `config.platforms` is keyed by `Platform` enum values (e.g. `Platform.TELEGRAM`), and `TELEGRAM_BOT_TOKEN` env override populates `PlatformConfig.token`, not a string-keyed `platforms['telegram']` entry or `.bot_token`. When adding profile-level secret scanners, avoid internal variable names like `secret = ...` in staged code because the existing `uvisa_lark_git_guard.py` may flag secret-like assignments even when values are computed/redacted.
-- Agent team controller (`agent_team_controller.py`) multi-model fallback: for codegen tasks, the fallback chain is GPT-5.5(openai-codex) → Claude Sonnet(anthropic) → MiMo(xiaomi). Each attempt must detect infrastructure failures (SDK null response crash, MCP connection loops, OpenAI client closed, auth/quota errors) and fail-fast to the next model instead of burning the 600s timeout. See `references/agent-team-failfast-model-fallback.md` for detection patterns and trace events.
-- `consult_models.py` multi-model fan-out should use health/circuit-breaker routing, not hardcoded permanent skips. If a provider such as MiMo/Xiaomi times out even on a minimum prompt, record it in `~/.hermes/state/model-health.json` with an `unhealthy_until` TTL and let planner selection skip it temporarily; successful calls should close the breaker. Claude Code verifier/planner calls that only need JSON should pass `--tools ""` with `--max-turns 1` to avoid `error_max_turns` caused by tool_use.
+Detailed `Pitfalls` guidance moved to `references/pitfalls.md`.
 
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Gemini CLI / OAuth provider wiring
 
-When the user asks to connect Gemini to Hermes because they already subscribed in the browser, do not assume a fresh login is required.
+Detailed `Gemini CLI / OAuth provider wiring` guidance moved to `references/gemini-cli-oauth-provider-wiring.md`.
 
-1. Check whether Hermes already has a reusable Gemini OAuth session before changing config.
-   - Run `hermes doctor` and look for `Google Gemini OAuth (logged in ...)`.
-   - If already logged in, prefer wiring the existing `google-gemini-cli` provider instead of forcing a new auth flow.
-2. Verify the provider with a one-shot query before editing config.
-   - Example: `hermes chat --provider google-gemini-cli -m gemini-3.1-pro-preview -q '只回复: GEMINI_OK'`
-3. If the user did not explicitly ask to replace their main model, preserve the current primary provider and attach Gemini as a fallback first.
-   - Use top-level `fallback_providers` in `~/.hermes/config.yaml`.
-   - Example entry:
-     ```yaml
-     fallback_providers:
-       - provider: google-gemini-cli
-         model: gemini-3.1-pro-preview
-     ```
-4. Verify the wiring after config change.
-   - `hermes fallback list`
-   - another direct `hermes chat --provider google-gemini-cli ... -q ...` probe
-5. Report the distinction clearly:
-   - `google-gemini-cli` = Gemini CLI / Cloud Code Assist OAuth path
-   - `gemini` = Google AI Studio API-key provider
-
-### Multi-model integration points for Gemini OAuth
-
-If Gemini should participate in Hermes multi-model orchestration (not just direct `/model` switching), wire every layer that resolves models by pricing/quorum metadata:
-
-1. `/model` picker: `hermes_cli/model_switch.py` must ask `hermes_cli.auth.get_auth_status()` for `oauth_external` / `external_process` providers because `google-gemini-cli` login state lives in `~/.hermes/auth/google_oauth.json`, not generic `auth.json` or credential pool.
-2. Provider display: `hermes_cli/providers.py` should label `google-gemini-cli` as `Google Gemini (OAuth)` so picker output is user-readable.
-3. Main/fallback config: preserve current primary unless explicitly changed; set Gemini under top-level `fallback_providers`.
-4. Pricing/router metadata: add canonical Gemini OAuth models such as `gemini-3.1-pro-preview` and `gemini-3-flash-preview` to `pricing.models` with `provider: google-gemini-cli` and candidate groups (`chat`, `codegen`, `reviewer`, optionally `hard_reasoning`/`arbiter`).
-5. Multi-brain quorum: add the canonical Gemini model to `~/.hermes/config/quorum.yaml` tiers as an additional planner while keeping `min_quorum` below total planners so expired OAuth/capacity throttle does not block certification. If taskpool ratification has a hardcoded core panel (e.g. `REQUIRED_RATIFICATION_MODELS`), do **not** remove Gemini from quorum to silence `unexpected_*`; model it as an optional/allowed ratification participant and set T2/T3 `quorum` high enough to actually include it.
-6. Script invocation: `~/.hermes/scripts/consult_models.py`, `~/.hermes/scripts/cross-patch.py`, and `~/.hermes/scripts/ensemble-vote.py` must treat `google-gemini-cli` as a supported Hermes provider so they pass `--provider google-gemini-cli` to `hermes chat`. Prefer augmenting from `hermes_cli.providers.HERMES_OVERLAYS` with a static fallback to avoid hardcoded-list drift.
-7. Smart routing / verification: add Gemini models to `smart_model_routing.candidate_models` and, where useful, `verification.tiers.*.reviewers` rather than making Gemini the default producer.
-8. Verification commands:
-   - `./venv/bin/python -m pytest tests/hermes_cli/test_gemini_oauth_in_model_picker.py tests/agent/test_gemini_fast_fallback.py`
-   - `./venv/bin/python -m py_compile ~/.hermes/scripts/consult_models.py ~/.hermes/scripts/cross-patch.py ~/.hermes/scripts/ensemble-vote.py`
-   - `python3 ~/.hermes/scripts/consult_models.py status`
-   - `hermes chat --provider google-gemini-cli -m gemini-3.1-pro-preview -q '只回复: GEMINI_OK' --quiet --max-turns 1 --ignore-rules`
-   - `python3 ~/.hermes/scripts/model-router.py probe`
-9. If the user says only “测试一下” after Gemini wiring, run the concise smoke-test triad instead of re-auditing everything:
-   - Direct OAuth call: `hermes chat --provider google-gemini-cli -m gemini-3.1-pro-preview -q '只回复: GEMINI_OK' --quiet --max-turns 1 --ignore-rules`
-   - Router probe: `python3 ~/.hermes/scripts/model-router.py probe`
-   - Focused regression: `./venv/bin/python -m pytest tests/hermes_cli/test_gemini_oauth_in_model_picker.py tests/agent/test_gemini_fast_fallback.py`
-- For multi-provider power users, switching the default model to Gemini without being asked can unnecessarily displace an existing primary workflow. Safer default: keep the current main provider and add Gemini as fallback unless the user explicitly wants Gemini as primary.
-- `google-gemini-cli` and `gemini` are different Hermes providers; do not describe the OAuth path as AI Studio API-key setup.
-- `anthropic` and `claude-code` are different Claude entitlement paths. For Claude Max / Claude Code OAuth users, canonical Claude models should resolve to runtime provider `claude-code` when the `claude` CLI is available; do not treat `hermes chat --provider anthropic ...` extra-usage errors as proof that Claude Code / Claude Max is offline or exhausted.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Runtime friction capture and consult_models prompt files
 
 When a Hermes runtime/CLI problem is encountered while operating Hermes itself (unsupported flag, hook parse failure, provider/router friction, taskpool event-hook error), do not save it as memory or leave it only in chat. Capture it as evidence-backed work:
@@ -210,27 +141,22 @@ When a Hermes runtime/CLI problem is encountered while operating Hermes itself (
 - Read the post-update-check summary and call out every non-OK item explicitly.
 
 ## References
-- `references/rokid-lingzhu-sse-bridge.md` — fixed-domain Rokid Lingzhu custom-agent integration pattern for Hermes: FastAPI SSE bridge, Cloudflare Tunnel, DNS route, launchd persistence, and end-to-end SSE verification.
-- `references/budget-relay-delegation.md` — debugging pattern for Hermes budget-relay features that appear wired at the CLI layer but fail on delegated child-agent execution paths; includes the staged-vs-worktree check.
 
-- `references/hermes-self-check-update.md` — explicit Hermes self-check/update workflow and reporting checklist
-- `references/rokid-lingzhu-bridge.md` — Rokid 灵珠/Rizon custom-agent bridge architecture, schema, safety red lines, and public exposure options
-- `references/hermes-rokid-lingzhu-bridge.md` — implementation/operations notes for FastAPI SSE bridge, temporary Cloudflare tunnels, launchd recovery, and endpoint refresh
-- `references/budget-handoff-automation.md` — default-safe budget/context exhaustion handoff automation
-- `references/self-evolution-pua-loop.md` — Hermes-hosted OpenClaw SE-AOS fusion
-- `references/pa-evolution-daily-reporting.md` — scheduled PA health reporting workflow, trigger interpretation, and when not to create a skill from `unknown`
-- `references/openclaw-inspired-hermes-control-plane.md`
-- `references/sakana-conductor-pattern.md` — Sakana-inspired multi-model conductor pattern for Hermes: evidence boundary, model capability profiles, role-specific prompting, default-off role plans, and truth-gate-preserving integration points.
-- `references/ratchet-upgrades.md` — ratchet upgrade pattern for combining upstream Hermes updates with local overlays using multi-model impact review, fail-closed patch replay, and verified baseline advancement. — OpenClaw/external agent framework → Hermes-local control-plane hardening
-- `references/continuation-control-plane.md` — global durable packet architecture for unfinished work across conversation, delegation, taskpool, bg-review, cron, and gateway; includes `agent/continuation.py` contracts and verification commands
-- `references/auto-relay-continuation.md` — budget/tool-iteration exhaustion auto-relay with relay packets; includes the `max_iterations_reached(...)` exit-reason pitfall and verification checklist
-- `references/taskpool-parallel-dispatch-and-handoff-governance.md` — taskpool parallel dispatch runtime config, dry-run observability, and handoff backlog archive workflow
-- New Hermes scripts `~/.hermes/scripts/brain_api.py` and `~/.hermes/scripts/edge_worker.py` implement a local cloud-edge prototype (Brain HTTP API + Edge execution proxy) for validating the brain-tentacle architecture. See `cloud-edge-architecture` skill for the full architecture pattern.
-- `references/prompt-builder-cache-layers.md` — 3-tier stable/context/volatile prompt cache architecture
-- `references/layered-prompt-cache-implementation.md` — implementation pattern for Anthropic system content blocks, internal `_hermes_cacheable` markers, native tool cache markers, byte-stability fallback, and regression tests
-- `references/evolution-lane-cert-loop.md` — evolution lane multimodel certification deadloop pattern and prevention
+Detailed `References` guidance moved to `references/references.md`.
 
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Related umbrella skills
 
 - `software-development` — general development workflow and verification discipline
 - `devops` — infrastructure/deploy operations that are not Hermes-specific
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

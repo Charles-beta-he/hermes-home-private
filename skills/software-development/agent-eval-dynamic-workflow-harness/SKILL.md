@@ -1,6 +1,6 @@
 ---
 name: agent-eval-dynamic-workflow-harness
-description: "Use for Hermes Agent self-architecture work that designs, implements, or reviews Agent Eval / Dynamic Workflow / Harness reliability systems: eval case registry, trajectory capture, hybrid graders, shadow workflow router, feedback ledger, sandboxed harness, and regression gates."
+description: "Use when use for Hermes Agent self-architecture work that designs, implements, or reviews Agent Eval / Dynamic Workflow / Harness reliability systems: eval case registry, trajectory capture, hybrid graders, shadow workflow router, feedback ledger, sandboxed harness, and regression gates."
 version: 1.0.0
 author: Hermes Agent
 license: MIT
@@ -35,6 +35,12 @@ Core principle:
 
 > Hot path minimal. Reliability logic off-path first, then shadow, then gated enforcement.
 
+
+## When to Use
+
+- Use when the user's request explicitly matches `agent-eval-dynamic-workflow-harness` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
 ## Architecture Components
 
 1. **Eval Case Registry**
@@ -149,8 +155,17 @@ Default-off/off-hot-path scaffold landed in Hermes Agent:
 - CLI smoke:
   ```bash
   python -m agent.reliability_harness list --cases-dir evals/cases --json
+  python -m agent.reliability_harness capabilities --json
   python -m agent.reliability_harness run --cases-dir evals/cases --runs-dir /tmp/hermes-eval-smoke --case direct-basic-answer --response-text OK --json
   ```
+- `capabilities` prints the Google agents-cli-inspired local contract: skill-pack IDs plus lifecycle command IDs (`intake`, `scaffold`, `implement`, `eval-generate`, `eval-grade`, `edge-profile`, `edge-benchmark`, `edge-verify`, `edge-activation-packet`, `edge-kill-switch-dry-run`, `edge-status-readback`, `edge-open-boundary-checklist`, `deploy-proposal`, `observe`, `ratchet`). It is contract/readback only; it does not load skills, mutate taskpool/memory/cron, or deploy externally.
+- `capabilities` also exposes the PicoClaw-inspired `local_edge_worker` edge-runtime profile. Treat it as a local/default-off profile and benchmark contract only: it may record device class, memory/boot budget, profile readback, fixture command simulation, and kill-switch dry run; it must not enable device control, MCP write authority, external dispatch, credential entry, publish/deploy/push, or destructive operations without a later exact authority gate.
+- `edge-benchmark --runs-dir <dir> --profile local_edge_worker --json` is the first executable dry-run surface for that profile. It writes a local `hermes_edge_benchmark_receipt_v1` receipt with `memory_rss_mb`, `boot_ms`, profile id, resource budget, and closed gate readback. Applicability: benchmark/readiness evidence only. Anti-condition: it still must not start workers, install PicoClaw, call MCP, control devices, mutate taskpool/cron/gateway, or dispatch externally.
+- `edge-verify --receipt <receipt.json> --json` is the read-only promotion-gate verifier for edge benchmark receipts. It writes no receipt, starts no worker, and returns `hermes_edge_benchmark_verification_v1` with pass/blocked checks for schema, known profile, memory/boot targets, and closed side-effect gates. Even when `status=pass`, `promotion_ready` remains false until a later exact runtime activation authority packet exists.
+- `edge-activation-packet --verification <verification.json> --target-id <target> --runs-dir <dir> --json` writes a non-executing `hermes_edge_activation_packet_v1` template only when verifier status is `pass`. The packet keeps `execute=false`, requires rollback/kill-switch/readback, and records closed gates. It is a human-gate artifact, not runtime activation.
+- `edge-kill-switch-dry-run --activation-packet <packet.json> --runs-dir <dir> --json` writes a local `hermes_edge_kill_switch_dry_run_receipt_v1` only for non-executing activation packets. It simulates disabled readback, records rollback verification, and fails closed on `execute=true`; it does not start/stop/contact any runtime.
+- `edge-status-readback --benchmark <receipt> --verification <verification> --activation-packet <packet> --kill-switch-receipt <receipt> --json` is the terminal read-only closed-ladder readback. It returns `hermes_edge_status_readback_v1`, keeps `execute=false` and `promotion_ready=false`, and points to `exact_runtime_activation_packet_execute_true` as the only remaining authority boundary.
+- `edge-open-boundary-checklist --status-readback <status.json> --runs-dir <dir> --json` writes a local `hermes_edge_open_boundary_checklist_v1` only when status readback is ready. It is not permission to open the runtime; it records exact-target/rollback/readback/human-ack requirements while preserving closed gates.
 - Regression command:
   ```bash
   uv run --extra dev pytest tests/agent/test_reliability_harness.py tests/test_trajectory_compressor.py tests/test_trajectory_compressor_async.py -q
@@ -168,3 +183,14 @@ Mirror durable harness structure into the local brain as L2 project knowledge pl
 
 Canonical planning note: `/Users/charles/.hermes/docs/private/agent-eval-dynamic-workflow-longterm-20260609.md`.
 Landing note: `/Users/charles/.hermes/docs/private/agent-eval-harness-full-landing-20260609.md`.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

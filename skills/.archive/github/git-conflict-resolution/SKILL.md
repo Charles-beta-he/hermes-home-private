@@ -28,6 +28,8 @@ Systematic approach to resolving merge/rebase conflicts. Covers analysis strateg
 - Binary file conflicts (images, compiled assets)
 - Semantic conflicts where both sides are "correct" but incompatible
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Workflow
 
 ### Step 1: Assess the Scope
@@ -196,6 +198,13 @@ See `references/two-phase-conflict-example.md` for a real-world walkthrough.
 
 - `references/common-conflict-patterns.md` — detailed examples of conflict resolution strategies
 - `references/two-phase-conflict-example.md` — stash pop → rebase two-phase workflow (UVISA 2026-05)
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

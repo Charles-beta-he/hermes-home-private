@@ -28,6 +28,8 @@ Role-based git branch management for one or more repositories. Resolve each repo
 - Need to rebase/sync local work against the correct remote target branch
 - Need to verify branch consistency across repos before push/PR/merge
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Workflow
 
 ### 1. Resolve Project Profile
@@ -245,6 +247,13 @@ When taskpool dispatches tasks, ensure the correct branch is checked out before 
 - Project profile branch maps — per-project data source for repo role → remote target branch
 - Git remote refs — runtime source of truth for current target state
 - GitHub PR base/head metadata — verification source before PR creation or merge
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

@@ -29,6 +29,8 @@ Create, clone, fork, configure, and manage GitHub repositories. Each section sho
 
 - You need guidance on clone, create, fork, configure, and manage GitHub repositories
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Authenticated with GitHub (see `github-auth` skill)
@@ -589,4 +591,3 @@ for g in json.load(sys.stdin):
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

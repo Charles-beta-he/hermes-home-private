@@ -30,6 +30,8 @@ This skill covers **PDFs and scanned documents**.
 
 - You need guidance on extract text from PDFs and scanned documents
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Step 1: Remote URL Available?
 
 If the document has a URL, **always try `web_extract` first**:
@@ -195,4 +197,3 @@ No extra dependencies needed — pymupdf covers split, merge, search, and text e
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

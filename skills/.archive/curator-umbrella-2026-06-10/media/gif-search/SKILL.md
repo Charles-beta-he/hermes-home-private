@@ -33,6 +33,8 @@ Search and download GIFs directly via the Tenor API using curl. No extra tools n
 
 - You need to search and download GIFs from Tenor using curl
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Setup
 
 Set your Tenor API key in your environment (add to `~/.hermes/.env`):
@@ -113,4 +115,3 @@ Each result has multiple formats under `.media_formats`:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

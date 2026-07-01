@@ -18,6 +18,10 @@ This is the umbrella for shipping a web frontend as a reliable mobile experience
 
 Use the root workflow for default decisions. Load support references only when the subproblem is specifically about that lane.
 
+When a mobile route depends on API/session/native data, blank-page prevention is part of delivery: verify that the initial state matches a visible template branch, that loading/error/empty fallback states render, and that slow or unavailable APIs cannot leave the screen permanently blank. See `references/api-dependent-mobile-page-fallback.md`.
+
+When a login/auth or short mobile form reports page-upward movement on input focus, classify the interaction model before applying a requested tweak. Prefer the class-level pattern in `references/mobile-pwa-keyboard-focus-layout.md`: no global keyboard reserve/scrollBy; ordinary flows keep safe-area bounds; short auth screens can keep default full-height + bottom CTA and reveal an inline CTA with CSS `group-focus-within`; full-screen composer shells shrink internal content with `visualViewport`.
+
 ## When to Use
 
 - PWA users see stale content, stale icons, or old JS/CSS after deploy
@@ -34,36 +38,11 @@ Don't use for:
 
 ## Routing by Subproblem
 
-| Subproblem | Default section / support file |
-|---|---|
-| Stale deployed PWA content or icons | `references/pwa-cache-invalidation.md` |
-| Backend-driven PWA release gates: prompt/block policy, SW update activation, CDN headers, multi-tab, offline, and old-bundle compatibility | `references/pwa-release-gate-audit.md` |
-| Long-term silent release/OTA control plane: release list, candidate-table selection, rollback preview/audit, per-user manifest alignment | `references/silent-release-control-plane.md` |
-| Implementing the client runtime side of silent release: manifest sync, local release state, safe-boundary activation, boot watchdog, chunk-error recovery, and runtime tests | `references/client-release-runtime-landing.md` |
-| Real authenticated verification of a release-control plane: distinguish UI render, API dispatch, deployed backend endpoint availability, and write/read-back evidence | `references/release-control-plane-real-verification.md` |
-| Railway-hosted H5/PWA silent release CI/CD: generate release manifest, retain versioned assets, register releases internally, and avoid container-overwrite chunk 404s | `references/railway-client-release-cicd.md` |
-| Railway PWA PR merge → live URL verification, local preview against Railway backend, branch/environment alignment, Vite proxy vs direct API base, and asset-marker proof | `references/railway-pwa-production-verification.md` |
-| Install prompt / iOS install guidance, including Android OEM launcher permission layers and HarmonyOS browsers that do not emit `beforeinstallprompt` | `references/pwa-install-prompt.md` |
-| Safe area, notch, Home Indicator, splash anti-repeat | `references/pwa-safe-area-handling.md` |
-| H5/browser is correct but installed iOS/Android PWA TabBar has inconsistent safe-area or too much bottom whitespace | `references/pwa-standalone-tab-safe-area-normalization.md` |
-| Installed PWA TabBar is correct on first render but becomes lifted after routing back from About/update/legal/settings screens | `references/pwa-route-safe-area-resettling.md` |
-| UVISA C-end bottom TabBar must match prototype iOS Liquid Glass and avoid an extra solid strip | `references/uvisa-tabbar-liquid-glass-verification.md` |
-| Android installed PWA bottom TabBar floats too high / `screen.height - innerHeight` safe-area over-offset | `references/android-pwa-safe-area-overoffset.md` |
-| Android installed PWA / WebView bottom TabBar is clipped by black system navigation bar / gesture area | `references/android-pwa-system-nav-underlap.md` |
-| Android PWA/WebView screenshot shows black/mismatched top status bar plus bottom navigation/gesture issues; need to separate system-bar theming from viewport underlap, OS dark-mode theming, app-owned theme-color, and bottom viewport clipping | `references/android-pwa-system-bars-theme-and-viewport.md` |
-| App icons, favicons, manifest icon sets, splash colors | `references/icon-asset-pipeline.md` |t - innerHeight` safe-area over-offset | `references/android-pwa-safe-area-overoffset.md` |
-| Android installed PWA / WebView bottom TabBar is clipped by black system navigation bar / gesture area | `references/android-pwa-system-nav-underlap.md` |
-| Android PWA/WebView screenshot shows black/mismatched top status bar plus bottom navigation/gesture issues; need to separate system-bar theming from viewport underlap, OS dark-mode theming, app-owned theme-color, and bottom viewport clipping | `references/android-pwa-system-bars-theme-and-viewport.md` |
-| App icons, favicons, manifest icon sets, splash colors | `references/icon-asset-pipeline.md` |
-| Android installed PWA shows wrong launcher/home-screen icon despite correct manifest paths | `references/android-pwa-launcher-icon-regression.md` |
-| Android / OnePlus / ColorOS reports install success but launches as a browser shortcut instead of standalone PWA | `references/android-pwa-webapk-vs-shortcut.md` |
-| Verify whether a deployed origin satisfies Android Chrome PWA installability, including CDP `Page.getInstallabilityErrors`, `beforeinstallprompt`, and Chrome menu `Install` vs `Create shortcut` evidence | `references/android-chrome-pwa-installability-verification.md` |
-| Capacitor / WebView native shell decision and pitfalls | `references/hybrid-app-packaging.md` |
-| Android native Back should exit on Home/main tabs vs pop history | `references/native-back-button-terminal-tabs.md` |
-| Web/PWA browser Back returns from Home/main tab into stale flow pages | `references/native-back-button-terminal-tabs.md` |
-| iOS installed PWA left-edge swipe returns through deep flow pages and shows white/blank screen | `references/ios-pwa-native-back-swipe-conflict.md` |
-| Authenticated production screenshots | `references/playwright-authenticated-screenshots.md` |
-| Local frontend UI verification against an online backend via same-origin Vite proxy | `references/vite-proxy-online-backend.md` |
+The detailed mobile-frontend routing-by-subproblem map was moved to `references/routing-by-subproblem.md`.
+
+Load it when classifying whether the task is WebView/H5, RN/native shell, auth, storage, routing, visual parity, performance, or release delivery.
+
+Minimum in-root rule: choose the narrowest target layer and preserve existing app behavior before editing.
 
 ## Default Delivery Checklist
 
@@ -75,108 +54,59 @@ Don't use for:
 
 ## Key Patterns
 
-### PWA cache/version strategy
+Detailed mobile-frontend implementation patterns were moved to `references/key-patterns.md`.
 
-- Treat `package.json.version` as the human release source.
-- Inject a build number for service-worker cache names so each deploy invalidates Workbox runtime caches.
-- Keep `skipWaiting` + `clientsClaim` on when immediate activation is desired.
-- Remember iOS icon caching is OS-level: `?v=` and redeploys can prove the server is correct without changing the Home Screen icon immediately.
+Load it for concrete coding patterns, browser/device verification, H5/RN interoperability, adapter seams, or production delivery checklists.
 
-### Silent release / OTA control-plane pattern
+Minimum in-root rule: validate on a real browser/device or explicit local equivalent; DOM-only or toast-only evidence is not UI acceptance.
 
-When the task is long-term silent client hot-update / OTA governance, do **not** reduce the answer to SSR, a version-update toast, or a single "latest version" config. Treat it as a release control-plane problem:
+## Mobile Hybrid Avatar UX
 
-- Backend decides the user/platform/channel-specific release manifest; client executes preload, safe-boundary activation, rollback, and reporting.
-- Admin release list is the governance surface for the full lifecycle; ordinary version dropdowns are insufficient for release selection because operators must compare status, asset completeness, API contract, health, and disabled reasons.
-- For publish/rollback/override actions, prefer a modal/drawer with a candidate Release table filtered by `usage` over a dropdown. Show `selectable`, `recommended`, and `disabledReason` from the backend.
-- Rollback interaction should include target selection, backend preview/impact analysis, reason type + required reason text, target `releaseId` re-entry, privileged confirmation/GA if available, append-only audit with before/after, and a post-rollback observation panel.
-- Historical release assets should be versioned by `releaseId` under CDN/object storage; CDN is a distribution/cache layer, not the source of truth. Keep rollback targets and still-active releases from being garbage-collected.
-- When the test environment uses Railway Docker deploys, do not treat container image replacement as the release artifact store. Generate a business `release-manifest.json` during app build, retain `/releases/{releaseId}/...` assets via Railway Volume or external object storage, and have the app/CI register the release with the backend. See `references/railway-client-release-cicd.md`.
+When building mobile avatar/control-room shells where implementation has online/server, device/cache fallback, readback queues, or voice/TTS lanes, keep those distinctions out of the main user experience. Present one avatar experience with context, tasks, readback, confirmation, and voice as a fast lane. Put explanations and diagnostics on secondary surfaces or short toasts instead of filling the interaction layer. See `references/mobile-hybrid-avatar-unified-ux-and-voice.md`.
 
-### Install UX
+Before claiming mobile/RN usability, run a UI optimization pass, not only functional routing/tests. A page that exposes Monorepo, authority-chain, dry-run, device IDs, internal alpha, or other engineering diagnostics as the default user surface is a UX failure even if every button routes correctly. First make the primary surface user-facing (status, next useful action, clear action cards, truthful receipts), then move diagnostics behind Settings/诊断 or a secondary detail affordance, and verify with simulator screenshots plus regression tests that the engineering copy is absent by default.
 
-- Chrome/Edge can emit `beforeinstallprompt`; Safari iOS never does.
-- Store the deferred event only after `e.preventDefault()` and consume it once.
-- Treat `beforeinstallprompt.userChoice === 'accepted'` as “browser prompt accepted,” not final installation. Android OEM launchers such as OnePlus/ColorOS may still show a separate home-screen icon permission, and users can still end up with only a Chrome shortcut.
-- For Android install copy, distinguish **generic user-facing guidance** from **OEM troubleshooting detail**:
-  - Generic C-side banners/toasts, especially Pixel/Chrome fallback states, should stay concise: show the action as “查看步骤 / View steps”, then give browser-menu install guidance. Do **not** mention specific systems/OEMs, icon permissions, “desktop icon”, “shortcut”, OnePlus/ColorOS, or “Chrome creates shortcut” in the normal customer-facing copy.
-  - Put OEM-specific launcher permission wording in troubleshooting/support docs or conditionally shown recovery flows only. If OnePlus/ColorOS then shows a system dialog worded “允许 Chrome 创建桌面快捷方式吗?”, the internal support guidance can explain that allowing it places the installed PWA icon. See `references/pwa-install-prompt.md`.
-- For Android install copy, distinguish target families before writing user-visible guidance. Pixel/Google Chrome fallback copy should stay generic and action-led: show “查看步骤 / View steps”, tell the user to use the browser menu and choose the install option, and avoid concrete OEM/system/icon/shortcut wording such as “一加/ColorOS/鸿蒙/桌面图标/创建桌面快捷方式/浏览器快捷方式”. OEM-specific launcher-permission wording belongs only in an OEM-specific troubleshooting surface, not in the generic user toast. See `references/pwa-install-prompt.md`.
-- Mark an app installed only from standalone-mode readback or a later runtime check after launch from the desktop icon; do not hide install UX solely because `userChoice` was accepted or because `appinstalled` fired. Treat `appinstalled` as “desktop entry created / install flow completed”, not proof of standalone WebAPK.
-- When auditing an existing install implementation, inspect both the hook and its tests: tests may have encoded the wrong product model by expecting `isInstalled === true` after `userChoice.accepted` or `appinstalled`. Update the state model and regression tests together so intermediate Chromium signals remain distinct from `standaloneVerified`.
-- For Android Chrome/Edge install UX, gate proactive install UI on the real `beforeinstallprompt` event. Do not show a timed “查看步骤 / View steps” fallback on mainstream Chrome just because no event arrived; keep it silent until browser readiness. Reserve timed manual guidance for Harmony/Huawei/OEM browsers that are known not to emit the event reliably. See `references/pwa-install-prompt.md`.
-- Prompt after value commitment (login / first transaction / repeated visits), not on first paint.
-- Provide explicit iOS Share → Add to Home Screen copy when no browser event exists.
+When a subfunction has a mature professional-software analogue, use that analogue as the interaction authority before inventing a bespoke AI-app pattern. Examples: voice input should learn from professional recording/metering software; release readiness from CI/CD/SRE dashboards; risk confirmation from payment/trading/deploy confirmations; long-running task progress from GitHub Actions/Vercel logs. Absorb the professional mechanism (signals, state, thresholds, feedback timing, failure modes) and translate it into the avatar's product language instead of copying the surface skin or exposing expert jargon.
 
-### Safe-area and installed-mode layout
+For mobile voice recognition, do not start from a new mobile-only ASR design if an existing desktop/server transcription stack already has provider selection, upload guards, timeout, and silence filtering. Migrate the proven server-side rules into a Gateway-backed mobile path: subscription ASR is primary, OS speech is a fast/fallback lane, embedded local ASR is fallback/draft only, and post-ASR fluency compensation must preserve action/risk keywords before confirmation. See `references/react-native-voice-asr-gateway-fallback.md`.
 
-- `viewport-fit=cover` is required but not sufficient.
-- Run standalone-only polyfills in `<head>` before CSS render if iOS reports zero safe-area values.
-- Make `--safe-bottom` / `--safe-top` the single source of truth; avoid compounding constants across App, Screen, and TabBar.
-- When H5/browser is correct but installed iOS/Android PWA spacing differs, derive platform/display-mode data attributes and feed TabBar through normalized app tokens (`--tabbar-bottom-gap`, `--tabbar-content-reserve`) rather than raw `env(safe-area-inset-bottom)`. See `references/pwa-standalone-tab-safe-area-normalization.md`.
-- When browser H5 shows a solid strip under a floating Liquid Glass TabBar, debug placement separately from glass styling: browser mode usually wants `--tabbar-bottom-gap: 0px`, while standalone mode can opt into a bounded safe-area gap. See `references/browser-h5-tabbar-safe-area-strip.md`.
-- On Android installed PWAs, do **not** synthesize iPhone-style bottom inset from `screen.height - window.innerHeight`; that delta can include system chrome and lift the TabBar too high. See `references/android-pwa-safe-area-overoffset.md`.
-- If Android screenshots show the TabBar clipped by a black system navigation bar instead of floating too high, treat it as the opposite underlap class: measure a narrow Android-only visual bottom obstruction with `visualViewport`, keep it in a separate token, and do not write it to generic `--safe-bottom` or iOS fallbacks. See `references/android-pwa-system-nav-underlap.md`.
-- If the screenshot also shows a black or mismatched **top** status bar, split the task into two acceptance atoms before coding: system-bar theming/ownership (meta `theme-color`, manifest `theme_color`, WebAPK cache, or native WebView status/navigation bar config) and bottom viewport underlap. Web CSS/layout can fix bottom in-page chrome, but a native/WebAPK system-bar color problem may require manifest freshness, reinstall/cache validation, or native shell settings. See `references/android-pwa-system-bars-theme-and-viewport.md`.
-- When fixing Android PWA/WebView dark-mode system bars, preserve the product theme model. Do **not** remove a “Follow system” option just to stop OS dark mode from overriding fixed themes. Preferred controlled model: fixed `light`/`dark` choices never read OS color-scheme; explicit `system` is the only path that reads `prefers-color-scheme`, listens for changes, and updates `data-theme` plus a single non-media-bound `theme-color` tag.
-- When a floating TabBar is correct on first render but becomes lifted after routing back from About/update/legal/settings screens, suspect delayed PWA viewport settlement rather than immediately changing TabBar CSS constants. Add a route-return multi-pass settle (`immediate`, `requestAnimationFrame`, and short delayed passes such as 150/300/600ms) that resets stray window scroll and reconciles safe-area / visual-inset tokens. See `references/pwa-route-safe-area-resettling.md`.
+When the avatar visual needs to evolve from a static/flat sphere into a voice-reactive particle/electric orb, use `references/react-native-avatar-reanimated-particles.md`: Reanimated is the low-risk first production slice for RN View-layer motion; Skia is the later shader/canvas path. If the user expects professional recording-software behavior, do not stop at active/listening state animation: use `references/react-native-voice-reactive-particle-orb-final.md` for native mic metering, multi-band/peak/transient audio profile, noise gate, renderer mapping, and real-device mic verification. Verify with Jest, lint, pod install/Release build, screenshot proof, and label physical microphone testing as a separate hardware boundary when only simulator evidence exists. If the user expects professional recording-software behavior, do not stop at state-driven `listening` animation; wire live audio RMS/peak (and later FFT bands) into the renderer, using `references/react-native-voice-reactive-webgl-orb.md`.
 
-### Icon, splash, and installed app labels
-
-- Map native source packages to web targets intentionally: iOS 180 for apple-touch-icon, Android playstore 512 for manifest/maskable, high-res source for favicons.
-- Strip SVG shadows, filters, and decorative strokes from production favicon/mask assets.
-- Verify dimensions and hashes after generation, especially when design packages contain multiple visual variants.
-- When changing the installed PWA/home-screen app name, update every install-label surface together: web manifest `name` and `short_name`, `<meta name="application-name">`, `<meta name="apple-mobile-web-app-title">`, and any native-shell config such as Capacitor `appName`. Keep browser `<title>` and in-app brand copy unchanged unless the request explicitly asks for those too.
-- Verify the built artifact, not only source: parse `dist/manifest.webmanifest` for `name`/`short_name`, inspect `dist/index.html` for app-name meta tags, and run the normal build gate before committing.
-
-### Hybrid WebView packaging
-
-- Prefer Capacitor when the existing SPA is clean, team is web-focused, and native requirements are moderate.
-- Intercept native back button and route through the SPA router; otherwise system back/side-swipe can exit the app.
-- For primary TabBar routes, explicitly decide terminal-route behavior. If Home/Card/Wealth/Me should behave like app roots, check the route predicate before `window.history.length` and call `CapacitorApp.exitApp()`; don't let Android Back resurrect prior flow pages just because browser history exists. See `references/native-back-button-terminal-tabs.md`.
-- Plan native/security gaps explicitly: biometrics, push, SSL pinning, secure keyboard, jailbreak/root detection.
-
-### Screenshot verification
-
-- Use an existing Chrome profile when production auth is required.
-- Run Playwright from a project with `@playwright/test` installed.
-- Prefer `domcontentloaded` plus a bounded render wait over `networkidle` for production SPAs with polling/SSE.
-- Always check whether the page redirected to login before treating screenshots as authenticated evidence.
-- For local UI verification that must hit an online backend, use same-origin Vite proxy (`VITE_DEV_API_PROXY_TARGET=...` with runtime API base still `/api`) instead of setting `VITE_API_BASE` to the online URL. Start with `--strictPort`, kill stale listeners first, and verify both transformed `api.ts` and a proxied `/api/...` request. See `references/vite-proxy-online-backend.md`.
-- For release-control screenshots, distinguish authenticated UI render from backend state evidence. Before claiming end-to-end success, probe the exact deployed API endpoints and confirm write/read-back; if the dev proxy points at a backend that lacks the new API, report the structured not-found response instead of mocking data. See `references/release-control-plane-real-verification.md`.
-
-### Shared visual-component copy changes
-
-When a mobile/PWA UI task asks to remove, rename, or hide text on a reusable visual component (for example a card face, account tile, banner, bottom action, or detail header), treat the component as the acceptance surface, not only the screenshot route:
-
-1. Locate the reusable component and all route-level consumers before editing.
-2. Add a negative regression test at the component level (`queryByText(...)` is null for removed copy) so every consumer inherits the behavior.
-3. Keep adjacent non-target visuals intact (icons, status, amount, masked identifiers, spacing intent) unless the task explicitly asks to remove them.
-4. Run both the component test and at least one representative route/detail-screen test that depends on the shared component, then run the build gate.
-5. In closeout, state which consumers are covered by reuse and which still need live UI evidence before final Lark/production completion.
-
-### Prototype restoration must include semantic routing
-
-When restoring a mobile screen to match a prototype, do not stop at visual parity. Check every card/CTA against the product/PRD content source that defines its meaning:
-
-1. Verify visible labels, links, and destination routes together. A card that visually says “AI assistant” but routes to human chat is a bug even if the screenshot looks correct.
-2. If the product has split content sources (for example a full knowledge base vs a curated FAQ), map each UI entry to the right source and route: assistant/search surfaces should use the full knowledge base; FAQ surfaces should use curated FAQ entries.
-3. Add route-level regression assertions for key links (`getByRole('link', { name: /.../ })` + `href`) alongside visual/text assertions.
-4. Preserve intentionally requested deviations from the prototype (such as removing a contact channel) and state them explicitly in closeout so they are not mistaken for missed parity.
+When the user asks for “1:1” restoration/absorption from a product reference, do not treat this as a loose style prompt. Lock one master reference and one screen, produce a screen map, move non-reference engineering surfaces to secondary details, and verify by screenshot diff/readback. Then audit the product loop, not just the pixels: every visible control must either perform the reference-equivalent action or route to the secondary surface that owns it; every secondary surface needs a return path; moved controls such as text composer, diagnostics, reset, or quick actions need regression tests proving they are still reachable. When the reference screen includes voice/avatar interaction, close the native permission/bridge/ledger path too: transcript must re-enter the same intent pipeline with provenance metadata, approved voice playback must not be replaced by a generic voice, and privacy/side-effect authority boundaries should be reported as the single manual decision point rather than disguised as remaining optimizations. See `references/mobile-reference-1to1-absorption.md` and `references/mobile-avatar-1to1-voice-closure.md`.
 
 ## Common Pitfalls
 
-1. **Treating PWA as one cache layer.** Browser cache, service-worker cache, and OS icon cache have different invalidation paths.
-2. **Changing `?v=` and assuming iOS Home Screen icon updates.** Server freshness and OS icon cache freshness are separate.
-3. **Prompting install before engagement.** It harms UX and Chrome may suppress future prompts after dismissal.
-4. **Stacking safe-area padding.** One global custom property should drive all components.
-5. **Using dark/mockup icon sources for production web assets.** Verify the source visually before generating every target size.
-6. **Calling WebView packaging “native complete.”** Security and platform affordances still need explicit bridge/plugin work.
-7. **Using `networkidle` for screenshots.** Long-polling apps may never become idle.
-8. **Treating a Chrome tab screenshot as installed PWA proof.** `ChromeTabbedActivity` only proves browser behavior. Installed PWA/WebAPK evidence must show standalone/WebappActivity or the actual installed/native package content; if the launched installed package is stuck on Android default splash, record it as a wrapper/runtime blocker, not theme verification.
-9. **Fixing route-return TabBar lift by changing the global gap.** If the lift appears only after navigation/update flows, avoid tuning `--tabbar-bottom-gap` or stacking `safe-bottom`; first add delayed route-return viewport resettling so stale visualViewport/window-scroll state cannot survive the route transition.
+Detailed mobile-frontend pitfalls were moved to `references/common-pitfalls.md`.
 
-## Verification Checklist
+Load it when UI acceptance, H5 regressions, auth/state-machine risk, screenshot parity, or design-tool-to-runtime transfer is involved.
+
+Keyboard-focus pitfall: if a user proposes a specific layout tweak for PWA keyboard movement, do not blindly apply it. First classify the page model and choose the best class-level interaction. For short auth/login screens, prefer `group-focus-within` dual-CTA swaps and no React focus state, blur timers, global keyboard reserve, or JS scrollBy; see `references/mobile-pwa-keyboard-focus-layout.md` and `references/pwa-login-keyboard-cta.md`.
+
+Minimum in-root rule: do not delete features/fields/routes and do not claim UI completion without real visual/runtime evidence.
+
+## Stitch SDK / design-tool → mobile 1:1 screens
+
+For Stitch work, prefer the SDK path and treat the MCP route as deprecated unless the user explicitly re-authorizes it for a legacy task. Follow `references/stitch-sdk-mobile-design-sync.md` for SDK credential handling, artifact download, explicit screen IDs, and verification. For pixel-parity reconstruction, keep the high-resolution screenshot / product-logic separation / simulator screenshot proof principles from `references/stitch-mcp-to-rn-1to1.md`, but acquire the source artifacts through the SDK or approved export path rather than MCP.
+
+## Enterprise-ready Stitch/PWA delivery guard
+
+When converting a Stitch/mobile design into a PWA/RN product surface, do not stop at design parity, no-op gates, or a backlog list if the user asked for enterprise-grade delivery or full closure. Advance every safe local slice before stopping: replace dead navigation with bounded real anchors/routes, make status chips runtime-backed, remove demo/mock/fixture wording from product copy, and update PRD/workflow/config so the remaining backlog contains only true unresolved boundaries.
+
+Keep test fixtures isolated. It is acceptable for Playwright to mock camera, Controller, WebSocket, or model responses, but product UI must not leak `mock`, `demo`, `sample`, `stub`, raw `mode=...`, or `evidence=...` debug strings. Convert technical states into operator-facing labels such as “模型待接入”, “证据 3”, and “置信 87%”, while keeping the degraded/model boundary visible in diagnostics. Add negative UI tests that assert fixture/debug strings are absent from user-facing advice.
+
+When a PWA/mobile product has a vision node, distinguish adapter architecture from real model availability. Add or run a read-only inventory/readiness path that reports implemented adapters, available non-stub adapters, and unavailable dependencies/model weights. Surface Controller `/health/ready` or equivalent in diagnostics. Do not claim real recognition until a non-stub adapter is available and verified by runtime readback plus an analysis smoke; otherwise keep the fail-visible operator label.
+
+For bottom navigation generated by a design tool, avoid leaving `href="#"` placeholders. If full multi-page routing is out of scope, the minimum safe slice depends on the user’s delivery bar:
+
+- If the task is only to remove dead links, map the nav to real in-page operator anchors and document the boundary.
+- If the user asks for project-level authorization, enterprise-grade delivery, or “fill all product surfaces,” promote the nav into local product panels inside the PWA shell (for example overview, voice, diagnostics, safety). Use `data-tab-target`, `hidden`, and `aria-current`; add runtime tab switching, panel-specific content, visual/interaction assertions, and screenshots for each panel. See `references/stitch-pwa-product-tabs-vision-readiness.md`.
+- If one panel is already optimized and the user says other pages also need `极限` / `项目级别全盘推进`, audit every sibling panel and close them as product surfaces too: panel-specific hero/status, concise command/checklist cards, conclusion-first diagnostics, duplicated runtime state kept in sync, tests and screenshots for every tab. For true project-level closure, productize the screenshot loop as a reusable gate (for example `make product-screenshots`) that regenerates every panel and fails on horizontal overflow or missing bottom navigation, then add it to workflow/config/tests/docs. See `references/stitch-pwa-all-panel-ux-closeout.md`.
+
+### Stitch SDK screen ordering and simulator discoverability
+
+When syncing Stitch SDK artifacts into RN/mobile surfaces, do not treat the first screen returned by `list_screens` as the canonical latest screen unless the API response exposes and you verify a reliable chronological field. Lock explicit screen IDs for each accepted surface, store the artifact/manifest, map each screen to a distinct runtime surface, and verify with route tests plus a simulator/device screenshot. If the app technically has multiple pages but the home screen shows only unlabeled abstract icons, treat that as a UX discoverability bug: add visible labels for primary destinations and rerun the simulator install/screenshot check.
+
+- Notification centers with incremental sync, read-state mutations, card-footer time semantics, or foreground/background polling/SSE coordination should use `references/notification-sync-time-and-lifecycle.md`: update existing items in place, use raw `createdAt`/delivery time for card display and ordering, keep `occurredAt` for business event detail, pause realtime/polling in background, and guard heartbeat/activity timers.
 
 - [ ] Target platform and installed/browser mode are named explicitly.
 - [ ] Cache/version/service-worker state was verified, not assumed.
@@ -185,3 +115,11 @@ When restoring a mobile screen to match a prototype, do not stop at visual parit
 - [ ] Hybrid packaging decisions include native capability/security gaps.
 - [ ] Visual proof is captured from the authenticated target surface when claiming UI delivery.
 - [ ] Wrapper safety: any side effect is followed by target-state read-back before reporting completion.
+
+## Verification Checklist
+
+- [ ] Target surface was identified: browser tab, installed PWA, iOS Safari, Android Chrome, WebView shell, or desktop.
+- [ ] Build/deploy freshness and cache/service-worker behavior were verified when relevant.
+- [ ] Loading/error/empty states prevent blank screens for API/session-dependent pages.
+- [ ] UI acceptance used real screenshot/visual/runtime evidence, not DOM-only or toast-only proof.
+- [ ] Existing routes, fields, H5 behavior, auth state machines, and secondary diagnostics remained reachable.

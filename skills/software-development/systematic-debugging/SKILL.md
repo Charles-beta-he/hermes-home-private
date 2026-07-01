@@ -25,6 +25,8 @@ Reference: `references/hermes-cli-regression-proofing.md` — notes on debugging
 
 When debugging Hermes/local-brain taskpool stalls, first separate active-task blockers from historical governance debt. If Lark tasks need to be removed temporarily, quarantine them with a manifest instead of deleting. If `dispatchable: true` exists but autorun does not claim, check the narrow autorun policy before changing lifecycle state. Historical `done task missing evidence` proof debt may be tolerated at the dispatch tick layer only when selfcheck and boundary checks still pass; keep the debt visible as tolerated errors and keep active-task proof failures fail-closed. See `references/taskpool-flow-tolerance.md`.
 
+When retry count grows across advisory/evolution review-gap tasks, debug it as retry churn rather than worker failure: classify retry tasks by gap type, verify whether PASS/LOOP_DONE JSON is present but only stored in `evidence_refs`/`evidence`, check for historical compact schemas not recognized by `task_multimodel_passed()`, stop recursive `补证闭环` repair children when a task already has `review_gap_parent`, and add/verify a transient multimodel retry cap that keeps capped tasks blocked instead of returning them to retry forever. Detailed taskpool-specific checklist: `taskpool-control-plane/references/taskpool-retry-churn-root-cause.md`.
+
 ## Overview
 
 Random fixes waste time and create new bugs. Quick patches mask underlying issues.
@@ -71,455 +73,27 @@ You MUST complete each phase before proceeding to the next.
 
 ## Phase 1: Root Cause Investigation
 
-**BEFORE attempting ANY fix:**
+Detailed Phase 1 root-cause investigation moved to `references/phase-1-root-cause-investigation.md`.
 
-### 1. Read Error Messages Carefully
+Load it when a bug/test failure requires reproduction, logs, history, data-flow tracing, vendor/update sustainability, memory ghost audit, automation escalation, or claim-validation audit.
 
-- Don't skip past errors or warnings
-- They often contain the exact solution
-- Read stack traces completely
-- Note line numbers, file paths, error codes
-
-**Action:** Use `read_file` on the relevant source files. Use `search_files` to find the error string in the codebase.
-
-### 2. Reproduce Consistently
-
-- Can you trigger it reliably?
-- What are the exact steps?
-- Does it happen every time?
-- If not reproducible → gather more data, don't guess
-
-**Action:** Use the `terminal` tool to run the failing test or trigger the bug:
-
-```bash
-# Run specific failing test
-pytest tests/test_module.py::test_name -v
-
-# Run with verbose output
-pytest tests/test_module.py -v --tb=long
-```
-
-**Java/Spring Boot startup pitfalls:**
-- After deleting or renaming controller/classes, `mvn package` may leave old `.class` files under `target/classes` and the repackaged jar can still fail with the same ambiguous mapping or bean conflict even though source search shows zero references. If a Spring Boot app still reports a deleted controller/mapping after source cleanup, verify with `jar tf ... | grep DeletedClass` and run `mvn clean package` before concluding the fix failed.
-- In multi-module Maven repos, `mvn -pl app/<module> spring-boot:run` can fail because sibling reactor artifacts are not installed. Run `mvn -pl app/<module> -am -DskipTests install` first, then start the app module.
-- Do not exclude an infrastructure auto-configuration just to get a local backend up if production beans constructor-require it (for example excluding RocketMQ auto-config while a controller requires `RocketMQTemplate`). That converts real-backend verification into a partial harness; either start/provide the real dependency or make the bean conditional in a proper test profile.
-- In React/Vitest suites, many unrelated text/label failures can come from a shared i18next singleton, not from the components themselves. Symptom: expected English labels but rendered DOM is Chinese (or another prior test language). Reproduce one failure and inspect the DOM language first. Fix the test harness by adding the required resource bundle in `beforeEach` with overwrite/deep merge and `await i18next.changeLanguage('<lang>')`; do not rely on `if (!i18next.isInitialized) init(...)` alone, because earlier tests may already have initialized the singleton.
-- Frontend release/version runtimes must separate pre-auth and authenticated surfaces. If a login/OTP/public auth page shows repeated 401s for a release-manifest endpoint, trace global hooks that run before auth. Pre-auth should read a static no-store artifact such as `/version.json` with `fetch(..., { cache: 'no-store', credentials: 'omit' })`; if protected release APIs are not proven login-safe, keep the whole browser runtime static-only instead of calling authenticated release endpoints after login. Verify with targeted Vitest plus build/build:release when the app generates version artifacts.
-- Public auth pages can still 401 from unrelated global widgets even after release-runtime is fixed. Applicability: SPA shells with root-mounted widgets/hooks and token refresh interceptors. Anti-condition: do not apply to deliberately protected routes. If a public auth page shows an auth-expired business error, identify the request name first and audit root-mounted widgets whose hooks run before `if (hide) return null` (for example support/session widgets, bootstraps, or heartbeats). A stale local token can make hook-level “has token” guards fire protected endpoints, which then cascade into refresh. See `references/frontend-public-auth-stale-token-global-hooks.md`.
-- Spring `Ambiguous mapping` errors are backend startup-contract bugs. If a legacy compatibility controller duplicates a canonical controller endpoint, keep the canonical route, remove/rename the duplicate compatibility mapping, and add a startup/contract test.
-- If Flyway/MySQL reports `UndeclaredThrowableException` or fails around `performance_schema.user_variables_by_thread`, inspect any JDBC `DataSource`/`Connection`/`Statement` dynamic-proxy instrumentation. `Method.invoke(...)` wraps thrown `SQLException` in `InvocationTargetException`; an `InvocationHandler` must unwrap and rethrow the original cause, otherwise Flyway cannot catch `SQLException` and degrade capability probes correctly. Add a unit regression that a proxied `PreparedStatement.executeQuery()` rethrows the original `SQLException`, not `UndeclaredThrowableException`.
-- A `Tomcat started on port ...` log line is not a Spring Boot readiness proof. The app can still fail during `ApplicationReadyEvent` listeners or seeders and immediately shut down. Treat startup as ready only after `Started <Application>` appears, the process remains alive, and `/actuator/health` (plus target smoke endpoints) returns 200/UP. If a post-ready seeder reports `Table '<schema>.<table>' doesn't exist`, check Flyway enablement/profile/schema before debugging controllers.
-- Conversely, `mvn spring-boot:run` for a long-lived server reports Maven `BUILD FAILURE` when the tracked process is intentionally stopped by SIGTERM (`exit code 143`). Do not classify that as app startup failure if logs show `Started <Application>`, the app stayed alive, smoke endpoints were hit while alive, and shutdown appears under `ShutdownHook`. Record it as a manual/test-harness termination, not a failed boot.
-
-See `references/spring-boot-real-backend-startup.md` for a concrete real-backend startup debugging checklist and error examples.
-
-### 3. Check Recent Changes
-
-- What changed that could cause this?
-- Git diff, recent commits
-- New dependencies, config changes
-- **Deployment staleness**: If the code looks correct locally but the user reports a bug, check whether the deployed version matches local HEAD. A correct local fix that isn't deployed produces symptoms identical to a code bug. Check build timestamps, Railway/Vercel deployment logs, or `git log` vs production version before deep-diving backend types or data flow.
-
-**Action:**
-
-```bash
-# Recent commits
-git log --oneline -10
-
-# Uncommitted changes
-git diff
-
-# Changes in specific file
-git log -p --follow src/problematic_file.py | head -100
-```
-
-### 4. Gather Evidence in Multi-Component Systems
-
-**WHEN system has multiple components (API → service → database, CI → build → deploy):**
-
-**BEFORE proposing fixes, add diagnostic instrumentation:**
-
-For EACH component boundary:
-- Log what data enters the component
-- Log what data exits the component
-- Verify environment/config propagation
-- Check state at each layer
-
-Run once to gather evidence showing WHERE it breaks.
-THEN analyze evidence to identify the failing component.
-THEN investigate that specific component.
-
-### 5. Trace Data Flow
-
-**WHEN error is deep in the call stack:**
-
-- Where does the bad value originate?
-- What called this function with the bad value?
-- Keep tracing upstream until you find the source
-- Fix at the source, not at the symptom
-
-**Action:** Use `search_files` to trace references:
-
-```python
-# Find where the function is called
-search_files("function_name(", path="src/", file_glob="*.py")
-
-# Find where the variable is set
-search_files("variable_name\\s*=", path="src/", file_glob="*.py")
-```
-
-### 6. Trace Data Through Pipeline Boundaries (Multi-Component Systems)
-
-**WHEN the data flows through a normalization → persistence → reconstruction → API replay pipeline:**
-
-This is a common pattern in LLM agent frameworks. Data enters the system in one shape, gets transformed, stored to DB, loaded, transformed again, and sent to an API. **Each boundary can silently drop fields.**
-
-**Map the full pipeline before picking a fix:**
-
-```
-API response → normalize_response() → [NormalizedResponse object] → _build_assistant_message() → dict
-  → append_message() → SQLite → get_messages_as_conversation() → dict
-  → _copy_reasoning_content_for_api() → api_messages dict → transport.build_kwargs() → API call
-```
-
-At EACH boundary, verify:
-- **Inbound**: what fields does the input have? (use `print(list(input.keys()))` or `dir()`)
-- **Outbound**: what fields does the output have?
-- **Loss**: did any field disappear? Was it intentionally stripped?
-- **Transformation**: did any field change type or format?
-
-**Action:** Read EVERY file in the pipeline chain, following each function call. Focus on:
-
-1. **`getattr(obj, field, None)` vs `hasattr(obj, field)`**
-   - `hasattr` returns `True` for `@property` definitions even when the underlying data is missing
-   - `getattr` returns the property's return value (which may be `None`)
-
-2. **`if value:` vs `if value is not None:`**
-   - `if value:` uses truthiness: empty string `""`, `0`, `[]`, `False` all fail the check
-   - `if value is not None:` preserves the value even when it's falsy
-   - This is the #1 cause of silent field loss at normalization boundaries
-
-3. **Deep copy vs shallow copy** — `msg.copy()` (shallow) vs `copy.deepcopy(messages)` (deep). Nested dicts/lists in shallow copies share references with the original, so modifications to one affect the other — or vice versa when the same mutable object is reused.
-
-4. **`if row["field"]:` vs `if row["field"] is not None:` in DB readback** — SQLite returns `""` for empty text fields and `None` for NULL. `if row["field"]:` treats both as falsy, silently dropping empty strings on round-trip.
-
-5. **`msg.copy()` on dicts with complex nested objects** — Tool calls, function arguments, and provider_data all contain nested structures. A shallow copy means child objects are shared between source and destination — mutations in one path leak into the other. Use `copy.deepcopy` when the dict contains mutable children.
-
-```python
-# WRONG — shallow copy passes through None for missing keys
-api_msg = msg.copy()
-api_msg["reasoning_content"] = api_msg.get("reasoning_content")  # None if missing
-
-# WRONG — truthiness check drops empty strings
-if reasoning_content:
-    provider_data["reasoning_content"] = reasoning_content
-
-# RIGHT — explicit None check preserves empty strings
-if reasoning_content is not None:
-    provider_data["reasoning_content"] = reasoning_content
-```
-
-**Real example (DeepSeek reasoning_content loss, April 2026):**
-```
-Root cause: chat_completions.py:351 used `if reasoning_content:` instead of
-`if reasoning_content is not None:`. Empty string `""` was silently dropped
-from provider_data, never flowing into the stored msg dict.
-
-Impact: DeepSeek's assistant messages lost reasoning_content on replay →
-HTTP 400 on every turn after the first. Fallback retried with the same
-broken schema → all retries failed → session never persisted.
-
-Fix: One-line change — truthiness check → None check.
-```
-
-### 7. Cross-Reference With Upstream Repository
-
-**WHEN working with a fork or open-source project that receives updates:**
-
-BEFORE proposing a fix, check whether the bug is already known upstream. This avoids:
-- Wasting time duplicating work
-- Writing a fix that will be overwritten by `git pull` on next update
-- Missing context from existing discussions (root cause analysis, edge cases, alternative approaches)
-
-**Action:**
-
-```bash
-# Search GitHub issues with relevant keywords
-open_browser -> https://github.com/<owner>/<repo>/issues?q=is%3Aissue+{keywords}
-```
-
-Sample keywords from common bug classes:
-- `reasoning_content` + `400` — DeepSeek/Kimi thinking mode validation
-- `think` + `stream` + `tag` — streaming reasoning tag display leaks
-- `_clean_for_display` — gateway stream filtering
-- `context_compressor` + `memory` — compression + memory interaction
-
-**When you find a matching issue:**
-- Note its status (Open/Closed/PR-linked)
-- Check if a PR already exists with a fix
-- Check if the fix has been merged — if so, `hermes update` will bring it
-- If the fix is not yet merged, decide whether to patch locally or wait
-
-### 8. Fix Sustainability Audit — Will This Survive `hermes update`?
-
-**WHEN the fix touches files inside the hermes-agent repo (`~/.hermes/hermes-agent/`):**
-
-Before writing any fix, map which files it affects against the update mechanism:
-
-```
-`hermes update` does git pull on ~/.hermes/hermes-agent/
-→ Any file inside this directory WILL be overwritten on next update
-
-Exempt files (NOT overwritten by update):
-  ~/.hermes/config.yaml         — user config
-  ~/.hermes/.env                — API keys
-  ~/.hermes/memories/           — persistent memory
-  ~/.hermes/skills/             — user skills
-  ~/.hermes/scripts/            — user scripts
-  ~/.hermes/cron/               — cron job data
-```
-
-**Three-layer fix strategy (ranked by sustainability):**
-
-| Layer | Method | Survives update? | Effort |
-|-------|--------|-----------------|--------|
-| **User data** | Edit ~/.hermes/memories/MEMORY.md, config.yaml | ✅ Always | Low |
-| **Monkey-patch** | Python runtime override at startup | ✅ Yes (inject from ~/.hermes/config.yaml or startup script) | Medium |
-| **Vendor code** | Edit run_agent.py, cli.py, transport files in ~/.hermes/hermes-agent/ | ❌ Overwritten by git pull | Low (but ephemeral) |
-| **PR upstream** | Submit fix to official repo, get merged | ✅ Once merged, future updates carry it | High |
-
-**Prefer higher layers when possible. Document lower-layer fixes with git hooks.**
-
-**For monkey-patching:**
-```python
-# Example: Patch ChatCompletionsTransport at startup
-# Place in ~/.hermes/hermes-agent/hermes_cli/startup_patch.py
-from agent.transports.chat_completions import ChatCompletionsTransport
-
-_orig_normalize = ChatCompletionsTransport.normalize_response
-
-def _patched_normalize(self, response, **kwargs):
-    result = _orig_normalize(self, response, **kwargs)
-    # Fix: preserve empty string reasoning_content
-    if hasattr(response, 'choices') and response.choices:
-        msg_rc = getattr(response.choices[0].message, 'reasoning_content', None)
-        if msg_rc is not None:
-            pd = result.provider_data or {}
-            pd['reasoning_content'] = msg_rc
-            object.__setattr__(result, 'provider_data', pd)
-    return result
-
-ChatCompletionsTransport.normalize_response = _patched_normalize
-```
-
-**For git hooks (auto-reapply patches after update):**
-```bash
-# ~/.hermes/hermes-agent/.git/hooks/post-merge
-#!/bin/sh
-# Auto-apply local patches after git pull
-git diff --quiet HEAD -- agent/transports/chat_completions.py || exit 0
-# Apply patch if not already present
-cd "$(git rev-parse --show-toplevel)"
-grep -q "is not None" agent/transports/chat_completions.py || \
-  sed -i '' 's/if reasoning_content:/if reasoning_content is not None:/' \
-    agent/transports/chat_completions.py
-```
-
-### 9. Ghost Memory Detection (Context-Compression-Aware)
-
-**WHEN analyzing issues related to persistent memory and context compression:**
-
-Past-tense entries in persistent memory survive context compression and get re-injected as current facts. This is a common source of confusion in agent systems.
-
-**Check for ghosts in `~/.hermes/memories/MEMORY.md`:**
-
-| Ghost Pattern | Example | Why It's Dangerous |
-|--------------|---------|-------------------|
-| **Past-tense completion summary** | "三轮审查修复10个问题，最终达到无改进状态" | Future sessions treat this as current state |
-| **Version number** | "v1.4.8" | Becomes stale as project evolves |
-| **Past progress** | "Discover 页面 + BottomNav 已上线" | Pages may have been modified/removed |
-| **Redundant entries** | Same project described twice | Wastes limited memory budget (2,200 chars) |
-
-**Detection heuristic:**
-```python
-# A memory entry is a ghost if it answers "Was this task COMPLETED?"
-# rather than "Is this fact STILL TRUE?"
-#
-# Linguistic markers:
-# - Past tense (完成/上线/修复了/was/implemented/done)
-# - Completion quantifiers (三轮/10个/全部)
-# - Version numbers (v1.4.x)
-# - Session-local progress (not system architecture)
-```
-
-**Fix:**
-- Remove ghost entries from MEMORY.md
-- Keep only architecturally durable facts (project structure, tool conventions, user preferences)
-- Duplicates → merge into single entry
-
-### 10. Automation Escalation Audit — Run Local Gates Before Spawning Broader Workers
-
-**WHEN debugging multi-stage automation (review auto-close, blocked resolvers, ratification loops, retry daemons, certification workers):**
-
-A common failure mode is to escalate too early. The orchestrator sees a broad signal like `multimodel_required`, `intervention_required`, or `needs_review`, immediately spawns a heavier worker, and accidentally bypasses the task's own deterministic gate. That creates false outcomes such as task-mismatch skips, unnecessary retries, or global workers certifying the wrong task.
-
-**Audit order:**
-1. Compute the task-local evidence first.
-2. Probe the normal gate for the exact transition being attempted.
-3. Only escalate if the local gate still fails **and** the failures are in the escalation domain.
-4. Narrow escalation by lane/domain instead of using a global boolean alone.
-
-**Heuristic:**
-- If the failure is ordinary lane proof debt (`missing build/test/browser/curl/project evidence`), keep it in the normal gate path and return `skip` / `blocked` / `retry` there.
-- If the failure is specifically about ratification or multimodel certification, then spawn the broader worker.
-- For taskpool orchestration, treat `review -> done` as the base path and PUA-loop/certification as the fallback path, not the default.
-
-**Real pattern (Hermes taskpool, May 2026):**
-- Symptom: `auto-close-review` marked a normal work-lane review task as `certification_triggered_skip` with `certification_task_mismatch`.
-- Root cause: the command triggered multimodel certification before checking whether the normal `done` gate was simply failing for missing project evidence.
-- Durable fix: run `lifecycle_gate(..., "done", ...)` first, then trigger certification only when the remaining failures are actually ratification/multimodel-related or the lane is explicitly evolution/advisory/mission-envelope.
-
-### 11. Multi-Loop Convergence — Iterate Until No Issues Remain
-
-**WHEN fixing multiple bugs in a single session:**
-
-```
-Fix → Re-check → Fix → Re-check → ... until 0 issues
-```
-
-Track progress with a structured todo list. Each loop iteration:
-1. Fix the highest-priority remaining issue
-2. Run the self-check
-3. If new issues found, add them to the todo list
-4. Stop when only time-dependent items remain
-
-**Convergence signal:** All checks pass or are explicitly labeled as time-dependent.
-
-### 11. Claim-Validation Audit — Verify System Weakness Claims Against Source Code
-
-**WHEN presented with a list of system weaknesses or "known issues" (from documentation, issue reports, or analysis):**
-
-BEFORE accepting any claim as true:
-1. **Read the actual source code** — do not rely on documentation or reputation
-2. **Categorize each claim** using a systematic framework:
-
-```python
-def audit_claim(claim, source_code):
-    """
-    Categories:
-    ✅ TRUE:       Claim accurately describes a real weakness
-    ⚠️ PARTIAL:    Claim is directionally correct but mitigations exist
-    ❌ FALSE:      Claim is wrong — the code doesn't match the description
-    """
-```
-
-3. **For each claim, produce evidence:**
-
-```
-| Claim: "MCP stdio lacks chunking → deadlock"
-| Reading: mcp_tool.py:1053 async with stdio_client(...)
-| Finding: ⚠️ PARTIAL — asyncio streams don't block, but large payloads
-|           can time out. 300s read timeout mitigates permanent deadlock.
-| Verdict: Theory risk exists, but has timeout guardrails.
-```
-
-**Real example (Apr 2026 MCP 7-claim audit):**
-```
-Out of 7 claims:
-  ✅ 4 real:     memory noise, error solidification, learning loop, OAuth no heartbeat
-  ⚠️ 2 partial:  stdio blocking (has timeout), context overflow (has compression)
-  ⚠️ 1 limited:  MemoryManager dirty instance (doesn't cause global deadlock)
-```
-
-**Why this matters:** Accepting false claims leads to unnecessary fixes that waste time and add complexity. Validating against source code is the only reliable way to separate real bugs from design tradeoffs.
-
-### Phase 1 Completion Checklist
-
-- [ ] Error messages fully read and understood
-- [ ] Issue reproduced consistently
-- [ ] Recent changes identified and reviewed
-- [ ] Evidence gathered (logs, state, data flow)
-- [ ] Problem isolated to specific component/code
-- [ ] Root cause hypothesis formed
-- [ ] Claim validated against source code (if third-party claim)
-- [ ] Upstream repository cross-referenced (if related)
-
-**STOP:** Do not proceed to Phase 2 until you understand WHY it's happening.
-
----
+Minimum in-root rule: reproduce or observe the failure before changing code; do not debug from assumptions.
 
 ## Phase 2: Pattern Analysis
 
-**Find the pattern before fixing:**
+Detailed Phase 2 pattern analysis moved to `references/phase-2-pattern-analysis.md`.
 
-### 1. Find Working Examples
+Load it after initial evidence when multiple files/symptoms may share a root cause.
 
-- Locate similar working code in the same codebase
-- What works that's similar to what's broken?
-
-**Action:** Use `search_files` to find comparable patterns:
-
-```python
-search_files("similar_pattern", path="src/", file_glob="*.py")
-```
-
-### 2. Compare Against References
-
-- If implementing a pattern, read the reference implementation COMPLETELY
-- Don't skim — read every line
-- Understand the pattern fully before applying
-
-### 3. Identify Differences
-
-- What's different between working and broken?
-- List every difference, however small
-- Don't assume "that can't matter"
-
-### 4. Understand Dependencies
-
-- What other components does this need?
-- What settings, config, environment?
-- What assumptions does it make?
-
----
+Minimum in-root rule: look for repeated patterns before applying isolated fixes.
 
 ## Phase 3: Hypothesis and Testing
 
-**Scientific method:**
+Detailed Phase 3 hypothesis/testing workflow moved to `references/phase-3-hypothesis-testing.md`.
 
-### 1. Form a Single Hypothesis
+Load it when you need to test candidate causes before committing to a fix.
 
-- State clearly: "I think X is the root cause because Y"
-- Write it down
-- Be specific, not vague
-
-### 2. Test Minimally (Isolation First for Destructive Tests)
-
-- Make the SMALLEST possible change to test the hypothesis
-- One variable at a time
-- Don't fix multiple things at once
-
-**For destructive tests (backup/restore, migrations, format conversions):**
-- NEVER test on production data or active skill directories directly
-- Copy the target to `/tmp` or a disposable workspace first
-- Run the destructive operation against the copy
-- Verify the outcome, then apply to the real target only after confirmation
-- Clean up the temporary copy when done
-
-### 3. Verify Before Continuing
-
-- Did it work? → Phase 4
-- Didn't work? → Form NEW hypothesis
-- DON'T add more fixes on top
-
-### 4. When You Don't Know
-
-- Say "I don't understand X"
-- Don't pretend to know
-- Ask the user for help
-- Research more
-
----
+Minimum in-root rule: make hypotheses falsifiable and run the narrowest check that can disprove each one.
 
 ## Phase 4: Implementation
 
@@ -618,48 +192,11 @@ If you catch yourself thinking:
 
 ## Hermes Agent Integration
 
-### Pre-merge iceberg scans
+Detailed Hermes Agent integration / development iceberg scans moved to `references/hermes-agent-integration.md`.
 
-When the user asks to auto-merge a PR and then requests a broader “冰山扫描” or same-batch commit check, pause the merge, define the batch scope, scan adjacent commits and deployment/config surfaces, and only fold in-scope fixes into the PR. Keep unrelated findings as follow-up work. See `references/pre-merge-iceberg-scan.md`.
+Load it for Hermes-specific debugging, taskpool/control-plane issues, or development iceberg scans.
 
-### Investigation Tools
-
-Use these Hermes tools during Phase 1:
-
-- **`search_files`** — Find error strings, trace function calls, locate patterns
-- **`read_file`** — Read source code with line numbers for precise analysis
-- **`terminal`** — Run tests, check git history, reproduce bugs
-- **`web_search`/`web_extract`** — Research error messages, library docs
-
-### With delegate_task
-
-For complex multi-component debugging, dispatch investigation subagents:
-
-```python
-delegate_task(
-    goal="Investigate why [specific test/behavior] fails",
-    context="""
-    Follow systematic-debugging skill:
-    1. Read the error message carefully
-    2. Reproduce the issue
-    3. Trace the data flow to find root cause
-    4. Report findings — do NOT fix yet
-
-    Error: [paste full error]
-    File: [path to failing code]
-    Test command: [exact command]
-    """,
-    toolsets=['terminal', 'file']
-)
-```
-
-### With test-driven-development
-
-When fixing bugs:
-1. Write a test that reproduces the bug (RED)
-2. Debug systematically to find root cause
-3. Fix the root cause (GREEN)
-4. The test proves the fix and prevents regression
+Minimum in-root rule: distinguish Hermes runtime/control-plane evidence from ordinary application debug evidence.
 
 ## Real-World Impact
 
@@ -673,12 +210,18 @@ From debugging sessions:
 
 ## Related references
 
-- `references/frontend-release-auth-iceberg.md` — generic checklist for browser apps where app-wide runtime hooks interact with public routes, static version manifests, auth telemetry, and post-auth verification locks; anti-condition: use only for frontend/auth/release-runtime flows, not as a project fact store.
-- `references/text-assertion-mismatch.md` — diagnosing and fixing `assert "X" in CONSTANT` failures (substring, singular/plural, synonym patterns)
-- `references/react-aria-role-migration.md` — cascading test selector failures when swapping interactive components (Link→Button, a→button); role grep checklist
-- `references/pytest-override-flags.md` — clearing xdist `addopts` from pyproject.toml when running serially (`-o "addopts="`)
-- `references/runtime-overlay-sensitive-test-fix.md` — fix pattern for tests that depend on runtime overlay/OAuth/provider discovery and need deterministic seeding
-- `references/spa-global-runtime-public-auth-401.md` — debugging path for SPA root-level runtime hooks that call protected endpoints on public unauthenticated auth routes, producing repeated 401s and auth-refresh noise
+Detailed related-reference index moved to `references/related-references.md`.
+
+Load it when looking for adjacent debugging workflows or specialized runbooks.
+
+Minimum in-root rule: choose the narrowest debugging reference that matches the observed failure.
+
+## Absorbed Debugger Packages
+
+These debugger-specific former skills are now support packages under the class-level debugging umbrella. Load them only when root-cause investigation reaches a language/runtime debugger boundary; keep the default workflow in this skill as the entry point.
+
+- `node-inspect-debugger` → `references/packages/node-inspect-debugger/README.md`: debugger-specific command recipes and pitfalls preserved as a support package.
+- `python-debugpy` → `references/packages/python-debugpy/README.md`: debugger-specific command recipes and pitfalls preserved as a support package.
 
 ## Common Pitfalls
 
@@ -690,7 +233,9 @@ From debugging sessions:
 5. **pytest xdist `-p no:xdist` doesn't clear `-n auto`**: Use `-o "addopts="` to override config-level addopts. See `references/pytest-override-flags.md`.
 6. **macOS `sed -i` requires empty string extension**: `sed -i 's/old/new/'` fails on macOS with "extra characters at end of h command". Use `sed -i '' 's/old/new/'` or, better, use the `patch` tool which handles both platforms correctly. Prefer `patch(mode='replace')` over terminal sed for file edits.
 7. **React component swap breaks `getByRole` selectors**: When replacing `<Link>` with `<CtaBtn>` (or any interactive component migration), `getByRole('link')` silently fails because Testing Library resolves by rendered HTML element, not React component name. Grep tests for the old role before committing. See `references/react-aria-role-migration.md`.
-8. **Chinese regex `[\u4e00-\u9fff]+` produces single-token groups**: `re.findall(r'[\u4e00-\u9fff]+', text)` treats contiguous Chinese as one token ("测试知识" → `['测试知识']`). For search/vectorization, use character-level `[\u4e00-\u9fff]` (→ `['测', '试', '知', '识']`). Mismatched tokenization between store and query silently returns zero results. See `references/chinese-text-tokenization-pitfalls.md`.
+9. **Provider proxy/TUN false root causes**: For LLM/provider timeouts, do not jump directly from `hermes chat`/wrapper timeout to "provider broken" or "model name wrong". First compare raw configured endpoint vs wrapper vs DNS/proxy/TUN route. If a provider host resolves to `198.18.0.0/15`, a global VPN/fake-ip layer is involved and ordinary `NO_PROXY` may not bypass it. Keep account-scoped base URLs from the console; do not replace them with public defaults unless the key is valid there. Prefer bounded direct adapters, min-quorum-aware health breakers, and stdin-based remote relays for global-only VPN setups. See `references/provider-proxy-relay-debugging.md`.
+10. **Auth availability is not runtime availability**: OAuth/session/API-key probes only show a provider is configured. If the exact provider/model runtime path returns no final response, account-disabled errors, or CLI wrapper failures, record a scoped runtime-unavailable snapshot and make routing honor it before generic OAuth assumptions. Do not lower the readiness gate to hide the failure. See `references/provider-runtime-availability-vs-auth.md`.
+11. **Catalog/approval is not the same as current key+endpoint entitlement**: Applicability: provider/model debugging where an approval notice, docs/catalog, or cached picker lists a model but runtime rejects it. Anti-condition: do not store provider-account facts globally or add a model as verified callable without current key/base readback. Split evidence sources and test the exact active base URL, active key, exact model id, and a known-good control model before concluding availability. See `references/provider-catalog-vs-runtime-entitlement.md`.
 
 ## Verification Checklist
 

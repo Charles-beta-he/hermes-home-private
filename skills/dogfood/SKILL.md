@@ -27,6 +27,8 @@ This skill guides you through systematic exploratory QA testing of web applicati
 
 - You need guidance on systematic exploratory QA testing of web applications — find bugs, capture evidence, and generate structured reports
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Browser toolset must be available (`browser_navigate`, `browser_snapshot`, `browser_click`, `browser_type`, `browser_vision`, `browser_console`, `browser_scroll`, `browser_back`, `browser_press`)
@@ -198,4 +200,3 @@ Save the report to `{output_dir}/report.md`.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] The Definition of Done items above were explicitly checked, not assumed.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

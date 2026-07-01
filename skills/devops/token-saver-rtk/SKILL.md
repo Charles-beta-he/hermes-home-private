@@ -29,6 +29,8 @@ Do not use it for:
 - neighboring specialist workflows with a narrower matching skill;
 - durable memory or project-profile writes unless this skill explicitly governs that landing zone.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 新增 (来自 Ruflo)
 
 ### Deterministic Bypass (agent/deterministic_bypass.py)

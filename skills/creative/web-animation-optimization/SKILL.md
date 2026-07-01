@@ -31,6 +31,8 @@ Analyze reference sites for animation techniques and implement a comprehensive a
 - Creating canvas-based game animations (board games, etc.)
 - Optimizing animation performance (GPU acceleration, RAF)
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Reference Site Analysis Pattern
 
 Before implementing, analyze a well-designed reference site:
@@ -40,10 +42,10 @@ Before implementing, analyze a well-designed reference site:
    // Check frameworks
    typeof THREE !== 'undefined'  // Three.js
    typeof gsap !== 'undefined'   // GSAP
-   
+
    // Count animated elements
    document.querySelectorAll('[style*="transition"]').length
-   
+
    // Check canvas count
    document.querySelectorAll('canvas').length
    ```
@@ -51,8 +53,8 @@ Before implementing, analyze a well-designed reference site:
 2. **CSS Analysis**:
    ```javascript
    // Count animation rules
-   Array.from(document.styleSheets).flatMap(s => 
-     Array.from(s.cssRules || []).filter(r => 
+   Array.from(document.styleSheets).flatMap(s =>
+     Array.from(s.cssRules || []).filter(r =>
        r.cssText?.includes('animation') || r.cssText?.includes('transition')
      )
    ).length
@@ -95,7 +97,7 @@ export function animate({
     const progress = Math.min((timestamp - startTime) / duration, 1)
     const eased = easeFn(progress)
     onUpdate?.(from + (to - from) * eased, progress)
-    
+
     if (progress < 1) rafId = requestAnimationFrame(step)
     else onComplete?.()
   }
@@ -125,7 +127,7 @@ export function stagger({ items, delayBetween = 50, animationConfig }) {
   items.forEach((item, index) => {
     setTimeout(() => animate({
       ...animationConfig,
-      onUpdate: (value, progress) => 
+      onUpdate: (value, progress) =>
         animationConfig.onUpdate?.(item, value, progress, index)
     }), index * delayBetween)
   })
@@ -154,7 +156,7 @@ export const canvasAnimations = {
     const currentRadius = radius * eased
     // Gradient, highlight, glow effects
   },
-  
+
   // Draw winning line progressively
   drawWinningLine(ctx, points, progress = 1, color) {
     // Interpolate along points based on progress
@@ -222,7 +224,7 @@ export function useIntersectionObserver({
 } = {}) {
   const ref = useRef(null)
   const [isVisible, setIsVisible] = useState(false)
-  
+
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
@@ -233,7 +235,7 @@ export function useIntersectionObserver({
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
   }, [threshold, rootMargin, triggerOnce])
-  
+
   return [ref, isVisible]
 }
 

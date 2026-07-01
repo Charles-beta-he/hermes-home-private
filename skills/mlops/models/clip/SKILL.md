@@ -37,6 +37,8 @@ OpenAI's model that understands images from natural language.
 
 - You need guidance on openAI's model connecting vision and language
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When to use CLIP
 
 **Use when:**
@@ -286,4 +288,3 @@ results = collection.query(
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

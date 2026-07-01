@@ -31,6 +31,8 @@ Use [OpenCode](https://opencode.ai) as an autonomous coding worker orchestrated 
 - You need long-running coding sessions with progress checks
 - You want parallel task execution in isolated workdirs/worktrees
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - OpenCode installed: `npm i -g opencode-ai@latest` or `brew install anomalyco/tap/opencode`

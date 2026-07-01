@@ -4,6 +4,12 @@ description: Use when designing or implementing agent/control-plane executors th
 ---
 
 # Event-governed side-effect executors
+## When to Use
+
+- Use when the user's request explicitly matches `event-governed-side-effect-executors` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
+
 
 ## When to use
 
@@ -95,28 +101,9 @@ Open capability in narrow, evidence-backed runtime boundaries. A worker/model/pr
 
 ## Implementation checklist
 
-For every executor function and CLI path:
+Detailed `Implementation checklist` guidance moved to `references/implementation-checklist.md`.
 
-- Define accepted input event type(s) and exact digest fields.
-- Normalize and validate IDs, channel, target, status, and mode.
-- Require evidence_refs for accepted paths.
-- Require TTL for authorizations.
-- Reject symlink paths and unsafe parent paths for file/DB/outbox targets.
-- Reject secret-like payload keys such as token, password, secret, api_key, authorization, credential.
-- Store hashes/summaries instead of raw payloads or credentials.
-- Write idempotently: replay of the same digest should not duplicate side effects.
-- Append structured ledger records with schema_version, run_id, run_status, accepted_as, runtime_boundary, request_digest, blocked_reasons, and readback fields.
-- Add CLI flags for each boundary and JSON payload input.
-- Add tests for success, rejection, idempotency, and CLI smoke.
-- For localhost control consoles that need “one-click opening”, implement it as a short-lived capability session over a registered allowlist, not as arbitrary execution. Keep tokens out of public snapshots, bootstrap auth through a same-origin HttpOnly cookie when possible, require `capability_allowed(action)` on every registered side-effect endpoint, and for `mission.decide` run a real mission-backed E2E when authorized: create a minimal handoff, prove pre-arm/invalid-answer rejection, submit the exact valid option, read back mission resume, stage-report the evidence, and reset the public snapshot to unarmed/no-token before committing. If the console must be resident, supervise it via a local process manager such as macOS LaunchAgent, keep per-session action tokens out of the persistent service plist, and verify UI/API readiness separately. See `references/local-control-console-capability-sessions.md` and `process-lifecycle-control-plane/references/macos-launchagent-local-console.md`.
-- Scope: localhost/operator consoles with approval-request or operator-decision controls. Applicability: when UI copy implies a decision, adapter mutation, or executor action landed. Anti-condition: do not use for external sends, arbitrary shell/tool execution, or destructive production mutation. Do not ship visual-only buttons for this class; advance through explicit layers: draft-only → local decision ledger → adapter apply/readback → executor dispatch → governed worker execute. For “full landing” / “全盘推进” requests, do **not** treat the current safe stop as the completion target. Model the production-grade chain first, then keep adding the next narrow capability boundary until the intended user-visible effect is genuinely carried to the safe boundary. If the user asks for “一次性开放”, implement one short-lived arm that opens the registered capability set, but preserve per-boundary validation, audit, idempotency, current-state readback, and explicit non-goals. For Human Inbox resume flows, record/apply/dispatch/worker-execute should be separate registered actions that can be called in one UI chain; `taskpool.executor.dispatch` means governed claim-and-handoff, while `taskpool.worker.execute` means starting the existing agent-team background worker job after verified claimed readback, not arbitrary shell, external sends, or direct done closeout. Scope: localhost/operator approval consoles with mixed local-decision and executor capabilities. Applicability: the same capability session can contain execution-capable actions while the currently selected request is only a safety gate, evidence gate, or other non-execution approval projection. Anti-condition: do not apply this to ordinary non-gated action buttons with no side-effect ladder. Do not foreground a permission-scope matrix in the Human Inbox just because these capability boundaries exist; the operator experience should reduce manual intervention by showing the next action, not a wall of permissions. Capability/safety status belongs at the concrete action point, in receipts/readback, or in a secondary diagnostics panel. If a permission/status display is explicitly required, make it request-aware: safety/Execution Flow Gate selections must still block dispatch/worker even when the short-lived capability session is armed, and UI allowed flags must bind to both capability and request context (for example `capabilityAllowed && !isSafetyGate`). See `references/control-console-human-inbox-write-through.md` and `references/control-console-worker-execute-boundary.md`.
-- For option/decision controls, keep UI state event-driven rather than local-draft-driven. Unauthorized clicks may show a transient global explanation, but must not render as selected or persist a selected-looking card state. Once a choice is recorded in the local ledger and read back through the snapshot, use that ledger event as the source of truth, lock/disable the target’s alternate choices, and reject conflicting writes for the same target unless an explicit override/supersede event type exists. A plain idempotency key on `(target, option)` is insufficient: also reject `(same target, different option)` to avoid silent “latest wins” semantics. Scope: localhost/operator decision controls. Applicability: a gate has exactly one safe, non-mutating next step. Anti-condition: do not auto-approve, dispatch workers, mark done, send/publish/delete, or write external adapters. For singleton safe gates, let the task/control-flow layer emit `auto_decision`, but keep it as draft/preselect state only: consumers must sanitize to an allowlist, require upstream `auto_decision` to match the single sanitized option, and never synthesize execution authority from a singleton. See `references/control-console-option-event-locking.md` and `references/singleton-safe-option-projections.md`.
-- For real senders, add a local HTTP server smoke that proves the production HTTP path without hitting the external platform; verify auth header/token placement, endpoint path/query, payload body, response parsing, and token non-persistence.
-- Before a live platform smoke, verify credentials and target separately: credential/token exchange proves only credential validity, while the receive target must come from the current user request, configured home target, or an explicit allowlist for this run.
-- Run py_compile, focused/full tests, a real temp smoke, and git diff --check.
-- Update the SSOT architecture/coverage document before committing.
-- Make a scoped commit.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Test matrix
 
 Minimum tests per boundary:
@@ -143,6 +130,21 @@ Minimum tests per boundary:
 - Preflight idempotency keys must include the drift-sensitive fields being protected (channel, authorization, dry-run digest, outbox, target, payload hash, platform payload hash, token source, capability flag). Do not key only on platform_payload_hash, or later drift/unsafe capability requests can be mistaken for replay.
 - Execution authorization idempotency should digest the semantic authorization request, not volatile evidence_refs. Include preflight/channel/target/payload/platform hash/token_source/capability/TTL/actor/decision, but allow evidence_refs to differ on safe replay.
 
+## Session-derived pitfall: broad internal authorization still needs staged local boundaries
+
+Scope: internal agent/workflow executors that may mutate local lifecycle state, adapter ledgers, worker receipts, or agent lifecycle coverage. Applicability: a human grants broad/project-level authority but the executor still has multiple side-effect tiers. Anti-condition: do not use this to justify external sends, publish/deploy/push, destructive operations, payment/credential entry, broad fan-out, or arbitrary shell/tool execution.
+
+When a user grants broad authority, do **not** collapse the ladder into arbitrary worker launch or adapter mutation. Turn the grant into explicit bounded runtime slices:
+
+1. Bind authority to exact target nodes, `max_workers`, `max_turns`, `max_cost`, allowed toolsets, write boundary, rollback, and readback.
+2. If the next authorized slice is a local runtime/domain-store bootstrap, require an exact packet naming allowed target files/stores and prohibited neighboring actions. Write only those targets, capture before/after hashes, append an idempotent receipt, and keep generated reconciliation plans `execute=false` until a later adapter/executor boundary is explicitly opened. Derive idempotency from stable semantic inputs, not volatile timestamps. See `objective-model-path-verification/references/autonomous-runtime-governance-p4-bootstrap.md`.
+3. For agent-lifecycle coverage requests, first land local artifacts/runtime schemas/tests and mark existing agents as `covered`, `advisory`, `blocked`, or `certified`; do not treat coverage as permission to execute those agents.
+3. Reject invalid authority values instead of silently coercing them. Examples: `max_workers=0`, `max_turns=0`, non-numeric limits, negative cost, empty toolsets, unsupported write boundaries, and non-ready/missing target nodes fail closed.
+4. Prefer the next narrow boundary: local state-machine execution first, adapter-specific local receipts second, real adapter write-through third, live worker/subagent spawn later. Each layer consumes the previous layer's receipt by exact ID.
+5. For task/mission-style integration, first write idempotent adapter receipts under the local ledger/state store with evidence refs, readback, and rollback metadata. Do not call adapter CLIs, schedulers, or external services from the receipt boundary.
+6. Add tests for success, rejection, idempotent replay, and an isolated-home smoke that proves only the intended local receipt keys/tables changed.
+7. Run independent review after implementation; treat findings such as silent limit coercion as blockers and add regression tests before committing.
+
 ## References
 
 - `references/read-only-control-console-projections.md` — pattern for projecting Mission/taskpool/control-plane ledgers into localhost dashboards safely: read-only DB access, public snapshot redaction, shell-quoted command drafts, Human Inbox mapping, and browser harness checks without hiding core UI.
@@ -150,4 +152,20 @@ Minimum tests per boundary:
 - `references/hermes-agent-architecture-coverage-20260608.md` — session-specific sequence for the Hermes agent architecture coverage plan: rollback, outbox, delivery authorization, Telegram/Lark dry-runs, tests, and commits.
 - `references/control-console-worker-execute-boundary.md` — Scope: localhost/operator approval consoles. Applicability: starting an existing governed background worker job after verified record/apply/dispatch ledgers and claimed readback. Anti-condition: creating a second worker system, arbitrary shell/tool execution, external sends, or direct done closeout.
 - `references/singleton-safe-option-projections.md` — Scope: localhost/operator decision gates. Applicability: exactly one safe non-mutating option remains. Anti-condition: not approval, dispatch, worker execution, done closeout, external writeback, send, publish, or delete. Covers allowlisted singleton `auto_decision`, draft/preselect UI state, and consumer-side sanitization.
+- `references/goal-workflow-governed-local-execution.md` — pattern for opening a Hermes goal/workflow executor one boundary at a time: exact ready-node selection, strict max_workers/max_turns/max_cost validation, local state/checkpoint receipts, rollback/readback, and taskpool/mission `authorized_not_written` handling before adapter write-through.
 - `references/live-platform-sender-smoke.md` — live Telegram/Lark/Feishu smoke pattern: separate credential validity from receive-target authorization, record ledger evidence, and avoid token persistence.
+- `references/project-level-high-risk-live-boundary-drain.md` — procedure for consuming broad project-level authorization into exact live boundaries (subagent smoke, taskpool lifecycle, mission report/dispatch, local cron heartbeat, exact push, destructive smoke) while stopping class-only external/deploy/destructive requests until exact targets exist.
+- `references/high-risk-sequential-execution-drain.md` — procedure for ordered real-execution drain after a user asks to execute every high-risk class: execute exact/reversible smokes, record receipts, classify attempted-but-unverified sends correctly, and stop payment/credential/fan-out at hard gates when exact targets are missing.
+- `references/high-risk-boundary-coverage-with-canary.md` — pattern for "100% coverage" requests over high-risk side-effect classes: implement a governance/readback coverage matrix, keep class-only real side effects closed, and use only a disposable local canary for destructive coverage when no exact production target exists.
+- `references/high-risk-gate-control-plane.md` — pattern for requests to enable many high-risk classes at once: open local/fail-closed gates with receipts/readback, heartbeat and canary proof, while live sends/deploys/deletes/credential-payment stay exact-target gated.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

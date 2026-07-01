@@ -47,6 +47,8 @@ Use what serves the song. Ignore what doesn't.
 - adapting a song
 - AI music generation
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 1. Song Structure (Pick One or Invent Your Own)
 
 Common skeletons — mix, modify, or throw out as needed:
@@ -324,4 +326,3 @@ Style can drift in extensions — restate genre/mood when extending.
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

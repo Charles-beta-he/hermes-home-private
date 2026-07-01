@@ -355,32 +355,16 @@ Never fix bugs without a test.
 
 ## Hermes Taskpool / Stateful CLI Transition Work
 
-When changing Hermes taskpool/control-plane scripts or any stateful CLI/orchestrator:
+Detailed `Hermes Taskpool / Stateful CLI Transition Work` guidance moved to `references/hermes-taskpool-stateful-cli-transition-work.md`.
 
-0. For standalone tools under `~/.hermes/scripts`, test the full CLI/proof-artifact contract with subprocess-based tests. If the system Python lacks pytest, use the Hermes repo venv pytest when available (for this setup: `/Users/charles/.hermes/hermes-agent/.venv/bin/python -m pytest ...`). Treat this as a setup fix, not a reason to skip RED/GREEN.
-1. Write RED tests around the **state transition**, not just helper functions. Assert frontmatter/body mutations, derived fields, CLI JSON actions, process exit codes, and emitted proof artifacts.
-2. Use fixture tasks/artifacts that mimic the real control-plane evidence shape (`discussion_result.json`, blocked/retry status, proof log sections) so the failure proves the workflow, not a toy helper.
-3. Add a second-cycle closure test whenever the feature spans phases, e.g.:
-   - trigger auto-split from blocked/non-convergence
-   - mark generated subtasks done
-   - verify parent reopen/sync on `reconcile` or the primary resolver path
-4. Treat CLI/control-plane JSON output as part of the contract. Add RED assertions for structured action payloads (`action`, `resolved/kept_blocked`, `taxonomy_axes`, `axis_rationale`, counts, reopen reasons) instead of only checking file text. When diagnostics guide later automation, test that they are returned explicitly, not just implied by side effects.
-5. When a control-plane workflow derives follow-up work from failure analysis, add RED coverage that the diagnostic taxonomy survives the whole path: gate/writeback -> task frontmatter/body -> resolver/auto-split JSON result. This prevents "analysis exists but downstream step cannot consume it" regressions.
-6. When you introduce new task metadata fields, treat persistence/display as separate contract surfaces. Add RED assertions that the fields survive all of these layers as needed: in-memory task state, serialized frontmatter (`SAVE_FIELDS`/persisted keys), preferred frontmatter ordering for operator readability, and command JSON. A feature is not done if the diagnostic exists only in memory or only in one output path.
-7. After GREEN on targeted tests, run a **real task dry verification** against the actual taskpool entry to confirm:
-   - idempotent re-run is a no-op
-   - already-done parents are safe no-ops
-   - proof log is appended, not overwritten
-   - structured diagnostics remain present in command output for operators/control-plane consumers
-7. If unrelated legacy tests fail, classify them explicitly as pre-existing/off-scope instead of silently broadening the task.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Testing Anti-Patterns
 
 - **Testing mock behavior instead of real behavior** — mocks should verify interactions, not replace the system under test
 - **Testing implementation details** — test behavior/results, not internal method calls
 - **Happy path only** — always test edge cases, errors, and boundaries
 - **Post-success boundary not tested** — for flows that verify/authenticate first and then run a downstream business action, add a RED test where verification succeeds but the downstream action throws/rejects. Assert the verified/consumed credential is not re-submitted and the failure is classified at the downstream boundary, not as a verification failure.
-- **Brittle tests** — tests should verify behavior, not structure; refactoring shouldn't break them
+- **React component tests with irrelevant async effects** — If the component under test starts an unrelated async effect (for example `api.get('/me/devices')`) that resolves after assertions and causes `act(...)` warnings, do not let that noise hide the behavior under test. Prefer mocking that irrelevant call as a never-resolving promise or an explicit controllable deferred so the test remains focused on the user action being specified. Only resolve the deferred inside `act` when the async result is part of the behavior being tested.
 
 ## Final Rule
 
@@ -393,55 +377,9 @@ No exceptions without the user's explicit permission.
 
 ## Replay-Based Regression Testing (Traffic-Driven)
 
-When a system has routing/dispatch logic (URL routers, intent classifiers, command matchers, LLM query classifiers), **hardcoded test cases drift from reality**. The user's inputs are unpredictable and diverse — you can't anticipate every phrasing.
+Detailed `Replay-Based Regression Testing (Traffic-Driven)` guidance moved to `references/replay-based-regression-testing-traffic-driven.md`.
 
-**Pattern: Record → Replay → Detect Drift**
-
-1. **Record**: On every live request, persist `(input, route_id, payload_snapshot)` to a local review store. This is cheap — just a JSON write.
-2. **Replay**: Periodically (batch trigger, e.g. every N records), re-run the routing logic against each recorded input and compare the new `route_id` against the recorded one.
-3. **Drift**: If they differ, you've caught a regression before the user does. Generate a regression test case from the drifted record.
-
-**Critical rule: Import real handlers, never duplicate matching logic.**
-The replay verifier must call the same handler functions that production uses. If you copy pattern-matching into the test, it will silently drift when production code changes — defeating the entire purpose.
-
-```python
-# CORRECT: import and call real handlers
-import app
-def replay(ctx):
-    return app.handle_l0_query(ctx.user_text)
-
-# WRONG: copy matching logic into test
-def replay(ctx):
-    if "天气" in ctx.user_text:  # Duplicates app.py!
-        return "weather", "..."
-```
-
-**Circular import avoidance**: If the replay tool can't import the app module directly (e.g. FastAPI app module imports the recording module), use subprocess:
-```python
-proc = await asyncio.create_subprocess_exec(
-    python_bin, "replay_verify.py", "--json",
-    stdout=asyncio.subprocess.PIPE,
-)
-```
-
-**Hot-path safety**: Never replay synchronously in the request path. Use batch triggers (count threshold since last replay) and run as a background task.
-
-**Stub payloads for offline replay**: When replaying without a real server, create lightweight stub objects that provide attribute access matching the production model:
-```python
-class _MessageStub:
-    """Wraps a dict to provide .role / .type / .image_url attribute access."""
-    def __init__(self, data):
-        self._data = data
-    def __getattr__(self, name):
-        if name.startswith("_"):
-            raise AttributeError(name)
-        return self._data.get(name)
-```
-
-**Expected drift vs unexpected drift**: When you fix a routing bug, old records will show `recorded_route_id=wrong, replayed_route_id=correct`. This is expected — not a regression. Only flag cases where the new route is unexpected.
-
-For a complete implementation example, see `references/replay-based-regression-testing.md`.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Test Suite Bootstrapping (Existing Codebases)
 
 When inheriting a codebase with zero tests, use the bootstrapping pattern:
@@ -474,4 +412,4 @@ See `references/python-test-debugging.md` for debugging patterns.
 8. **Assertion mismatch on warning-only paths** — When testing components that log warnings (e.g., uninitiated orchestrator), verify the actual behavior before asserting metrics. Some implementations only log warnings without incrementing error counters. Always run the test first (RED) to see what actually fails, then adjust assertions to match real behavior.
 9. **Python syntax typos with `self.`** — Common typo: `self balancer = LoadBalancer()` instead of `self.balancer = LoadBalancer()`. The linter catches this, but always run `python3 -m py_compile` on test files before running tests to catch syntax errors early.
 10. **Fake coverage from file counts** — `len(test_*.py) / len(source_*.py)` is only a boundary-mapping metric, not statement/branch coverage. If a project uses this bootstrap metric, label it explicitly (e.g. "file-level test mapping"), add behavior tests for critical files, and add a separate boundary catalog so the self-check covers execution, performance, security, stress, compatibility, and architecture links instead of only file presence.
-11. **unittest output may be on stderr** — `unittest.TextTestRunner` writes to stderr by default. Self-check scripts that parse only stdout can misclassify passing tests as UNKNOWN. Combine stdout+stderr, and prefer a Python interpreter with pytest available; if multiple Python versions exist, probe candidates before running the suite.
+11. **CSV fixtures on macOS/git must use LF line endings** — Python `csv.DictWriter` defaults to platform/excel-style `\r\n`, which can make `git diff --check` flag every CSV line as trailing whitespace. For committed/generated CSV evidence fixtures, pass `lineterminator="\n"` and add a regression assertion that the written CSV contains no `\r`.

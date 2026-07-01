@@ -36,6 +36,10 @@ metadata:
 - User says "UIMax", "UI审计", "UI评分", "UI检查", "UI走查"
 - Before/after optimization loops to measure improvement
 - Pre-release quality gates
+- React Native/mobile simulator UI closeout where screenshots, route tests, and accessibility gates must be combined; see `references/react-native-simulator-uimax.md`
+- React Native bottom-tab shells where the user reports tabs only appear on Home, excessive blank space, tab/content overlap, or unstable screenshot evidence; use `references/react-native-global-bottom-tab-closeout.md`.
+- React Native mobile shells that are functionally reachable but rejected as ugly, debug-like, or not run through UI workflow; run the extreme closeout loop in `references/react-native-extreme-ui-closeout.md`. If the user asks for `A+` / `全推A+`, close the full simulator evidence matrix in `references/react-native-aplus-simulator-matrix.md` before claiming final grade.
+- PWA/mobile tab surfaces where the user reports missing bottom tabs, excessive blank space, inconsistent tab coverage, stale mobile shell, or demands uIMax A/A+; use the checklist in `references/pwa-mobile-tab-uimax.md`.
 - Don't use for: requests that do not need you need guidance on uIMax — Systematic UI quality audit with A-F grading; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## Scoring Dimensions
 
@@ -52,68 +56,9 @@ metadata:
 
 ## Workflow
 
-### Phase 1: Visual Audit (browser tools)
+Detailed `Workflow` guidance moved to `references/workflow.md`.
 
-For each page/component:
-
-1. **Read the UI test ledger first** (`docs/UI_TEST_CASES.md`, project Workpad, or equivalent) and choose the exact flow/status to verify.
-2. **Navigate** to the page in browser-harness / a real browser at the target viewport.
-3. **Actually perform the documented flow**: click, type, submit, back/interrupt, switch theme/language, and confirm finish/error states. Do not score from screenshots alone.
-4. **Check console** for JS errors: `browser_console(clear=true)`
-5. **Inspect network/storage where relevant**; redact tokens/passwords/private values in reports.
-6. **Screenshot + analyze**: `browser_vision(question="Analyze UI quality...", annotate=true)`
-7. **Test interactions**: touch target size, press feedback, loading/error states, fixed header/bottom-nav safe-area, keyboard/focus/ARIA, reduced-motion, dark/i18n contrast.
-8. **Note issues** with severity and category, and link each issue to the test case ID and evidence path.
-
-**Important**: React CSR apps may show "Empty page" in browser_snapshot. Use browser_vision screenshots instead.
-
-**Acceptance rule**: UIMax scoring is secondary to flow truth. A visually polished screenshot is not a pass if the documented business flow was not actually completed through the browser.
-
-### Phase 2: Code Audit (terminal/file tools)
-
-Scan source code for quality metrics:
-
-```
-# Inline styles count per file
-search_files(r'style=\{', target='content', path='src/', file_glob='*.jsx')
-
-# ARIA attributes
-search_files(r'aria-', target='content', path='src/', file_glob='*.jsx')
-
-# tabIndex usage
-search_files(r'tabIndex', target='content', path='src/', file_glob='*.jsx')
-
-# Focus styles in CSS
-search_files(r':focus', target='content', path='src/', file_glob='*.css')
-
-# Hardcoded colors (not CSS vars)
-search_files(r"(?:color|background|border).*#[0-9a-fA-F]{3,8}", target='content', path='src/')
-
-# prefers-reduced-motion
-search_files(r'prefers-reduced-motion', target='content', path='src/')
-
-# CSS variable coverage
-# Count defined vs used in CSS files
-```
-
-### Phase 3: Generate Report
-
-Write `UIMAX_REPORT.md` with:
-1. Overall scores per dimension (table)
-2. Per-page/component grades
-3. Code quality statistics
-4. Prioritized issue list (P0/P1/P2)
-5. Optimization roadmap for next loop iteration
-
-### Phase 4: Optimization (P10 strategy)
-
-Based on scores, prioritize:
-1. **P0 (blocking)**: Accessibility gaps — tabIndex, :focus, ARIA
-2. **P1 (important)**: Static inline style migration, hardcoded colors
-3. **P2 (nice-to-have)**: CSS variable coverage, responsive polish
-
-After fixes: `pnpm test && pnpm build` → re-run Phase 1-3 to verify improvement.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Key Findings from Experience
 
 ### Accessibility Patterns (proven effective, ARIA +350%)
@@ -239,7 +184,7 @@ import BottomNav from '../components/BottomNav.jsx'
 export default function NewPage() {
   // State machine: idle → loading → loaded | empty | error
   const [status, setStatus] = useState('loading')
-  
+
   return (
     <div className="min-h-[100svh] bg-theme-primary text-theme-primary font-theme flex flex-col">
       <a href="#page-content" className="sr-only focus:not-sr-only ...">Skip to content</a>
@@ -457,4 +402,3 @@ This skill pairs with `p10` for optimization and `loop` for iterative improvemen
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] The Definition of Done items above were explicitly checked, not assumed.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

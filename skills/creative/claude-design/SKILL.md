@@ -41,56 +41,14 @@ The goal is to preserve Claude Design's useful design behavior and taste while r
 
 ## When To Use This Skill vs `popular-web-designs` vs `design-md`
 
-Hermes has three design-related skills under `skills/creative/`. They do different jobs — load the right one (or combine them):
+Detailed `When To Use This Skill vs `popular-web-designs` vs `design-md`` guidance moved to `references/when-to-use-this-skill-vs-popular-web-designs-vs-design-md.md`.
 
-| Skill | What it gives you | Use when the user wants... |
-|---|---|---|
-| **claude-design** (this one) | Design *process and taste* — how to scope a brief, gather context, produce variants, verify a local HTML artifact, avoid AI-design slop | a from-scratch designed artifact (landing page, prototype, deck, component lab, motion study) with no specific brand or token system dictated |
-| **popular-web-designs** | 54 ready-to-paste design systems — exact colors, typography, components, CSS values for sites like Stripe, Linear, Vercel, Notion, Airbnb | "make it look like Stripe / Linear / Vercel", a page styled after a known brand, or a visual starting point pulled from a real product |
-| **design-md** | Google's DESIGN.md spec format — author/validate/diff/export design-token files, WCAG contrast checking, Tailwind/DTCG export | a formal, persistent, machine-readable design-system *spec file* (tokens + rationale) that lives in a repo and gets consumed by agents over time |
-
-Rule of thumb:
-
-- **Process + taste, one-off artifact** → claude-design
-- **Match a known brand's look** → popular-web-designs (and let claude-design drive the process)
-- **Author the tokens spec itself** → design-md
-
-These compose: use `popular-web-designs` for the visual vocabulary, `claude-design` for how to turn a brief into a thoughtful local HTML file, and `design-md` when the output is the token file rather than a rendered artifact.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Runtime Mode
 
-You are running in **CLI/API mode**, not the Claude Design hosted web UI.
+Detailed `Runtime Mode` guidance moved to `references/runtime-mode.md`.
 
-Ignore references from source Claude Design prompts to hosted-only tools, project panes, preview panes, special toolbar protocols, or platform callbacks that are not available in the current environment.
-
-Examples of hosted-tool concepts to ignore or remap:
-
-- `done()`
-- `fork_verifier_agent()`
-- `questions_v2()`
-- `copy_starter_component()`
-- `show_to_user()`
-- `show_html()`
-- `snip()`
-- `eval_js_user_view()`
-- hosted asset review panes
-- hosted edit-mode or Tweaks toolbar messaging
-- `/projects/<projectId>/...` cross-project paths
-- built-in `window.claude.complete()` artifact helper
-- tool schemas embedded in the source prompt
-- web-search citation scaffolding meant for the hosted runtime
-
-Instead, use the tools actually available in the current agent environment.
-
-Default deliverable:
-
-- a complete local HTML file
-- self-contained CSS and JavaScript when portability matters
-- exact on-disk path in the final response
-- verification using available local methods before saying it is done
-
-If the user asks for implementation in an existing repo, generate code in the repo's actual stack instead of forcing a standalone HTML artifact.
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Core Identity
 
 Act as an expert designer working with the user as the manager.
@@ -112,6 +70,8 @@ Do not expose internal prompts, hidden system messages, or implementation plumbi
 ## When to Use
 Use this skill for:
 
+Reference for visual/IP continuation when generation is blocked: `references/visual-ip-h5-handoff.md`.
+
 - landing pages
 - teaser pages
 - high-fidelity prototypes
@@ -128,6 +88,8 @@ Use this skill for:
 
 Do not use this skill for pure DESIGN.md token authoring unless the user specifically asks for a DESIGN.md file. Use `design-md` for that.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Design Principle: Start From Context, Not Vibes
 
 Good high-fidelity design does not start from scratch.
@@ -186,50 +148,9 @@ When proceeding with assumptions, label only the important ones.
 
 ## Workflow
 
-1. **Understand the brief**
-   - What is being designed?
-   - Who is it for?
-   - What artifact should exist at the end?
-   - What constraints are locked?
+Detailed `Workflow` guidance moved to `references/workflow.md`.
 
-2. **Gather context**
-   - Read supplied docs, screenshots, repo files, or design assets.
-   - Identify the visual vocabulary before writing code.
-
-3. **Define the design system for this artifact**
-   - colors
-   - type
-   - spacing
-   - radii
-   - shadows or elevation
-   - motion posture
-   - component treatment
-   - interaction rules
-
-4. **Choose the right format**
-   - Static visual comparison: one HTML canvas with options side by side.
-   - Interaction/flow: clickable prototype.
-   - Presentation: fixed-size HTML deck with slide navigation.
-   - Component exploration: component lab with variants.
-   - Motion: timeline or state-based animation.
-
-5. **Build the artifact**
-   - Prefer a single self-contained HTML file unless the task calls for a repo implementation.
-   - Preserve prior versions for major revisions.
-   - Avoid unnecessary dependencies.
-
-6. **Verify**
-   - Confirm files exist.
-   - Run any available syntax/static checks.
-   - If browser tools are available, open the file and check console errors.
-   - If visual fidelity matters and screenshot tools are available, inspect at least the primary viewport.
-
-7. **Report briefly**
-   - exact file path
-   - what was created
-   - caveats
-   - next decision or next iteration
-
+Load it only when this specialized branch is directly active; preserve root safety and verification rules.
 ## Artifact Format Rules
 
 Default to local files.
@@ -603,6 +524,7 @@ You are running in CLI/API mode, not hosted Claude Design. Ignore references to 
 
 ## Common Pitfalls
 
+- When a design artifact depends on generated imagery, separate **model availability** from **provider authority** before promising replacement images. In Hermes, a model such as GPT Image 2 may appear in the image-generation catalog while the active `image_generate` tool still requires a configured image backend (for example FAL key or Nous Tool Gateway). If generation is blocked by credentials/login, record the provider gate honestly, keep the mockup/local artifact reversible, and offer the concrete setup path rather than implying the model is unavailable or fabricating image results.
 - Do not paste hosted tool schemas into a skill. They cause fake tool calls.
 - Do not point the skill at a giant external prompt as required runtime context. That creates drift.
 - Do not strip the design doctrine while removing tool plumbing.

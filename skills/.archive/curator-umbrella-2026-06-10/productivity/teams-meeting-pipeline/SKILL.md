@@ -50,6 +50,8 @@ Multilingual trigger examples (not exhaustive):
 - English: "summarize the Teams meeting", "pipeline status", "replay job X"
 - Turkish: "Teams meeting özetle", "action item çıkar", "toplantı notu", "pipeline durumu", "replay job"
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 Before using the pipeline, verify these are set in `~/.hermes/.env`:

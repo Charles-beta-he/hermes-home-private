@@ -45,6 +45,8 @@ The goal is not to silence warnings. The goal is to make warnings semantically h
 
 Do not use this to hide real failures such as broken refs, zombie skills, failing self-test, bad cron jobs, or gateway down.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Workflow
 
 ### 1. Establish the baseline

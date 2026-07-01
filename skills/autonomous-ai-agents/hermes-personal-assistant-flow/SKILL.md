@@ -22,11 +22,15 @@ Use this skill when the user asks Hermes to act as a personal assistant, create 
 
 Reference: `references/agent-productization-and-independent-delivery.md` covers the class-level path from business scenario to agent/personal-assistant deliverable: Hermes-native MVP, Hermes-incubated independent agent, or reusable agent runtime/product base, with workflow pack, evidence, human gates, and extraction mapping.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Operating principles
 
 - Evidence first: gather local/project/session/tool context before making claims.
 - Goal calibration first for vague or prompt-like requests: infer the durable target, ask only when ambiguity changes execution.
 - No fake completion: every closure needs proof from commands, UI screenshots, API responses, files, logs, or taskpool evidence.
+- External source intake is broader than architecture: GitHub Trending/Product Hunt/feed items should be triaged for product, workflow, commercial, browser automation, evidence-retrieval, and control-plane absorption opportunities; see `references/external-source-intake-and-dream-router.md`.
+- For self-evolution/dreaming jobs, separate runtime health from evolution effectiveness and routing/certification readiness; a green cron with repeated `no_state_change` is not a full success.
 - Keep state in the right place:
   - Memory: durable user/environment facts only.
   - Skills: reusable procedures.
@@ -125,7 +129,21 @@ Each task should include:
 - Evidence required for done
 - Suggested execution lane/model, if relevant
 
+#### Leaderboard / external-signal intake pitfall
+
+When converting daily reports, GitHub Trending, Product Hunt, launch lists, feed digests, or other ranked external signals into taskpool candidates, do **not** treat “吸收/入池” as architecture-only. For each high-signal item, actively classify whether it warrants:
+
+- an implementation/architecture task;
+- a product/workflow/commercial opportunity analysis;
+- an open-source/reference-repo absorption review;
+- an evidence-retrieval task when links or repos are indicated but unresolved;
+- a P2/P3 observation or PoC task when value is plausible but implementation evidence is incomplete.
+
+Fail-closed means “do not pretend unverified marketing copy is implementation proof”; it does **not** mean dropping non-architecture items. If evidence is partial (for example Product Hunt reports a GitHub/source link but repo metadata is unresolved), create a bounded evidence-retrieval or absorption-analysis candidate with explicit anti-drift checks, rather than writing an empty sidecar by default.
+
 ### D. Scheduled assistant flow
+
+When the user asks whether Hermes will proactively remind them about future gates (tickets, reservations, deadlines, renewals, health checks), first verify existing cron jobs instead of assuming reminder coverage. If no matching job exists and the user has already authorized reminders, create narrowly scoped jobs with explicit schedule, delivery target, non-action boundaries, and self-contained prompts. For one-shot travel/deadline gates, prefer T-minus reminders plus day-of checks; reminders should ask the user to handle screenshots/credentials/payments themselves rather than performing them.
 
 For cron jobs, prompt must be self-contained:
 
@@ -135,6 +153,14 @@ For cron jobs, prompt must be self-contained:
 - Output format
 - Failure behavior
 - Whether silence is acceptable when no update exists
+
+For time-gated personal logistics such as trips, appointments, ticketing, or reservation workflows, prefer a **T-minus + day-of gate ladder** instead of a single reminder:
+
+- T-7 or earliest booking window: total checklist for reservations, tickets, constraints, screenshots, and missing evidence.
+- T-2 or final planning window: strong verification reminder; if evidence is missing, tell the user which fallback/route/plan is triggered.
+- Day-of: concise gate card with today’s hard conditions, latest safe time, failure downgrade, and what screenshot/result to send back.
+
+Keep these jobs self-contained and explicit about boundaries: remind and request evidence, but do not log in, enter private data, purchase, book, pay, or submit external forms unless a separate exact authorization and readback path exists.
 
 ## Pitfalls
 
@@ -154,3 +180,14 @@ Before final response, confirm:
 - Side effects are scoped and intentional.
 - Verification evidence is included.
 - Reusable lessons were saved to a skill, not memory, when appropriate.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

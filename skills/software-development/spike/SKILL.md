@@ -36,6 +36,8 @@ Load this when the user says things like "let me try this", "I want to see if X 
 
 - You need guidance on throwaway experiments to validate an idea before build
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When NOT to use this
 
 - The answer is knowable from docs or reading code — just do research, don't build
@@ -226,4 +228,3 @@ Adapted from the GSD (Get Shit Done) project's `/gsd-spike` workflow — MIT © 
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

@@ -29,6 +29,8 @@ Do not use it for:
 
 When you have an existing Web SPA and need native mobile apps (APK/AAB/IPA), WebView-based wrappers like Capacitor are the fastest path. This skill covers the decision framework, known pitfalls, and implementation patterns.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Decision Framework: Capacitor vs React Native vs PWA
 
 ### When to choose Capacitor (WebView wrapper)

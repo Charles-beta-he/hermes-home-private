@@ -27,6 +27,8 @@ Perform code reviews on local changes before pushing, or review open PRs on GitH
 
 - You need to review code changes by analyzing git diffs, leaving inline comments on PRs, and performing thorough pre-push review
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Authenticated with GitHub (see `github-auth` skill)
@@ -508,4 +510,3 @@ git branch -D pr-$PR_NUMBER
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

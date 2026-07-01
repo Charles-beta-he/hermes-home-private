@@ -42,6 +42,8 @@ Use Guidance when you need to:
 
 **GitHub Stars**: 18,000+ | **From**: Microsoft Research
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Installation
 
 ```bash
@@ -600,4 +602,3 @@ lm += gen("name", regex=r"^(John|Jane)$", max_tokens=10)
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

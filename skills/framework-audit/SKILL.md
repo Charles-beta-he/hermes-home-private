@@ -30,6 +30,8 @@ metadata:
 
 - Evaluating whether to adopt, reject, or selectively extract ideas from an external AI framework, GitHub repo, package, or CLI. Produces evidence-first adoption analysis, integration risk assessment, and Hermes-native selective-adoption recommendations
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 核心流程
 
 ```
@@ -472,4 +474,3 @@ ls ~/.claude/skills/ | grep "<prefix>" | wc -l
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

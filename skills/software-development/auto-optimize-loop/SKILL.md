@@ -33,6 +33,8 @@ Systematic code improvement in 5 steps. Designed for self-contained execution (c
 - Autonomous long-running optimization sessions
 - Post-refactor verification
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Test suite must exist and pass before starting (`pnpm test`, `pytest`, etc.)

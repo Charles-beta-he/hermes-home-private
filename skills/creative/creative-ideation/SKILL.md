@@ -31,6 +31,8 @@ Generate project ideas through creative constraints. Constraint + direction = cr
 
 - The user says 'I want to build something', 'give me a project idea', 'I'm bored', 'what should I make', 'inspire me', or any variant of 'I have tools but no direction'. Works for code, art, hardware, writing, tools, and anything that can be made
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## How It Works
 
 1. **Pick a constraint** from the library below — random, or matched to the user's domain/mood
@@ -172,4 +174,3 @@ Constraint approach inspired by [wttdotm.com/prompts.html](https://wttdotm.com/p
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

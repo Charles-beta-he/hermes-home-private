@@ -34,6 +34,8 @@ metadata:
 - 用户要求 "thorough review" 或 "全面审查"
 - 代码变更涉及关键路径（认证、支付、数据处理）
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When NOT to Use
 
 - 小改动（< 30 行）—— 单 Agent 足够
@@ -67,6 +69,19 @@ Agent     Agent   Agent   Agent   Agent
 ```
 
 ## Step-by-Step Execution
+
+### Mandatory gate: reviewer model separation
+
+When the code was implemented by an LLM/model route and the user asks for "multi-model", "智能路由", "review", "certify", or merge authority:
+
+1. Identify the development model/provider from the active session or tool output.
+2. Choose at least one independent reviewer model/provider that is different from the development model. This independent reviewer is the approval gate.
+3. If an additional reviewer uses the same model/provider family as development, treat it as advisory only; do not count it as the independence gate.
+4. If any reviewer, even advisory, reports a concrete reproducible/security/correctness issue, handle it as real: add or run a failing check first when practical, patch the code, rerun verification, then rerun the independent reviewer on the final diff.
+5. Before auto-merge, bind the merge to the reviewed source SHA (`--sha` or equivalent) so unreviewed commits cannot slip in after approval.
+6. Post or record a concise review note listing development model, independent reviewer model, advisory reviewers, blocker/fix outcome, verification commands, and the reviewed SHA.
+
+This is a process gate, not a model-quality claim: the key requirement is that the final approval path is not the same model route that authored the change.
 
 ### Step 1: Prepare the Diff
 
@@ -227,7 +242,18 @@ After confidence filtering: 7 findings
   < 0.40: 5 findings (suppressed)
 ```
 
-### Step 5: Post to GitHub (Optional)
+### Step 5: Act on Review Findings Before Approval/Merge
+
+When review is part of a merge gate, treat multi-model output as an evidence workflow, not a ceremony:
+
+1. **Enforce model separation for the gate.** The independent review gate must use a different model/provider family than the development model. Same-family reviewers may still run, but classify them as advisory rather than the independence gate.
+2. **Promote deterministic findings even from advisory reviewers.** If any reviewer finds a concrete security/correctness issue with a reproducible case, add a failing regression test first, fix it, and rerun the affected tests. Do not suppress it just because the reviewer is not the independent gate.
+3. **Rerun independent review after fixes.** A merge approval from before a fix does not certify the final diff. Re-review the final HEAD and record the reviewed SHA.
+4. **Post a non-blocking review receipt.** When commenting on GitLab/GitHub, use non-resolvable/bot-status comments for review summaries so automation notes do not create discussion blockers.
+5. **Merge by reviewed SHA.** If auto-merge is authorized, merge with an explicit expected source SHA (`--sha` for GitLab/glab or equivalent) to prevent drift between review and merge.
+6. **Read back final state.** After merge, query the MR/PR state and target branch head; verify the target contains the reviewed commit. Do not delete the source branch unless explicitly authorized or project policy requires it.
+
+### Step 6: Post to GitHub/GitLab (Optional)
 
 If reviewing a PR, post the filtered results:
 
@@ -352,6 +378,8 @@ When mixing models across agents, the cross-agreement term (weighted 0.6) compen
 3. Reporting success before reading back the actual outputs, files, or external side-effects.
 ## References
 
+- `references/multi-model-gitlab-merge-gate.md` — GitLab MR pattern for independent model/provider review, deterministic finding fixes, reviewed-SHA merge, non-resolvable review receipt, and post-merge readback.
+- `references/self-managed-gitlab-smart-routed-review-receipt.md` — scoped pattern for self-managed GitLab MR/auto-merge when smart-routed multi-model review is degraded by provider/evidence-router gates but deterministic evidence shows no product-code blocker; includes receipt shape and reviewed-SHA merge guard.
 - `references/multi-agent-review-architecture.md` — Architecture patterns, agent decomposition, scoring methods
 - `references/confidence-calibration.md` — Calibration techniques, Bayesian reputation, feedback loops
 - `references/hermes-implementation-pattern.md` — Hermes-specific delegate_task patterns, aggregation script
@@ -362,4 +390,3 @@ When mixing models across agents, the cross-agreement term (weighted 0.6) compen
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] The Definition of Done items above were explicitly checked, not assumed.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

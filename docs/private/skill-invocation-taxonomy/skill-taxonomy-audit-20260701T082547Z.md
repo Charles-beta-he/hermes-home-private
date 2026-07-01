@@ -1,0 +1,484 @@
+# Hermes Skill Invocation Taxonomy Audit
+
+Generated: 2026-07-01T08:25:47.984634+00:00
+Root: `/Users/charles/.hermes/skills`
+Status: OK
+
+## Summary
+
+- Total skills: 266
+- Lifecycle: `{"active": 251, "deprecated": 5, "draft": 7, "personal": 3}`
+- Invocation: `{"model-invoked": 251, "not-default": 15}`
+- Finding severities: `{"warn": 277}`
+
+## Top Findings
+
+- **warn** `core_body_large` — `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/claude-code/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/curator-umbrella-2026-06-10/github/github-pr-workflow/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/curator-umbrella-2026-06-10/research/llm-wiki/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/curator-umbrella-2026-06-10/research/research-paper-writing/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/curator-umbrella-2026-06-17/research/references/absorbed/llm-wiki/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/curator-umbrella-2026-06-17/research/references/absorbed/research-paper-writing/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/software-development/cloud-edge-architecture/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `.archive/taskpool-ingest-triage/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `autonomous-ai-agents/hermes-agent/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `autonomous-ai-agents/hermes-pipeline/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `creative/claude-design/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `creative/comfyui/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `creative/humanizer/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `creative/p5js/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `devops/gateway-telegram-setup/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `github/git-repo-operations/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `incremental-implementation/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `p10-architecture-self-check/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `personal-productivity/travel-planning/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `smart-home/manufacturing-brain/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/agent-skill-design-patterns/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/browser-harness-integration/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/event-governed-side-effect-executors/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/frontend-state-domain-correctness/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/hermes-agent-skill-authoring/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/hermes-workflow-orchestrator/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/multi-model-architecture/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/objective-model-path-verification/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/post-update-patch-healing/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/react-architecture-migration/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/requesting-code-review/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/self-improvement-pipeline/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/systematic-debugging/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/test-driven-development/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `software-development/uimax-audit/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `core_body_large` — `ui-ux-pro-max/.claude/skills/ui-ux-pro-max/SKILL.md` — SKILL.md is large; consider moving conditional detail to references/
+- **warn** `description_not_trigger_shaped` — `.archive/curator-umbrella-2026-06-17/software-development/simplify-code/SKILL.md` — description should start with 'Use when' and express trigger class
+- **warn** `description_not_trigger_shaped` — `computer-use/SKILL.md` — description should start with 'Use when' and express trigger class
+- **warn** `description_not_trigger_shaped` — `productivity/petdex/SKILL.md` — description should start with 'Use when' and express trigger class
+- **warn** `description_not_trigger_shaped` — `software-development/agent-eval-dynamic-workflow-harness/SKILL.md` — description should start with 'Use when' and express trigger class
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/claude-code/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/codex/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/opencode/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/github/codebase-inspection/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/github/github-auth/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/github/github-code-review/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/github/github-issues/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/github/github-pr-workflow/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/github/github-repo-management/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/media/gif-search/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/media/youtube-content/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/mlops/evaluation/weights-and-biases/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/mlops/huggingface-hub/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/mlops/inference/llama-cpp/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/mlops/rag-knowledge-management/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/airtable/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/google-workspace/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/maps/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/nano-pdf/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/notion/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/ocr-and-documents/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/powerpoint/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-10/productivity/teams-meeting-pipeline/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-17/autonomous-ai-agents/hermes-voice-console-integration/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-17/software-development/simplify-code/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/curator-umbrella-2026-06-24/creative/excalidraw/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/devops/cli-tool-installation/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/devops/hermes-observability/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/devops/icon-asset-pipeline/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/devops/macos-network-admin/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/devops/multi-repo-branch-orchestration/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/git-state-aware-debugging/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/github/git-conflict-resolution/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/product-prototype-code-audit/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/project-profile-maintenance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/architecture-theory-audit/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/cloud-edge-architecture/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/concurrent-async-guard/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/financial-ledger-frontend-patterns/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/hermes-self-improvement-pipeline/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/hybrid-app-packaging/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/pwa-cache-invalidation/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/pwa-install-prompt/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/pwa-safe-area-handling/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/software-development/task-depth-analysis/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/task-framing-governance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/taskpool-ingest-triage/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `.archive/testing/playwright-authenticated-screenshots/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `autonomous-ai-agents/hermes-personal-assistant-flow/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `autonomous-ai-agents/hermes-pipeline/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `autonomous-ai-agents/kanban-codex-lane/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `autonomous-ai-agents/tradingagents-reference-patterns/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `chinese-platforms/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `codebase-intelligence/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `computer-use/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/baoyu-article-illustrator/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/baoyu-comic/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/baoyu-infographic/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/claude-design/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/comfyui/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/creative-ideation/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/design-md/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/humanizer/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/manim-video/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/p5js/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/popular-web-designs/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/sketch/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/songwriting-and-ai-music/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/touchdesigner-mcp/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/web-animation-optimization/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `creative/web-animation-patterns/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `data-science/jupyter-live-kernel/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `deprecation-and-migration/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `devops/hermes-storage-governance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `devops/kanban-worker/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `devops/token-saver-frontend-rtk/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `devops/token-saver-rtk/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `documentation-and-adrs/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `dogfood/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `email/himalaya/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `feeds/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `framework-audit/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `gifs/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `gsd-bridge/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `loop/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mcp/mcporter/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mcp/native-mcp/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `media/spotify/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/cloud/modal/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/inference/gguf/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/inference/guidance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/inference/outlines/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/models/clip/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/models/whisper/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/references/absorbed/rag-knowledge-management/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/research/dspy/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/training/axolotl/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/training/grpo-rl-training/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/training/pytorch-fsdp/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `mlops/training/unsloth/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `note-taking/obsidian/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `p10-architecture-self-check/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `p7/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `p9/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `personal-productivity/career-ops/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `productivity/lark-docx-reading/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `productivity/linear/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `productivity/petdex/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `smart-home/assembly-assistance-workflow/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `smart-home/electrical-brain/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `smart-home/external-control-brain/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `smart-home/manufacturing-brain/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/auto-optimize-loop/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/code-simplifier/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/color-contrast-checker/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/debugging-hermes-tui-commands/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/experience-ratchet/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/hermes-overlay-ratchet-upgrades/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/hermes-s6-container-supervision/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/hermes-self-audit/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/hermes-warning-governance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/mcp-server-from-scratch/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/multi-agent-code-review/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/post-update-patch-healing/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/react-architecture-migration/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/requirement-clarification/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/router/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/self-evolve-via-claude/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/self-improvement-pipeline/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/skill-ecosystem-governance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/skill-eval/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/spike/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/stuck-diagnosis/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/subagent-driven-development/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/taskpool-drain-governance/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/taskpool-lifecycle-drainage/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/theory-driven-evolution/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/visual-regression/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/workflow-ecosystem-audit/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `software-development/writing-plans/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `source-driven-development/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-skills/skills/baseline-ui/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-skills/skills/fixing-accessibility/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-skills/skills/fixing-metadata/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-ux-pro-max/.claude/skills/brand/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-ux-pro-max/.claude/skills/design-system/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-ux-pro-max/.claude/skills/slides/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-ux-pro-max/.claude/skills/ui-styling/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `ui-ux-pro-max/.claude/skills/ui-ux-pro-max/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_anti_conditions` — `workflow/qian-meta-synthesis/SKILL.md` — missing Don't use for / anti-conditions
+- **warn** `missing_common_pitfalls` — `.archive/curator-umbrella-2026-06-17/autonomous-ai-agents/hermes-voice-console-integration/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/curator-umbrella-2026-06-17/devops/hermes-tool-availability/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/curator-umbrella-2026-06-17/software-development/simplify-code/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/devops/cli-tool-installation/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/devops/hermes-observability/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/devops/icon-asset-pipeline/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/devops/multi-repo-branch-orchestration/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/git-state-aware-debugging/SKILL.md` — missing ## Common Pitfalls section
+- **warn** `missing_common_pitfalls` — `.archive/github/git-conflict-resolution/SKILL.md` — missing ## Common Pitfalls section
+
+## Skills
+
+- `.archive/agent-team-parallel/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10081
+- `.archive/curator-umbrella-2026-06-10/apple/apple-notes/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3391
+- `.archive/curator-umbrella-2026-06-10/apple/apple-reminders/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3783
+- `.archive/curator-umbrella-2026-06-10/apple/findmy/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4791
+- `.archive/curator-umbrella-2026-06-10/apple/imessage/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3639
+- `.archive/curator-umbrella-2026-06-10/apple/macos-computer-use/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10211
+- `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/claude-code/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=37230
+- `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/codex/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6045
+- `.archive/curator-umbrella-2026-06-10/autonomous-ai-agents/opencode/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7944
+- `.archive/curator-umbrella-2026-06-10/github/codebase-inspection/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=4628
+- `.archive/curator-umbrella-2026-06-10/github/github-auth/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=8399
+- `.archive/curator-umbrella-2026-06-10/github/github-code-review/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=15533
+- `.archive/curator-umbrella-2026-06-10/github/github-issues/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11123
+- `.archive/curator-umbrella-2026-06-10/github/github-pr-workflow/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=24778
+- `.archive/curator-umbrella-2026-06-10/github/github-repo-management/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=17113
+- `.archive/curator-umbrella-2026-06-10/media/gif-search/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3457
+- `.archive/curator-umbrella-2026-06-10/media/youtube-content/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=4081
+- `.archive/curator-umbrella-2026-06-10/mlops/evaluation/weights-and-biases/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=13506
+- `.archive/curator-umbrella-2026-06-10/mlops/huggingface-hub/SKILL.md` — lifecycle=deprecated invocation=not-default findings=1 size=4801
+- `.archive/curator-umbrella-2026-06-10/mlops/inference/llama-cpp/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=9722
+- `.archive/curator-umbrella-2026-06-10/mlops/rag-knowledge-management/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5424
+- `.archive/curator-umbrella-2026-06-10/productivity/airtable/SKILL.md` — lifecycle=deprecated invocation=not-default findings=1 size=12070
+- `.archive/curator-umbrella-2026-06-10/productivity/google-workspace/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11421
+- `.archive/curator-umbrella-2026-06-10/productivity/maps/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7605
+- `.archive/curator-umbrella-2026-06-10/productivity/nano-pdf/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=2313
+- `.archive/curator-umbrella-2026-06-10/productivity/notion/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6144
+- `.archive/curator-umbrella-2026-06-10/productivity/ocr-and-documents/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6056
+- `.archive/curator-umbrella-2026-06-10/productivity/powerpoint/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11159
+- `.archive/curator-umbrella-2026-06-10/productivity/teams-meeting-pipeline/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7738
+- `.archive/curator-umbrella-2026-06-10/research/arxiv/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=11377
+- `.archive/curator-umbrella-2026-06-10/research/blogwatcher/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=6242
+- `.archive/curator-umbrella-2026-06-10/research/llm-wiki/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=21025
+- `.archive/curator-umbrella-2026-06-10/research/polymarket/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4085
+- `.archive/curator-umbrella-2026-06-10/research/research-paper-writing/SKILL.md` — lifecycle=draft invocation=not-default findings=1 size=34636
+- `.archive/curator-umbrella-2026-06-17/apple/references/absorbed/apple-notes/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3391
+- `.archive/curator-umbrella-2026-06-17/apple/references/absorbed/apple-reminders/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3783
+- `.archive/curator-umbrella-2026-06-17/apple/references/absorbed/findmy/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4791
+- `.archive/curator-umbrella-2026-06-17/apple/references/absorbed/imessage/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3639
+- `.archive/curator-umbrella-2026-06-17/apple/references/absorbed/macos-computer-use/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10211
+- `.archive/curator-umbrella-2026-06-17/autonomous-ai-agents/hermes-voice-console-integration/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=4558
+- `.archive/curator-umbrella-2026-06-17/devops/hermes-tool-availability/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=9175
+- `.archive/curator-umbrella-2026-06-17/research/references/absorbed/arxiv/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=11377
+- `.archive/curator-umbrella-2026-06-17/research/references/absorbed/blogwatcher/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=6242
+- `.archive/curator-umbrella-2026-06-17/research/references/absorbed/llm-wiki/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=21025
+- `.archive/curator-umbrella-2026-06-17/research/references/absorbed/polymarket/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4085
+- `.archive/curator-umbrella-2026-06-17/research/references/absorbed/research-paper-writing/SKILL.md` — lifecycle=draft invocation=not-default findings=1 size=34636
+- `.archive/curator-umbrella-2026-06-17/software-development/simplify-code/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=8455
+- `.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6807
+- `.archive/curator-umbrella-2026-06-24/creative/excalidraw/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7966
+- `.archive/curator-umbrella-2026-06-24/software-development/node-inspect-debugger/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10879
+- `.archive/curator-umbrella-2026-06-24/software-development/python-debugpy/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=13237
+- `.archive/devops/cli-tool-installation/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=7726
+- `.archive/devops/hermes-observability/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=6816
+- `.archive/devops/icon-asset-pipeline/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=10700
+- `.archive/devops/macos-network-admin/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5873
+- `.archive/devops/multi-repo-branch-orchestration/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=8528
+- `.archive/git-state-aware-debugging/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=4016
+- `.archive/github/git-conflict-resolution/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=9262
+- `.archive/product-prototype-code-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=8821
+- `.archive/project-profile-maintenance/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=9365
+- `.archive/software-development/architecture-theory-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=7640
+- `.archive/software-development/cloud-edge-architecture/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=30713
+- `.archive/software-development/concurrent-async-guard/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=7860
+- `.archive/software-development/external-framework-evaluation/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=6129
+- `.archive/software-development/financial-ledger-frontend-patterns/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=16121
+- `.archive/software-development/hermes-self-improvement-pipeline/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=8784
+- `.archive/software-development/hybrid-app-packaging/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=9501
+- `.archive/software-development/pwa-cache-invalidation/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=10713
+- `.archive/software-development/pwa-install-prompt/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=5755
+- `.archive/software-development/pwa-safe-area-handling/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=9561
+- `.archive/software-development/task-depth-analysis/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=7163
+- `.archive/task-framing-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=5322
+- `.archive/taskpool-ingest-triage/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=25386
+- `.archive/testing/playwright-authenticated-screenshots/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=5641
+- `api-and-interface-design/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10534
+- `apple/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=5599
+- `autonomous-ai-agents/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=8214
+- `autonomous-ai-agents/hermes-agent/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=33388
+- `autonomous-ai-agents/hermes-experience-ratchet/SKILL.md` — lifecycle=deprecated invocation=not-default findings=2 size=7422
+- `autonomous-ai-agents/hermes-personal-assistant-flow/SKILL.md` — lifecycle=personal invocation=not-default findings=3 size=10310
+- `autonomous-ai-agents/hermes-pipeline/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=23995
+- `autonomous-ai-agents/kanban-codex-lane/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12774
+- `autonomous-ai-agents/tradingagents-reference-patterns/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=6515
+- `chinese-platforms/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3270
+- `code-simplification/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3936
+- `codebase-intelligence/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=16048
+- `computer-use/SKILL.md` — lifecycle=active invocation=model-invoked findings=5 size=11111
+- `creative/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=5100
+- `creative/baoyu-article-illustrator/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=10638
+- `creative/baoyu-comic/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=15555
+- `creative/baoyu-infographic/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11040
+- `creative/claude-design/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=21215
+- `creative/comfyui/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=23309
+- `creative/creative-ideation/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7217
+- `creative/design-md/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7615
+- `creative/humanizer/SKILL.md` — lifecycle=draft invocation=not-default findings=2 size=30738
+- `creative/manim-video/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=13097
+- `creative/p5js/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=27831
+- `creative/popular-web-designs/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=10411
+- `creative/pretext/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=14246
+- `creative/sketch/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=10060
+- `creative/songwriting-and-ai-music/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11379
+- `creative/touchdesigner-mcp/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=16507
+- `creative/web-animation-optimization/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=9593
+- `creative/web-animation-patterns/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5177
+- `data-science/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2232
+- `data-science/jupyter-live-kernel/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6078
+- `deprecation-and-migration/SKILL.md` — lifecycle=deprecated invocation=not-default findings=1 size=2675
+- `devops/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3741
+- `devops/cloudflare-pages-pnpm/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=6989
+- `devops/gateway-telegram-setup/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=29230
+- `devops/hermes-storage-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=8153
+- `devops/kanban-orchestrator/SKILL.md` — lifecycle=draft invocation=not-default findings=0 size=14194
+- `devops/kanban-worker/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=14766
+- `devops/local-devops-tooling/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=8875
+- `devops/semantic-release-monorepo/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=5978
+- `devops/token-saver-frontend-rtk/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3825
+- `devops/token-saver-rtk/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=4087
+- `devops/webhook-subscriptions/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=8139
+- `diagramming/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2970
+- `documentation-and-adrs/SKILL.md` — lifecycle=deprecated invocation=not-default findings=1 size=3720
+- `dogfood/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7879
+- `domain/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2382
+- `email/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2114
+- `email/himalaya/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6707
+- `feeds/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12967
+- `framework-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=16388
+- `gaming/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2295
+- `gifs/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3305
+- `github/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=14640
+- `github/git-repo-operations/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=44194
+- `gsd-bridge/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3597
+- `incremental-implementation/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=33683
+- `inference-sh/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2326
+- `loop/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11632
+- `mcp/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4451
+- `mcp/mcporter/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=4164
+- `mcp/native-mcp/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=16794
+- `media/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=9971
+- `media/long-video-course-essence/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=17777
+- `media/spotify/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7080
+- `mlops/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4729
+- `mlops/cloud/modal/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=9486
+- `mlops/inference/gguf/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11219
+- `mlops/inference/guidance/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=15517
+- `mlops/inference/outlines/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=16993
+- `mlops/models/clip/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7595
+- `mlops/models/whisper/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=8132
+- `mlops/references/absorbed/rag-knowledge-management/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5424
+- `mlops/research/dspy/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=16323
+- `mlops/training/axolotl/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5677
+- `mlops/training/grpo-rl-training/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=18093
+- `mlops/training/pytorch-fsdp/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3750
+- `mlops/training/unsloth/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3172
+- `note-taking/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3267
+- `note-taking/obsidian/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=14159
+- `p10-architecture-self-check/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=21528
+- `p10/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4055
+- `p7/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3942
+- `p9/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=4125
+- `personal-productivity/career-ops/SKILL.md` — lifecycle=personal invocation=not-default findings=2 size=6400
+- `personal-productivity/travel-planning/SKILL.md` — lifecycle=personal invocation=not-default findings=4 size=42871
+- `post-deploy-verification/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=1806
+- `pro/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=6176
+- `productivity/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=5507
+- `productivity/lark-docx-reading/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=15718
+- `productivity/linear/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12097
+- `productivity/petdex/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=3509
+- `red-teaming/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3599
+- `research/SKILL.md` — lifecycle=draft invocation=not-default findings=0 size=7125
+- `research/last30days/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=14230
+- `smart-home/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2175
+- `smart-home/assembly-assistance-workflow/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=7647
+- `smart-home/electrical-brain/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=6188
+- `smart-home/external-control-brain/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=9440
+- `smart-home/manufacturing-brain/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=42963
+- `social-media/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=4875
+- `social-media/xitter/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=7124
+- `social-media/xurl/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=15117
+- `software-development/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10080
+- `software-development/abstraction-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=19903
+- `software-development/agent-boundary-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=11036
+- `software-development/agent-eval-dynamic-workflow-harness/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=10483
+- `software-development/agent-skill-design-patterns/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=20846
+- `software-development/arc-dispatch-executor/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=13462
+- `software-development/architecture-governance-evaluation/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=9310
+- `software-development/architecture-optimization-loop/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3236
+- `software-development/auto-optimize-loop/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=19110
+- `software-development/browser-harness-integration/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=34897
+- `software-development/code-simplifier/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7132
+- `software-development/color-contrast-checker/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5265
+- `software-development/debugging-hermes-tui-commands/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=8556
+- `software-development/development-closure-consensus/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=15151
+- `software-development/event-governed-side-effect-executors/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=20177
+- `software-development/experience-ratchet/SKILL.md` — lifecycle=draft invocation=not-default findings=1 size=3798
+- `software-development/frontend-observability-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12791
+- `software-development/frontend-state-domain-correctness/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=20602
+- `software-development/goal-calibration/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=17758
+- `software-development/harness-intake-contract/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=12907
+- `software-development/hermes-agent-skill-authoring/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=24771
+- `software-development/hermes-overlay-ratchet-upgrades/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=14303
+- `software-development/hermes-s6-container-supervision/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=11984
+- `software-development/hermes-self-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=17942
+- `software-development/hermes-warning-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12660
+- `software-development/hermes-workflow-orchestrator/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=28381
+- `software-development/incident-response/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2982
+- `software-development/lark-task-reading/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=16949
+- `software-development/mcp-server-from-scratch/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=8444
+- `software-development/mobile-frontend-delivery/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=15016
+- `software-development/multi-agent-code-review/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=17926
+- `software-development/multi-model-agent-orchestration/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10454
+- `software-development/multi-model-architecture/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=37362
+- `software-development/multi-model-certification-round/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=15677
+- `software-development/multi-model-thinking/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=19474
+- `software-development/objective-model-path-verification/SKILL.md` — lifecycle=draft invocation=not-default findings=2 size=32928
+- `software-development/path-error-root-cause-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=10875
+- `software-development/plan/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=3692
+- `software-development/planning-with-files/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=13484
+- `software-development/post-deploy-verification/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=2625
+- `software-development/post-update-patch-healing/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=35540
+- `software-development/private-fork-evolution-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=15107
+- `software-development/process-lifecycle-control-plane/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=12631
+- `software-development/product-workflow-operating-system/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=17755
+- `software-development/project-evidence-grounding/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=16073
+- `software-development/project-portfolio-operating-system/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=8492
+- `software-development/python-multiline-grep-engine/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=11206
+- `software-development/react-architecture-migration/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=58401
+- `software-development/real-engineering-workflows/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=9429
+- `software-development/requesting-code-review/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=34500
+- `software-development/requirement-clarification/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3707
+- `software-development/router/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3767
+- `software-development/self-evolve-via-claude/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12708
+- `software-development/self-improvement-pipeline/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=28889
+- `software-development/skill-ecosystem-diagnosis/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=18472
+- `software-development/skill-ecosystem-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=19196
+- `software-development/skill-eval/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=14910
+- `software-development/spec-stateful-sdd-workflow/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=17505
+- `software-development/spike/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=9512
+- `software-development/stuck-diagnosis/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3063
+- `software-development/subagent-driven-development/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12896
+- `software-development/systematic-debugging/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=43378
+- `software-development/taskpool-control-plane/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=13267
+- `software-development/taskpool-drain-governance/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=2677
+- `software-development/taskpool-lifecycle-drainage/SKILL.md` — lifecycle=active invocation=model-invoked findings=4 size=3223
+- `software-development/taskpool-runtime-reconciliation/SKILL.md` — lifecycle=active invocation=model-invoked findings=3 size=7541
+- `software-development/test-driven-development/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=23555
+- `software-development/theory-driven-evolution/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=12245
+- `software-development/uimax-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=22707
+- `software-development/visual-conversation-core/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=9360
+- `software-development/visual-regression/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6209
+- `software-development/workflow-capability-graph/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=8917
+- `software-development/workflow-ecosystem-audit/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=11623
+- `software-development/writing-plans/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=8707
+- `source-driven-development/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6731
+- `ui-skills/skills/baseline-ui/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=15760
+- `ui-skills/skills/fixing-accessibility/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5615
+- `ui-skills/skills/fixing-metadata/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=6578
+- `ui-skills/skills/fixing-motion-performance/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=9519
+- `ui-ux-pro-max/.claude/skills/banner-design/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=8983
+- `ui-ux-pro-max/.claude/skills/brand/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=3851
+- `ui-ux-pro-max/.claude/skills/design-system/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=7586
+- `ui-ux-pro-max/.claude/skills/design/SKILL.md` — lifecycle=active invocation=model-invoked findings=0 size=13618
+- `ui-ux-pro-max/.claude/skills/slides/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=2155
+- `ui-ux-pro-max/.claude/skills/ui-styling/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=10856
+- `ui-ux-pro-max/.claude/skills/ui-ux-pro-max/SKILL.md` — lifecycle=active invocation=model-invoked findings=2 size=44913
+- `workflow/qian-meta-synthesis/SKILL.md` — lifecycle=active invocation=model-invoked findings=1 size=5214

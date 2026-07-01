@@ -27,6 +27,8 @@ Do not use it for:
 - neighboring specialist workflows with a narrower matching skill;
 - durable memory or project-profile writes unless this skill explicitly governs that landing zone.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 问题
 多模型运行导致 ~/.hermes 膨胀:
 - state.db: FTS trigram 索引 5.5x 膨胀 (293MB 数据 → 1.6GB 索引)
@@ -222,6 +224,13 @@ find ~/.hermes/hermes-agent -name ".hermes" -type d 2>/dev/null
 6. **selfcheck python3 路径解析 bug**: `hermes_hook_registry_selfcheck.py` 中 `command.split()[0]` 会把 `python3` 当作文件路径解析。当 shell hook 命令是 `python3 ~/.hermes/scripts/foo.py` 时，`command.split()[0]` 返回 `python3`，然后 `_expand("python3")` 变成 `CWD/python3`，不存在。修复: 用 `_resolve_script_path()` 跳过已知解释器 (`python3`, `python`, `bash`, `sh`, `node`, `ruby`, `/usr/bin/env`)。
 
 7. **新 hook 脚本缺执行权限**: 添加新的 shell hook 脚本后必须 `chmod +x`。selfcheck 会检查 `os.access(cmd_path, os.X_OK)`，缺失会报 "not executable"。预防: 在 hook registry 中注册新脚本时同步设置权限。
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

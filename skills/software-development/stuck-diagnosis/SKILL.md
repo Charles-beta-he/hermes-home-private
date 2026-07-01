@@ -27,6 +27,8 @@ metadata:
 
 - The task falls under 卡顿诊断三板斧
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Trigger
 
 - Agent 卡住不动、响应慢、工具调用无返回

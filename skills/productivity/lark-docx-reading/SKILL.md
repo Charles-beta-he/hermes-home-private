@@ -35,6 +35,8 @@ Never print or persist app secrets, tenant tokens, cookies, auth headers, localS
 
 Do not use this for `.docx` Office files already downloaded locally; use `ocr-and-documents` / `python-docx` for those.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Workflow
 
 ### 1. Discover access paths

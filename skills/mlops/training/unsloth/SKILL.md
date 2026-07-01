@@ -44,6 +44,8 @@ This skill should be triggered when:
 - Debugging unsloth code
 - Learning unsloth best practices
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Quick Reference
 
 ### Common Patterns
@@ -110,4 +112,3 @@ To refresh this skill with updated documentation:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

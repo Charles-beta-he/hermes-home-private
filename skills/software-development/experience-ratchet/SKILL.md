@@ -22,6 +22,8 @@ Do not use it for:
 Cross-project experience capture, validation, and promotion system.
 Lives entirely outside Hermes core. Uses plugin + hook + script boundary.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## ExperienceAtom v1 Schema
 
 ```json

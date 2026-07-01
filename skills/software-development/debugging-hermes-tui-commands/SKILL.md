@@ -39,6 +39,8 @@ Use this skill when you encounter issues with slash commands in the Hermes TUI, 
 - Command behavior is inconsistent between CLI and TUI
 - A command persists config but doesn't apply live in the TUI
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Architecture Overview
 
 ```

@@ -4,6 +4,12 @@ description: Use when diagnosing or repairing Hermes Agent `hermes doctor` Tool 
 ---
 
 # Hermes Tool Availability
+## When to Use
+
+- Use when the user's request explicitly matches `hermes-tool-availability` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
+
 
 ## Scope, applicability, and anti-conditions
 
@@ -191,3 +197,14 @@ These may show as `system dependency not met` when their check function has no e
 ## References
 
 - `references/system-dependency-tool-availability.md` — session-derived details and command examples for Pillow, `computer_use`, `browser-cdp`, and credential/session-gated tools.
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
+## Verification Checklist
+
+- [ ] The current user request still matches this skill's trigger class.
+- [ ] Required files, tools, commands, or external state were checked before action.
+- [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
+- [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.

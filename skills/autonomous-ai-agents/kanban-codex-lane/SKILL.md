@@ -37,6 +37,8 @@ Do not use the Codex lane when any of these are true:
 - The task is research-only and should produce a written handoff rather than a diff.
 - The worker would be tempted to mark Done based only on Codex self-report.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Ownership Rules
 
 1. Hermes owns the Kanban lifecycle. Codex must never call `kanban_complete`, `kanban_block`, `kanban_create`, gateway messaging, or any Hermes board CLI as a substitute for the worker.

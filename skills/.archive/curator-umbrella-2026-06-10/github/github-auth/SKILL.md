@@ -33,6 +33,8 @@ This skill sets up authentication so the agent can work with GitHub repositories
 
 - You need guidance on set up GitHub authentication for the agent using git (universally available) or the gh CLI
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Detection Flow
 
 When a user asks you to work with GitHub, run this check first:
@@ -272,4 +274,3 @@ fi
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

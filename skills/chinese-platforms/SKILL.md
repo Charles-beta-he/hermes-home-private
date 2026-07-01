@@ -26,6 +26,8 @@ metadata:
 
 - The task falls under 中文互联网平台路由
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 路由表
 
 | 用户意图 | 平台 | Hermes 工具 | 认证 |
@@ -112,4 +114,3 @@ python3 ~/.hermes/scripts/skill-steward.py --graph-check --json
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
-

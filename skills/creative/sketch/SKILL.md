@@ -36,6 +36,8 @@ Load this when the user says things like "sketch this screen", "show me what X c
 
 - You need guidance on throwaway HTML mockups: 2-3 design variants to compare
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When NOT to use this
 
 - User wants a production component — use `claude-design` or build it properly
@@ -247,4 +249,3 @@ Adapted from the GSD (Get Shit Done) project's `/gsd-sketch` workflow — MIT ©
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

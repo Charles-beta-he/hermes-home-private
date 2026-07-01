@@ -38,52 +38,9 @@ Do **not** use this skill for:
 
 ## Core Gate
 
-### Full-landing semantics
+Detailed `Core Gate` guidance moved to `references/core-gate.md`.
 
-Scope: complex implementation, workflow/control-plane, UI/API, or automation tasks where the user says “全盘推进”, “完整落地”, “推进至需人工介入”, or equivalent. Applicability: when the request is to build or repair the actual working system, not only advise. Anti-condition: do not use this wording to bypass permission, value-judgement, destructive, external-side-effect, credential, or evidence-insufficient gates.
-
-For these requests, the default completion target is not a plan, draft, read-only projection, mock, visual-only button, copy-only change, local-only placeholder, or test stub. Start from the target model and carry the work through the real layers that define the intended effect: UI/interaction, API/contract, SSOT/ledger, adapter or executor boundary, persistence, read-back, tests, browser/runtime verification, and scoped commit. If a lower layer is intentionally the endpoint, label it explicitly (for example “record-only; adapter apply not opened”).
-
-If the work reaches a boundary requiring human choice or authority, do not silently downgrade to a weaker layer and call it done. Also do not stop with only “cannot continue.” For self-advancing/workflow-kernel work, the dry-run acceptance bundle is a real scheme boundary: it is safe to land contract/projection/acceptance artifacts, but local executor/runtime/taskpool write-through requires a fresh human gate. Switch into boundary realignment:
-
-1. Restate the initial objective and the full-landing target that is still in force.
-2. Identify the exact boundary class: permission/authority, evidence insufficiency, destructive or external side effect, credential/secret, value judgment, or safety/legal risk.
-3. Mark confirmed vs unconfirmed facts, including what evidence would remove the boundary.
-4. Continue any safe read-only, local, reversible, dry-run, patch-preparation, rollback-design, or verification work that does not cross the boundary.
-5. Produce a compact intervention packet for the blocked action: requested authorization or choice, blast radius, rollback/escape hatch, verification after execution, and the default safe next step.
-6. Stop only at the smallest necessary confirmation point, preserving the original plan and dependency order.
-
-For complex tasks, run these steps before substantive execution:
-
-1. **Objective & cost function**
-   - Define success in concrete terms.
-   - List hard constraints/red lines.
-   - State what to minimize: risk, regression, user steering, downtime, token cost, migration cost, data loss, etc.
-
-2. **Situation model**
-   - Identify key objects, actors, state stores, dependencies, invariants, and permissions.
-   - Separate facts already evidenced from assumptions.
-   - For project work, locate the canonical source of truth before editing.
-
-3. **Candidate paths**
-   - Generate at least two viable paths unless only one is technically possible.
-   - Include the “do nothing / defer / ask human” path when authority or evidence is insufficient.
-
-4. **Consequence prediction**
-   - For each path, predict likely outcome, failure mode, blast radius, rollback path, and verification burden.
-   - Prefer paths that preserve existing behavior, are reversible, and produce evidence quickly.
-
-5. **Selection and execution plan**
-   - Choose one path and say why it wins against the cost function.
-   - Convert it into small verifiable steps.
-   - If action has side effects beyond granted scope, stop and ask or record a taskpool candidate.
-
-6. **Evidence verification**
-   - Before claiming completion, attach real evidence: test output, diff, logs, HTTP responses, screenshots, readback, or source citations.
-   - If verification is blocked, report the blocker and what was still completed.
-   - For multi-repo work, check branch names and pre-existing dirty files before committing. If the active branch is unrelated to the task or unrelated local changes are present, stop at verified working-tree changes and report a scoped commit boundary instead of mixing them into a commit.
-   - When a task name can refer to multiple repositories, apps, dashboards, or similarly named artifacts, verify the target artifact path before editing. If the user intends one artifact but wants you to borrow patterns or authority boundaries from another, treat the latter as a reference model, not as the edit target.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Compact Output Forms
 
 ### Full form for high-risk work
@@ -115,15 +72,21 @@ When the user wants concise output, perform the gate internally and final only t
 
 - For self-evolution or durable learning, combine with `agent-boundary-audit` and classify outputs into memory, skill, SSOT doc, taskpool candidate, or do-not-do.
 - For software changes, combine with `test-driven-development`, `systematic-debugging`, and `project-evidence-grounding`; this skill does not replace tests.
-- For taskpool/control-plane work, combine with `taskpool-control-plane`; task records and evidence ledgers remain canonical.
+- For taskpool/control-plane work, combine with `taskpool-control-plane`; task records and evidence ledgers remain canonical. For external repo/video/demo capability absorption, create the taskpool candidate with source/claim/red-lines, then land the next safe bounded implementation slice and write exact proof back to the task record. See `taskpool-control-plane` reference `references/external-capability-absorption-proof-loop.md`.
+- For local-brain/workflow auto-constraint layers, do not stop at a final plan or a separate multi-model review artifact. Fold supporting functions (retrieval/index filtering + RouteReview/multi-model routing) back into the canonical BrainConstraintGate, then land the safe ladder: dry-run CLI → `brainctl preflight` → task-intake embedding/blocking → reversible local pre-commit hook. Keep runtime hard gates, taskpool lifecycle writes, cron, external dispatch, publish/deploy, destructive actions, and credential/payment gates closed until exact target/rollback/receipt/readback are separately authorized. See `references/local-brain-auto-constraint-gate-landing.md`.
+- For “本地大脑” session recall or local-brain safety-gate progress checks, disambiguate before acting: do not conflate taskpool `human_escape_guard` with local-brain search/indexing or side-effect-gate control-plane sessions. Search for the exact term, identify the CLI session by kickoff/final bookends, then report session id, changed artifacts, receipts, and the remaining boundary. See `references/local-brain-session-disambiguation-and-s7-targets.md`.
+- For external web-scraping / web-cleaning / RAG ingestion tools, first absorb them as local-file evidence preprocessors, not as authoritative domain decision-makers or global MCP/network agents. Keep extraction success advisory until domain readback/certification exists. See `references/external-web-scraper-to-evidence-preprocessor.md`.
+- When a user asks to drain a taskpool to empty, treat it as a governed drain loop rather than permission to force completion: repeatedly run review close, blocked resolve, retry promotion, boundary reclass, subtask sync, dispatch, and worker readback; release orphaned running claims only through lifecycle commands back to retry; stop at hard gates such as missing artifacts or multimodel quorum. See `taskpool-control-plane` reference `references/drain-to-empty-and-orphan-claim-recovery.md`.
+- If taskpool `review -> done` is blocked by `PASS_ADVISORY_ONLY`, do not treat the advisory multimodel result as completion authority. Add concrete lifecycle evidence (`command: ... test/verification PASS`, `artifact:...`, and explicit UI/API non-applicability proofs only for governance-only tasks), then retry the normal transition; avoid `--force`. See `taskpool-control-plane` reference `references/semantic-profile-and-advisory-closeout.md`.
+- When the user approves absorbing an external/social/demo effect and asks to add it as a project or land it across ends, do not stop at a chat summary or claim runtime completion. Create a governed project profile/SSOT/contract/roadmap/evidence index/progress ledger, register it in Portfolio OS when available, and create per-end implementation cards with evidence gates. See `references/external-demo-to-cross-end-project.md`.
 - For user-facing UI work, add visual/UI verification and avoid mock-only acceptance.
+- When a full-landing task uses an external/design-tool screen as the target (Stitch, Figma-like tools, generated mockups), land the design as a named SSOT, wire a read-only design gate, add separate runtime/interaction and visual-structure gates, and preserve semantic boundaries between design copy and runtime capability claims. See `references/design-ssot-to-runtime-gate.md`.
 
 ## Control-plane resume verification
 
-When a governed mission/taskpool/control-plane workflow is unblocked and the user asks to “continue,” do not stop at recording the decision. Verify the canonical ledger, clear the human gate through the real decision command/API, wake the executor or scheduler, then read back fresh evidence. See `references/mission-control-resume-verification.md` for the detailed checklist and pitfalls.
+Detailed `Control-plane resume verification` guidance moved to `references/control-plane-resume-verification.md`.
 
-When a Mission is blocked by exhausted tick budget rather than an open human decision, first close and commit the current verified slice, then run bounded multi-model continuation sizing, authorize only the narrow budget delta, record the budget event + stage report, wake the governed dispatch path, and read back board/doctor/cron state. See `references/mission-budget-continuation.md` for the session-derived checklist and tick sizing heuristic.
-
+Load it when this subproblem is directly active. Minimum in-root rule: preserve the current skill's safety/verification boundaries and read the reference before executing this specialized branch.
 ## Runtime Prompt-Gate Landing
 
 When operationalizing this workflow as a Hermes runtime/system-prompt gate:
@@ -134,14 +97,31 @@ When operationalizing this workflow as a Hermes runtime/system-prompt gate:
 - If modifying the gateway that carries the active conversation, do not restart it casually inside the reply chain; land code/tests/commits first and state the safe-restart boundary.
 - See `references/runtime-prompt-gate-landing.md` for the session-derived checklist and verification evidence pattern.
 
+When a default-off advisory prompt/readback surface is implemented and the user gives broad wording such as “全部允许”, consume only the smallest live advisory-config boundary first. Enable the config via the canonical CLI, read back that the advisory surface is true, and also read back that real routing/tool invocation/external dispatch remain false. Do not invent a real execution target from broad authorization. See `references/live-advisory-config-enable-boundary.md`.
+
+Scope: agent-control-plane / workflow-control-plane boundary advancement. Applicability: a local advisory/route-preflight surface is already enabled and the user authorizes continuing, but the next safest advancement is to expand review/certification rather than execution. Anti-condition: do not use this to open tool invocation, scheduler/worker, lifecycle-write, external dispatch, publish/deploy, or destructive gates. Add a default-off multi-model/adversarial review preflight, prove neighboring gates remain false, run deterministic tests + independent code review + no-action multi-model certification, and repair evidence-ID mismatches before claiming certification. See `references/multimodel-review-preflight-boundary.md`.
+
 ## Pitfalls
 
-1. **Marketing-word trap**: “world model” vocabulary is a planning metaphor here, not proof of JEPA-like architecture or environment learning.
+1. **Backlog-as-boundary trap**: When the user asks for “企业生产级别”, “可交付用户体验”, “全盘推进”, or equivalent, do not leave safe local product gaps as “后续建议” merely because they were listed in a workflow backlog. A backlog item is only a stop point if it crosses a real authority/evidence/safety boundary. Otherwise continue the next safe slice, update the PRD/workflow/backlog to mark it done, and verify with tests/UI evidence. Also separate test fixtures from product experience: mocks may prove behavior, but user-facing UI must not expose mock/demo/debug fields as if they were product copy.
+2. **Inventory-as-proof trap**: For “真实模型/节点/adapter 是否可用” work, a module scan or registry listing is only discovery, not delivery. If safe and reversible, continue through an isolated runtime setup, real non-stub smoke (`/health` plus the actual inference/API endpoint), fail-visible no-stub-fallback gate, UI readiness readback, docs/PRD sync, and tests before calling it integrated. If the smoke uses a synthetic/blank frame, bound the claim to runtime/API execution and do not imply domain recognition quality.
+2. **Reference-effect absorption trap**: When the user asks to learn an external/open-source project’s “effect” and land it as an owned production-grade capability without changing existing interaction logic, do not cargo-cult the reference UI/runtime or add new always-on behavior by default. First classify transferable capabilities vs rejected mechanics, then land a reversible owned boundary such as a read-only readiness profile, diagnostics surface, contract, or governance wrapper that preserves current commands/flows and existing side-effect gates. Only proceed to UX/runtime changes after a separate explicit authority gate.
+2. **Design-artifact-as-proof trap**: A generated Stitch/Figma/mockup screen is not proof that the product has the behavior, and a passing runtime test is not proof that the design layer is governed. For full landing, keep both: named design SSOT + read-only design gate + local artifact/readback + browser interaction smoke + visual-structure or screenshot gate. Explicitly mark future/design-only elements and runtime semantic boundaries so the UI does not imply model/recognition/safety capability that the backend has not evidenced.
+3. **Taskpool-as-proof trap**: Adding an external capability absorption task to the pool is only tracking, not delivery. If the user also says “全盘推进”, continue with the next safe bounded slice immediately, verify with real tests/UI/diagnostics, commit scoped changes, and write the proof/commit hashes back to the task record. Stop only at true gates such as default-on microphone/wake-word privacy, credentials, destructive actions, external publish/send, or failed certification.
+3. **Marketing-word trap**: “world model” vocabulary is a planning metaphor here, not proof of JEPA-like architecture or environment learning.
 2. **Plan-as-proof trap**: a clean plan is not completion. Completion requires real evidence.
 3. **Over-triggering**: applying the full form to every small request wastes time and tokens. Use compressed or skip when risk is low.
 4. **Single-path bias**: if only one path is considered, the model is probably still “顺嘴生成”. Compare alternatives unless the task is truly constrained.
 5. **Memory pollution**: do not save one-off task choices as memory. Durable procedure belongs in skills; scoped evidence belongs in SSOT docs or task records.
 6. **Authority expansion**: user trust in “全盘推进” does not authorize destructive cleanup, secret handling, payment, credential entry, broad config rewrites, or external publishing without the relevant scope and gates.
+7. **Promoted-path overwrite trap**: after promoting a shadow/staging artifact to production, existing deterministic cron jobs or fallback writers may still target the same production path and silently overwrite the promoted result. Reconcile, pause, or retarget old writers before calling the promoted path steady-state.
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

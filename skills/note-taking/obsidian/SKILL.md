@@ -92,6 +92,8 @@ EOF
 
 - You need guidance on read, search, and create notes in the Obsidian vault
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Read a note
 
 ```bash
@@ -235,4 +237,3 @@ chmod +x ~/.hermes/skills/note-taking/obsidian/env.sh
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

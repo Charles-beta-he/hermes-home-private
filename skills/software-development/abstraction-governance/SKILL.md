@@ -249,6 +249,8 @@ Abstraction Governance Result
 6. Skipping anti-conditions, which makes the abstraction impossible to demote safely.
 7. Confusing action repair with double-loop learning; sometimes the rule-generation process is the bug.
 8. Letting a default task schema fill missing slots without marking them as assumptions.
+9. Repeating the same blocked durable-write attempt after the runtime gate reports `context_coupled_skill`. Diagnose once, then either strip local entities further, land a scoped project reference, or report that the protected/global skill boundary prevents the save. Do not loop on near-identical skill mutations.
+10. If a class-level skill's `SKILL.md` is over the manager size limit, do not keep trying to patch the main file. Add the reusable lesson as a scoped support file under `references/` when the gate permits it, then report that the one-line pointer could not be added until the oversized skill is split or compacted.
 
 ## Memory Landing-Zone Classifier
 
@@ -287,9 +289,13 @@ Before any durable write, run the anti-ghost save gate:
 
 Use preference-drift checks when newer user behavior or scoped project facts contradict old memory: keep, scope_down, ask_confirm, replace, or remove. Do not install or trust third-party memory servers merely because they claim high recall; treat them as design references until privacy, encryption, concurrency, tests, and deletion semantics are verified.
 
+## Local Brain Index Selection Filtering
+
+When local brain / evidence-memory search can mix current knowledge with stale project experience, treat FTS/BM25 as candidate discovery rather than final truth: expand candidates, add Chinese/dense-text fallback, classify source class, parse current/stale/evidence markers, demote stale or weak-proof blocks, and return visible `selection_status` / `filter_reasons` metadata. See `references/local-brain-index-selection-filtering.md` for the concrete `brainctl search` pattern and regression test shape.
+
 ## Sanitized Experience Pack Boundary
 
-When converting a mature personal/local Hermes setup into an installable distribution for other users, package the *capability shape*, not the owner's lived state. Safe landing zones are templates, checklists, example schemas, and deterministic selfchecks; forbidden payloads include live config, `.env`, tokens, OAuth sessions, memory/session DBs, real project profiles, logs, task evidence, and local brain vaults. Installer extensions should copy missing template files without overwriting user edits and expose an opt-out such as `--skip-experience-pack`. See `references/sanitized-experience-pack-boundary.md`.
+When converting a mature personal/local Hermes setup into an installable distribution for other users, package the *capability shape*, not the owner's lived state. Safe landing zones are templates, checklists, example schemas, and deterministic selfchecks; forbidden payloads include live config, `.env`, tokens, OAuth sessions, memory/session DBs, real project profiles, logs, task evidence, and local brain vaults. For production/new-user use, do not stop at a report, inventory, or manual template copy: provide an automated list/doctor/install path that sanitizer-gates the pack, copies safe payloads into the target `HERMES_HOME`, writes a receipt and disabled activation state, and preserves no-overwrite semantics. See `references/sanitized-experience-pack-boundary.md` for the boundary and `references/experience-pack-consensus-transfer.md` for layered consensus-pack design, sanitizer requirements, open-box installer behavior, and the transferable-rule template.
 
 ## Runtime Gate Implementation
 
@@ -320,6 +326,14 @@ Governed filesystem surfaces:
 Move/rename operations into governed surfaces are blocked when content is opaque; read the source and rewrite through a reviewed `write_file` / `patch` path instead.
 
 The runtime gate is intentionally deterministic and conservative. It is not a substitute for full abstraction review; it catches obvious boundary violations before they enter persistent prompt context. Ordinary project file writes are not classified by this gate; they continue through normal file/write guards.
+
+## Canonical overlay takeover
+
+When a new memory/architecture structure must take over an older local brain or scattered evidence corpus, prefer an overlay/canonical-index/strangler strategy rather than physical overwrite: establish one canonical entrypoint, map old sources to canonical landings, add disposition banners to old Markdown sources, govern JSON/profile/receipt sources through a manifest, run a read-only doctor, update scoped project profile/ledger pointers, and state that runtime/schema migration remains a separate authority gate. See `references/canonical-overlay-takeover.md`.
+
+## Skill Size Remediation
+
+When a skill audit reports hard size failures such as `skill_too_large`, use `references/skill-size-remediation-pattern.md`: preserve knowledge by extracting bounded long sections into adjacent `references/` files, keep routing/safety rules visible in root `SKILL.md`, and verify by rerunning the auditor plus root/reference readback.
 
 ## Verification Checklist
 

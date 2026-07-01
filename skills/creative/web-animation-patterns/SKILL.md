@@ -28,6 +28,8 @@ High-performance animation techniques for modern web applications.
 
 - You need guidance on web animation patterns and performance optimization techniques
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Technologies
 
 ### 1. CSS Animations (Simple → Use CSS)
@@ -152,7 +154,7 @@ function createParticles(container, { count = 20, spread = 100 }) {
 function useIntersectionObserver({ threshold = 0.1, triggerOnce = true }) {
   const ref = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  
+
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
@@ -160,11 +162,11 @@ function useIntersectionObserver({ threshold = 0.1, triggerOnce = true }) {
         if (triggerOnce) observer.unobserve(entry.target);
       }
     }, { threshold });
-    
+
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [threshold, triggerOnce]);
-  
+
   return [ref, isVisible];
 }
 ```
@@ -181,4 +183,3 @@ function useIntersectionObserver({ threshold = 0.1, triggerOnce = true }) {
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

@@ -57,6 +57,8 @@ system, shadows, responsive behavior, and practical agent prompts with exact CSS
 - dashboard design
 - website styled like
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## How to Use
 
 1. Pick a design from the catalog below
@@ -247,4 +249,3 @@ Match the design to the content:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

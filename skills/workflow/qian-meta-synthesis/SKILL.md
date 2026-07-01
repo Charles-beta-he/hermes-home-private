@@ -23,6 +23,8 @@ Use this skill when:
 - A Hermes evolution task affects brain routing, dev filling, taskpool governance, memory/skills, or long-term architecture.
 - A domain brain has a claim but needs dev to build a verification tool, connector, harness, or task contract.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core principle
 
 Do not treat “multi-model agreement” as truth. 钱学森式综合集成 requires three separated ledgers:

@@ -36,6 +36,8 @@ Use when frontend optimistic transactions interact with double-entry financial l
 - Exchange history or order list API returns no fee data (fee fields missing from response)
 - Backend has multiple endpoints serving same entity but with different field sets
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Problem: Optimistic Update ID Alignment
 
 When a backend uses **double-entry bookkeeping** (one operation creates multiple ledger entries), the frontend must align optimistic transaction IDs with the **specific leg the current wallet will see** from the backend, not with a generic operation ID.
@@ -210,6 +212,13 @@ This only works when optimistic and authoritative ids match. If they don't, you 
 - `references/exchange-fee-sourcing.md` — Fee definition (Approach B: channelFee + platformSpread), `exchangeFeeText()` formatting, USDT symbol ambiguity, endpoint field parity audit
 - `references/t104026-fee-alignment.md` — Specific t104026 fix: aligning quote/confirm/transactions endpoints to use consistent fee definition
 - `references/batch-exchange-fixes-t104020-t104052.md` — Batch of 6 exchange fixes: confirm DTO completeness, receive picker currency universe, scientific notation in URL params, description differentiation
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

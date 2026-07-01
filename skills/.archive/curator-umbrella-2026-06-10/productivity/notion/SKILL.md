@@ -31,6 +31,8 @@ Use the Notion API via curl to create, read, update pages, databases (data sourc
 
 - You need guidance on notion API for creating and managing pages, databases, and blocks via curl
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 1. Create an integration at https://notion.so/my-integrations
@@ -196,4 +198,3 @@ Common property formats for database items:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

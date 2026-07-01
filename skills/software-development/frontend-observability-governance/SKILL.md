@@ -26,6 +26,12 @@ Falsifier: if the project already has a governed frontend observability layer wi
 
 Frontend observability is not just installing a vendor SDK. The durable pattern is to build the governance layer before external delivery: classify errors, decide reportability and sampling, sanitize recursively, preserve correlation IDs, detect contract breaks at high-risk parsing boundaries, and add guardrail tests so future code cannot bypass the policy.
 
+
+## When to Use
+
+- Use when the user's request explicitly matches `frontend-observability-governance` or this skill's documented domain.
+- Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
+- Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
 ## Default Workflow
 
 1. **Map existing surfaces first**

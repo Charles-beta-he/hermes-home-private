@@ -32,6 +32,8 @@ Do not use it for:
 
 Operates `~/.hermes/scripts/self-improvement-pipeline.py` — the system that detects and prioritizes Hermes improvements from autopsy, health, evolution momentum, and operational signals.
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Architecture
 
 ```
@@ -206,6 +208,13 @@ Action type: `fix_benchmark_regression` → run benchmark runner, fix failing te
 - **subprocess stdout truncation**: NEVER slice `r.stdout[-2000:]` in `run_script()` helpers — this breaks JSON parsing by cutting the opening brace. Use full stdout, only truncate stderr. This bug caused 100% benchmark failure rate until fixed.
 - **Cron schedule 429s**: Multiple jobs at identical times (e.g. all at `3 2 * * *`) cause Gemini 429 rate limits. Stagger: `3 2`, `5 2`, `8 2`, `10 2`, `13 2`, `15 2`. Read `jobs.json` directly (not `crontab -l`) to see all jobs.
 - Behavioral benchmark runner: `validate_json_output()` needs FULL stdout — truncated JSON always fails validation
+
+
+## Common Pitfalls
+
+1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.
+2. Treating a plan, stale memory, or prior report as proof of completion. Verify with fresh readback.
+3. Ignoring neighboring skills or narrower workflows that better match the task. Prefer the most specific applicable skill.
 
 ## Verification Checklist
 

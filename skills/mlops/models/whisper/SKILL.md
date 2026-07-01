@@ -37,6 +37,8 @@ OpenAI's multilingual speech recognition model.
 
 - You need guidance on openAI's general-purpose speech recognition model
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## When to use Whisper
 
 **Use when:**
@@ -350,4 +352,3 @@ Full list: 99 languages total
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

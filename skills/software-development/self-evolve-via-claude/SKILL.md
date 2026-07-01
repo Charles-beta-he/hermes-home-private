@@ -31,6 +31,8 @@ metadata:
 
 - The task falls under Self-Evolve via Claude Code — 双脑自进化
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## 执行序列 (每步失败立即停, 不连环放大)
 
 ### Step 1: 自描述
@@ -362,4 +364,3 @@ model-router v2 集成 pricing.py 后, self-evolve tick 可以:
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

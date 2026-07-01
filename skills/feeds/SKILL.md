@@ -29,6 +29,8 @@ Use this skill when the task involves RSS, Atom, JSON feeds, blog monitoring, ne
 
 - You need guidance on monitor, validate, and summarize RSS/Atom/JSON feeds and blog update sources
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Inputs / 输入
 
 Collect the minimum feed task contract before acting:
@@ -58,6 +60,11 @@ Return a compact, auditable result:
 Reference: `references/aihot-daily-browser-cron.md` documents a browser-first daily-report pattern for AIHOT (`/daily`) plus cronjob delivery.
 Reference: `references/odaily-crypto-daily-source.md` documents the Odaily 星球日报 pattern: use its public JSON endpoints as a crypto/Web3 market-signal section, not a whole-site news stream, with strict noise filtering and taskpool-candidate gating.
 Reference: `references/producthunt-api-daily-source.md` documents Product Hunt official API setup for daily reports, including developer-token flow, HTTPS redirect placeholder, Atom fallback semantics, and credential-leak handling.
+Reference: `references/producthunt-github-link-resolution.md` documents PH GitHub/source backfill: `/r/...` redirect handling, landing-page HTML repo extraction, UTC date-window drift, precise unresolved states, and taskpool handoff gates.
+Reference: `references/producthunt-button-fallback-test.md` documents the test/replay pattern for PH `/r/...` Cloudflare 403 cases: query report date plus date-minus-one UTC, try direct redirect, then use product-page visible buttons before failing closed.
+Reference: `references/producthunt-github-link-resolution.md` documents the backfill/debug pattern for Product Hunt GitHub/source links that resolve through `/r/...` redirects, product landing pages, or GitHub Pages before reaching a repo.
+Reference: `references/daily-report-external-signal-taskpool-replay.md` documents how to replay GitHub/Product Hunt/AIHOT daily report signals through governed sidecar generation and isolated taskpool ingest when report body and `*.tasks.json` diverge.
+Reference: `references/daily-report-github-ph-sidecar-candidates.md` documents how daily reports should turn GitHub Trending / Product Hunt table rows into governed sidecar candidates, then verify ingest with dry-run, isolated temp-vault writeback, and idempotency checks.
 
 
 1. **Discover**
@@ -186,8 +193,13 @@ Keep network and parsing code bounded. For recurring jobs, write JSON with `stat
 - Letting ordinary news automatically create governed taskpool candidates. Feed-derived candidates should be limited to directly transferable, evidence-backed control-plane opportunities.
 - Putting literal credential environment-variable names into durable cron prompt prose or user-facing report text. Secret scanners can block commits on secret-like variable names even without a value; use generic wording in prose and reserve exact names for executable code when necessary.
 - For Product Hunt, assuming the app Redirect URI can be `http://localhost/...`; the dashboard may require HTTPS/SSL even when the integration only needs a developer token. Use an HTTPS placeholder and document that the redirect is unused for server-side read-only reports.
+- For Product Hunt GitHub/source enrichment, treating `github_link_detected_unresolved` as a final result. First distinguish: PH `/r/...` redirect unresolved, landing page found but repo not normalized, repo URL resolved but GitHub metadata unavailable, or truly no repo evidence. A `Github` productLink may redirect to a product website/GitHub Pages page whose HTML contains the actual repo.
+- For Product Hunt backfills, querying only the local report date. The composed daily report may be local-time while Product Hunt `createdAt` is UTC; include the prior UTC day when matching historical posts.
 - Repeating API keys, API secrets, or developer tokens from screenshots. Product Hunt dashboard exposes credentials in clear text; if the user shares a screenshot, identify the page/state without echoing credential values and advise rotation/deletion.
 - After adding a new source to an existing daily report flow, only validating the source script but not regenerating/reposting the composed report. For preview requests, insert the new section into the current report artifact and resend the full report.
+- For Product Hunt, treating `type: Github` PH `/r/...` redirects as unresolved when they land on a project website. Resolve the redirect, then do one bounded landing-page HTML scan for canonical `github.com/<owner>/<repo>` links before declaring unresolved.
+- For Product Hunt `/r/...` GitHub/source redirects returning Cloudflare `403`, do not stop at the direct fetch. Use the PH product page visible-button fallback (`Visit` / `Website` / `GitHub` / `Source Code`) when the browser/session can see the page; if the product page is also Cloudflare-challenged, record that separately and fail closed.
+- For Product Hunt backfills, searching only the local report date. PH `createdAt` is UTC while local reports may be Asia/Shanghai; inspect both report-date and report-date-minus-one UTC windows.
 
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
@@ -198,4 +210,3 @@ Keep network and parsing code bounded. For recurring jobs, write JSON with `stat
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

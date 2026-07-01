@@ -27,6 +27,8 @@ Create, search, triage, and manage GitHub issues. Each section shows `gh` first,
 
 - You need guidance on create, manage, triage, and close GitHub issues
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Prerequisites
 
 - Authenticated with GitHub (see `github-auth` skill)
@@ -403,4 +405,3 @@ Cherry-pick conflict resolution: when the file has diverged, compare the fix's i
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

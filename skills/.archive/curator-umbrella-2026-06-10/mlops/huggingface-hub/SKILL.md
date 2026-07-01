@@ -30,6 +30,8 @@ The `hf` command is the modern command-line interface for interacting with the H
 
 - You need guidance on hugging Face Hub CLI (hf) — search, download, and upload models and datasets, manage repos, query datasets with SQL, deploy inference endpoints, manage Spaces and buckets
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Quick Start
 *   **Installation:** `curl -LsSf https://hf.co/cli/install.sh | bash -s`
 *   **Help:** Use `hf --help` to view all available functions and real-world examples.
@@ -107,4 +109,3 @@ The `hf` command is the modern command-line interface for interacting with the H
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

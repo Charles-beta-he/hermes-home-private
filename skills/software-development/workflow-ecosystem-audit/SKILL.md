@@ -32,6 +32,8 @@ metadata:
 - 新增一批 skill 后，需要重新对齐工作流
 - 发现 skill 引用 broken（references 指向不存在的文件）
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Principle
 
 **Skills 是散落的拼图，Workflow 是拼完后的画面。** 单独每个 skill 可能完整，但拼在一起时可能有缝。
@@ -39,6 +41,15 @@ metadata:
 ## Audit Steps
 
 Reference: `references/external-workflow-marketplace-decomposition.md` documents the source-grounded pattern for analyzing external workflow/plugin marketplaces: verify the artifact directly, distinguish skills from commands/workflows, map a lifecycle, then identify evidence/state/SSOT/integration gaps before adapting it.
+Reference: `references/external-workflow-marketplace-decomposition.md` documents the source-grounded pattern for analyzing external workflow/plugin marketplaces: verify the artifact directly, distinguish skills from commands/workflows, map a lifecycle, then identify evidence/state/SSOT/integration gaps before adapting it.
+
+Reference: `references/open-source-absorption-module-registry.md` documents the pattern for turning scattered open-source/repo learning tasks into a machine-readable module registry, local-brain compiled knowledge entry, and formal minimum-slice-to-durable-delivery governance flow.
+
+Reference: `references/composable-capability-graph-workflow-coverage.md` documents the composable module/workflow/agent ontology and cross-workflow abstraction coverage audit pattern: treat modules, workflows, and agents as views over capability nodes; require stable I/O, subnodes, AgentWrapper policy, gates, closure states, and coverage scoring across neighboring workflow families before promoting a demo-derived abstraction.
+
+Reference: `references/goal-control-plane-production-audit.md` documents the production-grade audit pattern for agent/workflow systems that have `/goal`, hooks, taskpool/mission/cron, dynamic workflow, observer, or proof surfaces: separate control-plane contracts from executors, classify diagnostic/test-covered layers honestly, and land dry-run primitives before side effects.
+
+Reference: `references/smart-routing-coverage-audit.md` documents the audit pattern for intelligent routing coverage questions: separate conversation main model, pre-turn intent/workflow routing, task tier routing, multi-model execution/verification, taskpool event-hook routing, and existing-project profile/SSOT routing before claiming a workflow is covered.
 
 ### Step 1: Enumerate Skills by Category
 
@@ -142,6 +153,28 @@ The 9-stage model above is for software development. Other domains need differen
 - **DevOps**: [0]需求 → [1]设计 → [2]IaC → [3]CI → [4]部署 → [5]观测 → [6]on-call
 
 Adapt the stage model to your domain.
+
+### Open-source Learning Task Registries
+
+When the audit target is a history of source-review/open-source learning tasks, do not create a long flat list of repo-specific skills or modules. Use the bounded registry pattern in `references/open-source-absorption-module-registry.md`: keep original task notes as SSOT, create a human map plus machine-readable registry, count primary vs support tasks separately, and include a verifier that checks schema/module count/unique ids/path existence. The stable landing is a reusable module taxonomy plus next minimal verifiable slices, not a narrative recap.
+
+### Goal / Hook / Dynamic Workflow Production Audits
+
+When auditing an agent workflow system that already has `/goal`, hooks, taskpool, mission, cron, dynamic workflow, or proof concepts, do not treat design docs or isolated passing tests as production integration. Use `references/goal-control-plane-production-audit.md` and classify each surface as production-integrated, test-covered-but-unintegrated, diagnostic/prototype, advisory-only, or missing.
+
+Preferred landing order:
+1. Read the live runtime paths and persistence layer directly.
+2. Add or verify a structured control-plane contract (for example a goal spec) before executor work.
+3. Add or verify an advisory route/dry-run decision before lifecycle mutation.
+4. Keep `/goal set` and status operations side-effect safe: no taskpool enqueue, mission write, cron create, DAG execution, or external side effect.
+5. Convert concrete follow-up engineering gaps into taskpool/proposal candidates; do not encode them as narrow one-session skills.
+
+Production-grade red flags:
+- a migration doc says complete, but the main runtime path never calls the migrated component;
+- hooks are fail-open observers but are described as safety gates;
+- a judge accepts response text instead of proof/evidence bundles;
+- checkpoint/resume stores only goal text/status, not plan/proof/remaining work;
+- dynamic workflow code is test-covered in isolation but unreachable from the live goal/taskpool path.
 
 ### Roles Need Protocol Files
 

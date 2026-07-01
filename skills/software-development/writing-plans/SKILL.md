@@ -44,6 +44,8 @@ Assume the implementer is a skilled developer but knows almost nothing about the
 - You plan to implement it yourself (future you needs guidance)
 - Working alone (documentation matters)
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Bite-Sized Task Granularity
 
 **Each task = 2-5 minutes of focused work.**
@@ -325,4 +327,3 @@ Frequent commits
 - [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
 - [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
 - [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.
-

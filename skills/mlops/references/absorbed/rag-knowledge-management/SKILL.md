@@ -34,6 +34,8 @@ Build RAG (Retrieval-Augmented Generation) knowledge management systems with sup
 - Implementing vector-based retrieval systems
 - Need persistence and metrics tracking
 
+
+- Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Core Components
 
 ### 1. Chinese Tokenizer
@@ -43,31 +45,31 @@ Default TfidfVectorizer doesn't work well with Chinese text. Create a custom tok
 ```python
 class ChineseTokenizer:
     """中文分词器"""
-    
+
     def __init__(self):
         # 常用中文词汇
         self.common_words = set([
             "Python", "NumPy", "Pandas", "机器学习", "深度学习", "算法",
             "性能优化", "数组操作", "数据分析", "框架", "库", "技巧"
         ])
-    
+
     def tokenize(self, text: str) -> List[str]:
         """分词"""
         tokens = []
-        
+
         # 英文单词
         english_words = re.findall(r'[a-zA-Z]+', text)
         tokens.extend(english_words)
-        
+
         # 中文词汇（简单匹配）
         for word in self.common_words:
             if word in text:
                 tokens.append(word)
-        
+
         # 数字
         numbers = re.findall(r'\d+', text)
         tokens.extend(numbers)
-        
+
         return tokens
 ```
 
@@ -78,7 +80,7 @@ Core class for knowledge management:
 ```python
 class RAGKnowledgeManager:
     """RAG知识管理器"""
-    
+
     def __init__(self):
         self.knowledge_base = {}
         self.tokenizer = ChineseTokenizer()
@@ -89,8 +91,8 @@ class RAGKnowledgeManager:
             "total_searches": 0,
             "average_search_time": 0.0
         }
-    
-    def add_knowledge(self, knowledge_id: str, content: str, 
+
+    def add_knowledge(self, knowledge_id: str, content: str,
                       metadata: Optional[Dict[str, Any]] = None) -> str:
         """添加知识"""
         self.knowledge_base[knowledge_id] = {
@@ -102,16 +104,16 @@ class RAGKnowledgeManager:
         self._update_vector_index()
         self.metrics["total_knowledge"] += 1
         return knowledge_id
-    
+
     def search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """语义搜索"""
         if not self.knowledge_base:
             return []
-        
+
         query_vector = self.vectorizer.transform([query])
         similarities = cosine_similarity(query_vector, self.vectors)[0]
         top_indices = np.argsort(similarities)[::-1][:top_k]
-        
+
         results = []
         for idx in top_indices:
             if similarities[idx] > 0:
@@ -123,15 +125,15 @@ class RAGKnowledgeManager:
                     "metadata": knowledge["metadata"],
                     "score": float(similarities[idx])
                 })
-        
+
         return results
-    
+
     def _update_vector_index(self):
         """更新向量索引"""
         if not self.knowledge_base:
             self.vectors = None
             return
-        
+
         contents = [k["content"] for k in self.knowledge_base.values()]
         self.vectors = self.vectorizer.fit_transform(contents)
 ```
