@@ -37,6 +37,7 @@ from l0_routes import (
     DAILY_BRIEF_PATTERNS,
     MANUFACTURING_STATUS_PATTERNS,
     ROKID_DEVELOPER_RESOURCE_PATTERNS,
+    PLUGIN_STATUS_QUERY_PATTERNS,
     L0_TEXT_ROUTE_REGISTRY,
     match_text_route,
 )
@@ -44,6 +45,7 @@ from brain_stats import build_brain_stats_text_from_snapshot
 from daily_brief import build_daily_brief_text_from_cache
 from manufacturing_status import build_manufacturing_status_text_from_cache
 from lingzhu_plugins import (
+    LINGZHU_PLUGIN_REGISTRY,
     build_plugin_receipted_answer,
     build_plugin_unavailable_answer,
     can_execute_plugin,
@@ -1088,6 +1090,25 @@ def handle_rokid_developer_resource_query(user_text: str) -> tuple[bool, str]:
     return True, build_rokid_developer_resource_text()
 
 
+def build_rokid_plugin_status_text() -> str:
+    """Return a short read-only audit of Lingzhu/Rokid plugin handling."""
+    low = [p for p in LINGZHU_PLUGIN_REGISTRY if p.risk_tier == "low"]
+    high = [p for p in LINGZHU_PLUGIN_REGISTRY if p.risk_tier in {"high", "critical"}]
+    return (
+        f"眼镜端插件已登记 {len(LINGZHU_PLUGIN_REGISTRY)} 个。"
+        "设备/位置/天气/计算走只读或本地兜底；"
+        "拍照/导航/退出/支付只识别意图，必须等灵珠平台回执，Hermes不直接执行。"
+        f"低风险 {len(low)} 个，高风险 {len(high)} 个。"
+    )
+
+
+def handle_rokid_plugin_status_query(user_text: str) -> tuple[bool, str]:
+    text = user_text.strip()
+    if not text or not _contains_any(text, PLUGIN_STATUS_QUERY_PATTERNS):
+        return False, ""
+    return True, build_rokid_plugin_status_text()
+
+
 def _load_manufacturing_status_cache() -> Dict[str, Any]:
     path = Path(os.path.expanduser(ROKID_MANUFACTURING_STATUS_CACHE))
     try:
@@ -1217,6 +1238,8 @@ def handle_l0_query(user_text: str) -> tuple[bool, str]:
         return True, build_daily_brief_text()
     if route.route_id == "rokid_developer_resources":
         return handle_rokid_developer_resource_query(user_text)
+    if route.route_id == "rokid_plugin_status":
+        return handle_rokid_plugin_status_query(user_text)
     if route.route_id == "local_brain_stats":
         return True, build_brain_stats_text()
     return False, ""

@@ -94,6 +94,16 @@ ROKID_DEVELOPER_RESOURCE_PATTERNS = (
     "Glasses开发",
     "Rokid Glasses开发",
 )
+PLUGIN_STATUS_QUERY_PATTERNS = (
+    "插件情况",
+    "调用插件情况",
+    "眼镜端调用插件",
+    "眼镜插件",
+    "灵珠插件状态",
+    "插件状态",
+    "插件调用",
+    "检查眼镜端调用插件情况",
+)
 
 
 FUZZY_FILLER_CHARS = " 的了呢吗嘛啊呀吧个一下请帮我查查问问看看看"
@@ -183,6 +193,13 @@ L0_TEXT_ROUTE_REGISTRY: tuple[L0Route, ...] = (
         ROKID_DEVELOPER_RESOURCE_PATTERNS,
         description="Read-only Rokid developer resource entrypoints",
         intent_terms=("rokid", "开发", "文档", "资源", "sdk", "yodaos", "sprite", "开放平台"),
+        fuzzy=True,
+    ),
+    L0Route(
+        "rokid_plugin_status",
+        PLUGIN_STATUS_QUERY_PATTERNS,
+        description="Read-only Lingzhu/Rokid plugin capability and receipt status",
+        intent_terms=("插件", "调用", "灵珠", "眼镜端", "状态"),
         fuzzy=True,
     ),
     L0Route(
