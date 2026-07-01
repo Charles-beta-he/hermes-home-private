@@ -965,3 +965,17 @@ Boundaries: no physical device, no TestFlight/App Store, no push/deploy/external
   - `npm run production:gate` => PASS, 17/17 including `pwa.dialog-update-contract`.
   - Local preview smoke on `http://127.0.0.1:4180`: `/`, `/version.json`, `/sw.js` all HTTP 200; browser dialog smoke typed `检查一下版本` and rendered `当前已经是最新版本 0.1.0。`.
 - Boundary: this is the client-side update experience for an already-deployed PWA version. It does not itself authorize/build/deploy/publish a new production release; release execution still needs exact target, rollback path, receipt, and readback.
+
+
+## 2026-07-01 — Public PWA Vercel deployment
+
+- Deployed the built PWA static artifact to Vercel under account `onerou` / project `dist`.
+- Public URL: https://dist-blue-eight-82.vercel.app
+- Deployment URL: https://dist-jvj6rzdjp-onerous-projects.vercel.app
+- Inspect URL: https://vercel.com/onerous-projects/dist/J4muMSWzc2DRsAtqg3bgCPVUUtmg
+- Verification:
+  - `curl /` => HTTP 200 `text/html`.
+  - `curl /version.json` => HTTP 200 `application/json`, `Cache-Control: no-store`, version `0.1.0`, release note `PWA 内对话更新版本体验已启用`.
+  - `curl /sw.js` => HTTP 200 `application/javascript`, `Cache-Control: no-store`, includes `SKIP_WAITING`.
+  - Browser smoke on the public URL rendered Hermes Pocket; typed `检查一下版本`; PWA replied `当前已经是最新版本 0.1.0。`.
+- Boundary: this is a public PWA frontend deployment only. Gateway/backend production deployment and live Hermes sync remain separate targets.

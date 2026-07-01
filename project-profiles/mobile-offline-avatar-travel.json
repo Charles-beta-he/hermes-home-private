@@ -758,6 +758,22 @@
         "browser smoke: typed 检查一下版本 and PWA replied 当前已经是最新版本 0.1.0"
       ],
       "boundary": "This enables installed PWA users to check/apply a deployed version from the app/chat surface. It does not itself build/deploy/publish a new production release; external PWA hosting/CI release remains a separate authorized target with rollback/readback."
+    },
+    "pwa_vercel_public_deploy_20260701": {
+      "status": "deployed_verified_public_url",
+      "updated_at": "2026-07-01T23:07:00+08:00",
+      "platform": "Vercel",
+      "scope": "Static PWA dist deployment for visible public link; no Gateway/backend production deployment included.",
+      "url": "https://dist-blue-eight-82.vercel.app",
+      "deployment_url": "https://dist-jvj6rzdjp-onerous-projects.vercel.app",
+      "inspect_url": "https://vercel.com/onerous-projects/dist/J4muMSWzc2DRsAtqg3bgCPVUUtmg",
+      "verification": [
+        "curl / HTTP 200 text/html",
+        "curl /version.json HTTP 200 application/json Cache-Control no-store; version 0.1.0 releaseNotes PWA 内对话更新版本体验已启用",
+        "curl /sw.js HTTP 200 application/javascript Cache-Control no-store and includes SKIP_WAITING",
+        "browser smoke on public URL rendered Hermes Pocket and dialog 检查一下版本 returned 当前已经是最新版本 0.1.0。"
+      ],
+      "boundary": "PWA frontend is public. Gateway is not deployed/configured, so live Hermes sync/dialog backend is absent unless a Gateway URL is configured in a future deployment."
     }
   },
   "project_type": "mobile-platform/edge-runtime",
