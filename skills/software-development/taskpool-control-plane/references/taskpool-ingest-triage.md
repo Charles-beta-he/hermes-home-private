@@ -216,11 +216,19 @@ Minimum evidence pass before `add`:
 - if login modals or anti-bot UI obscure the video, do not force login; use whatever public text/OCR is available and state uncertainty
 - search/verify the likely upstream repo/source separately; if the canonical upstream is not proven, encode the first task step as **identify canonical upstream repo/source**
 
+Douyin-specific public evidence pattern:
+- after resolving the `v.douyin.com` short link, use the public web page text/DOM as the first evidence surface; `document.body.innerText` often exposes title/search label, author, visible caption, publish time, metrics, comments, and related-video text even when direct HTTP fetch returns an anti-bot status
+- treat comments as weak signals only; for example a creator comment about a coming feature such as `makeskill` should be recorded as `unverified` until the upstream repo/tree/docs prove it exists
+- search candidate upstreams with both spaced and hyphenated forms (`scream code agent`, `scream-code`, owner/name) because GitHub search may miss the exact social spelling
+- for GitHub candidates, capture metadata plus README/package/workspace structure before add; this is enough for intake, but not enough to claim architectural absorption
+- write a concise evidence note before `add` when the platform post is the discovery source, including uncertainty and red lines
+
 Task framing rule:
 - create the task around the mechanism class and net-new delta, not the social-video headline
 - compare against existing same-domain tasks before adding, especially browser/computer-use/control-plane projects that can overlap heavily
 - add explicit red lines for actions the intake should not perform yet: no login, no extension install, no system/browser permission grant, no third-party automation execution without human approval
 - write a concise evidence note under `~/.hermes/docs/private/` or another evidence location when the video is the only source and repo identity remains uncertain
+- after `add`, read back the created task because hooks or multimodel intervention may immediately move it from `pending` to `claimed/running`; report the observed status, not the requested initial status
 
 Good framing examples:
 - “评估 PageAgent 类浏览器 AI 自动化：核验上游并对比 OculOS / Browser Harness”

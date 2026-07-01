@@ -2,7 +2,9 @@
 
 ## Applicability
 
-Use when an installed PWA looks correct on first load, but after navigating to a non-tab route (for example About / update / legal / settings) and returning to a main tab, the floating bottom TabBar is lifted and a large blank/frosted block appears below it.
+Use when an installed PWA looks correct on first load, but after navigating to a non-tab route (for example About / update / legal / settings, receiving-info/payment flow pages) and returning to a main tab, the floating bottom TabBar is lifted and a large blank/frosted block appears below it.
+
+Also use when the lift appears after opening/closing searchable pickers, country/region dropdowns, bottom sheets, or input-heavy flow screens before returning to a Tab route. These controls can leave document scroll or `visualViewport` state settling after React route changes even if the TabBar CSS token itself is stable.
 
 This is most common in iOS installed PWA/WebKit, but the same debugging shape can apply to Android/WebView when visual viewport state settles after React route changes.
 
@@ -24,18 +26,21 @@ Do not assume the CSS token is wrong just because the TabBar is lifted. In insta
 
 ## Fix pattern
 
-Keep TabBar geometry tokens stable. Add a route-return settle pass that runs more than once:
+Keep TabBar geometry tokens stable. Add a route-return settle pass that runs more than once. If the app has a global viewport-stability runtime, expose a shared primitive (for example `settleViewportLayout`) and call it from both native viewport listeners and route-change effects instead of duplicating partial scroll resets.
 
 ```ts
-const settle = () => {
-  settleViewportLayout(); // reset scroll + reconcile safe-area + visual bottom inset
-  resetStrayWindowScroll();
-};
+export function scheduleViewportSettles(root = document.documentElement): () => void {
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const settle = () => settleViewportLayout(root); // reset scroll + reconcile safe-area + visual bottom inset
 
-settle();
-requestAnimationFrame(settle);
-[150, 300, 600].forEach((delay) => setTimeout(settle, delay));
+  settle();
+  window.requestAnimationFrame?.(settle);
+  [150, 300, 600].forEach((delay) => timers.push(setTimeout(settle, delay)));
+  return () => timers.forEach(clearTimeout);
+}
 ```
+
+Route effects should return the cleanup from this helper after resetting the app's internal screen scroller. Keep the helper generic and call it from route changes, native viewport listeners, and any explicit picker/dropdown settle event if the app needs one.
 
 `settleViewportLayout()` should be a small shared primitive that:
 
@@ -53,6 +58,8 @@ requestAnimationFrame(settle);
 
 - Unit test the settle primitive: stale scroll + stale safe-area guess are reconciled together.
 - Route reset test or code review confirms multiple settle passes on pathname change.
+- Layout regression checks outer scroll ownership: `html`, `body`, framework root, and app shell stay non-scroll owners (`overflow:hidden`, `scrollHeight === clientHeight` where applicable), while the intended internal screen scroller remains scrollable.
+- Browser/mobile harness verifies at least one affected non-tab flow route and one picker/dropdown route returning to a Tab page; compare `window.innerHeight - nav.getBoundingClientRect().bottom` before and after and require the gap to remain stable.
 - Existing safe-area tests still pass; TabBar fixed gap/content reserve tokens are unchanged.
 - Build artifact still preserves app-owned `theme-color` behavior and platform visual inset tokens.
 - Final visual acceptance should use installed PWA/native package content, not `ChromeTabbedActivity` browser-tab content.

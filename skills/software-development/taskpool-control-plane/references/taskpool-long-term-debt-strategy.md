@@ -142,7 +142,7 @@ For `proof-check` warnings, build a dry-run migration plan before writing task n
 - Read existing task body proof (`## Proof Log`, `## Final Handoff`, artifact paths, command/browser/build evidence).
 - Classify as migratable only when real evidence already exists.
 - Never fabricate fresh test/build/browser results for historical closeouts.
-- For invalid autorun proof hashes, rehash only if the source artifact still exists; otherwise classify as reviewed legacy debt rather than overwriting proof.
+- For invalid autorun proof hashes, recover only from a real append-only autorun proof log event (`auto_run_proof.jsonl`) linked to the same task/parent closeout chain. A nearby file digest is not an autorun proof event. If source recovery is exhausted and the user authorizes cleanup, replace the bad `proof:sha256:*` entry with structured debt such as `classification:legacy_unrecoverable_autorun_proof_debt:sha256:<missing>` plus an `artifact:` pointer to the recovery report. See `references/taskpool-proof-source-recovery-and-legacy-isolation.md`.
 
 Batch writes, if approved, should be tiny (e.g. 5 tasks per run) and followed by:
 

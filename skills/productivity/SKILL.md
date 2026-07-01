@@ -55,16 +55,16 @@ This umbrella skill is the routing surface for productivity. Use it to choose th
 
 ## Absorbed Workflow Packages (8 consolidated in curator umbrella pass)
 
-These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; support package directories preserve any former references/templates/scripts/assets under the demoted package; otherwise use the umbrella routing rules above.
 
-- `airtable` → `references/absorbed/airtable/SKILL.md`: Use when you need guidance on airtable REST API via curl.
-- `google-workspace` → `references/absorbed/google-workspace/SKILL.md`: Use when you need guidance on gmail, Calendar, Drive, Contacts, Sheets, and Docs integration for Hermes.
-- `maps` → `references/absorbed/maps/SKILL.md`: Use when you need guidance on location intelligence — geocode a place, reverse-geocode coordinates, find nearby places (46 POI categories), driving/walking/cycling distance + time, turn-by-turn directions, timezone lookup, bounding box + area for a named place, and POI search within a rectangle.
-- `nano-pdf` → `references/absorbed/nano-pdf/SKILL.md`: Use when you need guidance on edit PDFs with natural-language instructions using the nano-pdf CLI.
-- `notion` → `references/absorbed/notion/SKILL.md`: Use when you need guidance on notion API for creating and managing pages, databases, and blocks via curl.
-- `ocr-and-documents` → `references/absorbed/ocr-and-documents/SKILL.md`: Use when you need guidance on extract text from PDFs and scanned documents.
-- `powerpoint` → `references/absorbed/powerpoint/SKILL.md`: Use when you need to use this skill any time a .pptx file is involved in any way — as input, output, or both.
-- `teams-meeting-pipeline` → `references/absorbed/teams-meeting-pipeline/SKILL.md`: Use when you need guidance on operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.
+- `airtable` → `references/packages/airtable/README.md`: Use when you need guidance on airtable REST API via curl.
+- `google-workspace` → `references/packages/google-workspace/README.md`: Use when you need guidance on gmail, Calendar, Drive, Contacts, Sheets, and Docs integration for Hermes.
+- `maps` → `references/packages/maps/README.md`: Use when you need guidance on location intelligence — geocode a place, reverse-geocode coordinates, find nearby places (46 POI categories), driving/walking/cycling distance + time, turn-by-turn directions, timezone lookup, bounding box + area for a named place, and POI search within a rectangle.
+- `nano-pdf` → `references/packages/nano-pdf/README.md`: Use when you need guidance on edit PDFs with natural-language instructions using the nano-pdf CLI.
+- `notion` → `references/packages/notion/README.md`: Use when you need guidance on notion API for creating and managing pages, databases, and blocks via curl.
+- `ocr-and-documents` → `references/packages/ocr-and-documents/README.md`: Use when you need guidance on extract text from PDFs and scanned documents.
+- `powerpoint` → `references/packages/powerpoint/README.md`: Use when you need to use this skill any time a .pptx file is involved in any way — as input, output, or both.
+- `teams-meeting-pipeline` → `references/packages/teams-meeting-pipeline/README.md`: Use when you need guidance on operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.
 
 
 ## Common Pitfalls
@@ -78,4 +78,3 @@ These former narrow child skills are now treated as subsections/reference packag
 - [ ] The request was mapped to the best-fitting child skill or explicitly kept at umbrella level for routing only.
 - [ ] The selected child skill descriptions, references, and prerequisites were checked before substantive execution.
 - [ ] Any claimed handoff, output, or route decision was read back against the specific child workflow before completion.
-

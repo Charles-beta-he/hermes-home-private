@@ -88,7 +88,8 @@ Safe rollout order:
 6. Route higher-risk proposed commands into a human approval inbox before implementing approval decisions or execution.
 7. For lifecycle-control surfaces that already have proposed commands and human approval requests, add approval decisions as a separate non-executing lifecycle slice: decisions are single-use, same-decision retries are idempotent, conflicting second decisions fail closed, and decision APIs return explicit `not_executed` state.
 8. For lifecycle-control surfaces that need readiness visualization, add a canonical-store-derived workflow map/readiness projection before any executor. Validate node IDs/dependencies/cycles and surface executor eligibility as an explicit blocked gate.
-9. Stop for policy review before adding any executor, write-through adapter, or lifecycle-affecting action.
+9. When the user broadly authorizes moving past a proposal-only workflow packet, consume only the smallest already-described local boundary first: persist a local registry/template or record a local harness receipt, prove readback, and keep real workers, scheduler, lifecycle writes, external adapters, and publish/deploy/destructive actions closed unless they were separately named with exact target/budget/tool/readback constraints.
+10. Stop for policy review before adding any executor, write-through adapter, or lifecycle-affecting action.
 
 Scope and anti-condition: steps 7-8 apply only to multi-surface lifecycle/control-plane systems that need human gates or readiness graphs. Do not add them to single-view read-only dashboards, ordinary business CRUD, or systems that already have a mature policy-gated executor and canonical workflow store.
 
@@ -120,9 +121,11 @@ Safe promotion order:
 11. Project external write authorization only against an unchanged intent and unexpired elevated approval; still record `write_executed=false`.
 12. Add a narrow executor last: consume one authorization, perform one adapter operation, record attempt, read back remote state, and record verified/mismatch. Keep rollback execution as a later, separate slice.
 
-Verification additions for each rung: add RED/GREEN tests for accept and reject paths, provide a CLI/command smoke that walks the full ladder to the new rung, record explicit booleans such as `write_executed=false`, and update the canonical design/SSOT doc in the same scoped commit. See `references/event-governed-agent-authority-ladder.md` for the reusable ladder, local-file adapter harness shape, rejection coverage, and boundary-reporting language.
+Verification additions for each rung: add RED/GREEN tests for accept and reject paths, provide a CLI/command smoke that walks the full ladder to the new rung, record explicit booleans such as `write_executed=false`, and update the canonical design/SSOT doc in the same scoped commit. See `references/event-governed-agent-authority-ladder.md` for the reusable ladder, local-file adapter harness shape, rejection coverage, and boundary-reporting language. For the hardened first-executor implementation checklist (exact authorization tuple binding, direct-child path safety, descriptor-relative I/O, idempotency, receipt rollback, and adversarial review), see `references/local-file-harness-executor-hardening.md`.
 
 Pitfalls: do not treat certification as fact; do not let intent imply execution; do not accept authority keys from worker/model payloads; do not combine first write-through, read-back verification, and rollback execution into one unreviewable slice. Treat local-file harness write-through as real state mutation but not as real taskpool/Kanban/Lark/Telegram write-through.
+
+For ordered Agent OS / agent-control-plane boundary breakthroughs after broad project-level authorization, advance one rung at a time and certify each with exact target, receipt, readback, independent review, and multi-model evidence before continuing. Use `references/agent-os-boundary-breakthrough-ladder.md` for the reusable rung order: advisory → route preflight → review preflight → local harness → local scheduler heartbeat → local taskpool/Kanban lifecycle → exact external dispatch → stop at publish/deploy/push or destructive DecisionPacket.
 
 ## Common Pitfalls
 

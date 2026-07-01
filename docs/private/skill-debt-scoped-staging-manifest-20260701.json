@@ -1,0 +1,3587 @@
+{
+  "created_at": "2026-07-01T09:55:08.020836+00:00",
+  "authorization": "A授权: local-only scoped commit, no push",
+  "repo": "/Users/charles/.hermes",
+  "branch": "master",
+  "selection_rule": "exact files from git status --porcelain=v1 -z -uall in skills/, docs/private/skill-*, docs/private/mattpocock-*, docs/private/wechat-open-code-review-*, and three session scripts; excludes out-of-scope dirty state and docs/private/skill-debt-packaging patch bundles; no directory pathspecs.",
+  "cleanup": "stripped trailing whitespace/final extra blank lines in allowed text files before staging so git diff --check can pass",
+  "prior_cleanup": {
+    "cleaned_files_count": 35,
+    "cleaned_files_sample": [
+      "docs/private/skill-invocation-taxonomy/latest.json",
+      "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095343Z.json",
+      "skills/.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/evals/prompts.csv",
+      "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/evals/prompts.csv",
+      "skills/.archive/curator-umbrella-2026-06-24/software-development/node-inspect-debugger/evals/prompts.csv",
+      "skills/.archive/curator-umbrella-2026-06-24/software-development/python-debugpy/evals/prompts.csv",
+      "skills/autonomous-ai-agents/references/packages/claude-code/evals/prompts.csv",
+      "skills/autonomous-ai-agents/references/packages/codex/evals/prompts.csv",
+      "skills/autonomous-ai-agents/references/packages/opencode/evals/prompts.csv",
+      "skills/diagramming/references/packages/architecture-diagram/evals/prompts.csv",
+      "skills/diagramming/references/packages/excalidraw/evals/prompts.csv",
+      "skills/github/references/packages/codebase-inspection/evals/prompts.csv",
+      "skills/github/references/packages/github-auth/evals/prompts.csv",
+      "skills/github/references/packages/github-code-review/evals/prompts.csv",
+      "skills/github/references/packages/github-issues/evals/prompts.csv",
+      "skills/github/references/packages/github-pr-workflow/evals/prompts.csv",
+      "skills/github/references/packages/github-repo-management/evals/prompts.csv",
+      "skills/media/references/packages/gif-search/evals/prompts.csv",
+      "skills/media/references/packages/youtube-content/evals/prompts.csv",
+      "skills/mlops/references/packages/huggingface-hub/evals/prompts.csv",
+      "skills/mlops/references/packages/llama-cpp/evals/prompts.csv",
+      "skills/mlops/references/packages/weights-and-biases/evals/prompts.csv",
+      "skills/productivity/references/packages/airtable/evals/prompts.csv",
+      "skills/productivity/references/packages/google-workspace/evals/prompts.csv",
+      "skills/productivity/references/packages/maps/evals/prompts.csv",
+      "skills/productivity/references/packages/nano-pdf/evals/prompts.csv",
+      "skills/productivity/references/packages/notion/evals/prompts.csv",
+      "skills/productivity/references/packages/ocr-and-documents/evals/prompts.csv",
+      "skills/productivity/references/packages/powerpoint/evals/prompts.csv",
+      "skills/productivity/references/packages/powerpoint/scripts/__init__.py",
+      "skills/productivity/references/packages/powerpoint/scripts/office/helpers/__init__.py",
+      "skills/productivity/references/packages/teams-meeting-pipeline/evals/prompts.csv",
+      "skills/software-development/systematic-debugging/references/packages/node-inspect-debugger/evals/prompts.csv",
+      "skills/software-development/systematic-debugging/references/packages/python-debugpy/evals/prompts.csv",
+      "docs/private/skill-debt-scoped-staging-manifest-20260701.json"
+    ],
+    "diff_check_exit_after": 0,
+    "diff_check_head": ""
+  },
+  "precommit_audit": {
+    "ok": true,
+    "total": 266,
+    "findings_by_code": {},
+    "findings_by_severity": {}
+  },
+  "counts": {
+    "session_reports": 13,
+    "skill_tree_changed_or_untracked": 691
+  },
+  "total_paths": 704,
+  "paths": [
+    {
+      "status": "A ",
+      "path": "docs/private/mattpocock-skills-hermes-absorption-plan-20260701.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "MM",
+      "path": "docs/private/skill-invocation-taxonomy/latest.json",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "MM",
+      "path": "docs/private/skill-invocation-taxonomy/latest.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095010Z.json",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095010Z.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095116Z.json",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095116Z.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095343Z.json",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095343Z.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095507Z.json",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skill-invocation-taxonomy/skill-taxonomy-audit-20260701T095507Z.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "A ",
+      "path": "docs/private/wechat-open-code-review-analysis-20260701.md",
+      "bucket": "session_reports"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/templates/template.html",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/architecture-diagram/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/references/colors.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/references/dark-mode.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/references/examples.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/scripts/upload.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/creative/excalidraw/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/software-development/node-inspect-debugger/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/software-development/node-inspect-debugger/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/software-development/python-debugpy/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/software-development/python-debugpy/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/.archive/curator-umbrella-2026-06-24/software-development/python-debugpy/scripts/run_tests.sh",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/.bundled_manifest",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/api-and-interface-design/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/autonomous-ai-agents/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/autonomous-ai-agents/hermes-agent/references/background-watch-notifications.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/autonomous-ai-agents/hermes-personal-assistant-flow/references/external-source-intake-and-dream-router.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/autonomous-ai-agents/hermes-pipeline/references/canonical-projection-cache-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/autonomous-ai-agents/references/claude-code-goal-control-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/claude-code/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/claude-code/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/claude-code/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/claude-code/references/fable-5-migration.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/claude-code/references/session-log-analysis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/claude-code/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/codex/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/codex/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/codex/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/codex/references/codex-plugin-evaluation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/codex/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/opencode/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/opencode/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/opencode/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/autonomous-ai-agents/references/packages/opencode/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/autonomous-ai-agents/references/posttooluse-runtime-landing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/codebase-memory-mcp-adoption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/pwa-install-prompt-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": " M",
+      "path": "skills/codebase-intelligence/references/reference-architecture-gap-analysis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/uvisa-client-version-update-audit.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/uvisa-first-login-payment-pin-routing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/uvisa-ios-keyboard-flow-viewport.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/codebase-intelligence/references/uvisa-notification-system.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/uvisa-payment-pin-setup-contract.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/codebase-intelligence/references/uvisa-wallet-transaction-screenshot-to-backend.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/computer-use/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/creative/claude-design/references/visual-ip-h5-handoff.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/devops/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/gateway-telegram-setup/references/cron-startup-audit-and-compensation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/devops/gateway-telegram-setup/references/cron-telegram-delivery-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/gateway-telegram-setup/references/first-party-mobile-dialog-bridge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/gateway-telegram-setup/references/telegram-live-location-handling.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/gateway-telegram-setup/references/telegram-reliable-delivery-enterprise-patterns.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/gateway-telegram-setup/references/telegram-send-path-degraded-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/devops/local-devops-tooling/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/local-devops-tooling/references/oauth-cli-provider-runtime-diagnostics.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/local-devops-tooling/references/private-git-ssh-network-triage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/local-devops-tooling/references/shadowrocket-active-config-browser-vs-git.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/local-devops-tooling/references/shadowrocket-active-config-gitlab-direct.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/local-devops-tooling/references/shadowrocket-config-vs-proxy-mimo.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/local-devops-tooling/references/xiaohongshu-fake-ip-browser-triage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/devops/references/post-pr-production-url-smoke.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/diagramming/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/diagramming/references/packages/architecture-diagram/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/diagramming/references/packages/architecture-diagram/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/architecture-diagram/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/architecture-diagram/templates/template.html",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/architecture-diagram/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/diagramming/references/packages/excalidraw/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/diagramming/references/packages/excalidraw/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/excalidraw/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/excalidraw/references/colors.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/excalidraw/references/dark-mode.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/excalidraw/references/examples.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/excalidraw/scripts/upload.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/diagramming/references/packages/excalidraw/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/feeds/references/daily-report-external-signal-taskpool-replay.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/feeds/references/daily-report-github-ph-sidecar-candidates.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/feeds/references/producthunt-button-fallback-test.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/feeds/references/producthunt-github-link-resolution.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/gaming/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/github/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/github/git-repo-operations/references/clean-gitlab-mr-from-dirty-stale-worktree.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/github/git-repo-operations/references/clean-pr-worktree-auto-merge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/github/git-repo-operations/references/control-plane-local-existing-cleanup.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/github/git-repo-operations/references/dirty-control-plane-scoped-commit-boundary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/github/git-repo-operations/references/gitlab-self-managed-mr-automation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/github/git-repo-operations/references/secret-scan-safe-scoped-commits.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/github/git-repo-operations/references/self-managed-gitlab-mr-automation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/codebase-inspection/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/codebase-inspection/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/codebase-inspection/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/codebase-inspection/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-auth/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-auth/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-auth/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-auth/scripts/gh-env.sh",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-auth/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-code-review/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-code-review/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-code-review/references/review-output-template.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-code-review/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-issues/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-issues/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-issues/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-issues/templates/bug-report.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-issues/templates/feature-request.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-issues/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/ci-troubleshooting.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/conventional-commits.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/dual-repo-fresh-branch-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/dual-repo-rebase-push.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/junk-file-cleanup.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/pr-closeout-consensus.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/references/surgical-file-revert.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/templates/pr-body-bugfix.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/templates/pr-body-feature.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-pr-workflow/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-repo-management/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-repo-management/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-repo-management/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-repo-management/references/github-api-cheatsheet.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/github/references/packages/github-repo-management/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/incremental-implementation/references/autonomous-continuation-checkpoints.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/incremental-implementation/references/frontend-global-error-toast-backend-message.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/incremental-implementation/references/legacy-frontend-static-contract-mr-slices.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/incremental-implementation/references/mobile-keyboard-stable-input-shell.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/incremental-implementation/references/operator-status-projection-slice.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/references/design-tool-mcp-integration.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/references/http-header-mcp-servers.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/references/http-mcp-header-auth-hermes.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/references/stitch-figma-document-api-bridge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/references/stitch-figma-html-to-product-mcp.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/references/stitch-http-mcp-setup.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mcp/native-mcp/scripts/figma_fetch_node.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/media/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/media/references/douyin-short-video-analysis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/login-state-assisted-public-media-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/multi-douyin-agent-workflow-synthesis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/gif-search/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/gif-search/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/gif-search/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/gif-search/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/youtube-content/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/youtube-content/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/youtube-content/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/youtube-content/references/output-formats.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/youtube-content/scripts/fetch_transcript.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/media/references/packages/youtube-content/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/short-video-architecture-diagram-extraction.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/short-video-ui-ritual-analysis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/voice-clone-consent-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/wechat-channels-public-preview-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/media/references/wechat-channels-video-analysis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/media/references/wechat-edge-agent-runtime-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/mlops/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/huggingface-hub/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/huggingface-hub/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/huggingface-hub/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/huggingface-hub/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/references/advanced-usage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/references/hub-discovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/references/optimization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/references/quantization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/references/server.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/references/troubleshooting.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/llama-cpp/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/references/artifacts.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/references/integrations.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/references/sweeps.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/mlops/references/packages/weights-and-biases/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/mlops/training/pytorch-fsdp/references/quick-reference-patterns.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/note-taking/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/personal-productivity/travel-planning/references/china-local-food-play-evidence-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/confirmed-flight-anchors-self-drive.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/domestic-self-drive-daily-briefing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/domestic-self-drive-final-day-hotel-return-buffer-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/domestic-self-drive-rental-vehicle-selection-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/live-self-drive-execution-checklist.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/live-self-drive-gates-hulunbuir-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/scenery-first-self-drive-planning-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/scenic-self-drive-tripstate-review-supplement.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/scheduled-travel-assistant-drift-evidence-governance.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/social-video-to-road-reservation-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/stateful-live-travel-pa-drift-review-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/t7-official-entry-precheck-pack.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/tripstate-gated-travel-copilot-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/tripstate-gated-travel-copilot.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xiaohongshu-ranking-evidence-workflow.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xinjiang-flight-hotel-car-anchor-triage-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xinjiang-hotel-evidence-tiering-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xinjiang-ili-flight-self-drive-execution-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xinjiang-ili-rental-hotel-low-touch-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xinjiang-ili-social-evidence-route-shaping-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/personal-productivity/travel-planning/references/xinjiang-urumqi-airport-rental-hotel-gate-2026-06.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/productivity/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/productivity/petdex/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "D ",
+      "path": "skills/productivity/references/absorbed/powerpoint/scripts/__init__.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "D ",
+      "path": "skills/productivity/references/absorbed/powerpoint/scripts/office/helpers/__init__.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/airtable/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/airtable/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/references/gmail-search-syntax.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/scripts/_hermes_home.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/scripts/google_api.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/scripts/gws_bridge.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/scripts/setup.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/google-workspace/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/maps/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/maps/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/maps/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/maps/scripts/maps_client.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/maps/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/nano-pdf/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/nano-pdf/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/nano-pdf/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/nano-pdf/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/notion/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/notion/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/notion/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/notion/references/block-types.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/notion/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/DESCRIPTION.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/scripts/extract_marker.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/scripts/extract_pymupdf.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/ocr-and-documents/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/productivity/references/packages/powerpoint/CHANGELOG.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/LICENSE.txt",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/editing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/pptxgenjs.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/__init__.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/add_slide.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/clean.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/helpers/__init__.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/helpers/merge_runs.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/helpers/simplify_redlines.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/pack.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-chart.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-chartDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-diagram.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-lockedCanvas.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-main.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-picture.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-spreadsheetDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/dml-wordprocessingDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/pml.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-additionalCharacteristics.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-bibliography.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-commonSimpleTypes.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-customXmlDataProperties.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-customXmlSchemaProperties.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-documentPropertiesCustom.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-documentPropertiesExtended.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-documentPropertiesVariantTypes.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-math.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/shared-relationshipReference.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/sml.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/vml-main.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/vml-officeDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/vml-presentationDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/vml-spreadsheetDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/vml-wordprocessingDrawing.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/wml.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ISO-IEC29500-4_2016/xml.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ecma/fourth-edition/opc-contentTypes.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ecma/fourth-edition/opc-coreProperties.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ecma/fourth-edition/opc-digSig.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/ecma/fourth-edition/opc-relationships.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/mce/mc.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-2010.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-2012.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-2018.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-cex-2018.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-cid-2016.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-sdtdatahash-2020.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/schemas/microsoft/wml-symex-2015.xsd",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/scripts/office/soffice.py",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/powerpoint/test-prompts.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/teams-meeting-pipeline/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "R ",
+      "path": "skills/productivity/references/packages/teams-meeting-pipeline/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/research/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/research/last30days/references/synthesis-and-presentation-contract.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/research/references/collectible-wine-price-check.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/research/references/daily-report-project-analysis.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/research/references/medical-misconduct-public-evidence.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/research/references/public-medical-incident-research.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/research/references/social-pain-insight-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/smart-home/assembly-assistance-workflow/references/pwa-live-smoke-and-automation-ladder.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/social-media/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/social-media/references/douyin-social-intake-evidence-workflow.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/social-media/references/social-video-content-first-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/abstraction-governance/references/canonical-overlay-takeover.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/abstraction-governance/references/experience-pack-consensus-transfer.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/abstraction-governance/references/local-brain-index-selection-filtering.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/abstraction-governance/references/sanitized-experience-pack-boundary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/abstraction-governance/references/skill-size-remediation-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/agent-boundary-audit/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/agent-eval-dynamic-workflow-harness/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/agent-skill-design-patterns/references/public-loop-catalog-agent-patterns-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/agent-skill-design-patterns/references/qianwen-ai-workflow-local-model-fullstack-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/agent-skill-design-patterns/references/qianwen-google-cloud-agent-workflow-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/agent-skill-design-patterns/references/qianwen-swarm-router-workflow-dsl-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/architecture-governance-evaluation/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/autonomous-runtime-governance-docs.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/aws-mac-graphical-brain-deployment.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/canonical-projection-pipeline-stability.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/cloud-macos-graphical-brain-vpn-edge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/contextcard-mobile-assistant-stability.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/local-brain-auto-constraint-layer-landing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/local-brain-canonical-architecture-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/architecture-governance-evaluation/references/open-source-capability-absorption-governance.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/browser-harness-integration/references/optional-external-verification-loop-backend.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/event-governed-side-effect-executors/references/goal-workflow-governed-local-execution.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/event-governed-side-effect-executors/references/high-risk-boundary-coverage-with-canary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/event-governed-side-effect-executors/references/high-risk-gate-control-plane.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/event-governed-side-effect-executors/references/high-risk-sequential-execution-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/event-governed-side-effect-executors/references/project-level-high-risk-live-boundary-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/goal-calibration/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/harness-intake-contract/references/runtime-envelope-landing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-self-audit/references/conversation-ledger-audit.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-self-audit/references/self-scan-4h-cron.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-self-audit/references/selfcheck-bloat-and-cron-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/external-sdk-builtin-tool-integration.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/prd-design-runtime-workflow-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/requirements-design-runtime-self-circulation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/hermes-workflow-orchestrator/references/self-advancing-progress-audit-live-gates.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/lark-task-video-attachment-triage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/lark-tasklist-section-inventory.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uaec-h5-analyzed-batch-continuation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uaec-h5-android-reference-before-questions.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uaec-h5-lark-supplement-triage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uaec-h5-live-task-inventory.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-android-pwa-pending-login-auth-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-android-pwa-shortcut-auth-root-cause.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-cend-linked-ui-issue-implementation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-fund-protection-local-state-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-lark-linked-issue-triage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-lark-task-closeout-branch-and-review.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-notification-template-cta-contract.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/lark-task-reading/references/uvisa-wealth-holdings-main-tab-back-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-app-canvas-bottom-trim.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-app-theme-vs-system-dark.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-canvas-trim-and-bottom-chrome.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-system-bars-theme-and-viewport.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-system-theme-resume-sync.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-tabbar-bottom-gap-regression.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/android-pwa-tabbar-safe-area.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/api-dependent-mobile-page-fallback.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/cross-end-capability-sdk.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/design-sdk-production-delivery-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/external-website-return-bfcache-blank.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/hermes-pocket-control-room-ratchet.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-keyboard-global-viewport-inset.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-pwa-native-back-swipe-conflict.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-pwa-old-sw-white-screen-before-loading.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-pwa-splash-status-bar-viewport.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-pwa-status-bar-app-theme.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-pwa-statusbar-safe-top-double-count.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ios-pwa-sw-cache-and-splash-measurement.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-avatar-1to1-voice-closure.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-composer-flex-height.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-composer-header-occlusion.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-composer-visual-viewport-shell.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-host-model-router-contract.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-host-router-provider-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-hybrid-avatar-control-room-redesign.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-hybrid-avatar-unified-ux-and-voice.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-keyboard-preserve-scope.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-keyboard-scroll-owner-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-legal-pdf-page-rendering.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-multimodel-routing-verification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-offline-avatar-travel-vertical.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-projection-bootstrap-readiness.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-pwa-keyboard-focus-layout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/mobile-reference-1to1-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/multi-end-entry-core.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/notification-sync-time-and-lifecycle.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/prd-stitch-pwa-self-circulation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-android-clear-cache-reload-tabbar.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-cache-invalidation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-first-paint-layout-markers.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-install-prompt.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-login-keyboard-cta.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-manifest-display-mode-diagnostics.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-offline-context-assistant.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-offline-context-gateway.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-platform-startup-screens.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-production-readiness-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-route-safe-area-resettling.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-safe-area-handling.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-silent-safe-update-boundaries.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-splash-marker-tabbar-restore.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-stale-index-missing-chunk-rescue.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-stale-index-rescue-without-release-assets.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-standalone-tab-safe-area-normalization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-startup-splash-stitch-sdk.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-tabbar-root-scroll-and-update.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-tabbar-scroll-owner-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-tabbar-top-anchor-visual-height.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/pwa-update-toast-vs-missing-chunk-rescue.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/ratchet-replacement-offline-assistant.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-avatar-reanimated-particles.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-ios-shell.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-ios-simulator-acceptance.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-reanimated-particle-orb.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-skia-ion-cloud-parity.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-voice-asr-gateway-fallback.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-voice-reactive-orb-closure.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-voice-reactive-particle-orb-final.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/react-native-voice-reactive-webgl-orb.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/rn-mobile-ui-production-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/rn-redesign-prd-before-implementation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/rn-simulator-page-discoverability.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-design-automation-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-mcp-to-react-native-design-ssot.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-mcp-to-rn-1to1.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-mobile-design-functional-fill.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-pwa-all-panel-ux-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-pwa-enterprise-ux-closure.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-pwa-fullres-visual-parity.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-pwa-product-tabs-vision-readiness.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-rn-concentric-orb-alignment.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-rn-pixel-limit-parity.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-rn-reference-reuse-product-docs.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-rn-webgl-bbox-offset-correction.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-sdk-mobile-design-sync.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/stitch-sdk-sync-to-rn.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/tabbar-top-fallback-regression.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/uvisa-c-lifecycle-and-notification-sync.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/uvisa-pwa-stale-sw-missing-chunk-root-cause.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/uvisa-pwa-sw-main-tab-update.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/mobile-frontend-delivery/references/uvisa-tabbar-liquid-glass-verification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-agent-code-review/references/multi-model-gitlab-merge-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-agent-code-review/references/self-managed-gitlab-smart-routed-review-receipt.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/multi-model-certification-round/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/capability-boundary-and-evidence-authority.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/mainloop-background-certification-queue.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/mainloop-multimodel-integration-boundary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/mainloop-route-required-evidence-ledger.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/mainloop-verification-gate-consumer.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/model-participant-substitution.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/multimodel-adapter-health-and-internal-projections.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/no-action-repair-child-recertification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/profile-driven-surface-router-coverage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/provider-model-catalog-vs-live-availability.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/route-review-gate-stable-plan.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/routed-truth-grounded-not-certified.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/taskpool-blocked-certification-rebuild.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/multi-model-certification-round/references/taskpool-concurrency-certification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/agent-os-runtime-route-preflight.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/authority-consumption-after-human-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/autonomous-runtime-governance-p4-bootstrap.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/autonomous-runtime-governance-takeover-to-readonly-gates.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/context-projection-pipeline-hardening.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/degraded-multimodel-certification-after-implementation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/design-ssot-to-runtime-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/dynamic-evidence-adapter-contract-first.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/existing-workflow-integration-after-local-contract.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/external-demo-to-cross-end-project.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/external-web-scraper-to-evidence-preprocessor.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/greenfield-architecture-truth-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/high-risk-boundary-projection-and-exact-execution.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/high-risk-exact-execution-smoke-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/interruption-to-resume-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/isolated-upstream-ratchet-merge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/live-advisory-config-enable-boundary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/local-brain-auto-constraint-gate-landing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/local-brain-session-disambiguation-and-s7-targets.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/loop-audit-to-local-contract.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/objective-model-path-verification/references/mission-control-resume-verification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/multimodel-review-preflight-boundary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/multimodel-routing-production-closure.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/ordered-boundary-breakthrough.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/project-level-authorization-drain-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/read-only-live-adapter-progression.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/runtime-api-kill-switch-rollback.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/runtime-promotion-authorization-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/shadow-promotion-gates.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/objective-model-path-verification/references/upstream-ratchet-mainline-self-contained-worktree.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/path-error-root-cause-governance/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/path-error-root-cause-governance/references/problem-finding-chain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/path-error-root-cause-governance/references/pwa-kill-reopen-bottom-chrome-case.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/path-error-root-cause-governance/templates/rpepr-debugging-note.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/planning-with-files/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/planning-with-files/references/project-progress-ledger.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/process-lifecycle-control-plane/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/process-lifecycle-control-plane/references/agent-os-boundary-breakthrough-ladder.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/process-lifecycle-control-plane/references/local-file-harness-executor-hardening.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/product-workflow-operating-system/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/product-workflow-operating-system/references/design-generator-product-logic-bridge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/product-workflow-operating-system/references/enterprise-production-readiness.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/product-workflow-operating-system/references/portfolio-ratchet-operating-system.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/product-workflow-operating-system/references/taskpool-ingest-bridge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/product-workflow-operating-system/references/visual-commercialization-router-first-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/product-workflow-operating-system/references/voice-agent-product-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/project-evidence-grounding/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/cross-project-profile-abstraction.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/design-source-browser-evidence-fallback.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/fact-source-merge-multi-implementation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/multi-implementation-truth-source-drift.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/producthunt-external-link-audit.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/project-profile-from-target-and-reference-repo.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-evidence-grounding/references/project-profile-graph-and-task-inventory.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/references/agent-os-projectization-and-readonly-projection.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/references/ai-os-architecture-signal-projectization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/references/hermes-cli-integration-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/references/projectizing-extension-directions.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/references/self-extension-control-console-operationalization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/project-portfolio-operating-system/references/work-project-exclusion-and-platform-promotion.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/real-engineering-workflows/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/requesting-code-review/references/specialist-code-review-cli-reference-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/skill-eval/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/skill-eval/references/zero-warning-skill-debt-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/spec-stateful-sdd-workflow/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/spec-stateful-sdd-workflow/references/reference-media-to-durable-workflow-landing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/spec-stateful-sdd-workflow/templates/spec-gate-converge.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/auth-step-up-token-exchange.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/frontend-auth-contract-stale-client-cache.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/frontend-auth-state-machine-routing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/frontend-pwa-service-worker-precache.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/large-merge-regression-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/packages/node-inspect-debugger/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/packages/node-inspect-debugger/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/packages/python-debugpy/README.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/packages/python-debugpy/evals/prompts.csv",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/packages/python-debugpy/scripts/run_tests.sh",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/provider-catalog-vs-runtime-entitlement.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/provider-proxy-relay-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/provider-runtime-availability-vs-auth.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/systematic-debugging/references/pwa-service-worker-first-load-performance.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/active-claim-reconciliation-and-media-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/advisory-8-governance.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/advisory-8-no-next-step-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/advisory-lane-concurrency-upgrade.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/agent-team-cron-liveness.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/taskpool-control-plane/references/ai-cybersecurity-repo-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/authorized-local-dispatch-write-readback.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/autorun-policy-fallback-and-hook-isolation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/batch-external-source-intake-parallel-boundaries.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/batch-intake-and-recertification-repair.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/blocked-drain-evidence-repair-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/blocked-drain-gate-repair-2026-06-28.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/blocked-drain-root-cause-packets.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/blocked-task-resolution-workflow.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/bounded-drain-continuation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/bounded-taskpool-drain-and-certification-repair.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/certified-lifecycle-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/closeout-surface-classifier-and-human-escape-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/concurrency-expansion-certification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/cron-wrapper-and-precommit-gate.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/daily-report-and-dream-idle-replay.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/daily-report-external-signal-replay.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/daily-report-intake-and-dream-router-review.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/dev-closure-certification-adapter-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/dev-closure-certification-takeover.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/done-gate-closeout-heuristics.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/drain-loop-readback-boundaries.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/drain-reconcile-patterns.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/drain-to-empty-and-orphan-claim-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/drain-to-empty-orphan-active-claim-reconciliation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/drain-to-normal-flow.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/dynamic-runner-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/evidence-autoclose-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/evidence-repair-and-narrow-subtask-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/external-capability-absorption-proof-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/taskpool-control-plane/references/external-repo-doc-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/failure-taxonomy-narrow-subtasks.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/full-drain-flow-normalization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/governed-slice-interruption-and-readback.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/human-escape-and-proof-check-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/human-escape-resume-and-dynamic-runner-probe.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/index.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/kanban-blocked-card-structured-unblock-audit.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/kanban-mirror-coverage-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/lane-scoped-concurrency-promotion.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/live-migration-proof-handoff-edge-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/local-lifecycle-readback-after-authorization.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/long-drain-loop-safe-repair.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/long-running-safe-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/macos-icloud-dataless-task-file-selfcheck.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/macos-icloud-dataless-task-files.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/manual-task-intake-cli-pitfalls.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-blocked-certification-rebuild.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-certification-closeout-boundary.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-certification-degraded-after-implementation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-certification-loop-handoff.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-provider-auth-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-routing-vs-thinking-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-t3-provider-gate-debugging.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/multimodel-thinking-intervention.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/no-agent-cron-runner-wrapper-and-fixture-pitfalls.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/no-dispatchable-vs-follow-through-cron-timeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/no-execution-evidence-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/non-convergence-narrowing-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/normal-flow-no-block-drain.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/offensive-security-repo-architecture-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/old-task-dev-closure-shadow-run.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/orphaned-active-claim-reconciliation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/parallel-worker-nested-hook-repair.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/parent-child-evidence-aggregation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/parent-child-flow-and-certification-aggregation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/parent-child-stall-diagnostics.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/project-dev-closure-runner-closeout-adapter.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/project-dev-closure-runner-to-taskpool-handoff.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/proof-check-autorun-debt-classification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/proof-source-recovery-and-live-migration.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/proof-warning-debt-classification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/public-media-advisory-taskpool-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/public-media-link-taskpool-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/ratification-repair-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/repair-child-recertification-after-late-degraded-round.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/retry-first-drain-and-dispatch.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/retry-storm-review-gap-repair.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/review-closeout-with-multimodel-claims.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/running-takeover-and-nested-hook.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/safe-drain-continuation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/safe-drain-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/safety-gated-drain-pattern.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/semantic-profile-and-advisory-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/social-signal-taskpool-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/social-video-agent-pattern-intake.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/t3-closeout-optional-reviewer-event-hook.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/task-creation-required-triage-fields.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/task-creation-timeout-reconciliation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-acceleration-drain-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-acceleration-loop.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-closeout-cron-projection-lessons.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-concurrency-multimodel-routing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-cron-precommit-ratification.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-drain-loop-continuation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-evidence-writeback-and-multimodel-races.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-fullpush-timeout-boundaries.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-ingest-triage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-long-drain-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-long-term-debt-strategy.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-proof-source-recovery-and-legacy-isolation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-retry-churn-root-cause.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-stall-remediation-patterns.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/taskpool-status-inspection-checklist.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/temporary-worker-blocked-subtask-unblock.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-control-plane/references/wechat-channels-public-preview-api.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-drain-governance/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-drain-governance/references/drain-to-empty-orphan-active-claim-reconciliation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-lifecycle-drainage/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-lifecycle-drainage/references/blocked-drain-gate-repair-2026-06-28.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-runtime-reconciliation/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-runtime-reconciliation/references/human-escape-terminal-envelope-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-runtime-reconciliation/references/human-escape-to-parallel-progress.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-runtime-reconciliation/references/mission-envelope-and-foreground-consume-recovery.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/taskpool-runtime-reconciliation/references/orphaned-active-claim-reconciliation.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/test-driven-development/references/historical-idle-window-replay-testing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/test-driven-development/references/taskpool-parent-aggregator-tdd.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/uimax-audit/references/pwa-mobile-tab-uimax.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/uimax-audit/references/react-native-aplus-simulator-matrix.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/uimax-audit/references/react-native-extreme-ui-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/uimax-audit/references/react-native-global-bottom-tab-closeout.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/uimax-audit/references/react-native-simulator-uimax.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/SKILL.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/references/3d-ip-extension-pack-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/references/audio-reactive-animation-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/references/capability-granular-model-routing.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/references/evidence-gated-agent-lifecycle.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/references/superagent-research-harness-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-capability-graph/templates/workflow-capability-graph-templates.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-ecosystem-audit/references/composable-capability-graph-workflow-coverage.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-ecosystem-audit/references/goal-control-plane-production-audit.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-ecosystem-audit/references/open-source-absorption-module-registry.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-ecosystem-audit/references/public-agent-design-module-absorption.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "A ",
+      "path": "skills/software-development/workflow-ecosystem-audit/references/smart-routing-coverage-audit.md",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "M ",
+      "path": "skills/steward/skill-graph-report.json",
+      "bucket": "skill_tree_changed_or_untracked"
+    },
+    {
+      "status": "??",
+      "path": "docs/private/skill-debt-scoped-staging-manifest-20260701.json",
+      "bucket": "session_reports"
+    }
+  ],
+  "out_of_scope_counts": {
+    "out_of_scope_dirty_state": 4091,
+    "exclude_patch_bundle": 1
+  }
+}

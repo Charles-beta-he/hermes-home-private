@@ -122,9 +122,11 @@ python3 ~/.hermes/scripts/brain_task_orchestrator.py add-repo-capability-absorpt
 
 Use `--target-surface` to encode the lowest-coupling landing surface: `skill`, `cli_wrapper`, `mcp`, `sidecar`, `adapter`, `core`, or `taskpool`. Use `--integration-level` to encode the current ambition: `evaluate`, `reproduce`, `wrap`, `integrate`, or `productionize`.
 
-The command creates `absorption_type: repo_capability_absorption` tasks with evidence gates for capability definition, real reproduction, risk boundary, integration surface, harness acceptance, and maintenance/rollback strategy. Creation itself **does not** authorize vendoring, external side effects, runtime integration, or taskpool automation; later workers must pass the reproduction and risk gates first.
+The command creates `absorption_type: repo_capability_absorption` tasks with evidence gates for capability definition, real reproduction, risk boundary, integration surface, harness acceptance, maintenance/rollback strategy, and mainline promotion readiness. Creation itself **does not** authorize vendoring, external side effects, runtime integration, taskpool automation, or main-chain replacement; later workers must pass the reproduction, risk, harness, rollback/fallback, and maintenance gates first.
 
-This workflow is generic for external repositories/docs, not a one-off chat plan. After intake, the remaining work must live in taskpool tasks with explicit progress and evidence.
+Promotion invariant: an external capability may become a Hermes mainline capability only after all three are evidenced in the task note or SSOT artifact: (1) evidence verification is reproducible by command/test/log/artifact, (2) rollback or fallback is executable and preserves the old path, and (3) maintenance is clear enough to survive upstream version drift. If any of these is missing, the valid decisions are `watch`, `skill-only`, `wrapper`, or a bounded follow-up task — not `integrated` / `taskpool-automated` / `done`.
+
+Default execution rule: when the user asks to absorb, implement, or strengthen an open-source feature for Hermes, create or update a `repo_capability_absorption` task/SSOT before implementation. Do not leave the process as chat-only advice.
 
 Use these stage gates when the material may be absorbed into Hermes:
 

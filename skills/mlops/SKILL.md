@@ -52,12 +52,12 @@ This umbrella skill is the routing surface for mlops. Use it to choose the most 
 
 ## Absorbed Workflow Packages (4 consolidated in curator umbrella pass)
 
-These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; support package directories preserve any former references/templates/scripts/assets under the demoted package; otherwise use the umbrella routing rules above.
 
-- `huggingface-hub` → `references/absorbed/huggingface-hub/SKILL.md`: Use when you need guidance on hugging Face Hub CLI (hf) — search, download, and upload models and datasets, manage repos, query datasets with SQL, deploy inference endpoints, manage Spaces and buckets.
-- `llama-cpp` → `references/absorbed/llama-cpp/SKILL.md`: Use when you need guidance on llama.cpp local GGUF inference + HF Hub model discovery.
+- `huggingface-hub` → `references/packages/huggingface-hub/README.md`: Use when you need guidance on hugging Face Hub CLI (hf) — search, download, and upload models and datasets, manage repos, query datasets with SQL, deploy inference endpoints, manage Spaces and buckets.
+- `llama-cpp` → `references/packages/llama-cpp/README.md`: Use when you need guidance on llama.cpp local GGUF inference + HF Hub model discovery.
 - `rag-knowledge-management` → `references/absorbed/rag-knowledge-management/SKILL.md`: Use when building RAG (Retrieval-Augmented Generation) knowledge management systems with Chinese text support, TF-IDF vectorization, semantic search, and RESTful API interfaces.
-- `weights-and-biases` → `references/absorbed/weights-and-biases/SKILL.md`: Use when you need to track ML experiments with automatic logging, visualize training in real-time, optimize hyperparameters with sweeps, and manage model registry with W&B - collaborative MLOps platform.
+- `weights-and-biases` → `references/packages/weights-and-biases/README.md`: Use when you need to track ML experiments with automatic logging, visualize training in real-time, optimize hyperparameters with sweeps, and manage model registry with W&B - collaborative MLOps platform.
 
 
 ## Common Pitfalls
@@ -71,4 +71,3 @@ These former narrow child skills are now treated as subsections/reference packag
 - [ ] The request was mapped to the best-fitting child skill or explicitly kept at umbrella level for routing only.
 - [ ] The selected child skill descriptions, references, and prerequisites were checked before substantive execution.
 - [ ] Any claimed handoff, output, or route decision was read back against the specific child workflow before completion.
-

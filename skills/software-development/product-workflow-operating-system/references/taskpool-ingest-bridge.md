@@ -16,6 +16,10 @@ Add `--write` only when the candidate JSON has been reviewed and taskpool mutati
 python3 ~/.hermes/scripts/product_workflow_taskpool_ingest.py --slug <workflow-slug> --write --json
 ```
 
+## Social/video signal follow-up rule
+
+When a product workflow starts from a social video that points to a tool/repo already present in the taskpool, treat the video as a **signal layer**, not as a fresh source-review task. The new candidate should be a bounded delta such as provider-selection, prototype gate, safety/consent gate, market-demand validation, or packaging decision. Link the existing task(s) and the new evidence bundle. Acceptance evidence must say whether the outcome is `WATCH`, `REJECT`, or `PROTOTYPE_BEHIND_GATE`; do not require immediate implementation or media delivery if the next layer would cross runtime, cost, credential, identity/consent, or external-send boundaries.
+
 ## Contract
 
 The workspace must contain:

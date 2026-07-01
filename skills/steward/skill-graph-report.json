@@ -1,59 +1,44 @@
 {
   "metric": "Skill Graphs 2.0 \u62d3\u6251\u5ba1\u8ba1",
-  "value": "edges=84, depth_max=4, cycles=0, tiers={'atom': 254, 'compound': 3, 'molecule': 21}",
-  "status": "OK",
+  "value": "edges=105, depth_max=5, cycles=0, tiers={'atom': 236, 'compound': 7, 'molecule': 22}",
+  "status": "GRAPH_VIOLATIONS",
   "max_depth_allowed": 4,
-  "edge_count": 84,
+  "edge_count": 105,
   "tier_counts": {
-    "atom": 254,
-    "compound": 3,
-    "molecule": 21
+    "atom": 236,
+    "compound": 7,
+    "molecule": 22
   },
   "explicit_tier_count": 1,
   "cycle_count": 0,
   "cycles": [],
-  "excessive_depth": [],
+  "excessive_depth": [
+    {
+      "skill": "software-development/workflow-capability-graph",
+      "depth": 5,
+      "chain": [
+        "software-development/workflow-capability-graph",
+        "software-development/agent-skill-design-patterns",
+        "software-development/spec-stateful-sdd-workflow",
+        "software-development/abstraction-governance",
+        "software-development/agent-boundary-audit",
+        "autonomous-ai-agents/hermes-agent"
+      ],
+      "action": "Split at a molecule boundary; keep graph depth <= 4."
+    }
+  ],
   "typed_violations": [],
   "missing_dependencies": [
     {
       "skill": "software-development/hermes-s6-container-supervision",
       "dependency": "hermes-agent-dev"
+    },
+    {
+      "skill": "computer-use",
+      "dependency": "browser"
     }
   ],
-  "ambiguous_dependencies": [
-    {
-      "skill": "github/git-repo-operations",
-      "dependency": "github-pr-workflow",
-      "candidates": [
-        ".archive/curator-umbrella-2026-06-10/github/github-pr-workflow",
-        "github/references/absorbed/github-pr-workflow"
-      ]
-    },
-    {
-      "skill": "github/git-repo-operations",
-      "dependency": "github-code-review",
-      "candidates": [
-        ".archive/curator-umbrella-2026-06-10/github/github-code-review",
-        "github/references/absorbed/github-code-review"
-      ]
-    },
-    {
-      "skill": "autonomous-ai-agents/kanban-codex-lane",
-      "dependency": "codex",
-      "candidates": [
-        ".archive/curator-umbrella-2026-06-10/autonomous-ai-agents/codex",
-        "autonomous-ai-agents/references/absorbed/codex"
-      ]
-    },
-    {
-      "skill": "media/long-video-course-essence",
-      "dependency": "youtube-content",
-      "candidates": [
-        ".archive/curator-umbrella-2026-06-10/media/youtube-content",
-        "media/references/absorbed/youtube-content"
-      ]
-    }
-  ],
+  "ambiguous_dependencies": [],
   "migration_suggestions": [
     {
       "skill": "apple",
@@ -61,57 +46,7 @@
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": "apple/references/absorbed/apple-reminders",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "apple/references/absorbed/macos-computer-use",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "apple/references/absorbed/imessage",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "apple/references/absorbed/findmy",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "apple/references/absorbed/apple-notes",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
       "skill": "research",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "research/references/absorbed/blogwatcher",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "research/references/absorbed/polymarket",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "research/references/absorbed/llm-wiki",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "research/references/absorbed/arxiv",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": "research/references/absorbed/research-paper-writing",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
@@ -216,6 +151,26 @@
       "reason": "deps=0, depth=0"
     },
     {
+      "skill": ".archive/curator-umbrella-2026-06-24/software-development/python-debugpy",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-24/software-development/node-inspect-debugger",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-24/creative/excalidraw",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-24/creative/architecture-diagram",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
       "skill": ".archive/git-state-aware-debugging",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
@@ -286,28 +241,58 @@
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": ".archive/curator-umbrella-2026-06-10/apple/apple-reminders",
+      "skill": ".archive/curator-umbrella-2026-06-17/apple/references/absorbed/apple-reminders",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": ".archive/curator-umbrella-2026-06-10/apple/macos-computer-use",
+      "skill": ".archive/curator-umbrella-2026-06-17/apple/references/absorbed/macos-computer-use",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": ".archive/curator-umbrella-2026-06-10/apple/imessage",
+      "skill": ".archive/curator-umbrella-2026-06-17/apple/references/absorbed/imessage",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
     {
-      "skill": ".archive/curator-umbrella-2026-06-10/apple/findmy",
+      "skill": ".archive/curator-umbrella-2026-06-17/apple/references/absorbed/findmy",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-17/apple/references/absorbed/apple-notes",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/blogwatcher",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/polymarket",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/llm-wiki",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/arxiv",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/research-paper-writing",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     }
   ],
   "details": [
-    "\u663e\u5f0f tier: 1/278\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
-    "fail-closed gate: cycles=0, excessive_depth=0, typed_violations=0"
+    "\u663e\u5f0f tier: 1/265\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
+    "fail-closed gate: cycles=0, excessive_depth=1, typed_violations=0"
   ]
 }

@@ -92,6 +92,17 @@ Gateway location to inspect:
 
 Fresh events should still render as `[IMPORTANT]`. Stale events should either be dropped or rendered as non-action `[INFO]`; gateway stale events should usually be log-only to avoid triggering noisy synthetic turns.
 
+### 3b. Preserve autonomous continuation semantics
+
+When a user has authorized autonomous/self-advance mode, a watch notification must not become a terminal reporting turn unless it is genuinely blocking or requires authority. After classifying the event:
+
+- `drop` / stale / non-blocking normal exit: do not reply only with telemetry; resume the active objective or stay silent if no delivery channel supports silent turns.
+- `downgrade`: record as internal context and continue the current safe local slice when possible.
+- `deliver`: only interrupt the user if the event changes readiness, blocks progress, fails a command, or opens an authorization/verification gate.
+- If implementation cannot safely resume because no continuation packet/objective is available, report that as the root cause and enqueue/capture a runtime issue; do not present the telemetry check as the completion of autonomous work.
+
+Regression coverage should assert that stale/non-blocking watch events in autonomous mode do not produce a final-only assistant response when an active continuation/objective exists.
+
 ### 4. Improve poll/log UX with tombstones
 
 Keep a bounded recent tombstone map for finished/pruned sessions. When `poll(session_id)` cannot find a session but the tombstone exists, return structured context:

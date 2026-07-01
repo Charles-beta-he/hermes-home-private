@@ -44,9 +44,33 @@ Don't use for:
 |---|---|
 | Theory audit | Map each component to explicit foundations and missing constraints. |
 | External framework evaluation | Extract architecture, map to local primitives, score migration value vs difficulty. |
+| Open-source capability absorption | Treat external features as candidate capabilities; require evidence verification, rollback/fallback, and maintenance readiness before mainline promotion. See `references/open-source-capability-absorption-governance.md`. |
+| Open-source capability absorption | Treat external features as candidate capabilities: decompose problem/capability/interface/implementation/verification, map to local primitives, then land via adapter + registry + policy gate + harness + shadow mode before mainline adoption. |
 | Cloud-edge assistant design | Separate brain decision/state from local stateless execution; enforce auth, audit, allowlists, and centralized memory. |
+| Canonical projection/mobile companion pipelines | Keep the brain/source DB authoritative, make mobile/PWA/local model read-only over projection caches, and require staging/merge/promotion gates before serving enriched cache. See `references/canonical-projection-pipeline-stability.md`. |
 | Architecture refactoring | Classify core/deprecated/integrated components, migrate essential features, then validate. |
 | Distributed worker/task systems | Preserve a single task-pool SSOT; workers are execution-only unless a deliberate control-plane design says otherwise. |
+
+## Open-source Capability Absorption
+
+When the goal is to implement and strengthen selected features from open-source projects inside the user's own architecture, do not start by copying code into core. Run a governed capability-intake path:
+
+1. Decompose the source feature into problem, capability, interface, implementation, verification, and license/risk.
+2. Map the capability to local architecture primitives: owning module, adapter point, event/state boundary, permission surface, and fallback path.
+3. Prefer absorbing the capability shape and verification method; copy implementation only when license, coupling, and maintenance risk are explicitly acceptable.
+4. Land first as a local adapter/shim plus capability-registry entry, not as direct core mutation.
+5. Add a harness: unit/integration smoke, demo fixture, failure case, rollback check, and any benchmark relevant to the claimed improvement.
+6. Run in shadow/advisory mode before active control of a main workflow; compare success rate, latency, cost, error types, and regressions against the existing path.
+7. Promote only behind feature flags / kill switches with rollback and preserved old behavior.
+8. Ratchet the accepted pattern into a skill, ADR, project profile, or registry entry according to scope; do not put project-specific repo paths or one-off conclusions in global memory.
+
+Decision heuristic:
+- High value + high architectural fit + strong harness + low risk → adopt.
+- High value + uncertain risk → spike then shadow.
+- High value + high coupling/risk → absorb idea and rewrite locally.
+- Low value + high complexity → reject/watch.
+
+Red lines: do not let an external worker/tool gain decision authority without an explicit control-plane design; do not treat multi-model agreement as verification; do not drop existing behavior without a reversible rollout.
 
 ## Output Contract
 
@@ -86,5 +110,12 @@ For serious audits, produce:
 ## Support Files
 
 - `references/architecture-theory-audit.md` — theory domain mapping and academic grounding details.
+- `references/autonomous-runtime-governance-docs.md` — scoped reference for automation/control-plane architecture documentation: use for long-term, evidence-gated autonomous-runtime docs; anti-condition: do not use as task progress or a project-specific fact source.
 - `references/external-framework-evaluation.md` — framework/tool evaluation template and scoring.
+- `references/open-source-capability-absorption-governance.md` — evidence/rollback/maintenance promotion gates for absorbing open-source features into a local architecture.
 - `references/cloud-edge-architecture.md` — brain/tentacle architecture, edge worker deployment, multi-node patterns, and pitfalls.
+- `references/aws-mac-graphical-brain-deployment.md` — AWS EC2 Mac as an overseas graphical brain: cost modeling, GUI access, edge VPN separation, Tailscale/private overlay, security boundaries, and full-landing runbook artifacts up to paid-resource authorization.
+- `references/cloud-macos-graphical-brain-vpn-edge.md` — overseas macOS graphical brain pattern: AWS EC2 Mac as GUI/Hermes executor, optimized VPS as VPN/edge relay, Tailscale/WireGuard as private control plane, with security and verification gates.
+- `references/contextcard-mobile-assistant-stability.md` — ContextCard/mobile assistant long-term stability pattern: authority boundary, source-bound rich writer, polling watcher vs core hook decision gate, incremental merge/promotion invariants, fallback cache separation, and degraded multi-model review handling.
+- `references/local-brain-canonical-architecture-absorption.md` — use when consolidating old Hermes local-brain artifacts (project profiles, SSOTs, ledgers, gate packets, receipts, phase docs) into a single canonical long-term architecture packet without creating patchwork docs or claiming runtime completion from documentation.
+- `references/local-brain-auto-constraint-layer-landing.md` — use when landing a final local-brain auto-constraint-layer plan: fold auxiliary review capabilities back into the main SSOT, implement the first local dry-run BrainConstraintGate/RouteReviewGate slice with TDD, and keep runtime/external/lifecycle side-effect gates closed until separately authorized.

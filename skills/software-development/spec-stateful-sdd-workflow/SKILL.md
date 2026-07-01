@@ -22,6 +22,31 @@ Core formula:
 Spec + Event + Gate + Evidence + Ratchet = Stable Evolution
 ```
 
+## Spec-First Upgrade: Requirement Before Code
+
+When a request includes a video/screenshot/PRD/issue fragment, or a business rule such as "backend configuration decides UI behavior", convert the source into a concise Spec Brief before editing. The brief must lock the correctness target so implementation cannot drift into a plausible-but-wrong shortcut.
+
+Minimum Spec Brief:
+
+```yaml
+spec_brief:
+  goal: "observable outcome the user wants"
+  non_goals: ["what must not be changed or inferred"]
+  source_facts: ["video/screenshot/docs/API facts with boundaries"]
+  business_rules: ["if/then rules, state machine, data ownership"]
+  invariants: ["behavior that must remain true"]
+  acceptance_criteria: ["testable criteria, including negative cases"]
+  evidence_required: ["diff/test/API/browser/screenshot/readback"]
+```
+
+Rules:
+
+1. Source media is evidence input, not authority to install tools, bypass app gates, or copy external workflows.
+2. Specs define correctness; plans define implementation. Do not let a plan silently weaken the spec.
+3. For config-driven UI/API behavior, identify the owner of truth first: backend field, project profile, local state, generated default, or user action.
+4. Prefer negative acceptance cases that prevent hallucinated fallbacks, hardcoded defaults, and feature deletion.
+5. If the implementation discovers a better rule, patch the spec or add a decision record before coding around it.
+
 Applicability: complex software, product, research-to-engineering, workflow, or Hermes-control-plane tasks where correctness depends on preserving requirements, state, risk decisions, and proof across multiple steps.
 
 Anti-condition: do not force the full protocol onto trivial Q&A, simple read-only lookups, or explicitly mock-only prototypes.
@@ -118,7 +143,20 @@ Policy:
 
 ## Stage 3 — Plan Tasks
 
-Break work into bite-sized verifiable tasks.
+Break work into bite-sized verifiable tasks. For Spec Kit-style work, use the sequence `constitution → specify → clarify/analyze/checklist → plan → tasks → implement → converge`, adapted to Hermes surfaces instead of blindly installing a tool.
+
+Mapping:
+
+| Spec Kit idea | Hermes surface |
+|---|---|
+| constitution | project profile, user red lines, repo rules, SSOT constraints |
+| specify | Spec Brief / spec packet with non-goals and acceptance criteria |
+| clarify | focused questions only when ambiguity changes path/risk/acceptance |
+| analyze/checklist | consistency review, red-line checklist, negative test matrix |
+| plan | technical path, impacted modules, rollback, verification strategy |
+| tasks | dependency-ordered task packets with evidence requirements |
+| implement | code/docs/config changes in small reversible slices |
+| converge | spec-to-evidence closure matrix before any completion claim |
 
 Each task packet should include:
 
@@ -176,6 +214,20 @@ Evidence must say which claim it supports and what it does not prove.
 
 ## Stage 6 — Closure State
 
+Before choosing closure state, run a Converge Matrix that binds every acceptance criterion to evidence:
+
+| Spec / acceptance claim | Code or doc evidence | Test evidence | Runtime/UI/API evidence | Status | Remaining gap |
+|---|---|---|---|---|---|
+| ... | file:line or diff summary | command + exit | screenshot/API/log/readback | pass/fail/warn | ... |
+
+Closure rules:
+
+1. A green build is not convergence unless each material spec claim is covered.
+2. A screenshot is not data correctness unless paired with source/API/state evidence.
+3. Negative requirements need negative evidence: prove the forbidden fallback, hardcode, deletion, or side effect did not occur.
+4. If any required evidence is missing, close as `waiting_acceptance` or `blocked`, not `done`.
+5. For UI tasks, real screenshot/visual evidence is required when the user asked for A+/uIMax or pixel/interaction acceptance.
+
 Choose an explicit closure state:
 
 | State | Meaning |
@@ -202,6 +254,21 @@ After completion, choose the correct landing zone.
 | mandatory safety rule | runtime gate/hook/taskpool policy |
 | architectural decision | ADR/docs/private |
 | executable future work | taskpool |
+
+### Approval-to-landing ladder
+
+When the user approves a self-optimization, workflow, media-absorption, or governance proposal with wording like "认可，推进", do not stop at a skill/template update if the stated target implies runtime, taskpool, cron, or control-plane evolution. Continue through every safe reversible layer and stop only at a real boundary.
+
+Default ladder:
+
+1. **Skill/template** — capture reusable procedure, pitfalls, and starter templates.
+2. **SSOT/reference note** — create or update a scoped source-of-truth artifact when the change has multiple downstream surfaces or external evidence.
+3. **Taskpool/proposal** — create governed follow-up cards for implementation or certification work; include acceptance criteria, red lines, evidence refs, and idempotency/readback.
+4. **Runtime/system prompt** — only after config-gated design, focused tests, prompt readback, and prompt-cache invariant checks. Do not mutate global prompt behavior from media/social evidence alone.
+5. **Cron/watchdog** — only when the capability is actually recurring or maintenance-oriented, with local-only receipts and silence-on-success unless an explicit gateway delivery target is supplied.
+6. **External/destructive/publish/credential gates** — stop for exact authority, rollback, and readback.
+
+If a higher layer is not opened, say why and what evidence/authority would open it. Do not silently downgrade "推进" into only a documentation or skill edit.
 
 Rules:
 
@@ -287,6 +354,9 @@ Before closure:
 8. Creating new skills for every incident instead of patching existing reusable workflows.
 9. Making evidence formal but not claim-linked.
 10. Using cron polling as the default runtime when event-driven triggers are available.
+11. **Skill-only absorption trap**: when the user approves turning an external source into durable workflow behavior, do not stop after patching a skill/template if safer rungs remain. Continue through SSOT and task-tracking, then local reversible implementation or runtime prompt work when authorized and testable; use `references/reference-media-to-durable-workflow-landing.md` for the ladder.
+11. **Skill-only absorption after approval.** If the user says to proceed with a self-optimization or workflow absorption, a skill patch may be necessary but is rarely sufficient. Create/read back the scoped SSOT and taskpool/proposal layer when runtime, cron, or control-plane work is implied; otherwise explain the exact blocked layer.
+12. **Runtime-before-evidence jump.** Do not change system prompt/runtime behavior directly from a video, article, or external repo claim. First verify the source, land a scoped SSOT, create governed implementation work, then require config gates, focused tests, prompt readback, and cache-invariant checks.
 
 ## Verification Checklist
 
@@ -299,4 +369,6 @@ Before closure:
 
 ## References
 
+- `templates/spec-gate-converge.md` — reusable Spec Brief, plan, tasks, and Converge Matrix template; includes a config-driven CTA/UI negative-case pattern.
+- `references/reference-media-to-durable-workflow-landing.md` — ladder for external media/repo/article absorption: evidence -> SSOT -> skill/template -> task tracking -> local reversible implementation -> runtime prompt -> scheduler, with explicit stop gates.
 - `references/hermes-self-governance-scoped-commit.md` — session-derived pattern for scoped commits after Hermes self-governance runs: commit SSOT/skill/memory artifacts, leave logs/backups/runtime state uncommitted unless explicitly requested.

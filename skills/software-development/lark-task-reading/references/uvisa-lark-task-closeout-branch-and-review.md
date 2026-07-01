@@ -17,11 +17,12 @@ Session pattern extracted from UVISA Lark task loop work (remit recipient valida
    - If no PR/merge exists and only the shared task-loop branch was pushed, still check Railway health, but do not claim latest-code deployment when Railway is tracking a different branch/commit. Use `closed_with_remote_blocker` until the task commit is merged/deployed.
    - Record safe evidence only: deployment id, branch, commit hash, status, timestamp. Do not log tokens/cookies.
 
-3. Independent review diffs must include untracked/new test files.
+3. Independent review diffs must include untracked/new test files and exclude unrelated dirty hunks.
    - `git diff -- path...` will not include untracked files.
    - Preferred: stage the intended task files first, run `git diff --cached --check`, then write `git diff --cached > /tmp/<task>.diff` for reviewer input.
    - If reviewing before staging, explicitly include untracked file contents or use `git add -N` for new files.
-   - A reviewer pass on a diff missing the new test file is incomplete; rerun review on the staged diff.
+   - When a shared file such as `src/i18n/zh.json` / `src/i18n/en.json` already contains unrelated dirty keys from another task, do not stage the whole file. Stage only the intended locale keys with `git add -p`, or for precise control build a staged blob from `git show HEAD:<path>` plus the new keys and stage it via `git hash-object -w` + `git update-index --cacheinfo`. Then inspect `git diff --cached -- <path>` before commit and `git diff HEAD -- <path>` after commit to prove unrelated hunks stayed in the working tree.
+   - A reviewer pass on a diff missing the new test file, or including unrelated i18n/runtime hunks, is incomplete; rerun review on the staged diff.
 
 4. For ambiguous Lark UI wording tasks, cover all plausible user-observed locations.
    - Example: a task asking to update SWIFT/CNH “备注栏下提示语” could refer to both the notice page (`topup.noticeRefDesc`) and the receiving-info Reference row (`topup.refHint`).

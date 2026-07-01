@@ -211,6 +211,12 @@ Date: {date}
 
 ## Integration with Existing Skills
 
+### Skill debt remediation evals
+
+When a session performs library debt cleanup (oversized root skills, missing anti-conditions, missing pitfalls, missing verification checklists, or progressive-loading refactors), use `references/skill-debt-remediation-eval-rules.md` as the eval/checklist. It captures the deterministic auditor loop, progressive-loading regression checks, and the rule that local multi-model routing dry-runs are advisory unless external provider execution is actually authorized and read back.
+
+For full-library closeout loops, also use `references/zero-warning-skill-debt-closeout.md`: drive to a fresh zero-finding auditor report, then stop before git staging/commit if the repository has broad unrelated dirty state; emit a DecisionPacket / ContinuationPacket with scoped commit, patch-bundle, or leave-uncommitted options.
+
 ### Batch library rehabilitation triage
 
 For a skill-library cleanup pass, run three complementary reviews instead of one blended judgment:

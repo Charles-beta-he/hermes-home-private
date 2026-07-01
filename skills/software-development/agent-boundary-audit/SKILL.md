@@ -96,10 +96,11 @@ If a candidate mixes several classes, split it. If the review toolset cannot wri
 
 1. Treating multi-model consensus as permission to change global behavior. Consensus can justify a proposal; it is not a truth gate or authorization gate.
 2. Writing a memory for a temporary repo observation. External repo facts and session outcomes go to evidence/proposals, not user memory.
-3. Creating broad skills for one-off advice. Patch an existing umbrella or create a narrow trigger-class skill with negative space.
-4. Enqueuing noisy taskpool work from every insight. Only queue concrete work with target, artifact, risk, and verification.
-5. Claiming the landing is complete without reading back the artifacts and checking git scope.
-6. Freezing transient provider/auth failures into durable negative rules. If a multi-model run degrades because one provider/CLI was unauthenticated or stale, record the run as degraded/not-certified, but do not memorialize “provider X does not work.” When the user says the login/session was refreshed, re-probe the exact CLI/provider/model path first, then re-run the narrow model call or certification step and report the old blocker as resolved only if the probe returns real model output.
+3. Turning a workflow correction into memory when it is really a gate/rule. If the user corrects the reasoning layer (e.g. “this should be a dynamic gate, not a memory preference”), remove any over-broad memory and land the correction in the governing project SSOT/skill as a gate template or landing-zone rule.
+4. Creating broad skills for one-off advice. Patch an existing umbrella or create a narrow trigger-class skill with negative space.
+5. Enqueuing noisy taskpool work from every insight. Only queue concrete work with target, artifact, risk, and verification.
+6. Claiming the landing is complete without reading back the artifacts and checking git scope.
+7. Freezing transient provider/auth failures into durable negative rules. If a multi-model run degrades because one provider/CLI was unauthenticated or stale, record the run as degraded/not-certified, but do not memorialize “provider X does not work.” When the user says the login/session was refreshed, re-probe the exact CLI/provider/model path first, then re-run the narrow model call or certification step and report the old blocker as resolved only if the probe returns real model output.
 
 ## Provider re-probe pattern for degraded multi-model reviews
 

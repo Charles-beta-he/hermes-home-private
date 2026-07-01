@@ -32,13 +32,21 @@ This umbrella skill is the routing surface for diagramming. Use it to choose the
 
 ## Routing Guide
 
-- No child skills were discovered automatically; inspect linked references and neighboring skills before acting.
+- `architecture-diagram` package — dark-themed SVG/software/cloud architecture diagrams as standalone HTML.
+- `excalidraw` package — hand-drawn Excalidraw JSON diagrams and upload workflow.
 
 ## Selection Rules
 
 - Prefer the narrowest child skill that matches the user request, platform, and desired artifact.
 - Stay at the umbrella level only for routing, taxonomy, or category-wide orientation.
 - If the request spans multiple subskills, use this umbrella to map the lane first, then hand off to the specific workflow that will do the real work.
+
+## Absorbed Diagram Packages
+
+These former narrow diagram skills are now support packages under the class-level diagramming umbrella. Start here for routing, then load the relevant package only when the requested output format requires its details.
+
+- `architecture-diagram` → `references/packages/architecture-diagram/README.md`: diagram-specific format, template, and upload instructions preserved as a support package.
+- `excalidraw` → `references/packages/excalidraw/README.md`: diagram-specific format, template, and upload instructions preserved as a support package.
 
 ## Common Pitfalls
 

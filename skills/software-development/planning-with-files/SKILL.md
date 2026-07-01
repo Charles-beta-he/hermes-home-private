@@ -57,6 +57,8 @@ LLM context windows are finite. When they fill up, the ContextCompressor summari
 
 ## Step-by-Step Workflow
 
+Reference: `references/project-progress-ledger.md` captures the project progress ledger pattern for durable product/implementation tracks: component status, evidence, open gates, project-profile pointer, and memory-vs-ledger split.
+
 ### Step 1: Write the Plan to File
 
 Before executing ANY multi-step task, write the plan:
@@ -94,7 +96,20 @@ Do **not** save ordinary active-plan/WIP progress to durable memory. Durable mem
 
 **Why:** Files survive compression, while WIP memory entries become stale ghosts in later sessions.
 
-### Step 3: Execute Steps with Atomic Updates
+### Step 3: Maintain a Project Progress Ledger for Durable Product/Implementation Work
+
+When a task becomes a named project, product workflow, mobile app, agent capability, portfolio-governed project, or any cross-session engineering track, a plan file alone is not enough. Create or update a compact `progress-ledger.md` inside the project SSOT/workspace and make the project profile point to it.
+
+The ledger should record:
+- current component states, using explicit labels such as `contract-ready`, `validated`, `promoted`, `blocked`, or `released`;
+- verified commands and evidence paths, not just narrative progress;
+- browser/API/UI/readback proof for user-facing app work;
+- open gates and the next safe reversible step;
+- the rule that every material future step must update the ledger.
+
+Use memory only for the stable profile/ledger pointer, not step-by-step progress. If the user signals that work felt like a one-off chat or that progress was not preserved, treat that as a mandatory ledger/profile update for this class of project.
+
+### Step 4: Execute Steps with Atomic Updates
 
 For each step in the plan:
 

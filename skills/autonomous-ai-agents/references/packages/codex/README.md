@@ -1,0 +1,144 @@
+---
+name: codex
+description: Use when you need to delegate coding tasks to OpenAI Codex CLI agent.
+version: 1.0.0
+author: Hermes Agent
+license: MIT
+metadata:
+  hermes:
+    tags:
+    - Coding-Agent
+    - Codex
+    - OpenAI
+    - Code-Review
+    - Refactoring
+    related_skills:
+    - opencode
+---
+
+# Demoted package: Codex CLI
+
+## Overview
+
+
+Delegate coding tasks to [Codex](https://github.com/openai/codex) via the Hermes terminal. Codex is OpenAI's autonomous coding agent CLI.
+
+## When to Use
+
+- You need to delegate coding tasks to OpenAI Codex CLI agent
+- You need to evaluate, install, or route work through Codex plugins/skills. For plugin triage and permission tiers, see `references/codex-plugin-evaluation.md`.
+
+## Prerequisites
+
+- Codex installed: `npm install -g @openai/codex`
+- Authentication configured either via OpenAI API key or ChatGPT/Codex login/session (`codex --version` should work; use `codex login` if the CLI asks)
+- Hermes provider/model mapping is environment-specific; check `~/.hermes/config.yaml` instead of hardcoding a model name in this skill.
+- **Must run inside a git repository** — Codex refuses to run outside one
+- Use `pty=true` in terminal calls — Codex is an interactive terminal app
+
+## One-Shot Tasks
+
+```
+terminal(command="codex exec 'Add dark mode toggle to settings'", workdir="~/project", pty=true)
+```
+
+For scratch work (Codex needs a git repo):
+```
+terminal(command="cd $(mktemp -d) && git init && codex exec 'Build a snake game in Python'", pty=true)
+```
+
+## Background Mode (Long Tasks)
+
+```
+# Start in background with PTY
+terminal(command="codex exec --full-auto 'Refactor the auth module'", workdir="~/project", background=true, pty=true)
+# Returns session_id
+
+# Monitor progress
+process(action="poll", session_id="<id>")
+process(action="log", session_id="<id>")
+
+# Send input if Codex asks a question
+process(action="submit", session_id="<id>", data="yes")
+
+# Kill if needed
+process(action="kill", session_id="<id>")
+```
+
+## Key Flags
+
+| Flag | Effect |
+|------|--------|
+| `exec "prompt"` | One-shot execution, exits when done |
+| `--full-auto` | Sandboxed but auto-approves file changes in workspace |
+| `--yolo` | No sandbox, no approvals (fastest, most dangerous) |
+
+## PR Reviews
+
+Clone to a temp directory for safe review:
+
+```
+terminal(command="REVIEW=$(mktemp -d) && git clone https://github.com/user/repo.git $REVIEW && cd $REVIEW && gh pr checkout 42 && codex review --base origin/main", pty=true)
+```
+
+## Parallel Issue Fixing with Worktrees
+
+```
+# Create worktrees
+terminal(command="git worktree add -b fix/issue-78 /tmp/issue-78 main", workdir="~/project")
+terminal(command="git worktree add -b fix/issue-99 /tmp/issue-99 main", workdir="~/project")
+
+# Launch Codex in each
+terminal(command="codex --yolo exec 'Fix issue #78: <description>. Commit when done.'", workdir="/tmp/issue-78", background=true, pty=true)
+terminal(command="codex --yolo exec 'Fix issue #99: <description>. Commit when done.'", workdir="/tmp/issue-99", background=true, pty=true)
+
+# Monitor
+process(action="list")
+
+# After completion, push and create PRs
+terminal(command="cd /tmp/issue-78 && git push -u origin fix/issue-78")
+terminal(command="gh pr create --repo user/repo --head fix/issue-78 --title 'fix: ...' --body '...'")
+
+# Cleanup
+terminal(command="git worktree remove /tmp/issue-78", workdir="~/project")
+```
+
+## Batch PR Reviews
+
+```
+# Fetch all PR refs
+terminal(command="git fetch origin '+refs/pull/*/head:refs/remotes/origin/pr/*'", workdir="~/project")
+
+# Review multiple PRs in parallel
+terminal(command="codex exec 'Review PR #86. git diff origin/main...origin/pr/86'", workdir="~/project", background=true, pty=true)
+terminal(command="codex exec 'Review PR #87. git diff origin/main...origin/pr/87'", workdir="~/project", background=true, pty=true)
+
+# Post results
+terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
+```
+
+## Rules
+
+1. **Always use `pty=true`** — Codex is an interactive terminal app and hangs without a PTY
+2. **Git repo required for agentic code execution** — Codex code tasks should run inside a git directory. Use `mktemp -d && git init` for scratch
+3. **Use `exec` for one-shots** — `codex exec "prompt"` runs and exits cleanly
+4. **`--full-auto` for building** — auto-approves changes within the sandbox
+5. **Background for long tasks** — use `background=true` and monitor with `process` tool
+6. **Don't interfere** — monitor with `poll`/`log`, be patient with long-running tasks
+7. **Parallel is fine** — run multiple Codex processes at once for batch work
+8. **For plugin questions, verify the local plugin surface first** — run `codex plugin --help` and `codex plugin list`, then read plugin metadata/README before recommending install or use.
+9. **Apply least authority to plugins** — prefer local in-app Browser/APIs/CLIs before real Chrome state, desktop Computer Use, or account/action plugins; require explicit authorization for high-permission surfaces.
+
+## Common Pitfalls
+
+1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
+2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
+3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. Treating plugin marketplace availability as permission to install/use the plugin; browser state, desktop control, account data, and external sending still need explicit task-scoped authorization.
+5. Confusing Codex `browser` with `chrome`: `browser` is the in-app/local web target route, while `chrome` touches the user's real Chrome state and should be a later fallback.
+
+## Verification Checklist
+
+- [ ] The task actually matches this skill's trigger class and the current route is still appropriate.
+- [ ] All prerequisites, linked references, templates, scripts, and required tools have been checked before execution.
+- [ ] Claimed outputs, commands, files, or external side-effects were read back or otherwise verified before completion.

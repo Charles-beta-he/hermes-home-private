@@ -82,14 +82,19 @@ to match. `npm version patch` → edit index.html → commit together.
 
 ## Step 3: Versioned SW Cache Names
 
-Workbox/vite-plugin-pwa caches must include a version identifier so new
-deployments auto-invalidate old caches:
+Workbox/vite-plugin-pwa runtime caches must include a version identifier so new
+deployments auto-invalidate old caches. However, **do not add a runtime
+`StaleWhileRevalidate` cache for hashed JS/CSS when those assets are already
+handled by Workbox precache**. Installed PWAs can keep serving old bundles from a
+runtime `static-cache` until users clear site data or reinstall. For app code,
+prefer precache + hashed filenames + `cleanupOutdatedCaches`; reserve runtime
+caching for images or other non-critical assets.
 
 ```ts
 // vite.config.ts — VitePWA config
 VitePWA({
   workbox: {
-    // Runtime image cache: versioned by build number
+    cleanupOutdatedCaches: true,
     runtimeCaching: [
       {
         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
@@ -99,26 +104,15 @@ VitePWA({
           expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
         },
       },
-      {
-        urlPattern: /\.(?:js|css)$/,
-        handler: 'StaleWhileRevalidate',
-        options: {
-          cacheName: `static-cache-${__BUILD_NUMBER__}`,  // ← auto-invalidates
-          expiration: { maxEntries: 60, maxAgeSeconds: 24 * 60 * 60 },
-        },
-      },
     ],
-    // Ensure new SW activates immediately
-    skipWaiting: true,
-    clientsClaim: true,
-    // cleanupOutdatedCaches: true,  // default true in vite-plugin-pwa
   },
 });
 ```
 
 **Key**: `__BUILD_NUMBER__` is a Vite `define` constant → replaced at build
-time → each build produces unique cache names → Workbox's `cleanupOutdatedCaches`
-removes the old-named caches automatically.
+time → each runtime cache name that uses it auto-invalidates. Hashed JS/CSS
+should normally be absent from `runtimeCaching`; verify the generated `sw.js`
+does not contain `static-cache` / `StaleWhileRevalidate` for app bundles.
 
 ## Step 4: iOS Icon Cache Strategy
 
@@ -172,6 +166,51 @@ async function checkForUpdate() {
 The `/version.json` file should be generated at build time or served by the
 backend with the deployed version. Use `cache: 'no-store'` to bypass HTTP cache.
 
+## Step 6: iOS Home Screen stale SW / CDN cache escape
+
+When Android installs the latest PWA but iOS Home Screen keeps launching an old
+version even after Safari cache clearing, treat the installed iOS PWA as a
+separate WebKit container and inspect the deployed SW/CDN path before blaming
+local device cache.
+
+Evidence to gather:
+
+```bash
+base=https://example.com
+ua_ios='Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1'
+for p in / /sw.js /registerSW.js /manifest.webmanifest /version.json; do
+  echo "=== $p";
+  curl -sS -L -A "$ua_ios" -D - "$base$p" -o /tmp/pwa-body | \
+    grep -iE 'HTTP/|cache-control|cf-cache-status|age:|expires:|last-modified|content-type'
+  head -c 300 /tmp/pwa-body; echo
+ done
+```
+
+Root-cause signal: `/sw.js` or `/registerSW.js` returns `Cache-Control: public,
+max-age=...`, `cf-cache-status: HIT`, a large `Age`, or an old `Last-Modified`.
+In that case the iOS Home Screen app can keep seeing the old worker even after
+the user clears Safari data.
+
+Client-side escape hatch:
+
+```ts
+import { BUILD_NUMBER } from './version';
+
+navigator.serviceWorker.register(`/sw.js?v=${encodeURIComponent(BUILD_NUMBER)}`, {
+  scope: '/',
+  updateViaCache: 'none',
+});
+```
+
+Server/CDN hardening for entry files: serve `/sw.js`, `/registerSW.js`,
+`/manifest.webmanifest`, and `/version.json` with `no-store`, `max-age=0`,
+`s-maxage=0`, and CDN-specific no-store headers such as
+`CDN-Cache-Control: no-store` and `Cloudflare-CDN-Cache-Control: no-store`.
+After deploy, purge CDN exact URLs for `/`, `/index.html`, `/sw.js`,
+`/registerSW.js`, `/manifest.webmanifest`, and `/version.json`. If
+`/version.json` returns the SPA HTML, the release artifact or server routing is
+stale/misconfigured; fix deployment before asking users to reinstall.
+
 ## Update Notification UX
 
 For the user-facing update notification pattern (Toast with action button, swipe-to-dismiss, persistent mode), see `references/uvisa-update-notification-ux.md`. This covers the UVISA-specific pattern of replacing sticky banners with action-capable Toast notifications for SW updates.
@@ -193,38 +232,38 @@ For the user-facing update notification pattern (Toast with action button, swipe
    `cacheName: 'static-cache'` persist across deployments. Always interpolate
    `__BUILD_NUMBER__` or `__APP_VERSION__`.
 
-3. **Missing `skipWaiting` + `clientsClaim`**: Without these, new SW waits for
-   all tabs to close before activating. Users see stale content until they
-   manually close and reopen.
+3. **Missing `skipWaiting` + `clientsClaim` or inert prompt activation**: Without immediate activation, new SW waits for all tabs to close before activating. If the product uses prompt-only updates, the update action must not only do `registration.waiting?.postMessage(SKIP_WAITING)`. It should call `registration.update()`, wait for an installing worker to reach `installed`/`waiting` with a bounded timeout, then send `SKIP_WAITING` and reload only the user-initiated tab.
 
-4. **index.html not in Vite transform pipeline**: `import.meta.env` replacements
+4. **Runtime-caching hashed JS/CSS with StaleWhileRevalidate**: Vite/Workbox already precaches hashed JS/CSS. Adding a runtime `StaleWhileRevalidate` rule for `/\.(js|css)$/` can make installed PWAs keep serving an old bundle until site data is cleared, even though `sw.js` and `index.html` are fresh. Prefer precache-only for hashed bundles; reserve runtime caches for images or explicitly safe assets.
+
+5. **index.html not in Vite transform pipeline**: `import.meta.env` replacements
    don't apply to index.html. Use raw values or a Vite plugin
    (`transformIndexHtml` hook) if you need dynamic injection.
 
-5. **Vite `define` and TypeScript**: When using `__BUILD_NUMBER__` in TS files,
+6. **Vite `define` and TypeScript**: When using `__BUILD_NUMBER__` in TS files,
    declare it to avoid TS errors:
    ```ts
    // src/vite-env.d.ts
    declare const __BUILD_NUMBER__: string;
    ```
 
-6. **Manifest `version` field**: The `version` field in `manifest.json` is
+7. **Manifest `version` field**: The `version` field in `manifest.json` is
    **not** a standard W3C field. It's a Chrome extension concept. Don't rely
    on it for cache invalidation. Some TypeScript types (e.g.,
    `ManifestOptions` in `vite-plugin-pwa`) may not include it — remove it
    from the manifest config to avoid TS errors.
 
-7. **package-lock.json must be committed**: `npm version patch` modifies both
+8. **package-lock.json must be committed**: `npm version patch` modifies both
    `package.json` and `package-lock.json`. Both must be staged and committed.
    If `package-lock.json` is in `.gitignore`, the version bump won't propagate
    to CI/CD.
 
-8. **Pre-existing test failures vs new ones**: When making cache/version
+9. **Pre-existing test failures vs new ones**: When making cache/version
    changes, run tests before AND after. Use `git stash` to verify which
    failures are pre-existing vs introduced. Don't claim "0 new failures"
    without this check.
 
-9. **Lost `data-*` attributes when extracting wrapper components**: When
+10. **Lost `data-*` attributes when extracting wrapper components**: When
    refactoring a component by extracting a wrapper (e.g. `SwipeableBanner`
    from `Toast`), any `data-*` attributes used as test selectors (like
    `data-tone`) must be explicitly passed through to the new wrapper.

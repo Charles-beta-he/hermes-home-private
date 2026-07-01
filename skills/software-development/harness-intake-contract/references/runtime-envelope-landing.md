@@ -40,5 +40,7 @@ For local reversible landing, verify with:
 
 1. **Contract evaporation:** task records may contain acceptance, but envelope creation can drop it. Preserve contract fields at the producer boundary.
 2. **Prompt-only enforcement:** telling the worker to follow acceptance is not enough; the executor must reject done proof that does not cover acceptance.
-3. **Live-run creep:** after tests pass, do not silently run the real scheduler/executor. That crosses from local verification into control-plane side effects.
-4. **Broad legacy blocking:** adding fail-closed proof checks can affect old envelopes; keep changes scoped to declared acceptance fields and test the no-acceptance path for backward compatibility.
+3. **Final-proof omission:** real workers may explain that an inline contract is sufficient but still omit the required final `PROOF_JSON:` line. Harden the prompt with a dedicated `FINAL OUTPUT CONTRACT`, tell proof-only smoke tasks to return PROOF_JSON immediately, and require no explanatory text after the final marker.
+4. **Live-run creep:** after tests pass, do not silently run the real scheduler/executor. That crosses from local verification into control-plane side effects.
+5. **Synthetic failure accounting:** controlled runtime-smoke envelopes can intentionally or accidentally create terminal FAILED records. After root-causing and fixing a synthetic failure, read back trace/proof and move the human-escape acknowledgement watermark with an explicit smoke-review reason; do not delete audit history.
+6. **Broad legacy blocking:** adding fail-closed proof checks can affect old envelopes; keep changes scoped to declared acceptance fields and test the no-acceptance path for backward compatibility.

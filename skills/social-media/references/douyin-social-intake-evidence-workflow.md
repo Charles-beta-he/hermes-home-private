@@ -1,6 +1,6 @@
 # Douyin / short-video inspiration intake evidence workflow
 
-Use this reference when the user shares a Douyin/TikTok/Xiaohongshu-style link as inspiration for Hermes, UI, workflow, product, agent design, memory, or creative tooling. The goal is to extract reusable class-level patterns without cargo-culting a social post.
+Use this reference when the user shares a Douyin/TikTok/Xiaohongshu/WeChat Channels (视频号)-style link for analysis, inspiration, Hermes, UI, workflow, product, agent design, memory, or creative tooling. Scope calibration is mandatory: if the user asks generally to “分析” or “添加任务池”, analyze the content itself first (what it says, facts vs opinions, product/business/technical/user implications, opportunities, risks). Hermes/taskpool/workflow absorption is only one labeled subsection unless the user explicitly asks for that as the sole scope. The goal is to extract reusable class-level patterns without cargo-culting a social post.
 
 ## Landing-zone classifier
 
@@ -23,6 +23,15 @@ Before writing durable artifacts, split the source into:
 7. If the post makes a regulatory/compliance/policy claim, verify against official government/platform documentation before answering; separate “policy helps with friction” from “policy grants an exemption/license.”
 8. Write an intake note with: source facts, OCR, transcript summary when available, verified external facts, transferable pattern, risks/redlines, and recommended landing zone.
 9. Only create a taskpool follow-up when there is concrete engineering work; include evidence refs, acceptance criteria, anti-drift checks, explicit non-goals, and enough priority/dependency/triage metadata for the taskpool CLI to accept it without a second repair pass.
+10. For `brain_task_orchestrator.py add`, include the current required triage trio up front: `--priority-layer`, `--dependency-order`, and `--multimodel-triage-result`. Social inspiration/advisory tasks commonly use `priority_layer=P2`, dependency order that places evidence/IA before any implementation or write-action work, and a multimodel triage note such as “single-source inspiration intake; no multimodel required until prototype design review or implementation promotion.” If the CLI fail-closes with missing priority/dependency/triage metadata, retry with those fields instead of hand-writing task Markdown.
+
+## WeChat Channels / 视频号 link intake
+
+When the user provides a `https://weixin.qq.com/sph/<id>` short link, resolve it first with a normal/mobile browser user agent and record the canonical preview URL. The observed stable shape is:
+
+`https://channels.weixin.qq.com/finder-preview/pages/sph?id=<id>`
+
+Treat HTTP 200 and page title “视频号” as link-resolution evidence only, not content evidence. The preview shell often exposes little or no post content without platform context, so do not infer video claims from the URL alone. If metadata/OCR/transcript is unavailable, create the intake/task with an explicit evidence gap and ask for screenshots, transcript, or user-provided summary rather than logging into WeChat or bypassing controls.
 
 ## Douyin SSR extraction fallback
 
@@ -36,16 +45,25 @@ When a `v.douyin.com` link redirects to `www.iesdouyin.com/share/{video|note}/{i
 6. If local ASR is available (for example `faster_whisper`), transcribe the saved video and store both JSON and timestamped text beside the media evidence. Mark ASR text as imperfect evidence and normalize obvious recognition errors only in the intake note, not in the raw transcript.
 7. Treat this as evidence capture, not a downloader bypass. If SSR metadata/media is absent or blocked, state the evidence gap and ask for screenshots/transcript rather than inventing content.
 
+## Scope calibration pitfall
+
+Do not narrow generic social-link analysis to “what Hermes can absorb.” For this user, a generic “分析/添加任务池” request should create/execute a content-analysis task whose primary sections cover the post itself: source facts, visible content, core claims, fact/opinion split, product/business/technical/user scenarios, opportunities, risks, and credibility. Add “Hermes/taskpool/agent 可吸收点” as a derived subsection only after the content analysis, unless the user explicitly requests Hermes absorption as the whole task.
+
+Taskpool naming and acceptance criteria must reflect that broad scope. Avoid titles like “评估其对 Hermes taskpool / agent 工作流的可吸收价值” for a generic social-link request; use “内容综合复盘 / 机会风险评估 / 可吸收点” language, and make the Hermes/workflow section explicitly derived rather than the main objective.
+
 ## Standard analysis sections
 
 - Source / canonical URL
 - Local evidence files
-- OCR / visible content
+- OCR / visible content / transcript or explicit evidence gap
+- What the post says: core claims and examples
+- Fact vs opinion / marketing-expression split
+- Product, business, technical, user-scenario analysis
+- Opportunities, risks, and redlines
 - Verified external sources
 - What it really is
-- Transferable Hermes pattern
+- Transferable Hermes pattern (derived subsection, not the whole analysis)
 - What not to copy
-- Risks and redlines
 - Recommended absorption path
 - Initial verdict
 

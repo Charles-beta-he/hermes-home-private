@@ -33,6 +33,7 @@ This umbrella skill is the routing surface for note taking. Use it to choose the
 
 - `obsidian` — you need guidance on read, search, and create notes in the Obsidian vault.
 - `references/local-brain-llm-wiki-intake.md` — use when placing external research/video/repo insights into the local brain as an evidence-backed compiled wiki layer; keeps raw evidence, compiled knowledge, recall index, and promotion gates separate.
+- Daily/project status reports — when summarizing a user's daily work from repositories, count only work that is actually committed by/for the user under the requested project scope. Do not count uncommitted diffs, other people's commits, exploratory tool work, or session progress as completed daily-report items unless the user explicitly asks for WIP. Verify with `git log` author/committer and commit/MR evidence; mention uncommitted work separately as WIP only if relevant.
 
 ## Selection Rules
 

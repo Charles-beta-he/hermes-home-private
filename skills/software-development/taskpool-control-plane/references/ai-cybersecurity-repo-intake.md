@@ -95,6 +95,10 @@ The safe landing is an internal selfcheck / evidence gate:
 - skill graph index;
 - human gates for anything active or offensive.
 
+## Related references
+
+- `references/offensive-security-repo-architecture-intake.md` — use when a pentest/scanner/exploitation repo is being added as architecture-only taskpool learning. It gives the static evidence-note pattern, `add-repo-capability-absorption` shape, no-network/no-install red lines, and the post-create read-back patch for compressed acceptance criteria.
+
 ## Pitfalls
 
 - Do not install or enable a whole cybersecurity skill repository just because it is popular.

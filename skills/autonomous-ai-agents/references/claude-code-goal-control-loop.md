@@ -43,10 +43,14 @@ Runtime landing pattern:
 
 - Keep the cross-turn completion loop in the session goal manager: persist goal text, `goal_spec_v1`, route projection, subgoals, proof refs, and checkpoint sidecar state.
 - Add a separate dynamic-workflow dry-run harness that compiles the active goal into a plan DAG plus run-state packet. The run packet should hold ready/blocked/human-gated node status, evidence contracts, permission boundaries, progress/cost counters, and next actions with `execute: false`.
+- Add safe completion surfaces before any executor: a reusable workflow template packet that preserves nodes/dependencies/evidence/permission boundaries but does not install an executable script or write a registry; and a not-executed execution proposal that lists exact authority, budget, worker/tool boundary, rollback/readback requirements, and a dispatch plan with `dispatch_state: not_executed`, `worker_dispatch_enabled: false`, and `write_executed: false`.
 - Preserve script-held state across resume/compression by storing the run packet in the goal state/checkpoint, not only in the hot conversation.
 - Treat execution as a later adapter boundary: the dry-run harness proves structure and readiness only.
+- When a user broadly says `授权推进` after seeing a proposal-only packet, consume only the smallest already-named safe authority. For `/goal` dynamic workflows, the next safe rung is local persistence/readback: save the reusable template into a session-local registry and record a local harness receipt with dispatch items marked `recorded_not_executed`. Keep real worker/subagent launch, taskpool/mission/cron write-through, and external adapters closed until a later exact target/budget/tool-boundary authority exists.
 
-Verification pattern: add RED tests for plan/run packet shape, persistence across manager reload, command dispatch, and no-execution markers; then run focused goal suites, syntax checks, temp-home smoke, diff/secret scan, and independent review before claiming runtime landing.
+Verification pattern: add RED tests for plan/run packet shape, persistence across manager reload, command dispatch, no-execution markers, local registry save/list, and local harness receipt readback; then run focused goal suites, syntax checks, temp-home smoke, diff/secret scan, and independent review before claiming runtime landing.
+
+Commit/readback pattern: when the runtime repo and the skill/library repo are separate, close both scoped slices. Commit runtime code/docs/tests separately from class-level skill/reference updates, inspect each repo's staged names/stat before commit, and report remaining unrelated dirty files as boundaries rather than absorbing them.
 
 ## Workflow implication
 

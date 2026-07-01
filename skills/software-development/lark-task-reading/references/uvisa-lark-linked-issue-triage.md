@@ -46,12 +46,33 @@ Produce a live, evidence-backed issue readout without prematurely editing code o
    - current code/git evidence
    - classification and exact next gate
 
+## When Lark OAuth/API access is blocked but the user provides a screenshot
+
+If the OAuth/browser authorization path is unavailable (for example the machine is locked) and the user sends a Lark task screenshot, do not keep retrying the API loop. Use the screenshot as live Lark evidence when it contains enough acceptance atoms:
+
+1. Extract the task id/title if visible, platform, product path, reproduction steps, actual behavior, and expected behavior from the image.
+2. Preserve the API limitation explicitly: comments/attachments/tasklist metadata are unverified, but the screenshot is sufficient for initial code/githistory triage.
+3. Continue with code mapping and git-history checks as usual. Search by task id when available, but do not require a task-id hit before diagnosing the surface.
+4. For UI/viewport tasks, map words in the title to route families (e.g. `资产 → 转出 → 国际汇款/链上提现/快捷转账`) and inspect both current code and recently added/reverted feature commits.
+5. Final closeout still requires online UI/device evidence; screenshot-only analysis is a triage/implementation input, not a Lark completion gate.
+
+## Temporary unsupported-feature / click-behavior tasks
+
+When a linked C-end task says a feature flow is not connected yet (for example phone/SMS/OTP verification is unavailable) and asks to change a row/button click into a top prompt:
+
+1. Treat it as a UI interaction gate, not as a request to delete the future feature.
+2. Search the current screen for the entry point, the route, and the existing flow component.
+3. If the flow component/route exists, prefer non-destructive gating at the entry point: click shows the requested top Toast/Banner/Modal copy and does not navigate. Keep the route/component unless the task explicitly asks to remove it.
+4. Acceptance atoms should include: no route delta for the gated entry, exact title/body copy, top prompt visibility, accessibility role/status where applicable, and unaffected sibling rows/buttons still navigate normally.
+5. Add or identify focused tests that prove the entry click triggers the prompt and does not enter the unfinished flow. Do not claim final Lark closeout from local tests alone; online UI evidence/native screenshot is still required.
+
 ## Pitfalls
 
 - Do not start implementation just because a task is incomplete in Lark. First determine whether it is stale or already fixed in current code.
 - Do not close or write back to Lark from this triage step. UVISA final completion still requires the online UI retest/native screenshot gate.
 - Do not equate local unit/build proof with final user-facing closeout for C-end UI tasks.
 - Do not paste local screenshot paths or token-bearing API output into Lark/public reports.
+- Do not delete routes, screens, buttons, or future feature flows to satisfy a temporary unsupported-feature prompt; gate the visible entry point unless removal is explicitly required.
 
 ## Example patterns from UVISA C-end issues
 

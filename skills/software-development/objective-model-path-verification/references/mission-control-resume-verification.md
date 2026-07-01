@@ -22,10 +22,14 @@ Clearing a human gate is not the same as advancing the system. Treat decision ca
    - Dispatch pending signals if applicable.
    - Run the scheduled job or one-shot scheduler tick when the user asked to continue now.
    - Watch for prompt creation and real stage reports, not only a changed `next_run_at`.
-5. Verify with read-back.
-   - Board/status should show active/no open decision/budget remaining.
+5. If the mission tick exposes a downstream taskpool/reconcile gate, clear that gate through the canonical taskpool command before claiming the system can self-advance.
+   - Typical pattern: `brain_task_orchestrator.py reconcile --write --json`, then `reconcile --promote-due-retry --write --json` if retry-due items exist.
+   - Verify with `dispatch-dry-run --json` and `selfcheck --json`; expected evidence is `dispatchable: true` and selfcheck PASS or clearly scoped non-blocking warnings.
+   - Treat oversized command JSON as an output-management issue; summarize the fields that prove state rather than pasting the whole task body.
+6. Verify with read-back.
+   - Board/status should show active/no open decision; if budget is exactly exhausted, record whether the next action is a budget-continuation gate rather than hiding it.
    - Cron/job state should show a fresh successful run or due next run.
-   - Mission report should include a new evidence-backed stage report.
+   - Mission report should include a new evidence-backed stage report when the tick produced one.
    - If code changed, run focused tests and commit only scoped files.
 
 ## Pitfalls

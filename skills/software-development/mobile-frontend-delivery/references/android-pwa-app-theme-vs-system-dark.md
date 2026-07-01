@@ -15,10 +15,11 @@ The critical regression is usually case 2: system dark mode leaks into PWA chrom
 
 ## Diagnosis split
 
-Separate three surfaces:
+Separate four surfaces before changing code:
 
 - App content area: controlled by app CSS/runtime theme. It can and should follow the app's own theme SSOT.
-- Top status bar: Chrome WebappActivity usually follows `theme-color`, but behavior can depend on manifest cache and runtime meta tags.
+- Android/Chrome top status bar: Chrome WebappActivity usually follows `theme-color`, but behavior can depend on manifest cache and runtime meta tags.
+- iOS Home Screen top status bar: controlled by `meta[name="apple-mobile-web-app-status-bar-style"]`; if this is statically `black-translucent`, phone dark + app light can show a black top bar even when Android `theme-color` is correct. See `references/ios-pwa-status-bar-app-theme.md`.
 - Bottom gesture/navigation bar: Android/Chrome may keep this system-controlled in dark mode. Pure PWA can avoid content underlap but may not be able to force the bar color on every device/OEM.
 
 ## Common root cause
@@ -52,9 +53,35 @@ function syncThemeColor(theme: 'light' | 'dark') {
 }
 ```
 
+### Resume / rehydration hardening
+
+If the top status bar stays stale until the user navigates back to `/me` or toggles theme again, the app may already have the right theme model but miss a lifecycle sync. Add two guards before tuning route CSS:
+
+- Synchronously read the persisted theme choice during theme-store initialization so a persisted `system` choice resolves to current OS dark/light before React/persistence rehydration can briefly apply default light.
+- Re-resolve `system` and reapply `data-theme` + `theme-color` on `pageshow`, foreground `visibilitychange`, and `focus`, because Android Chrome/WebAPK/WebView can miss or delay the media-query change event when the OS theme changes in the background.
+
+See `references/android-pwa-system-theme-resume-sync.md` for the regression-test checklist.
+
+## Runtime hardening pattern
+
+For apps that support `light | dark | system` themes, avoid a rehydration flash that temporarily repaints Android PWA chrome white:
+
+- Read the persisted theme choice synchronously at store/bootstrap time before React rehydration applies the default state.
+- If the persisted choice is `system`, resolve it immediately from `matchMedia('(prefers-color-scheme: dark)')` and apply both `document.documentElement[data-theme]` and the single app-owned `meta[name="theme-color"]`.
+- Keep fixed `light` and `dark` choices app-owned; they must not follow the phone unless the explicit `system` option is selected.
+- Add a lifecycle resync for Android/WebAPK/WebView cases where the media-query `change` event is missed or delayed: re-resolve the theme on `pageshow`, `focus`, and `visibilitychange` when visible. This prevents the status bar from staying white until route navigation (for example returning to `/me`) happens to reapply the theme.
+
 ## Verification checklist
 
-For a real Android AVD or device:
+When no Android device is attached, still run a **PWA-layer proof** before reporting a device blocker:
+
+1. Build and inspect the generated artifacts: `dist/index.html` should have exactly one `meta[name="theme-color"]`, zero media-bound theme-color tags, exactly one `meta[name="apple-mobile-web-app-status-bar-style"]`, and `dist/manifest.webmanifest` should have `display: standalone` plus the expected light `theme_color` / `background_color`. For iOS Home Screen PWA, app light should map `apple-mobile-web-app-status-bar-style` to `default`; app dark should map it to `black-translucent`.
+2. Serve the built `dist` with `vite preview` or an equivalent static preview.
+3. Use Playwright mobile context (for example Pixel 7) with `colorScheme: 'dark'`, set persisted `{ theme: 'system' }`, reload, and assert `data-theme='dark'` + `theme-color='#0E0F12'`.
+4. Switch `page.emulateMedia({ colorScheme: 'light' })`, dispatch `pageshow`, and assert `data-theme='light'` + `theme-color='#F2F3F5'`.
+5. Label this as "PWA/H5 runtime proof" only. It proves the web inputs to Android system chrome are correct; it does **not** prove installed WebAPK/native system-bar rendering.
+
+For final installed-PWA proof, use a real Android AVD or device:
 
 ```bash
 adb shell cmd uimode night yes   # system dark
@@ -73,7 +100,7 @@ Capture screenshots with:
 adb exec-out screencap -p > /tmp/pwa-dark-mode-check.png
 ```
 
-Acceptance evidence should say which combination was tested, e.g. "Android system dark + app light". Do not report a light-mode pass as proof for a dark-mode bug.
+Acceptance evidence should say which combination was tested, e.g. "Android system dark + app light". Do not report a PWA-layer Playwright pass or a light-mode pass as proof for an installed Android PWA dark-mode system-bar bug.
 
 ## Anti-conditions
 

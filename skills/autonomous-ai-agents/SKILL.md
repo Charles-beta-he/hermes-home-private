@@ -55,11 +55,11 @@ This umbrella skill is the routing surface for autonomous ai agents. Use it to c
 
 ## Absorbed Workflow Packages (3 consolidated in curator umbrella pass)
 
-These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; otherwise use the umbrella routing rules above.
+These former narrow child skills are now treated as subsections/reference packages under this class-level umbrella. Load the package only when the task needs that provider/tool's detailed commands, templates, or scripts; support package directories preserve any former references/templates/scripts/assets under the demoted package; otherwise use the umbrella routing rules above.
 
-- `claude-code` → `references/absorbed/claude-code/SKILL.md`: Use when you need to delegate coding tasks to Claude Code (Anthropic's CLI agent).
-- `codex` → `references/absorbed/codex/SKILL.md`: Use when you need to delegate coding tasks to OpenAI Codex CLI agent.
-- `opencode` → `references/absorbed/opencode/SKILL.md`: Use when you need to delegate coding tasks to OpenCode CLI agent for feature implementation, refactoring, PR review, and long-running autonomous sessions.
+- `claude-code` → `references/packages/claude-code/README.md`: Use when you need to delegate coding tasks to Claude Code (Anthropic's CLI agent).
+- `codex` → `references/packages/codex/README.md`: Use when you need to delegate coding tasks to OpenAI Codex CLI agent.
+- `opencode` → `references/packages/opencode/README.md`: Use when you need to delegate coding tasks to OpenCode CLI agent for feature implementation, refactoring, PR review, and long-running autonomous sessions.
 
 
 ## Common Pitfalls
@@ -88,6 +88,7 @@ Applicability: for class-level analysis of post-tool evidence hooks, especially 
 - See `references/claude-code-posttooluse-hook.md` for the durable pattern: `PostToolUse` is post-execution observation and feedback, not prevention. Tool effects have already happened.
 - Transferable Hermes lesson: use post-tool events to capture evidence, derive risk/latency/context, steer the next step, and feed verification ledgers while keeping permission prevention in pre-tool gates.
 - For parallel tools, prefer batch/turn-level aggregation before claiming “all checks passed.”
+- When implementing the pattern in a real runtime, use `references/posttooluse-runtime-landing.md`: preserve internal-vs-wire event names, keep non-post payload extras backward-compatible, prevent failure hooks from masking error results, cover agent-owned tool paths, and verify with temporary-home CLI smoke plus focused tests/re-review.
 
 Anti-conditions: do not treat output replacement/redaction as a privacy boundary for already-recorded telemetry, do not store raw tool payloads in hot ledgers, and do not claim a runtime hook exists without implementation/readback/tests.
 
@@ -96,4 +97,3 @@ Anti-conditions: do not treat output replacement/redaction as a privacy boundary
 - [ ] The request was mapped to the best-fitting child skill or explicitly kept at umbrella level for routing only.
 - [ ] The selected child skill descriptions, references, and prerequisites were checked before substantive execution.
 - [ ] Any claimed handoff, output, or route decision was read back against the specific child workflow before completion.
-

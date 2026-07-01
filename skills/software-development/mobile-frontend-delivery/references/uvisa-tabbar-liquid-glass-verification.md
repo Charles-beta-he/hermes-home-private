@@ -41,7 +41,10 @@ Prototype pattern:
 }
 ```
 
-- Do not copy blindly: preserve current geometry tokens such as `--tabbar-height`, `--tabbar-bottom-gap`, and `--tabbar-content-reserve` if they were introduced to prevent iOS/Android gesture-bar regressions. For UVISA C-end, do **not** make the TabBar bottom gap additive with synthesized iOS standalone bottom safe-area height (`--system-safe-bottom` / `--app-safe-bottom`). First login or cold PWA relaunch can synthesize/report a large bottom inset and lift the pill too high, leaving a large blank band under it. Keep the base TabBar gap as the fixed product geometry token (for example 18px), let only non-tab full-screen flows use `--safe-bottom` when needed, and handle Android system navigation overlap with a separate bounded `visualViewport`-derived token (for example `--android-visual-bottom-inset` from `innerHeight - visualViewport.height - offsetTop`) scoped to `[data-display-mode="standalone"][data-platform="android"]`. Never reintroduce `screen.height - innerHeight` as a generic bottom inset. For this product's accepted visual, also remove stale inline `backdropFilter` / `WebkitBackdropFilter` from `TabBar.tsx`; an inline filter overrides CSS tuning and makes the translucent surface look wrong.
+- Do not copy blindly: preserve current geometry tokens such as `--tabbar-height`, `--tabbar-bottom-gap`, and `--tabbar-content-reserve` if they were introduced to prevent iOS/Android gesture-bar regressions. For UVISA C-end, do **not** make the TabBar bottom gap additive with synthesized iOS standalone bottom safe-area height (`--system-safe-bottom` / `--app-safe-bottom`). First login or cold PWA relaunch can synthesize/report a large bottom inset and lift the pill too high, leaving a large blank band under it. Keep the TabBar gap as an app-owned geometry token, let only non-tab full-screen flows use `--safe-bottom` when needed, and never reintroduce `screen.height - innerHeight` as a generic bottom inset.
+- Android installed PWA has two opposite failure modes that must both be covered: (1) day/night switch over-lifts the TabBar if theme-sensitive `visualViewport` deltas are consumed; (2) clear-cache/cold install can hide the TabBar behind the Android system navigation area if the standalone bottom gap is `0px` while `env(bottom)` also reports `0`. For UVISA, use a fixed Android standalone bottom clearance token (for example `--android-standalone-tabbar-bottom-gap: 32px`) and have `[data-display-mode="standalone"][data-platform="android"]` consume that token rather than live `visualViewport` deltas. This keeps cold-start visible while preventing theme-switch drift.
+- If a top status-bar line appears only after switching day/night mode (not on first install open), suspect Android/WebAPK UA chrome `color-scheme` repaint rather than ordinary CSS border. Keep the app theme rendered via `[data-theme]` tokens, but consider locking Android standalone UA `color-scheme: light` and updating the single app-owned `theme-color` meta from the theme store. Do not remove an explicit “Follow system” product option unless confirmed.
+- For this product's accepted visual, also remove stale inline `backdropFilter` / `WebkitBackdropFilter` from `TabBar.tsx`; an inline filter overrides CSS tuning and makes the translucent surface look wrong. Use a dedicated borderless `.tabbar-glass` if shared `.glass` reintroduces a line/border.
 
 ## Workflow
 
@@ -54,9 +57,12 @@ Prototype pattern:
    - scroll viewport bottom/padding behavior.
 4. Add or update a focused layout test covering:
    - TabBar class/style glass contract;
-   - prototype geometry (`h-16`/64px, 18px browser bottom gap, 32px radius, `shadow-tab`);
+   - current accepted geometry tokens (`--tabbar-height`, platform-specific bottom gap tokens, `--tabbar-content-reserve`) rather than hard-coding an old prototype height/gap when later Lark/mobile evidence superseded it;
+   - Android standalone cold-start visibility token and Android day/night switch stability (`--tabbar-bottom-gap` should not be driven by live `visualViewport` deltas);
+   - iOS standalone does not consume raw `--safe-bottom` for TabBar geometry;
    - tab-page scroll reserve extends behind TabBar;
-   - no stale inline `backdropFilter` / `WebkitBackdropFilter` and no CSS `backdrop-filter` / `-webkit-backdrop-filter` if the accepted design is the current semi-transparent surface.
+   - no stale inline `backdropFilter` / `WebkitBackdropFilter` and no CSS `backdrop-filter` / `-webkit-backdrop-filter` if the accepted design is the current semi-transparent surface;
+   - no TabBar border / top shadow / inset highlight if the user reports “the line came back”.
 5. Run targeted test and build.
 6. For UI proof, run a real browser/mobile viewport check on the built preview and record computed styles for `/home`, `/card`, and `/me`:
    - `navBackground` is the accepted translucent rgba for the active theme;

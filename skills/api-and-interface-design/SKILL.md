@@ -78,6 +78,17 @@ Good APIs are consistent, predictable, and self-documenting. Bad APIs multiply m
 - Default limits: never return unlimited results
 - Consider rate limiting on expensive endpoints
 
+### Mobile/offline sync gateway contracts
+Applicability: mobile web/PWA clients that cache server-derived context locally and later reconcile with an online authority. Anti-condition: do not apply this pattern to simple online-only CRUD APIs or to clients that are allowed to execute authoritative side effects offline.
+
+When designing this class of API, keep the gateway as a projection and device-control boundary rather than embedding mobile sync concerns into the core business/agent loop:
+- Prefer an independent gateway boundary for device registration, revoke/wipe state, sync cursors, offline package projection, and handoff queue; keep the core service authoritative for tools, current facts, summary-card generation, and safety decisions.
+- Use explicit versioned resources such as `/v1/sync/bootstrap`, `/v1/sync/changes?since=...`, `/v1/sync/deviceState`, `/v1/offline-handoff`, and `/v1/offline-handoff/:id/result`.
+- All sync/chat/tool-adjacent API responses that may contain user context should return `Cache-Control: no-store`; service workers should cache static shell only.
+- Require a stable device identifier or stronger device credential on sync endpoints; missing device identity should be a structured `400 DEVICE_ID_REQUIRED`, not an implicit anonymous device.
+- For local pairing flows, pairing codes must be one-time, expiring, and rejected on reuse; revoke must make the next bootstrap return a wipe-required action.
+- Treat handoff reconciliation as an explicit state machine (`queued`, then `confirmed | expanded | corrected | rejected`) rather than silently overwriting offline answers.
+
 ### Stateful Mutations and Source-of-Truth Contracts
 When an endpoint changes persisted state that the client may also cache locally (trust flags, device/session state, feature entitlements, KYC/profile status, wallet/card state):
 - Make the server the explicit source of truth. Client-side fallback/cache may fill missing fields for old backends, but must not override an explicit server `false`, revoked state, or authoritative value.
@@ -143,4 +154,3 @@ When a mutation endpoint (confirm, execute, transfer, pay) computes derived valu
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
 4. Financial mutation endpoints returning only txId/status without fee/rate/amountOut — forces client reverse-calculation with precision loss (UVISA exchange confirm case, 2026-05-30).
-

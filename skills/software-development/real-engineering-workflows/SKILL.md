@@ -39,11 +39,12 @@ Don't use for:
 The source repo was reviewed at:
 
 - Repo: `https://github.com/mattpocock/skills`
-- Commit: `0288510dd61ff6ef7c2003834082ab8f2387e80e`
+- Original reviewed commit: `0288510dd61ff6ef7c2003834082ab8f2387e80e`
+- Refreshed public-artifact check: `0877403d1e867fd9d574117e9b34ade404f36d2a` (2026-06-30), recorded as a time-scoped external-source readback, not as vendoring authority.
 - Hermes SSOT review: `docs/private/mattpocock-skills-reference-review-20260528.md`
 - Detailed transfer map: `references/mattpocock-skills-map.md`
 
-This skill is a synthesized Hermes workflow. It is not a verbatim vendoring of the source package.
+This skill is a synthesized Hermes workflow. It is not a verbatim vendoring of the source package. External skill packages should be absorbed as entity-stripped workflow patterns unless an explicit scoped install/evaluation task is approved.
 
 ## Operating Principles
 

@@ -103,7 +103,7 @@ Do not call `setIsInstalled(true)` only from `userChoice === 'accepted'`. For OE
 
 ### Android Chrome readiness gate vs HarmonyOS / Huawei Browser fallback
 
-For mainstream Android Chrome/Edge, do **not** show a proactive fallback such as “查看步骤” merely because a short timer elapsed. `beforeinstallprompt` is the browser readiness signal: keep the install UI silent until Chrome emits it, then show the custom install toast/banner with “立即安装”. This avoids teaching ordinary Chrome users a manual path while the browser may still be evaluating installability, engagement, cooldown, native-app suppression, or service-worker readiness.
+For mainstream Android Chrome/Edge, do **not** show a proactive fallback such as “查看步骤” merely because a timer elapsed — even a 30s “real usage”/engagement window is only Chrome’s internal eligibility input, not proof that install is available. `beforeinstallprompt` is the browser readiness signal: keep the install UI silent until Chrome emits it, then show the custom install toast/banner with “立即安装”. If the event arrives late after the engagement window, show the toast immediately at that point. This avoids teaching ordinary Chrome users a manual path while the browser may still be evaluating installability, engagement, cooldown, native-app suppression, or service-worker readiness.
 
 HarmonyOS, Huawei Browser, ArkWeb, and OEM browsers may not emit `beforeinstallprompt` even with a valid manifest and service worker. Detect likely platform from UA markers such as `HarmonyOS`, `OpenHarmony`, `ArkWeb`, `HuaweiBrowser`, or `Huawei`, then after a short bounded wait (for example 1–2s) show manual browser-menu guidance if no native prompt arrived.
 
@@ -186,6 +186,23 @@ if (outcome === 'accepted') {
   });
 }
 ```
+
+### Android Chrome readiness gate: `beforeinstallprompt`, not timers
+
+Mainstream Android Chrome may delay installability until browser-owned engagement gates are satisfied (for example real usage time/user activation) and may also suppress the prompt for cooldown, native-app, incognito, or installability reasons. Do not implement a “30 seconds elapsed” or generic timer toast for Chrome. For Chrome/Edge, stay silent until `beforeinstallprompt` fires; that event is the reliable frontend signal that the browser has detected the site can be installed and has supplied a callable prompt.
+
+Correct behavior:
+
+1. Listen for `beforeinstallprompt`, call `preventDefault()`, store the event, set `canInstall=true`, and then show the app's install toast/banner.
+2. If no event arrives on mainstream Android Chrome, show no Chrome install toast merely because time elapsed.
+3. If the event arrives late after the engagement window, show the install toast immediately then.
+4. Keep Harmony/Huawei/OEM manual guidance as a separate detected fallback because those browsers may never emit `beforeinstallprompt`.
+
+Test this explicitly:
+
+- Android Chrome UA + advance timers by 30s + no `beforeinstallprompt` → no install UI.
+- Android Chrome UA + 30s elapsed + then dispatch `beforeinstallprompt` → browser install UI becomes available.
+- Harmony/Huawei UA + no event + short bounded timer → manual browser-menu guide.
 
 ### Test coverage pattern
 

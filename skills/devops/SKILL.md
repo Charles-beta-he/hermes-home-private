@@ -46,6 +46,7 @@ This umbrella skill is the routing surface for devops. Use it to choose the most
 - `token-saver-rtk` — the task falls under Token Saver: 全架构优化 (17层).
 - `webhook-subscriptions` — the user wants external services to trigger agent runs OR push notifications to chats.
 - `macos-network-admin` — you need to diagnose macOS network/proxy/VPN issues: system proxy misconfiguration, proxy app not running, subscription URL unreachable, DNS failures, or 'sites won't load'.
+- Production/staging URL smoke after a merge — stay in this umbrella unless a narrower deploy skill applies; use `references/post-pr-production-url-smoke.md` to verify browser render + JS console + curl status before saying a site is up.
 
 ## Selection Rules
 
@@ -65,3 +66,18 @@ This umbrella skill is the routing surface for devops. Use it to choose the most
 - [ ] The selected child skill descriptions, references, and prerequisites were checked before substantive execution.
 - [ ] Any claimed handoff, output, or route decision was read back against the specific child workflow before completion.
 
+
+
+## 输入
+
+- 用户请求的具体参数
+
+## 约束
+
+- 遵循项目规范
+- 在 context budget 内完成
+
+## 检查点
+
+- [ ] 输入参数完整
+- [ ] 输出符合预期格式

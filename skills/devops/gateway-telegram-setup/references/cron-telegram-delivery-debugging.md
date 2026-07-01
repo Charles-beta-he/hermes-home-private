@@ -8,6 +8,7 @@ Use this reference when a scheduled Hermes report or reminder appears to have "n
    - `cronjob list` can show `last_status: ok` while `last_delivery_error` is non-empty.
    - Read the job output under `~/.hermes/cron/output/<job_id>/...` before concluding the report failed to generate.
    - Check any report artifact paths mentioned inside the cron output.
+   - If a job-specific artifact exists (for example a daily report under `~/.hermes/notes/reports/`) but `jobs.json` still has a stale `last_run_at` or no Telegram delivery evidence, switch to `references/cron-startup-audit-and-compensation.md` before retrying. That split state usually means generation happened outside the full `run_one_job -> save_job_output -> deliver -> mark_job_run` closure, or the closure was interrupted after `advance_next_run`.
 
 2. Correlate scheduler logs.
    - Look for `Running job '<name>'`, `Turn ended`, `Job '<name>' completed successfully`, and then delivery lines.

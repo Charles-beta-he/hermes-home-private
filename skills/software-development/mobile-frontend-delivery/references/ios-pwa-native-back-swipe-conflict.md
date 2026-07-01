@@ -44,6 +44,26 @@ Then no-op `onTouchStart` / `onTouchEnd` when `shouldUseCustomSwipe` is false, s
 
 For iOS profile-installed/fullscreen PWA Web Clips, do **not** blindly delegate to Safari. A profile Web Clip can expose native history swipe while hiding browser chrome; repeated swipes can fall through to the empty Web Clip launch snapshot. Detect `navigator.standalone === true` or `matchMedia('(display-mode: standalone|fullscreen)')`, suppress the native edge gesture with `preventDefault()` on edge `touchstart`/`touchmove`/`touchend`, and issue exactly one SPA `navigate(-1)` on sub-routes. On main-tab routes, swallow the gesture after suppression. Also keep a same-URL history guard entry armed on main tabs for iOS standalone/profile PWA so native back cannot escape to a blank snapshot if suppression is bypassed.
 
+Implementation detail from UVISA C-end: React `onTouchStart/onTouchMove/onTouchEnd` attached to the app's `<main>` can still be too late or too narrow for iOS Web Clip edge gestures. Touches may begin on TopBar, TabBar, floating customer-service FAB, or the browser-owned edge before React's delegated listener can prevent default. Prefer a native `document.addEventListener(..., { capture: true, passive: false })` listener for iOS standalone/profile PWA only. It should record edge-start coordinates, call `event.preventDefault()` on `touchstart`/`touchmove`/`touchend`, and then run exactly one route action after the threshold passes. Keep existing element-level handlers for Capacitor/native Android and non-iOS web so platform back behavior is not regressed.
+
+## Source-directed main-tab returns
+
+Some flows intentionally open a main tab from a deep page but expect the next back gesture to return to the original tab, not to the deep page or a blank snapshot. Example shape:
+
+```text
+/home -> /wealth/holdings?from=home -> CTA "view products" -> /wealth -> back should return /home
+```
+
+Do not solve this with a plain `navigate('/wealth')` push: it leaves the deep page in the history stack. Do not solve it with `replace` alone if a main-tab history guard re-arms every deep-to-main transition: the guard can trap the main tab. Instead:
+
+1. Replace the deep page with the main tab (`navigate('/wealth', { replace: true, state: ... })`).
+2. Carry an explicit source target in router state, e.g. `__mainTabBackTarget: '/home'`.
+3. Carry a skip flag for the main-tab history guard, e.g. `__skipMainTabHistoryGuard: true`.
+4. In the iOS standalone PWA swipe handler, when the current route is a main tab and has a source target, navigate to that target with `replace: true` instead of swallowing.
+5. In the main-tab history guard, do not arm same-URL guard entries for source-directed main-tab entries, while preserving guard behavior for ordinary flow-finish transitions such as `/wealth/buy/finish -> /wealth`.
+
+Add regression coverage for both directions: source-directed main tab returns to source, and ordinary deep-to-main flow still arms the guard.
+
 ## Regression tests
 
 Add/keep hook-level tests for all branches:

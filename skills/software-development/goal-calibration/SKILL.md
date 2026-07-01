@@ -120,6 +120,13 @@ Planner/executor/verifier should stay anchored to this contract. Recalibrate onl
    - For "follow prototype", verify observable user effects, not mock field names.
    - For "improve prompt", verify the prompt handles positive cases, negative cases, and likely ambiguity.
 
+7. For visual/runtime bug reports, calibrate the problem-finding chain before choosing a fix path.
+   - Split the artifact into time slices: first paint/startup, loading/skeleton, transition, hydrated steady state, resume/update.
+   - Identify the surface owner at that slice: OS/browser/WebView, app shell, route, component, data/cache, deployment.
+   - State what the suspected layer can actually control; if the missing area/state is owned upstream, do not patch downstream CSS/components first.
+   - Treat recent commits as candidate causes, not as the acceptance target.
+   - Verification must prove the user's chosen slice/effect, plus a nearby contrast slice that must not regress.
+
 ## Prompt-Writing Tasks
 
 Prompt requests are also ambiguity tasks. A prompt is an interface between human intent and model behavior, so apply the same calibration:

@@ -153,6 +153,38 @@ ensures the last item scrolls above TabBar. No extra `10px`, `18px`, `72px`, or 
 hardcode the old values** (e.g. `expect(nav).toHaveStyle({ bottom: 'calc(10px + var(--safe-bottom))' })`).
 Tests that assert exact CSS strings break silently when values change.
 
+## Cross-End Capability SDK Pointer
+
+For device/system features whose behavior differs across H5, installed PWA/WebView, and native/hybrid shells (camera scan, geolocation, push, biometrics, file picker, share sheet), use `references/cross-end-capability-sdk.md`. The key rule is to split permission, device/session, and processing layers; do not let an optional processor API decide whether the base permission/device path is attempted.
+
+## iOS PWA Splash Fullscreen Status Bar Contract
+
+When an installed iOS PWA must show a fullscreen splash/loading surface, treat
+`apple-mobile-web-app-status-bar-style` as a **viewport ownership contract**, not
+as a theme color. In iOS Home Screen standalone mode:
+
+- `content="default"` makes the WebView content area avoid the status bar / Dynamic Island; even `position: fixed; inset: 0` only fills the cropped content area, so the splash can look one status-bar slice short.
+- `content="black-translucent"` lets web content draw underneath the status bar, so the startup splash can own the full drawable viewport.
+
+Rules:
+1. Keep the first-paint HTML meta as `black-translucent` when splash/loading is expected to cover the whole screen.
+2. The meta must ship before the React module script; CSS/React cannot recover the area if the initial WebView was created with `default`.
+3. Runtime theme sync may update `theme-color` for light/dark/system, but must not map light theme back to iOS status-bar `default` unless the product explicitly accepts a non-fullscreen splash.
+4. Do not diagnose this as only `100vh` / `100dvh` / `.splash-root` height. If the WebView drawable area is cropped by status-bar mode, CSS height cannot fill the missing slice.
+5. Keep normal page safe-area layout separate: splash fullscreen bugs are not the same as completed-page TopBar/main-content double safe-top bugs.
+
+Regression gates:
+- Unit/static test reads `index.html` and asserts `apple-mobile-web-app-status-bar-style` is `black-translucent` before the React module script.
+- Test/scan that first-paint boot code has no `iosStatusBarStyle = 'default'` path.
+- Theme-store tests assert light, dark, and system-resolved-light all keep iOS status bar `black-translucent` while `theme-color` can still change.
+- Build artifact readback checks `dist/index.html`, not only source HTML.
+- Visual proof should use installed iOS PWA early frames (T0/T1 splash/loading), not only Safari tab mode or completed-page screenshots.
+
+Anti-patterns:
+- Coupling `theme-color` and `apple-mobile-web-app-status-bar-style` as if both are harmless theme metadata.
+- Fixing splash top/bottom gaps by changing TabBar, main page padding, or completed-page `--safe-top` math without verifying the startup status-bar mode.
+- Letting recent commit diffs redefine the user's visual target; first separate T0 splash/loading, T1 skeleton, and T2 completed-page layout.
+
 ## Splash Anti-Repeat for Android PWA Rebuilds
 
 In Android PWA standalone mode, the system back gesture can trigger a full

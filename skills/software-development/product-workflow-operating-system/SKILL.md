@@ -24,6 +24,20 @@ This skill is the Hermes-local product workflow operating system. It adapts the 
 
 The goal is not to copy any external marketplace. The goal is to make product work executable and auditable: every stage has an input contract, artifact, evidence gate, next-state decision, and handoff boundary.
 
+## Portfolio Layer
+
+Scope: product/workflow efforts that span multiple durable projects or may consolidate several projects into a larger capability system. Applicability: use after project profiles/SSOTs are identified and before cross-project merge, abstraction, or shared-module promotion. Anti-condition: do not use this layer to copy secrets, auth state, raw user data, task progress, or project-specific facts into another project or global memory.
+
+For multi-project work, treat projects as a portfolio graph rather than isolated chats or folders. See `references/portfolio-ratchet-operating-system.md` for the full procedure, relation taxonomy, doctor checklist, casual-chat uplift policy, and metadata-only code guard.
+
+- create or read a project profile and progress ledger for every durable project;
+- merge projects only by objective, capability, authority, and rollback alignment, not by name similarity;
+- extract shared modules/patterns when facts must remain scoped;
+- link platform, integration, vertical, and application projects with explicit relations instead of copying secrets, task state, or domain facts;
+- when casual conversation improves a project, land it as a proposal/signal/decision unless a verified artifact supports a status promotion;
+- if portfolio governance is authorized but project code is forbidden, encode a metadata-only code guard and verify it with a read-only doctor;
+- promote cross-project lessons through abstraction governance / experience ratchet before editing global skills or memory.
+
 ## When to Use
 
 Use this skill when the user asks to:
@@ -202,6 +216,14 @@ Ordinary news, broad market trends, or low-confidence product ideas should not b
 
 Reference: `references/landing-and-commit-pitfalls.md` is a scoped packaging note for this workflow class. Scope: product-workflow skill/workspace landing. Applicability: use when committing templates, helper scripts, or scaffolded workflow workspaces. Anti-condition: do not apply it as a general repository rule outside this workflow class.
 
+Reference: `references/voice-agent-product-absorption.md` captures voice-assistant + PM-agent absorption patterns: realtime partial transcript, no dummy transcript acceptance, voice intent routing, product-manager artifact routing, and open-source references worth checking before claiming a voice/product workflow is absorbed.
+
+Reference: `references/enterprise-production-readiness.md` captures the enterprise production readiness pattern: multidimensional scorecards, PM artifact routing, launch-level distinctions, governance drafts vs runtime controls, and the real stop gates for executor authority, release provenance, privacy approval, real-device QA, and enterprise controls.
+
+Reference: `references/design-generator-product-logic-bridge.md` captures the Stitch/Gemini/Figma/MCP design-generator bridge: use generated HTML/Figma output as design evidence, extract token/screen/component maps, and land changes through owned product state, tests, and screenshot verification rather than letting generated HTML overwrite runtime logic.
+
+Reference: `references/visual-commercialization-router-first-absorption.md` captures the router-first absorption pattern for visual commercialization demos: split demo chains into intent, asset model, atomic modules, workflow compositions, minimal agent roles, evidence gates, and closure states before turning them into product workflows. Use it when a video/demo suggests workflows like 2D IP → 3D render → proposal board → e-commerce/Amazon image set, or when the user may only need a sub-capability such as a group of 3D images or promotional layouts from existing images.
+
 Use the helper script when a request needs a durable workspace:
 
 ```bash
@@ -265,7 +287,10 @@ Forbidden loads:
 3. **Workflow over-expansion**: if the user only wants opportunity analysis, do not invent launch or implementation artifacts. Stop at the agreed boundary.
 4. **Taskpool pollution**: do not enqueue broad “study this trend” tasks. Candidates need acceptance evidence and an anti-drift check.
 5. **Mock acceptance**: prototypes and mock data can support design discussion, but do not satisfy real implementation acceptance unless explicitly allowed.
-6. **Memory pollution**: do not save one-off product decisions as durable memory; use project SSOT, task records, or skills for reusable procedures.
+6. **Voice dummy transcript trap**: for voice-assistant product work, an empty speech-recognition result must fail closed; never append a placeholder/fabricated user utterance to the ledger. Realtime voice closure requires partial transcript transfer into the visible intent surface plus final transcript routing, or an explicit manual/permission blocker.
+7. **PM-agent absorption gap**: when the user asks to absorb product logic from comparable projects, do not stop at visual/UI changes or generic chat behavior. Route product/design/strategy requests through a PM-agent layer that creates artifacts such as story cards, PRD slices, competitor matrices, interaction models, and acceptance criteria before execution.
+8. **Enterprise-ready score inflation trap**: for `企业生产级` or public launch requests, do not treat passing tests, simulator builds, governance drafts, or dry-run gateways as production readiness. Land a multidimensional scorecard and any safe artifact/router/governance layers, but keep P0 blockers explicit for real executor authority, repo/release provenance, legal/privacy review, real-device QA, and enterprise SSO/RBAC/audit controls.
+8. **Memory pollution**: do not save one-off product decisions as durable memory; use project SSOT, task records, or skills for reusable procedures.
 
 ## Verification Checklist
 

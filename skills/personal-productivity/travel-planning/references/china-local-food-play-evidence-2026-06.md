@@ -79,3 +79,22 @@ Lesson: for mainland China food/play, ask for app screenshots early. Do not over
 4. Use official/open POI only for distance/route/cross-check, labeling source confidence.
 5. Give an immediate practical recommendation: eat/skip/only small-order, what to order, what to avoid, and next nearby fallback.
 6. If evidence is blocked, state the boundary and use on-site heuristics rather than fabricating review data.
+
+## Rural/border-town weak-evidence fallback
+
+Use this when the user is in a small mainland town, grassland route, border area, scenic-town stop, or roadside location where domestic app screenshots are not yet available and open POI coverage is sparse:
+
+1. Reverse-geocode first to name the nearest town/road, then search the town name plus 美食/餐厅/local specialty keywords.
+2. Treat Google Maps/Bing/OSM as weak candidate discovery only. A restricted Google Maps result can still provide useful candidate names, coarse distance, and weak ratings, but it is not review-quality evidence for China-local restaurants.
+3. Separate restaurant POIs from scenic/play POIs. Do not rank 景区/骑马场/营地 as food-first choices unless the user explicitly wants a scenic stop; prefer family-style 饭店/家常菜/百姓人家-like names for dinner.
+4. In grassland/Inner Mongolia border towns, give order guidance by category rather than inventing house specialties: 手把肉/羊排/烤羊腿, 铁锅炖牛羊肉/小鸡炖蘑菇, 奶茶/奶皮子/酸奶, and local bread/jam when culturally appropriate.
+5. Add an on-site decision gate: local cars/tables, visible heat/active kitchen, clear per-jin/per-portion pricing for beef/lamb, and no aggressive big-package upsell. If price is vague or only tourist set meals are pushed, downgrade or move to the next candidate.
+6. If the user says “不急/要好吃/本地特色”, avoid a single rushed nearest-place answer: provide a ranked shortlist with evidence class and ask for app screenshots to make the final call.
+
+## Validation checklist
+
+- Run `china_local_evidence_pipeline.py --markdown` when location/query inputs are enough, or explain why a screenshot is required.
+- Label evidence class explicitly: native-app screenshot OCR, official map API, authorized temporary login, or weak open-web fallback.
+- For China-local small shops, "not found on Google/OSM" is not a negative quality signal; treat it only as weak indexing evidence.
+- Stop at password, SMS, CAPTCHA, slider, payment, identity, or biometric gates. The next action is screenshot/OCR or explicit temporary-login authorization, not bypassing.
+- For GitHub crawler projects, record them as adapter/spike references with governance risk; do not make them live-trip dependencies unless separately authorized and verified.

@@ -37,7 +37,7 @@ Backend API → notification.service.ts:
   normalizeCategory(notification)
     → returns transactionType if present, else "other"
     → category = "trade" when transactionType exists
-  
+
   normalizeNotification(raw)
     → inferTransactionType(raw) — regex on title/body keywords
     → fallback: raw.subType
@@ -63,6 +63,56 @@ notifications.tx.card       → "U卡"
 notifications.tx.wealth     → "理财"
 notifications.tx.other      → "交易"
 ```
+
+## Message Center Sorting Strategy
+
+Current user-side list rendering (`NotificationsScreen.tsx`) does not sort locally; it renders `useNotificationStore().notifications` as-is, with category tabs only filtering by `category`.
+
+Backend intended order for `/api/notifications` and full `/api/notifications/sync?afterSeq=0` is:
+
+1. `createdAt DESC` — primary key, interpreted as message received/inserted time; product expectation is “latest received message on top”.
+2. `occurredAt DESC` — tie-breaker only, to prevent backfilled old business events from jumping ahead of newly received messages.
+
+Key backend evidence paths:
+
+- `api/api-public/src/main/java/com/uvisa/api/pub/NotificationController.java` — `PageRequest` uses `Sort.by(DESC, "createdAt").and(Sort.by(DESC, "occurredAt"))`.
+- `domain/identity/src/main/java/com/uvisa/domain/identity/UserNotificationRepository.java` — repository methods are named `...OrderByCreatedAtDescOccurredAtDesc`.
+- Historical intent commit: `d01bf0b1 fix(notif): 消息中心按 createdAt DESC 排序 — 最新收到的消息在最上方`.
+
+Incremental `/sync` caveat: for `afterSeq > 0`, backend event query orders `notification_event_log` by `event_seq ASC`; frontend merges as `[...incoming, ...oldWithoutDuplicates]`. This means a batch of new events may not be strictly newest-first within the incoming slice, and old notifications touched by mutation events can be moved to the top. If strict ordering is required, fix either backend incremental item ordering (`createdAt DESC, occurredAt DESC`) or perform a stable store-side sort after merge using server timestamps.
+
+### Read-status mutation reordering pitfall
+
+Symptom: user taps an unread notification, it becomes read, then the same old row jumps to the first position in the message center.
+
+Root cause chain:
+
+1. `NotificationsScreen.tsx` calls `markRead(id)` before navigating to detail. Store `markRead` only performs an optimistic in-place `read: true` update; this does **not** reorder locally.
+2. Backend `NotificationController.markRead()` calls `appendMutationEvent(userId, id, "notification.read", n.getType())` after saving `readAt`.
+3. SSE / polling / visibility invalidation triggers `syncNotifications()`, which calls `/notifications/sync?afterSeq=lastEventSeq`.
+4. Backend incremental sync treats every non-deleted event as a changed notification id; `notification.read` is included in `changedIds` and the old notification is returned in `items`.
+5. Frontend merge prepends all `incoming` rows, so an existing notification touched only by read-state mutation is moved to the top.
+
+Durable fix pattern:
+
+- Do not prepend every incoming row blindly.
+- Split incoming into `trulyNew` and `updatesForExisting` by comparing against current store ids.
+- Prepend only `trulyNew`; replace existing rows in place for read/status mutations; still remove `deletedIds`.
+
+Minimal store-side merge shape:
+
+```ts
+const current = get().notifications;
+const incomingById = new Map(incoming.map((n) => [n.id, n]));
+const currentIds = new Set(current.map((n) => n.id));
+const updatedExisting = current
+  .filter((n) => !deleted.has(n.id))
+  .map((n) => incomingById.get(n.id) ?? n);
+const trulyNew = incoming.filter((n) => !currentIds.has(n.id));
+const merged = [...trulyNew, ...updatedExisting];
+```
+
+Backend-contract alternative: split `/sync` response into `createdItems`, `updatedItems`, and `deletedIds`; only `createdItems` should be top-inserted. Avoid using read-status changes as list-order signals.
 
 ## UI Rendering (NotificationsScreen.tsx)
 
