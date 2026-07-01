@@ -1,6 +1,6 @@
 # Progress Ledger — Mobile Offline Avatar × Travel
 
-Updated: 2026-06-21 05:10 CST
+Updated: 2026-07-01 08:31 CST
 Status model: idea → SSOT → contract → implementation-slice → verified-slice → app-shell → production-beta → release
 
 ## Current truth
@@ -10,15 +10,16 @@ This project is no longer a one-off chat. Canonical state lives here and must be
 | Component | Status | Evidence | Next gate |
 |---|---|---|---|
 | Product SSOT | verified-slice | `00-intake/intent-card.md`, `04-prd/prd.md`, `decision-log.md` | keep decisions appended |
-| Shared offline core | verified-slice | `implementation/offline-core`, `npm test` pass 6/6 | integrate with app/gateway |
+| Shared offline core | verified-slice | `/Users/charles/hermes-pocket/packages/offline-core`, `PROOF.md`, `npm test` pass 55/55, `npm run build` pass, production verify source-mode regression fixed | integrate with app/gateway |
 | Pocket Gateway | verified-slice | `implementation/pocket-gateway`, `npm test` pass 45/45, HTTP smoke proof `evidence/pocket-gateway-http-smoke-proof-20260622.json` | connect app to gateway client |
 | Basic offline PWA App | verified-slice | `implementation/offline-app-pwa`, `npm test` pass 3/3, browser screenshot verified | add persistence, IndexedDB, real gateway client |
-| Travel TripState/OCR vertical | contract-ready | `04-prd/travel-optimization-spec.md` | fixture set + OCR adapter |
-| Enterprise security/release | contract-ready | `04-prd/permissions-privacy.md`, `05-risk/risk-register.md`, `08-shipping/acceptance-matrix.md` | encryption/revoke/wipe/browser/mobile QA |
+| Travel TripState/OCR vertical | verified-slice | `/Users/charles/hermes-pocket/packages/offline-core/src/travelDecision.ts`, `/Users/charles/hermes-pocket/packages/offline-core/src/webEvidencePreprocessor.ts`, `/Users/charles/hermes-pocket/packages/offline-core/PROOF.md` | integrate projection into PWA/RN runtime |
+| Enterprise security/release | verified-slice | `04-prd/permissions-privacy.md`, `05-risk/risk-register.md`, `08-shipping/acceptance-matrix.md`, `evidence/enterprise-security-hardening-20260701T000259+0800.md` | client wipe/readback UX proof; native install/release human gates remain separate |
 
 ## Verified commands
 ```bash
-cd implementation/offline-core && npm test       # pass 6/6
+cd /Users/charles/hermes-pocket/packages/offline-core && npm test      # pass 55/55
+cd /Users/charles/hermes-pocket/packages/offline-core && npm run build # PASS: tsc exit 0
 cd implementation/pocket-gateway && npm test     # pass 45/45 (2026-06-22 follow-through)
 python3 evidence/pocket-gateway-http-smoke-20260622.py http://127.0.0.1:3909 evidence/pocket-gateway-http-smoke-proof-20260622.json  # PASS: pair/register/dry-run/readback/bootstrap/changes/revoke/wipe no-store
 cd implementation/offline-app-pwa && npm test    # pass 3/3
@@ -34,9 +35,89 @@ browser: http://127.0.0.1:8765/offline-app-pwa/index.html
 ## Open gates
 1. Connect PWA to Pocket Gateway dry-run endpoint and persist accepted/rejected readback.
 2. Add IndexedDB/WebCrypto persistence rather than in-memory-only queue.
-3. Add screenshot/OCR fixture pipeline for travel apps.
+3. Integrate screenshot/OCR travel projection into PWA/RN runtime and local fixture ingestion UX.
 4. Decide packaging lane for production beta: PWA first vs RN/Capacitor shell.
 5. If native: Bundle ID/signing/device are human gates.
+
+## Enterprise production verify restored — 2026-07-01 05:31 CST
+
+Root cause and fix:
+- RN native Jest maps `@hermes-pocket/offline-core` to `packages/offline-core/src/index.ts` and must map offline-core's NodeNext `.js` source specifiers back to `.ts` files for source-mode execution.
+- The active-trip export correctly used `./travelActiveTrip.js` for offline-core build/runtime, but `apps/rn-shell/native/jest.config.js` was missing the corresponding source-mode mapper.
+- Added `'^\\./travelActiveTrip\\.js$': '<rootDir>/../../../packages/offline-core/src/travelActiveTrip.ts'` in `apps/rn-shell/native/jest.config.js`; offline-core public export specifiers remain unchanged.
+
+Fresh evidence:
+- `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native run lint` => PASS.
+- `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => PASS, 3 suites / 46 tests.
+- `cd /Users/charles/hermes-pocket && npm --prefix packages/offline-core test -- --run tests/travel-active-trip.test.ts` => PASS, 1 file / 4 tests.
+- `cd /Users/charles/hermes-pocket && npm --prefix packages/offline-core run build` => PASS (`tsc`).
+- `cd /Users/charles/hermes-pocket && npm run production:verify` => PASS at 2026-07-01 05:31 CST: RN lint/test passed; production gate passed 16/16; workspace tests passed (gateway 34/34, PWA 17/17, RN shell 12/12, entry-core 7/7, offline-core 55/55); workspace build passed; rollback proof passed with artifact `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-30T21-31-18-609Z.json`; npm audit passed with `found 0 vulnerabilities`.
+
+Boundary / next gate:
+- The previous `Cannot find module './travelActiveTrip.js'` blocker is removed and one-command enterprise verification is green again.
+- This does not claim deploy/publish/App Store/TestFlight readiness, native signing/device install, or user-visible permission-panel/mobile-device proof; those remain separate human-gated evidence lanes if required.
+
+## Enterprise production verify restored — 2026-07-01 08:31 CST
+
+Root cause and fix:
+- RN native Jest source-mode executes `@hermes-pocket/offline-core` from `packages/offline-core/src/index.ts`.
+- Babel/Jest helper imports emitted from those out-of-app source files resolve from the offline-core package path and repo root, not from the native app package path.
+- The current workspace has `@babel/runtime` under `apps/rn-shell/native/node_modules`, but not under the repo-root `node_modules`; therefore transformed `packages/offline-core/src/tripState.ts` could not resolve `@babel/runtime/helpers/interopRequireDefault`.
+- Added `'^@babel/runtime/(.*)$': '<rootDir>/node_modules/@babel/runtime/$1'` to `apps/rn-shell/native/jest.config.js`, keeping the existing offline-core NodeNext exports and `travelActiveTrip.js` source-mode mapper intact.
+
+Fresh evidence:
+- `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => PASS, 3 suites / 46 tests.
+- `cd /Users/charles/hermes-pocket && npm run production:verify` => PASS at 2026-07-01 08:31 CST: RN lint/test passed; production gate passed 16/16; workspace tests passed (gateway 34/34, PWA 17/17, RN shell 12/12, entry-core 7/7, offline-core 58/58); workspace build passed; rollback proof passed with artifact `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-07-01T00-31-37-749Z.json`; npm audit passed with `found 0 vulnerabilities`.
+
+Boundary / next gate:
+- The `Cannot find module '@babel/runtime/helpers/interopRequireDefault'` RN/native source-mode blocker is removed and one-command enterprise verification is green again on the live repo state.
+- This does not claim deploy/publish/App Store/TestFlight readiness, native signing/device install, or user-visible permission-panel/mobile-device proof; those remain separate human-gated evidence lanes if required.
+
+## Enterprise privacy/security hardening refresh — 2026-07-01 00:02 CST
+
+## Shared offline core proof-log refresh — 2026-07-01 02:25 CST
+
+Fresh verification confirmed the active-trip proof-log slice is now part of the shared offline-core authority instead of an app-local experiment.
+
+Evidence:
+- `/Users/charles/hermes-pocket/packages/offline-core/src/travelActiveTrip.ts`
+- `/Users/charles/hermes-pocket/packages/offline-core/src/travelDecision.ts`
+- `/Users/charles/hermes-pocket/packages/offline-core/src/index.ts`
+- `/Users/charles/hermes-pocket/packages/offline-core/tests/travel-active-trip.test.ts`
+- `/Users/charles/hermes-pocket/packages/offline-core/PROOF.md`
+- `cd /Users/charles/hermes-pocket/packages/offline-core && npm test -- --run tests/travel-active-trip.test.ts` => PASS 4/4
+- `cd /Users/charles/hermes-pocket/packages/offline-core && npm test` => PASS 11 files / 55 tests
+- `cd /Users/charles/hermes-pocket/packages/offline-core && npm run build` => PASS (`tsc` exit 0)
+
+What is now explicitly verified:
+- Active-trip state is exported as a serializable schema-versioned runtime envelope with title/timezone/status/current-location/projection/proof-log fields.
+- Screenshot/OCR intake is linked to both trip and projection identity while preserving source metadata, parsed fields, confidence, redaction, raw text, and normalized text.
+- Observable acceptance is recorded in the proof log itself: OCR-intake and decision-card events are appended immutably and covered by package tests.
+
+Boundary / next gate:
+- Shared offline-core proof is closed for this slice; next work should happen in consuming PWA/RN or gateway persistence/rendering layers rather than moving storage authority into offline-core.
+
+Fresh proof reclassified the enterprise lane from `contract-ready` to `verified-slice` without claiming beta/release closeout.
+
+Evidence:
+- `evidence/enterprise-security-hardening-20260701T000259+0800.md`
+- `npm run production:gate` => PASS 16/16
+- `npm run test --workspace hermes-pocket-pwa -- sync-security.test.ts` => PASS 3/3
+- `npm run test --workspace @hermes-pocket/gateway -- gateway-contract.test.ts` => PASS 21/21
+- `npm run test --workspace @hermes-pocket/gateway -- hermes-state-redaction.test.ts pairing-devices.test.ts` => PASS 4/4
+- `npm run test --workspace @hermes-pocket/entry-core -- release-rollback.test.ts entry-core.test.ts` => PASS 7/7
+- `npm run proof:rollback` => ok true, decision `rollback_proof_ready`, artifact `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-30T16-02-46-139Z.json`
+
+What is now explicitly verified:
+- PWA local encrypted persistence contract and 30-day/high-sensitivity sync policy.
+- Gateway one-time pairing plus revoked-device fail-closed wipe/readback behavior.
+- Exported offline-context redaction for injected skill boilerplate.
+- Release rollback proof requiring artifacts + readbacks + rollback steps.
+
+Boundary / next gate:
+- This is not enterprise beta or release-channel certification.
+- Next maintainable engineering slice is client-side wipe/readback UX proof on RN/PWA using the already-landed Gateway revoke/wipe contract.
+- Native install/distribution and any release approval remain human gates.
 
 ## Dev closure loop pilot — 2026-06-22 21:59 CST
 
@@ -569,3 +650,318 @@ Runtime friction captured:
 - Result: quota state is file-backed and low-confidence/unobservable (`unobservable_count=2`, `exhausted_count=0`, `stale_after_seconds=300`); treat as advisory unless fresh quota evidence is required.
 - Boundary: documentation/taskpool lifecycle only; no runtime/deploy/private-auth side effect.
 
+## 2026-06-29 06:39 CST Shared TypeScript offline-core refresh
+
+- Authority/path reconciliation: `/Users/charles/hermes-pocket/packages/offline-core` is the current shared pure TypeScript implementation authority; `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/implementation/offline-core` remains historical bootstrap evidence only.
+- Verified requested core surfaces in the shared package:
+  - retrieval: `src/retriever.ts`
+  - intent gate: `src/intent.ts`, `src/evidenceGate.ts`
+  - offline answer state machine + citation gate: `src/responder.ts`
+  - handoff queue / TripState sync lifecycle: `src/tripState.ts`
+  - travel follow-through exports: `src/travelDecision.ts`, `src/index.ts`
+- Fresh verification:
+  - `cd /Users/charles/hermes-pocket/packages/offline-core && npm test` -> PASS, Vitest 13/13 (`offline-core`, `trip-state`, `travel-decision`, `local-model-adapter`)
+  - `cd /Users/charles/hermes-pocket/packages/offline-core && npm run build` -> PASS (`tsc`)
+- New proof artifact: `/Users/charles/hermes-pocket/packages/offline-core/PROOF.md`
+- Boundary preserved: offline-core remains read-only for canonical Hermes facts and only supports local evidence answers, local drafts, and queued handoff metadata.
+
+
+
+## 2026-06-29 16:54:40 Mobile Platform framing confirmed
+
+- User confirmed UVISA and UAEC H5 are work projects and must be ignored by default; only advance them when the user explicitly switches context.
+- Confirmed `mobile-offline-avatar-travel` should be treated as `Hermes Pocket Mobile Platform`: a mobile edge-runtime/companion platform where Travel is the first vertical module, not the full product boundary.
+- Portfolio execution ordering artifact: `/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/05-status/project-execution-order-nonwork-mobile-platform-2026-06-29.md`.
+- Boundary: metadata/SSOT/roadmap framing only in this step; no production deploy, push, external side effect, credential action, or work-project advancement.
+
+
+## 2026-06-29T16:57:14+08:00 Hermes Pocket Mobile Platform vertical registry landed
+
+- Implemented `packages/entry-core/src/verticalRegistry.ts` to make platform framing executable rather than only documentary.
+- Verticals: `travel` default/validated-local-slice, `portfolio-dashboard` candidate, `persona-wake-stage` contract-ready, `work-project-companion` candidate gated by explicit user project switch.
+- Guards: every vertical forbids canonical fact writes and external side effects without handoff; work-project companion additionally forbids autonomous UVISA/UAEC advancement without explicit switch.
+- Verification:
+  - `npm run test --workspace @hermes-pocket/entry-core` PASS 7/7.
+  - `npm run build --workspace @hermes-pocket/entry-core` PASS.
+  - `npm test` PASS: gateway 29/29, pwa 17/17, rn-shell 12/12, entry-core 7/7, offline-core 34/34.
+  - `npm run build` PASS all workspaces.
+- Boundary: no push/deploy/external release/credential action; this is local reversible platform-core contract code.
+
+
+### 2026-06-29T17:00:38+08:00 Production verify after platform vertical registry
+
+- Fixed RN native Jest resolver for newly exported offline-core `webEvidencePreprocessor.js` TypeScript source mapping.
+- Verification: `npm --prefix apps/rn-shell/native test -- --runInBand` PASS: 3 suites, 41 tests.
+- Verification: `npm run production:verify` PASS: RN lint PASS; RN Jest 41/41 PASS; production gate 16/16 PASS; workspace tests PASS (gateway 29/29, pwa 17/17, rn-shell 12/12, entry-core 7/7, offline-core 34/34); workspace build PASS; rollback proof `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T09-00-17-184Z.json`; `npm audit --omit=dev` found 0 vulnerabilities.
+- Boundary: local production verification only; no git push, deploy, TestFlight/App Store, external message, credential entry, or work-project advancement.
+
+
+### 2026-06-29T17:06:37+08:00 Enterprise local product smoke running
+
+- Product delivery doc: `/Users/charles/hermes-pocket/docs/ENTERPRISE_PRODUCT_DELIVERY_2026-06-29.md`.
+- Gateway started locally: `PORT=3924 HERMES_POCKET_GATEWAY_DB=/tmp/hermes-pocket-gateway-enterprise.sqlite npm run dev --workspace @hermes-pocket/gateway` (Hermes background session `proc_4883a793bbac`).
+- PWA preview started locally: `npm run preview --workspace hermes-pocket-pwa -- --host 127.0.0.1 --port 4174` (Hermes background session `proc_736f1219a1e2`).
+- Smoke: `curl --noproxy '*' -H 'x-hermes-device-id: enterprise_demo' http://127.0.0.1:3924/v1/sync/bootstrap` -> HTTP 200, `deviceStatus=active`, `latestRevision=2`, `requiredClientAction=none`.
+- Smoke: `curl --noproxy '*' http://127.0.0.1:4174/` -> HTTP 200, title `Hermes Pocket`, manifest + production asset loaded.
+- Boundary: local-only runtime smoke; no external publish/deploy, no App Store/TestFlight, no broad fan-out, no UVISA/UAEC advancement.
+
+
+## 2026-06-29 — Stitch reference UI + product UX supplementation
+
+- Authorization interpreted as local code/docs/tests only; no external release, no push/deploy.
+- Reused existing Stitch reference system from `apps/rn-shell/references/stitch/` instead of creating a new Stitch project.
+- RN shell primary surface redesigned toward Hermes Ion Core: dark control-room shell, centered ion orb, bottom dock, product experience card, vertical registry chips.
+- Product/UX documentation added at `docs/PRODUCT_EXPERIENCE_SPEC_2026-06-29.md`.
+- Production gate updated so the new Stitch-derived anchors are required by verification.
+- Verification: `npm run production:verify` PASS; production gate 16/16, RN Jest 41/41, workspace tests/build PASS, audit 0 vulnerabilities.
+
+
+## 2026-06-29 — Control Room ratchet local slice committed
+
+- User granted highest local self-advance for pain-driven product evolution.
+- Landed Hermes Pocket Control Room as a ratchet upgrade, not an isolated dashboard.
+- Added no-store read-only Gateway operator projection: `GET /v1/operator/control-room`.
+- RN Home now includes `control-room-runtime-summary`; Control page includes `control-room-needs-human` and `control-room-todos`; voice hints cover runtime status, needs-human, todos, and safe continue.
+- Added PRD: `/Users/charles/hermes-pocket/docs/CONTROL_ROOM_RATCHET_PRD_2026-06-29.md`.
+- Verification: `npm run production:verify` PASS; live curl smoke against local Gateway `operator_control_room_projection_v1` PASS.
+- Commit: `acf3652 feat: add Hermes Pocket control room ratchet`.
+- Boundaries still closed without exact target: push, deploy, TestFlight/App Store/MDM, Apple Reminders/Lark writes, external notifications, credentials, destructive operations.
+
+
+## 2026-06-29 — Control Room live operator projection slice
+
+- Continued self-advance after checkpoint-final root-cause repair.
+- Added Gateway `OperatorProjectionSource` injection and local taskpool source.
+- Added `createLocalHermesOperatorProjectionSource()` reading `brain_task_orchestrator.py selfcheck --json` and `dispatch-dry-run --json`.
+- Server opt-in: `HERMES_OPERATOR_PROJECTION_SOURCE=local-taskpool`.
+- Added docs: `/Users/charles/hermes-pocket/docs/CONTROL_ROOM_OPERATOR_PROJECTION_2026-06-29.md`.
+- Verification: gateway operator-source and contract tests PASS; live smoke on port 3926 returned `operator_control_room_projection_v1`, `freshness=live`, `taskpool PASS · dispatch OK`; `npm run production:verify` PASS.
+- Boundary: read-only local taskpool projection only; no claim/dispatch/lifecycle write/external notification/deploy.
+
+
+## 2026-06-29 — RN operator control-room metadata merge slice
+
+- Added native thread runtime metadata for operator control-room sync without writing canonical ContextCards/facts.
+- Added `AssistantOperatorControlRoomSync` on `AssistantThreadState`.
+- Added `mergeOperatorControlRoomIntoThread()` to summarize runtime status, freshness, self-advance counts, needs-human/todo/voice intent counts.
+- Verification: targeted RN projection sync Jest PASS; RN shell build PASS; `npm run production:verify` PASS with RN Jest 43/43, Gateway 32/32, workspace build PASS, audit 0 vulnerabilities.
+- Rollback proof: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T10-16-28-477Z.json`.
+- Boundary: runtime metadata only; no canonical fact writes, no external adapters, no dispatch/lifecycle mutation.
+
+
+## 2026-06-29 — RN Home control-room live metadata UI slice
+
+- Added `buildOperatorControlRoomViewModel()` so Home control-room summary prefers live `operatorControlRoomSync` runtime metadata and falls back to the static local projection.
+- RN App now fetches `/v1/operator/control-room` after hydration and merges it through `mergeOperatorControlRoomIntoThread()`.
+- Home summary now renders live runtime status/label, needs-human count, todo count, and LIVE indicator when projection freshness is live.
+- Verification: targeted App Jest RED->GREEN, RN shell build PASS, `npm run production:verify` PASS with RN Jest 44/44, Gateway 32/32, workspace build PASS, audit 0 vulnerabilities.
+- Rollback proof: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T10-20-31-244Z.json`.
+- Boundary: read-only fetch/render only; no lifecycle mutation, external adapter write, notification, deploy, or canonical fact write.
+
+
+## 2026-06-29 — RN operator detail metadata slice
+
+- Preserved bounded top needs-human/todo/voice hint summaries inside `operatorControlRoomSync`.
+- Kept projection as runtime metadata only; no ContextCard/canonical fact write.
+- `buildOperatorControlRoomViewModel()` now uses live voice hints when present.
+- Verification: targeted projectionSync/App Jest PASS; `npm run production:verify` PASS with RN Jest 44/44, Gateway 32/32, workspace build PASS, audit 0 vulnerabilities.
+- Rollback proof: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T10-22-44-287Z.json`.
+- Boundary: local read-only rendering metadata only; no dispatch/lifecycle/external adapter writes.
+
+
+## 2026-06-29 — RN Control Room detail live summaries slice
+
+- Main control detail surface now renders live operator top needs-human and todo summary lines when `operatorControlRoomSync` is present.
+- Static fallback remains for offline/no-projection mode.
+- Verification: targeted App Jest PASS, targeted projectionSync Jest PASS, RN shell build PASS, `npm run production:verify` PASS with RN Jest 44/44, Gateway 32/32, workspace build PASS, audit 0 vulnerabilities.
+- Rollback proof: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T10-25-31-957Z.json`.
+- Boundary: read-only render only; no taskpool lifecycle mutation, no external adapter write, no notification, no deploy/push, no canonical fact write.
+
+
+## 2026-06-29 — RN needs-human authority packet preview slice
+
+- Added read-only authority packet preview to Control Room detail for top needs-human items.
+- `buildOperatorControlRoomViewModel()` now derives bounded local preview packets with allowed action = local preview and blocked action = external write/notification/lifecycle mutation.
+- Detail UI renders packet title/status/allowed/blocked lines under `control-room-authority-preview`.
+- Verification: RED App view-model test failed on missing `authorityPackets`, then GREEN targeted App Jest PASS, RN shell build PASS, `npm run production:verify` PASS with RN Jest 44/44, Gateway 32/32, workspace build PASS, audit 0 vulnerabilities.
+- Rollback proof: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T10-33-29-064Z.json`.
+- Boundary: preview-only; no external dispatch, no Apple/Lark write, no notification, no taskpool lifecycle mutation, no deploy/push.
+
+
+## 2026-06-29 — Gateway taskpool dispatch readback detail slice
+
+- Local operator projection source now turns non-dispatchable `dispatch-dry-run` readback messages into bounded `needsHuman` items.
+- This makes mobile Control Room show actual taskpool readback reasons instead of only counts/static warnings.
+- Verification: RED operator-source test failed when readback item was missing, then GREEN gateway targeted test PASS, gateway build PASS, `npm run production:verify` PASS with RN Jest 44/44, Gateway 32/32, workspace build PASS, audit 0 vulnerabilities.
+- Rollback proof: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T10-36-55-560Z.json`.
+- Boundary: read-only projection only; no reconcile write, no dispatch execution, no lifecycle mutation, no external adapter write.
+
+
+## 2026-06-29 — Control Room live local-taskpool smoke
+
+- Started Gateway on port 3927 with `HERMES_OPERATOR_PROJECTION_SOURCE=local-taskpool` and read `/v1/operator/control-room`.
+- Readback: schema `operator_control_room_projection_v1`; runtime `healthy`; label `taskpool PASS · dispatch OK`; freshness `live`; dispatchableCount `7`; blockedCount `0`; needsHuman IDs included `taskpool-dispatch-readback`; todosCount `0`; voice intents included runtime/needs/todo/safe_continue.
+- Evidence doc: `/Users/charles/hermes-pocket/docs/CONTROL_ROOM_LIVE_OPERATOR_SMOKE_2026-06-29.md`.
+- Verification: `git diff --check` PASS; targeted gateway operator-source test PASS.
+- Boundary: read-only Gateway smoke only; process killed after readback; no reconcile/dispatch/lifecycle/external writes/deploy/push.
+
+
+## 2026-06-29 — Control Room lifecycle readback projection
+
+- Consumed project-level local authorization without opening external write/deploy/push boundaries.
+- Diagnosed C write-through: local taskpool claim/running/worker path executed; target was later released by governance and returned to pending; selfcheck remains PASS.
+- Added Gateway local-taskpool lifecycle readback: `selfcheck`, `dispatch-dry-run`, and `list --json` now project blocked lifecycle count, active tasks, and blocked task needs-human cards.
+- Fixed live smoke maxBuffer boundary after real `list --json` measured 11.34MB; bounded child stdout buffer raised to 16MB.
+- Evidence: `docs/CONTROL_ROOM_LIFECYCLE_READBACK_SMOKE_2026-06-29.md`.
+- Verification: targeted operator-source test PASS, gateway build PASS, live Gateway smoke on port 3928 PASS, `npm run production:verify` PASS with rollback proof `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T11-12-50-839Z.json`.
+- Boundaries preserved: no Apple/Lark/Kanban writes, no external notification, no deploy, no push, no force-done.
+
+
+## 2026-06-29 — Control Room RN blocked-card priority
+
+- Fixed RN operator metadata merge so real `taskpool-blocked-*` needs-human cards are preserved ahead of warning noise in top mobile cards.
+- TDD: added RED test for three warnings plus one blocked task; verified failure then implemented blocked-first dedupe/top-3 selection.
+- Verification: targeted RN projectionSync Jest PASS (5/5), RN lint PASS, RN shell build PASS, `npm run production:verify` PASS with rollback proof `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T11-15-11-283Z.json`.
+- Boundaries preserved: read-only projection/metadata only; no taskpool lifecycle mutation, external writes, deploy, or push.
+
+
+## 2026-06-30 — Control Room bounded taskpool summary refresh
+
+- Closed worktree drift first: accepted and committed `packages/offline-core/PROOF.md` after fresh `npm --prefix packages/offline-core test` PASS (51/51) and `npm --prefix packages/offline-core run build` PASS.
+- Replaced Gateway local-taskpool raw Node read of `brain_task_orchestrator.py list --json` with a bounded Python summary helper that emits only lifecycle fields needed by Control Room (`id`, `title`, `status`, `priority`, claim/run metadata). This addresses the measured 11.34MB list payload; after bounded-summary smoke passed, Node child-process stdout buffer was reduced back to 2MB.
+- TDD: added RED operator-source test proving the Node gateway process does not call raw `list --json` and still projects blocked lifecycle cards from the bounded summary; then implemented helper and updated existing mocks.
+- Live smoke: Gateway on port 3929, then repeated with 2MB buffer on port 3930 with `HERMES_OPERATOR_PROJECTION_SOURCE=local-taskpool`; `/v1/operator/control-room` returned 2699-byte payload, schema `operator_control_room_projection_v1`, runtime healthy, label `taskpool PASS · dispatch OK`, dispatchableCount 4, blockedCount 3, real `taskpool-blocked-*` cards, next pending todo.
+- Verification: targeted gateway operator-source test PASS (3/3), gateway build PASS, `npm run production:verify` PASS with rollback proof `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T16-54-18-927Z.json`, audit 0 vulnerabilities.
+- Boundary: read-only summary/projection only; no taskpool lifecycle mutation, dispatch, external write, deploy, push, notification, Apple/Lark/Kanban write, or force-done.
+
+
+## 2026-06-30 — RN iOS Simulator acceptance
+
+Status: PASS for local iOS Simulator acceptance.
+
+Evidence:
+- Release workspace simulator build PASS: `xcodebuild -workspace ios/HermesPocket.xcworkspace -scheme HermesPocket -configuration Release -sdk iphonesimulator ... build`.
+- Installed/launched bundle `com.charles.hermespocket` on `HermesPocketSE` (`F439D3FF-7EE3-4DAE-A6CA-42159C0D2B74`).
+- Foreground screenshot evidence: `/tmp/hermes-pocket-sim-acceptance/app-foreground-final.png`.
+- Debug XCUITest with Metro on 127.0.0.1:8081 PASS: 2 tests, 0 failures, Home→input composer and Settings→Diagnostics.
+- Report: `/Users/charles/hermes-pocket/docs/RN_IOS_SIMULATOR_ACCEPTANCE_2026-06-30.md`.
+
+Boundaries: no physical device, no TestFlight/App Store, no push/deploy/external dispatch.
+
+
+## 2026-06-30 — Shared offline core proof-log refresh
+
+- Reconciled the current authority boundary back to the live package path `/Users/charles/hermes-pocket/packages/offline-core` and refreshed the package proof artifact `/Users/charles/hermes-pocket/packages/offline-core/PROOF.md`.
+- Re-verified the requested ContextCard/EvidenceSpan retrieval, intent gate, offline answer state machine, and handoff/TripState queue surfaces against the live source files: `src/retriever.ts`, `src/intent.ts`, `src/evidenceGate.ts`, `src/responder.ts`, `src/tripState.ts`, and `src/index.ts`.
+- Fresh verification commands:
+  - `cd /Users/charles/hermes-pocket/packages/offline-core && npm test` => PASS: 10 files, 51/51 tests
+  - `cd /Users/charles/hermes-pocket/packages/offline-core && npm run build` => PASS: `tsc` exit 0
+- Observable result: proof-log drift is closed and the ledger now points at the current package authority rather than the historical bootstrap slice.
+
+
+## 2026-07-01 — Freeze SSOT review readback logged
+
+- Durable review artifact written to `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/ssot-review-readback-20260630.md` so the acceptance evidence is no longer stranded in a scratch kanban workspace.
+- Accepted canonical SSOT model/gates on readback: unified mobile avatar identity, travel as first vertical only, shared TypeScript evidence/handoff core first, online Hermes/Gateway as normal authority, TripState/handoff/capability/privacy boundaries intact.
+- Confirmed the remaining blocker is not SSOT ambiguity but parent projection debt: duplicated 2026-06-29 framing/quota child notes still leave the parent reporting `auto_subtask_ready_for_parent: false` despite equivalent narrowed evidence already existing.
+- Observable result: the proof log now records both the acceptance verdict and the exact next dependency order before blocked-resolve / multimodel ratification may rerun.
+
+
+## 2026-07-01 — Enterprise privacy/security hardening reconciliation refresh
+
+- Durable proof packet written to `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/enterprise-privacy-security-hardening-reconciliation-20260701.md`.
+- Fresh bounded verification is green for the hardening sub-surfaces:
+  - PWA sync/encryption policy test PASS (3/3): AES-GCM local encryption, 30-day retention window + pinned, `includeSensitive=false`, refusal handoff does not leak unrelated local evidence.
+  - Gateway privacy/security tests PASS for redaction, pairing/revoke/wipe, deviceState persistence/readback, and no-store sync boundary; two host-router tests required explicit `--testTimeout 20000` reruns and then passed.
+  - Entry-core rollback test PASS; `npm run proof:rollback` PASS with fresh artifact `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-30T16-02-25-652Z.json`.
+  - `npm run production:gate` PASS (16/16), `npm audit --omit=dev` PASS (0 vulnerabilities), `npm run build` PASS.
+- New blocking readback from end-to-end verification: `npm run production:verify` currently FAILS in RN native Jest because `packages/offline-core/src/index.ts` exports `./travelActiveTrip.js`, while source-mode RN Jest cannot resolve that path even though `packages/offline-core/src/travelActiveTrip.ts` exists.
+- Observable result: privacy/security proof drift is now closed, and the next dependency order is explicit again: fix RN/offline-core module-resolution regression -> rerun `npm run production:verify` -> only then reassess remaining human-gated permission/mobile evidence.
+
+
+## 2026-07-01 — Privacy/compliance package and proof-spine refresh
+
+- Refreshed stale proof-spine refs in `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/evidence-bundle.json`: missing `security-test-report.md`, `privacy-checklist.md`, and `wipe-readback-proof.md` now point to live artifact/source paths.
+- Landed privacy/compliance package contract at `/Users/charles/hermes-pocket/apps/rn-shell/references/enterprise/PRIVACY_DATA_HANDLING.md`, covering speech/transcript retention, delete/export/wipe flow, permission-denied UX, and privacy/telemetry copy.
+- Proof log: `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/privacy-compliance-package-proof-spine-refresh-20260701.md`.
+- Verification: evidence JSON parses, refreshed refs exist, stale refs no longer appear in `evidence-bundle.json`, Gateway contract test `npx vitest run --testTimeout 15000 apps/gateway/tests/gateway-contract.test.ts` PASS 21/21, `git diff --check` PASS.
+- Boundary: documentation/contract/evidence slice only; no enterprise hardening completion claim, no legal/public launch approval, no deploy/push/TestFlight/App Store, and runtime control acceptance remains separate.
+
+
+## 2026-07-01 — Enterprise hardening regression refresh at live repo state
+
+- Re-ran the current one-command gate: `cd /Users/charles/hermes-pocket && npm run production:verify` => FAIL in RN native Jest on `Cannot find module '@babel/runtime/helpers/interopRequireDefault'` from `packages/offline-core/src/tripState.ts`.
+- Focused reproduction matches the gate: `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => FAIL with the same `@babel/runtime` resolution error from offline-core source-mode execution.
+- Verified the previous `travelActiveTrip.js` mapper gap is not the current blocker: `apps/rn-shell/native/jest.config.js` still contains `'^\\./travelActiveTrip\\.js$': '<rootDir>/../../../packages/offline-core/src/travelActiveTrip.ts'`.
+- Corroborating runtime boundary: app-local runtime helper exists at `apps/rn-shell/native/node_modules/@babel/runtime/helpers/interopRequireDefault.js`, while `/Users/charles/hermes-pocket/node_modules/@babel/runtime/helpers/interopRequireDefault.js` is absent on the current workspace state.
+- Observable result: the proof log now reflects the live blocker truth again. Next bounded dependency order is package/workspace runtime-resolution diagnosis -> maintainable fix at the right boundary -> rerun focused RN Jest -> rerun full `npm run production:verify` -> only then reassess remaining permission/mobile evidence.
+
+
+## 2026-07-01 — Enterprise hardening fresh verification rerun after child review handoffs
+
+- Reconciled child-task state first: `t_21b35c93` and `t_011d6df8` are both blocked `review-required`, but their handoffs agree on the live fix boundary in `apps/rn-shell/native/jest.config.js` (`travelActiveTrip.js` source-mode mapper plus `@babel/runtime` helper mapper).
+- Fresh same-slice reruns on the current repo state:
+  - `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => PASS, 3 suites / 46 tests.
+  - `cd /Users/charles/hermes-pocket && npm run production:verify` => PASS; RN lint/test green, production gate 16/16 PASS, workspace tests PASS (gateway 34/34, PWA 17/17, RN shell 12/12, entry-core 7/7, offline-core 58/58), workspace build PASS, rollback proof PASS, `npm audit --omit=dev` found 0 vulnerabilities.
+- Fresh rollback artifact from the rerun: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-07-01T03-26-54-757Z.json`.
+- Observable result: the canonical proof packet `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/enterprise-privacy-security-hardening-reconciliation-20260701.md` now records a post-handoff rerun showing the one-command enterprise verification path is green on the live repo state.
+- Remaining boundary: review/governance is still open on the code-changing child tasks; this rerun does not claim deploy/push/publish/TestFlight/App Store/native-signing/device-install or user-visible permission-panel/mobile-device proof beyond the automated gates.
+
+
+## 2026-07-01 — Enterprise hardening fresh same-slice rerun
+
+- Revalidated the parent lane against the live repo after the earlier child review handoffs instead of relying on stale green evidence.
+- Fresh reruns on the current repo state:
+  - `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => PASS, 3 suites / 46 tests.
+  - `cd /Users/charles/hermes-pocket && npm run production:verify` => PASS; RN lint/test green, production gate 16/16 PASS, workspace tests PASS (gateway 34/34, PWA 17/17, RN shell 12/12, entry-core 7/7, offline-core 58/58), workspace build PASS, rollback proof PASS, `npm audit --omit=dev` found 0 vulnerabilities.
+  - `cd /Users/charles/hermes-pocket && git diff --check` => PASS.
+  - `cd /Users/charles/.hermes && git diff --check -- workflows/product/mobile-offline-avatar-travel/evidence/enterprise-privacy-security-hardening-reconciliation-20260701.md workflows/product/mobile-offline-avatar-travel/progress-ledger.md` => PASS.
+- Fresh rollback artifact from the rerun: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-07-01T06-28-42-020Z.json`.
+- Observable result: the canonical proof packet now contains a new 2026-07-01 14:29 CST verification refresh confirming the one-command enterprise verification path is still green on the live repo state.
+- Remaining boundary: governance/review remains open on child tasks `t_21b35c93` and `t_011d6df8`; this rerun does not claim deploy/push/publish/TestFlight/App Store/native-signing/device-install or user-visible permission-panel/mobile-device proof beyond the automated gates.
+
+
+## 2026-07-01 — Enterprise hardening rerun plus source-sync correction
+
+- Revalidated the parent lane again against the live repo instead of relying on the 14:29 CST packet alone.
+- Fresh reruns on the current repo state:
+  - `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => PASS, 3 suites / 46 tests.
+  - `cd /Users/charles/hermes-pocket && npm run production:verify` => PASS; RN lint/test green, production gate 16/16 PASS, workspace tests PASS (gateway 34/34, PWA 17/17, RN shell 12/12, entry-core 7/7, offline-core 58/58), workspace build PASS, rollback proof PASS, `npm audit --omit=dev` found 0 vulnerabilities.
+- Fresh rollback artifact from the rerun: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-07-01T09-26-05-669Z.json`.
+- Reconciled source-task drift at `/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-21-enterprise-privacy-security-hardening.md`: the framing convergence child is now done, so auto-subtask sync is corrected to done=3/3, open=0, and the parent is ready for the next ratification rerun instead of reporting a stale open child.
+- Observable result: the canonical proof packet now contains a new 2026-07-01 17:26 CST verification refresh, and the source task no longer misreports the framing child as open.
+- Remaining boundary: governance/review remains open on child tasks `t_21b35c93` and `t_011d6df8`; this rerun does not claim deploy/push/publish/TestFlight/App Store/native-signing/device-install or user-visible permission-panel/mobile-device proof beyond the automated gates.
+
+
+## 2026-07-01 — Enterprise hardening governance-boundary rerun
+
+- Revalidated the parent lane again on the live repo instead of relying on the 17:26 CST packet.
+- Fresh reruns on the current repo state:
+  - `cd /Users/charles/hermes-pocket && npm --prefix apps/rn-shell/native test -- --runInBand` => PASS, 3 suites / 46 tests.
+  - `cd /Users/charles/hermes-pocket && npm run production:verify` => PASS; RN lint/test green, production gate 16/16 PASS, workspace tests PASS (gateway 34/34, PWA 17/17, RN shell 12/12, entry-core 7/7, offline-core 58/58), workspace build PASS, rollback proof PASS, `npm audit --omit=dev` found 0 vulnerabilities.
+- Fresh rollback artifact from the rerun: `/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-07-01T12-25-09-077Z.json`.
+- Observable result: the canonical proof packet now contains a new 2026-07-01 20:25 CST verification refresh confirming the enterprise verification path is still green on the live repo state.
+- Current blocker is governance/ratification rather than code/test health: child tasks `t_21b35c93` and `t_011d6df8` still require review, and the parent source task remains blocked on multimodel certification / governance closeout outside this worker's authority.
+- Boundary: this rerun does not claim deploy/push/publish/TestFlight/App Store/native-signing/device-install or user-visible permission-panel/mobile-device proof beyond the automated gates.
+
+## Mineradio C-mode absorption intake — 2026-07-01
+- Portfolio rollout: `/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/04-merge-candidates/mineradio-c-mode-rollout-2026-07-01.json`
+- Mode: C / bounded implementation absorption for non-work project.
+- Exclusions respected: no UAEC/UVISA work-project changes from this rollout.
+- C targets:
+  - Implement travel copilot as stage-first experience: active trip state, evidence cards, weather/time/location mood context, offline/online authority badges.
+  - Use golden default demo snapshot for local/mobile shell without overwriting user trip data.
+- Boundary: this intake is not runtime completion; project is only C-absorbed after its own SSOT is read, a bounded local slice or implementation-ready contract is landed, tests/static/browser proof pass, and evidence is appended here.
+
+
+## 2026-07-01 — PWA in-app/dialog update experience
+
+- Landed PWA version/update UX so installed/web users can check a deployed version from the UI or by typing Chinese dialog intents such as `检查一下版本` / `立即更新版本`.
+- Added build-time `dist/version.json`, versioned `/sw.js?v=<appVersion>` registration with `updateViaCache: none`, `SKIP_WAITING` message handling, release status card, and chat-intent routing before normal offline/Gateway Q&A.
+- Added production gate anchor `pwa.dialog-update-contract` so future production verification fails if version/update anchors disappear.
+- Verification:
+  - `npm run test --workspace hermes-pocket-pwa` => PASS, 11 files / 22 tests.
+  - `npm run build --workspace hermes-pocket-pwa` => PASS, emitted `dist/version.json`.
+  - `npm run production:gate` => PASS, 17/17 including `pwa.dialog-update-contract`.
+  - Local preview smoke on `http://127.0.0.1:4180`: `/`, `/version.json`, `/sw.js` all HTTP 200; browser dialog smoke typed `检查一下版本` and rendered `当前已经是最新版本 0.1.0。`.
+- Boundary: this is the client-side update experience for an already-deployed PWA version. It does not itself authorize/build/deploy/publish a new production release; release execution still needs exact target, rollback path, receipt, and readback.

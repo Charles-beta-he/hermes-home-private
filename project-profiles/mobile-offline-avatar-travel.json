@@ -1,6 +1,6 @@
 {
   "project": "mobile-offline-avatar-travel",
-  "title": "手机端离线分身 × 旅游优化",
+  "title": "Hermes Pocket Mobile Platform（移动端平台；Travel 为首个垂直）",
   "created_at": "2026-06-21T04:26:00+08:00",
   "ssot_root": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel",
   "plan_file": "/Users/charles/.hermes/plans/2026-06-21_0416-mobile-offline-avatar-prod.md",
@@ -37,11 +37,14 @@
     "certification_latest_completed_discussion": "/Users/charles/.hermes/tick-20260622-161626-057907-p5242-9e38e9f9-df614b7c/discussion_result.json"
   },
   "product_model": {
-    "platform": "mobile hybrid avatar as Hermes edge runtime; offline/local model is fallback, not primary positioning",
-    "first_vertical": "travel live copilot",
+    "platform": "Hermes Pocket Mobile Platform: cross-end mobile companion/edge runtime for Hermes; travel is first vertical, not the whole product boundary",
+    "first_vertical": "travel live copilot / offline travel assistant",
     "architecture_default": "shared TypeScript evidence/handoff core first; online Hermes/Gateway remains normal authority, offline/local model is fallback; PWA/RN/Capacitor packaging decided after repo/device/signing gates",
     "cloud_authority": "Hermes remains canonical for current facts, tools, tasks, memory, and external side effects",
-    "mobile_authority": "local projection, TripState, selected screenshots/OCR, drafts, handoff queue"
+    "mobile_authority": "local projection, TripState, selected screenshots/OCR, drafts, handoff queue",
+    "platform_scope": "shared mobile evidence core + Gateway projection + RN/PWA shells + local draft/handoff queue + vertical plugin surfaces",
+    "vertical_model": "Travel is vertical module v1; future verticals must use same authority/evidence/handoff contract and cannot become new fact authorities.",
+    "execution_policy": "Full safe local advancement authorized for non-work Hermes/mobile platform projects; UVISA and UAEC H5 are work projects and excluded unless user explicitly switches context."
   },
   "red_lines": [
     "no offline external side effects",
@@ -83,10 +86,22 @@
       "test": "npm test pass 3/3; browser smoke verified"
     },
     "travel_ocr": {
-      "status": "contract-ready"
+      "status": "validated-offline-core-travel-contract",
+      "path": "/Users/charles/hermes-pocket/packages/offline-core",
+      "test": "npm test pass 51/51; npm run build pass",
+      "evidence": "/Users/charles/hermes-pocket/packages/offline-core/PROOF.md",
+      "last_verified_at": "2026-06-30T23:53:00+08:00",
+      "scope": "active-trip projection, screenshot/OCR evidence schema, live decision card, map deep-link outputs, drift warnings, advisory-only web evidence bridge",
+      "boundary": "validated as shared offline-core contract and tests only; runtime PWA/RN screenshot intake UI + live projection wiring remain separate integration work"
     },
     "enterprise_release": {
-      "status": "contract-ready"
+      "status": "verified-bounded-hardening-slices",
+      "path": "/Users/charles/hermes-pocket",
+      "evidence": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/enterprise-security-hardening-20260701T000259+0800.md",
+      "test": "npm run production:gate PASS 16/16; @hermes-pocket/gateway gateway-contract.test.ts PASS 21/21; @hermes-pocket/gateway hermes-state-redaction.test.ts + pairing-devices.test.ts PASS 4/4; hermes-pocket-pwa sync-security.test.ts PASS 3/3; @hermes-pocket/entry-core release-rollback.test.ts + entry-core.test.ts PASS 7/7; npm run proof:rollback ok true rollback_proof_ready",
+      "last_verified_at": "2026-07-01T00:02:59+08:00",
+      "scope": "fresh proof covers encrypted local persistence policy, revoked-device wipe/readback fail-closed behavior, exported-context redaction, and release rollback proof",
+      "boundary": "not enterprise beta/release certification; next engineering slice is client-side wipe/readback UX proof on RN/PWA, while native install/distribution remain separate human gates"
     },
     "dev_closure_loop": {
       "status": "blocked-after-auth-refresh-certification-command-terminated",
@@ -683,11 +698,71 @@
         "safe_default": "Keep google-gemini-cli unavailable; model-router filters it and production loop remains verified through non-Google providers.",
         "resume_after_human_action": "After Google appeal succeeds or a different eligible Google account/project is configured, rerun model-provider-recovery.py, readiness, default smoke, production verify."
       }
+    },
+    "mobile_platform_vertical_registry": {
+      "status": "landed_verified",
+      "updated_at": "2026-06-29T16:57:14+08:00",
+      "scope": "Entry-core now models Hermes Pocket Mobile Platform vertical plugins: travel default, portfolio dashboard candidate, persona wake stage contract-ready, and work-project companion gated by explicit user project switch.",
+      "changed_files": [
+        "/Users/charles/hermes-pocket/packages/entry-core/src/verticalRegistry.ts",
+        "/Users/charles/hermes-pocket/packages/entry-core/src/index.ts",
+        "/Users/charles/hermes-pocket/packages/entry-core/tests/entry-core.test.ts",
+        "/Users/charles/hermes-pocket/apps/rn-shell/native/jest.config.js"
+      ],
+      "verification": [
+        "npm run test --workspace @hermes-pocket/entry-core PASS 7/7",
+        "npm run build --workspace @hermes-pocket/entry-core PASS",
+        "npm test PASS: gateway 29/29, pwa 17/17, rn-shell 12/12, entry-core 7/7, offline-core 34/34",
+        "npm run build PASS all workspaces",
+        "npm --prefix apps/rn-shell/native test -- --runInBand PASS 41/41",
+        "npm run production:verify PASS: gate 16/16, workspace tests/build PASS, rollback proof ready, audit 0 vulnerabilities"
+      ],
+      "boundary": "No push/deploy/external release; UVISA/UAEC work-project companion remains disabled unless user explicitly switches context; mobile verticals cannot write canonical facts.",
+      "production_verify_artifact": "/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-29T09-00-17-184Z.json"
+    },
+    "enterprise_local_product_smoke": {
+      "status": "running_verified",
+      "updated_at": "2026-06-29T17:06:37+08:00",
+      "doc": "/Users/charles/hermes-pocket/docs/ENTERPRISE_PRODUCT_DELIVERY_2026-06-29.md",
+      "gateway_url": "http://127.0.0.1:3924",
+      "pwa_url": "http://127.0.0.1:4174/",
+      "gateway_session": "proc_4883a793bbac",
+      "pwa_session": "proc_736f1219a1e2",
+      "verification": [
+        "Gateway bootstrap HTTP 200 deviceStatus=active latestRevision=2 requiredClientAction=none",
+        "PWA preview HTTP 200 title Hermes Pocket",
+        "npm run production:verify PASS 2026-06-29T09:04Z"
+      ],
+      "boundary": "local-only product smoke; no external release or work-project advancement"
+    },
+    "pwa_dialog_update_experience": {
+      "status": "implemented_verified",
+      "updated_at": "2026-07-01T22:49:36+08:00",
+      "scope": "PWA in-app/dialog version update experience: generated version.json, versioned SW registration with updateViaCache none, release card, Chinese chat intents for checking/applying updates, SKIP_WAITING activation path.",
+      "path": "/Users/charles/hermes-pocket/apps/pwa",
+      "changed_files": [
+        "/Users/charles/hermes-pocket/apps/pwa/src/main.ts",
+        "/Users/charles/hermes-pocket/apps/pwa/src/pwa/releaseVersion.ts",
+        "/Users/charles/hermes-pocket/apps/pwa/src/pwa/updateController.ts",
+        "/Users/charles/hermes-pocket/apps/pwa/src/pwa/releaseIntent.ts",
+        "/Users/charles/hermes-pocket/apps/pwa/src/pwa/registerServiceWorker.ts",
+        "/Users/charles/hermes-pocket/apps/pwa/public/sw.js",
+        "/Users/charles/hermes-pocket/apps/pwa/vite.config.ts",
+        "/Users/charles/hermes-pocket/scripts/production-readiness-gate.mjs"
+      ],
+      "verification": [
+        "npm run test --workspace hermes-pocket-pwa PASS 11 files / 22 tests",
+        "npm run build --workspace hermes-pocket-pwa PASS and emits dist/version.json",
+        "npm run production:gate PASS 17/17 including pwa.dialog-update-contract",
+        "local preview smoke http://127.0.0.1:4180 /version.json and /sw.js HTTP 200",
+        "browser smoke: typed 检查一下版本 and PWA replied 当前已经是最新版本 0.1.0"
+      ],
+      "boundary": "This enables installed PWA users to check/apply a deployed version from the app/chat surface. It does not itself build/deploy/publish a new production release; external PWA hosting/CI release remains a separate authorized target with rollback/readback."
     }
   },
-  "project_type": "edge-product",
+  "project_type": "mobile-platform/edge-runtime",
   "portfolio_profile": true,
-  "portfolio_status": "ledgered+validated-slices",
+  "portfolio_status": "platform-framed+validated-local-slices",
   "promotion_policy": "evidence-gated ratchet; proposed/candidate/needs-evidence cannot be reported as validated/promoted without proof",
   "relations": [
     {
@@ -704,6 +779,11 @@
       "target": "project-portfolio-os",
       "relation": "governed_by",
       "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "target": "hermes-persona-wake-stage",
+      "relation": "shares_module",
+      "merge_policy": "mobile_avatar_interaction_patterns_only_no_fact_merge"
     }
   ],
   "current_components": {
@@ -756,6 +836,21 @@
       "status": "validated-local-rollback-proof",
       "evidence": "/Users/charles/hermes-pocket/evidence/release-rollback/pwa-local-2026-06-22T17-40-10-003Z.json",
       "next_gate": "promote only after real deployment target is chosen; add native binary rollback after Apple Team/Xcode install path exists"
+    },
+    "mobile_platform_framing": {
+      "status": "approved_direction/metadata_landed",
+      "evidence": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/00-intake/mobile-platform-expansion-2026-06-29.md",
+      "next_gate": "update PRD/roadmap/taskpool candidates, then verify implementation slices"
+    },
+    "travel_vertical": {
+      "status": "first_vertical/validated-local-slices",
+      "evidence": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+      "next_gate": "keep as vertical module over shared platform core"
+    },
+    "mobile_platform_vertical_registry": {
+      "status": "landed_verified",
+      "evidence": "/Users/charles/hermes-pocket/packages/entry-core/src/verticalRegistry.ts",
+      "next_gate": "wire vertical registry into RN/PWA UI and platform roadmap, then rerun production:verify"
     }
   },
   "implementation_repo": "/Users/charles/hermes-pocket",
@@ -875,5 +970,39 @@
       "evidence-only/regression-proof-already-satisfied"
     ],
     "enforcement": "warn_only_profile_contract; lifecycle proof gates remain authoritative"
+  },
+  "updated_at": "2026-06-29T16:55:00+08:00",
+  "platform_expansion": {
+    "status": "approved_direction/ssot_metadata_landed",
+    "approved_at": "2026-06-29T16:55:00+08:00",
+    "positioning": "Expand from mobile-offline-avatar-travel into Hermes Pocket Mobile Platform with travel as first vertical/plugin.",
+    "core_capabilities": [
+      "entry-core multi-end registry",
+      "offline-core evidence-bound local assistant",
+      "Pocket Gateway projection/sync",
+      "RN shell",
+      "PWA companion",
+      "deviceState health writeback",
+      "release rollback proof",
+      "host mobile model-router contract",
+      "voice/asr lane gated by explicit permissions"
+    ],
+    "verticals": {
+      "travel": "first validated/product vertical",
+      "future_verticals": "proposal only until PRD/evidence/task gates exist"
+    },
+    "non_goals": [
+      "do not make mobile a canonical fact source",
+      "do not upload raw coordinates/screenshots as memory",
+      "do not perform external side effects offline",
+      "do not claim TestFlight/App Store/MDM/release without separate evidence and authorization"
+    ],
+    "next_safe_slices": [
+      "platform SSOT/PRD rename and architecture map",
+      "active taskpool drain excluding work projects",
+      "live Gateway projection and RN/PWA readback refresh",
+      "provider/router fail-closed readiness refresh",
+      "device/simulator UI evidence refresh when permitted"
+    ]
   }
 }
