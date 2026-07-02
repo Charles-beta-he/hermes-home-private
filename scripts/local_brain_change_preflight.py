@@ -241,15 +241,24 @@ def aggregate_hits(search_results: Sequence[dict]) -> tuple[list[dict], list[dic
 
 def has_local_deterministic_precommit_certification(evidence: Sequence[str]) -> bool:
     blob = "\n".join(evidence).lower()
-    return (
+    common = (
         "deterministic_gate:pre-commit local deterministic checks completed" in blob
         and "tests:" in blob
         and "py_compile_or_build:" in blob
-        and "task_record:" in blob
-        and "proof_log:" in blob
-        and "lifecycle_readback:" in blob
         and "post_action_readback:" in blob
     )
+    taskpool_lifecycle = (
+        "task_record:" in blob
+        and "proof_log:" in blob
+        and "lifecycle_readback:" in blob
+    )
+    local_runtime_or_architecture = (
+        "design_doc:" in blob
+        and "gate_readback:" in blob
+        and "exact_target:" in blob
+        and "rollback:" in blob
+    )
+    return common and (taskpool_lifecycle or local_runtime_or_architecture)
 
 
 def build_route_review_record(summary: str, files: Sequence[str], evidence: Sequence[str]) -> dict:

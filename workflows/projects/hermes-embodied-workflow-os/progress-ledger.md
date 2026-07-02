@@ -88,3 +88,12 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Latest test pass: `python3 -m unittest discover -s implementation/tests -v` => 22 tests OK.
 - Boundary preserved: static HTML fixture only; no server, browser automation, UI acceptance claim, external adapter, hardware/robot, taskpool/deploy/auth side effects.
 - Stop gate after this slice: real Web runtime/UI implementation requires separate gate and likely uIMax/UI acceptance if quality is claimed.
+
+## Update — 2026-07-02T19:58:00+08:00
+- Ran multi-model safety review for local Web Workbench runtime. Result: degraded/advisory, not certified; Claude and MiMo provided actionable amendments, Gemini provider route failed.
+- Implemented `implementation/hewos_core/workbench_runtime.py` as projection-only local stdlib HTTP runtime with host/port flags.
+- Added `implementation/tests/test_workbench_runtime.py` endpoint and boundary tests.
+- Verified browser smoke at `http://127.0.0.1:8799/`: Dashboard, ActionIntent Review blocked state, and EvidenceLedger visible; console 0 errors.
+- Latest test pass: 27 tests OK.
+- Verification report: `06-verification/web-workbench-runtime-verification-20260702.md`.
+- Boundary preserved: no taskpool write, no external dispatch, no deploy/push, no auth/credentials, no hardware/robot execution, no `/execute` endpoint, no UI quality/uIMax claim.
