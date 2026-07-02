@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>HEWOS Workbench Static Fixture</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 2rem; background: #101418; color: #f4f7fb; }
+    section { border: 1px solid #2d3a46; border-radius: 12px; padding: 1rem; margin: 1rem 0; background: #161d24; }
+    .badge { display: inline-block; padding: .2rem .5rem; border-radius: 999px; background: #2a533a; color: #b8ffd2; }
+    .blocked { background: #55302f; color: #ffd1cf; }
+  </style>
+</head>
+<body>
+  <h1>HEWOS Workbench</h1>
+  <p class="badge">Simulation-only static fixture</p>
+  <section>
+    <h2>Dashboard</h2>
+    <p>Capabilities: 2</p>
+    <p>Ledger entries: 1</p>
+    <p>Visible parts from replay: fixture-part</p>
+    <ul><li>cap.web.text_observation — observation — simulated</li><li>cap.robot.dry_run — physical_action — simulated</li></ul>
+  </section>
+  <section>
+    <h2>ActionIntent Review</h2>
+    <p>Intent: ai.fixture.blocked</p>
+    <p>Risk: physical_action</p>
+    <p class="badge blocked">Status: blocked</p>
+    <p>No real execution path is present in this artifact.</p>
+  </section>
+  <section>
+    <h2>EvidenceLedger</h2>
+    <ul><li>ev.1 — observation — adapter.web.mock</li></ul>
+  </section>
+</body>
+</html>
