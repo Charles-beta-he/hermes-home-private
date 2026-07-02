@@ -1,8 +1,8 @@
 ---
 project: hermes-embodied-workflow-os
-updated_at: 2026-07-03T00:13:00+08:00
-current_stage: high_risk_boundary_governance_covered_with_simulation_ledger
-completion_boundary: local_intent_only_no_live_external_or_hardware_side_effects
+updated_at: 2026-07-03T00:22:00+08:00
+current_stage: local_harness_write_through_for_high_risk_boundaries
+completion_boundary: disposable_local_harness_only_no_live_adapter
 states:
   p1_contract_core:
     status: accepted
@@ -14,6 +14,10 @@ states:
     status: accepted_scoped_a_plus
   high_risk_boundary_coverage:
     status: accepted_governance_coverage_100_percent
+  simulation_write_local_ledger:
+    status: accepted_intent_only_receipts
+  harness_write_through:
+    status: accepted_disposable_local_harness
     requested_boundaries:
       - taskpool_lifecycle
       - external_dispatch
@@ -21,22 +25,21 @@ states:
       - deploy_publish
       - auth_credential
     artifacts:
-      - implementation/hewos_core/high_risk_boundaries.py
-      - implementation/hewos_core/simulation_ledger.py
-      - implementation/tests/test_high_risk_boundaries.py
-      - 06-verification/high-risk-boundary-coverage-20260703.json
-      - 06-verification/HIGH_RISK_BOUNDARY_REPORT_20260703.md
-      - artifacts/simulation-ledger-20260703.jsonl
+      - implementation/hewos_core/local_harness.py
+      - implementation/tests/test_local_harness.py
+      - artifacts/local-harness-20260703/receipts.jsonl
+      - 06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md
     evidence:
-      - unscoped live execution requests blocked
-      - exact local simulation intent authorization returns authorized_intent_only
-      - auth boundary forbids agent secret entry and token read
-      - simulation ledger idempotent append verified
-      - simulation ledger rollback verified
-    live_execution_enabled: false
-    production_resource_touched: false
+      - disposable local harness write verified
+      - idempotent replay verified
+      - non-local target rejected
+      - live execution-enabled decision rejected
+      - rollback by exact receipt verified
+    live_adapter_touched: false
+    execution_enabled: false
+    token_read_allowed: false
 next_safe_phase:
-  phase: harness_write_through
-  allowed: one exact disposable local harness target with receipt/readback/rollback
+  phase: real_adapter_write_through
+  allowed: one exact adapter only with target/payload/rollback/readback packet
   forbidden_without_exact_packet: taskpool_live_write, external_live_send, hardware_or_robot_execution, deploy_or_push, credential_or_secret_entry, broad_fanout
 ---
