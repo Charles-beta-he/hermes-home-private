@@ -109,7 +109,7 @@ When the user asks to inspect existing evolution direction/progress (进化方�
 ## Workflow
 
 1. Capture as `captured`; do not generalize immediately.
-2. For abstraction-heavy claims, load `abstraction-governance` and run scope tagging, entity stripping, pattern extraction, anti-condition/falsifier review, and landing-zone selection before promotion.
+2. For abstraction-heavy claims, load `abstraction-governance` and run scope tagging, entity stripping, pattern extraction, anti-condition/falsifier review, and landing-zone selection before promotion. For external-repo/public-media/self-optimization absorption, apply `agent-boundary-audit/references/memory-ownership-gate.md` before proposal emission so claims are not mis-landed as global memory, project facts, or vague skills.
 3. Normalize claim, tags, landing zone, applicability conditions, anti-conditions, and falsifiers.
 4. Challenge with dissent or counterexamples before validation.
 5. Validate with command/file/session/task evidence.

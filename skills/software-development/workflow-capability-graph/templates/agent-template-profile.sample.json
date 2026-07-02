@@ -1,0 +1,55 @@
+{
+  "id": "agent-template:reference-reviewer",
+  "name": "Reference Reviewer",
+  "purpose": "Review external reference repositories and produce local SSOT/graph/proposal artifacts without runtime authority.",
+  "source_refs": ["file:evidence/source-evidence.json"],
+  "capability_graph_refs": ["capability:source_reference_intake", "capability:memory_ownership_model"],
+  "intent_routes": ["reference_repo_absorption"],
+  "inputs": {
+    "allowed_sources": ["local_files", "public_repo_docs"],
+    "freshness_rules": ["pin_repo_head", "separate_media_claims_from_repo_facts"],
+    "privacy_class": "private"
+  },
+  "outputs": {
+    "artifact_types": ["source_evidence", "capability_graph", "gap_matrix", "proposal_atoms", "final_report"],
+    "delivery_targets": "local_only"
+  },
+  "authority": {
+    "read": "local",
+    "local_write": "scoped",
+    "external_write": "none",
+    "code_execution": "none",
+    "credentials": "never_agent_typed",
+    "publish_deploy_push": "exact_gate_required",
+    "destructive": "exact_gate_required_with_backup"
+  },
+  "side_effect_matrix": {
+    "S0_read_only": ["inspect source evidence", "read local cloned repo"],
+    "S1_local_write": ["write local SSOT report", "write local capability graph"],
+    "S2_external_read": [],
+    "S3_external_write": [],
+    "S4_publish_deploy_push": [],
+    "S5_destructive": [],
+    "S6_payment_credentials": [],
+    "S7_broad_fanout": []
+  },
+  "gates": {
+    "preflight": ["source_identity_gate", "authority_projection_gate"],
+    "evidence": ["file_line_refs", "repo_head_pinned"],
+    "approval": [],
+    "rollback": ["remove local SSOT files"],
+    "receipt_readback": ["read final report", "validate graph"]
+  },
+  "runtime": {
+    "model_policy": "default_current_model",
+    "tool_policy": ["file", "terminal-readonly", "git-readonly"],
+    "budget_policy": "bounded",
+    "kill_switch": "stop local run and preserve receipt"
+  },
+  "observability": {
+    "receipts": ["local json", "final markdown"],
+    "ledgers": ["project SSOT"],
+    "health_checks": ["validate_agent_template_profile.py"]
+  },
+  "cannot_do": ["external dispatch", "credential entry", "bulk import external skills", "enable upstream runtime", "push/deploy"]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "nudge:local-dry-run-sample",
+  "source_event": "manual_reference_absorption",
+  "user_goal": "Validate proactive nudge governance without external delivery.",
+  "trigger": {"kind": "manual", "cadence_or_event": "manual dry run"},
+  "scope": {
+    "allowed_inputs": ["local SSOT", "local capability graph"],
+    "allowed_outputs": ["local receipt"],
+    "forbidden_outputs": ["external message", "gateway send", "cron delivery"]
+  },
+  "budget": {"max_runtime": "30s", "max_tool_calls": 3, "max_external_reads": 0},
+  "delivery": {"mode": "local_only", "platform": null, "target": null, "payload_class": "receipt"},
+  "receipts": {
+    "ledger_path": "./sentinel-nudge-dry-run-ledger.jsonl",
+    "success_silent": true,
+    "failure_alert": true
+  },
+  "rollback": {"pause_command": "no recurring job created", "remove_command": "delete local ledger row/file if needed"},
+  "readback": {"required_commands": ["read ledger_path"]}
+}

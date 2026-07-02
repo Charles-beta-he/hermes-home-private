@@ -63,6 +63,10 @@ observability:
 cannot_do: []
 ```
 
+## Validator
+
+Use `scripts/validate_agent_template_profile.py <profile.json>` to validate JSON profiles against the required contract without third-party dependencies. A valid local-only example lives at `templates/agent-template-profile.sample.json`; regression tests live at `scripts/test_validate_agent_template_profile.py`.
+
 ## Projection rules
 
 1. A template may become a Hermes project profile, Mission profile, or taskpool lane only after source refs and capability graph refs exist.

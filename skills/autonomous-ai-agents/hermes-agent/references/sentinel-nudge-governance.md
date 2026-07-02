@@ -76,6 +76,10 @@ Stop before execution, but continue local packet preparation, when any of these 
 - duplicate suppression for recurring reports;
 - authority for external write, publish/deploy, destructive action, payment, credential entry, or broad fan-out.
 
+## Local dry-run harness
+
+Use `scripts/sentinel_nudge_dry_run.py <packet.json>` to validate a nudge packet and append a local receipt without sending anything. A generic sample lives at `templates/sentinel-nudge.local-only.sample.json`; regression tests live at `scripts/test_sentinel_nudge_dry_run.py`.
+
 ## Verification
 
 - For cron jobs, list/read job configuration after creation or update.

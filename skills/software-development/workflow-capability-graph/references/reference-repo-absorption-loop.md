@@ -26,6 +26,8 @@ Do not stop at a chat report when the user authorizes absorption. Run this close
 
 3. **Capability graph**
    - Create CapabilityNodes for reusable modules, gates, adapters, artifact templates, and agent wrappers.
+   - For agent-harness/self-improving-agent references, start from these required node classes unless source evidence disproves them: `source_reference_intake`, `memory_ownership_model`, `skill_evolution_ratchet`, `agent_template_profile`, `doctor_onboard_readiness`, `sentinel_nudge_governance`, and `edge_harness_boundary`.
+   - Add AgentWrappers such as `reference_reviewer`, `capability_graph_designer`, and a future gated `runtime_executor` only when the authority boundary is explicit.
    - Every agent wrapper must declare `wraps`, `policy`, `authority`, `produces`, and `cannot_do`.
    - Every gate must expose pass/warn/fail/blocked outcomes.
 
@@ -40,6 +42,10 @@ Do not stop at a chat report when the user authorizes absorption. Run this close
 6. **Owned next slice**
    - If a safe local prototype/checker/schema/reference patch is available, continue to land it.
    - If the next step crosses install, external dispatch, credentials, publish/deploy, destructive action, or live runtime authority, produce an exact authorization packet with target, rollback, receipt, and readback.
+
+## Checker
+
+Use `scripts/check_reference_absorption_pack.py <ssot-root>` to validate the local pack shape: required files, source evidence identity, capability nodes, agent wrappers, gate outcomes, proposal manifest, authority boundary, and final report not-done terms. Regression tests live at `scripts/test_check_reference_absorption_pack.py`.
 
 ## Do-not-do
 

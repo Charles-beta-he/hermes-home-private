@@ -250,11 +250,14 @@ Abstraction Governance Result
 7. Confusing action repair with double-loop learning; sometimes the rule-generation process is the bug.
 8. Letting a default task schema fill missing slots without marking them as assumptions.
 9. Repeating the same blocked durable-write attempt after the runtime gate reports `context_coupled_skill`. Diagnose once, then either strip local entities further, land a scoped project reference, or report that the protected/global skill boundary prevents the save. Do not loop on near-identical skill mutations.
-10. If a class-level skill's `SKILL.md` is over the manager size limit, do not keep trying to patch the main file. Add the reusable lesson as a scoped support file under `references/` when the gate permits it, then report that the one-line pointer could not be added until the oversized skill is split or compacted.
+10. If the most relevant loaded skill is bundled/protected, do not edit it. Prefer an unprotected loaded governance/umbrella skill only when the lesson can be entity-stripped into a true class-level procedure; otherwise say `Nothing to save.` rather than creating a fake narrow skill.
+11. If a class-level skill's `SKILL.md` is over the manager size limit, do not keep trying to patch the main file. Add the reusable lesson as a scoped support file under `references/` when the gate permits it, then report that the one-line pointer could not be added until the oversized skill is split or compacted.
 
 ## Memory Landing-Zone Classifier
 
 Scope: global Hermes abstraction/memory governance. Applicability: use before writing durable memory, user profile facts, project profiles, skills, ADRs, or experience-ratchet notes. Anti-conditions: do not use this section to preserve task progress, secrets, local-only project facts, or social-media claims without independent evidence.
+
+For public-media/external-repo/self-optimization absorption, also apply `agent-boundary-audit/references/memory-ownership-gate.md` before durable writes. That gate forces a single primary landing zone: user memory, agent note, project SSOT, skill procedure, project profile/doc, experience-ratchet proposal, taskpool candidate, or do-not-do boundary. If the correct durable target is unsafe, continue by landing only local SSOT/proposal artifacts rather than stopping or writing ghost memory.
 
 For any candidate durable memory, choose the smallest sufficient authority boundary before writing:
 
@@ -330,6 +333,10 @@ The runtime gate is intentionally deterministic and conservative. It is not a su
 ## Canonical overlay takeover
 
 When a new memory/architecture structure must take over an older local brain or scattered evidence corpus, prefer an overlay/canonical-index/strangler strategy rather than physical overwrite: establish one canonical entrypoint, map old sources to canonical landings, add disposition banners to old Markdown sources, govern JSON/profile/receipt sources through a manifest, run a read-only doctor, update scoped project profile/ledger pointers, and state that runtime/schema migration remains a separate authority gate. See `references/canonical-overlay-takeover.md`.
+
+## External observability reference absorption
+
+When an external observability/control-plane project is analyzed and the user asks to absorb it into Hermes or another project, extract class-level affordances rather than importing product code: pin source evidence, land a reference-review SSOT, add only a local-only schema/projection/doctor slice first, encode no-network/no-credential/no-mutation/no-telemetry boundaries, and keep runtime instrumentation/automation as a later authority gate. See `references/external-observability-reference-absorption.md`.
 
 ## Skill Size Remediation
 

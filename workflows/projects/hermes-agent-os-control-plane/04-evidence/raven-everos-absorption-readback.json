@@ -1,0 +1,8 @@
+{
+  "commit_skill_absorption": "8d214947",
+  "created_at_epoch": 1783008690,
+  "id": "raven-everos-agentos-absorption-readback-20260702",
+  "no_runtime_mutation": true,
+  "projection": "06-projection/raven-everos-capability-projection.json",
+  "source_ssot": "/Users/charles/wechat_video_analysis/project_absorption/raven-everos-absorption-ssot"
+}
