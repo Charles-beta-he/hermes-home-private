@@ -105,6 +105,27 @@ def estimate_cost(model: str, tokens_in: int, tokens_out: int) -> float:
     return round((tokens_in * float(m.get("in", 0)) + tokens_out * float(m.get("out", 0))) / 1_000_000, 8)
 
 
+def record_health(model: str, ok: bool, provider: str, adapter: str, error: str = "") -> None:
+    """Close/open the consult_models model-health circuit from a real smoke call.
+
+    Router availability honors state/model-health.json.  A smoke success must
+    clear a stale timeout breaker; otherwise a provider can be callable but still
+    filtered from taskpool/multimodel certification candidates.
+    """
+    try:
+        from consult_models import record_model_health  # type: ignore
+        record_model_health(
+            model,
+            ok=ok,
+            provider=provider,
+            adapter=adapter,
+            error=error[:500],
+            reason="smoke_failed" if not ok else "",
+        )
+    except Exception:
+        pass
+
+
 def append_route(model: str, ok: bool, duration_s: float, tokens_in: int, tokens_out: int, cost: float, task_id: str, route: str, error: str = "") -> None:
     DB.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB)
@@ -304,6 +325,13 @@ def main(argv=None) -> int:
             route = route_for(args.route, model, run_id, iteration)
             task_id = f"smoke-{run_id}-{iteration}-{model}"
             append_route(model, ok, dt, tin, tout, cost, task_id, route=route, error=err)
+            record_health(
+                model,
+                ok,
+                spec["provider"],
+                f"{spec['provider']}-api" if spec.get("direct") else "hermes-chat",
+                err,
+            )
             # Preserve quota observability without pretending empty subprocess
             # headers are exact budget evidence. DeepSeek exact balance is handled
             # by --probe-deepseek-balance; response headers are recorded only when

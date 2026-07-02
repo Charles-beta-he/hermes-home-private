@@ -2579,6 +2579,53 @@ def task_multimodel_round_count(task: "Task") -> int:
     return body.count("Multimodel PUA-loop round")
 
 
+def missing_required_models_from_failures(failures: Any) -> list[str]:
+    models: list[str] = []
+    for item in list_value(failures):
+        text = str(item or "").strip()
+        for prefix in ("missing_required_model_consulted:", "missing_required_model_vote:"):
+            if text.startswith(prefix):
+                model = text.split(":", 1)[1].strip()
+                if model and model not in models:
+                    models.append(model)
+    return models
+
+
+def model_health_recovered_after(task: "Task", models: list[str]) -> list[str]:
+    """Return missing required models whose fresh smoke/probe is newer than the failed round."""
+    if not models:
+        return []
+    checked_at = parse_dt(task.fm.get("multimodel_last_checked_at"))
+    if checked_at is None:
+        return []
+    health_path = Path(os.path.expanduser(os.environ.get("HERMES_MODEL_HEALTH_FILE", str(Path(HERMES_HOME) / "state" / "model-health.json"))))
+    try:
+        health = json.loads(health_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    entries = health.get("models") if isinstance(health, dict) else {}
+    if not isinstance(entries, dict):
+        return []
+    recovered: list[str] = []
+    checked_ts = checked_at.timestamp()
+    for model in models:
+        entry = entries.get(model)
+        if not isinstance(entry, dict):
+            continue
+        try:
+            observed_at = float(entry.get("last_observed_at") or 0)
+        except (TypeError, ValueError):
+            observed_at = 0.0
+        if (
+            entry.get("status") == "healthy"
+            and bool(entry.get("last_ok"))
+            and float(entry.get("unhealthy_until") or 0) <= 0
+            and observed_at > checked_ts
+        ):
+            recovered.append(model)
+    return recovered
+
+
 def task_multimodel_economy_gate(task: "Task") -> dict[str, Any]:
     """Apply loop economy rules: throttle or pause tasks with too many failed rounds."""
     rounds = task_multimodel_round_count(task)
@@ -2586,6 +2633,16 @@ def task_multimodel_economy_gate(task: "Task") -> dict[str, Any]:
     last_decision = str(task.fm.get("multimodel_last_decision") or "").upper()
 
     if rounds >= MAX_T3_ROUNDS_BEFORE_PAUSE and last_status == "failed":
+        missing_models = missing_required_models_from_failures(task.fm.get("multimodel_last_failures"))
+        recovered_models = model_health_recovered_after(task, missing_models)
+        if missing_models and set(recovered_models) == set(missing_models):
+            return {
+                "action": "recovery_rerun",
+                "reason": "required multimodel participant health recovered after last failed round; allow one ratification rerun before pausing again",
+                "allowed_tier": "any",
+                "rounds": rounds,
+                "recovered_models": recovered_models,
+            }
         return {
             "action": "pause",
             "reason": f"task has {rounds} failed T3 rounds (max={MAX_T3_ROUNDS_BEFORE_PAUSE}); requires human review or targeted evidence fix",

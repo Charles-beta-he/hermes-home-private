@@ -2602,6 +2602,53 @@ def test_ratification_gate_cli_reports_legacy_packet_read_compat_without_relaxin
 
 
 
+def test_economy_gate_allows_recovery_rerun_after_missing_required_model_smoke_pass():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        health_path = Path(td) / "model-health.json"
+        health_path.write_text(json.dumps({
+            "models": {
+                "mimo-v2.5-pro": {
+                    "model": "mimo-v2.5-pro",
+                    "provider": "xiaomi",
+                    "status": "healthy",
+                    "last_ok": True,
+                    "last_observed_at": 2000,
+                    "unhealthy_until": 0,
+                }
+            }
+        }), encoding="utf-8")
+        old_health_path = os.environ.get("HERMES_MODEL_HEALTH_FILE")
+        os.environ["HERMES_MODEL_HEALTH_FILE"] = str(health_path)
+        try:
+            task = mod.Task(
+                Path(td) / "missing-mimo.md",
+                {
+                    "status": "blocked",
+                    "retry_count": 9,
+                    "multimodel_round_status": "failed",
+                    "multimodel_last_checked_at": "1970-01-01T00:00:01+00:00",
+                    "multimodel_last_failures": [
+                        "missing_required_model_consulted:mimo-v2.5-pro",
+                        "missing_required_model_vote:mimo-v2.5-pro",
+                        "model_count_below_required:2/3",
+                    ],
+                },
+                "\n".join([f"- Multimodel PUA-loop round {i}: failed" for i in range(5)]),
+            )
+
+            gate = mod.task_multimodel_economy_gate(task)
+        finally:
+            if old_health_path is None:
+                os.environ.pop("HERMES_MODEL_HEALTH_FILE", None)
+            else:
+                os.environ["HERMES_MODEL_HEALTH_FILE"] = old_health_path
+
+        assert gate["action"] == "recovery_rerun", gate
+        assert gate["allowed_tier"] == "any", gate
+        assert gate["recovered_models"] == ["mimo-v2.5-pro"], gate
+
+
 def test_finish_multimodel_advisory_only_pass_enters_review_without_done_authority(monkeypatch):
     mod = load_orchestrator_module()
     with tempfile.TemporaryDirectory() as td:
@@ -4263,6 +4310,7 @@ def main():
     test_proof_check_include_active_does_not_fail_historical_autorun_hashes()
     test_multimodel_step_marks_task_running_while_external_process_is_inflight_then_review()
     test_multimodel_step_background_spawns_durable_job_without_waiting_for_models()
+    test_economy_gate_allows_recovery_rerun_after_missing_required_model_smoke_pass()
     test_ratification_policy_is_loaded_from_quorum_config_not_code_literals()
     test_terminal_boundary_debt_does_not_block_active_dispatch_boundary()
     test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_task()
