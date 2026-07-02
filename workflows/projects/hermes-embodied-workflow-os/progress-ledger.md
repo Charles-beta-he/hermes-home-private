@@ -126,3 +126,12 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Added `implementation/hewos_core/local_harness.py` and `implementation/tests/test_local_harness.py`.
 - Wrote local harness receipts under `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/artifacts/local-harness-20260703` and report `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md`.
 - No real adapter was touched: taskpool CLI/DB, external APIs, hardware/robot, deploy/push, auth provider, token/secret store all remained closed.
+
+## Update — 2026-07-03T00:36:00+08:00
+- Ordered high-risk drain advanced in user-specified order.
+- Taskpool real local write-through executed by creating exact local task `2026-07-03-hewos-high-risk-boundary-local-write-through-receipt-20260703` and reading back the task file.
+- External dispatch stopped at dry-run/outbox with payload hash and allowlisted local target; no send executed.
+- Deploy/push dry-run against `/Users/charles/.hermes` `origin/master` was blocked by non-fast-forward readback; no push executed.
+- Hardware gate used exact virtual device id and fresh virtual telemetry; physical-risk path blocked without onsite gate; no hardware touched.
+- Auth gate recorded human-secret-entry only; no secret typed/read/stored.
+- Report: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ORDERED_HIGH_RISK_DRAIN_REPORT_20260703.md`; machine receipt: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ordered-high-risk-drain-20260703.json`.

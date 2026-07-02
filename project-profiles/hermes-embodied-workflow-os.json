@@ -3,11 +3,11 @@
   "display_name": "Hermes Embodied Workflow OS",
   "project_type": "outer-tooling/embodied-workflow-platform",
   "created_at": "2026-07-02T18:43:34+08:00",
-  "updated_at": "2026-07-03T00:22:00+08:00",
+  "updated_at": "2026-07-03T00:36:00+08:00",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
   "portfolio_profile": true,
-  "status": "p1-p3-uimax-high-risk-governance-and-local-harness-write-through",
+  "status": "ordered-high-risk-drain-taskpool-written-outbox-deploy-preflight-hardware-auth-gated",
   "role": "Long-term outer-tool/body layer for Hermes: stable workflow core plus adapters for Web/PWA/App/PC, glasses, voice, embedded devices, robots, NAS archive, proxy connectivity, and physical/external-control gates.",
   "promotion_policy": "evidence-gated ratchet: proposal -> profiled -> ledgered -> contract-ready -> validated-slice -> runtime-gated -> promoted only with tests/readback/evidence; physical/external actions require exact target, dry-run, telemetry/readback, audit, and explicit authority.",
   "relations": [
@@ -82,7 +82,9 @@
     "best_practice_gates_and_process": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/best-practice-gates-and-process.md",
     "uimax_report_20260702": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/UIMAX_REPORT_20260702.md",
     "high_risk_boundary_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/HIGH_RISK_BOUNDARY_REPORT_20260703.md",
-    "local_harness_write_through_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md"
+    "local_harness_write_through_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md",
+    "ordered_high_risk_drain_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ORDERED_HIGH_RISK_DRAIN_REPORT_20260703.md",
+    "ordered_high_risk_drain_receipt_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ordered-high-risk-drain-20260703.json"
   },
   "current_components": {
     "project_profile": "profiled",
@@ -112,7 +114,8 @@
     "best_practice_gates": "local_contract_tests_and_process_spec",
     "uimax_local_workbench": "A+ scoped local projection-only Workbench; responsive subscore A due to desktop-only screenshot harness",
     "high_risk_boundary_governance": "taskpool/external/hardware/deploy/auth covered by local exact-gated control plane and simulation ledger; no live execution",
-    "local_harness_write_through": "disposable local harness receipts for taskpool/external/hardware/deploy/auth; no live adapter touched"
+    "local_harness_write_through": "disposable local harness receipts for taskpool/external/hardware/deploy/auth; no live adapter touched",
+    "ordered_high_risk_drain": "taskpool local write executed; external outbox dry-run; deploy push dry-run blocked non-fast-forward; hardware virtual gate; auth human-secret-entry only"
   },
   "boundaries": [
     "metadata/profile/ledger/research only in this slice",
@@ -133,5 +136,5 @@
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/precommit-evidence-packet-20260702.md",
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/implementation/README.md"
   ],
-  "next_gate": "real_adapter_write_through only one exact adapter at a time with target/payload/rollback/readback; credentials remain human-secret-entry only."
+  "next_gate": "Integrate remote branch before real push; provide exact external target for live send; provide real hardware device telemetry/onsite gate before actuation; auth remains human-secret-entry only."
 }

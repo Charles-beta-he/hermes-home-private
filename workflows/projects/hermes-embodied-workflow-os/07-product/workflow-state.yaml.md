@@ -1,45 +1,38 @@
 ---
 project: hermes-embodied-workflow-os
-updated_at: 2026-07-03T00:22:00+08:00
-current_stage: local_harness_write_through_for_high_risk_boundaries
-completion_boundary: disposable_local_harness_only_no_live_adapter
+updated_at: 2026-07-03T00:36:00+08:00
+current_stage: ordered_high_risk_drain_completed_with_truthful_boundary_status
 states:
-  p1_contract_core:
-    status: accepted
-  p2_replay_harness:
-    status: accepted
-  p3_local_web_runtime:
-    status: accepted_smoke_verified
-  ui_quality_audit:
-    status: accepted_scoped_a_plus
-  high_risk_boundary_coverage:
-    status: accepted_governance_coverage_100_percent
-  simulation_write_local_ledger:
-    status: accepted_intent_only_receipts
-  harness_write_through:
-    status: accepted_disposable_local_harness
-    requested_boundaries:
-      - taskpool_lifecycle
-      - external_dispatch
-      - hardware_execution
-      - deploy_publish
-      - auth_credential
-    artifacts:
-      - implementation/hewos_core/local_harness.py
-      - implementation/tests/test_local_harness.py
-      - artifacts/local-harness-20260703/receipts.jsonl
-      - 06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md
-    evidence:
-      - disposable local harness write verified
-      - idempotent replay verified
-      - non-local target rejected
-      - live execution-enabled decision rejected
-      - rollback by exact receipt verified
-    live_adapter_touched: false
-    execution_enabled: false
+  taskpool_real_local_write_through:
+    status: executed_local_write_readback
+    task_id: 2026-07-03-hewos-high-risk-boundary-local-write-through-receipt-20260703
+    task_path: /Users/charles/Documents/brain/05-实践与项目/tasks/2026-07-03-hewos-high-risk-boundary-local-write-through-receipt-20260703.md
+  external_dispatch_dry_run_outbox:
+    status: dry_run_recorded_no_send
+    outbox_path: /Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/artifacts/external-outbox-20260703.jsonl
+    outbox_id: outbox:d62ab409a0291453
+  deploy_push:
+    status: blocked_preflight_no_push
+    repo: /Users/charles/.hermes
+    remote: origin
+    branch: master
+    reason: non_fast_forward_remote_ahead
+  hardware:
+    status: gate_evaluated_no_hardware_touched
+    device_id: hewos-local-virtual-device-20260703
+    physical_risk_decision: blocked_without_onsite_gate
+  auth:
+    status: human_secret_entry_only
+    agent_may_type_secret: false
     token_read_allowed: false
+artifacts:
+  - 06-verification/ordered-high-risk-drain-20260703.json
+  - 06-verification/ORDERED_HIGH_RISK_DRAIN_REPORT_20260703.md
+  - artifacts/external-outbox-20260703.jsonl
+  - artifacts/deploy-push-20260703/push-dry-run.txt
 next_safe_phase:
-  phase: real_adapter_write_through
-  allowed: one exact adapter only with target/payload/rollback/readback packet
-  forbidden_without_exact_packet: taskpool_live_write, external_live_send, hardware_or_robot_execution, deploy_or_push, credential_or_secret_entry, broad_fanout
+  push: integrate remote branch then rerun tests and push dry-run before real push
+  external: provide exact real platform target and payload for live send
+  hardware: provide real device id plus telemetry and onsite confirmation for physical risk
+  auth: human enters secrets only; agent records non-secret readiness receipt
 ---
