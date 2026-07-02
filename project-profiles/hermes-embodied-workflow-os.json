@@ -3,11 +3,11 @@
   "display_name": "Hermes Embodied Workflow OS",
   "project_type": "outer-tooling/embodied-workflow-platform",
   "created_at": "2026-07-02T18:43:34+08:00",
-  "updated_at": "2026-07-02T19:58:00+08:00",
+  "updated_at": "2026-07-02T20:52:00+08:00",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
   "portfolio_profile": true,
-  "status": "p1-p2-validated-and-p3-local-web-runtime-smoke-verified",
+  "status": "p1-p2-validated-p3-runtime-smoke-and-best-practice-gates-codified",
   "role": "Long-term outer-tool/body layer for Hermes: stable workflow core plus adapters for Web/PWA/App/PC, glasses, voice, embedded devices, robots, NAS archive, proxy connectivity, and physical/external-control gates.",
   "promotion_policy": "evidence-gated ratchet: proposal -> profiled -> ledgered -> contract-ready -> validated-slice -> runtime-gated -> promoted only with tests/readback/evidence; physical/external actions require exact target, dry-run, telemetry/readback, audit, and explicit authority.",
   "relations": [
@@ -78,7 +78,8 @@
     "prd_p3_web_workbench": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/07-product/prd-p3-web-workbench.md",
     "web_workbench_boundary": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/web-workbench-boundary.md",
     "workbench_static_fixture": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/artifacts/workbench-static-fixture.html",
-    "web_workbench_runtime_verification": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/web-workbench-runtime-verification-20260702.md"
+    "web_workbench_runtime_verification": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/web-workbench-runtime-verification-20260702.md",
+    "best_practice_gates_and_process": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/best-practice-gates-and-process.md"
   },
   "current_components": {
     "project_profile": "profiled",
@@ -104,7 +105,8 @@
     "p3_tests": "27_unittest_tests_passing",
     "p3_static_workbench_artifact": "validated_local_html_fixture_no_server",
     "p3_local_web_runtime": "smoke_verified_local_projection_only",
-    "multimodel_runtime_safety_review": "degraded_advisory_not_certified"
+    "multimodel_runtime_safety_review": "degraded_advisory_not_certified",
+    "best_practice_gates": "local_contract_tests_and_process_spec"
   },
   "boundaries": [
     "metadata/profile/ledger/research only in this slice",
@@ -125,5 +127,5 @@
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/precommit-evidence-packet-20260702.md",
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/implementation/README.md"
   ],
-  "next_gate": "Stop before UI quality/uIMax acceptance, auth, taskpool ingestion, external adapter, hardware/robot, deploy/push, or production runtime."
+  "next_gate": "ui_quality_audit is the next local-only phase; external/taskpool/hardware/deploy/auth remain exact-gated."
 }
