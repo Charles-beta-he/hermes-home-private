@@ -97,3 +97,10 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Latest test pass: 27 tests OK.
 - Verification report: `06-verification/web-workbench-runtime-verification-20260702.md`.
 - Boundary preserved: no taskpool write, no external dispatch, no deploy/push, no auth/credentials, no hardware/robot execution, no `/execute` endpoint, no UI quality/uIMax claim.
+
+## Update — 2026-07-02T20:52:00+08:00
+- Codified best-practice gate/process ladder as local-only contract and architecture spec.
+- Added `implementation/hewos_core/best_practice_gates.py` with fail-closed GatePacket, ProcessPhase, and AuthorityLadder helpers.
+- Added `implementation/tests/test_best_practice_gates.py` covering missing evidence, forbidden high-risk actions, phase order, previous receipts, skipped external execution, and stable required evidence.
+- Added `01-architecture/best-practice-gates-and-process.md`.
+- Boundary preserved: no executor opened; no taskpool write, external dispatch, hardware/robot, deploy/push, auth, credentials, or `/execute` path.
