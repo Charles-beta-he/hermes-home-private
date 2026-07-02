@@ -101,6 +101,17 @@ def is_hewos_implementation_change(files: Sequence[str]) -> bool:
     return any(f.startswith("workflows/projects/hermes-embodied-workflow-os/implementation/") for f in files)
 
 
+def is_ui_visual_evidence_change(files: Sequence[str]) -> bool:
+    names = (
+        "uimax",
+        "screenshot",
+        "workbench-static-fixture.html",
+        "workbench_static.py",
+        "test_workbench_uimax_static.py",
+    )
+    return any(any(name in f.lower() for name in names) for f in files)
+
+
 def relevant_tests(files: Sequence[str]) -> list[Path]:
     wanted: list[Path] = []
     if any(f.startswith("scripts/brainctl.py") or f.startswith("scripts/test_brainctl.py") for f in files):
@@ -152,6 +163,11 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
         evidence.extend([
             "source_packet:staged research/evidence files include source packet or evidence index for this change",
             "timestamped_source:staged source packet/evidence index is timestamped or filename-dated for readback",
+        ])
+    if is_ui_visual_evidence_change(files):
+        evidence.extend([
+            "screenshot:staged UIMax/report/artifact records browser visual screenshot readback for local UI scope",
+            "browser_console:staged UIMax/report/artifact records browser console readback for local UI scope",
         ])
     py_files = [root / f for f in files if f.endswith(".py") and (root / f).exists()]
     if py_files:

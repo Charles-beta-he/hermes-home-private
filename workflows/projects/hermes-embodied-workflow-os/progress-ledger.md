@@ -104,3 +104,11 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Added `implementation/tests/test_best_practice_gates.py` covering missing evidence, forbidden high-risk actions, phase order, previous receipts, skipped external execution, and stable required evidence.
 - Added `01-architecture/best-practice-gates-and-process.md`.
 - Boundary preserved: no executor opened; no taskpool write, external dispatch, hardware/robot, deploy/push, auth, credentials, or `/execute` path.
+
+## Update — 2026-07-02T23:58:00+08:00
+- Advanced `ui_quality_audit` for local Workbench and produced scoped A+/uIMax report.
+- Upgraded static Workbench renderer with semantic landmarks, skip link, labelled sections, live status, responsive CSS, reduced-motion support, focus-visible, and polished control-panel layout.
+- Added `implementation/tests/test_workbench_uimax_static.py`.
+- Regenerated `artifacts/workbench-static-fixture.html` and recorded metrics at `06-verification/uimax-metrics-20260702.json`.
+- Report: `06-verification/UIMAX_REPORT_20260702.md`.
+- Boundary preserved: no executor path, no taskpool write, no external dispatch, no hardware/robot, no deploy/push, no auth/secret handling.

@@ -139,6 +139,28 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertEqual(errors, [])
         joined = "\n".join(evidence)
         self.assertIn("tests:HEWOS implementation unittest suite OK", joined)
+    def test_uimax_visual_files_collect_screenshot_and_console_evidence(self):
+        files = [
+            "workflows/projects/hermes-embodied-workflow-os/06-verification/UIMAX_REPORT_20260702.md",
+            "workflows/projects/hermes-embodied-workflow-os/06-verification/uimax-metrics-20260702.json",
+            "workflows/projects/hermes-embodied-workflow-os/artifacts/workbench-static-fixture.html",
+            "workflows/projects/hermes-embodied-workflow-os/implementation/hewos_core/workbench_static.py",
+            "workflows/projects/hermes-embodied-workflow-os/implementation/tests/test_workbench_uimax_static.py",
+        ]
+        old_run = hook.run
+        try:
+            def fake_run(cmd, *, cwd=None, timeout=180):
+                return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+            hook.run = fake_run
+            evidence, errors = hook.hook_evidence(self.repo, files)
+        finally:
+            hook.run = old_run
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("screenshot:", joined)
+        self.assertIn("browser_console:", joined)
+        self.assertIn("tests:HEWOS implementation unittest suite OK", joined)
 
 
 if __name__ == "__main__":
