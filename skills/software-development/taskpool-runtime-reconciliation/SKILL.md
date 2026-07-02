@@ -35,6 +35,17 @@ Before releasing a claimed/running row, prove that it has no live owner:
    - `parallel-claim-and-handoff`
 5. Only when all owner checks are empty may canonical reconcile release the row to retry/over-retry with evidence such as `command:reconcile_orphaned_active_claim_no_live_owner`.
 
+## Provider-health recovery before repeated multimodel drain
+
+When many blocked tasks share `missing_required_model_consulted:<model>` / `missing_required_model_vote:<model>` and multimodel economy gates report `failed T3 rounds (max=5)`, do not keep running `blocked-resolve-step` in a loop. First separate live runtime availability from stale health/circuit-breaker state:
+
+1. Run a real minimal provider/model smoke/probe for the missing required participant.
+2. Read `~/.hermes/state/model-health.json`; if the smoke passed but the model remains `unhealthy`, fix the smoke/probe path to call `consult_models.record_model_health(..., ok=True)` so router/taskpool candidate filtering sees the recovery.
+3. Rerun router/readiness and `multimodel-intervention-dry-run`.
+4. Only allow a recovery rerun when the newly healthy required model observation is newer than the last failed multimodel round. This prevents unlimited retry loops while permitting a targeted evidence repair to reopen paused T3 gates.
+5. If the rerun still fails on agreement, non-approve votes, provider parse errors, or unresolved severity issues, stop treating it as provider recovery and produce a targeted evidence/human-review packet instead of draining status again.
+6. If the provider flaps during the real multimodel fanout (smoke PASS, then fanout timeout re-marks `model-health.json` unhealthy), do not keep smoke→retry looping. Finish any live jobs, read worker/multimodel logs, record which tasks returned to blocked, and stop at human/targeted-evidence gate unless a concrete adapter/timeout fix is in scope.
+
 ## Drain loop after reconciliation
 
 Run the normal safe loop:

@@ -79,6 +79,28 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertIn("lifecycle_readback:", joined)
         self.assertTrue(any("test_brain_task_autorun_step.py" in " ".join(call) for call in calls))
 
+    def test_consult_models_and_taskpool_skill_collect_taskpool_evidence(self):
+        files = [
+            "scripts/consult_models.py",
+            "skills/software-development/taskpool-runtime-reconciliation/SKILL.md",
+        ]
+        self.assertTrue(hook.is_taskpool_control_plane_change(files))
+
+        old_run = hook.run
+        try:
+            def fake_run(cmd, *, cwd=None, timeout=180):
+                return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+            hook.run = fake_run
+            evidence, errors = hook.hook_evidence(self.repo, files)
+        finally:
+            hook.run = old_run
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("task_record:", joined)
+        self.assertIn("proof_log:", joined)
+        self.assertIn("lifecycle_readback:", joined)
+
 
 if __name__ == "__main__":
     unittest.main()

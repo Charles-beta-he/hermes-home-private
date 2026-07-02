@@ -45,6 +45,10 @@ HERMES_HOME = os.path.expanduser(os.environ.get("HERMES_HOME", "~/.hermes"))
 SCRIPTS_DIR = os.path.join(HERMES_HOME, "scripts")
 CONFIG_DIR = os.path.join(HERMES_HOME, "config")
 LOG_DIR = os.path.join(HERMES_HOME, "logs")
+STATE_DIR = os.path.join(HERMES_HOME, "state")
+MODEL_HEALTH_PATH = os.path.expanduser(os.environ.get("HERMES_MODEL_HEALTH_FILE", os.path.join(STATE_DIR, "model-health.json")))
+MODEL_HEALTH_TTL_SECONDS = int(os.environ.get("HERMES_MODEL_HEALTH_TTL_SECONDS", "3600") or 3600)
+MODEL_HEALTH_TRANSIENT_TTL_SECONDS = int(os.environ.get("HERMES_MODEL_HEALTH_TRANSIENT_TTL_SECONDS", "300") or 300)
 
 # ── L2 协议导入 ──
 sys.path.insert(0, SCRIPTS_DIR)
@@ -107,6 +111,152 @@ def record_model_quota_call(**kwargs: Any) -> None:
         model_quota.record_call(**kwargs)
 
 
+def _health_now() -> float:
+    return time.time()
+
+
+def load_model_health(path: Optional[str] = None) -> Dict[str, Any]:
+    """Load durable model health/circuit-breaker state.
+
+    Shape: {"models": {model: {status, unhealthy_until, last_error, ...}}}
+    Missing/corrupt files are treated as empty so health never breaks fan-out.
+    """
+    health_path = os.path.expanduser(path or MODEL_HEALTH_PATH)
+    try:
+        with open(health_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {"models": {}}
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return {"models": {}}
+
+
+def save_model_health(data: Dict[str, Any], path: Optional[str] = None) -> None:
+    health_path = os.path.expanduser(path or MODEL_HEALTH_PATH)
+    os.makedirs(os.path.dirname(health_path), exist_ok=True)
+    tmp = f"{health_path}.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, sort_keys=True, indent=2)
+    os.replace(tmp, health_path)
+
+
+def _model_health_ttl_for_failure(reason: str = "", error: str = "") -> int:
+    """Return circuit TTL for provider failures.
+
+    Authentication/model entitlement errors should stay blocked for the default
+    window.  Transport/read timeouts are transient in multimodel fanout: a single
+    MiMo/DeepSeek timeout must not poison required-provider selection for an hour.
+    """
+    text = f"{reason} {error}".lower()
+    if reason in {"auth_invalid", "model_or_path_invalid"} or "invalid key" in text or "http 401" in text or "http 403" in text:
+        return MODEL_HEALTH_TTL_SECONDS
+    transient_markers = (
+        "timeout",
+        "timed out",
+        "read operation timed out",
+        "transport failed",
+        "urlerror",
+        "connection reset",
+        "temporarily unavailable",
+    )
+    if any(marker in text for marker in transient_markers):
+        return max(0, MODEL_HEALTH_TRANSIENT_TTL_SECONDS)
+    return MODEL_HEALTH_TTL_SECONDS
+
+
+def record_model_health(
+    model: str,
+    *,
+    ok: bool,
+    provider: str = "",
+    adapter: str = "",
+    error: str = "",
+    reason: str = "",
+    ttl_seconds: Optional[int] = None,
+    path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Update durable health state for a planner model.
+
+    Failures open a time-bound circuit breaker; successes close it.
+    """
+    if not model:
+        return load_model_health(path)
+    data = load_model_health(path)
+    models = data.setdefault("models", {})
+    now = _health_now()
+    entry = dict(models.get(model) or {})
+    entry.update({
+        "model": model,
+        "provider": provider,
+        "adapter": adapter,
+        "last_observed_at": now,
+        "last_ok": bool(ok),
+    })
+    if ok:
+        entry.update({"status": "healthy", "unhealthy_until": 0, "last_error": "", "last_reason": ""})
+    else:
+        ttl = int(ttl_seconds if ttl_seconds is not None else _model_health_ttl_for_failure(reason, error))
+        entry.update({
+            "status": "unhealthy",
+            "unhealthy_until": now + max(ttl, 0),
+            "last_error": _truncate_runtime_error_text(error or reason or "model failure", 500) if "_truncate_runtime_error_text" in globals() else (error or reason or "model failure")[:500],
+            "last_reason": reason or "runtime_failure",
+            "failure_count": int(entry.get("failure_count") or 0) + 1,
+        })
+    models[model] = entry
+    save_model_health(data, path)
+    return data
+
+
+def unhealthy_model_reason(model: str, *, path: Optional[str] = None, now: Optional[float] = None) -> str:
+    data = load_model_health(path)
+    entry = (data.get("models") or {}).get(model) or {}
+    if entry.get("status") == "unhealthy" and float(entry.get("unhealthy_until") or 0) > (now if now is not None else _health_now()):
+        return str(entry.get("last_reason") or entry.get("last_error") or "unhealthy")
+    return ""
+
+
+def filter_unhealthy_models(models: List[str], *, path: Optional[str] = None, now: Optional[float] = None, min_keep: int = 0) -> Tuple[List[str], List[Dict[str, Any]]]:
+    """Remove models with active circuit breakers without starving quorum.
+
+    Auth/model-invalid failures are hard skips. Transient timeouts/runtime failures are
+    soft skips and may be restored if filtering would leave fewer than min_keep models.
+    """
+    if os.environ.get("HERMES_MODEL_HEALTH_FILTER", "1") == "0":
+        return list(models), []
+    data = load_model_health(path)
+    state = data.get("models") or {}
+    current = now if now is not None else _health_now()
+    kept: List[str] = []
+    hard_skipped: List[Dict[str, Any]] = []
+    soft_skipped: List[Dict[str, Any]] = []
+    for model in models:
+        entry = state.get(model) or {}
+        if entry.get("status") == "unhealthy" and float(entry.get("unhealthy_until") or 0) > current:
+            item = {
+                "model": model,
+                "reason": entry.get("last_reason") or entry.get("last_error") or "unhealthy",
+                "unhealthy_until": entry.get("unhealthy_until"),
+            }
+            reason = str(item["reason"]).lower()
+            if reason in {"auth_invalid", "model_or_path_invalid"} or "invalid key" in reason:
+                hard_skipped.append(item)
+            else:
+                soft_skipped.append(item)
+        else:
+            kept.append(model)
+    restored: List[Dict[str, Any]] = []
+    if min_keep > 0 and len(kept) < min_keep:
+        need = min_keep - len(kept)
+        for item in soft_skipped[:need]:
+            kept.append(str(item["model"]))
+            restored.append({**item, "restored_for_min_quorum": True})
+        soft_skipped = soft_skipped[len(restored):]
+    skipped = hard_skipped + soft_skipped
+    if restored and os.environ.get("HERMES_MODEL_HEALTH_RESTORE_LOG", "1") != "0":
+        print(f"[consult_models] Restored transient-unhealthy planners for min_quorum: {restored}", file=sys.stderr)
+    return kept, skipped
+
+
 def load_quorum() -> dict:
     """读取 quorum.yaml"""
     path = os.environ.get("HERMES_QUORUM_CONFIG", os.path.join(CONFIG_DIR, "quorum.yaml"))
@@ -133,11 +283,14 @@ def load_config() -> dict:
         return {}
 
 
-def get_tier_planners(quorum: dict, tier: str, skip_claude: bool = False) -> Tuple[List[str], int, int]:
+def get_tier_planners(quorum: dict, tier: str, skip_claude: bool = False, *, filter_health: bool = False) -> Tuple[List[str], int, int]:
     """
     从 quorum.yaml 读取 tier 配置。
 
-    返回 (planner_list, quorum_count, min_quorum)
+    返回 (planner_list, quorum_count, min_quorum).
+    Runtime dispatch filters active model-health circuit breakers by default;
+    deterministic selfchecks pass filter_health=False so live transient adapter
+    outages cannot mutate local config invariant results.
     """
     tiers = quorum.get("tiers", {})
     tier_cfg = tiers.get(tier, {})
@@ -149,6 +302,9 @@ def get_tier_planners(quorum: dict, tier: str, skip_claude: bool = False) -> Tup
     # because they represent an operator policy, not an optional tier choice.
     if skip_claude or _claude_excluded(quorum):
         planners = [m for m in planners if "claude" not in m.lower()]
+    if os.environ.get("SKIP_MIMO", "0") == "1":
+        planners = [m for m in planners if "mimo" not in m.lower()]
+        resident_planners = [m for m in resident_planners if "mimo" not in m.lower()]
 
     merged: List[str] = []
     for model in resident_planners + planners:
@@ -158,7 +314,13 @@ def get_tier_planners(quorum: dict, tier: str, skip_claude: bool = False) -> Tup
     q = tier_cfg.get("quorum", 3)
     mq = tier_cfg.get("min_quorum", 2)
 
-    return merged, q, mq
+    if filter_health:
+        filtered, skipped = filter_unhealthy_models(merged, min_keep=int(mq or 0))
+        if skipped:
+            print(f"[consult_models] Skipping unhealthy planners: {skipped}", file=sys.stderr)
+    else:
+        filtered, skipped = merged, []
+    return filtered, q, mq
 
 
 def _claude_excluded(quorum: dict) -> bool:
@@ -2254,7 +2416,7 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
     all_models: List[str] = []
     for tier_name in ("T0", "T1", "T2", "T3"):
         tier_cfg = tiers.get(tier_name, {}) if isinstance(tiers, dict) else {}
-        planners, quorum_count_raw, min_quorum_raw = get_tier_planners(quorum, tier_name, skip_claude=False)
+        planners, quorum_count_raw, min_quorum_raw = get_tier_planners(quorum, tier_name, skip_claude=False, filter_health=False)
         quorum_count = _safe_int(quorum_count_raw, 0)
         min_quorum = _safe_int(min_quorum_raw, 0)
         providers = {model: model_provider(config, model) for model in planners}
@@ -2466,6 +2628,29 @@ def run_analysis_selfcheck(quorum: Optional[dict] = None, config: Optional[dict]
     return report
 
 
+def _ratification_optional_models() -> set[str]:
+    """Return optional ratification reviewers from quorum.yaml.
+
+    consult_models.py evaluates live discussion status before brain_task_orchestrator.py
+    applies its ratification gate. Keep the stop condition aligned with the canonical
+    ratification policy: configured optional reviewers may contribute provenance, but a
+    provider failure from an optional reviewer must not block a clean required panel.
+    """
+    quorum_path = os.path.join(HERMES_HOME, "config", "quorum.yaml")
+    if yaml is None or not os.path.exists(quorum_path):
+        return {"gemini-3.1-pro-preview"}
+    try:
+        with open(quorum_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        ratification = data.get("ratification") if isinstance(data, dict) else {}
+        optional = ratification.get("optional_models") if isinstance(ratification, dict) else None
+        if isinstance(optional, list):
+            return {str(model).strip() for model in optional if str(model).strip()}
+    except Exception:
+        pass
+    return {"gemini-3.1-pro-preview"}
+
+
 def evaluate_ratification(
     votes: List[dict],
     agreement_matrix: dict,
@@ -2480,12 +2665,21 @@ def evaluate_ratification(
     Multi-model approval is not factual verification. If an evidence/truth gate is
     supplied, unsupported or contradicted high-severity claims fail closed even when
     every reviewer votes approve.
+
+    Optional reviewers from quorum.yaml are advisory/provenance-only at this layer,
+    matching brain_task_orchestrator.ratification_gate_result(). A failed optional
+    provider should produce warnings downstream, not convert an otherwise clean
+    required-panel certification into non-certification.
     """
     reasons: List[str] = []
-    n = len(votes)
-    approvals = sum(1 for v in votes if str(v.get("vote", "")).lower() == "approve" and _strict_true(v.get("best_within_constraints")))
-    rejects = [v for v in votes if str(v.get("vote", "")).lower() == "reject"]
-    unsigned = [v for v in votes if not _strict_true(v.get("best_within_constraints"))]
+    optional_models = _ratification_optional_models()
+    gate_votes = [v for v in votes if str(v.get("model") or "").strip() not in optional_models]
+    # If every vote is optional/malformed, fail closed on the original vote set.
+    effective_votes = gate_votes or votes
+    n = len(effective_votes)
+    approvals = sum(1 for v in effective_votes if str(v.get("vote", "")).lower() == "approve" and _strict_true(v.get("best_within_constraints")))
+    rejects = [v for v in effective_votes if str(v.get("vote", "")).lower() == "reject"]
+    unsigned = [v for v in effective_votes if not _strict_true(v.get("best_within_constraints"))]
     blockers = [i for i in issue_ledger if i.get("status") == "unresolved" and _safe_int(i.get("severity", 3), 3) >= 3]
 
     if approvals < max(1, n - 1):
@@ -3480,6 +3674,153 @@ def _load_env_file(path: Optional[str] = None) -> dict:
     return data
 
 
+def _positive_int_env(name: str) -> Optional[int]:
+    raw = str(os.environ.get(name) or "").strip()
+    if not raw:
+        return None
+    try:
+        value = int(raw)
+    except ValueError:
+        return None
+    return value if value > 0 else None
+
+
+def _xiaomi_compact_retry_prompt(original_prompt: str, prior_content: str = "", finish_reason: str = "") -> str:
+    """Build a second-attempt prompt that reduces reasoning/prose pressure.
+
+    MiMo can spend most of a planner response on reasoning_content and return an
+    empty or truncated message.content.  The retry keeps the original task but
+    explicitly requests a compact JSON object; it does not impose a fixed token
+    cap, leaving provider-side budgeting configurable via XIAOMI_MAX_TOKENS.
+    """
+    prior_note = ""
+    if prior_content.strip():
+        prior_note = "\nThe previous response was truncated; preserve only valid JSON fields and omit prose."
+    if finish_reason:
+        prior_note += f"\nPrevious finish_reason: {finish_reason}."
+    return (
+        "Return compact JSON only. No markdown fences, no analysis, no prose. "
+        "Use short strings and include only fields required by the schema."
+        f"{prior_note}\n\nORIGINAL PLANNER REQUEST:\n{original_prompt}"
+    )
+
+
+def _xiaomi_response_content(data: dict[str, Any]) -> tuple[str, str, int]:
+    choices = data.get("choices") if isinstance(data, dict) else None
+    if not isinstance(choices, list) or not choices:
+        return "", "", 0
+    choice = choices[0] if isinstance(choices[0], dict) else {}
+    msg = choice.get("message") if isinstance(choice, dict) else {}
+    if not isinstance(msg, dict):
+        msg = {}
+    content = str(msg.get("content") or "")
+    reasoning_len = len(str(msg.get("reasoning_content") or ""))
+    return content, str(choice.get("finish_reason") or ""), reasoning_len
+
+
+def call_xiaomi_api(prompt: str, model: str, timeout: int = DEFAULT_TIMEOUT) -> str:
+    """Direct Xiaomi MiMo adapter with bounded timeout and explicit HTTP errors.
+
+    Supports two modes:
+    - local direct HTTP for machines that can reach token-plan-cn without VPN/TUN.
+    - XIAOMI_RELAY_COMMAND for macOS global-proxy/TUN setups; the request JSON is
+      sent on stdin to a remote command that performs the HTTPS call off-machine.
+
+    By default this does not bake in a fixed max_tokens cap. Operators may set
+    XIAOMI_MAX_TOKENS for a workflow-scoped budget override.
+    """
+    import socket
+    import subprocess
+    import urllib.error
+    import urllib.request
+
+    env_file = _load_env_file()
+    key = os.environ.get("XIAOMI_API_KEY") or env_file.get("XIAOMI_API_KEY")
+    if not key:
+        raise RuntimeError("XIAOMI_API_KEY missing")
+    base_url = (os.environ.get("XIAOMI_BASE_URL") or env_file.get("XIAOMI_BASE_URL") or "https://token-plan-cn.xiaomimimo.com/v1").rstrip("/")
+    api_model = os.environ.get("XIAOMI_MODEL") or model
+    request_obj = {
+        "base_url": base_url,
+        "model": api_model,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2,
+        "stream": False,
+    }
+    max_tokens = _positive_int_env("XIAOMI_MAX_TOKENS")
+    if max_tokens is not None:
+        request_obj["max_tokens"] = max_tokens
+    bounded_timeout = max(5, min(int(timeout), int(os.environ.get("XIAOMI_ADAPTER_TIMEOUT", "60"))))
+
+    relay_command = (os.environ.get("XIAOMI_RELAY_COMMAND") or "").strip()
+    if relay_command:
+        relay_payload = dict(request_obj)
+        relay_payload["api_key"] = key
+        try:
+            r = subprocess.run(
+                shlex.split(relay_command),
+                input=json.dumps(relay_payload, ensure_ascii=False),
+                capture_output=True,
+                text=True,
+                timeout=bounded_timeout,
+            )
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(f"Xiaomi relay timed out after {bounded_timeout}s") from e
+        if r.returncode != 0:
+            raise RuntimeError(f"Xiaomi relay failed rc={r.returncode}: {_truncate_runtime_error_text(r.stderr or r.stdout, 500)}")
+        try:
+            data = json.loads(r.stdout)
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Xiaomi relay returned non-JSON: {_truncate_runtime_error_text(r.stdout, 500)}") from e
+        if isinstance(data, dict) and data.get("error"):
+            raise RuntimeError(f"Xiaomi relay error: {_truncate_runtime_error_text(data.get('error'), 500)}")
+        content, finish_reason, reasoning_len = _xiaomi_response_content(data)
+        if not content.strip():
+            raise RuntimeError(f"Xiaomi relay returned empty content; finish_reason={finish_reason or 'unknown'} reasoning_content_len={reasoning_len}")
+        return content
+
+    last_empty_detail = ""
+    last_transport_detail = ""
+    for attempt in range(2):
+        payload = json.dumps(request_obj).encode("utf-8")
+        req = urllib.request.Request(
+            base_url + "/chat/completions",
+            data=payload,
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=bounded_timeout) as resp:
+                body = resp.read().decode("utf-8")
+                if model_quota:
+                    record_model_quota_call(model=model, provider="xiaomi", ok=True, headers=dict(resp.headers), usage={})
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", errors="replace")[:500]
+            if model_quota:
+                record_model_quota_call(model=model, provider="xiaomi", ok=False, headers=dict(e.headers or {}), error=detail)
+            raise RuntimeError(f"Xiaomi API HTTP {e.code}: {detail}") from e
+        except (urllib.error.URLError, TimeoutError, socket.timeout) as e:
+            detail = str(e)[:500]
+            if attempt == 0:
+                last_transport_detail = detail
+                continue
+            if model_quota:
+                record_model_quota_call(model=model, provider="xiaomi", ok=False, headers={}, error=detail)
+            prior = f"; previous_transport={last_transport_detail}" if last_transport_detail and last_transport_detail != detail else ""
+            raise RuntimeError(f"Xiaomi API transport failed after {attempt + 1} attempts: {detail}{prior}") from e
+        data = json.loads(body)
+        content, finish_reason, reasoning_len = _xiaomi_response_content(data)
+        if content.strip() and finish_reason != "length":
+            return content
+        last_empty_detail = f"finish_reason={finish_reason or 'unknown'} content_len={len(content)} reasoning_content_len={reasoning_len}"
+        if attempt == 0 and (finish_reason == "length" or not content.strip()):
+            request_obj["messages"] = [{"role": "user", "content": _xiaomi_compact_retry_prompt(prompt, content, finish_reason)}]
+            continue
+        if content.strip():
+            return content
+    raise RuntimeError(f"Xiaomi API returned empty content after retry; {last_empty_detail}")
+
+
 def call_deepseek_api(prompt: str, model: str, timeout: int = DEFAULT_TIMEOUT) -> str:
     """Direct DeepSeek adapter used because Hermes CLI may not expose --provider deepseek."""
     import urllib.error
@@ -3623,7 +3964,7 @@ def call_discussion_model(model: str, prompt: str, config: dict, timeout: int = 
         # Prefer Claude Code CLI for Claude models. It uses the user's working
         # Claude Max/OAuth session and avoids the Hermes Anthropic adapter path
         # that can misroute provider/model fields in some local configs.
-        cmd = ["claude", "-p", prompt, "--model", model, "--max-turns", "1", "--output-format", "json"]
+        cmd = ["claude", "-p", prompt, "--model", model, "--max-turns", "1", "--output-format", "json", "--tools", ""]
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         except subprocess.TimeoutExpired as e:
@@ -3758,17 +4099,38 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
             latency_ms = int((time.time() - start) * 1000)
             parsed = extract_plan_json(raw)
             plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
+            record_model_health(model, ok=True, provider=provider, adapter=adapter)
             return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
         except Exception as e:
             latency_ms = int((time.time() - start) * 1000)
             plan = generate_shadow_plan(model, state_hash, tier, chain_id)
             plan["meta"]["confidence"] = 0.2
             plan["diagnosis"]["summary"] = f"{model} direct DeepSeek adapter failed: {str(e)[:240]}"
+            record_model_health(model, ok=False, provider=provider, adapter=adapter, error=str(e)[:500], reason="deepseek_adapter_failed")
             return plan, {"ok": False, "adapter": adapter, "provider": provider, "error": str(e)[:500], "latency_ms": latency_ms}
+    if provider == "xiaomi":
+        adapter = "xiaomi-api"
+        start = time.time()
+        try:
+            raw = call_xiaomi_api(prompt, model, timeout=timeout)
+            latency_ms = int((time.time() - start) * 1000)
+            parsed = extract_plan_json(raw)
+            plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
+            record_model_health(model, ok=True, provider=provider, adapter=adapter)
+            return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
+        except Exception as e:
+            latency_ms = int((time.time() - start) * 1000)
+            message = str(e)[:500]
+            plan = generate_shadow_plan(model, state_hash, tier, chain_id)
+            plan["meta"]["confidence"] = 0.2
+            plan["diagnosis"]["summary"] = f"{model} direct Xiaomi adapter failed: {message[:240]}"
+            reason = "auth_invalid" if "HTTP 401" in message or "invalid" in message.lower() else "xiaomi_adapter_failed"
+            record_model_health(model, ok=False, provider=provider, adapter=adapter, error=message, reason=reason)
+            return plan, {"ok": False, "adapter": adapter, "provider": provider, "error": message, "latency_ms": latency_ms}
     if "claude" in model.lower() and shutil.which("claude"):
         adapter = "claude-code"
         cmd = ["claude", "-p", prompt, "--model", model,
-               "--max-turns", "1", "--output-format", "json"]
+               "--max-turns", "1", "--output-format", "json", "--tools", ""]
     elif shutil.which("hermes"):
         adapter = "hermes-chat"
         cmd = [hermes_bin, "chat", "-q", prompt, "--model", model, "--quiet", "--max-turns", "1", "--source", "multi-brain", "--ignore-rules"]
@@ -3794,6 +4156,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
                 plan = generate_shadow_plan(model, state_hash, tier, chain_id)
                 plan["meta"]["confidence"] = 0.2
                 plan["diagnosis"]["summary"] = f"{model} Claude Code runtime failed: {message[:240]}"
+                record_model_health(model, ok=False, provider=provider, adapter=adapter, error=message[:500], reason="claude_code_runtime_failed")
                 return plan, {
                     "ok": False,
                     "adapter": adapter,
@@ -3811,10 +4174,12 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
                 plan = generate_shadow_plan(model, state_hash, tier, chain_id)
                 plan["meta"]["confidence"] = 0.2
                 plan["diagnosis"]["summary"] = f"{model} adapter {adapter} failed: {_truncate_runtime_error_text(r.stderr or r.stdout, 240)}"
+                record_model_health(model, ok=False, provider=provider, adapter=adapter, error=(r.stderr or r.stdout)[:500], reason="adapter_exit_nonzero")
                 return plan, {"ok": False, "adapter": adapter, "provider": provider, "exit_code": r.returncode, "latency_ms": latency_ms, "stderr": _truncate_runtime_error_text(r.stderr, 500)}
             raw_stdout = r.stdout
         parsed = extract_plan_json(raw_stdout)
         plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
+        record_model_health(model, ok=True, provider=provider, adapter=adapter)
         if model_quota:
             record_model_quota_call(model=model, provider=provider or model_quota.provider_for_model(model, config), ok=True, headers={}, usage={})
         return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
@@ -3824,6 +4189,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} timed out after {timeout}s via adapter"
+        record_model_health(model, ok=False, provider=provider, adapter=adapter, error=f"timeout after {timeout}s", reason="timeout")
         return plan, {"ok": False, "adapter": adapter, "provider": provider, "timeout_s": timeout}
     except ModelRuntimeError as e:
         message = _truncate_runtime_error_text(str(e), 500)
@@ -3832,6 +4198,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} runtime failed: {message[:240]}"
+        record_model_health(model, ok=False, provider=provider, adapter=adapter, error=message[:500], reason="runtime_error")
         return plan, {"ok": False, "adapter": adapter, "provider": provider, "api_error_status": getattr(e, "status", None), "error": message[:500]}
     except (json.JSONDecodeError, ValueError, OSError) as e:
         if model_quota:
@@ -3839,6 +4206,7 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         plan = generate_shadow_plan(model, state_hash, tier, chain_id)
         plan["meta"]["confidence"] = 0.2
         plan["diagnosis"]["summary"] = f"{model} output parse/invoke failed: {e}"
+        record_model_health(model, ok=False, provider=provider, adapter=adapter, error=str(e)[:500], reason="parse_or_invoke_error")
         return plan, {"ok": False, "adapter": adapter, "provider": provider, "error": str(e)[:500]}
 
 
@@ -3918,7 +4286,7 @@ def run_fanout(
     config = load_config()
     skip_claude = os.environ.get("SKIP_CLAUDE", "0") == "1"
 
-    planners, q_count, min_q = get_tier_planners(quorum, tier, skip_claude)
+    planners, q_count, min_q = get_tier_planners(quorum, tier, skip_claude, filter_health=True)
     if quorum_override:
         q_count = quorum_override
 
@@ -4326,6 +4694,7 @@ def cli():
     # ── status ──
     status_p = sub.add_parser("status", help="Show current quorum.yaml configuration")
     status_p.add_argument("--quota", action="store_true", help="Include current model quota snapshot")
+    status_p.add_argument("--health", action="store_true", help="Include current model health/circuit-breaker snapshot")
 
     # ── deterministic analysis selfcheck ──
     selfcheck_p = sub.add_parser("selfcheck", help="Run deterministic multi-model analysis self-check (no model calls)")
@@ -4502,6 +4871,9 @@ def cli():
                 print(model_quota.render_table(snapshots))
             else:
                 print("  model_quota unavailable")
+        if getattr(args, "health", False):
+            print("\nModel health snapshot:")
+            print(json.dumps(load_model_health(), indent=2, ensure_ascii=False, sort_keys=True))
 
     elif args.cmd == "selfcheck":
         report = run_analysis_selfcheck(include_temp_audit=not args.no_temp_audit)

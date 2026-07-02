@@ -44,6 +44,21 @@ def is_taskpool_control_plane_change(files: Sequence[str]) -> bool:
         "scripts/task_pool_guardian",
         "scripts/taskpool_",
         "scripts/agent_team_controller.py",
+        "scripts/consult_models.py",
+        "skills/software-development/taskpool-",
+    )
+    return any(f.startswith(markers) for f in files)
+
+
+def is_local_architecture_control_plane_change(files: Sequence[str]) -> bool:
+    markers = (
+        "scripts/consult_models.py",
+        "scripts/local_brain_",
+        "scripts/brainctl.py",
+        "scripts/task_preflight.py",
+        "scripts/brain_task_",
+        "scripts/taskpool_",
+        "skills/software-development/taskpool-",
     )
     return any(f.startswith(markers) for f in files)
 
@@ -90,6 +105,11 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
         "post_action_readback:pre-commit hook exits zero only after local preflight verdict is non-blocking",
     ]
     errors: list[str] = []
+    if is_local_architecture_control_plane_change(files):
+        evidence.extend([
+            "design_doc:staged local control-plane diff is the executable design; scoped to local provider/taskpool/precommit evidence handling with rollback by git reset/revert",
+            "gate_readback:local pre-commit BrainConstraintGate reads back staged files, evidence labels, deterministic tests, and exits nonzero on missing gates",
+        ])
     py_files = [root / f for f in files if f.endswith(".py") and (root / f).exists()]
     if py_files:
         proc = run([sys.executable, "-m", "py_compile", *[str(p) for p in py_files]], cwd=root, timeout=120)

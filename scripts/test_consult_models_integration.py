@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 import unittest
+import urllib.error
 from unittest import mock
 from pathlib import Path
 
@@ -66,6 +67,156 @@ class TestConsultModelsIntegration(unittest.TestCase):
         config = {"pricing": {"models": {"mimo-v2.5-pro": {"provider": "xiaomi"}}}}
         result = consult.model_provider(config, "mimo-v2.5-pro")
         self.assertEqual(result, "xiaomi")
+
+    def test_xiaomi_api_omits_fixed_max_tokens_by_default_and_honors_env_override(self):
+        """MiMo planner calls should not be capped by a baked-in max_tokens limit."""
+        captured_payloads = []
+
+        class FakeResponse:
+            status = 200
+            headers = {}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def read(self):
+                return json.dumps({
+                    "choices": [{"message": {"content": "{\"patches\": []}"}, "finish_reason": "stop"}],
+                }).encode("utf-8")
+
+        def fake_urlopen(req, timeout=0):
+            captured_payloads.append(json.loads(req.data.decode("utf-8")))
+            return FakeResponse()
+
+        env = {
+            "XIAOMI_API_KEY": "test-key",
+            "XIAOMI_BASE_URL": "https://unit.test/v1",
+        }
+        with mock.patch.dict(os.environ, env, clear=False), mock.patch("urllib.request.urlopen", fake_urlopen):
+            consult.call_xiaomi_api("prompt", "mimo-v2.5-pro", timeout=10)
+        self.assertNotIn("max_tokens", captured_payloads[-1])
+
+        with mock.patch.dict(os.environ, {**env, "XIAOMI_MAX_TOKENS": "4096"}, clear=False), mock.patch("urllib.request.urlopen", fake_urlopen):
+            consult.call_xiaomi_api("prompt", "mimo-v2.5-pro", timeout=10)
+        self.assertEqual(captured_payloads[-1].get("max_tokens"), 4096)
+
+    def test_xiaomi_api_retries_when_reasoning_consumes_output_budget(self):
+        """If MiMo returns empty/truncated content, retry with a compact JSON-only prompt."""
+        responses = [
+            {
+                "choices": [{
+                    "message": {"content": "", "reasoning_content": "spent tokens thinking"},
+                    "finish_reason": "length",
+                }],
+            },
+            {
+                "choices": [{
+                    "message": {"content": "{\"meta\": {\"confidence\": 1}, \"patches\": []}"},
+                    "finish_reason": "stop",
+                }],
+            },
+        ]
+        prompts = []
+
+        class FakeResponse:
+            status = 200
+            headers = {}
+
+            def __init__(self, payload):
+                self.payload = payload
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def read(self):
+                return json.dumps(self.payload).encode("utf-8")
+
+        def fake_urlopen(req, timeout=0):
+            body = json.loads(req.data.decode("utf-8"))
+            prompts.append(body["messages"][0]["content"])
+            return FakeResponse(responses.pop(0))
+
+        with mock.patch.dict(os.environ, {"XIAOMI_API_KEY": "test-key", "XIAOMI_BASE_URL": "https://unit.test/v1"}, clear=False), mock.patch("urllib.request.urlopen", fake_urlopen):
+            raw = consult.call_xiaomi_api("long planner prompt", "mimo-v2.5-pro", timeout=10)
+
+        self.assertIn('"patches"', raw)
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("compact JSON", prompts[1])
+
+    def test_xiaomi_api_retries_once_after_transport_timeout(self):
+        """A single MiMo read timeout should be retried before failing the planner."""
+        calls = {"count": 0}
+
+        class FakeResponse:
+            headers = {}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+            def read(self):
+                return json.dumps({
+                    "choices": [{"message": {"content": "{\"meta\": {\"confidence\": 1}, \"patches\": []}"}, "finish_reason": "stop"}],
+                }).encode("utf-8")
+
+        def fake_urlopen(req, timeout=0):
+            calls["count"] += 1
+            if calls["count"] == 1:
+                raise urllib.error.URLError(TimeoutError("The read operation timed out"))
+            return FakeResponse()
+
+        with mock.patch.dict(os.environ, {"XIAOMI_API_KEY": "test-key", "XIAOMI_BASE_URL": "https://unit.test/v1"}, clear=False), mock.patch("urllib.request.urlopen", fake_urlopen):
+            raw = consult.call_xiaomi_api("planner prompt", "mimo-v2.5-pro", timeout=10)
+
+        self.assertEqual(calls["count"], 2)
+        self.assertIn('"patches"', raw)
+
+    def test_model_health_transient_timeout_uses_short_circuit_ttl(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            health_path = Path(tmpdir) / "model-health.json"
+            with mock.patch.object(consult, "MODEL_HEALTH_TRANSIENT_TTL_SECONDS", 7), \
+                 mock.patch.object(consult, "MODEL_HEALTH_TTL_SECONDS", 3600), \
+                 mock.patch.object(consult, "_health_now", return_value=100.0):
+                data = consult.record_model_health(
+                    "mimo-v2.5-pro",
+                    ok=False,
+                    provider="xiaomi",
+                    adapter="xiaomi-api",
+                    reason="xiaomi_adapter_failed",
+                    error="Xiaomi API transport failed: The read operation timed out",
+                    path=str(health_path),
+                )
+
+            entry = data["models"]["mimo-v2.5-pro"]
+            self.assertEqual(entry["status"], "unhealthy")
+            self.assertEqual(entry["unhealthy_until"], 107.0)
+
+    def test_model_health_auth_failure_keeps_default_circuit_ttl(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            health_path = Path(tmpdir) / "model-health.json"
+            with mock.patch.object(consult, "MODEL_HEALTH_TRANSIENT_TTL_SECONDS", 7), \
+                 mock.patch.object(consult, "MODEL_HEALTH_TTL_SECONDS", 3600), \
+                 mock.patch.object(consult, "_health_now", return_value=100.0):
+                data = consult.record_model_health(
+                    "mimo-v2.5-pro",
+                    ok=False,
+                    provider="xiaomi",
+                    adapter="xiaomi-api",
+                    reason="auth_invalid",
+                    error="HTTP 401: invalid key",
+                    path=str(health_path),
+                )
+
+            entry = data["models"]["mimo-v2.5-pro"]
+            self.assertEqual(entry["unhealthy_until"], 3700.0)
 
     def test_model_provider_unknown_returns_empty(self):
         """model_provider() returns '' for unknown model"""
@@ -487,6 +638,27 @@ class TestConsultModelsIntegration(unittest.TestCase):
         )
         self.assertEqual(status["status"], "not_certified")
         self.assertIn("reject", " ".join(status["reasons"]))
+
+    def test_ratification_ignores_optional_provider_failure_when_required_panel_passes(self):
+        """Optional ratification reviewers should not block a clean required panel."""
+        with mock.patch.object(consult, "_ratification_optional_models", return_value={"gemini-3.1-pro-preview", "gpt-5.5"}):
+            status = consult.evaluate_ratification(
+                votes=[
+                    {"model": "claude-opus-4-8", "vote": "approve", "best_within_constraints": True},
+                    {"model": "deepseek-v4-pro", "vote": "approve", "best_within_constraints": True},
+                    {"model": "mimo-v2.5-pro", "vote": "approve", "best_within_constraints": True},
+                    {"model": "gpt-5.5", "vote": "approve", "best_within_constraints": True},
+                    {"model": "gemini-3.1-pro-preview", "vote": "amend", "best_within_constraints": False},
+                ],
+                agreement_matrix={"framing": 0.95, "approach": 0.95, "implementation_order": 0.95},
+                issue_ledger=[],
+                revised_this_round=False,
+                novel_redteam_blocker=False,
+                truth_gate={"can_certify_truth": True, "unsupported_high_severity_claim_ids": [], "contradicted_high_severity_claim_ids": []},
+            )
+        self.assertEqual(status["status"], "certified")
+        self.assertEqual(status["approval_count"], 3)
+        self.assertFalse(status["reasons"])
 
     def test_run_discussion_offline_certifies_when_all_gates_clean(self):
         """Offline discussion runner should produce auditable ratification output without model calls."""
