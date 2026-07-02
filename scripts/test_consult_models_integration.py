@@ -179,6 +179,40 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertEqual(calls["count"], 2)
         self.assertIn('"patches"', raw)
 
+    def test_xiaomi_planner_parse_error_retries_with_compact_prompt(self):
+        calls = []
+        valid_plan = {
+            "meta": {"confidence": 0.9},
+            "diagnosis": {"summary": "ok"},
+            "patches": [],
+            "verification": {},
+            "evidence_requests": [],
+        }
+
+        def fake_call(prompt, model, timeout=0):
+            calls.append(prompt)
+            if len(calls) == 1:
+                return '{"meta": {"confidence": 0.9}, "diagnosis": "bad\\x"}'
+            return json.dumps(valid_plan)
+
+        with mock.patch.object(consult, "call_xiaomi_api", side_effect=fake_call), \
+             mock.patch.object(consult, "record_model_health") as health:
+            plan, info = consult.call_planner_model(
+                model="mimo-v2.5-pro",
+                prompt="original planner prompt",
+                state_hash="statehash",
+                tier="T3",
+                chain_id="chain",
+                config={"pricing": {"models": {"mimo-v2.5-pro": {"provider": "xiaomi"}}}},
+                timeout=10,
+            )
+
+        self.assertEqual(len(calls), 2)
+        self.assertIn("Return compact JSON only", calls[1])
+        self.assertTrue(info["ok"])
+        self.assertEqual(plan["meta"]["planner_model"], "mimo-v2.5-pro")
+        health.assert_called_with("mimo-v2.5-pro", ok=True, provider="xiaomi", adapter="xiaomi-api")
+
     def test_model_health_transient_timeout_uses_short_circuit_ttl(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             health_path = Path(tmpdir) / "model-health.json"
@@ -192,6 +226,26 @@ class TestConsultModelsIntegration(unittest.TestCase):
                     adapter="xiaomi-api",
                     reason="xiaomi_adapter_failed",
                     error="Xiaomi API transport failed: The read operation timed out",
+                    path=str(health_path),
+                )
+
+            entry = data["models"]["mimo-v2.5-pro"]
+            self.assertEqual(entry["status"], "unhealthy")
+            self.assertEqual(entry["unhealthy_until"], 107.0)
+
+    def test_model_health_planner_parse_failure_uses_short_circuit_ttl(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            health_path = Path(tmpdir) / "model-health.json"
+            with mock.patch.object(consult, "MODEL_HEALTH_TRANSIENT_TTL_SECONDS", 7), \
+                 mock.patch.object(consult, "MODEL_HEALTH_TTL_SECONDS", 3600), \
+                 mock.patch.object(consult, "_health_now", return_value=100.0):
+                data = consult.record_model_health(
+                    "mimo-v2.5-pro",
+                    ok=False,
+                    provider="xiaomi",
+                    adapter="xiaomi-api",
+                    reason="parse_or_invoke_error",
+                    error="Invalid \\escape: line 57 column 31",
                     path=str(health_path),
                 )
 

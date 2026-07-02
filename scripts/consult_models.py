@@ -157,6 +157,12 @@ def _model_health_ttl_for_failure(reason: str = "", error: str = "") -> int:
         "urlerror",
         "connection reset",
         "temporarily unavailable",
+        "parse_or_invoke_error",
+        "jsondecodeerror",
+        "json decode",
+        "invalid \\escape",
+        "unterminated string",
+        "expecting value",
     )
     if any(marker in text for marker in transient_markers):
         return max(0, MODEL_HEALTH_TRANSIENT_TTL_SECONDS)
@@ -4114,7 +4120,13 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
         try:
             raw = call_xiaomi_api(prompt, model, timeout=timeout)
             latency_ms = int((time.time() - start) * 1000)
-            parsed = extract_plan_json(raw)
+            try:
+                parsed = extract_plan_json(raw)
+            except (json.JSONDecodeError, ValueError) as parse_error:
+                retry_prompt = _xiaomi_compact_retry_prompt(prompt, raw, f"planner_parse_error:{parse_error}")
+                raw = call_xiaomi_api(retry_prompt, model, timeout=timeout)
+                latency_ms = int((time.time() - start) * 1000)
+                parsed = extract_plan_json(raw)
             plan = normalize_plan(parsed, model, state_hash, tier, chain_id, provider, adapter, latency_ms)
             record_model_health(model, ok=True, provider=provider, adapter=adapter)
             return plan, {"ok": True, "adapter": adapter, "provider": provider, "latency_ms": latency_ms}
@@ -4124,7 +4136,8 @@ def call_planner_model(model: str, prompt: str, state_hash: str, tier: str,
             plan = generate_shadow_plan(model, state_hash, tier, chain_id)
             plan["meta"]["confidence"] = 0.2
             plan["diagnosis"]["summary"] = f"{model} direct Xiaomi adapter failed: {message[:240]}"
-            reason = "auth_invalid" if "HTTP 401" in message or "invalid" in message.lower() else "xiaomi_adapter_failed"
+            lowered = message.lower()
+            reason = "auth_invalid" if ("http 401" in lowered or "invalid key" in lowered or "unauthorized" in lowered or "permission denied" in lowered) else "xiaomi_adapter_failed"
             record_model_health(model, ok=False, provider=provider, adapter=adapter, error=message, reason=reason)
             return plan, {"ok": False, "adapter": adapter, "provider": provider, "error": message, "latency_ms": latency_ms}
     if "claude" in model.lower() and shutil.which("claude"):

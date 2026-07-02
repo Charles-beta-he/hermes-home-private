@@ -10,6 +10,10 @@ description: Use when Hermes taskpool drain/dispatch stalls on claimed/running/r
 - Use when this skill is already selected by the Hermes skill router and the task still fits the current goal.
 - Don't use for: adjacent workflows with a more specific skill, generic Q&A, or tasks that lack evidence for this skill's domain.
 
+## Provider-health recovery for stuck multimodel queues
+
+See `references/provider-timeout-health-stability.md` for the adapter-level timeout/health-TTL fix pattern when smoke passes but full multimodel fanout intermittently marks a required provider unhealthy.
+
 
 Use this skill when taskpool is not draining because rows remain `claimed`, `running`, or `retry`, especially when `worker-jobs` appears empty or dispatch reports resource ceiling / already claimed conflicts.
 
