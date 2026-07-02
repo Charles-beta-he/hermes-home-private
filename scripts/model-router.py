@@ -977,6 +977,37 @@ def select_pair(
         if m != prod["model"] and _provider_for_model(m, config=config) != prod_provider
     ]
     
+    def same_provider_fallback() -> dict:
+        # 无可用 diverse reviewer — 选同 provider 但要求 off-peak + 高 pass_rate。
+        # This also covers the case where diverse reviewer names exist but all are
+        # currently unavailable due provider/runtime health gates.
+        same_provider = [
+            m for m in reviewer_candidates
+            if m != prod["model"] and _provider_for_model(m, config=config) == prod_provider
+        ]
+        fallback = {"model": None, "reason": "no_diverse_reviewer"}
+        if same_provider and pt and pt.is_off_peak(prod["model"], now_utc):
+            stats = get_model_stats(task_class=task_class)
+            stats_by_model = {s.get("model"): s for s in stats if isinstance(s, dict)}
+            high_conf_same_provider = [
+                m for m in same_provider
+                if stats_by_model.get(m, {}).get("pass_rate", 0.5) >= 0.9
+            ]
+            if high_conf_same_provider:
+                rev_config = dict(config)
+                rev_config["candidate_models"] = high_conf_same_provider
+                fallback = select_model(
+                    task_class=task_class,
+                    task_tier="reviewer",
+                    config=rev_config,
+                    now_utc=now_utc,
+                    candidate_override=high_conf_same_provider,
+                )
+                if fallback.get("model"):
+                    fallback = dict(fallback)
+                    fallback["reason"] = "same_provider_offpeak_highconf"
+        return fallback
+
     if diverse_reviewers:
         # 在 diverse reviewers 中选最优
         # 使用与 select_model 相同的逻辑
@@ -989,33 +1020,10 @@ def select_pair(
             now_utc=now_utc,
             candidate_override=diverse_reviewers,
         )
+        if not reviewer.get("model"):
+            reviewer = same_provider_fallback()
     else:
-        # 无 diverse reviewer — 选同 provider 但要求 off-peak + 高 pass_rate
-        same_provider = [
-            m for m in reviewer_candidates
-            if m != prod["model"] and _provider_for_model(m, config=config) == prod_provider
-        ]
-        reviewer = {"model": None, "reason": "no_diverse_reviewer"}
-        if same_provider and pt and pt.is_off_peak(prod["model"], now_utc):
-            stats = get_model_stats(task_class=task_class)
-            stats_by_model = {s.get("model"): s for s in stats if isinstance(s, dict)}
-            high_conf_same_provider = [
-                m for m in same_provider
-                if stats_by_model.get(m, {}).get("pass_rate", 0.5) >= 0.9
-            ]
-            if high_conf_same_provider:
-                rev_config = dict(config)
-                rev_config["candidate_models"] = high_conf_same_provider
-                reviewer = select_model(
-                    task_class=task_class,
-                    task_tier="reviewer",
-                    config=rev_config,
-                    now_utc=now_utc,
-                    candidate_override=high_conf_same_provider,
-                )
-                if reviewer.get("model"):
-                    reviewer = dict(reviewer)
-                    reviewer["reason"] = "same_provider_offpeak_highconf"
+        reviewer = same_provider_fallback()
 
     pair = {
         "producer": prod,

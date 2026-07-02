@@ -439,6 +439,49 @@ class TestModelRouterQuota(unittest.TestCase):
             self.assertEqual(pair["reviewer"]["reason"], "no_diverse_reviewer")
             self.assertFalse(pair["same_provider"])
 
+    def test_select_pair_falls_back_to_same_provider_when_diverse_reviewers_unavailable_offpeak(self):
+        with tempfile.TemporaryDirectory() as td:
+            router = load_router(td)
+
+            class FakePricing:
+                def get_candidate_models(self, tier):
+                    if tier == "reviewer":
+                        return ["producer", "same-reviewer", "diverse-reviewer"]
+                    return ["producer"]
+
+                def is_off_peak(self, model, now_utc):
+                    return True
+
+                def estimate_cost(self, model, tokens_in, tokens_out, now_utc=None):
+                    return 0.001
+
+                def effective_rate(self, model, now_utc=None):
+                    return (0.001, 0.001, "offpeak")
+
+            router._get_pricing = lambda: FakePricing()
+            router._model_available = lambda model, config=None, log_unavailable=True: model != "diverse-reviewer"
+            router.get_model_stats = lambda task_class=None: [
+                {"model": "producer", "count": 100, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+                {"model": "same-reviewer", "count": 100, "pass_rate": 0.95, "score": 0.95, "avg_dur": 1},
+            ]
+            config = {
+                "enabled": True,
+                "default_model": "producer",
+                "candidate_models": ["producer", "same-reviewer", "diverse-reviewer"],
+                "min_traces_per_model": 1,
+                "epsilon": 0.0,
+                "pricing": {"models": {
+                    "producer": {"provider": "same", "capabilities": ["code"]},
+                    "same-reviewer": {"provider": "same", "capabilities": ["code"]},
+                    "diverse-reviewer": {"provider": "other", "capabilities": ["code"]},
+                }},
+            }
+            pair = router.select_pair(config=config, task_class="bugfix", task_tier="codegen")
+            self.assertEqual(pair["producer"]["model"], "producer")
+            self.assertEqual(pair["reviewer"]["model"], "same-reviewer")
+            self.assertEqual(pair["reviewer"]["reason"], "same_provider_offpeak_highconf")
+            self.assertTrue(pair["same_provider"])
+
     def test_claude_models_use_claude_code_provider_when_cli_available(self):
         with tempfile.TemporaryDirectory() as td:
             bin_dir = Path(td) / "bin"

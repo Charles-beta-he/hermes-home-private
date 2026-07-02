@@ -249,9 +249,49 @@ r = subprocess.run(
 test("ensemble-vote.py compiles", lambda: (r.returncode == 0, r.stderr[:200]))
 
 # model-router.py select-pair
+# Keep this self-test deterministic: live provider health can legitimately leave
+# only one provider available, while the router function should still be able to
+# form a producer/reviewer pair under a controlled fixture.
+router_selftest = r'''
+import importlib.util, json, sys
+spec = importlib.util.spec_from_file_location("model_router_selftest", sys.argv[1])
+router = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(router)
+class FakePricing:
+    def get_candidate_models(self, tier):
+        if tier == "reviewer":
+            return ["producer", "reviewer"]
+        return ["producer"]
+    def is_off_peak(self, model, now_utc):
+        return False
+    def estimate_cost(self, model, tokens_in, tokens_out, now_utc=None):
+        return 0.001
+    def effective_rate(self, model, now_utc=None):
+        return (0.001, 0.001, "default")
+router._get_pricing = lambda: FakePricing()
+router._model_available = lambda model, config=None, log_unavailable=True: True
+router.get_model_stats = lambda task_class=None: [
+    {"model": "producer", "count": 20, "pass_rate": 1.0, "score": 1.0, "avg_dur": 1},
+    {"model": "reviewer", "count": 20, "pass_rate": 0.95, "score": 0.95, "avg_dur": 1},
+]
+config = {
+    "enabled": True,
+    "default_model": "producer",
+    "candidate_models": ["producer", "reviewer"],
+    "min_traces_per_model": 1,
+    "epsilon": 0.0,
+    "pricing": {"models": {
+        "producer": {"provider": "p1", "capabilities": ["code"]},
+        "reviewer": {"provider": "p2", "capabilities": ["code"]},
+    }},
+}
+pair = router.select_pair(config=config, task_class="self_test_router", task_tier="codegen")
+if not pair.get("producer", {}).get("model") or not pair.get("reviewer", {}).get("model"):
+    raise SystemExit(json.dumps(pair, ensure_ascii=False))
+print(json.dumps(pair, ensure_ascii=False))
+'''
 r = subprocess.run(
-    [sys.executable, os.path.join(HERMES_HOME, "scripts/model-router.py"),
-     "select-pair", "--task-tier", "codegen"],
+    [sys.executable, "-c", router_selftest, os.path.join(HERMES_HOME, "scripts/model-router.py")],
     capture_output=True, text=True, timeout=10, env=ROUTE_ENV
 )
 has_pair = '"producer"' in r.stdout and '"reviewer"' in r.stdout
