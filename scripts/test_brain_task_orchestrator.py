@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -3208,6 +3209,44 @@ def test_auto_split_non_convergence_creates_axis_specific_narrowed_briefs():
         assert "## Narrowed Scope" in quota_note
         assert f"- Parent task: {parent_id}" in quota_note
         assert str(discussion_path) in quota_note
+
+
+
+def test_auto_split_non_convergence_work_children_get_project_source_policy_ref():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["hermes", "hermes-agent"])
+        parent_id, parent_path = add_task(env, title="Work parent needs convergence narrowing", priority="P1", project="hermes-agent")
+        discussion_path = parent_path.parent / "work-non-convergence-discussion.json"
+        discussion_path.write_text(json.dumps({
+            "status": "not_certified",
+            "issue_ledger": [
+                {"id": "I-FALLBACK", "status": "unresolved", "summary": "fallback threshold remains ambiguous"},
+            ],
+            "planner_patch_summary": {"certification_intent": "unresolved_noop_vs_change"},
+        }, ensure_ascii=False), encoding="utf-8")
+        text = parent_path.read_text(encoding="utf-8")
+        # Exercise the production fallback path: generated work children must bind
+        # the project profile source policy even when the parent note predates the
+        # source_weighting_policy_ref gate.
+        text = re.sub(r"^source_weighting_policy_ref:.*\n", "", text, flags=re.M)
+        text = text.replace(
+            "evidence: []",
+            f"multimodel_last_discussion_artifact: {discussion_path}\nmultimodel_last_failures:\n  - loop_non_convergence\n  - agreement_below_threshold:framing:0.61\nevidence: []",
+            1,
+        )
+        parent_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-split-non-convergence", "--task", parent_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["created_count"] >= 1, result
+        created_paths = [Path(item["created"]) for item in result["created"]]
+        for created_path in created_paths:
+            note_text = created_path.read_text(encoding="utf-8")
+            assert "lane: work" in note_text
+            assert "project: hermes-agent" in note_text
+            assert "source_weighting_policy_ref:" in note_text
+            assert "hermes.json#source_weighting_policy" in note_text
 
 
 

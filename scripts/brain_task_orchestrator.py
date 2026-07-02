@@ -4039,6 +4039,9 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
             objective=spec["objective"],
             accept=spec["accept"],
             extra_frontmatter={
+                **({
+                    "source_weighting_policy_ref": str(parent.fm.get("source_weighting_policy_ref") or source_weighting_policy_ref_for_project(parent.project))
+                } if parent.lane == "work" and parent.project else {}),
                 "auto_subtask_parent": parent.id,
                 "auto_subtask_kind": "non_convergence_narrowing",
                 "auto_subtask_axis": spec.get("axis") or "framing",
