@@ -120,3 +120,9 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Generated coverage artifact `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/high-risk-boundary-coverage-20260703.json` and report `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/HIGH_RISK_BOUNDARY_REPORT_20260703.md`.
 - Generated local simulation ledger `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/artifacts/simulation-ledger-20260703.jsonl` with 5 intent-only receipts.
 - No live taskpool write, external send, hardware/robot action, deploy/push, credential entry, token read, or secret persistence occurred.
+
+## Update — 2026-07-03T00:22:00+08:00
+- Advanced from simulation ledger to disposable local harness write-through for the five authorized high-risk classes.
+- Added `implementation/hewos_core/local_harness.py` and `implementation/tests/test_local_harness.py`.
+- Wrote local harness receipts under `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/artifacts/local-harness-20260703` and report `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md`.
+- No real adapter was touched: taskpool CLI/DB, external APIs, hardware/robot, deploy/push, auth provider, token/secret store all remained closed.
