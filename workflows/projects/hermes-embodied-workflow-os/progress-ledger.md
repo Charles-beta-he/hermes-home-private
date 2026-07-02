@@ -66,3 +66,10 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Added regression test in `/Users/charles/.hermes/scripts/test_local_brain_precommit_hook.py`.
 - Verification: `python3 scripts/test_local_brain_precommit_hook.py -q` => 5 tests OK; `python3 scripts/test_local_brain_change_preflight.py -q` => 4 tests OK; HEWOS implementation tests still 17 OK.
 - Boundary preserved: this is a local deterministic hook evidence-mapping repair; no bypass, no external dispatch, no taskpool write, no deployment.
+
+## Update — 2026-07-02T19:34:00+08:00
+- Continued sequentially after commit `c5538566` into P3 spec-only work.
+- Added P3 Web Workbench PRD: `07-product/prd-p3-web-workbench.md`.
+- Added Web Workbench architecture boundary: `01-architecture/web-workbench-boundary.md`.
+- Boundary preserved: spec-only; no UI runtime, no browser implementation claim, no external/hardware/taskpool/deploy/auth side effects.
+- Next gate: P3 local implementation may build projections/fixtures only, with tests proving no execution path.

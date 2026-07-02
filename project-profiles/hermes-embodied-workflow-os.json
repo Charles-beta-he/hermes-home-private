@@ -3,11 +3,11 @@
   "display_name": "Hermes Embodied Workflow OS",
   "project_type": "outer-tooling/embodied-workflow-platform",
   "created_at": "2026-07-02T18:43:34+08:00",
-  "updated_at": "2026-07-02T19:25:00+08:00",
+  "updated_at": "2026-07-02T19:34:00+08:00",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
   "portfolio_profile": true,
-  "status": "p1-p2-contract-and-replay-validated-local-slice",
+  "status": "p1-p2-validated-and-p3-workbench-specified",
   "role": "Long-term outer-tool/body layer for Hermes: stable workflow core plus adapters for Web/PWA/App/PC, glasses, voice, embedded devices, robots, NAS archive, proxy connectivity, and physical/external-control gates.",
   "promotion_policy": "evidence-gated ratchet: proposal -> profiled -> ledgered -> contract-ready -> validated-slice -> runtime-gated -> promoted only with tests/readback/evidence; physical/external actions require exact target, dry-run, telemetry/readback, audit, and explicit authority.",
   "relations": [
@@ -74,7 +74,9 @@
     "workflow_state": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/07-product/workflow-state.yaml.md",
     "task_candidates": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/08-tasks/task-candidates.json",
     "benchmark_scorecard": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/09-benchmark/architecture-benchmark-scorecard.md",
-    "implementation_readme": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/implementation/README.md"
+    "implementation_readme": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/implementation/README.md",
+    "prd_p3_web_workbench": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/07-product/prd-p3-web-workbench.md",
+    "web_workbench_boundary": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/web-workbench-boundary.md"
   },
   "current_components": {
     "project_profile": "profiled",
@@ -94,7 +96,8 @@
     "taskpool_write": "not_performed",
     "p2_replay_harness": "validated_local_in_memory_reducer",
     "commit_status": "blocked_by_local_brain_governance_degraded_not_certified",
-    "commit_governance_repair": "local_precommit_evidence_mapping_regression_tested"
+    "commit_governance_repair": "local_precommit_evidence_mapping_regression_tested",
+    "p3_web_workbench_spec": "spec_only_no_ui_runtime"
   },
   "boundaries": [
     "metadata/profile/ledger/research only in this slice",
@@ -115,5 +118,5 @@
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/precommit-evidence-packet-20260702.md",
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/implementation/README.md"
   ],
-  "next_gate": "Scoped commit with repaired local brain pre-commit evidence mapping; no bypass."
+  "next_gate": "P3 implementation gate: local Workbench projection/fixture implementation only; no real execution, hardware, gateway, taskpool lifecycle, deploy, or auth."
 }
