@@ -73,3 +73,10 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Added Web Workbench architecture boundary: `01-architecture/web-workbench-boundary.md`.
 - Boundary preserved: spec-only; no UI runtime, no browser implementation claim, no external/hardware/taskpool/deploy/auth side effects.
 - Next gate: P3 local implementation may build projections/fixtures only, with tests proving no execution path.
+
+## Update — 2026-07-02T19:42:00+08:00
+- Continued from P3 spec-only into local P3 projection fixture implementation.
+- Added `implementation/hewos_core/projections.py` for Workbench-safe projection DTO helpers.
+- Added `implementation/tests/test_workbench_projections.py` covering dashboard projection from ledger replay, projection shapes, and AST guard against hardware/external side-effect imports/calls.
+- Latest test pass: `python3 -m unittest discover -s implementation/tests -v` => 20 tests OK.
+- Boundary preserved: no Web runtime/server, no UI acceptance claim, no external/hardware/taskpool/deploy/auth side effects.

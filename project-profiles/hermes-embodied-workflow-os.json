@@ -3,11 +3,11 @@
   "display_name": "Hermes Embodied Workflow OS",
   "project_type": "outer-tooling/embodied-workflow-platform",
   "created_at": "2026-07-02T18:43:34+08:00",
-  "updated_at": "2026-07-02T19:34:00+08:00",
+  "updated_at": "2026-07-02T19:42:00+08:00",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
   "portfolio_profile": true,
-  "status": "p1-p2-validated-and-p3-workbench-specified",
+  "status": "p1-p2-validated-and-p3-projections-validated-local-slice",
   "role": "Long-term outer-tool/body layer for Hermes: stable workflow core plus adapters for Web/PWA/App/PC, glasses, voice, embedded devices, robots, NAS archive, proxy connectivity, and physical/external-control gates.",
   "promotion_policy": "evidence-gated ratchet: proposal -> profiled -> ledgered -> contract-ready -> validated-slice -> runtime-gated -> promoted only with tests/readback/evidence; physical/external actions require exact target, dry-run, telemetry/readback, audit, and explicit authority.",
   "relations": [
@@ -97,7 +97,9 @@
     "p2_replay_harness": "validated_local_in_memory_reducer",
     "commit_status": "blocked_by_local_brain_governance_degraded_not_certified",
     "commit_governance_repair": "local_precommit_evidence_mapping_regression_tested",
-    "p3_web_workbench_spec": "spec_only_no_ui_runtime"
+    "p3_web_workbench_spec": "spec_only_no_ui_runtime",
+    "p3_workbench_projection_fixtures": "validated_local_no_ui_runtime",
+    "p3_tests": "20_unittest_tests_passing"
   },
   "boundaries": [
     "metadata/profile/ledger/research only in this slice",
@@ -118,5 +120,5 @@
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/precommit-evidence-packet-20260702.md",
     "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/implementation/README.md"
   ],
-  "next_gate": "P3 implementation gate: local Workbench projection/fixture implementation only; no real execution, hardware, gateway, taskpool lifecycle, deploy, or auth."
+  "next_gate": "P3 UI/workbench runtime implementation gate; no real execution, hardware, gateway, taskpool lifecycle, deploy, or auth."
 }
