@@ -309,6 +309,17 @@ def event_hook_multimodel_route(event: str, task_id: str = "") -> dict[str, Any]
 
     try:
         task = find_task(task_id)
+        dream_audit_gate = dream_audit_advancement_gate(task)
+        if dream_audit_gate.get("applicable") and not dream_audit_gate.get("allowed"):
+            return {
+                **route,
+                "reason": str(dream_audit_gate.get("reason") or "dream_audit_gate_blocked"),
+                "task_status": task.status,
+                "priority": task.priority,
+                "lane": task.lane,
+                "project": task.project,
+                "dream_audit_gate": dream_audit_gate,
+            }
         reasons = task_multimodel_intervention_reasons(task)
         cert_reasons = task_multimodel_certification_reasons(task)
         advisory_reasons = task_multimodel_advisory_reasons(task)
@@ -324,6 +335,8 @@ def event_hook_multimodel_route(event: str, task_id: str = "") -> dict[str, Any]
         "certification_reasons": cert_reasons,
         "advisory_reasons": advisory_reasons,
     })
+    if dream_audit_gate.get("applicable"):
+        route["dream_audit_gate"] = dream_audit_gate
     if not reasons:
         return {**route, "reason": "no_multimodel_reasons"}
 
@@ -1822,6 +1835,94 @@ def split_csv_frontmatter_value(value: Any) -> list[str]:
 
 def task_requires_multimodel_contract(task: "Task") -> bool:
     return truthy_frontmatter_value(task.fm.get("requires_multimodel") or task.fm.get("multimodel_required"))
+
+
+def _dream_audit_selector_state_path() -> Path:
+    explicit = str(os.environ.get("HERMES_EVOLUTION_CONFIDENCE_DB_PATH") or "").strip()
+    if explicit:
+        return Path(explicit).expanduser()
+    return HERMES_HOME / "state" / "evolution" / "bayesian-agent" / "confidence-db.json"
+
+
+def dream_audit_advancement_gate(task: "Task") -> dict[str, Any]:
+    """Fail-closed routing gate for taskpool dream-audit advancement tasks.
+
+    Dream audit selection state remains canonical in the evolution confidence DB;
+    taskpool routing may only advance an explicitly marked audit task when that
+    selector row exists, is not currently cooling down/blocked, and the task has
+    the required proof precondition for the handoff.
+    """
+    fm = getattr(task, "fm", {}) or {}
+    markers = ("dream_audit_advancement", "dream_audit_skill", "dream_audit_status")
+    audit_kind = str(fm.get("audit_kind") or fm.get("audit_scope") or "").strip().lower()
+    if not any(str(fm.get(field) or "").strip() for field in markers) and audit_kind not in {"dream", "dream_audit"}:
+        return {"applicable": False, "decision": "not_applicable"}
+
+    skill = ""
+    for field in ("dream_audit_skill", "audit_skill", "selected_skill", "skill_name", "target_skill"):
+        candidate = str(fm.get(field) or "").strip()
+        if candidate:
+            skill = candidate
+            break
+    gate: dict[str, Any] = {"applicable": True, "skill": skill}
+    if not skill:
+        return {**gate, "allowed": False, "decision": "retry_later", "reason": "dream_audit_missing_candidate"}
+
+    status = str(fm.get("dream_audit_status") or fm.get("audit_status") or "").strip().lower()
+    if status in {"blocked", "invalid", "failed", "error"}:
+        return {**gate, "allowed": False, "decision": "block", "reason": "dream_audit_invalid_status", "audit_status": status}
+
+    proof_required_raw = fm.get("dream_audit_requires_proof")
+    proof_required = True if proof_required_raw in (None, "") else truthy_frontmatter_value(proof_required_raw)
+    proof_refs = list_value(fm.get("proof_artifacts"))
+    for field in ("acceptance_evidence", "evidence_bundle", "ratification_artifact"):
+        value = str(fm.get(field) or "").strip()
+        if value:
+            proof_refs.append(value)
+    if proof_required and not proof_refs:
+        return {**gate, "allowed": False, "decision": "hand_off", "reason": "dream_audit_missing_proof"}
+
+    state_path = _dream_audit_selector_state_path()
+    gate["selector_state_path"] = str(state_path)
+    try:
+        data = json.loads(state_path.read_text(encoding="utf-8"))
+        skills = data.get("skills") if isinstance(data, dict) else None
+        row = skills.get(skill) if isinstance(skills, dict) else None
+    except Exception as exc:
+        return {**gate, "allowed": False, "decision": "retry_later", "reason": "dream_audit_missing_selector_state", "error": str(exc)}
+    if not isinstance(row, dict):
+        return {**gate, "allowed": False, "decision": "retry_later", "reason": "dream_audit_missing_selector_state"}
+
+    cooldown_until = str(row.get("audit_cooldown_until") or "").strip()
+    cooldown_dt = parse_dt(cooldown_until)
+    blocked_reason = str(row.get("audit_blocked_reason") or "").strip()
+    if cooldown_dt is not None and cooldown_dt > now():
+        if blocked_reason:
+            return {
+                **gate,
+                "allowed": False,
+                "decision": "block",
+                "reason": "dream_audit_blocked",
+                "blocked_reason": blocked_reason,
+                "cooldown_until": cooldown_until,
+            }
+        return {
+            **gate,
+            "allowed": False,
+            "decision": "hold_for_cooldown",
+            "reason": "dream_audit_cooling_down",
+            "cooldown_until": cooldown_until,
+        }
+
+    return {
+        **gate,
+        "allowed": True,
+        "decision": "advance",
+        "reason": "dream_audit_eligible",
+        "last_audit_attempt": row.get("last_audit_attempt") or row.get("last_audit"),
+        "last_audit_result": row.get("last_audit_result"),
+        "consecutive_no_change": row.get("consecutive_no_change", 0),
+    }
 
 
 MULTIMODEL_CONTROL_PLANE_TARGETS = {
@@ -8544,6 +8645,11 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
     evidence = f"command: multimodel-intervention-step gate={gate_status} decision={decision or 'n/a'} artifact={discussion_path or 'missing'}"
 
     strong_certification = normalized_status == "PASS" and normalized_decision == "LOOP_DONE"
+    advisory_only_pass = normalized_status == "PASS_ADVISORY_ONLY"
+    advisory_has_no_cert_authority = (
+        _frontmatter_bool(task.fm.get("multimodel_advisory_only"))
+        and not _frontmatter_bool(task.fm.get("multimodel_certification_authority"))
+    )
     closeout_probe_evidence = _dedupe_evidence([*auto_close_review_evidence(task), evidence])
     closeout_failures = completion_gate_failures(task, closeout_probe_evidence)
 
@@ -8556,6 +8662,20 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
             reason="multimodel_certification_passed_enter_review",
         )
         refresh_reason = "multimodel-review"
+        to_status = "review"
+    elif advisory_only_pass and advisory_has_no_cert_authority and not closeout_failures:
+        # Advisory-only rounds are not done authority, but keeping an evidence-only
+        # task in pending after PASS_ADVISORY_ONLY re-dispatches the same worker and
+        # creates blocked/retry ping-pong.  Move it to review; the normal review->done
+        # completion gate still decides whether the task may close.
+        apply_lifecycle_status(
+            task,
+            "review",
+            actor,
+            evidence=[evidence],
+            reason="multimodel_advisory_pass_enter_review_without_done_authority",
+        )
+        refresh_reason = "multimodel-advisory-review"
         to_status = "review"
     else:
         gap_kind = "multimodel_certification_lacks_project_closeout_evidence" if strong_certification else "multimodel_advisory_or_failed_not_completion"

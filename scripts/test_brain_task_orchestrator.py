@@ -2602,6 +2602,42 @@ def test_ratification_gate_cli_reports_legacy_packet_read_compat_without_relaxin
 
 
 
+def test_finish_multimodel_advisory_only_pass_enters_review_without_done_authority(monkeypatch):
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        task_path = root / "2026-07-02-advisory-evidence-only.md"
+        body = "# Advisory evidence only\n"
+        task_path.write_text(body, encoding="utf-8")
+        task = mod.Task(
+            path=task_path,
+            fm={
+                "status": "running",
+                "priority": "P2",
+                "multimodel_status": "advisory_completed",
+                "multimodel_advisory_only": True,
+                "multimodel_certification_authority": False,
+            },
+            body=body,
+        )
+        monkeypatch.setattr(mod, "find_task", lambda task_id: task if task_id == task.id else None)
+        monkeypatch.setattr(mod, "completion_gate_failures", lambda task, evidence: [])
+        monkeypatch.setattr(mod, "refresh_derived_task_views", lambda reason: {"status": "OK", "reason": reason})
+
+        result = mod.finish_multimodel_step_running(
+            task.id,
+            {
+                "gate": {"status": "PASS_ADVISORY_ONLY", "decision": "CONTINUE_LOOP", "failures": []},
+                "discussion_path": str(root / "discussion_result.json"),
+            },
+        )
+
+        assert result["status"] == "OK", result
+        assert result["to_status"] == "review", result
+        assert task.fm["status"] == "review", task.fm
+        assert "multimodel_advisory_pass_enter_review_without_done_authority" in task.body
+
+
 def test_legacy_packet_does_not_authorize_advisory_only_task_or_mismatched_target():
     mod = load_orchestrator_module()
     with tempfile.TemporaryDirectory() as td:
@@ -3894,6 +3930,216 @@ def test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes
 
         assert auto["enabled"] is False, auto
         assert auto["reason"] == "multimodel_spawn_disabled_by_env", auto
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+def test_event_hook_auto_route_enables_multimodel_for_p1_evolution_control_plane_task():
+    old_env = os.environ.copy()
+    try:
+        os.environ.clear()
+        os.environ.update(old_env)
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "auto"
+        mod = load_orchestrator_module()
+
+        original_find_task = mod.find_task
+        original_reasons = mod.task_multimodel_intervention_reasons
+        original_cert_reasons = mod.task_multimodel_certification_reasons
+        original_advisory_reasons = mod.task_multimodel_advisory_reasons
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="pending",
+                priority="P1",
+                lane="evolution",
+                project="hermes-agent",
+                fm={"architecture_target": "taskpool"},
+            ))
+            setattr(mod, "task_multimodel_intervention_reasons", lambda task: ["architecture_target", "evolution_lane"])
+            setattr(mod, "task_multimodel_certification_reasons", lambda task: [])
+            setattr(mod, "task_multimodel_advisory_reasons", lambda task: ["architecture_target", "evolution_lane"])
+            route = mod.event_hook_multimodel_route("task_added", "selector-fix-task")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+            setattr(mod, "task_multimodel_intervention_reasons", original_reasons)
+            setattr(mod, "task_multimodel_certification_reasons", original_cert_reasons)
+            setattr(mod, "task_multimodel_advisory_reasons", original_advisory_reasons)
+
+        assert route["enabled"] is True, route
+        assert route["reason"] == "smart_route_matched", route
+        assert route["priority"] == "P1", route
+        assert route["lane"] == "evolution", route
+        assert route["project"] == "hermes-agent", route
+        assert route["reasons"] == ["architecture_target", "evolution_lane"], route
+        assert route["advisory_reasons"] == ["architecture_target", "evolution_lane"], route
+        assert route["certification_reasons"] == [], route
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+def test_event_hook_dream_audit_gate_blocks_blocked_candidate(tmp_path):
+    old_env = os.environ.copy()
+    try:
+        state_path = tmp_path / "confidence-db.json"
+        state_path.write_text(json.dumps({"skills": {"apple": {
+            "darwin_score": 80,
+            "audit_cooldown_until": "2099-01-15T00:00:00+08:00",
+            "audit_blocked_reason": "repeated_no_state_change",
+        }}}, ensure_ascii=False), encoding="utf-8")
+        os.environ["HERMES_EVOLUTION_CONFIDENCE_DB_PATH"] = str(state_path)
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "auto"
+        mod = load_orchestrator_module()
+
+        original_find_task = mod.find_task
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="pending",
+                priority="P1",
+                lane="evolution",
+                project="hermes-agent",
+                fm={
+                    "architecture_target": "taskpool",
+                    "dream_audit_advancement": True,
+                    "dream_audit_skill": "apple",
+                    "proof_artifacts": ["artifact:/tmp/apple-audit-proof.json"],
+                },
+            ))
+            route = mod.event_hook_multimodel_route("task_added", "dream-audit-task")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+
+        assert route["enabled"] is False, route
+        assert route["reason"] == "dream_audit_blocked", route
+        assert route["dream_audit_gate"]["decision"] == "block", route
+        assert route["dream_audit_gate"]["blocked_reason"] == "repeated_no_state_change", route
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+def test_event_hook_dream_audit_gate_holds_cooling_candidate(tmp_path):
+    old_env = os.environ.copy()
+    try:
+        state_path = tmp_path / "confidence-db.json"
+        state_path.write_text(json.dumps({"skills": {"apple": {
+            "darwin_score": 80,
+            "audit_cooldown_until": "2099-01-15T00:00:00+08:00",
+        }}}, ensure_ascii=False), encoding="utf-8")
+        os.environ["HERMES_EVOLUTION_CONFIDENCE_DB_PATH"] = str(state_path)
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "auto"
+        mod = load_orchestrator_module()
+
+        original_find_task = mod.find_task
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="pending",
+                priority="P1",
+                lane="evolution",
+                project="hermes-agent",
+                fm={
+                    "architecture_target": "taskpool",
+                    "dream_audit_advancement": True,
+                    "dream_audit_skill": "apple",
+                    "proof_artifacts": ["artifact:/tmp/apple-audit-proof.json"],
+                },
+            ))
+            route = mod.event_hook_multimodel_route("task_added", "dream-audit-task")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+
+        assert route["enabled"] is False, route
+        assert route["reason"] == "dream_audit_cooling_down", route
+        assert route["dream_audit_gate"]["decision"] == "hold_for_cooldown", route
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+def test_event_hook_dream_audit_gate_advances_eligible_candidate(tmp_path):
+    old_env = os.environ.copy()
+    try:
+        state_path = tmp_path / "confidence-db.json"
+        state_path.write_text(json.dumps({"skills": {"research": {
+            "darwin_score": 72,
+            "last_audit_attempt": "2026-06-01T00:00:00+08:00",
+            "consecutive_no_change": 0,
+        }}}, ensure_ascii=False), encoding="utf-8")
+        os.environ["HERMES_EVOLUTION_CONFIDENCE_DB_PATH"] = str(state_path)
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "auto"
+        mod = load_orchestrator_module()
+
+        original_find_task = mod.find_task
+        original_reasons = mod.task_multimodel_intervention_reasons
+        original_cert_reasons = mod.task_multimodel_certification_reasons
+        original_advisory_reasons = mod.task_multimodel_advisory_reasons
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="pending",
+                priority="P1",
+                lane="evolution",
+                project="hermes-agent",
+                fm={
+                    "architecture_target": "taskpool",
+                    "dream_audit_advancement": True,
+                    "dream_audit_skill": "research",
+                    "proof_artifacts": ["artifact:/tmp/research-audit-proof.json"],
+                },
+            ))
+            setattr(mod, "task_multimodel_intervention_reasons", lambda task: ["architecture_target", "evolution_lane"])
+            setattr(mod, "task_multimodel_certification_reasons", lambda task: [])
+            setattr(mod, "task_multimodel_advisory_reasons", lambda task: ["architecture_target", "evolution_lane"])
+            route = mod.event_hook_multimodel_route("task_added", "dream-audit-task")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+            setattr(mod, "task_multimodel_intervention_reasons", original_reasons)
+            setattr(mod, "task_multimodel_certification_reasons", original_cert_reasons)
+            setattr(mod, "task_multimodel_advisory_reasons", original_advisory_reasons)
+
+        assert route["enabled"] is True, route
+        assert route["reason"] == "smart_route_matched", route
+        assert route["dream_audit_gate"]["decision"] == "advance", route
+        assert route["dream_audit_gate"]["skill"] == "research", route
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+def test_event_hook_dream_audit_gate_retries_missing_or_invalid_state(tmp_path):
+    old_env = os.environ.copy()
+    try:
+        state_path = tmp_path / "confidence-db.json"
+        state_path.write_text(json.dumps({"skills": {}}, ensure_ascii=False), encoding="utf-8")
+        os.environ["HERMES_EVOLUTION_CONFIDENCE_DB_PATH"] = str(state_path)
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_MULTIMODEL"] = "auto"
+        mod = load_orchestrator_module()
+
+        original_find_task = mod.find_task
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="pending",
+                priority="P1",
+                lane="evolution",
+                project="hermes-agent",
+                fm={
+                    "architecture_target": "taskpool",
+                    "dream_audit_advancement": True,
+                    "dream_audit_skill": "missing-skill",
+                    "proof_artifacts": ["artifact:/tmp/missing-audit-proof.json"],
+                },
+            ))
+            route = mod.event_hook_multimodel_route("task_added", "dream-audit-task")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+
+        assert route["enabled"] is False, route
+        assert route["reason"] == "dream_audit_missing_selector_state", route
+        assert route["dream_audit_gate"]["decision"] == "retry_later", route
     finally:
         os.environ.clear()
         os.environ.update(old_env)
