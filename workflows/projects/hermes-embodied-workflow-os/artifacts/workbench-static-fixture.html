@@ -2,34 +2,192 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HEWOS Workbench Static Fixture</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 2rem; background: #101418; color: #f4f7fb; }
-    section { border: 1px solid #2d3a46; border-radius: 12px; padding: 1rem; margin: 1rem 0; background: #161d24; }
-    .badge { display: inline-block; padding: .2rem .5rem; border-radius: 999px; background: #2a533a; color: #b8ffd2; }
-    .blocked { background: #55302f; color: #ffd1cf; }
+    :root {
+      --bg: #071016;
+      --surface: #0d1821;
+      --surface-strong: #132534;
+      --card: #111f2a;
+      --card-soft: #0f1a22;
+      --line: #244354;
+      --line-strong: #3a6377;
+      --text: #f5f9fc;
+      --muted: #a9bdc8;
+      --subtle: #78909d;
+      --accent: #8ee7ff;
+      --accent-strong: #c6f5ff;
+      --good-bg: #123a2a;
+      --good-text: #bff6d6;
+      --warn-bg: #4b2d23;
+      --warn-text: #ffd8c2;
+      --blocked-bg: #4a252c;
+      --blocked-text: #ffd4dc;
+      --shadow: 0 22px 70px rgba(0, 0, 0, .34);
+      --radius: 22px;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 5%, rgba(142, 231, 255, .16), transparent 32rem),
+        linear-gradient(135deg, var(--bg), #0b1218 54%, #05090d);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    a:focus-visible, section:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+    .skip-link {
+      position: fixed; left: 1rem; top: .75rem; z-index: 10;
+      transform: translateY(-180%); padding: .7rem 1rem; border-radius: 999px;
+      background: var(--accent); color: #061017; font-weight: 800; text-decoration: none;
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; padding: 32px 0 40px; }
+    header[role="banner"] {
+      display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, .6fr); gap: 24px; align-items: stretch;
+      margin-bottom: 22px;
+    }
+    .hero, .status-panel, section {
+      border: 1px solid var(--line); border-radius: var(--radius); background: color-mix(in srgb, var(--surface) 88%, transparent);
+      box-shadow: var(--shadow);
+    }
+    .hero { padding: 34px; position: relative; overflow: hidden; }
+    .hero::after {
+      content: ""; position: absolute; inset: auto -8rem -10rem auto; width: 20rem; height: 20rem; border-radius: 50%;
+      background: rgba(142, 231, 255, .11); filter: blur(8px); pointer-events: none;
+    }
+    .eyebrow { margin: 0 0 12px; color: var(--accent); font-size: .82rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 14px; font-size: clamp(2.4rem, 6vw, 4.9rem); line-height: .92; letter-spacing: -.055em; text-wrap: balance; }
+    h2 { font-size: clamp(1.25rem, 2vw, 1.65rem); letter-spacing: -.025em; }
+    h3 { font-size: 1rem; color: var(--accent-strong); }
+    .lede { max-width: 66ch; color: var(--muted); font-size: clamp(1rem, 1.8vw, 1.18rem); text-wrap: pretty; }
+    .status-panel { padding: 22px; display: grid; gap: 14px; align-content: start; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: .45rem; width: max-content;
+      padding: .42rem .72rem; border-radius: 999px; font-size: .82rem; font-weight: 800;
+      border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+      background: var(--good-bg); color: var(--good-text);
+    }
+    .badge.blocked { background: var(--blocked-bg); color: var(--blocked-text); }
+    .badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+    nav[aria-label="Workbench sections"] {
+      display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 26px;
+    }
+    nav a {
+      text-decoration: none; padding: .7rem .9rem; border-radius: 999px; color: var(--muted);
+      border: 1px solid var(--line); background: rgba(255,255,255,.025);
+    }
+    nav a:hover { color: var(--text); border-color: var(--line-strong); }
+    main { display: grid; gap: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 18px; }
+    section { padding: 24px; }
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+    .metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+    .metric { padding: 16px; border-radius: 18px; background: var(--card-soft); border: 1px solid var(--line); }
+    .metric strong { display: block; font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+    .metric span, .muted { color: var(--muted); }
+    .item-list { display: grid; gap: 10px; padding: 0; margin: 16px 0 0; list-style: none; }
+    .item-list li {
+      display: grid; grid-template-columns: minmax(170px, 1fr) auto auto; gap: 12px; align-items: center;
+      padding: 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+    }
+    .item-title { font-weight: 850; color: var(--text); overflow-wrap: anywhere; }
+    .item-list strong { justify-self: end; color: var(--accent-strong); font-size: .88rem; }
+    .callout { border-left: 4px solid var(--accent); padding: 12px 14px; background: rgba(142, 231, 255, .07); border-radius: 14px; color: var(--muted); }
+    .review-card { display: grid; gap: 12px; }
+    .review-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    footer[role="contentinfo"] { margin-top: 24px; color: var(--subtle); font-size: .9rem; }
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 24px, 680px); padding-top: 18px; }
+      header[role="banner"], .grid { grid-template-columns: 1fr; }
+      .span-7, .span-5, .span-6, .span-12 { grid-column: auto; }
+      .hero, .status-panel, section { padding: 18px; border-radius: 18px; }
+      .metrics { grid-template-columns: 1fr; }
+      .item-list li { grid-template-columns: 1fr; }
+      .item-list strong { justify-self: start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
   </style>
 </head>
 <body>
-  <h1>HEWOS Workbench</h1>
-  <p class="badge">Simulation-only static fixture</p>
-  <section>
-    <h2>Dashboard</h2>
-    <p>Capabilities: 2</p>
-    <p>Ledger entries: 1</p>
-    <p>Visible parts from replay: fixture-part</p>
-    <ul><li>cap.web.text_observation — observation — simulated</li><li>cap.robot.dry_run — physical_action — simulated</li></ul>
-  </section>
-  <section>
-    <h2>ActionIntent Review</h2>
-    <p>Intent: ai.fixture.blocked</p>
-    <p>Risk: physical_action</p>
-    <p class="badge blocked">Status: blocked</p>
-    <p>No real execution path is present in this artifact.</p>
-  </section>
-  <section>
-    <h2>EvidenceLedger</h2>
-    <ul><li>ev.1 — observation — adapter.web.mock</li></ul>
-  </section>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div class="shell">
+    <header role="banner">
+      <div class="hero">
+        <p class="eyebrow">HEWOS / Projection only</p>
+        <h1>Workbench for evidence-led operations.</h1>
+        <p class="lede">Simulation-only static fixture for reviewing capability state, blocked ActionIntents, and EvidenceLedger replay without opening any real execution path.</p>
+        <div class="badge-row" aria-label="Runtime safety summary">
+          <span class="badge">Simulation-only</span>
+          <span class="badge">Projection only</span>
+          <span class="badge blocked">Blocked physical intent</span>
+        </div>
+      </div>
+      <aside class="status-panel" aria-labelledby="runtime-status-title">
+        <h2 id="runtime-status-title">Runtime status</h2>
+        <p role="status" aria-live="polite" class="badge warn">Execution disabled</p>
+        <p class="muted">Local browser view renders the same projection contract used by the static fixture. It is evidence display, not an operator actuator.</p>
+      </aside>
+    </header>
+
+    <nav aria-label="Workbench sections">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#action-review">Action review</a>
+      <a href="#evidence-ledger">Evidence ledger</a>
+      <a href="#gate-ladder">Gate ladder</a>
+    </nav>
+
+    <main id="main-content" role="main" tabindex="-1">
+      <div class="grid">
+        <section id="dashboard" class="span-7" aria-labelledby="dashboard-title" tabindex="-1">
+          <h2 id="dashboard-title">Dashboard</h2>
+          <p class="muted">Reducer-derived state from append-only evidence.</p>
+          <div class="metrics" aria-label="Dashboard metrics">
+            <div class="metric"><strong>2</strong><span>Capabilities</span></div>
+            <div class="metric"><strong>1</strong><span>Ledger entries</span></div>
+            <div class="metric"><strong>1</strong><span>Visible parts</span></div>
+          </div>
+          <p class="callout">Visible parts from replay: <strong>fixture-part</strong></p>
+          <ul class="item-list" aria-label="Capability projection list"><li><span class="item-title">cap.web.text_observation</span><span>observation</span><strong>simulated</strong></li><li><span class="item-title">cap.robot.dry_run</span><span>physical_action</span><strong>simulated</strong></li></ul>
+        </section>
+
+        <section id="action-review" class="span-5" aria-labelledby="action-review-title" tabindex="-1">
+          <h2 id="action-review-title">ActionIntent Review</h2>
+          <div class="review-card" aria-label="Blocked ActionIntent details">
+            <div class="review-row"><span>Intent</span><strong>ai.fixture.blocked</strong></div>
+            <div class="review-row"><span>Risk</span><strong>physical_action</strong></div>
+            <div class="review-row"><span>Status</span><strong class="badge blocked">Blocked</strong></div>
+          </div>
+          <p class="callout">No real execution path is present in this artifact. Approval controls are intentionally absent in this local UI quality phase.</p>
+        </section>
+
+        <section id="evidence-ledger" class="span-6" aria-labelledby="evidence-ledger-title" tabindex="-1">
+          <h2 id="evidence-ledger-title">EvidenceLedger</h2>
+          <p class="muted">Append-only event projection with source and hash-backed evidence references.</p>
+          <ul class="item-list" aria-label="Evidence ledger entries"><li><span class="item-title">ev.1</span><span>observation</span><strong>adapter.web.mock</strong></li></ul>
+        </section>
+
+        <section id="gate-ladder" class="span-6" aria-labelledby="gate-ladder-title" tabindex="-1">
+          <h2 id="gate-ladder-title">Gate ladder</h2>
+          <p class="muted">Physical-risk actions remain closed until sequential gates produce exact receipts and readback.</p>
+          <ul class="item-list" aria-label="Required gates"><li><span class="item-title">SafetyGate</span><span>logic and risk</span><strong>closed</strong></li><li><span class="item-title">ExternalControlGate</span><span>identity and readback</span><strong>closed</strong></li><li><span class="item-title">OnsiteHumanGate</span><span>required for physical risk</span><strong>required</strong></li></ul>
+        </section>
+      </div>
+    </main>
+    <footer role="contentinfo">HEWOS Workbench fixture — local projection, deterministic replay, zero actuator path.</footer>
+  </div>
 </body>
 </html>

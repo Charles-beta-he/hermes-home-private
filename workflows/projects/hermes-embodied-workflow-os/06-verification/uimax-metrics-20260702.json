@@ -1,0 +1,25 @@
+{
+  "aria_count": 14,
+  "role_count": 7,
+  "section_count": 4,
+  "focus_visible_count": 2,
+  "media_query_count": 2,
+  "css_token_count": 20,
+  "inline_style_count": 0,
+  "forbidden_mentions": {
+    "/execute": false,
+    "taskpool": false,
+    "deploy": false,
+    "publish": false,
+    "gateway": false,
+    "credential": false
+  },
+  "contrast": {
+    "text_on_bg": 18.12,
+    "muted_on_surface": 9.23,
+    "accent_on_bg": 13.72,
+    "blocked_text_on_blocked_bg": 9.86,
+    "warn_text_on_warn_bg": 9.33,
+    "good_text_on_good_bg": 10.44
+  }
+}
