@@ -16,7 +16,7 @@ metadata:
 
 Use this skill when a result should be learned by Hermes itself without overstepping authority. The goal is to turn multi-model reflections, repo-governance lessons, or user corrections into the right durable landing zone while preserving evidence, permission, and reversibility.
 
-Default stance: land what is safe, propose what needs governance, queue what needs execution, and explicitly refuse what would be authority expansion or false completion. A boundary is not a stop-work signal: after naming the blocked action, realign to the initial objective, continue safe read-only/reversible preparation, and emit the smallest required confirmation packet for the next gated step.
+Default stance: land what is safe, propose what needs governance, queue what needs execution, and explicitly refuse what would be authority expansion or false completion. A boundary is not a stop-work signal and should not be turned into a generic “human intervention interface.” After naming the blocked action, realign to the initial objective, choose the safest available gate (for example multi-model advisory review plus deterministic local tests for a local-only slice), continue safe read-only/reversible preparation, and emit the smallest required confirmation packet for the next gated step.
 
 ## When to Use
 
@@ -64,6 +64,7 @@ Don't use for:
    - Read back created/changed skill artifacts.
    - Run available validation commands for experience-ratchet artifacts.
    - For changes under `~/.hermes`, make a scoped git commit with only the files changed for this landing.
+8. If a local governance/pre-commit hook blocks because evidence labels are mapped to the wrong surface, use `references/local-precommit-evidence-mapping-repair.md`: repair the reusable classifier/predicate with tests, rerun deterministic gates, and retry the normal commit without bypassing hooks.
 
 ## Output Template
 
@@ -77,6 +78,23 @@ Don't use for:
 - verification: <commands/files read back>
 - commit: <sha or why not committed>
 ```
+
+## MemoryOwnershipGate for external reference absorption
+
+When absorbing an external agent harness, memory runtime, skill ecosystem, or self-improving-agent reference, classify durable writes before writing anything:
+
+- User preference or recurring correction -> `memory(target="user")` in compact declarative form.
+- Agent note or reusable environment/tool convention -> `memory(target="memory")` only if stable across many sessions.
+- Project/source facts, repo paths, commits, media URLs, evidence bundles, and active absorption status -> local SSOT/project profile/reference note, not global memory.
+- Reusable procedure, pitfall, verification gate, or workflow loop -> existing class-level skill or support reference.
+- Digital worker / agent template / proactive nudge ideas -> profile/project_doc/taskpool proposal with explicit authority matrix, not a live worker.
+- Runtime install, external dispatch, self-modifying code, gateway/sentinel enablement, cron/taskpool lifecycle, push/deploy, credentials -> `do-not-do` until exact target, rollback, receipt, and readback are authorized.
+
+Pitfall: agent-harness videos and repos often mix memory, skills, gateway, templates, and autonomous execution in one narrative. Split the conclusion into separate landing zones; do not save a coupled blob or treat "self-improving" as verified runtime capability.
+
+## Memory Ownership Gate
+
+When a candidate lesson, external-repo finding, public-media claim, or self-optimization result may become durable state, first apply `references/memory-ownership-gate.md`. The gate separates user-owned memory, agent notes, project SSOT evidence, skill procedures, experience-ratchet proposals, taskpool candidates, and do-not-do actions. If the correct target is blocked, land a local SSOT/proposal and continue the next safe reversible slice; do not use the boundary as a stop-work excuse.
 
 ## Dreaming / background-review landing classifier
 
