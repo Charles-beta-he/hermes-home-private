@@ -1,8 +1,8 @@
 ---
 project: hermes-embodied-workflow-os
-updated_at: 2026-07-02T19:13:00+08:00
-current_stage: p1_p2_contract_and_replay_validated_local_slice
-completion_boundary: local_contract_and_replay_implementation_no_runtime_side_effects
+updated_at: 2026-07-02T19:34:00+08:00
+current_stage: p1_p2_validated_and_p3_workbench_specified
+completion_boundary: local_contract_replay_and_p3_spec_no_runtime_side_effects
 states:
   p0_project_memory:
     status: accepted
@@ -20,13 +20,17 @@ states:
     status: accepted
     artifact: implementation/hewos_core/ledger.py
     evidence: implementation/tests/test_evidence_replay.py + unittest 17 tests OK
-  commit:
-    status: blocked
-    blocker: local brain governance pre-commit degraded_not_certified; do not bypass
+  p3_web_workbench_spec:
+    status: accepted
+    artifact: 07-product/prd-p3-web-workbench.md + 01-architecture/web-workbench-boundary.md
+    evidence: spec readback required before commit
+  latest_commit:
+    status: accepted
+    commit: c5538566 feat: add embodied workflow contract core
 human_intervention_gate:
-  reason: next unsafe/material boundary is scoped commit governance repair or taskpool/hardware/external work; P3 spec can continue locally but runtime/UI implementation should be separately gated
+  reason: next material boundary is P3 implementation or any real adapter/hardware/taskpool/deploy path
   safe_next_options:
-    - repair local commit governance evidence/certification then scoped commit
-    - draft P3 Web Workbench spec only
-    - stop here with P1/P2 local validated slices
+    - implement P3 projection fixtures and tests only
+    - repair old unrelated portfolio warnings separately
+    - stop here with P3 spec-only slice
 ---
