@@ -97,6 +97,10 @@ def is_source_evidence_change(files: Sequence[str]) -> bool:
     return any(any(name in f.lower() for name in source_names) for f in files)
 
 
+def is_hewos_implementation_change(files: Sequence[str]) -> bool:
+    return any(f.startswith("workflows/projects/hermes-embodied-workflow-os/implementation/") for f in files)
+
+
 def relevant_tests(files: Sequence[str]) -> list[Path]:
     wanted: list[Path] = []
     if any(f.startswith("scripts/brainctl.py") or f.startswith("scripts/test_brainctl.py") for f in files):
@@ -172,6 +176,13 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
                     "proof_log:targeted taskpool regression tests and py_compile completed under pre-commit hook",
                     "lifecycle_readback:focused tests cover fail-closed eligibility, claim precheck, review close gating, cron wrapper dedupe, and no force-done path",
                 ])
+    elif is_hewos_implementation_change(files):
+        hewos_tests = root / "workflows" / "projects" / "hermes-embodied-workflow-os" / "implementation" / "tests"
+        proc = run([sys.executable, "-m", "unittest", "discover", "-s", str(hewos_tests), "-q"], cwd=root, timeout=300)
+        if proc.returncode != 0:
+            errors.append(f"HEWOS tests failed:\n{proc.stdout}\n{proc.stderr}")
+        else:
+            evidence.append("tests:HEWOS implementation unittest suite OK")
     else:
         evidence.append("tests:not_applicable_no_local_brain_code_surface")
     if not any(e.startswith("deterministic_gate:") for e in evidence):

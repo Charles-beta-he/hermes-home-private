@@ -35,7 +35,7 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.write_note(
             self.notes_vault,
             "05-实践与项目/实践方案/12-本地大脑全量自动约束层长期方案.md",
-            "---\nstatus: active-stable\nstability_class: long_term_canonical_plan\n---\n\n# 本地大脑全量自动约束层最终长期稳定方案\n\nCurrent source: RouteReviewGate BrainConstraintRecord route_required_evidence。\n",
+            "---\nstatus: active-stable\nstability_class: long_term_canonical_plan\n---\n\n# 本地大脑全量自动约束层最终长期稳定方案\n\nCurrent source: RouteReviewGate BrainConstraintRecord route_required_evidence。\n\nHEWOS hermes embodied workflow os workbench runtime uses the same local deterministic evidence gate for scoped architecture/code/docs commits.\n",
         )
 
     def tearDown(self):
@@ -119,6 +119,36 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.assertFalse(route["verdict"]["multi_model_certified"])
         self.assertEqual(verdict["status"], "pass")
         self.assertNotIn("degraded_not_certified", verdict["reasons"])
+    def test_t3_architecture_runtime_with_full_deterministic_evidence_gets_local_certification(self):
+        evidence = [
+            "diff:git diff --cached --name-only readback",
+            "tests:HEWOS workbench runtime tests OK",
+            "py_compile_or_build:staged python py_compile OK",
+            "design_doc:staged architecture/profile docs are the scoped design document",
+            "gate_readback:local pre-commit BrainConstraintGate reads staged files and evidence labels",
+            "deterministic_gate:pre-commit local deterministic checks completed",
+            "route_review_record:embedded RouteReviewRecord emitted",
+            "exact_target:local git repository staged files only",
+            "rollback:git reset staged changes or git revert resulting commit",
+            "post_action_readback:pre-commit hook exits zero only after local preflight verdict is non-blocking",
+        ]
+        result = preflight.run_preflight(
+            summary="git pre-commit staged files: project-profiles/hermes-embodied-workflow-os.json, workflows/projects/hermes-embodied-workflow-os/implementation/hewos_core/workbench_runtime.py",
+            files=[
+                "project-profiles/hermes-embodied-workflow-os.json",
+                "workflows/projects/hermes-embodied-workflow-os/implementation/hewos_core/workbench_runtime.py",
+            ],
+            vaults=[self.notes_vault],
+            memory_root=self.memory_root,
+            evidence=evidence,
+            limit=5,
+        )
+
+        route = result["route_review_record"]
+        verdict = result["brain_constraint_record"]["verdict"]
+        self.assertEqual(route["evidence_state"]["missing_evidence"], [])
+        self.assertEqual(route["verdict"]["status"], "local_deterministic_certified")
+        self.assertEqual(verdict["status"], "pass")
 
 
     def test_cli_json_emits_parseable_record_and_never_executes_side_effects(self):

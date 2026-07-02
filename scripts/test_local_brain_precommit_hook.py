@@ -122,6 +122,23 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertIn("gate_readback:", joined)
         self.assertIn("source_packet:", joined)
         self.assertIn("timestamped_source:", joined)
+    def test_hewos_implementation_files_collect_project_test_evidence(self):
+        files = [
+            "workflows/projects/hermes-embodied-workflow-os/implementation/hewos_core/workbench_runtime.py",
+            "workflows/projects/hermes-embodied-workflow-os/implementation/tests/test_workbench_runtime.py",
+        ]
+        old_run = hook.run
+        try:
+            def fake_run(cmd, *, cwd=None, timeout=180):
+                return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+            hook.run = fake_run
+            evidence, errors = hook.hook_evidence(self.repo, files)
+        finally:
+            hook.run = old_run
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("tests:HEWOS implementation unittest suite OK", joined)
 
 
 if __name__ == "__main__":
