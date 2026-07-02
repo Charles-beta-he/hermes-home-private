@@ -2537,7 +2537,15 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     # --- Strong structural triggers (fire immediately) ---
     if task.priority == "P0" and task.lane == "evolution":
         reasons.append("p0_evolution_blast_radius")
-    if task.retry_count() >= 2 and not task_has_explicit_negative_multimodel_contract(task):
+    advisory_no_certification_authority = (
+        _frontmatter_bool(task.fm.get("multimodel_advisory_only"))
+        and not _frontmatter_bool(task.fm.get("multimodel_certification_authority"))
+    )
+    if (
+        task.retry_count() >= 2
+        and not task_has_explicit_negative_multimodel_contract(task)
+        and not advisory_no_certification_authority
+    ):
         reasons.append("loop_non_convergence")
     if task.is_stale_claim():
         reasons.append("stale_claim")
@@ -8385,6 +8393,7 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
     recommended_tier = "T3_certification" if cert_reasons else ("T2_advisory" if len(reasons) >= 3 else "T1_advisory")
     consult_tier = "T3" if recommended_tier == "T3_certification" else recommended_tier.split("_", 1)[0]
     consult_quorum_arg = f" --quorum {RATIFICATION_FULL_QUORUM}" if recommended_tier == "T3_certification" else ""
+    consult_max_rounds = 1 if advisory_only else 3
     if advisory_only:
         pua_loop = {
             "mode": "advisory_until_signal_consumed",
@@ -8428,7 +8437,7 @@ def build_multimodel_intervention_plan(task: Task) -> dict[str, Any]:
             f"{evidence_args} "
             f"--file {shlex.quote(str(task.path))} --out {state_arg}"
         ),
-        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier {consult_tier}{consult_quorum_arg} --discussion --max-rounds 3 --keep",
+        "run_discussion_command": f"python3 ~/.hermes/scripts/consult_models.py run {state_arg} --tier {consult_tier}{consult_quorum_arg} --discussion --max-rounds {consult_max_rounds} --keep",
         "gate_command_template": f"python3 ~/.hermes/scripts/brain_task_orchestrator.py ratification-gate --task {task_arg} --discussion-result DISCUSSION_RESULT_JSON --json",
         "safety": "dry-run intervention plan only; no claim, no task mutation, no arbitrary hook execution",
     }

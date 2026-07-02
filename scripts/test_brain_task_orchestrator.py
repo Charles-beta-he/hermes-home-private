@@ -2021,6 +2021,7 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         assert "--quorum 5" in selected["run_discussion_command"], selected
         assert "target-bound" in selected["pua_loop"]["completion_signal"], selected
         assert "core ratification-gate PASS" in selected["pua_loop"]["completion_signal"], selected
+        assert "--max-rounds 3" in selected["run_discussion_command"], selected
         assert "ratification-gate" in selected["gate_command_template"], selected
         assert "status: pending" in task_path.read_text(encoding="utf-8")
 
@@ -2028,6 +2029,27 @@ def test_multimodel_intervention_and_pua_loop_gate_are_automatic_and_read_only()
         row = next(r for r in rows if r["id"] == task_id)
         assert row["multimodel_intervention_required"] is True, row
         assert "p0_evolution_blast_radius" in row["multimodel_intervention_reasons"], row
+
+        advisory_id, advisory_path = add_evolution_task(
+            env,
+            title="advisory accuracy architecture closeout ratification slice",
+            priority="P2",
+        )
+        advisory_text = advisory_path.read_text(encoding="utf-8")
+        advisory_text = advisory_text.replace("retry_count: 0", "retry_count: 2", 1)
+        advisory_text = advisory_text.replace(
+            "retry_count: 2",
+            "retry_count: 2\nmultimodel_advisory_only: true\nmultimodel_certification_authority: false",
+            1,
+        )
+        advisory_path.write_text(advisory_text, encoding="utf-8")
+        advisory = json.loads(run(env, "multimodel-intervention-dry-run", "--task", advisory_id, "--json").stdout)
+        assert advisory["status"] == "OK", advisory
+        advisory_selected = advisory["selected"]
+        assert advisory_selected["advisory_only"] is True, advisory_selected
+        assert advisory_selected["recommended_tier"] in {"T1_advisory", "T2_advisory"}, advisory_selected
+        assert "--max-rounds 1" in advisory_selected["run_discussion_command"], advisory_selected
+        assert "--quorum" not in advisory_selected["run_discussion_command"], advisory_selected
 
         good = task_path.parent / "discussion-good.json"
         good.write_text(json.dumps({
