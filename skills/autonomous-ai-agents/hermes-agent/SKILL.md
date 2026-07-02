@@ -3,6 +3,10 @@ name: hermes-agent
 description: Use when extending or operating Hermes Agent including CLI/setup, skills, tools, profiles, gateway, taskpool hooks, certified auto-done, blocked-task closure, memory-cap selfcheck, and self-evolution / PUA-loop workflows. See references/ for taskpool hook debugging, evolution-task add rules, pre-ingest triage, memory compaction, bad-case to proposal to benchmark self-optimization, `references/budget-handoff-automation.md` for default-safe budget/context exhaustion behavior, `references/budget-relay-debugging.md` for delegated continuation / relay pitfalls, and other Hermes-specific deep dives.
 ---
 
+Reference addendum: `references/lazycodex-omo-complex-task-harness.md` captures the source-verified LazyCodex/OmO pattern for Hermes self-optimization: run an iceberg complexity scan before direct advancement, pin external-reference evidence in an SSOT, transfer complex-task harness relationships (project memory, decision-complete plan, durable ledger, worker-claim verification, manual-QA evidence, cleanup receipt), and keep core/runtime/side-effect gates closed until separately authorized.
+
+Reference addendum: `references/cpa-manager-plus-gateway-observability.md` captures source-verified CPA Manager Plus patterns for Hermes provider/gateway observability: local-first traffic/cost/failure/quota projections, manual-override-aware cooldown automation, redacted diagnostics, and the boundary that CPAMP is a reference architecture rather than a default dependency or credential adapter.
+
 Reference addendum: `references/agent-team-failfast-model-fallback.md` captures multi-model fallback chain (GPT-5.5→Claude→MiMo), infrastructure error detection (SDK crash, MCP loop, client closed, auth/quota), workspace sync barrier, and trace events for `agent_team_controller.py` parallel workers.
 
 Reference addendum: `references/provider-version-drift-and-codex-breaker.md` captures the workflow for separating Hermes runtime package skew from local source drift when provider/version mismatch or `agent.codex_circuit_breaker` incidents appear.
