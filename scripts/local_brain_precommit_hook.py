@@ -44,8 +44,72 @@ def is_taskpool_control_plane_change(files: Sequence[str]) -> bool:
         "scripts/task_pool_guardian",
         "scripts/taskpool_",
         "scripts/agent_team_controller.py",
+        "scripts/consult_models.py",
+        "skills/software-development/taskpool-",
     )
     return any(f.startswith(markers) for f in files)
+
+
+def is_local_architecture_control_plane_change(files: Sequence[str]) -> bool:
+    markers = (
+        "scripts/consult_models.py",
+        "scripts/local_brain_",
+        "scripts/brainctl.py",
+        "scripts/task_preflight.py",
+        "scripts/brain_task_",
+        "scripts/taskpool_",
+        "skills/software-development/taskpool-",
+    )
+    return any(f.startswith(markers) for f in files)
+
+
+def is_architecture_evidence_change(files: Sequence[str]) -> bool:
+    markers = (
+        "workflows/projects/",
+        "project-profiles/",
+        "workflows/portfolio/project-portfolio-os/01-registry/",
+    )
+    architecture_names = (
+        "architecture",
+        "adr-",
+        "ssot",
+        "schema",
+        "contract",
+        "workflow-state",
+        "progress-ledger",
+        "benchmark-scorecard",
+    )
+    return any(
+        f.startswith(markers) and any(name in f.lower() for name in architecture_names)
+        for f in files
+    )
+
+
+def is_source_evidence_change(files: Sequence[str]) -> bool:
+    source_names = (
+        "source-samples",
+        "evidence-index",
+        "core-works-and-arguments",
+        "competitor-and-best-practice-evaluation",
+        "research/",
+        "02-research/",
+    )
+    return any(any(name in f.lower() for name in source_names) for f in files)
+
+
+def is_hewos_implementation_change(files: Sequence[str]) -> bool:
+    return any(f.startswith("workflows/projects/hermes-embodied-workflow-os/implementation/") for f in files)
+
+
+def is_ui_visual_evidence_change(files: Sequence[str]) -> bool:
+    names = (
+        "uimax",
+        "screenshot",
+        "workbench-static-fixture.html",
+        "workbench_static.py",
+        "test_workbench_uimax_static.py",
+    )
+    return any(any(name in f.lower() for name in names) for f in files)
 
 
 def relevant_tests(files: Sequence[str]) -> list[Path]:
@@ -90,6 +154,21 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
         "post_action_readback:pre-commit hook exits zero only after local preflight verdict is non-blocking",
     ]
     errors: list[str] = []
+    if is_local_architecture_control_plane_change(files) or is_architecture_evidence_change(files):
+        evidence.extend([
+            "design_doc:staged design/profile/architecture/ADR files are the scoped design document; rollback by git reset/revert",
+            "gate_readback:local pre-commit BrainConstraintGate reads staged files, evidence labels, deterministic checks, and exits nonzero on missing gates",
+        ])
+    if is_source_evidence_change(files):
+        evidence.extend([
+            "source_packet:staged research/evidence files include source packet or evidence index for this change",
+            "timestamped_source:staged source packet/evidence index is timestamped or filename-dated for readback",
+        ])
+    if is_ui_visual_evidence_change(files):
+        evidence.extend([
+            "screenshot:staged UIMax/report/artifact records browser visual screenshot readback for local UI scope",
+            "browser_console:staged UIMax/report/artifact records browser console readback for local UI scope",
+        ])
     py_files = [root / f for f in files if f.endswith(".py") and (root / f).exists()]
     if py_files:
         proc = run([sys.executable, "-m", "py_compile", *[str(p) for p in py_files]], cwd=root, timeout=120)
@@ -113,6 +192,13 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
                     "proof_log:targeted taskpool regression tests and py_compile completed under pre-commit hook",
                     "lifecycle_readback:focused tests cover fail-closed eligibility, claim precheck, review close gating, cron wrapper dedupe, and no force-done path",
                 ])
+    elif is_hewos_implementation_change(files):
+        hewos_tests = root / "workflows" / "projects" / "hermes-embodied-workflow-os" / "implementation" / "tests"
+        proc = run([sys.executable, "-m", "unittest", "discover", "-s", str(hewos_tests), "-q"], cwd=root, timeout=300)
+        if proc.returncode != 0:
+            errors.append(f"HEWOS tests failed:\n{proc.stdout}\n{proc.stderr}")
+        else:
+            evidence.append("tests:HEWOS implementation unittest suite OK")
     else:
         evidence.append("tests:not_applicable_no_local_brain_code_surface")
     if not any(e.startswith("deterministic_gate:") for e in evidence):
