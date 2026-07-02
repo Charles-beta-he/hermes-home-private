@@ -1,8 +1,8 @@
 ---
 project: hermes-embodied-workflow-os
-updated_at: 2026-07-02T23:58:00+08:00
-current_stage: p1_p2_validated_p3_runtime_smoke_and_uimax_a_plus_local_workbench
-completion_boundary: local_projection_only_uimax_no_external_or_hardware_side_effects
+updated_at: 2026-07-03T00:13:00+08:00
+current_stage: high_risk_boundary_governance_covered_with_simulation_ledger
+completion_boundary: local_intent_only_no_live_external_or_hardware_side_effects
 states:
   p1_contract_core:
     status: accepted
@@ -10,26 +10,33 @@ states:
     status: accepted
   p3_local_web_runtime:
     status: accepted_smoke_verified
-  best_practice_gate_ladder:
-    status: accepted_local_contract
   ui_quality_audit:
     status: accepted_scoped_a_plus
+  high_risk_boundary_coverage:
+    status: accepted_governance_coverage_100_percent
+    requested_boundaries:
+      - taskpool_lifecycle
+      - external_dispatch
+      - hardware_execution
+      - deploy_publish
+      - auth_credential
     artifacts:
-      - implementation/hewos_core/workbench_static.py
-      - implementation/tests/test_workbench_uimax_static.py
-      - artifacts/workbench-static-fixture.html
-      - 06-verification/uimax-metrics-20260702.json
-      - 06-verification/UIMAX_REPORT_20260702.md
+      - implementation/hewos_core/high_risk_boundaries.py
+      - implementation/hewos_core/simulation_ledger.py
+      - implementation/tests/test_high_risk_boundaries.py
+      - 06-verification/high-risk-boundary-coverage-20260703.json
+      - 06-verification/HIGH_RISK_BOUNDARY_REPORT_20260703.md
+      - artifacts/simulation-ledger-20260703.jsonl
     evidence:
-      - 39 unittest tests OK
-      - py_compile OK
-      - browser console 0 errors
-      - browser DOM readback: landmarks/sections/skip link/no overflow/no forbidden text
-      - /healthz execution_enabled=false
-      - /execute returns 404
-    grade: A+ scoped to local projection-only Workbench
+      - unscoped live execution requests blocked
+      - exact local simulation intent authorization returns authorized_intent_only
+      - auth boundary forbids agent secret entry and token read
+      - simulation ledger idempotent append verified
+      - simulation ledger rollback verified
+    live_execution_enabled: false
+    production_resource_touched: false
 next_safe_phase:
-  phase: simulation_write_local_ledger
-  allowed: simulation-only local ledger receipt with idempotency and rollback tests
-  forbidden: taskpool_write, external_dispatch, hardware_or_robot_execution, deploy_or_push, auth_or_credentials, execute_endpoint
+  phase: harness_write_through
+  allowed: one exact disposable local harness target with receipt/readback/rollback
+  forbidden_without_exact_packet: taskpool_live_write, external_live_send, hardware_or_robot_execution, deploy_or_push, credential_or_secret_entry, broad_fanout
 ---
