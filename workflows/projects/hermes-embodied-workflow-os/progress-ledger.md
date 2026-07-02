@@ -80,3 +80,11 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Added `implementation/tests/test_workbench_projections.py` covering dashboard projection from ledger replay, projection shapes, and AST guard against hardware/external side-effect imports/calls.
 - Latest test pass: `python3 -m unittest discover -s implementation/tests -v` => 20 tests OK.
 - Boundary preserved: no Web runtime/server, no UI acceptance claim, no external/hardware/taskpool/deploy/auth side effects.
+
+## Update — 2026-07-02T19:50:00+08:00
+- Continued into safe P3 static Workbench artifact.
+- Added `implementation/hewos_core/workbench_static.py` renderer and `implementation/tests/test_workbench_static.py`.
+- Generated local artifact: `artifacts/workbench-static-fixture.html`.
+- Latest test pass: `python3 -m unittest discover -s implementation/tests -v` => 22 tests OK.
+- Boundary preserved: static HTML fixture only; no server, browser automation, UI acceptance claim, external adapter, hardware/robot, taskpool/deploy/auth side effects.
+- Stop gate after this slice: real Web runtime/UI implementation requires separate gate and likely uIMax/UI acceptance if quality is claimed.
