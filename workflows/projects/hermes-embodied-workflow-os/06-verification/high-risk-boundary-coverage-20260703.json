@@ -1,0 +1,101 @@
+{
+  "schema": "hewos_high_risk_boundary_coverage_v1",
+  "requested_boundaries": [
+    "taskpool_lifecycle",
+    "external_dispatch",
+    "hardware_execution",
+    "deploy_publish",
+    "auth_credential"
+  ],
+  "governance_coverage_percent": 100,
+  "live_execution_enabled": false,
+  "production_resource_touched": false,
+  "boundaries": [
+    {
+      "id": "taskpool_lifecycle",
+      "label": "Taskpool lifecycle write-through",
+      "mode": "exact_local_target_required",
+      "governance_covered": true,
+      "exact_target_required": true,
+      "receipt_required": true,
+      "rollback_required": true,
+      "readback_required": true,
+      "executed": false,
+      "execution_status": "not_executed_exact_target_required",
+      "token_read_allowed": false,
+      "stores_secrets": false,
+      "agent_may_type_secret": null,
+      "minimum_authority": "specific task id, intended status/action, idempotency key, evidence refs, rollback, readback"
+    },
+    {
+      "id": "external_dispatch",
+      "label": "External dispatch / outbox / sender",
+      "mode": "exact_allowlist_required",
+      "governance_covered": true,
+      "exact_target_required": true,
+      "receipt_required": true,
+      "rollback_required": false,
+      "readback_required": true,
+      "executed": false,
+      "execution_status": "not_executed_exact_target_required",
+      "token_read_allowed": false,
+      "stores_secrets": false,
+      "agent_may_type_secret": null,
+      "minimum_authority": "specific platform/channel/target, payload hash, allowlist proof, evidence refs, readback"
+    },
+    {
+      "id": "hardware_execution",
+      "label": "Hardware / robot physical execution",
+      "mode": "device_identity_telemetry_and_onsite_gate_required",
+      "governance_covered": true,
+      "exact_target_required": true,
+      "receipt_required": true,
+      "rollback_required": true,
+      "readback_required": true,
+      "executed": false,
+      "execution_status": "not_executed_exact_target_required",
+      "token_read_allowed": false,
+      "stores_secrets": false,
+      "agent_may_type_secret": null,
+      "minimum_authority": "device id, telemetry freshness, command preview, safety gates, idempotency, audit path, readback"
+    },
+    {
+      "id": "deploy_publish",
+      "label": "Deploy / publish / push",
+      "mode": "exact_target_required",
+      "governance_covered": true,
+      "exact_target_required": true,
+      "receipt_required": true,
+      "rollback_required": true,
+      "readback_required": true,
+      "executed": false,
+      "execution_status": "not_executed_exact_target_required",
+      "token_read_allowed": false,
+      "stores_secrets": false,
+      "agent_may_type_secret": null,
+      "minimum_authority": "repository/env/branch or deployment target, rollback path, receipt, post-action readback"
+    },
+    {
+      "id": "auth_credential",
+      "label": "Auth / credential / payment boundary",
+      "mode": "human_secret_entry_required",
+      "governance_covered": true,
+      "exact_target_required": true,
+      "receipt_required": true,
+      "rollback_required": false,
+      "readback_required": true,
+      "executed": false,
+      "execution_status": "not_executed_exact_target_required",
+      "token_read_allowed": false,
+      "stores_secrets": false,
+      "agent_may_type_secret": false,
+      "minimum_authority": "human enters secrets outside agent; agent records only non-secret gate receipt and denied/ready state"
+    }
+  ],
+  "validation": {
+    "ok": true,
+    "missing": [],
+    "malformed": [],
+    "boundary_count": 5
+  }
+}

@@ -112,3 +112,11 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Regenerated `artifacts/workbench-static-fixture.html` and recorded metrics at `06-verification/uimax-metrics-20260702.json`.
 - Report: `06-verification/UIMAX_REPORT_20260702.md`.
 - Boundary preserved: no executor path, no taskpool write, no external dispatch, no hardware/robot, no deploy/push, no auth/secret handling.
+
+## Update — 2026-07-03T00:13:00+08:00
+- Consumed user authorization for taskpool/external/hardware/deploy/auth into the next safe rung: local high-risk boundary coverage plus simulation-only ledger receipts.
+- Added `implementation/hewos_core/high_risk_boundaries.py` and `implementation/hewos_core/simulation_ledger.py`.
+- Added `implementation/tests/test_high_risk_boundaries.py` covering exact-target requirements, no live execution, no agent secret entry, idempotent simulation receipts, and rollback.
+- Generated coverage artifact `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/high-risk-boundary-coverage-20260703.json` and report `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/HIGH_RISK_BOUNDARY_REPORT_20260703.md`.
+- Generated local simulation ledger `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/artifacts/simulation-ledger-20260703.jsonl` with 5 intent-only receipts.
+- No live taskpool write, external send, hardware/robot action, deploy/push, credential entry, token read, or secret persistence occurred.
