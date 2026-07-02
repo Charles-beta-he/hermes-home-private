@@ -63,6 +63,40 @@ def is_local_architecture_control_plane_change(files: Sequence[str]) -> bool:
     return any(f.startswith(markers) for f in files)
 
 
+def is_architecture_evidence_change(files: Sequence[str]) -> bool:
+    markers = (
+        "workflows/projects/",
+        "project-profiles/",
+        "workflows/portfolio/project-portfolio-os/01-registry/",
+    )
+    architecture_names = (
+        "architecture",
+        "adr-",
+        "ssot",
+        "schema",
+        "contract",
+        "workflow-state",
+        "progress-ledger",
+        "benchmark-scorecard",
+    )
+    return any(
+        f.startswith(markers) and any(name in f.lower() for name in architecture_names)
+        for f in files
+    )
+
+
+def is_source_evidence_change(files: Sequence[str]) -> bool:
+    source_names = (
+        "source-samples",
+        "evidence-index",
+        "core-works-and-arguments",
+        "competitor-and-best-practice-evaluation",
+        "research/",
+        "02-research/",
+    )
+    return any(any(name in f.lower() for name in source_names) for f in files)
+
+
 def relevant_tests(files: Sequence[str]) -> list[Path]:
     wanted: list[Path] = []
     if any(f.startswith("scripts/brainctl.py") or f.startswith("scripts/test_brainctl.py") for f in files):
@@ -105,10 +139,15 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
         "post_action_readback:pre-commit hook exits zero only after local preflight verdict is non-blocking",
     ]
     errors: list[str] = []
-    if is_local_architecture_control_plane_change(files):
+    if is_local_architecture_control_plane_change(files) or is_architecture_evidence_change(files):
         evidence.extend([
-            "design_doc:staged local control-plane diff is the executable design; scoped to local provider/taskpool/precommit evidence handling with rollback by git reset/revert",
-            "gate_readback:local pre-commit BrainConstraintGate reads back staged files, evidence labels, deterministic tests, and exits nonzero on missing gates",
+            "design_doc:staged design/profile/architecture/ADR files are the scoped design document; rollback by git reset/revert",
+            "gate_readback:local pre-commit BrainConstraintGate reads staged files, evidence labels, deterministic checks, and exits nonzero on missing gates",
+        ])
+    if is_source_evidence_change(files):
+        evidence.extend([
+            "source_packet:staged research/evidence files include source packet or evidence index for this change",
+            "timestamped_source:staged source packet/evidence index is timestamped or filename-dated for readback",
         ])
     py_files = [root / f for f in files if f.endswith(".py") and (root / f).exists()]
     if py_files:

@@ -1,0 +1,73 @@
+{
+  "schema": "product_workflow_task_candidates_v1",
+  "project": "hermes-embodied-workflow-os",
+  "generated_at": "2026-07-02T18:58:00+08:00",
+  "write_status": "not_ingested_requires_human_approval",
+  "candidates": [
+    {
+      "dedupe_key": "hewos-p1-contract-validators",
+      "title": "P1: Implement contract validators and mock adapter registration",
+      "priority": "P1",
+      "project": "hermes-embodied-workflow-os",
+      "objective": "Create a local contract-only package with CapabilityManifest, Observation, ActionIntent, VerificationResult, EvidenceLedgerEntry validators plus CLI/Web/glasses/embedded/robot mock manifests.",
+      "acceptance_evidence": [
+        "unit tests show invalid physical capability without readback/audit/gates fails",
+        "all mock manifests register without Core code branching",
+        "json/schema fixtures pass positive and negative cases"
+      ],
+      "anti_drift_check": "No Web/PWA/glasses/robot/platform imports in Core; no real hardware/external side effect; validators fail closed.",
+      "parallel_boundary": "Can run independently from UI/hardware work; blocks Web Workbench implementation.",
+      "evidence_bundle": [
+        "01-architecture/core-contract-schemas.json",
+        "02-research/competitor-and-best-practice-evaluation.md",
+        "07-product/prd-p1-p2-contract-core.md"
+      ],
+      "dependency_order": 1,
+      "external_side_effect_intent": "none/local files/tests only",
+      "human_gate": "required before code changes or taskpool write"
+    },
+    {
+      "dedupe_key": "hewos-p2-evidence-replay-harness",
+      "title": "P2: Implement EvidenceLedger reducer and replay harness fixtures",
+      "priority": "P1",
+      "project": "hermes-embodied-workflow-os",
+      "objective": "Append-only ledger prototype with reducer-derived WorldState and replay command over fixture sessions.",
+      "acceptance_evidence": [
+        "completion claim without evidence is rejected",
+        "adapter direct WorldState write fixture fails",
+        "replay matches expected WorldState fixture"
+      ],
+      "anti_drift_check": "WorldState is derived only from ledger/reducer; no chat transcript or UI state as source of truth.",
+      "parallel_boundary": "Depends on P1 contract validators; independent from real adapters.",
+      "evidence_bundle": [
+        "00-model/embodied-workflow-os-ssot.md",
+        "04-roadmap/phase-roadmap.md",
+        "07-product/prd-p1-p2-contract-core.md"
+      ],
+      "dependency_order": 2,
+      "external_side_effect_intent": "none/local files/tests only",
+      "human_gate": "required before code changes or taskpool write"
+    },
+    {
+      "dedupe_key": "hewos-p3-web-workbench-spec",
+      "title": "P3: Specify Web Workbench as non-authoritative operator surface",
+      "priority": "P2",
+      "project": "hermes-embodied-workflow-os",
+      "objective": "After P1/P2 pass, define Workbench views for TaskGraph, WorldState, CapabilityRegistry, ActionIntent queue, EvidenceLedger, and gate decisions.",
+      "acceptance_evidence": [
+        "Workbench spec shows no planner/safety core logic in UI",
+        "UI actions emit events only",
+        "same session inspectable from CLI mock and Workbench"
+      ],
+      "anti_drift_check": "Web remains adapter/viewer/approval surface, not product boundary or source of truth.",
+      "parallel_boundary": "Depends on P1/P2 artifacts; no hardware dependency.",
+      "evidence_bundle": [
+        "02-research/competitor-and-best-practice-evaluation.md",
+        "04-roadmap/phase-roadmap.md"
+      ],
+      "dependency_order": 3,
+      "external_side_effect_intent": "none/spec only until implementation approval",
+      "human_gate": "approval required for UI implementation"
+    }
+  ]
+}

@@ -100,6 +100,28 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertIn("task_record:", joined)
         self.assertIn("proof_log:", joined)
         self.assertIn("lifecycle_readback:", joined)
+    def test_architecture_and_research_project_files_collect_design_and_source_evidence(self):
+        files = [
+            "project-profiles/hermes-embodied-workflow-os.json",
+            "workflows/projects/hermes-embodied-workflow-os/01-architecture/stable-core-and-adapter-architecture.md",
+            "workflows/projects/hermes-embodied-workflow-os/02-research/competitor-source-samples-20260702.json",
+            "workflows/projects/hermes-embodied-workflow-os/07-product/workflow-state.yaml.md",
+        ]
+        old_run = hook.run
+        try:
+            def fake_run(cmd, *, cwd=None, timeout=180):
+                return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+            hook.run = fake_run
+            evidence, errors = hook.hook_evidence(self.repo, files)
+        finally:
+            hook.run = old_run
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("design_doc:", joined)
+        self.assertIn("gate_readback:", joined)
+        self.assertIn("source_packet:", joined)
+        self.assertIn("timestamped_source:", joined)
 
 
 if __name__ == "__main__":

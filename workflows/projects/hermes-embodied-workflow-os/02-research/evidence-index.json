@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "project": "hermes-embodied-workflow-os",
+  "created_at": "2026-07-02T18:43:34+08:00",
+  "source_evidence": [
+    {
+      "id": "E-MULTI-20260702",
+      "kind": "multi_model_advisory",
+      "path": "/Users/charles/.hermes/tick-20260702-101349-760163-p20773-dd66cf15-28477ee1/final/certification_manifest.json",
+      "summary": "3/3 planner fanout succeeded; final certification not complete due noop-vs-change disagreement; advisory consensus supports core/adapter boundary, ActionIntent/SafetyGate, AdapterPort/CapabilityRegistry, Observation/EvidenceLedger first."
+    },
+    {
+      "id": "E-AOS-PROFILE",
+      "kind": "local_profile_readback",
+      "path": "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
+      "summary": "Existing Agent OS project already owns Context Graph, CapabilityGraph, Evidence DAG, AuthorityGate, Control Surface, Edge Event pipeline, runtime routing gates."
+    },
+    {
+      "id": "E-CONTROL-CONSOLE-PROFILE",
+      "kind": "local_profile_readback",
+      "path": "/Users/charles/.hermes/project-profiles/hermes-control-console.json",
+      "summary": "Existing control console project provides operator surface/projection health/capability ladder/action API/UI harness patterns."
+    },
+    {
+      "id": "E-MOBILE-PLATFORM-PROFILE",
+      "kind": "local_profile_readback",
+      "path": "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+      "summary": "Existing mobile platform project validates PWA/RN/Gateway projection and read-only mobile authority patterns; travel is first vertical, not platform boundary."
+    },
+    {
+      "id": "E-SELF-EXTENSION-PROFILE",
+      "kind": "local_profile_readback",
+      "path": "/Users/charles/.hermes/project-profiles/hermes-self-extension-os.json",
+      "summary": "Existing self-extension project provides mission/control-plane loop, objective ledger, human handoff, review/fix/verify loop."
+    }
+  ],
+  "research_sources": [
+    {
+      "id": "W-PARNAS-1972",
+      "title": "David L. Parnas, On the Criteria To Be Used in Decomposing Systems into Modules",
+      "url": "https://dl.acm.org/doi/10.1145/361598.361623",
+      "evidence_status": "doi_known; ACM fetch blocked 403 in this session",
+      "supports": [
+        "information hiding",
+        "stable module boundaries before implementation"
+      ]
+    },
+    {
+      "id": "W-BROOKS-1986",
+      "title": "Frederick P. Brooks, No Silver Bullet",
+      "url": "https://worrydream.com/refs/Brooks-NoSilverBullet.pdf",
+      "evidence_status": "HTTP 200 application/pdf sampled",
+      "supports": [
+        "essential vs accidental complexity",
+        "avoid accidental complexity from platform-specific endpoint sprawl"
+      ]
+    },
+    {
+      "id": "W-COCKBURN-PORTS",
+      "title": "Alistair Cockburn, Hexagonal Architecture / Ports and Adapters",
+      "url": "https://alistair.cockburn.us/hexagonal-architecture/",
+      "evidence_status": "HTTP 200; page title hexagonal-architecture",
+      "supports": [
+        "core isolated from UI/device/database adapters",
+        "ports before adapters"
+      ]
+    },
+    {
+      "id": "W-CLEAN-ARCH",
+      "title": "Robert C. Martin, Clean Architecture",
+      "url": "https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html",
+      "evidence_status": "HTTP 200; page title Clean Coder Blog",
+      "supports": [
+        "dependency rule inward toward policy/core",
+        "UI/framework/database as details"
+      ]
+    },
+    {
+      "id": "W-DDD-EVANS",
+      "title": "Eric Evans / Domain Language DDD Resources",
+      "url": "https://www.domainlanguage.com/ddd/",
+      "evidence_status": "HTTP 200; page title DDD Resources - Domain Language",
+      "supports": [
+        "ubiquitous language: TaskGraph/ActionIntent/Observation as domain contracts"
+      ]
+    },
+    {
+      "id": "W-FOWLER-EVENT-SOURCING",
+      "title": "Martin Fowler, Event Sourcing",
+      "url": "https://martinfowler.com/eaaDev/EventSourcing.html",
+      "evidence_status": "HTTP 200; page title Event Sourcing",
+      "supports": [
+        "append-only event/evidence ledger",
+        "replay/debug/audit"
+      ]
+    },
+    {
+      "id": "W-DDIA",
+      "title": "Martin Kleppmann, Designing Data-Intensive Applications",
+      "url": "https://dataintensive.net/",
+      "evidence_status": "HTTP 200; page title Designing Data-Intensive Applications",
+      "supports": [
+        "logs, derived state, local state vs archive topology, replayable data systems"
+      ]
+    },
+    {
+      "id": "W-ENDSLEY-SA",
+      "title": "Mica R. Endsley, Toward a Theory of Situation Awareness in Dynamic Systems",
+      "url": "https://doi.org/10.1518/001872095779049543",
+      "evidence_status": "DOI known; DOI fetch blocked 403 in this session",
+      "supports": [
+        "Observation -> WorldState -> projection/decision loop",
+        "human/robot shared situation awareness"
+      ]
+    },
+    {
+      "id": "W-RASMUSSEN-EID",
+      "title": "Rasmussen & Vicente, Ecological Interface Design / work-domain constraints",
+      "url": "https://doi.org/10.1016/0953-5438(92)90030-S",
+      "evidence_status": "DOI/page unresolved in session; keep as candidate requiring later bibliographic verification",
+      "supports": [
+        "Workbench should expose constraints/gates/evidence, not only pretty UI"
+      ]
+    },
+    {
+      "id": "W-NIST-CPS",
+      "title": "NIST Framework for Cyber-Physical Systems",
+      "url": "https://www.nist.gov/publications/framework-cyber-physical-systems-volume-1-overview",
+      "evidence_status": "HTTP 200 sampled",
+      "supports": [
+        "cyber-physical separation, telemetry, actuation, trustworthiness concerns"
+      ]
+    },
+    {
+      "id": "W-IEC-61508",
+      "title": "IEC 61508 Functional Safety overview",
+      "url": "https://www.iec.ch/functional-safety",
+      "evidence_status": "fetch blocked 403 in this session; standard family cited as safety reference, not implementation proof",
+      "supports": [
+        "fail-safe/default-off safety gate principle for physical actuation"
+      ]
+    },
+    {
+      "id": "W-ISO-10218",
+      "title": "ISO 10218 Robots and robotic devices safety requirements",
+      "url": "https://www.iso.org/standard/73933.html",
+      "evidence_status": "fetch blocked 403 in this session; standard family cited as robot-safety reference, not implementation proof",
+      "supports": [
+        "robot actor requires safety-rated constraints, telemetry/readback, human gate"
+      ]
+    },
+    {
+      "id": "W-APPLE-HIG",
+      "title": "Apple Human Interface Guidelines",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/",
+      "evidence_status": "HTTP 200; page title Human Interface Guidelines",
+      "supports": [
+        "mobile/PC/glasses surfaces should be experience-specific renderers over same core contract"
+      ]
+    }
+  ],
+  "boundaries": [
+    "Not complete academic literature review; blocked/DOI-only items require later bibliographic verification before publication-grade citation.",
+    "No runtime code, hardware, external dispatch, credentials, deployment, or physical actuation authorized by this projectization slice."
+  ]
+}

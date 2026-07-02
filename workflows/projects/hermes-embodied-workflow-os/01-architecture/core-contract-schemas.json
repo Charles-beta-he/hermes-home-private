@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "project": "hermes-embodied-workflow-os",
+  "contracts": {
+    "CapabilityManifest": {
+      "required": [
+        "capability_id",
+        "actor_id",
+        "adapter_id",
+        "capability_type",
+        "input_schema",
+        "output_schema",
+        "risk_class",
+        "required_gates",
+        "dry_run_supported",
+        "readback_required",
+        "audit_required",
+        "idempotency_policy"
+      ]
+    },
+    "Observation": {
+      "required": [
+        "observation_id",
+        "session_id",
+        "source_adapter_id",
+        "type",
+        "timestamp",
+        "raw_ref_or_hash",
+        "confidence",
+        "evidence_refs",
+        "derived_facts"
+      ]
+    },
+    "ActionIntent": {
+      "required": [
+        "intent_id",
+        "session_id",
+        "taskgraph_node_id",
+        "actor_id",
+        "capability_id",
+        "verb",
+        "target",
+        "parameters",
+        "risk_level",
+        "preconditions",
+        "expected_observation_delta",
+        "verification_plan",
+        "evidence_refs",
+        "requested_authority",
+        "dry_run",
+        "idempotency_key",
+        "rollback_or_abort"
+      ]
+    },
+    "VerificationResult": {
+      "required": [
+        "verification_id",
+        "intent_id",
+        "status",
+        "observations_checked",
+        "evidence_refs",
+        "world_state_delta",
+        "next_action"
+      ]
+    },
+    "EvidenceLedgerEntry": {
+      "required": [
+        "entry_id",
+        "timestamp",
+        "kind",
+        "subject_id",
+        "source",
+        "claims",
+        "evidence_refs",
+        "checksum_or_hash",
+        "append_only"
+      ]
+    }
+  },
+  "side_effect_classes": [
+    "none",
+    "local_read",
+    "local_write",
+    "external_read",
+    "external_write",
+    "physical_action",
+    "publish",
+    "destructive",
+    "payment_or_credential"
+  ],
+  "gate_outcomes": [
+    "pass",
+    "warn",
+    "fail",
+    "blocked_human_gate"
+  ]
+}

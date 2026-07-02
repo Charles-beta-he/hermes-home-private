@@ -1,0 +1,617 @@
+{
+  "updated_at": "2026-07-02T18:43:34+08:00",
+  "schema_version": 2,
+  "source": "project profiles in /Users/charles/.hermes/project-profiles",
+  "projects": [
+    {
+      "id": "hermes",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes.json",
+      "type": "platform",
+      "status": "ledgered",
+      "role": "agent runtime / tools / gateway / taskpool / core platform",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md"
+    },
+    {
+      "id": "hermes-skill-learning",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-skill-learning.json",
+      "type": "knowledge-system",
+      "status": "ledgered",
+      "role": "skills / semantic control plane / workflow learning",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md"
+    },
+    {
+      "id": "lark",
+      "profile": "/Users/charles/.hermes/project-profiles/lark.json",
+      "type": "integration",
+      "status": "ledgered",
+      "role": "Feishu/Lark OAuth MCP and bot-send boundary",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md"
+    },
+    {
+      "id": "mobile-offline-avatar-travel",
+      "profile": "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+      "type": "mobile-platform/edge-runtime",
+      "status": "platform-framed+validated-local-slices",
+      "role": "Hermes Pocket Mobile Platform: mobile edge runtime/companion platform; travel is first vertical module.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md"
+    },
+    {
+      "id": "project-portfolio-os",
+      "profile": "/Users/charles/.hermes/project-profiles/project-portfolio-os.json",
+      "type": "portfolio-governance",
+      "status": "ledgered",
+      "role": "portfolio graph, project relation, progress-ledger, and ratchet governance",
+      "progress_ledger": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md"
+    },
+    {
+      "id": "uvisa-app-2.0",
+      "profile": "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json",
+      "type": "application",
+      "status": "work-project/excluded-unless-user-switches",
+      "role": "UVISA work application; excluded from autonomous non-work full-advance unless user switches to UVISA.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md"
+    },
+    {
+      "id": "hermes-self-extension-os",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-self-extension-os.json",
+      "type": "agent-runtime-evolution",
+      "status": "validated-active-control-loop-slice",
+      "role": "Hermes long-term self-extension mission/control-plane: research → plan → local proof → human handoff → review/fix/verify → skill/CLI/runtime promotion.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
+      "updated_at": "2026-06-21T16:38:00+08:00",
+      "current_components": {
+        "mission_control": "validated-active-control-loop-slice",
+        "objective_ledger": "contract-ready-metadata-slice",
+        "human_handoff": "validated-decision-resume-slice",
+        "review_fix_verify_loop": "contract-ready",
+        "skill_runtime_promotion": "proposal/needs-evidence",
+        "stage_report_schema": "contract-ready",
+        "stale_signal_recovery": "validated-local-ledger-slice"
+      }
+    },
+    {
+      "id": "hermes-control-console",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-control-console.json",
+      "type": "operator-console",
+      "status": "validated-local-slice",
+      "role": "Desktop local Hermes control console: projection health, capability ladder, mission/taskpool/human inbox/evidence/cron operator surface.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md"
+    },
+    {
+      "id": "career-ops",
+      "profile": "/Users/charles/.hermes/project-profiles/career-ops.json",
+      "type": "personal-productivity-product",
+      "status": "ledgered",
+      "role": "Career/JD/resume/story-bank/job-search tracker direction surfaced in control console capability directions.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md"
+    },
+    {
+      "id": "single-session-multitopic-trace",
+      "profile": "/Users/charles/.hermes/project-profiles/single-session-multitopic-trace.json",
+      "type": "hermes-self-architecture",
+      "status": "initiated",
+      "role": "single-session multi-topic trace/query/current-state projection capability",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md"
+    },
+    {
+      "id": "hermes-capability-model-router",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-capability-model-router.json",
+      "type": "hermes-self-architecture",
+      "status": "validated-local-slice",
+      "role": "capability-granular specialist model primary routing with risk-layer verification",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md"
+    },
+    {
+      "id": "hermes-persona-wake-stage",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
+      "type": "cross-end-ai-assistant-ux-system",
+      "status": "profiled+ledgered+contract-ready",
+      "role": "Cross-end AI assistant wake ritual, agent core, mode-specific stage, and ritual command binding system for Hermes-facing web/PWA/RN/desktop/Telegram surfaces.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
+      "updated_at": "2026-06-25T10:11:41+08:00",
+      "current_components": {
+        "source_absorption": "source-observed",
+        "project_profile": "profiled",
+        "progress_ledger": "ledgered",
+        "cross_end_contract": "contract-ready",
+        "runtime_implementation": "planned/needs-code-evidence",
+        "visual_prototype": "planned/needs-screenshot-evidence",
+        "voice_projection": "planned/explicit-authorization-required"
+      }
+    },
+    {
+      "id": "uaec-h5",
+      "profile": "/Users/charles/.hermes/project-profiles/uaec-h5.json",
+      "type": "work-application/mobile-trading-h5",
+      "status": "work-project/excluded-unless-user-switches",
+      "role": "UAEC H5 work application; excluded from autonomous non-work full-advance unless user switches to UAEC.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md",
+      "updated_at": "2026-06-25T11:20:51+08:00"
+    },
+    {
+      "id": "hermes-agent-os-control-plane",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
+      "type": "hermes-self-architecture",
+      "status": "p0-read-only-projection-validated+p1-sample-shadow-validated",
+      "role": "YodaOS-inspired Hermes Agent OS control-plane project: Context Graph, CapabilityGraph, Evidence DAG, AuthorityGate, Control Surface, Edge Event pipeline, and worker lease governance.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/progress-ledger.md",
+      "updated_at": "2026-06-26T23:29:27+08:00",
+      "current_components": {
+        "source_absorption": "chat+image-analysis/advisory-evidence",
+        "project_profile": "profiled",
+        "progress_ledger": "ledgered",
+        "agent_os_ssot": "contract-ready",
+        "capability_graph_projection": "validated-local-read-only-slice/344-nodes",
+        "context_graph": "validated-snapshot-contract",
+        "evidence_dag": "validated-schema-sample",
+        "authority_gate": "contract-ready/default-off",
+        "control_surface": "read-only-projection-generated",
+        "edge_event_pipeline": "planned/p2-shadow-only",
+        "runtime_implementation": "not_started/explicit-authorization-required",
+        "capability_intent": "sample-shadow-replay-validated/8-records-3-policy-blocked",
+        "resume_layer": "shadow-contract-ready",
+        "interruptibility_policy": "shadow-draft-ready"
+      }
+    },
+    {
+      "id": "hermes-embodied-workflow-os",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-embodied-workflow-os.json",
+      "type": "outer-tooling/embodied-workflow-platform",
+      "status": "competitor-evaluated+implementation-ready-packet",
+      "role": "Long-term outer-tool/body layer for Hermes: stable workflow core plus adapters for Web/PWA/App/PC, glasses, voice, embedded devices, robots, NAS archive, proxy connectivity, and physical/external-control gates.",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
+      "updated_at": "2026-07-02T18:58:00+08:00",
+      "current_components": {
+        "project_profile": "profiled",
+        "progress_ledger": "ledgered",
+        "ssot": "ledgered",
+        "architecture": "contract-draft",
+        "core_contract_schemas": "draft/needs-validator",
+        "literature_review": "research-backed/advisory-with-blocked-source-notes",
+        "existing_project_integration": "mapped",
+        "implementation": "not_started/no-code-change",
+        "hardware_physical_actions": "closed/dry-run-only-until-authorized"
+      },
+      "evidence": [
+        "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/precommit-evidence-packet-20260702.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/02-research/competitor-source-samples-20260702.json"
+      ],
+      "artifacts": {
+        "competitor_evaluation": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/02-research/competitor-and-best-practice-evaluation.md",
+        "prd_p1_p2": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/07-product/prd-p1-p2-contract-core.md",
+        "task_candidates": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/08-tasks/task-candidates.json"
+      },
+      "next_gate": "human approval for P1 code implementation or taskpool ingest"
+    }
+  ],
+  "relations": [
+    {
+      "from": "hermes",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes",
+      "target": "hermes-skill-learning",
+      "relation": "hosts_knowledge_control_plane",
+      "merge_policy": "skill_pattern_governed_by_abstraction"
+    },
+    {
+      "from": "hermes-skill-learning",
+      "target": "hermes",
+      "relation": "knowledge_control_plane_for",
+      "merge_policy": "skill_pattern_governed_by_abstraction"
+    },
+    {
+      "from": "hermes-skill-learning",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "lark",
+      "target": "hermes",
+      "relation": "integration_boundary_for",
+      "merge_policy": "no_secret_or_auth_merge"
+    },
+    {
+      "from": "lark",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "mobile-offline-avatar-travel",
+      "target": "hermes",
+      "relation": "edge_runtime_of",
+      "merge_policy": "platform_contract_not_fact_merge"
+    },
+    {
+      "from": "mobile-offline-avatar-travel",
+      "target": "lark",
+      "relation": "may_use_integration_boundary",
+      "merge_policy": "no_secret_or_auth_merge"
+    },
+    {
+      "from": "mobile-offline-avatar-travel",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "uvisa-app-2.0",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "workflow_patterns_only"
+    },
+    {
+      "from": "uvisa-app-2.0",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "uvisa-app-2.0",
+      "target": "mobile-offline-avatar-travel",
+      "relation": "shares_module",
+      "merge_policy": "ui_pwa_mobile_verification_patterns_only_no_business_fact_merge"
+    },
+    {
+      "from": "hermes-self-extension-os",
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes-self-extension-os",
+      "relation": "managed_by_agent_workflow",
+      "target": "hermes",
+      "merge_policy": "runtime_extension_contract_not_fact_merge"
+    },
+    {
+      "from": "hermes-self-extension-os",
+      "relation": "shares_module",
+      "target": "hermes-skill-learning",
+      "merge_policy": "skill_pattern_only_no_project_fact_merge"
+    },
+    {
+      "from": "hermes-control-console",
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes-control-console",
+      "relation": "managed_by_agent_workflow",
+      "target": "hermes",
+      "merge_policy": "operator_surface_contract_no_runtime_fact_merge"
+    },
+    {
+      "from": "hermes-control-console",
+      "relation": "shares_module",
+      "target": "hermes-self-extension-os",
+      "merge_policy": "control_plane_patterns_only"
+    },
+    {
+      "from": "career-ops",
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "career-ops",
+      "relation": "shares_module",
+      "target": "hermes-skill-learning",
+      "merge_policy": "skill_pattern_only"
+    },
+    {
+      "from": "career-ops",
+      "relation": "managed_by_agent_workflow",
+      "target": "hermes",
+      "merge_policy": "workflow_patterns_only"
+    },
+    {
+      "from": "single-session-multitopic-trace",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "single-session-multitopic-trace",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "runtime_extension_contract_not_fact_merge"
+    },
+    {
+      "from": "hermes-capability-model-router",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes-capability-model-router",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "runtime_extension_contract_not_fact_merge"
+    },
+    {
+      "from": "hermes-persona-wake-stage",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes-persona-wake-stage",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "ux_contract_no_runtime_authority_merge"
+    },
+    {
+      "from": "hermes-persona-wake-stage",
+      "target": "mobile-offline-avatar-travel",
+      "relation": "shares_module",
+      "merge_policy": "mobile_avatar_patterns_only_no_trip_fact_merge"
+    },
+    {
+      "from": "hermes-persona-wake-stage",
+      "target": "hermes-control-console",
+      "relation": "shares_module",
+      "merge_policy": "operator_surface_patterns_only"
+    },
+    {
+      "from": "hermes-persona-wake-stage",
+      "target": "hermes-skill-learning",
+      "relation": "shares_module",
+      "merge_policy": "skill_pattern_only_no_project_fact_merge"
+    },
+    {
+      "from": "uaec-h5",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "uaec-h5",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "workflow_patterns_only_no_business_fact_merge"
+    },
+    {
+      "from": "hermes-agent-os-control-plane",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes-agent-os-control-plane",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "self_architecture_contract_no_runtime_authority_merge"
+    },
+    {
+      "from": "hermes-agent-os-control-plane",
+      "target": "hermes-self-extension-os",
+      "relation": "shares_module",
+      "merge_policy": "control_plane_patterns_only"
+    },
+    {
+      "from": "hermes-agent-os-control-plane",
+      "target": "hermes-control-console",
+      "relation": "shares_module",
+      "merge_policy": "operator_surface_projection_patterns_only"
+    },
+    {
+      "from": "hermes-agent-os-control-plane",
+      "target": "hermes-capability-model-router",
+      "relation": "shares_module",
+      "merge_policy": "model_routing_patterns_only"
+    },
+    {
+      "from": "hermes-agent-os-control-plane",
+      "target": "hermes-persona-wake-stage",
+      "relation": "shares_module",
+      "merge_policy": "interaction_surface_patterns_only_no_always_on_authority"
+    },
+    {
+      "from": "mobile-offline-avatar-travel",
+      "target": "hermes-persona-wake-stage",
+      "relation": "shares_module",
+      "merge_policy": "mobile_avatar_interaction_patterns_only_no_fact_merge"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "project-portfolio-os",
+      "relation": "governed_by",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "hermes",
+      "relation": "managed_by_agent_workflow",
+      "merge_policy": "outer_tooling_contract_no_runtime_authority_merge"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "hermes-agent-os-control-plane",
+      "relation": "shares_module",
+      "merge_policy": "capability_graph_authority_gate_evidence_patterns_only"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "hermes-control-console",
+      "relation": "shares_module",
+      "merge_policy": "workbench_operator_surface_patterns_only"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "mobile-offline-avatar-travel",
+      "relation": "shares_module",
+      "merge_policy": "mobile_light_entry_projection_patterns_only_no_travel_fact_merge"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "hermes-persona-wake-stage",
+      "relation": "shares_module",
+      "merge_policy": "cross_end_interaction_patterns_only_no_always_on_authority"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "hermes-self-extension-os",
+      "relation": "shares_module",
+      "merge_policy": "mission_review_verify_patterns_only"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "hermes-capability-model-router",
+      "relation": "shares_module",
+      "merge_policy": "surface_model_routing_patterns_only"
+    },
+    {
+      "from": "hermes-embodied-workflow-os",
+      "target": "lark",
+      "relation": "may_use_integration_boundary",
+      "merge_policy": "no_secret_or_auth_merge"
+    }
+  ],
+  "shared_modules": [
+    {
+      "id": "evidence_gated_progress_ledger",
+      "applies_to": [
+        "all"
+      ],
+      "status": "validated_metadata_slice",
+      "landing": "project progress-ledger + portfolio doctor",
+      "experience_atom": "project-portfolio-os-f75d772b7697"
+    },
+    {
+      "id": "ratchet_promotion_state_machine",
+      "applies_to": [
+        "all"
+      ],
+      "status": "proposed_global_rule",
+      "landing": "profile promotion_policy + doctor status checks"
+    },
+    {
+      "id": "project_relation_graph",
+      "applies_to": [
+        "all"
+      ],
+      "status": "validated_metadata_slice",
+      "landing": "portfolio-registry.json + profile relations",
+      "experience_atom": "project-portfolio-os-c4c2abb85f04"
+    },
+    {
+      "id": "capability_module_registry",
+      "applies_to": [
+        "all"
+      ],
+      "status": "proposed_global_rule",
+      "landing": "experience-ratchet / future skill"
+    },
+    {
+      "id": "mission_control_plane_loop",
+      "applies_to": [
+        "hermes-self-extension-os",
+        "hermes-control-console",
+        "hermes"
+      ],
+      "status": "proposed_global_rule",
+      "landing": "mission ledger + human handoff + stage report + decision resume"
+    },
+    {
+      "id": "operator_capability_ladder",
+      "applies_to": [
+        "hermes-control-console",
+        "hermes-self-extension-os"
+      ],
+      "status": "validated_source_observed",
+      "landing": "console long-term plan + dashboard controlCapabilityModel"
+    },
+    {
+      "id": "persona_wake_stage_system",
+      "applies_to": [
+        "hermes",
+        "hermes-control-console",
+        "mobile-offline-avatar-travel",
+        "hermes-persona-wake-stage"
+      ],
+      "status": "contract-ready",
+      "landing": "Persona Wake Screen + Agent Core + Mode-specific Stage + Ritual Command Binding contract; implementation per-end pending evidence"
+    },
+    {
+      "id": "agent_os_control_plane_midplane",
+      "applies_to": [
+        "hermes-agent-os-control-plane",
+        "hermes",
+        "hermes-control-console",
+        "hermes-self-extension-os",
+        "hermes-capability-model-router"
+      ],
+      "status": "contract-ready/proposed-runtime-slices",
+      "landing": "Context Graph + CapabilityGraph + Evidence DAG + AuthorityGate + Control Surface project SSOT; runtime implementation gated"
+    },
+    {
+      "id": "hermes_pocket_mobile_platform_core",
+      "applies_to": [
+        "mobile-offline-avatar-travel",
+        "hermes-persona-wake-stage",
+        "hermes",
+        "lark"
+      ],
+      "status": "approved_direction/metadata_landed",
+      "landing": "mobile platform framing in mobile-offline-avatar-travel profile; travel vertical remains first module"
+    },
+    {
+      "id": "embodied_workflow_stable_core",
+      "applies_to": [
+        "hermes-embodied-workflow-os",
+        "hermes-agent-os-control-plane",
+        "hermes-control-console",
+        "mobile-offline-avatar-travel"
+      ],
+      "status": "contract-draft",
+      "landing": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/stable-core-and-adapter-architecture.md"
+    },
+    {
+      "id": "outer_tool_adapter_ports",
+      "applies_to": [
+        "hermes-embodied-workflow-os",
+        "hermes",
+        "hermes-control-console",
+        "hermes-persona-wake-stage"
+      ],
+      "status": "planned/p1-contract",
+      "landing": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/04-roadmap/phase-roadmap.md"
+    },
+    {
+      "id": "dual_gate_external_control_boundary",
+      "applies_to": [
+        "hermes-embodied-workflow-os",
+        "hermes-agent-os-control-plane"
+      ],
+      "status": "planned/p1-contract",
+      "landing": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/05-decisions/adr-0001-stable-core-adapter-first.md"
+    }
+  ],
+  "doctor": {
+    "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_doctor.py",
+    "last_result": "ok true, 6 profiles, 0 errors, 0 warnings",
+    "last_verified_at": "2026-06-21T05:00:00+08:00"
+  },
+  "reference_absorption_policies": [
+    {
+      "id": "mineradio-reference-c-mode-rollout-2026-07-01",
+      "source": "XxHuberrr/Mineradio",
+      "default_for_non_work_projects": "C_implementation_slice",
+      "excluded_projects": [
+        "uvisa-app-2.0",
+        "uaec-h5"
+      ],
+      "rollout_json": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/04-merge-candidates/mineradio-c-mode-rollout-2026-07-01.json",
+      "rollout_md": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/04-merge-candidates/mineradio-c-mode-rollout-2026-07-01.md",
+      "created_at": "2026-07-01T09:55:00+08:00",
+      "boundary": "project-specific bounded implementation only; no external/publish/destructive/credential authority expansion"
+    }
+  ]
+}

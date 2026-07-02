@@ -1,0 +1,289 @@
+{
+  "schema": "competitor_source_samples_v1",
+  "generated_at": "2026-07-02T18:55:00+08:00",
+  "sources": [
+    {
+      "id": "home-assistant",
+      "name": "Home Assistant",
+      "category": "smart-home/local automation",
+      "url": "https://www.home-assistant.io/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Home Assistant",
+      "description": "Open source home automation that puts local control and privacy first. Powered by a worldwide community of tinkerers and DIY enthusiasts. Perfect to run on a...",
+      "headings": [
+        "Awakenyour home",
+        "Release Notes",
+        "Recent Blog Posts",
+        "Alexa, turn on the lights",
+        "Ok Google, turn off the AC",
+        "Join The Community",
+        "Features",
+        "Over 2 million households"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "home-assistant-integrations",
+      "name": "Home Assistant Integrations",
+      "category": "adapter ecosystem",
+      "url": "https://www.home-assistant.io/integrations/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Integrations - devices and services that work with Home Assistant - Home Assistant",
+      "description": "Browse the list of devices and services Home Assistant works with. Home Assistant supports thousands of brands across more than a hundred categories, includi...",
+      "headings": [
+        "Integrations - devices and services that work with Home Assistant"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "node-red",
+      "name": "Node-RED",
+      "category": "flow-based integration",
+      "url": "https://nodered.org/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "Low-code programming for event-driven applications : Node-RED",
+      "description": "",
+      "headings": [
+        "Low-code programming for event-driven applications",
+        "The easiest way to collect, transform and visualize real-time data."
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "openhab",
+      "name": "openHAB",
+      "category": "vendor-neutral smart-home automation",
+      "url": "https://www.openhab.org/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "title": "openHAB",
+      "description": "openHAB - a vendor and technology agnostic open source automation software for your home",
+      "headings": [
+        "empowering the smart home",
+        "a vendor and technology agnostic open source automation software for your home",
+        "Why openHAB?",
+        "Set up your own openHAB system in just a few steps",
+        "No Cloud Required...",
+        "...but Cloud-Friendly",
+        "More than 3000 supported things!",
+        "100% Open Source. 100% Reliable."
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "ros2-docs",
+      "name": "ROS 2 Docs",
+      "category": "robotics middleware",
+      "url": "https://docs.ros.org/en/rolling/index.html",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html",
+      "title": "ROS 2 Documentation &mdash; ROS 2 Documentation: Rolling documentation",
+      "description": "",
+      "headings": [
+        "ROS 2 Documentation",
+        "Getting started",
+        "The ROS 2 project",
+        "ROS community resources",
+        "General ROS project resources",
+        "Events",
+        "Miscellaneous",
+        "Deprecated"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "micro-ros",
+      "name": "micro-ROS",
+      "category": "embedded ROS 2",
+      "url": "https://micro.ros.org/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html",
+      "title": "micro-ROS has moved",
+      "description": "",
+      "headings": [
+        "micro-ROS has moved"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "mqtt",
+      "name": "MQTT",
+      "category": "lightweight pub/sub protocol",
+      "url": "https://mqtt.org/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "MQTT - The Standard for IoT Messaging",
+      "description": "A lightweight messaging protocol for small sensors and mobile devices, optimized for high-latency or unreliable networks, enabling a Connected World and the Internet of Things",
+      "headings": [
+        "MQTT: The Standard for IoT Messaging",
+        "Why MQTT?",
+        "MQTT Publish / Subscribe Architecture",
+        "MQTT in Action"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "matter",
+      "name": "Matter",
+      "category": "smart-home interoperability standard",
+      "url": "https://csa-iot.org/all-solutions/matter/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Build With Matter | Smart Home Device Solution",
+      "description": "Discover Matter by CSA, the industry-unifying standard for reliable, secure IoT connectivity. Simplify development and build interoperable smart home devices.",
+      "headings": [
+        "Matter Smart Home Standard",
+        "The Foundation for Connected Things",
+        "The Promise of Reliable and Secure Connectivity",
+        "Create more connections. Simplify development.",
+        "Increase compatibility.",
+        "",
+        "Latest Alliance News"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "webrtc",
+      "name": "WebRTC",
+      "category": "realtime browser media/data channels",
+      "url": "https://webrtc.org/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "WebRTC",
+      "description": "An open framework for the web that enables Real-Time Communications (RTC) capabilities in the browser.",
+      "headings": [
+        "Real-time communication for the web"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "tailscale",
+      "name": "Tailscale",
+      "category": "mesh VPN connectivity",
+      "url": "https://tailscale.com/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "Tailscale | Secure Connectivity for AI, IoT &amp; Multi-Cloud",
+      "description": "The connectivity platform for devs, IT, and security teams. Zero Trust identity-based access that deploys in minutes and scales to every resource. Start free.",
+      "headings": [
+        "The best secure connectivity platform for the AI era",
+        "The best secure connectivity platform for the AI era",
+        "30,000 businesses  choose Tailscale",
+        "30,000 businesses  choose Tailscale",
+        "Easy, secure, identity-based access to anything",
+        "Easy, secure, identity-based access to anything",
+        "Developer approved, But don’t just take our word for it.",
+        "Developer approved, But don’t just take our word for it."
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "cloudflare-tunnel",
+      "name": "Cloudflare Tunnel",
+      "category": "zero-trust tunnel connectivity",
+      "url": "https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html",
+      "title": "Cloudflare Tunnel · Cloudflare One docs",
+      "description": "How Cloudflare Tunnel works in Zero Trust networking.",
+      "headings": [],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "langgraph",
+      "name": "LangGraph",
+      "category": "agent workflow/state graph",
+      "url": "https://langchain-ai.github.io/langgraph/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "Redirecting to LangGraph Documentation",
+      "description": "",
+      "headings": [
+        "Documentation has moved"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "autogen",
+      "name": "Microsoft AutoGen",
+      "category": "multi-agent framework",
+      "url": "https://microsoft.github.io/autogen/stable/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "AutoGen &#8212; AutoGen",
+      "description": "",
+      "headings": [
+        "AutoGen#",
+        "AutoGen"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "openai-agents",
+      "name": "OpenAI Agents SDK",
+      "category": "agent runner/tools/handoffs/guardrails",
+      "url": "https://openai.github.io/openai-agents-python/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "OpenAI Agents SDK",
+      "description": "",
+      "headings": [
+        "OpenAI Agents SDK",
+        "Why use the Agents SDK",
+        "Agents SDK or Responses API?",
+        "Installation",
+        "Hello world example",
+        "Start here",
+        "Choose your path"
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "apple-hig",
+      "name": "Apple HIG",
+      "category": "human interface guidelines",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "title": "Human Interface Guidelines | Apple Developer Documentation",
+      "description": "The HIG contains guidance and best practices that can help you design a great experience for any Apple platform.",
+      "headings": [
+        "This page requires JavaScript."
+      ],
+      "verification_status": "sampled_http"
+    },
+    {
+      "id": "nasa-tlx",
+      "name": "NASA TLX",
+      "category": "workload evaluation method",
+      "url": "https://humansystems.arc.nasa.gov/groups/tlx/",
+      "fetched_at": "2026-07-02T18:55:00+08:00",
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "title": "Human Systems Integration Division - NASA",
+      "description": "The Human Systems Integration Division enables the development of complex aerospace systems through analysis and modeling of human performance and human-automation interactions.",
+      "headings": [
+        "Suggested Searches"
+      ],
+      "verification_status": "sampled_http"
+    }
+  ]
+}
