@@ -1,0 +1,122 @@
+{
+  "schema": "hewos_ordered_high_risk_drain_v1",
+  "updated_at": "2026-07-03T00:36:00+08:00",
+  "records": [
+    {
+      "order": 1,
+      "boundary": "taskpool_real_local_write_through",
+      "result": {
+        "schema": "hewos_taskpool_real_local_write_receipt_v1",
+        "task_id": "2026-07-03-hewos-high-risk-boundary-local-write-through-receipt-20260703",
+        "task_path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-07-03-hewos-high-risk-boundary-local-write-through-receipt-20260703.md",
+        "status": "pending",
+        "action": "add_task_note",
+        "project": "hermes-embodied-workflow-os",
+        "readback": "task file read back; list/add output returned status OK; event hook PASS allowlist_miss no claim/no execution",
+        "rollback_plan": "archive/remove exact task note only after confirming no downstream claim; do not force-close or mark done",
+        "external_side_effects": false
+      }
+    },
+    {
+      "order": 2,
+      "boundary": "external_dispatch_dry_run_outbox",
+      "result": {
+        "schema": "hewos_external_outbox_dry_run_v1",
+        "outbox_id": "outbox:d62ab409a0291453",
+        "platform": "local-outbox",
+        "target": "hewos-dry-run-channel",
+        "payload_hash": "sha256:096c82ce97eb7ce877763075c02c34462f0c1c2b0308ec03551791c68562d929",
+        "allowlist_ref": [
+          "local-outbox:hewos-dry-run-channel"
+        ],
+        "status": "dry_run_recorded",
+        "send_executed": false,
+        "token_read_allowed": false,
+        "stores_secrets": false,
+        "idempotency_key": "hewos-20260703-external-outbox-dry-run",
+        "idempotent_replay": false
+      }
+    },
+    {
+      "order": 3,
+      "boundary": "deploy_push_preflight",
+      "result": {
+        "schema": "hewos_deploy_push_preflight_v1",
+        "repo": "/Users/charles/.hermes",
+        "remote": "origin",
+        "branch": "master",
+        "dry_run_exit_code": 1,
+        "status": "blocked_preflight",
+        "push_executed": false,
+        "deploy_executed": false,
+        "rollback_plan": "Before any real push: fetch/rebase or merge remote, run tests, then rollback by git revert pushed commit(s) or reset local before push if dry-run only.",
+        "readback": "COMMAND: git -C /Users/charles/.hermes push --dry-run origin HEAD:master\nTo https://github.com/Charles-beta-he/hermes-home-private.git\n ! [rejected]          HEAD -> master (non-fast-forward)\nerror: failed to push some refs to 'https://github.com/Charles-beta-he/hermes-home-private.git'\nhint: Updates were rejected because the tip of your current branch is behind\nhint: its remote counterpart. If you want to integrate the remote changes,\nhint: use 'git pull' before pushing again.\nhint: See the 'Note about fast-forwards' in 'git push --help' for details.\n"
+      }
+    },
+    {
+      "order": 4,
+      "boundary": "hardware_gate",
+      "result": {
+        "physical_blocked": {
+          "schema": "hewos_hardware_safety_gate_v1",
+          "device_id": "hewos-local-virtual-device-20260703",
+          "telemetry": {
+            "fresh": true,
+            "age_seconds": 0,
+            "state": "virtual_dry_run"
+          },
+          "safety_gate": true,
+          "external_control_gate": true,
+          "onsite_gate": false,
+          "physical_risk": true,
+          "decision": "blocked",
+          "reasons": [
+            "onsite_gate_required"
+          ],
+          "execution_enabled": false,
+          "hardware_touched": false
+        },
+        "virtual_dry_run": {
+          "schema": "hewos_hardware_safety_gate_v1",
+          "device_id": "hewos-local-virtual-device-20260703",
+          "telemetry": {
+            "fresh": true,
+            "age_seconds": 0,
+            "state": "virtual_dry_run"
+          },
+          "safety_gate": true,
+          "external_control_gate": true,
+          "onsite_gate": true,
+          "physical_risk": false,
+          "decision": "dry_run_pass_no_execution",
+          "reasons": [],
+          "execution_enabled": false,
+          "hardware_touched": false
+        }
+      }
+    },
+    {
+      "order": 5,
+      "boundary": "auth_human_secret_gate",
+      "result": {
+        "schema": "hewos_auth_human_secret_gate_v1",
+        "provider": "local-human-secret-entry",
+        "actor": "human-operator",
+        "requested_scope": "record-non-secret-readiness",
+        "decision": "human_secret_entry_only",
+        "agent_may_type_secret": false,
+        "token_read_allowed": false,
+        "stores_secrets": false,
+        "auth_executed": false,
+        "readback": "non-secret gate record only"
+      }
+    }
+  ],
+  "summary": {
+    "taskpool_real_local_write": true,
+    "external_send_executed": false,
+    "push_executed": false,
+    "hardware_touched": false,
+    "auth_secret_typed_or_read": false
+  }
+}
