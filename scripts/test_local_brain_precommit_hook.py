@@ -162,6 +162,18 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertIn("browser_console:", joined)
         self.assertIn("tests:HEWOS implementation unittest suite OK", joined)
 
+    def test_browser_readback_artifacts_collect_screenshot_and_console_evidence(self):
+        files = [
+            "workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/review_ui_browser_readback.json",
+            "workflows/projects/hermes-fitness-posture-coach/04-implementation/ui/review.html",
+        ]
+        evidence, errors = hook.hook_evidence(self.repo, files)
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("screenshot:", joined)
+        self.assertIn("browser_console:", joined)
+
 
 if __name__ == "__main__":
     unittest.main()

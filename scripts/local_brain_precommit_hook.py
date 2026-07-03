@@ -105,6 +105,11 @@ def is_ui_visual_evidence_change(files: Sequence[str]) -> bool:
     names = (
         "uimax",
         "screenshot",
+        "browser_readback",
+        "browser-console",
+        "browser_console",
+        "visual_readback",
+        "screenshot_readback",
         "workbench-static-fixture.html",
         "workbench_static.py",
         "test_workbench_uimax_static.py",
