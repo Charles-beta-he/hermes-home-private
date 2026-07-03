@@ -17,6 +17,15 @@ Minimum in-root rule: treat safe preclaim no-op as OK, verify escape guard state
 
 - `references/batch-intake-and-recertification-repair.md` — batch intake + degraded recertification repair.
 - `references/multimodel-routing-vs-thinking-drain.md` — split taskpool multi-model routing-plan intervention from task-content thinking/ratification; includes stage-to-tier guidance and drain-loop checks.
+- `references/advisory-only-pass-review-gate.md` — avoid evidence-only advisory tasks ping-ponging back to pending after `PASS_ADVISORY_ONLY`; keep review/done authority separated.
+- `references/quota-observability-fail-closed-child-closeout.md` — close quota-observability narrowing children with honest fail-closed evidence when quota confidence is unobservable/low-confidence; exact claim refusal beats standalone eligibility for dispatch authority.
+- `references/exact-temporary-allowlist-and-advisory-closeout.md` — when dry-run selects a bounded child but exact handoff returns `allowlist_miss`, use a temporary exact task allowlist entry, remove it after the run, and remember PASS_ADVISORY_ONLY closeout needs recognized implementation evidence such as `pytest`/test/build, not selfcheck alone.
+- `references/blocked-worker-produced-proof-closeout.md` — when a worker reports `blocked` but the child note/scratch artifact contains the requested narrowed brief or proof, stabilize the artifact, write readback, move through `blocked -> retry -> claimed -> running -> review`, auto-close, then sync the parent without running parent-worker churn.
+- `references/parent-certification-churn-and-missing-axis-drain.md` — when a parent remains selected/retry after children seem done, avoid repeated parent worker churn: inspect taxonomy axes, stale child evidence, parent aggregation, and work-first blockers; backfill missing-axis children or stale proofs before ratification.
+- `references/authorized-local-child-drain-after-blocked-parent.md` — when the user authorizes continued local-only progress despite blocked/not-certified parents, iterate full-pool split/sync, close newly generated children with deterministic local brief/readback/test evidence, wait out event-hook multimodel races, and keep parent certification separate.
+- `references/false-selected-parent-and-live-certification-drain.md` — when broad dispatch selects a parent but exact eligibility/certification gates deny execution, avoid parent-worker churn: respect live certification ownership, split new taxonomy axes into children, then verify no live jobs/allowlist residue.
+- `references/browser-readback-precommit-evidence.md` — when a scoped taskpool/project closeout commit is blocked because local-brain pre-commit does not recognize real browser screenshot/console readback, preserve the gate and repair the evidence-shape classifier under TDD instead of bypassing the hook.
+- `references/normal-automation-advance-chain.md` — class-level chain for continuing blocked/retry taskpool work without punting: snapshot, deterministic maintenance, human-escape recovery, live-owner reconciliation, child-parent sync, exact eligibility, multimodel routing/thinking, certification loop breakers, scoped tests/commits, and final readback.
 
 ## Review/done lifecycle proof pitfall
 
@@ -40,7 +49,9 @@ Detailed `brain_task_orchestrator.py add` / retry / duplicate-control / capabili
 
 Load it when creating or repairing taskpool task files, especially after hook errors, timeout ambiguity, duplicate creation, add-repo-capability-absorption, or evidence-prefix rejection.
 
-Minimum in-root rule: before retrying a failed-looking task creation, search/read existing task files for the intended title; evidence refs must use accepted prefixes such as `command:`, `artifact:`, `proof:`, `url:`, `file:`, or `brainctl:`.
+Minimum in-root rule: before retrying a failed-looking task creation, search/read existing task files for the intended title; evidence refs must use accepted prefixes such as `command:`, `artifact:`, `proof:`, `url:`, or `file:`.
+
+Pitfall: work-lane project tasks can fail closed at creation time when the project profile has no `source_weighting_policy`. For a receipt-only/local-write boundary that must not dispatch workers, use an advisory lane with explicit project/status/evidence and read the created task back; do not force a work-lane task through by weakening profile gates. If the task must be dispatchable work, add the scoped source-weighting policy to the project profile first, then retry creation after searching for duplicates.
 
 ## Overview
 
@@ -105,6 +116,16 @@ Load it when the pool appears stuck and you need ordered checks for hooks, cron,
 
 Minimum in-root rule: inspect live state before declaring stuck; avoid retry loops that create duplicates or steal active claims.
 
+## Manual autorun handoff -> worker start
+
+Detailed handoff-to-worker recovery was added in `references/manual-autorun-handoff-worker-start.md`.
+
+Load it when `autorun-runner` or `brain_task_dispatch_tick.py --autorun-step` creates a handoff / claim but no actual worker is progressing. Minimum in-root rule: a handoff is not execution proof; explicitly start `agent_team_controller.py consume-claimed --background` only for the exact claimed task/handoff, then verify worker job id, pid/alive, task status transition, and proof/selfcheck readback. Do not steal legitimate live claims or force-close review gates.
+
+## Reconcile-required after write readback pitfall
+
+If `eligibility-check` or `dispatch-dry-run` still reports `reconcile_required` after `reconcile --write`, do not loop the same command or assume the pool is broken. Run `next --reconcile --json` so due retries can be promoted through the same selection path, then verify with `next --no-reconcile --json` and `HERMES_LOCAL_BRAIN_AUTORUN=1 ... eligibility-check --json`. A successful recovery is `eligible=true`, empty `reasons`, and a concrete `task_id`; `selfcheck` may still carry non-blocking handoff archival warnings.
+
 ## Manual anti-idle rule
 
 If all of the following are true:
@@ -137,6 +158,12 @@ Detailed taskpool intake/framing/parallel-execution umbrella mapping moved to `r
 Load it when adding tasks, applying project-profile source weighting, or operating parallel agent-team lanes.
 
 Minimum in-root rule: taskpool items need governed lane, priority, dependency/parallel boundary, proof expectation, and profile evidence when applicable.
+
+## Generated convergence child source-policy gate
+
+Detailed auto-subtask source-policy repair moved to `references/generated-convergence-child-source-policy.md`.
+
+Load it when `auto-split-non-convergence` or another generator creates work/project children, or when a generated child is pending/retry but `eligibility-check` reports `task_not_dispatchable`. Minimum in-root rule: generated `lane=work` + `project` children must carry `source_weighting_policy_ref`; repair only non-terminal children that need dispatch, then verify `eligibility-check` before exact claim/handoff.
 
 ## Task Adapter Framework (pluggable source pattern)
 
@@ -219,7 +246,10 @@ Minimum in-root rule: prefer the narrowest named reference for the active sympto
 1. Treating a taskpool status label as proof of feature delivery. Always read the task body and live target evidence.
 2. Retrying add/transition commands after a timeout without first checking whether the previous command partially succeeded.
 3. Upgrading advisory-only multimodel outputs or local py_compile/proof-check health into certified done authority.
-4. Cleaning dashboards by force-closing or archiving instead of fixing evidence shape, lifecycle ownership, or stale-claim state.
+4. Sending advisory-only `PASS_ADVISORY_ONLY` evidence tasks back to `pending` after deterministic worker proof exists; this re-dispatches the same task and creates blocked/retry ping-pong. Keep them in `review` without granting done authority; see `references/advisory-only-pass-review-gate.md`.
+5. Cleaning dashboards by force-closing or archiving instead of fixing evidence shape, lifecycle ownership, or stale-claim state.
+6. Re-dispatching the same blocked parent worker after children are done and certification still fails. First inspect `parent_aggregation`, missing taxonomy axes, stale child-status proofs, and the ratification surface; see `references/parent-certification-churn-and-missing-axis-drain.md`.
+7. Treating broad scheduler selection as execution authority for a parent. Always run exact task eligibility and live worker/certification readback before adding allowlist or claiming; see `references/false-selected-parent-and-live-certification-drain.md`.
 
 ## Verification Checklist
 
