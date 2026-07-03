@@ -3291,6 +3291,43 @@ def test_auto_split_non_convergence_dedupes_existing_children_by_axis():
         assert set(result.get("existing_axes") or []) >= {"quota_observability", "fallback_threshold", "relay_ordering", "patch_normalization", "framing"}
 
 
+def test_auto_split_non_convergence_backfills_taxonomy_axes_missing_from_existing_children():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["hermes", "hermes-agent"])
+        parent_id, parent_path = add_task(env, title="Parent with stale quota child still needs taxonomy axis children", priority="P1", project="hermes-agent")
+        discussion_path = parent_path.parent / "taxonomy-axis-backfill-discussion.json"
+        discussion_path.write_text(json.dumps({
+            "status": "not_certified",
+            "claims": [],
+            "votes": {"model-a": "reject"},
+            "agreement_matrix": {"implementation_order": 0.50},
+        }, ensure_ascii=False), encoding="utf-8")
+        child_id, child_path = add_task(env, title="Historical quota child with truncated id", priority="P1", project="hermes-agent")
+        child_text = child_path.read_text(encoding="utf-8")
+        child_text = child_text.replace("status: pending", "status: done", 1)
+        child_text = child_text.replace(
+            "evidence: []",
+            f"auto_subtask_parent: {parent_id}\nauto_subtask_kind: non_convergence_narrowing\nauto_subtask_axis: quota_observability\nevidence:\n  - command: historical quota child proof PASS",
+            1,
+        )
+        child_path.write_text(child_text, encoding="utf-8")
+        text = parent_path.read_text(encoding="utf-8")
+        text = text.replace(
+            "evidence: []",
+            f"multimodel_last_discussion_artifact: {discussion_path}\nmultimodel_last_failures:\n  - loop_non_convergence\n  - agreement_below_threshold:framing:0.61\n  - missing_required_model_vote:deepseek-v4-pro\nmultimodel_recommended_axes: [\"fallback_threshold\", \"relay_ordering\", \"framing\"]\nauto_subtask_children: [\"{child_id}\"]\nevidence: []",
+            1,
+        )
+        parent_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-split-non-convergence", "--task", parent_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["created_count"] >= 2, result
+        created_axes = set(result.get("created_axes") or [])
+        assert {"relay_ordering", "framing"} <= created_axes
+        assert "quota_observability" in result.get("existing_axes", []), result
+
+
 
 def test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_child_evidence():
     td, _vault, env = make_env_and_vault()

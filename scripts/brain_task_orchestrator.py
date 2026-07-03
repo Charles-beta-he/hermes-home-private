@@ -4019,6 +4019,16 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
         discussion = {}
     specs = build_non_convergence_subtask_specs(parent, discussion)
     taxonomy_hints = multimodel_failure_taxonomy(discussion, [str(x) for x in list_value(parent.fm.get("multimodel_last_failures"))])
+    merged_taxonomy_axes: list[str] = []
+    for axis in list_value(parent.fm.get("multimodel_recommended_axes")) + list(taxonomy_hints.get("recommended_axes", [])):
+        axis = str(axis or "").strip()
+        if axis in AUTO_SUBTASK_AXIS_ORDER and axis not in merged_taxonomy_axes:
+            merged_taxonomy_axes.append(axis)
+    spec_axes = {str(spec.get("axis") or "framing") for spec in specs}
+    for axis in merged_taxonomy_axes:
+        if axis not in spec_axes:
+            specs.append(build_non_convergence_spec(parent, axis=axis, issue_ids=[], artifact_path=str(parent.fm.get("multimodel_last_discussion_artifact") or "")))
+            spec_axes.add(axis)
     existing = [str(x) for x in list_value(parent.fm.get("auto_subtask_children"))]
     existing_set = set(existing)
     existing_axes: set[str] = set()
@@ -4033,12 +4043,13 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
         if axis in AUTO_SUBTASK_AXIS_ORDER:
             existing_axes.add(axis)
     created: list[dict[str, Any]] = []
+    created_axes_list: list[str] = []
 
     for spec in specs:
         axis = str(spec.get("axis") or "framing")
         expected_slug = slugify(spec["title"])
         expected_id = f"{now().date().isoformat()}-{expected_slug}"
-        if expected_id in existing_set or axis in existing_axes:
+        if axis in existing_axes:
             continue
         result = create_task_note(
             title=spec["title"],
@@ -4078,9 +4089,12 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
         existing_set.add(result["id"])
         if axis in AUTO_SUBTASK_AXIS_ORDER:
             existing_axes.add(axis)
+            if axis not in created_axes_list:
+                created_axes_list.append(axis)
 
     child_ids = sorted(existing_set)
     child_links = [item["link"] for item in created]
+    created_axes = sorted(created_axes_list)
     parent.fm["auto_subtask_children"] = child_ids
     parent.fm["auto_subtask_kind"] = "non_convergence_narrowing"
     parent.fm["auto_subtask_taxonomy_axes"] = [axis for axis in taxonomy_hints.get("recommended_axes", []) if axis in AUTO_SUBTASK_AXIS_ORDER]
@@ -4107,6 +4121,7 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
         "parent_task": parent.id,
         "created_count": len(created),
         "created": created,
+        "created_axes": created_axes,
         "existing_children": existing,
         "existing_axes": sorted(existing_axes),
         "all_children": child_ids,
