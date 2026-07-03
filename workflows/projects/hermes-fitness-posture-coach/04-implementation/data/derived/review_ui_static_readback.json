@@ -1,0 +1,13 @@
+{
+  "schema": "fitness_posture_review_ui_static_readback_v1",
+  "ui_surface": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/ui/review.html",
+  "exercise_seed_integrated": true,
+  "evidence_ledger_refs": [
+    "pose_adapter_spike_receipt.json",
+    "squat_pilot_replay_receipt.json",
+    "squat_pilot_contract_readback.json"
+  ],
+  "camera_default_off": true,
+  "browser_or_local_smoke": "static_html_readback",
+  "sha256": "3d7b09d4892516b8db46f2d6a3929fe011b3e1e043f8beff2aa8946db06f6d37"
+}

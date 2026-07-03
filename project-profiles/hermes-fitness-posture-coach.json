@@ -1,0 +1,103 @@
+{
+  "project": "hermes-fitness-posture-coach",
+  "display_name": "Hermes Fitness Posture Coach（自用健身体态/动作教练）",
+  "project_type": "self-use/visual-conversation-domain-pack",
+  "created_at": "2026-07-03T12:12:40+08:00",
+  "updated_at": "2026-07-03T12:18:30+08:00",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md",
+  "portfolio_profile": true,
+  "status": "projectized_metadata_seed_built_pose_adapter_smoked_fail_closed",
+  "role": "Self-use fitness_posture domain pack for visual-conversation-core: exercise taxonomy, camera coaching, low-risk posture cues, evidence/safety gates.",
+  "promotion_policy": "evidence-gated ratchet: metadata seed -> local pose smoke -> low-risk movement pilots -> local UI; every promotion needs current proof/readback and ledger update; no commercial/media/default camera promotion without explicit evidence gates.",
+  "relations": [
+    {
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "relation": "shares_module",
+      "target": "hermes-embodied-workflow-os",
+      "merge_policy": "visual_conversation_domain_pack_patterns_only"
+    },
+    {
+      "relation": "shares_module",
+      "target": "mobile-offline-avatar-travel",
+      "merge_policy": "mobile_shell_patterns_only_no_travel_fact_merge"
+    }
+  ],
+  "canonical_docs": {
+    "ssot": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/00-model/fitness-posture-coach-ssot.md",
+    "contract": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/01-contract/fitness-posture-interaction-contract.md",
+    "roadmap": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/02-roadmap/self-use-landing-roadmap.md",
+    "evidence_index": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/03-evidence/source-evidence-index.json",
+    "progress": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md",
+    "exercise_seed_script": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/scripts/build_exercise_seed.py",
+    "exercise_seed_index": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/exercise_seed_index.json",
+    "exercise_seed_report": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/exercise_seed_report.md",
+    "pose_adapter_spike_script": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/scripts/pose_adapter_spike.py",
+    "pose_adapter_model": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/models/pose_landmarker_lite.task",
+    "pose_adapter_receipt": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/pose_adapter_spike_receipt.json",
+    "task_candidates": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/05-tasks/task-candidates.json"
+  },
+  "current_components": {
+    "project_profile": "created",
+    "exercise_metadata_seed": "built_from_verified_github_dataset",
+    "pose_adapter": "mediapipe_tasks_local_smoke_fail_closed_no_pose_detected",
+    "fitness_posture_runtime": "not_implemented",
+    "commercial_license": "closed_not_cleared"
+  },
+  "source_weighting_policy": {
+    "applies_to": "hermes-fitness-posture-coach lane=work/advisory tasks",
+    "preflight": "Load this project profile, visual-conversation-core skill, SSOT/contract/ledger, and source evidence index before implementation.",
+    "weights": [
+      {
+        "source": "project SSOT/contract/progress ledger",
+        "weight": 1.0,
+        "rule": "Defines owned capability boundary and safety gates."
+      },
+      {
+        "source": "local build/test/proof artifacts",
+        "weight": 0.95,
+        "rule": "Highest authority for implemented status."
+      },
+      {
+        "source": "verified GitHub README/API/data",
+        "weight": 0.75,
+        "rule": "Valid for dataset facts only."
+      },
+      {
+        "source": "Douyin/social video",
+        "weight": 0.35,
+        "rule": "Lead/caption evidence only; verify all claims upstream."
+      }
+    ],
+    "conflict_rule": "If social claims conflict with README/API/data or local proof, prefer upstream/local proof and keep adoption fail-closed.",
+    "taskpool_required_fields": [
+      "project_profile_ref",
+      "source_weighting_policy_ref",
+      "acceptance_evidence",
+      "evidence_refs",
+      "safety_red_lines"
+    ]
+  },
+  "red_lines": [
+    "self-use only unless license cleared",
+    "no medical diagnosis or injury treatment",
+    "no heavy-load coaching without stop gate",
+    "no raw camera/video cloud upload by default",
+    "no invented media assets",
+    "no silent pose/VLM fallback"
+  ],
+  "acceptance": [
+    "JSON profile validates",
+    "exercise seed script builds derived index/report",
+    "taskpool cards include safety and evidence gates"
+  ],
+  "taskpool_created_ids": [
+    "2026-07-03-fitness-posture-p1-local-pose-adapter-spike-with-no-stub-receipt",
+    "2026-07-03-fitness-posture-p1-low-risk-squat-pilot-phase-rule-contract",
+    "2026-07-03-fitness-posture-p2-local-self-use-review-ui-for-exercise-seed-and-pose-evidence"
+  ]
+}

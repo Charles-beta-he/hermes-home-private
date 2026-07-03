@@ -1,0 +1,15 @@
+{
+  "schema": "fitness_posture_squat_contract_readback_v1",
+  "module": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/scripts/squat_pilot_contract.py",
+  "replay_receipt": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/squat_pilot_replay_receipt.json",
+  "phase_sequence": [
+    "setup",
+    "eccentric",
+    "bottom",
+    "concentric"
+  ],
+  "low_visibility_next_action": "adjust_camera",
+  "pain_interrupt": true,
+  "ui_surface": "non_ui_contract_surface; no browser UI required for this P1 contract slice; P2 UI task remains separate",
+  "readback_status": "PASS"
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "fitness_posture_pose_adapter_spike_v1",
+  "generated_at": "2026-07-03T04:30:27.302322Z",
+  "project": "hermes-fitness-posture-coach",
+  "selected_adapter": "mediapipe_pose_local",
+  "adapter_comparison": [
+    {
+      "adapter": "MediaPipe Pose",
+      "decision": "selected_for_initial_local_spike",
+      "rationale": "pip-installable local CPU path on macOS; returns explicit landmark visibility; adequate for fail-closed smoke before product quality claims"
+    },
+    {
+      "adapter": "MoveNet/TF.js or TFLite",
+      "decision": "defer",
+      "rationale": "good mobile/web target, but needs model packaging and separate runtime contract"
+    },
+    {
+      "adapter": "RTMPose/MMPose",
+      "decision": "defer",
+      "rationale": "stronger research stack, higher dependency/runtime cost for first local self-use spike"
+    }
+  ],
+  "runtime": {
+    "python": "3.9.6 (default, Apr 17 2026, 18:15:52) \n[Clang 21.0.0 (clang-2100.1.1.101)]",
+    "platform": "macOS-26.5.1-arm64-arm-64bit",
+    "opencv_version": "4.10.0"
+  },
+  "frame": {
+    "path": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/pose_adapter_smoke_frame.png",
+    "boundary": "deterministic local smoke frame; not a real form-quality benchmark"
+  },
+  "adapter_result": {
+    "status": "no_pose_detected",
+    "fail_closed": true,
+    "reason": "real MediaPipe Tasks PoseLandmarker executed but returned no landmarks for deterministic smoke frame; no keypoints fabricated",
+    "landmarks_count": 0,
+    "keypoints": [],
+    "model_asset": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/models/pose_landmarker_lite.task"
+  },
+  "contract_mapping": {
+    "pose_evidence_ref": "artifact:/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/pose_adapter_spike_receipt.json",
+    "raw_frame_ref": "artifact:/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/data/derived/pose_adapter_smoke_frame.png",
+    "missing_pose_policy": "return camera/adapter failure receipt; do not judge posture and do not synthesize keypoints"
+  },
+  "safety": {
+    "raw_cloud_upload": false,
+    "medical_or_injury_claim": false,
+    "coaching_quality_claim": false,
+    "no_stub_fallback": true
+  }
+}

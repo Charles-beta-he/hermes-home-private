@@ -1,0 +1,47 @@
+[
+  {
+    "id": "hfp-p1-pose-adapter-spike",
+    "priority": "P1",
+    "title": "Fitness posture: local pose adapter spike with no-stub capability receipt",
+    "acceptance": [
+      "adapter comparison note",
+      "one local frame/clip smoke",
+      "no-stub failure path tested",
+      "ledger updated"
+    ],
+    "red_lines": [
+      "no cloud raw-frame upload by default",
+      "no coaching quality claim from synthetic-only smoke"
+    ]
+  },
+  {
+    "id": "hfp-p1-low-risk-squat-pilot",
+    "priority": "P1",
+    "title": "Fitness posture: squat pilot phase/rule contract",
+    "acceptance": [
+      "phase labels defined",
+      "pose-derived visual proxy rules",
+      "sample evidence replay",
+      "safety stop tests"
+    ],
+    "red_lines": [
+      "no medical claims",
+      "no loaded barbell default"
+    ]
+  },
+  {
+    "id": "hfp-p2-local-review-ui",
+    "priority": "P2",
+    "title": "Fitness posture: local self-use review UI for exercise seed + pose evidence",
+    "acceptance": [
+      "exercise search/filter",
+      "evidence ledger readback",
+      "camera setup checklist",
+      "screenshot/browser smoke"
+    ],
+    "red_lines": [
+      "no default-on camera/mic",
+      "no commercial media assets"
+    ]
+  }
+]

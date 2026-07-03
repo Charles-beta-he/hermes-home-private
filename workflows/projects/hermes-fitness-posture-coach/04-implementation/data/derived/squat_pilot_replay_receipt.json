@@ -1,0 +1,158 @@
+{
+  "schema": "fitness_posture_squat_pilot_replay_v1",
+  "generated_at": "2026-07-03T04:47:07.741733Z",
+  "boundary": "deterministic proxy replay; no medical diagnosis; no heavy-load coaching",
+  "result": {
+    "mode": "fitness_posture",
+    "intent": "inspect_form",
+    "exercise_id": "bodyweight-squat",
+    "exercise_name": "Bodyweight squat",
+    "phase": "concentric",
+    "speak_text": "节奏稳定，继续。",
+    "subtitle": "Low-risk bodyweight squat pilot only; proxy rules classify phase and preserve local evidence refs.",
+    "camera_instruction": null,
+    "confidence": 0.9,
+    "risk_level": "low",
+    "should_interrupt": false,
+    "requires_confirmation": false,
+    "overlay": [
+      {
+        "type": "angle",
+        "target": "knee",
+        "value": 172
+      },
+      {
+        "type": "angle",
+        "target": "knee",
+        "value": 126
+      },
+      {
+        "type": "angle",
+        "target": "knee",
+        "value": 88
+      },
+      {
+        "type": "angle",
+        "target": "knee",
+        "value": 142
+      }
+    ],
+    "evidence_refs": [
+      "frame:f1",
+      "pose:f1",
+      "frame:f2",
+      "pose:f2",
+      "frame:f3",
+      "pose:f3",
+      "frame:f4",
+      "pose:f4"
+    ],
+    "next_action": "continue",
+    "frames": [
+      {
+        "frame_id": "f1",
+        "phase": "setup",
+        "knee_angle": 172,
+        "visibility_min": 0.92,
+        "evidence_refs": [
+          "frame:f1",
+          "pose:f1"
+        ]
+      },
+      {
+        "frame_id": "f2",
+        "phase": "eccentric",
+        "knee_angle": 126,
+        "visibility_min": 0.9,
+        "evidence_refs": [
+          "frame:f2",
+          "pose:f2"
+        ]
+      },
+      {
+        "frame_id": "f3",
+        "phase": "bottom",
+        "knee_angle": 88,
+        "visibility_min": 0.91,
+        "evidence_refs": [
+          "frame:f3",
+          "pose:f3"
+        ]
+      },
+      {
+        "frame_id": "f4",
+        "phase": "concentric",
+        "knee_angle": 142,
+        "visibility_min": 0.9,
+        "evidence_refs": [
+          "frame:f4",
+          "pose:f4"
+        ]
+      }
+    ]
+  },
+  "safety_stop_low_visibility": {
+    "mode": "fitness_posture",
+    "intent": "inspect_form",
+    "exercise_id": "bodyweight-squat",
+    "exercise_name": "Bodyweight squat",
+    "phase": "setup",
+    "confidence": 0.25,
+    "overlay": [],
+    "evidence_refs": [
+      "frame:f1",
+      "pose:f1"
+    ],
+    "frames": [
+      {
+        "frame_id": "f1",
+        "phase": "setup",
+        "knee_angle": 172,
+        "visibility_min": 0.25,
+        "evidence_refs": [
+          "frame:f1",
+          "pose:f1"
+        ]
+      }
+    ],
+    "risk_level": "stop",
+    "should_interrupt": true,
+    "requires_confirmation": false,
+    "camera_instruction": "fixed_full_body_side_view",
+    "speak_text": "Missing critical joints. 调整侧面全身机位。",
+    "subtitle": "Missing critical joints or low pose confidence; camera adjustment required before form judgment.",
+    "next_action": "adjust_camera"
+  },
+  "safety_stop_pain": {
+    "mode": "fitness_posture",
+    "intent": "inspect_form",
+    "exercise_id": "bodyweight-squat",
+    "exercise_name": "Bodyweight squat",
+    "phase": "setup",
+    "confidence": 0.92,
+    "overlay": [],
+    "evidence_refs": [
+      "frame:f1",
+      "pose:f1"
+    ],
+    "frames": [
+      {
+        "frame_id": "f1",
+        "phase": "setup",
+        "knee_angle": 172,
+        "visibility_min": 0.92,
+        "evidence_refs": [
+          "frame:f1",
+          "pose:f1"
+        ]
+      }
+    ],
+    "risk_level": "stop",
+    "should_interrupt": true,
+    "requires_confirmation": true,
+    "camera_instruction": null,
+    "speak_text": "Stop. 身体不适先停止。",
+    "subtitle": "Stop because pain/numbness/dizziness was declared; no diagnosis or treatment advice is produced.",
+    "next_action": "stop"
+  }
+}

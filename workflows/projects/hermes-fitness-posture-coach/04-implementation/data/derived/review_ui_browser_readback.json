@@ -1,0 +1,22 @@
+{
+  "schema": "fitness_posture_review_ui_browser_readback_v1",
+  "url": "file:///Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/04-implementation/ui/review.html",
+  "browser_console": {
+    "total_messages": 0,
+    "total_errors": 0,
+    "js_errors": []
+  },
+  "screenshot_readback": {
+    "captured_by": "browser_vision",
+    "shows": [
+      "Local-only fitness posture review",
+      "Exercise search/filter",
+      "Camera setup checklist",
+      "Evidence ledger readback",
+      "Posture result"
+    ],
+    "permission_prompt_visible": false,
+    "camera_default_off_visible": true
+  },
+  "status": "PASS"
+}

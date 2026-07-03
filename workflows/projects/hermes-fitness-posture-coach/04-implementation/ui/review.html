@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hermes Fitness Posture Coach — Local Review</title>
+  <style>
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f7faf9; color: #10201c; }
+    main { max-width: 960px; margin: 0 auto; padding: 24px; display: grid; gap: 16px; }
+    section { background: white; border: 1px solid #d9e7e1; border-radius: 16px; padding: 18px; box-shadow: 0 8px 24px rgba(16, 32, 28, .06); }
+    h1, h2 { margin: 0 0 10px; }
+    code, .pill { background: #edf7f2; border-radius: 999px; padding: 3px 8px; }
+    .danger { color: #a23b2a; font-weight: 700; }
+    .ok { color: #116b4f; font-weight: 700; }
+    ul { margin: 8px 0 0 20px; }
+  </style>
+</head>
+<body>
+<main data-camera-state="camera-default-off">
+  <section>
+    <h1>Local-only fitness posture review</h1>
+    <p class="ok">Local-only / camera-default-off. This page is a review surface; it does not start camera or microphone by default.</p>
+    <p>Exercise seed: <code>../data/derived/exercise_seed_index.json</code></p>
+    <p>Progress ledger: <code>../../progress-ledger.md</code></p>
+  </section>
+
+  <section aria-labelledby="exercise-search-title">
+    <h2 id="exercise-search-title">Exercise search/filter</h2>
+    <label>Filter seed index <input id="exercise-filter" placeholder="squat / push-up / plank" /></label>
+    <ul id="exercise-results">
+      <li data-seed-ref="exercise_seed_index.json">Bodyweight squat — low-risk pilot target</li>
+      <li data-seed-ref="exercise_seed_index.json">Push-up — later pilot</li>
+      <li data-seed-ref="exercise_seed_index.json">Plank — later pilot</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="camera-title">
+    <h2 id="camera-title">Camera setup checklist</h2>
+    <p><button type="button" id="start-camera-placeholder" disabled>Start camera (manual future action)</button></p>
+    <ul>
+      <li>Full-body side view</li>
+      <li>Good lighting</li>
+      <li>No heavy load for pilot</li>
+      <li>Stop on pain, numbness, dizziness, or missing critical joints</li>
+    </ul>
+    <p class="danger">No browser media capture call is present in this static slice.</p>
+  </section>
+
+  <section aria-labelledby="evidence-title">
+    <h2 id="evidence-title">Evidence ledger readback</h2>
+    <ul>
+      <li>Pose adapter receipt: <code>../data/derived/pose_adapter_spike_receipt.json</code></li>
+      <li>Pose smoke frame: <code>../data/derived/pose_adapter_smoke_frame.png</code></li>
+      <li>Squat replay receipt: <code>../data/derived/squat_pilot_replay_receipt.json</code></li>
+      <li>Squat contract readback: <code>../data/derived/squat_pilot_contract_readback.json</code></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="posture-title">
+    <h2 id="posture-title">Posture result</h2>
+    <pre id="posture-result">{
+  "risk_level": "low|stop",
+  "should_interrupt": false,
+  "next_action": "continue|adjust_camera|stop",
+  "evidence_refs": ["frame:f1", "pose:f1", "exercise_seed_index.json"]
+}</pre>
+  </section>
+</main>
+</body>
+</html>
