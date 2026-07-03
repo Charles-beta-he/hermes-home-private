@@ -166,3 +166,5 @@ Load it only when this specialized branch is directly active; preserve root safe
 - [ ] Required files, tools, commands, or external state were checked before action.
 - [ ] Outputs, edits, or side effects were verified by readback or direct inspection.
 - [ ] Boundaries, unresolved assumptions, and any deferred work were stated clearly.
+
+Reference addendum: `references/self-evolution-proposal-boundary.md` captures the default-off Raven/EverOS self-evolution absorption boundary: consume isolated benchmark evidence, emit proposal-only receipts, keep direct memory/skill writes closed, and require a separate promotion gate before applying generated skill diffs.
