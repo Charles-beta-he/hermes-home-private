@@ -6364,6 +6364,7 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
             gate_status = str(task.fm.get("multimodel_last_gate_status") or "").upper()
             round_status = str(task.fm.get("multimodel_round_status") or task.fm.get("multimodel_status") or "").lower()
             decision = str(task.fm.get("multimodel_last_decision") or "").strip()
+            economy_gate = task_multimodel_economy_gate(task)
             evidence = auto_close_review_evidence(task)
             has_evidence = bool(evidence)
             taxonomy_payload = _blocked_taxonomy_payload(task)
@@ -6378,6 +6379,33 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
             auto_subtask_sync = None
             parent_aggregation = build_auto_subtask_parent_aggregation(task, cert_reasons=cert_reasons)
             if str(task.fm.get("auto_subtask_kind") or "") == "non_convergence_narrowing":
+                if (
+                    parent_aggregation
+                    and parent_aggregation.get("action") == "keep_blocked_certification_required"
+                    and str(economy_gate.get("action") or "") == "pause"
+                ):
+                    keep_reason = str(
+                        economy_gate.get("reason")
+                        or task.fm.get("blocked_resolve_reason")
+                        or "blocked resolver: child evidence aggregated but multimodel economy gate is paused; requires human review or targeted evidence fix"
+                    )
+                    task.fm["status"] = "blocked"
+                    task.fm["blocked_resolve_last_action"] = "auto_subtask_parent_backfilled_paused"
+                    task.fm["blocked_resolve_reason"] = keep_reason
+                    task.fm["blocker_status"] = "flow_paused_targeted_evidence_review"
+                    task.fm["blocker_summary"] = keep_reason
+                    task.fm["next_attempt_at"] = ""
+                    save_task(task)
+                    kept_blocked.append({
+                        "task": task.id,
+                        "action": "auto_subtask_parent_backfilled_paused",
+                        "reason": keep_reason,
+                        "multimodel_required": mm_required,
+                        "multimodel_passed": mm_passed,
+                        **({"parent_aggregation": parent_aggregation} if parent_aggregation else {}),
+                        **taxonomy_payload,
+                    })
+                    continue
                 auto_subtask_sync = sync_auto_subtask_parent(task, actor=actor, write=False)
                 if auto_subtask_sync and auto_subtask_sync.get("action") == "auto_subtask_parent_backfilled_paused":
                     keep_reason = str(
