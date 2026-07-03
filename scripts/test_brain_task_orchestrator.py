@@ -3249,6 +3249,48 @@ def test_auto_split_non_convergence_work_children_get_project_source_policy_ref(
             assert "hermes.json#source_weighting_policy" in note_text
 
 
+def test_auto_split_non_convergence_dedupes_existing_children_by_axis():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["hermes", "hermes-agent"])
+        parent_id, parent_path = add_task(env, title="Work parent with long title needs stable child axis dedupe", priority="P1", project="hermes-agent")
+        discussion_path = parent_path.parent / "dedupe-non-convergence-discussion.json"
+        discussion_path.write_text(json.dumps({
+            "status": "not_certified",
+            "issue_ledger": [
+                {"id": "I-QUOTA", "status": "unresolved", "summary": "quota confidence is unobservable"},
+                {"id": "I-PATCH", "status": "unresolved", "summary": "patch normalization remains ambiguous"},
+                {"id": "I-FRAME", "status": "unresolved", "summary": "framing still rejected by reviewers"},
+            ],
+            "planner_patch_summary": {"certification_intent": "unresolved_noop_vs_change"},
+            "merge_info": {"minority_patches": ["patch normalization candidate"]},
+        }, ensure_ascii=False), encoding="utf-8")
+        existing_ids = []
+        for axis in ("quota_observability", "fallback_threshold", "relay_ordering", "patch_normalization", "framing"):
+            child_id, child_path = add_task(env, title=f"Historical already closed {axis} child with non expected id", priority="P1", project="hermes-agent")
+            child_text = child_path.read_text(encoding="utf-8")
+            child_text = child_text.replace("status: pending", "status: done", 1)
+            child_text = child_text.replace(
+                "evidence: []",
+                f"auto_subtask_parent: {parent_id}\nauto_subtask_kind: non_convergence_narrowing\nauto_subtask_axis: {axis}\nevidence:\n  - command: historical child proof PASS",
+                1,
+            )
+            child_path.write_text(child_text, encoding="utf-8")
+            existing_ids.append(child_id)
+        text = parent_path.read_text(encoding="utf-8")
+        text = text.replace(
+            "evidence: []",
+            f"multimodel_last_discussion_artifact: {discussion_path}\nmultimodel_last_failures:\n  - loop_non_convergence\n  - agreement_below_threshold:framing:0.61\nauto_subtask_children: {json.dumps(existing_ids, ensure_ascii=False)}\nevidence: []",
+            1,
+        )
+        parent_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-split-non-convergence", "--task", parent_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["created_count"] == 0, result
+        assert set(result.get("existing_axes") or []) >= {"quota_observability", "fallback_threshold", "relay_ordering", "patch_normalization", "framing"}
+
+
 
 def test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_child_evidence():
     td, _vault, env = make_env_and_vault()
@@ -3370,6 +3412,44 @@ def test_loop_non_convergence_parent_uses_targeted_evidence_refresh_plan_after_c
         assert str(child_path) in selected["build_state_command"], selected
         assert "fallback_threshold" in json.dumps(selected["criteria"], ensure_ascii=False) or "fallback_threshold" in selected["build_state_command"], selected
 
+
+def test_blocked_resolve_step_keeps_paused_parent_blocked_after_child_backfill():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["self-improvement"])
+        parent_id, parent_path = add_evolution_task(env, title="Paused parent should stay blocked after child backfill", priority="P1")
+        child_id, child_path = add_evolution_task(env, title="Done child evidence for paused parent", priority="P1")
+        mark_task_done_directly(child_path)
+        child_text = child_path.read_text(encoding="utf-8")
+        child_text = child_text.replace(
+            "evidence:\n  - command: fixture done PASS",
+            "auto_subtask_axis: framing\nmultimodel_status: certified\nmultimodel_last_gate_status: PASS\nmultimodel_ratification_artifact: /tmp/child-discussion.json\nevidence:\n  - command: fixture done PASS",
+            1,
+        )
+        child_path.write_text(child_text, encoding="utf-8")
+
+        parent_text = parent_path.read_text(encoding="utf-8")
+        parent_text = parent_text.replace("status: pending", "status: blocked", 1)
+        parent_text = parent_text.replace("retry_count: 0", "retry_count: 6", 1)
+        parent_text = parent_text.replace(
+            "evidence: []",
+            f"multimodel_round_status: failed\nmultimodel_last_decision: CONTINUE_LOOP\nmultimodel_last_failures:\n  - loop_non_convergence\n  - vote_reject\nauto_subtask_kind: non_convergence_narrowing\nauto_subtask_children: [\"{child_id}\"]\nauto_subtask_open_children: []\nauto_subtask_missing_children: []\nauto_subtask_ready_for_parent: true\nblocked_resolve_reason: task has 6 failed T3 rounds (max=5); requires human review or targeted evidence fix\nevidence: []",
+            1,
+        )
+        parent_path.write_text(parent_text, encoding="utf-8")
+
+        result = json.loads(run(env, "blocked-resolve-step", "--task", parent_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["resolved_count"] == 0, result
+        assert result["kept_blocked_count"] == 1, result
+        row = result["kept_blocked"][0]
+        assert row["action"] == "auto_subtask_parent_backfilled_paused", result
+        assert "requires human review or targeted evidence fix" in row["reason"], result
+
+        parent_after = parent_path.read_text(encoding="utf-8")
+        assert "status: blocked" in parent_after, parent_after
+        assert "blocked_resolve_last_action: auto_subtask_parent_backfilled_paused" in parent_after, parent_after
+        assert "blocker_status: flow_paused_targeted_evidence_review" in parent_after, parent_after
 
 
 def test_autorun_kill_switches_and_evolution_preemption_gate():

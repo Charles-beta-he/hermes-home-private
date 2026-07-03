@@ -2576,7 +2576,18 @@ def load_governance_adjustments() -> dict[str, Any]:
 def task_multimodel_round_count(task: "Task") -> int:
     """Count how many multimodel rounds this task has been through."""
     body = task.body or ""
-    return body.count("Multimodel PUA-loop round")
+    count = body.count("Multimodel PUA-loop round")
+    if count:
+        return count
+    for key in ("blocked_resolve_reason", "blocker_summary"):
+        text = str(task.fm.get(key) or "")
+        match = re.search(r"task has (\d+) failed T3 rounds", text)
+        if match:
+            try:
+                return int(match.group(1))
+            except Exception:
+                continue
+    return 0
 
 
 def missing_required_models_from_failures(failures: Any) -> list[str]:
@@ -4010,12 +4021,24 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
     taxonomy_hints = multimodel_failure_taxonomy(discussion, [str(x) for x in list_value(parent.fm.get("multimodel_last_failures"))])
     existing = [str(x) for x in list_value(parent.fm.get("auto_subtask_children"))]
     existing_set = set(existing)
+    existing_axes: set[str] = set()
+    for child_id in list(existing_set):
+        try:
+            child = find_task(child_id)
+        except SystemExit:
+            continue
+        if str(child.fm.get("auto_subtask_parent") or "") != parent.id:
+            continue
+        axis = str(child.fm.get("auto_subtask_axis") or "").strip()
+        if axis in AUTO_SUBTASK_AXIS_ORDER:
+            existing_axes.add(axis)
     created: list[dict[str, Any]] = []
 
     for spec in specs:
+        axis = str(spec.get("axis") or "framing")
         expected_slug = slugify(spec["title"])
         expected_id = f"{now().date().isoformat()}-{expected_slug}"
-        if expected_id in existing_set:
+        if expected_id in existing_set or axis in existing_axes:
             continue
         result = create_task_note(
             title=spec["title"],
@@ -4053,6 +4076,8 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
         )
         created.append(result)
         existing_set.add(result["id"])
+        if axis in AUTO_SUBTASK_AXIS_ORDER:
+            existing_axes.add(axis)
 
     child_ids = sorted(existing_set)
     child_links = [item["link"] for item in created]
@@ -4083,6 +4108,7 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
         "created_count": len(created),
         "created": created,
         "existing_children": existing,
+        "existing_axes": sorted(existing_axes),
         "all_children": child_ids,
         "taxonomy_axes": [axis for axis in taxonomy_hints.get("recommended_axes", []) if axis in AUTO_SUBTASK_AXIS_ORDER],
         "axis_rationale": taxonomy_hints.get("axis_rationale") or {},
@@ -6353,6 +6379,27 @@ def command_blocked_resolve_step(args: argparse.Namespace) -> dict[str, Any]:
             parent_aggregation = build_auto_subtask_parent_aggregation(task, cert_reasons=cert_reasons)
             if str(task.fm.get("auto_subtask_kind") or "") == "non_convergence_narrowing":
                 auto_subtask_sync = sync_auto_subtask_parent(task, actor=actor, write=False)
+                if auto_subtask_sync and auto_subtask_sync.get("action") == "auto_subtask_parent_backfilled_paused":
+                    keep_reason = str(
+                        task.fm.get("blocked_resolve_reason")
+                        or "blocked resolver: child evidence aggregated but multimodel economy gate is paused; requires human review or targeted evidence fix"
+                    )
+                    task.fm["status"] = "blocked"
+                    task.fm["blocked_resolve_last_action"] = "auto_subtask_parent_backfilled_paused"
+                    task.fm["blocked_resolve_reason"] = keep_reason
+                    task.fm["blocker_status"] = "flow_paused_targeted_evidence_review"
+                    task.fm["blocker_summary"] = keep_reason
+                    save_task(task)
+                    kept_blocked.append({
+                        "task": task.id,
+                        "action": "auto_subtask_parent_backfilled_paused",
+                        "reason": keep_reason,
+                        "multimodel_required": mm_required,
+                        "multimodel_passed": mm_passed,
+                        **({"parent_aggregation": parent_aggregation} if parent_aggregation else {}),
+                        **taxonomy_payload,
+                    })
+                    continue
                 if (
                     auto_subtask_sync
                     and auto_subtask_sync.get("action") == "auto_subtask_parent_reopened"
