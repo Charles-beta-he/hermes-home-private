@@ -2923,6 +2923,28 @@ def test_autorun_runner_pauses_on_pending_permission_gate():
         assert "status: pending" in task_path.read_text(encoding="utf-8")
 
 
+def test_autorun_eligibility_blocks_certification_skip_no_discussion_result_from_worker_loop():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        task_id, task_path = add_task(env, title="Certification no discussion should not worker loop", priority="P2", project="hermes-agent")
+        note = task_path.read_text(encoding="utf-8")
+        note = note.replace(
+            "evidence: []",
+            "multimodel_status: not_certified\nmultimodel_last_gate_status: SKIP\nmultimodel_last_decision: CONTINUE_LOOP\nmultimodel_last_failures: [no_discussion_result]\nmultimodel_certification_authority: true\nmultimodel_certification_reasons: [loop_non_convergence]\nevidence: []",
+            1,
+        )
+        task_path.write_text(note, encoding="utf-8")
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+
+        eligible = json.loads(run(env, "eligibility-check", "--task", task_id, "--json").stdout)
+        assert eligible["eligible"] is False, eligible
+        assert "multimodel_certification_no_discussion_result" in eligible["reasons"], eligible
+
+
+
 def test_autorun_eligibility_and_handoff_are_fail_closed():
     td, _vault, env = make_env_and_vault()
     with td:

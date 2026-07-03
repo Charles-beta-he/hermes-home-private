@@ -2794,6 +2794,14 @@ def task_multimodel_certification_reasons(task: "Task") -> list[str]:
     return sorted([r for r in reasons if r in strong_certification])
 
 
+def task_multimodel_certification_no_discussion_result(task: "Task") -> bool:
+    gate_status = str(task.fm.get("multimodel_last_gate_status") or "").strip().upper()
+    failures = {str(x).strip() for x in list_value(task.fm.get("multimodel_last_failures"))}
+    cert_authority = _frontmatter_bool(task.fm.get("multimodel_certification_authority"))
+    cert_reasons = list_value(task.fm.get("multimodel_certification_reasons"))
+    return gate_status == "SKIP" and "no_discussion_result" in failures and (cert_authority or bool(cert_reasons))
+
+
 @dataclasses.dataclass
 class Task:
     path: Path
@@ -2933,6 +2941,8 @@ class Task:
         if not ignore_mission_node and mission_node_blockers(self):
             return False
         if work_dispatch_blockers(self):
+            return False
+        if task_multimodel_certification_no_discussion_result(self):
             return False
         return True
 
@@ -9948,6 +9958,8 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         reasons.append("allowlist_empty")
     elif task and not allowlist_hit:
         reasons.append("allowlist_miss")
+    if task and task_multimodel_certification_no_discussion_result(task):
+        reasons.append("multimodel_certification_no_discussion_result")
     if task and not task.is_dispatchable():
         blockers = mission_node_blockers(task)
         if "permission_gate_pending" in blockers:
