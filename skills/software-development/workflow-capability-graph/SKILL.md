@@ -130,6 +130,7 @@ outcomes:
 
 ## Reference Patterns
 
+- `references/compound-engineering-modular-absorption.md` — use when absorbing Every/AI MBA Compound Engineering / 复利工程 / Plan→Work→Review→Compound into Hermes, taskpool, project workflows, or skill systems as a capability graph with prior-context intake, objective plan, vertical work slice, evidence packet, review matrix, compound writeback router, and next-loop hook. Template: `templates/compound-engineering-loop.yaml.md`.
 - `references/audio-reactive-animation-absorption.md` — use when absorbing sound-reactive visual demos, waveform/particle/VJ effects, or V1→V2 animation upgrades into capability graphs and runnable prototype slices.
 - `references/3d-ip-extension-pack-absorption.md` — use when absorbing public media/design demos or client requests about 2D-to-3D IP/mascot conversion, 3D brand character extension, ecommerce visual packs, social/H5 asset packs, or “老板要看3D的IP延展和套图” workflows.
 - `references/superagent-research-harness-absorption.md` — use when absorbing public media/open-source leads about deep-research agents, superagent harnesses, evidence-search workflows, multi-agent report generators, or skill/tool marketplaces into an evidence-backed research-task graph and safe owned prototype slices.
