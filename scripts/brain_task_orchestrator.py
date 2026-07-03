@@ -4099,8 +4099,18 @@ def command_auto_split_non_convergence(args: argparse.Namespace) -> dict[str, An
     parent.fm["auto_subtask_kind"] = "non_convergence_narrowing"
     parent.fm["auto_subtask_taxonomy_axes"] = [axis for axis in taxonomy_hints.get("recommended_axes", []) if axis in AUTO_SUBTASK_AXIS_ORDER]
     parent.fm["auto_subtask_axis_rationale"] = taxonomy_hints.get("axis_rationale") or {}
-    parent.fm["auto_subtask_open_children"] = child_ids
-    parent.fm["auto_subtask_ready_for_parent"] = False
+    refreshed_children: list[Task] = []
+    missing_children: list[str] = []
+    for child_id in child_ids:
+        try:
+            refreshed_children.append(find_task(child_id))
+        except SystemExit:
+            missing_children.append(child_id)
+    open_children = [child.id for child in refreshed_children if child.status not in TERMINAL_STATUSES]
+    done_children = [child.id for child in refreshed_children if child.status == "done"]
+    parent.fm["auto_subtask_open_children"] = open_children
+    parent.fm["auto_subtask_missing_children"] = missing_children
+    parent.fm["auto_subtask_ready_for_parent"] = not open_children and not missing_children and len(done_children) == len(child_ids)
     blocker_lines = [
         "- auto-generated convergence subtasks:",
         *[f"  - {cid}" for cid in child_ids],

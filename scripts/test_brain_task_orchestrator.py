@@ -3329,6 +3329,43 @@ def test_auto_split_non_convergence_backfills_taxonomy_axes_missing_from_existin
 
 
 
+def test_auto_split_noop_preserves_ready_parent_after_children_done():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        seed_project_profile(env, aliases=["hermes", "hermes-agent"])
+        parent_id, parent_path = add_task(env, title="Parent no-op split must not reopen finished child wait", priority="P1", project="hermes-agent")
+        child_ids = []
+        for axis in ["quota_observability", "fallback_threshold", "relay_ordering", "patch_normalization", "framing"]:
+            child_id, child_path = add_task(env, title=f"Finished {axis} child", priority="P1", project="hermes-agent")
+            child_text = child_path.read_text(encoding="utf-8")
+            child_text = child_text.replace("status: pending", "status: done", 1)
+            child_text = child_text.replace(
+                "evidence: []",
+                f"auto_subtask_parent: {parent_id}\nauto_subtask_kind: non_convergence_narrowing\nauto_subtask_axis: {axis}\nevidence:\n  - command:child proof PASS",
+                1,
+            )
+            child_path.write_text(child_text, encoding="utf-8")
+            child_ids.append(child_id)
+        parent_text = parent_path.read_text(encoding="utf-8")
+        parent_text = parent_text.replace(
+            "evidence: []",
+            "multimodel_last_failures:\n  - agreement_below_threshold:framing:0.65\n"
+            "multimodel_recommended_axes: [quota_observability, fallback_threshold, relay_ordering, patch_normalization, framing]\n"
+            f"auto_subtask_kind: non_convergence_narrowing\nauto_subtask_children: {json.dumps(child_ids)}\nauto_subtask_open_children: []\nauto_subtask_missing_children: []\nauto_subtask_ready_for_parent: true\nevidence:\n"
+            + "\n".join(f"  - proof:child-task:{cid}:status:done" for cid in child_ids),
+            1,
+        )
+        parent_path.write_text(parent_text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-split-non-convergence", "--task", parent_id, "--json").stdout)
+        assert result["created_count"] == 0, result
+        mod = load_orchestrator_module()
+        updated_fm, _ = mod.split_frontmatter(parent_path.read_text(encoding="utf-8"))
+        assert str(updated_fm.get("auto_subtask_ready_for_parent")).lower() == "true"
+        assert updated_fm.get("auto_subtask_open_children") == []
+
+
+
 def test_auto_subtask_sync_reopens_loop_non_convergence_parent_and_backfills_child_evidence():
     td, _vault, env = make_env_and_vault()
     with td:
