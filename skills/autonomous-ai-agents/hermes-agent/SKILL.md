@@ -208,6 +208,7 @@ When a Hermes runtime/CLI problem is encountered while operating Hermes itself (
 - Confirm the repo branch/upstream and whether local modifications remain.
 - Confirm whether `git stash list` contains a fresh `hermes-update-autostash-*` entry.
 - Read the post-update-check summary and call out every non-OK item explicitly.
+- For user-facing scheduled jobs, self-check must inspect `~/.hermes/cron/jobs.json` for enabled non-local delivery jobs with recent `last_status=error` or `last_delivery_error`, then read the corresponding `~/.hermes/cron/output/<job_id>/...` artifact and rerun/resend if needed. A local-only health pass is not enough when Telegram/origin delivery failed.
 
 ## References
 - `references/rokid-lingzhu-sse-bridge.md` — fixed-domain Rokid Lingzhu custom-agent integration pattern for Hermes: FastAPI SSE bridge, Cloudflare Tunnel, DNS route, launchd persistence, and end-to-end SSE verification.
@@ -234,3 +235,5 @@ When a Hermes runtime/CLI problem is encountered while operating Hermes itself (
 
 - `software-development` — general development workflow and verification discipline
 - `devops` — infrastructure/deploy operations that are not Hermes-specific
+
+Reference addendum: `references/dynamic-selfcheck-coverage-control-plane.md` captures the class-level dynamic self-check coverage control-plane pattern: user-system profile discovery, Coverage Registry, change-aware coverage plans, workflow proposals, gated local-only/no-agent promotion, evidence readback, and explicit anti-conditions for external writes/push/delete/credential actions.
