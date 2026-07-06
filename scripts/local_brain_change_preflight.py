@@ -35,7 +35,10 @@ BRAIN_SCHEMA = "local_brain_constraint_record_v1"
 SURFACE_RULES = {
     "architecture": ["architecture", "架构", "control-plane", "控制面", "runtime", "hermes 自进化"],
     "code": [".py", ".ts", ".tsx", ".js", ".vue", "代码", "script", "scripts/"],
-    "ui_visual": ["ui", "visual", "screenshot", "截图", "视觉", "页面", ".tsx", ".vue"],
+    # Keep UI markers specific. A bare substring "ui" matches ordinary words such as
+    # "required" and caused non-UI Python/control-plane changes to require screenshot
+    # evidence. Use explicit visual/UI path terms instead.
+    "ui_visual": ["ui/", "ui-", "_ui", "visual", "screenshot", "截图", "视觉", "页面", ".tsx", ".vue"],
     "retrieval": ["brain", "本地大脑", "retrieval", "search", "index", "检索", "索引", "vault"],
     "safety": ["permission", "authority", "secret", "credential", "安全", "授权", "凭证", "删除", "destructive"],
     "mlops": ["model", "模型", "quota", "provider", "route", "路由", "consult_models"],

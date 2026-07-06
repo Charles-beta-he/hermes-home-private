@@ -24,6 +24,9 @@ REQUIRED_FILES = [
     "06-non-human-interface-boundary.md",
     "07-backlog.json",
     "08-progress-ledger.md",
+    "personal_ai_os_control.py",
+    "build_capability_projection.py",
+    "10-capability-projection.json",
 ]
 
 REQUIRED_DOMAIN_ENTITIES = [

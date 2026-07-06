@@ -179,6 +179,25 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.assertEqual(route["verdict"]["status"], "local_deterministic_certified")
         self.assertEqual(verdict["status"], "pass")
 
+    def test_python_control_plane_with_required_fields_does_not_trigger_ui_visual_evidence(self):
+        route = preflight.build_route_review_record(
+            summary="git pre-commit staged files: workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/personal_ai_os_control.py",
+            files=["workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/personal_ai_os_control.py"],
+            evidence=[
+                "diff:git diff --cached --name-only readback",
+                "tests:read-only control surface smoke OK",
+                "py_compile_or_build:staged python py_compile OK",
+                "file_readback:control script read back",
+                "exact_target:local git repository staged files only",
+                "rollback:git reset staged changes or git revert resulting commit",
+                "post_action_readback:control command exits zero",
+            ],
+        )
+
+        self.assertNotIn("ui_visual", route["classification"]["surfaces"])
+        self.assertNotIn("screenshot", route["evidence_state"]["required_evidence"])
+        self.assertNotIn("browser_console", route["evidence_state"]["required_evidence"])
+
 
     def test_cli_json_emits_parseable_record_and_never_executes_side_effects(self):
         proc = subprocess.run(

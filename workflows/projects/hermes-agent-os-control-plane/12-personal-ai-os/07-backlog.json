@@ -11,7 +11,7 @@
       "title": "Validate Personal AI OS SSOT packet",
       "phase": "P0",
       "automation_level": "L2",
-      "status": "in_progress",
+      "status": "completed",
       "safe_without_additional_authority": true,
       "artifact": "12-personal-ai-os/*",
       "verification": "JSON validation + file readback + project profile readback"
@@ -21,10 +21,10 @@
       "title": "Add read-only personal AI OS status/doctor/schema projection",
       "phase": "P1",
       "automation_level": "L2",
-      "status": "ready_next",
+      "status": "completed_local_equivalent",
       "safe_without_additional_authority": true,
-      "artifact": "Hermes CLI read-only projection or script",
-      "verification": "focused tests + live status/doctor/schema command",
+      "artifact": "12-personal-ai-os/personal_ai_os_control.py",
+      "verification": "py_compile + status --with-doctor + schema --entity CapabilityNode + backlog --status ready_next -> PAIOS_CONTROL_PASS",
       "boundary": "no runtime routing/tool invocation/scheduler/external side effects"
     },
     {
@@ -32,17 +32,17 @@
       "title": "Project current tools/skills/profile into CapabilityNode records",
       "phase": "P2",
       "automation_level": "L2",
-      "status": "ready_after_P1",
+      "status": "completed",
       "safe_without_additional_authority": true,
-      "artifact": "capability_graph_personal_ai_os_projection.json",
-      "verification": "node count + required-field doctor + sample route no-execute proof"
+      "artifact": "12-personal-ai-os/10-capability-projection.json",
+      "verification": "build_capability_projection.py + personal_ai_os_control.py capabilities readback -> PAIOS_P2_PASS, 299 nodes, would_execute=false"
     },
     {
       "id": "PAIOS-P3-001",
       "title": "Map local receipts to AuthorityRecord schema",
       "phase": "P3",
       "automation_level": "L2",
-      "status": "ready_after_P2",
+      "status": "ready_next",
       "safe_without_additional_authority": true,
       "artifact": "authority_ledger_projection.jsonl",
       "verification": "local disposable write receipt + idempotent readback"

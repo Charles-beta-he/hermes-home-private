@@ -37,3 +37,29 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
 - Doctor: `personal_ai_os_doctor.py` and `09-doctor-report.json`; readback `ok=true`, `findings=[]`, `domain_entity_count=11`, `backlog_count=10`, `runtime_mutation=false`, `external_side_effects_executed=false`, `generic_human_intervention_interface=false`.
 - Verification command: `python3 12-personal-ai-os/personal_ai_os_doctor.py > 12-personal-ai-os/09-doctor-report.json && python3 -m json.tool ... && python3 -m py_compile ...` -> `PAIOS_DOCTOR_PASS`.
 - Next safe slice: P1 read-only Personal OS CLI/doctor/schema projection integrated into existing Agent OS command surface or a local equivalent; no runtime routing/tool invocation/external side effects.
+
+## 2026-07-06T14:08:00+08:00 — P1 read-only Personal AI OS control surface validated
+
+- User reiterated: “继续全盘推进，不以人工介入为借口”; consumed as continuation of safe local autonomous work, not authority expansion for secrets/payment/irreversible external actions.
+- Code artifact: `personal_ai_os_control.py` with read-only `status`, `doctor`, `schema`, and `backlog` commands.
+- Doctor updated to include `personal_ai_os_control.py` as a required packet file.
+- Live verification:
+  - `python3 -m py_compile personal_ai_os_control.py personal_ai_os_doctor.py` -> pass.
+  - `personal_ai_os_control.py status --with-doctor` -> ok true; runtime_mutation false; external_side_effects_executed false; generic_human_intervention_interface false.
+  - `personal_ai_os_control.py schema --entity CapabilityNode` -> ok true.
+  - `personal_ai_os_control.py backlog --status ready_next` -> ok true.
+  - Doctor report refreshed at `09-doctor-report.json`.
+- Backlog update: P0 completed; P1 completed via local equivalent; P2 Capability Graph projection is now `ready_next`.
+- Next safe slice: P2 project current tools/skills/profile into CapabilityNode records; no execution from projected nodes.
+
+## 2026-07-06T14:16:00+08:00 — P2 Capability Graph projection validated
+
+- Scope: read-only local CapabilityNode projection; no projected node executed.
+- Code artifact: `build_capability_projection.py`.
+- Control surface updated: `personal_ai_os_control.py capabilities`.
+- Projection artifact: `10-capability-projection.json`.
+- Live readback: `PAIOS_P2_PASS 299 {'local_packet_script': 3, 'project_profile': 1, 'skill': 295}`.
+- Projection invariants: `runtime_mutation=false`, `tool_invocation_from_projection=false`, `external_side_effects_executed=false`, `projected_nodes_would_execute=false`, `findings=[]`.
+- Doctor refreshed: `09-doctor-report.json` includes required P2 files.
+- Backlog update: P2 completed; P3 Authority Ledger projection is now `ready_next`.
+- Next safe slice: map local receipts / packet verification events to AuthorityRecord schema; no external/payment/secret execution.
