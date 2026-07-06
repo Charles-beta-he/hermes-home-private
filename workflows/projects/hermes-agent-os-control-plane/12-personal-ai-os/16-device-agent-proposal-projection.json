@@ -1,0 +1,63 @@
+{
+  "ok": true,
+  "mode": "device_and_agent_proposal_projection_v0",
+  "updated": "2026-07-06T14:55:00+08:00",
+  "runtime_mutation": false,
+  "external_side_effects_executed": false,
+  "device_physical_effect_executed": false,
+  "agent_proposal_auto_executed": false,
+  "device_nodes": [
+    {
+      "schema": "DeviceNode.v0",
+      "id": "device.local_desktop_computer_use",
+      "type": "desktop",
+      "capabilities": ["observe", "suggest", "draft", "execute_local_exact_tool_scope"],
+      "input_streams": ["screen_accessibility_snapshot", "screenshot_on_request"],
+      "output_actions": ["click", "type", "key", "scroll"],
+      "safety_level": "S4",
+      "owner": "user",
+      "mode": "exact_authority_required",
+      "physical_effect": false
+    },
+    {
+      "schema": "DeviceNode.v0",
+      "id": "device.future_glasses_phone_sensor_layer",
+      "type": "glasses_phone_sensor",
+      "capabilities": ["observe", "suggest", "draft"],
+      "input_streams": ["future_camera", "future_audio", "future_location"],
+      "output_actions": ["future_prompt_or_overlay"],
+      "safety_level": "S6",
+      "owner": "user",
+      "mode": "observe_first_external_support_required",
+      "physical_effect": false
+    }
+  ],
+  "agent_proposal_inbox": [
+    {
+      "schema": "AgentProposal.v0",
+      "id": "proposal.external_agent_default_contract",
+      "proposer": "external_or_subagent",
+      "objective": "submit evidence/proposal without mutating local lifecycle or external systems",
+      "proposed_action": "proposal_only",
+      "required_permissions": ["proposal_intake_read", "no_write_without_authority"],
+      "expected_result": "reviewable proposal packet with risk/evidence/rollback",
+      "evidence": ["14-model-review-projection.json", "06-non-human-interface-boundary.md"],
+      "risk": "S2 unless requesting external/physical/payment/credential action",
+      "rollback": "reject or mark superseded; no side effect to compensate",
+      "status": "projection_only"
+    }
+  ],
+  "service_contract_stubs": [
+    {
+      "schema": "ServiceContract.v0",
+      "id": "service.local_personal_ai_os_control",
+      "service": "personal_ai_os_control.py",
+      "capabilities": ["status", "doctor", "schema", "backlog", "capabilities"],
+      "auth_required": ["local_read"],
+      "side_effects": "none_read_only",
+      "verification": "command JSON readback",
+      "rollback": "not_applicable_read_only"
+    }
+  ],
+  "findings": []
+}

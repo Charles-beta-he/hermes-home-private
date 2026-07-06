@@ -108,3 +108,13 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
 - Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `live_model_fanout_executed=false`, `findings=[]`.
 - Backlog update: P6 completed; P7 UX shell projection is now `ready_next`.
 - Next safe slice: generate read-only UX shell panel projections for Today/Missions/Inbox/Receipts/Permissions/DataVault/Capabilities/Risk/ModelConsole.
+
+## 2026-07-06T14:55:00+08:00 — P7/P8 UX shell + Device/A2A projections validated
+
+- Scope: read-only UX and Web4.0 endpoint projections only; no live dashboard/device/external-agent execution.
+- UX artifact: `15-ux-shell-projection.md` with Today, Missions, Inbox, Receipts, Permissions, Data Vault, Capabilities, Risk Console, and Model Console panels.
+- Device/A2A artifact: `16-device-agent-proposal-projection.json` with observe-first DeviceNode records, proposal-only AgentProposal inbox, and local service contract stub.
+- Live verification: `PAIOS_P7_P8_PASS device_and_agent_proposal_projection_v0`.
+- Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `device_physical_effect_executed=false`, `agent_proposal_auto_executed=false`.
+- Backlog update: P7 and P8 completed; only `PAIOS-EXT-001` remains open as external dependency boundary for DID/VC/wallet/payment/legal/hardware ecosystem support.
+- Local Web4.0 Agent OS gap補齐 packet now covers P0-P8 safe internal surfaces.

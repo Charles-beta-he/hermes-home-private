@@ -36,6 +36,8 @@ REQUIRED_FILES = [
     "13-mission-runtime-state.json",
     "build_model_review_projection.py",
     "14-model-review-projection.json",
+    "15-ux-shell-projection.md",
+    "16-device-agent-proposal-projection.json",
 ]
 
 REQUIRED_DOMAIN_ENTITIES = [

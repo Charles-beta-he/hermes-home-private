@@ -82,20 +82,20 @@
       "title": "Generate read-only UX shell panel projections",
       "phase": "P7",
       "automation_level": "L2",
-      "status": "ready_next",
+      "status": "completed",
       "safe_without_additional_authority": true,
-      "artifact": "ux_shell_projection.md",
-      "verification": "each panel has source artifact and unsupported claims list"
+      "artifact": "12-personal-ai-os/15-ux-shell-projection.md",
+      "verification": "UX shell projection readback + PAIOS_P7_P8_PASS; every panel cites source artifacts and unsupported claims"
     },
     {
       "id": "PAIOS-P8-001",
       "title": "Add DeviceNode and AgentProposal inbox projection",
       "phase": "P8",
       "automation_level": "L2",
-      "status": "ready_after_P7",
+      "status": "completed",
       "safe_without_additional_authority": true,
-      "artifact": "device_and_agent_proposal_projection.json",
-      "verification": "observe-first devices and proposal-only external agents"
+      "artifact": "12-personal-ai-os/16-device-agent-proposal-projection.json",
+      "verification": "JSON validation + PAIOS_P7_P8_PASS; observe-first devices and proposal-only external agents"
     },
     {
       "id": "PAIOS-EXT-001",
