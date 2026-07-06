@@ -581,3 +581,19 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
 - Security boundary: endpoint is not added to the public dashboard allowlist; test uses `X-Hermes-Session-Token`.
 - Side-effect boundary: endpoint mirrors `hermes agent-os status --json`; no capability invocation, lifecycle write, external dispatch, secret/payment/legal action, or physical-device effect.
 - Backlog update: P10 completed; continuing safe internal projection surfaces instead of stopping at phase labels.
+
+## 2026-07-06T15:46:00+08:00 — P11 dashboard Agent OS page landed
+
+- Scope: dashboard frontend read-only page consuming authenticated `GET /api/agent-os/status`.
+- Code artifacts:
+  - `/Users/charles/.hermes/hermes-agent/web/src/pages/AgentOsPage.tsx`
+  - `/Users/charles/.hermes/hermes-agent/web/src/App.tsx`
+  - `/Users/charles/.hermes/hermes-agent/web/src/lib/api.ts`
+  - `/Users/charles/.hermes/hermes-agent/hermes_cli/agent_os.py` readback fix for `projected_nodes_would_execute`.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `3 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - `hermes dashboard --skip-build` local readback on `http://127.0.0.1:9120/agent-os` shows Agent OS route, nav entry, status cards, authority boundary rows, data/model state, and external ecosystem boundary.
+  - Browser console after page load: 0 messages / 0 JS errors.
+- Boundary preserved: page is read-only; capability execution, lifecycle writes, external dispatch, secret/payment/legal action, and physical-device effects remain false/none.
+- Backlog update: P11 completed.

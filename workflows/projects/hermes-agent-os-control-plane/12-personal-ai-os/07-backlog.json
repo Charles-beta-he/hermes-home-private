@@ -128,6 +128,17 @@
       "artifact": "hermes_cli/web_server.py /api/agent-os/status + tests/hermes_cli/test_dashboard_agent_os_endpoint.py",
       "verification": "pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q -> 3 passed; py_compile web_server/agent_os/tests",
       "boundary": "authenticated dashboard read-only endpoint; no public allowlist exposure, no executor/lifecycle/external/device side effects"
+    },
+    {
+      "id": "PAIOS-P11-001",
+      "title": "Add dashboard Agent OS page consuming authenticated read-only status endpoint",
+      "phase": "P11",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "web/src/pages/AgentOsPage.tsx + web/src/App.tsx + web/src/lib/api.ts + hermes_cli/agent_os.py readback fix",
+      "verification": "npm run build -> pass; pytest test_agent_os.py test_dashboard_agent_os_endpoint.py -> 3 passed; browser /agent-os shows cards and boundary rows; browser console 0 errors",
+      "boundary": "dashboard UI read-only; no capability execution, lifecycle write, external dispatch, secret/payment/legal action, or physical-device effect"
     }
   ]
 }
