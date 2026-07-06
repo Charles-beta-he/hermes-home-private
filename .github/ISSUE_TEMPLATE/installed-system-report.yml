@@ -1,0 +1,49 @@
+name: Installed system report
+labels: [installed-system, needs-triage]
+description: Sanitized report from a trusted private-home installer
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for reports produced by `scripts/private_home_update_check.py report`.
+        Do not paste API keys, tokens, cookies, private config, or full logs.
+  - type: input
+    id: fingerprint
+    attributes:
+      label: Report fingerprint
+      description: Fingerprint from the generated issue packet.
+    validations:
+      required: true
+  - type: input
+    id: private_home_version
+    attributes:
+      label: Private-home version/tag
+      placeholder: private-home-YYYY.MM.DD.N
+    validations:
+      required: true
+  - type: input
+    id: repo_head
+    attributes:
+      label: Repo head
+      description: Commit hash from the installed private-home checkout.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Paste the generated markdown body or relevant command diagnostics after redaction.
+    validations:
+      required: true
+  - type: dropdown
+    id: suspected_target
+    attributes:
+      label: Suspected target
+      options:
+        - unknown / needs triage
+        - hermes-home-private:master
+        - hermes-agent-private:private/main
+        - NousResearch/hermes-agent:main
+        - installer environment/config
+    validations:
+      required: true
