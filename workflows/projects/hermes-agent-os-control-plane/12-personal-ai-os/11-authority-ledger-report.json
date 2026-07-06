@@ -1,0 +1,17 @@
+{
+  "agent_typed_secret": false,
+  "external_side_effects_executed": false,
+  "mode": "authority_ledger_projection_v0",
+  "ok": true,
+  "path": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/11-authority-ledger-projection.jsonl",
+  "payment_or_credential_action_executed": false,
+  "record_count": 5,
+  "records": [
+    "authority.paios.p0_packet",
+    "authority.paios.p1_control_surface",
+    "authority.paios.p2_capability_projection",
+    "authority.paios.precommit_classifier_repair",
+    "authority.paios.current_commit_readback"
+  ],
+  "runtime_mutation": false
+}

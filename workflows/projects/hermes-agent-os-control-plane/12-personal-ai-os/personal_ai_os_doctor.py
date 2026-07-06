@@ -27,6 +27,9 @@ REQUIRED_FILES = [
     "personal_ai_os_control.py",
     "build_capability_projection.py",
     "10-capability-projection.json",
+    "build_authority_ledger_projection.py",
+    "11-authority-ledger-projection.jsonl",
+    "11-authority-ledger-report.json",
 ]
 
 REQUIRED_DOMAIN_ENTITIES = [

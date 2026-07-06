@@ -139,6 +139,19 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertEqual(errors, [])
         joined = "\n".join(evidence)
         self.assertIn("tests:HEWOS implementation unittest suite OK", joined)
+    def test_authority_ledger_files_collect_authority_and_readback_evidence(self):
+        files = [
+            "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/11-authority-ledger-projection.jsonl",
+            "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/11-authority-ledger-report.json",
+            "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/06-non-human-interface-boundary.md",
+        ]
+        evidence, errors = hook.hook_evidence(self.repo, files)
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("authority:", joined)
+        self.assertIn("readback:", joined)
+
     def test_uimax_visual_files_collect_screenshot_and_console_evidence(self):
         files = [
             "workflows/projects/hermes-embodied-workflow-os/06-verification/UIMAX_REPORT_20260702.md",

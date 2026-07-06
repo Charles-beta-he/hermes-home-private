@@ -27,6 +27,8 @@ DOCTOR = PACKET / "personal_ai_os_doctor.py"
 DOMAIN = PACKET / "03-domain-model-v0.json"
 BACKLOG = PACKET / "07-backlog.json"
 CAPABILITY = PACKET / "10-capability-projection.json"
+AUTHORITY_REPORT = PACKET / "11-authority-ledger-report.json"
+AUTHORITY_LEDGER = PACKET / "11-authority-ledger-projection.jsonl"
 
 
 def load_json(path: Path):
@@ -54,6 +56,7 @@ def cmd_status(args) -> int:
     domain = load_json(DOMAIN)
     backlog = load_json(BACKLOG)
     capability = load_json(CAPABILITY) if CAPABILITY.exists() else None
+    authority = load_json(AUTHORITY_REPORT) if AUTHORITY_REPORT.exists() else None
     doctor = run_doctor_json() if args.with_doctor else None
     items = backlog.get("items", [])
     by_status = {}
@@ -79,6 +82,14 @@ def cmd_status(args) -> int:
             "runtime_mutation": capability.get("runtime_mutation"),
             "external_side_effects_executed": capability.get("external_side_effects_executed"),
             "projected_nodes_would_execute": capability.get("projected_nodes_would_execute"),
+        },
+        "authority_ledger": None if authority is None else {
+            "ok": authority.get("ok"),
+            "record_count": authority.get("record_count"),
+            "runtime_mutation": authority.get("runtime_mutation"),
+            "external_side_effects_executed": authority.get("external_side_effects_executed"),
+            "payment_or_credential_action_executed": authority.get("payment_or_credential_action_executed"),
+            "agent_typed_secret": authority.get("agent_typed_secret"),
         },
         "backlog_by_status": by_status,
         "backlog_by_phase": by_phase,

@@ -42,17 +42,17 @@
       "title": "Map local receipts to AuthorityRecord schema",
       "phase": "P3",
       "automation_level": "L2",
-      "status": "ready_next",
+      "status": "completed",
       "safe_without_additional_authority": true,
-      "artifact": "authority_ledger_projection.jsonl",
-      "verification": "local disposable write receipt + idempotent readback"
+      "artifact": "12-personal-ai-os/11-authority-ledger-projection.jsonl",
+      "verification": "build_authority_ledger_projection.py + status readback -> AUTHORITY_LEDGER_PASS / PAIOS_P3_STATUS_PASS, 5 records, no external/secret/payment action"
     },
     {
       "id": "PAIOS-P4-001",
       "title": "Create DataVault classification projection for project profile and packet files",
       "phase": "P4",
       "automation_level": "L1",
-      "status": "ready_after_P3",
+      "status": "ready_next",
       "safe_without_additional_authority": true,
       "artifact": "data_vault_projection.json",
       "verification": "D0-D6 classification, D5 export never, WIP not memory"

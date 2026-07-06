@@ -117,6 +117,20 @@ def is_ui_visual_evidence_change(files: Sequence[str]) -> bool:
     return any(any(name in f.lower() for name in names) for f in files)
 
 
+def is_authority_evidence_change(files: Sequence[str]) -> bool:
+    names = (
+        "authority",
+        "permission",
+        "grant",
+        "ledger",
+        "receipt",
+        "side-effect",
+        "side_effect",
+        "boundary",
+    )
+    return any(any(name in f.lower() for name in names) for f in files)
+
+
 def relevant_tests(files: Sequence[str]) -> list[Path]:
     wanted: list[Path] = []
     if any(f.startswith("scripts/brainctl.py") or f.startswith("scripts/test_brainctl.py") for f in files):
@@ -173,6 +187,11 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
         evidence.extend([
             "screenshot:staged UIMax/report/artifact records browser visual screenshot readback for local UI scope",
             "browser_console:staged UIMax/report/artifact records browser console readback for local UI scope",
+        ])
+    if is_authority_evidence_change(files):
+        evidence.extend([
+            "authority:staged authority/ledger/boundary artifacts encode the local grant or explicit blocked authority surface",
+            "readback:staged authority/ledger/boundary artifacts are read back by the local pre-commit gate",
         ])
     py_files = [root / f for f in files if f.endswith(".py") and (root / f).exists()]
     if py_files:

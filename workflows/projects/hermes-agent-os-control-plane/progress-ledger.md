@@ -504,3 +504,14 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
 - Doctor refreshed: `09-doctor-report.json` includes required P2 files.
 - Backlog update: P2 completed; P3 Authority Ledger projection is now `ready_next`.
 - Next safe slice: map local receipts / packet verification events to AuthorityRecord schema; no external/payment/secret execution.
+
+## 2026-07-06T14:25:00+08:00 — P3 Authority Ledger projection validated
+
+- Scope: local AuthorityRecord projection over Personal AI OS packet actions, current git readback, and precommit classifier repair; no external/payment/secret action.
+- Code artifact: `build_authority_ledger_projection.py`.
+- Ledger artifacts: `11-authority-ledger-projection.jsonl`, `11-authority-ledger-report.json`.
+- Control surface readback includes `authority_ledger`.
+- Live verification: `AUTHORITY_LEDGER_PASS 5`; `PAIOS_P3_STATUS_PASS 5`.
+- Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `payment_or_credential_action_executed=false`, `agent_typed_secret=false`.
+- Backlog update: P3 completed; P4 Data Vault classification projection is now `ready_next`.
+- Next safe slice: classify project profile/packet artifacts into DataVaultItem records with D0-D6 sensitivity and export policy; no raw secret export.
