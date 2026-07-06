@@ -695,3 +695,9 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Browser console after interaction: 0 messages / 0 JS errors.
 - Boundary preserved: hash is a browser-local integrity stamp only; no clipboard write, file export, external dispatch, lifecycle write, capability execution, secret/payment/legal action, or physical-device effect.
 - Backlog update: P17 completed.
+
+## 2026-07-06T18:36:00+08:00 — Personal AI OS P18 handoff hash verification
+
+- Local read-only dashboard slice: `/agent-os` can now verify a generated or pasted handoff summary against an expected SHA-256 hash in-browser.
+- Evidence: dashboard source RED/GREEN test added; focused pytest returned `7 passed`; web build passed; browser readback returned `verification_status: match`; browser console 0 errors.
+- Boundaries still closed: no capability execution, lifecycle mutation, external dispatch, clipboard/file export, secret/payment/legal action, or physical-device effect.

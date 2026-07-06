@@ -254,3 +254,21 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
   - Browser console after interaction: 0 messages / 0 JS errors.
 - Boundary preserved: hash is a browser-local integrity stamp only; no clipboard write, file export, external dispatch, lifecycle write, capability execution, secret/payment/legal action, or physical-device effect.
 - Backlog update: P17 completed.
+
+## 2026-07-06T18:36:00+08:00 — P18 Agent OS local handoff hash verification landed
+
+- Scope: add a browser-local readback verifier for Agent OS handoff summaries and SHA-256 integrity stamps.
+- TDD evidence:
+  - RED: `tests/hermes_cli/test_agent_os_dashboard_source.py` failed because `/agent-os` had no `Verify handoff hash` verification surface.
+  - GREEN: source contract test passes after adding verification input, expected hash input, status badge, and local recomputation.
+- Frontend additions:
+  - Generated handoff summary/hash prefill the verification textarea and expected hash input.
+  - `Verify handoff hash` recomputes SHA-256 with browser WebCrypto and displays `verification_status: match|mismatch|error`.
+  - Editing verification text or expected hash resets stale verification status.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py tests/hermes_cli/test_agent_os_dashboard_source.py -q` -> `7 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - Browser readback at `http://127.0.0.1:9127/agent-os?evidence=data_vault&authority=phase8&proposal=draft&device=dashboard`: Build handoff prefills verification inputs; Verify handoff hash returns `verification_status: match`; recomputed hash equals expected `10dae1b63b032828ce167c520f0726e253780037bbba1c393c70a8ccced696e2`.
+  - Browser console after interaction: 0 messages / 0 JS errors.
+- Boundary preserved: verification is browser-local only; no clipboard write, file export, external dispatch, lifecycle write, capability execution, secret/payment/legal action, or physical-device effect.
+- Backlog update: P18 completed.

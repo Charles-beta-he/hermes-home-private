@@ -205,6 +205,17 @@
       "artifact": "/agent-os Build handoff computes browser-local SHA-256 over handoff summary and displays handoff_sha256",
       "verification": "pytest agent_os/dashboard endpoint -> 5 passed; web npm run build -> pass; browser Build handoff renders handoff_sha256; browser WebCrypto recomputation matches displayed hash; console 0 errors",
       "boundary": "browser-local integrity stamp only; no clipboard/file export, dispatch, execution, lifecycle write, secret/payment/legal/device side effects"
+    },
+    {
+      "id": "PAIOS-P18-001",
+      "title": "Add Agent OS browser-local receipt handoff hash verification surface",
+      "phase": "P18",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "/agent-os Verify handoff hash panel recomputes SHA-256 from generated or pasted handoff text and compares expected hash",
+      "verification": "RED static test failed for missing Verify handoff hash surface; pytest agent_os/dashboard/source -> 7 passed; web npm run build -> pass; browser Build handoff + Verify handoff hash -> verification_status match and recomputed hash equals expected; console 0 errors",
+      "boundary": "browser-local verification only; no clipboard/file export, dispatch, execution, lifecycle write, secret/payment/legal/device side effects"
     }
   ]
 }
