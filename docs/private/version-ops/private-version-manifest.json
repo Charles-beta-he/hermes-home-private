@@ -97,7 +97,7 @@
     "destructive": "Closed until exact resource, backup/restore, receipt, and readback exist.",
     "secrets_payments": "Human-only entry; never type or store secrets in repo."
   },
-  "current_version": "private-home-2026.07.06.1-candidate",
+  "current_version": "private-home-2026.07.06.1",
   "issue_reporting": {
     "script": "scripts/private_home_update_check.py",
     "default_github_repo": "Charles-beta-he/hermes-home-private",
@@ -130,5 +130,6 @@
       "runtime-fork": "Charles-beta-he/hermes-agent-private:private/main",
       "upstream-candidate": "NousResearch/hermes-agent:main"
     }
-  }
+  },
+  "candidate_version": "private-home-2026.07.06.1-candidate"
 }
