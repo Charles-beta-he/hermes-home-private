@@ -649,3 +649,19 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Browser readback at `http://127.0.0.1:9123/agent-os`: Build receipt renders `PersonalAIOSReceipt.v0` and `capability_execution`; browser console 0 messages / 0 JS errors.
 - Boundary preserved: receipt construction is read-only; no file export, external dispatch, execution, lifecycle write, secret/payment/legal action, or physical-device effect.
 - Backlog update: P14 completed.
+
+## 2026-07-06T17:20:00+08:00 — P15 Agent OS deep-link filters landed
+
+- Scope: make `/agent-os` control-room filter state reproducible through URL query parameters.
+- Frontend additions:
+  - Initial filter hydration from `?evidence=...&authority=...&proposal=...&device=...`.
+  - Local `history.replaceState` sync when filter inputs change.
+  - `popstate` hydration for browser navigation readback.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `5 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - Browser readback at `http://127.0.0.1:9124/agent-os?evidence=data_vault&authority=phase9&proposal=draft&device=dashboard`: all four filters hydrate; evidence result includes `evidence.12_data_vault_projection`; device result includes `service.local_personal_ai_os_control`.
+  - Browser edit readback: changing authority filter to `phase8` updates URL to `?evidence=data_vault&authority=phase8&proposal=draft&device=dashboard`.
+  - Browser console after interaction: 0 messages / 0 JS errors.
+- Boundary preserved: URL state is read-only operator state; no capability execution, lifecycle writes, external dispatch, secret/payment/legal action, or physical-device effect.
+- Backlog update: P15 completed.

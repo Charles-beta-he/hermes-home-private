@@ -172,6 +172,17 @@
       "artifact": "hermes agent-os receipt --json; /api/agent-os/receipt; dashboard Receipt export packet panel",
       "verification": "TDD red tests failed for missing receipt command and endpoint; green tests 5 passed; web npm run build -> pass; CLI receipt emits PersonalAIOSReceipt.v0; browser Build receipt renders receipt and boundary flags with console 0 errors",
       "boundary": "read-only receipt construction only; no file export, dispatch, execution, lifecycle write, secret/payment/legal/physical-device side effects"
+    },
+    {
+      "id": "PAIOS-P15-001",
+      "title": "Add Agent OS URL query deep-link filters",
+      "phase": "P15",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "/agent-os query params: evidence, authority, proposal, device; front-end URL replacement sync and popstate hydration",
+      "verification": "pytest agent_os/dashboard endpoint -> 5 passed; web npm run build -> pass; browser /agent-os?evidence=data_vault&authority=phase9&proposal=draft&device=dashboard hydrates filters; editing authority to phase8 updates URL; console 0 errors",
+      "boundary": "read-only URL state only; no execution/lifecycle/external/secret/payment/legal/device side effects"
     }
   ]
 }
