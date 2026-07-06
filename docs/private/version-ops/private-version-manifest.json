@@ -1,0 +1,63 @@
+{
+  "schema": "hermes_private_home_release_manifest_v1",
+  "release_lane": "private-home",
+  "source_repo": "Charles-beta-he/hermes-home-private",
+  "base_ref": "origin/master",
+  "release_intent": "Make the private Hermes home reproducible enough for trusted operators while preserving local-only runtime and secret boundaries.",
+  "version_policy": {
+    "tag_format": "private-home-YYYY.MM.DD.N",
+    "candidate_branch_format": "release/private-home/YYYYMMDD-N",
+    "channels": ["stable", "candidate", "lab", "local-only"],
+    "stable_requires": [
+      "version doctor passes without blockers",
+      "changed scripts compile and targeted tests pass",
+      "manifest updated",
+      "install-same-experience runbook updated when installer surface changes",
+      "no live config, secrets, DBs, locks, cron outputs, or credentials are newly tracked"
+    ]
+  },
+  "publishable_surfaces": {
+    "skills": "Procedural memory and reusable workflows under skills/.",
+    "scripts": "Local automation, validators, doctors, schedulable scripts, and tests under scripts/.",
+    "project_profiles": "Durable project profiles under project-profiles/ with no secrets.",
+    "workflows": "SSOTs, architecture docs, verification evidence, and local implementation slices under workflows/.",
+    "docs_private": "Private but durable evidence, architecture, and release notes under docs/private/.",
+    "hermes_agent_submodule": "Pinned upstream/private runtime checkout pointer; runtime code changes belong in the child repo first.",
+    "hewos": "Embodied workflow OS implementation and tests under workflows/projects/hermes-embodied-workflow-os/.",
+    "dynamic_selfcheck": "Dynamic coverage control plane under scripts/dynamic_selfcheck_coverage.py and matching tests/docs."
+  },
+  "non_publishable_surfaces": [
+    "config.yaml",
+    "cron/jobs.json",
+    "memories/",
+    "state/",
+    "sessions/",
+    "*.db",
+    "*.lock",
+    "cron/output/",
+    "logs/",
+    "gateway_state.json",
+    "credentials/",
+    "secrets/",
+    ".env*"
+  ],
+  "install_same_experience_layers": [
+    {"layer": "L0 upstream runtime", "required": true, "activation": "Install official Hermes Agent and run hermes doctor."},
+    {"layer": "L1 private skills", "required": true, "activation": "Copy/import skills and verify skill listing."},
+    {"layer": "L2 private scripts", "required": true, "activation": "Copy scripts, run py_compile and targeted doctors."},
+    {"layer": "L3 project profiles", "required": true, "activation": "Install project-profiles/*.json and verify referenced paths are adapted."},
+    {"layer": "L4 workflow SSOTs", "required": false, "activation": "Install selected workflows/ projects; read-only by default."},
+    {"layer": "L5 local cron/selfcheck", "required": false, "activation": "Create local-only no-agent jobs from runbooks; success-silent by default."},
+    {"layer": "L6 gateway/external delivery", "required": false, "activation": "Requires platform credentials, exact target allowlist, send/readback tests."},
+    {"layer": "L7 hardware/embodied adapters", "required": false, "activation": "Requires exact device, rollback, safety gate, dry-run, and readback."}
+  ],
+  "authority_boundaries": {
+    "local_read": "Allowed after install.",
+    "local_write": "Allowed only for target ~/.hermes install with backup/receipt.",
+    "scheduled_jobs": "Install disabled or local-only; no external delivery by default.",
+    "external_send": "Closed until exact platform/target/payload/readback authority exists.",
+    "push_deploy_publish": "Closed until explicit repo/branch/rollback/readback authority exists.",
+    "destructive": "Closed until exact resource, backup/restore, receipt, and readback exist.",
+    "secrets_payments": "Human-only entry; never type or store secrets in repo."
+  }
+}
