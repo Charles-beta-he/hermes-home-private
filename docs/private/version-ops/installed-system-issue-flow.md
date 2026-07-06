@@ -32,7 +32,7 @@ installer checks private-home version
 
 | Problem class | Repo | Target branch |
 |---|---|---|
-| skills/scripts/docs/workflows/project-profiles/install pack | `Charles-beta-he/hermes-home-private` | `master` |
+| skills/scripts/docs/workflows/project-profile templates/install pack | `Charles-beta-he/hermes-home-private` | `master` |
 | Hermes runtime/CLI/provider/dashboard/doctor/core gateway code | `Charles-beta-he/hermes-agent-private` | `private/main` |
 | Upstreamable generic Hermes Agent fix | `NousResearch/hermes-agent` | `main` |
 

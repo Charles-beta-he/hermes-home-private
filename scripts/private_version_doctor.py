@@ -32,8 +32,26 @@ REQUIRED_PATHS = [
     "scripts/dynamic_selfcheck_coverage.py",
     "scripts/tests/test_dynamic_selfcheck_coverage.py",
     "skills/autonomous-ai-agents/hermes-agent/SKILL.md",
-    "project-profiles/hermes.json",
+    "project-profiles/template.json",
+    "project-profiles/examples/demo-local-project.json",
 ]
+
+PERSONAL_PROFILE_FILENAMES = {
+    "project-profiles/hermes.json",
+    "project-profiles/uvisa-app-2.0.json",
+    "project-profiles/mobile-offline-avatar-travel.json",
+    "project-profiles/hermes-embodied-workflow-os.json",
+}
+
+PERSONAL_PROFILE_TOKENS = (
+    "/Users/charles",
+    "uvisa",
+    "mobile-offline-avatar",
+    "lark",
+    "feishu",
+    "telegram",
+    "Charles",
+)
 
 RUNTIME_PREFIXES = (
     "cron/output/",
@@ -151,6 +169,27 @@ def scan_secret_markers(root: Path, files: list[str], limit_bytes: int = 512_000
     return findings
 
 
+def scan_project_profile_boundary(root: Path, files: list[str]) -> list[Finding]:
+    findings: list[Finding] = []
+    for rel in sorted(set(files) & PERSONAL_PROFILE_FILENAMES):
+        findings.append(Finding("blocker", "personal_project_profile_published", rel, "Charles personal/client project profile must not be in default install surface"))
+    for rel in files:
+        if not rel.startswith("project-profiles/") or not rel.endswith(".json"):
+            continue
+        if rel == "project-profiles/template.json" or rel.startswith("project-profiles/examples/"):
+            continue
+        path = root / rel
+        try:
+            data = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        lowered = data.lower()
+        hits = [token for token in PERSONAL_PROFILE_TOKENS if token.lower() in lowered]
+        if hits:
+            findings.append(Finding("blocker", "personal_profile_token", rel, "project profile contains personal/client tokens: " + ", ".join(sorted(set(hits)))))
+    return findings
+
+
 def run(root: Path) -> dict:
     root = root.resolve()
     files = git_files(root)
@@ -177,6 +216,7 @@ def run(root: Path) -> dict:
         findings.append(Finding("warning", "tracked_runtime_artifact_truncated", "", f"{len(runtime)-200} additional runtime artifacts omitted"))
 
     findings.extend(scan_secret_markers(root, files))
+    findings.extend(scan_project_profile_boundary(root, files))
 
     counts = {
         "tracked_files": len(files),

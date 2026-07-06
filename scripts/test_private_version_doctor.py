@@ -69,6 +69,29 @@ class PrivateVersionDoctorTests(unittest.TestCase):
             self.assertFalse(payload["ok"])
             self.assertTrue(any(f["code"] == "secret_value" for f in payload["blockers"]))
 
+    def test_personal_project_profile_blocks(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.make_min_repo(root)
+            p = root / "project-profiles" / "uvisa-app-2.0.json"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text('{"project":"uvisa-app-2.0","paths":{"repo":"/Users/charles/work/uvisa"}}\n', encoding="utf-8")
+            payload = mod.run(root)
+            self.assertFalse(payload["ok"])
+            codes = {f["code"] for f in payload["blockers"]}
+            self.assertIn("personal_project_profile_published", codes)
+
+    def test_unallowlisted_profile_with_personal_token_blocks(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self.make_min_repo(root)
+            p = root / "project-profiles" / "client.json"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text('{"project":"client","note":"Lark task flow"}\n', encoding="utf-8")
+            payload = mod.run(root)
+            self.assertFalse(payload["ok"])
+            self.assertTrue(any(f["code"] == "personal_profile_token" for f in payload["blockers"]))
+
     def test_cli_json(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)

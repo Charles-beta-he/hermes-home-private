@@ -11,7 +11,7 @@ Authoritative version docs:
 - `scripts/private_version_doctor.py` — local version readiness scanner.
 - `scripts/private_home_update_check.py` — installer-side update checker and issue packet/submission helper.
 
-Core rule: publish durable capabilities, docs, skills, scripts, tests, profiles, and workflow SSOTs; never publish live config, secrets, logs, DBs, locks, runtime queues, or delivery credentials.
+Core rule: publish durable capabilities, docs, skills, scripts, tests, project-profile templates/examples, and workflow SSOTs; never publish live config, secrets, logs, DBs, locks, runtime queues, delivery credentials, or Charles personal/client project profiles.
 
 Current release posture:
 

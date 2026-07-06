@@ -1,0 +1,19 @@
+{
+  "schema": "hermes_project_profile_example_v1",
+  "project": "demo-local-project",
+  "display_name": "Demo Local Project",
+  "profile_type": "example",
+  "description": "Sanitized example showing structure only. Replace all paths after local install; do not treat this as any real personal project context.",
+  "paths": {
+    "repo": "~/projects/demo-local-project",
+    "ssot_root": "~/projects/demo-local-project/docs"
+  },
+  "conventions": {
+    "branching": "feature branches from target remote branch",
+    "evidence": "store receipts under project-local docs/evidence"
+  },
+  "verification": {
+    "unit": "<project test command>",
+    "doctor": "python3 scripts/private_version_doctor.py . --json"
+  }
+}
