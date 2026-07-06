@@ -272,6 +272,33 @@ class TestConsultModelsIntegration(unittest.TestCase):
             entry = data["models"]["mimo-v2.5-pro"]
             self.assertEqual(entry["unhealthy_until"], 3700.0)
 
+    def test_model_health_cli_not_logged_in_is_hard_auth_failure(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            health_path = Path(tmpdir) / "model-health.json"
+            with mock.patch.object(consult, "MODEL_HEALTH_TRANSIENT_TTL_SECONDS", 7), \
+                 mock.patch.object(consult, "MODEL_HEALTH_TTL_SECONDS", 3600), \
+                 mock.patch.object(consult, "_health_now", return_value=100.0):
+                data = consult.record_model_health(
+                    "claude-opus-4-8",
+                    ok=False,
+                    provider="claude-code",
+                    adapter="claude-code",
+                    reason="claude_code_runtime_failed",
+                    error="Claude Code CLI exited 1: Not logged in · Please run /login",
+                    path=str(health_path),
+                )
+                kept, skipped = consult.filter_unhealthy_models(
+                    ["claude-opus-4-8", "mimo-v2.5-pro"],
+                    path=str(health_path),
+                    now=101.0,
+                    min_keep=2,
+                )
+
+            entry = data["models"]["claude-opus-4-8"]
+            self.assertEqual(entry["unhealthy_until"], 3700.0)
+            self.assertEqual(kept, ["mimo-v2.5-pro"])
+            self.assertEqual(skipped[0]["model"], "claude-opus-4-8")
+
     def test_model_provider_unknown_returns_empty(self):
         """model_provider() returns '' for unknown model"""
         config = {"pricing": {"models": {}}}

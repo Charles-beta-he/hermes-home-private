@@ -139,6 +139,24 @@ def save_model_health(data: Dict[str, Any], path: Optional[str] = None) -> None:
     os.replace(tmp, health_path)
 
 
+def _model_health_hard_failure(reason: str = "", error: str = "") -> bool:
+    text = f"{reason} {error}".lower()
+    hard_markers = (
+        "auth_invalid",
+        "model_or_path_invalid",
+        "invalid key",
+        "http 401",
+        "http 403",
+        "not logged in",
+        "please run /login",
+        "login required",
+        "authentication credentials",
+        "unauthorized",
+        "forbidden",
+    )
+    return any(marker in text for marker in hard_markers)
+
+
 def _model_health_ttl_for_failure(reason: str = "", error: str = "") -> int:
     """Return circuit TTL for provider failures.
 
@@ -147,7 +165,7 @@ def _model_health_ttl_for_failure(reason: str = "", error: str = "") -> int:
     MiMo/DeepSeek timeout must not poison required-provider selection for an hour.
     """
     text = f"{reason} {error}".lower()
-    if reason in {"auth_invalid", "model_or_path_invalid"} or "invalid key" in text or "http 401" in text or "http 403" in text:
+    if _model_health_hard_failure(reason, error):
         return MODEL_HEALTH_TTL_SECONDS
     transient_markers = (
         "timeout",
@@ -244,7 +262,8 @@ def filter_unhealthy_models(models: List[str], *, path: Optional[str] = None, no
                 "unhealthy_until": entry.get("unhealthy_until"),
             }
             reason = str(item["reason"]).lower()
-            if reason in {"auth_invalid", "model_or_path_invalid"} or "invalid key" in reason:
+            error = str(entry.get("last_error") or "")
+            if _model_health_hard_failure(reason, error):
                 hard_skipped.append(item)
             else:
                 soft_skipped.append(item)
