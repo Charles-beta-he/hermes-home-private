@@ -679,3 +679,19 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Browser readback at `http://127.0.0.1:9125/agent-os?evidence=data_vault&authority=phase8&proposal=draft&device=dashboard`: `Build handoff` renders textarea value starting `Agent OS handoff summary`, includes URL filter state, counts, `capability_execution: closed`, and open dependency `PAIOS-EXT-001`; browser console 0 messages / 0 JS errors.
 - Boundary preserved: handoff summary is read-only display only; no capability execution, lifecycle write, external dispatch, clipboard/file export, secret/payment/legal action, or physical-device effect.
 - Backlog update: P16 completed.
+
+## 2026-07-06T18:05:00+08:00 — P17 Agent OS handoff integrity stamp landed
+
+- Scope: add a browser-local SHA-256 integrity stamp for read-only Agent OS handoff summaries.
+- Frontend additions:
+  - `sha256Hex()` using browser WebCrypto.
+  - `handoff_sha256` display after `Build handoff`.
+  - Handoff summary/hash are cleared when URL filter state changes to prevent stale stamps.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `5 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - Browser readback at `http://127.0.0.1:9126/agent-os?evidence=data_vault&authority=phase8&proposal=draft&device=dashboard`: `Build handoff` renders `handoff_sha256`.
+  - Browser WebCrypto recomputation over the textarea handoff summary matches displayed hash: `d94f25dd6a50b6ec658ded211f7b1d1f08831b36e57cfee87001b3ebd7d7022e`.
+  - Browser console after interaction: 0 messages / 0 JS errors.
+- Boundary preserved: hash is a browser-local integrity stamp only; no clipboard write, file export, external dispatch, lifecycle write, capability execution, secret/payment/legal action, or physical-device effect.
+- Backlog update: P17 completed.
