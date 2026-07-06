@@ -39,12 +39,12 @@
       "non_empty": true
     },
     "07-backlog.json": {
-      "bytes": 4762,
+      "bytes": 4854,
       "exists": true,
       "non_empty": true
     },
     "08-progress-ledger.md": {
-      "bytes": 6704,
+      "bytes": 7744,
       "exists": true,
       "non_empty": true
     },
@@ -73,6 +73,11 @@
       "exists": true,
       "non_empty": true
     },
+    "14-model-review-projection.json": {
+      "bytes": 5361,
+      "exists": true,
+      "non_empty": true
+    },
     "build_authority_ledger_projection.py": {
       "bytes": 4912,
       "exists": true,
@@ -93,8 +98,13 @@
       "exists": true,
       "non_empty": true
     },
+    "build_model_review_projection.py": {
+      "bytes": 4080,
+      "exists": true,
+      "non_empty": true
+    },
     "personal_ai_os_control.py": {
-      "bytes": 9177,
+      "bytes": 9828,
       "exists": true,
       "non_empty": true
     }
@@ -106,5 +116,5 @@
   "packet": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os",
   "profile": "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
   "runtime_mutation": false,
-  "timestamp": "2026-07-06T06:28:33.041680+00:00"
+  "timestamp": "2026-07-06T06:34:48.255361+00:00"
 }

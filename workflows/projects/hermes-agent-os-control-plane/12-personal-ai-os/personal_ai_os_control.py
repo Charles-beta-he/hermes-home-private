@@ -31,6 +31,7 @@ AUTHORITY_REPORT = PACKET / "11-authority-ledger-report.json"
 AUTHORITY_LEDGER = PACKET / "11-authority-ledger-projection.jsonl"
 DATA_VAULT = PACKET / "12-data-vault-projection.json"
 MISSION_STATE = PACKET / "13-mission-runtime-state.json"
+MODEL_REVIEW = PACKET / "14-model-review-projection.json"
 
 
 def load_json(path: Path):
@@ -61,6 +62,7 @@ def cmd_status(args) -> int:
     authority = load_json(AUTHORITY_REPORT) if AUTHORITY_REPORT.exists() else None
     data_vault = load_json(DATA_VAULT) if DATA_VAULT.exists() else None
     mission_state = load_json(MISSION_STATE) if MISSION_STATE.exists() else None
+    model_review = load_json(MODEL_REVIEW) if MODEL_REVIEW.exists() else None
     doctor = run_doctor_json() if args.with_doctor else None
     items = backlog.get("items", [])
     by_status = {}
@@ -112,6 +114,14 @@ def cmd_status(args) -> int:
             "external_side_effects_executed": mission_state.get("external_side_effects_executed"),
             "taskpool_lifecycle_write_executed": mission_state.get("taskpool_lifecycle_write_executed"),
             "generic_human_intervention_interface": mission_state.get("success_metrics", {}).get("generic_human_intervention_interface"),
+        },
+        "model_review": None if model_review is None else {
+            "ok": model_review.get("ok"),
+            "mode": model_review.get("mode"),
+            "live_model_fanout_executed": model_review.get("live_model_fanout_executed"),
+            "runtime_mutation": model_review.get("runtime_mutation"),
+            "external_side_effects_executed": model_review.get("external_side_effects_executed"),
+            "automation_ceiling": model_review.get("model_review", {}).get("automation_ceiling"),
         },
         "backlog_by_status": by_status,
         "backlog_by_phase": by_phase,

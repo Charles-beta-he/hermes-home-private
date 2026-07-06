@@ -537,3 +537,15 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
 - Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `taskpool_lifecycle_write_executed=false`, `cron_mutation_executed=false`.
 - Backlog update: P5 completed; P6 Multi-model Governance RouteReview/EvidencePacket projection is now `ready_next`.
 - Next safe slice: create model review projection with RouteReview and EvidencePacket records; no live model fanout required for projection.
+
+## 2026-07-06T14:49:00+08:00 — P6 Multi-model Governance projection validated
+
+- Scope: local RouteReview/EvidencePacket/ModelReview projection only; no live model fanout or provider call.
+- Code artifact: `build_model_review_projection.py`.
+- Projection artifact: `14-model-review-projection.json`.
+- Live verification: `MODEL_REVIEW_PROJECTION_PASS L3`; `PAIOS_P6_STATUS_PASS L3`.
+- Model roles projected: architect, safety/adversarial reviewer, arbiter, T0 router.
+- Evidence packet binds claims C-001..C-005 to packet artifacts.
+- Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `live_model_fanout_executed=false`, `findings=[]`.
+- Backlog update: P6 completed; P7 UX shell projection is now `ready_next`.
+- Next safe slice: generate read-only UX shell panel projections for Today/Missions/Inbox/Receipts/Permissions/DataVault/Capabilities/Risk/ModelConsole.

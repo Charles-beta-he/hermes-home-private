@@ -34,6 +34,8 @@ REQUIRED_FILES = [
     "12-data-vault-projection.json",
     "build_mission_runtime_state.py",
     "13-mission-runtime-state.json",
+    "build_model_review_projection.py",
+    "14-model-review-projection.json",
 ]
 
 REQUIRED_DOMAIN_ENTITIES = [

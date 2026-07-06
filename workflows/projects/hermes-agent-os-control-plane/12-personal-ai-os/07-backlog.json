@@ -72,17 +72,17 @@
       "title": "Implement RouteReview and EvidencePacket schema projection for multi-model governance",
       "phase": "P6",
       "automation_level": "L2",
-      "status": "ready_next",
+      "status": "completed",
       "safe_without_additional_authority": true,
-      "artifact": "model_review_projection.json",
-      "verification": "synthetic T3 task review packet + degraded-mode sample"
+      "artifact": "12-personal-ai-os/14-model-review-projection.json",
+      "verification": "build_model_review_projection.py + status readback -> MODEL_REVIEW_PROJECTION_PASS / PAIOS_P6_STATUS_PASS, no live model fanout/external side effects"
     },
     {
       "id": "PAIOS-P7-001",
       "title": "Generate read-only UX shell panel projections",
       "phase": "P7",
       "automation_level": "L2",
-      "status": "ready_after_P6",
+      "status": "ready_next",
       "safe_without_additional_authority": true,
       "artifact": "ux_shell_projection.md",
       "verification": "each panel has source artifact and unsupported claims list"
