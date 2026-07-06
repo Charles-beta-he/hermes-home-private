@@ -118,3 +118,15 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
 - Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `device_physical_effect_executed=false`, `agent_proposal_auto_executed=false`.
 - Backlog update: P7 and P8 completed; only `PAIOS-EXT-001` remains open as external dependency boundary for DID/VC/wallet/payment/legal/hardware ecosystem support.
 - Local Web4.0 Agent OS gap補齐 packet now covers P0-P8 safe internal surfaces.
+
+## 2026-07-06T15:18:00+08:00 — P9 native `hermes agent-os` read-only CLI wired
+
+- Scope: Hermes native CLI read-only projection surface only.
+- Code artifacts: `/Users/charles/.hermes/hermes-agent/hermes_cli/agent_os.py`, `/Users/charles/.hermes/hermes-agent/hermes_cli/main.py`.
+- Test artifact: `/Users/charles/.hermes/hermes-agent/tests/hermes_cli/test_agent_os.py`.
+- Commands verified:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py -q` -> `2 passed`.
+  - `venv/bin/python -m py_compile hermes_cli/agent_os.py hermes_cli/main.py tests/hermes_cli/test_agent_os.py` -> pass.
+  - `venv/bin/python -m hermes_cli.main agent-os status --json` -> `AGENT_OS_CLI_PASS True 299 {'completed': 8, 'completed_local_equivalent': 1, 'external_dependency_open': 1} L3`.
+- Boundaries preserved: command reads the Personal AI OS packet only; it never invokes capabilities, external dispatch, scheduler/taskpool lifecycle writes, secret entry, payment, or physical-device effects.
+- Backlog update: P9 completed; external dependency remains a structured boundary, not an execution stop.
