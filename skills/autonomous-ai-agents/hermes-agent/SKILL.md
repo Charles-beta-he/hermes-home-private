@@ -15,6 +15,8 @@ Reference addendum: `references/provider-version-drift-and-codex-breaker.md` cap
 
 Reference addendum: `references/dreaming-outcomes-skill-review-and-evaluator.md` maps Dreaming-style post-run procedure distillation and Outcomes-style independent evaluator gates into Hermes skill review, memory hygiene, taskpool proof logs, and fail-closed lifecycle advancement.
 
+Reference addendum: `references/codex-maxxing-long-running-work-loop.md` captures the OpenAI Codex-maxxing long-running-work pattern translated into Hermes governance: durable objective/profile/SSOT, tool-bounded execution surfaces, recurring wake signals, remote/mid-turn steering, artifact-first review, and proof-gated writeback. Key boundary: durable threads and automations prepare/verify/draft, but global memory must not absorb WIP and irreversible external actions still require exact authority/readback.
+
 Reference addendum: `references/yd-ai-wf-stop-hook-auto-review.md` captures the user-provided yd-ai-wf + Stop Hook pattern: workflow init/planning/parallel specialist agents, per-task code review, P0-only auto-fix loop, AGENTS.md self-learning, and a bounded stop-time dirty-worktree review hook that fails open on infrastructure errors.
 
 Reference addendum: `references/external-skill-to-brain-overlay.md` captures the governed workflow for absorbing an external Agent Skills package into Hermes as a discoverable brain overlay with registry routing, skill discovery, diagnostics, taskpool evidence, and fail-closed review/done handling.
