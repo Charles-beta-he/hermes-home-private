@@ -3857,12 +3857,15 @@ def build_auto_subtask_parent_aggregation(task: Task, *, cert_reasons: list[str]
     done_children = [child.id for child in children if child.status == "done"]
     ready = bool(child_ids) and not missing and not open_children and len(done_children) == len(child_ids)
     current_status = {child.id: child.status for child in children}
-    stale: list[dict[str, str]] = []
+    latest_evidence_status: dict[str, str] = {}
     for item in list_value(task.fm.get("evidence")):
         match = re.search(r"proof:child-task:([^:]+):status:([^\s]+)", str(item))
         if not match:
             continue
         child_id, evidence_status = match.group(1), match.group(2)
+        latest_evidence_status[child_id] = evidence_status
+    stale: list[dict[str, str]] = []
+    for child_id, evidence_status in latest_evidence_status.items():
         status = current_status.get(child_id)
         if status and evidence_status != status:
             stale.append({"child_id": child_id, "evidence_status": evidence_status, "current_status": status})

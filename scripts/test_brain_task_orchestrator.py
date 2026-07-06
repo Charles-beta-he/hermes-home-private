@@ -3471,7 +3471,7 @@ def test_blocked_resolve_reports_parent_aggregation_when_children_done_but_certi
         assert aggregation["action"] == "keep_blocked_certification_required", aggregation
         assert aggregation["done_count"] == aggregation["child_count"] == 1, aggregation
         assert aggregation["axis_summary"] == {"framing": "done"}, aggregation
-        assert aggregation["stale_evidence_count"] == 1, aggregation
+        assert aggregation["stale_evidence_count"] == 0, aggregation
         assert aggregation["suggested_next"] == "parent_ratification_refresh", aggregation
 
 

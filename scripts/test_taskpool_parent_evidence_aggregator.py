@@ -25,7 +25,7 @@ def write_task(root: Path, task_id: str, fm: dict, body: str = "") -> Path:
     return path
 
 
-def test_certification_blocked_parent_aggregates_done_children_and_detects_stale_status_evidence(tmp_path):
+def test_certification_blocked_parent_ignores_superseded_child_status_evidence(tmp_path):
     parent_id = "parent"
     write_task(
         tmp_path,
@@ -55,7 +55,6 @@ def test_certification_blocked_parent_aggregates_done_children_and_detects_stale
     assert report["action"] == "keep_blocked_certification_required"
     assert report["axis_summary"] == {"framing": "done", "quota_observability": "done"}
     assert report["stale_evidence"] == [
-        {"child_id": "child-framing", "evidence_status": "pending", "current_status": "done"},
         {"child_id": "child-quota", "evidence_status": "pending", "current_status": "done"},
     ]
     assert "explicit_requires_multimodel" in report["remaining_gate_reasons"]

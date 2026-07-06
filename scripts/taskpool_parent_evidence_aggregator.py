@@ -88,12 +88,15 @@ def _status(task: dict[str, Any]) -> str:
 
 def _stale_child_status_evidence(parent: dict[str, Any], children: list[dict[str, Any]]) -> list[dict[str, str]]:
     current = {child["id"]: _status(child) for child in children}
-    stale: list[dict[str, str]] = []
+    latest_evidence_status: dict[str, str] = {}
     for evidence in list_value(parent["fm"].get("evidence")):
         match = re.search(r"proof:child-task:([^:]+):status:([^\s]+)", evidence)
         if not match:
             continue
         child_id, evidence_status = match.group(1), match.group(2)
+        latest_evidence_status[child_id] = evidence_status
+    stale: list[dict[str, str]] = []
+    for child_id, evidence_status in latest_evidence_status.items():
         current_status = current.get(child_id)
         if current_status and evidence_status != current_status:
             stale.append({"child_id": child_id, "evidence_status": evidence_status, "current_status": current_status})
