@@ -19,12 +19,13 @@
       "manifest updated",
       "install-same-experience runbook updated when installer surface changes",
       "no live config, secrets, DBs, locks, cron outputs, or credentials are newly tracked"
-    ]
+    ],
+    "privacy_boundary": "Personal project profiles are excluded from the default install surface. Publish only templates/examples or explicitly allowlisted sanitized profiles."
   },
   "publishable_surfaces": {
     "skills": "Procedural memory and reusable workflows under skills/.",
     "scripts": "Local automation, validators, doctors, schedulable scripts, and tests under scripts/; private-home update checker and installed-system issue reporter.",
-    "project_profiles": "Durable project profiles under project-profiles/ with no secrets.",
+    "project_profiles": "Only sanitized templates/examples under project-profiles/ are publishable by default. Charles personal/client project profiles are excluded unless explicitly allowlisted after privacy review.",
     "workflows": "SSOTs, architecture docs, verification evidence, and local implementation slices under workflows/.",
     "docs_private": "Private but durable evidence, architecture, and release notes under docs/private/.",
     "hermes_agent_submodule": "Pinned upstream/private runtime checkout pointer; runtime code changes belong in the child repo first.",
@@ -44,7 +45,12 @@
     "gateway_state.json",
     "credentials/",
     "secrets/",
-    ".env*"
+    ".env*",
+    "project-profiles/private/",
+    "project-profiles/local/",
+    "project-profiles/charles/",
+    "project-profiles/*uvisa*",
+    "project-profiles/*mobile-offline*"
   ],
   "install_same_experience_layers": [
     {
@@ -63,9 +69,9 @@
       "activation": "Copy scripts, run py_compile and targeted doctors."
     },
     {
-      "layer": "L3 project profiles",
-      "required": true,
-      "activation": "Install project-profiles/*.json and verify referenced paths are adapted."
+      "layer": "L3 project profile templates",
+      "required": false,
+      "activation": "Install project-profiles/template.json and sanitized examples only. Create local personal profiles on the installer machine; do not import Charles personal project profiles."
     },
     {
       "layer": "L4 workflow SSOTs",
@@ -97,7 +103,7 @@
     "destructive": "Closed until exact resource, backup/restore, receipt, and readback exist.",
     "secrets_payments": "Human-only entry; never type or store secrets in repo."
   },
-  "current_version": "private-home-2026.07.06.1",
+  "current_version": "private-home-2026.07.06.2",
   "issue_reporting": {
     "script": "scripts/private_home_update_check.py",
     "default_github_repo": "Charles-beta-he/hermes-home-private",
@@ -131,5 +137,20 @@
       "upstream-candidate": "NousResearch/hermes-agent:main"
     }
   },
-  "candidate_version": "private-home-2026.07.06.1-candidate"
+  "candidate_version": "private-home-2026.07.06.2-candidate",
+  "previous_version": "private-home-2026.07.06.1",
+  "project_profile_policy": {
+    "default": "exclude_personal_profiles",
+    "published_by_default": [
+      "project-profiles/template.json",
+      "project-profiles/examples/*.json"
+    ],
+    "excluded_by_default": [
+      "project-profiles/hermes.json",
+      "project-profiles/uvisa-app-2.0.json",
+      "project-profiles/mobile-offline-avatar-travel.json",
+      "project-profiles/hermes-embodied-workflow-os.json"
+    ],
+    "rationale": "Smoothness comes from reusable profile schema and local adaptation, not copying Charles personal project context."
+  }
 }

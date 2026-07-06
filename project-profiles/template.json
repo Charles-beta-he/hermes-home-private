@@ -1,0 +1,24 @@
+{
+  "schema": "hermes_project_profile_template_v1",
+  "project": "example-project-id",
+  "display_name": "Example Project",
+  "profile_type": "template",
+  "description": "Copy this file locally and replace placeholders. Do not commit personal paths, client names, credentials, task IDs, chat IDs, or private repo URLs.",
+  "paths": {
+    "repo": "/ABSOLUTE/PATH/TO/YOUR/LOCAL/REPO",
+    "ssot_root": "/ABSOLUTE/PATH/TO/YOUR/LOCAL/SSOT"
+  },
+  "repo_targets": {
+    "home_pack": "owner/private-home:master",
+    "runtime_fork": "owner/hermes-agent-private:private/main",
+    "upstream": "NousResearch/hermes-agent:main"
+  },
+  "red_lines": [
+    "No secrets or credentials",
+    "No client-private task identifiers",
+    "No personal absolute paths in published profiles"
+  ],
+  "verification": {
+    "doctor": "python3 scripts/private_version_doctor.py . --json"
+  }
+}

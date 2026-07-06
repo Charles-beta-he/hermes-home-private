@@ -10,7 +10,7 @@ Can reproduce:
 
 - skills and procedural memory;
 - local automation scripts and doctors;
-- project profiles and workflow SSOTs;
+- project profile templates and workflow SSOTs;
 - HEWOS implementation/tests/workbench artifacts;
 - dynamic self-check coverage code and runbook;
 - private release policy and capability manifest.
@@ -57,7 +57,8 @@ Minimum useful set:
 ```text
 skills/
 scripts/
-project-profiles/
+project-profiles/template.json
+project-profiles/examples/                         sanitized examples only
 docs/private/version-ops/
 workflows/projects/hermes-embodied-workflow-os/        optional but recommended
 workflows/projects/hermes-agent-os-control-plane/      optional architecture/read-only
@@ -78,19 +79,27 @@ cron/output/
 credentials/
 secrets/
 .env*
+project-profiles/private/
+project-profiles/local/
+project-profiles/charles/
+project-profiles/*uvisa*
+project-profiles/*mobile-offline*
 ```
 
 Recommended first import is conservative:
 
 ```bash
-mkdir -p ~/.hermes
+mkdir -p ~/.hermes ~/.hermes/project-profiles/examples
 rsync -a --ignore-existing ~/.hermes-private-home/skills/ ~/.hermes/skills/
 rsync -a --ignore-existing ~/.hermes-private-home/scripts/ ~/.hermes/scripts/
-rsync -a --ignore-existing ~/.hermes-private-home/project-profiles/ ~/.hermes/project-profiles/
+rsync -a --ignore-existing ~/.hermes-private-home/project-profiles/template.json ~/.hermes/project-profiles/template.json
+rsync -a --ignore-existing ~/.hermes-private-home/project-profiles/examples/ ~/.hermes/project-profiles/examples/
 rsync -a --ignore-existing ~/.hermes-private-home/docs/private/version-ops/ ~/.hermes/docs/private/version-ops/
 ```
 
 Use `--ignore-existing` for first install so local user edits are not overwritten.
+
+Personal/project-specific profiles are intentionally excluded from the default install pack. Another installer should create their own profile by copying `project-profiles/template.json` locally; do not import Charles' UVISA, travel/avatar, Lark, or machine-path profiles.
 
 ### L3. Verify imported capability pack
 

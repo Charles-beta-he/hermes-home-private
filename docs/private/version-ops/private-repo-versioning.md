@@ -10,7 +10,7 @@ Success means a trusted installer can reproduce the high-leverage parts of Charl
 
 The private repository should therefore publish:
 
-1. durable capability assets: skills, scripts, project profiles, workflow SSOTs, tests, docs, version manifests;
+1. durable capability assets: skills, scripts, project profile templates/examples, workflow SSOTs, tests, docs, version manifests;
 2. exact version evidence: commit, tag, release lane, capability manifest, verification commands;
 3. safe bootstrap instructions: disabled-by-default activation, local-only receipts, explicit gates for external effects;
 4. operational boundaries: what is intentionally not versioned and what must be recreated locally.
@@ -30,7 +30,7 @@ The repo is not a normal app binary. It is a private "Hermes home distribution" 
 | Stratum | Contents | Release posture |
 |---|---|---|
 | Runtime substrate | upstream/private `hermes-agent` checkout, CLI, provider adapters | pinned by submodule/ref; released in child repo first |
-| Capability pack | `skills/`, `scripts/`, `project-profiles/`, `workflows/`, `docs/private/` | versioned here |
+| Capability pack | `skills/`, `scripts/`, project-profile templates/examples, `workflows/`, `docs/private/` | versioned here |
 | Local activation | config, cron jobs, gateways, memories, DBs, state | not versioned; recreated by installer/runbook |
 | High-risk adapters | push/deploy/external delivery/hardware/payment/destructive actions | gated; never auto-enabled |
 
@@ -81,7 +81,7 @@ Publishable:
 
 - `skills/**`: reusable procedures and references;
 - `scripts/**`: local automation and tests, with py_compile/targeted tests;
-- `project-profiles/*.json`: durable project navigation and policies;
+- `project-profiles/template.json` and `project-profiles/examples/**`: schema/examples for local profiles only; Charles personal/client profiles are excluded by default;
 - `workflows/**`: SSOTs, project docs, local harnesses, tests, verification artifacts;
 - `docs/private/**`: durable private evidence and architecture notes;
 - `schemas/**`, `templates/**`, selected `fixtures/**` when no secrets;
