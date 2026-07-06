@@ -665,3 +665,17 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Browser console after interaction: 0 messages / 0 JS errors.
 - Boundary preserved: URL state is read-only operator state; no capability execution, lifecycle writes, external dispatch, secret/payment/legal action, or physical-device effect.
 - Backlog update: P15 completed.
+
+## 2026-07-06T17:43:00+08:00 — P16 Agent OS operator handoff summary landed
+
+- Scope: combine receipt packet and deep-link filter state into a local read-only operator handoff summary.
+- Frontend additions:
+  - `Build handoff` action beside `Build receipt`.
+  - Read-only `Agent OS handoff summary` textarea containing schema, ok flag, current URL, active filters, receipt counts, boundary flags, open external dependencies, and side-effect flag.
+  - No clipboard write, file export, dispatch, lifecycle write, or execution unlock.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `5 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - Browser readback at `http://127.0.0.1:9125/agent-os?evidence=data_vault&authority=phase8&proposal=draft&device=dashboard`: `Build handoff` renders textarea value starting `Agent OS handoff summary`, includes URL filter state, counts, `capability_execution: closed`, and open dependency `PAIOS-EXT-001`; browser console 0 messages / 0 JS errors.
+- Boundary preserved: handoff summary is read-only display only; no capability execution, lifecycle write, external dispatch, clipboard/file export, secret/payment/legal action, or physical-device effect.
+- Backlog update: P16 completed.
