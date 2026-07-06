@@ -12,8 +12,42 @@ from hermes_evolution_store import EvolutionStore, classify_nightly_result
 SCRIPT = Path.home() / ".hermes" / "scripts" / "autonomous-evolution-nightly.py"
 
 
+def _tail(value: str | bytes | None, limit: int) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")[-limit:]
+    return value[-limit:]
+
+
+def emit_payload(payload: dict) -> None:
+    store = EvolutionStore()
+    record = store.append_dream_run(payload)
+    payload["dream_run_proof_hash"] = record.get("proof_hash")
+    payload["dream_run_ledger"] = str(store.runs_path)
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
 def main() -> int:
-    p = subprocess.run([sys.executable, str(SCRIPT)], text=True, capture_output=True, timeout=300)
+    try:
+        p = subprocess.run([sys.executable, str(SCRIPT)], text=True, capture_output=True, timeout=300)
+    except subprocess.TimeoutExpired as exc:
+        payload = {
+            "schema": "autonomous_evolution_nightly_noagent_v1",
+            "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "status": "timeout_recorded",
+            "returncode": 124,
+            "effective_audit": False,
+            "state_advanced": False,
+            "degraded": True,
+            "write_blocked": False,
+            "reasons": ["timeout_recorded", "subprocess_timeout"],
+            "stdout_tail": _tail(exc.stdout, 3000).strip(),
+            "stderr_tail": _tail(exc.stderr, 1000).strip(),
+        }
+        emit_payload(payload)
+        return 0
+
     out = (p.stdout or "").strip()
     err = (p.stderr or "").strip()
     health = classify_nightly_result(p.returncode, out, err)
@@ -30,10 +64,7 @@ def main() -> int:
         "stdout_tail": out[-3000:],
         "stderr_tail": err[-1000:],
     }
-    record = EvolutionStore().append_dream_run(payload)
-    payload["dream_run_proof_hash"] = record.get("proof_hash")
-    payload["dream_run_ledger"] = str(EvolutionStore().runs_path)
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    emit_payload(payload)
     return 0 if health["status"] == "OK" else 2
 
 
