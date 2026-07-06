@@ -7,7 +7,12 @@
   "version_policy": {
     "tag_format": "private-home-YYYY.MM.DD.N",
     "candidate_branch_format": "release/private-home/YYYYMMDD-N",
-    "channels": ["stable", "candidate", "lab", "local-only"],
+    "channels": [
+      "stable",
+      "candidate",
+      "lab",
+      "local-only"
+    ],
     "stable_requires": [
       "version doctor passes without blockers",
       "changed scripts compile and targeted tests pass",
@@ -18,7 +23,7 @@
   },
   "publishable_surfaces": {
     "skills": "Procedural memory and reusable workflows under skills/.",
-    "scripts": "Local automation, validators, doctors, schedulable scripts, and tests under scripts/.",
+    "scripts": "Local automation, validators, doctors, schedulable scripts, and tests under scripts/; private-home update checker and installed-system issue reporter.",
     "project_profiles": "Durable project profiles under project-profiles/ with no secrets.",
     "workflows": "SSOTs, architecture docs, verification evidence, and local implementation slices under workflows/.",
     "docs_private": "Private but durable evidence, architecture, and release notes under docs/private/.",
@@ -42,14 +47,46 @@
     ".env*"
   ],
   "install_same_experience_layers": [
-    {"layer": "L0 upstream runtime", "required": true, "activation": "Install official Hermes Agent and run hermes doctor."},
-    {"layer": "L1 private skills", "required": true, "activation": "Copy/import skills and verify skill listing."},
-    {"layer": "L2 private scripts", "required": true, "activation": "Copy scripts, run py_compile and targeted doctors."},
-    {"layer": "L3 project profiles", "required": true, "activation": "Install project-profiles/*.json and verify referenced paths are adapted."},
-    {"layer": "L4 workflow SSOTs", "required": false, "activation": "Install selected workflows/ projects; read-only by default."},
-    {"layer": "L5 local cron/selfcheck", "required": false, "activation": "Create local-only no-agent jobs from runbooks; success-silent by default."},
-    {"layer": "L6 gateway/external delivery", "required": false, "activation": "Requires platform credentials, exact target allowlist, send/readback tests."},
-    {"layer": "L7 hardware/embodied adapters", "required": false, "activation": "Requires exact device, rollback, safety gate, dry-run, and readback."}
+    {
+      "layer": "L0 upstream runtime",
+      "required": true,
+      "activation": "Install official Hermes Agent and run hermes doctor."
+    },
+    {
+      "layer": "L1 private skills",
+      "required": true,
+      "activation": "Copy/import skills and verify skill listing."
+    },
+    {
+      "layer": "L2 private scripts",
+      "required": true,
+      "activation": "Copy scripts, run py_compile and targeted doctors."
+    },
+    {
+      "layer": "L3 project profiles",
+      "required": true,
+      "activation": "Install project-profiles/*.json and verify referenced paths are adapted."
+    },
+    {
+      "layer": "L4 workflow SSOTs",
+      "required": false,
+      "activation": "Install selected workflows/ projects; read-only by default."
+    },
+    {
+      "layer": "L5 local cron/selfcheck",
+      "required": false,
+      "activation": "Create local-only no-agent jobs from runbooks; success-silent by default."
+    },
+    {
+      "layer": "L6 gateway/external delivery",
+      "required": false,
+      "activation": "Requires platform credentials, exact target allowlist, send/readback tests."
+    },
+    {
+      "layer": "L7 hardware/embodied adapters",
+      "required": false,
+      "activation": "Requires exact device, rollback, safety gate, dry-run, and readback."
+    }
   ],
   "authority_boundaries": {
     "local_read": "Allowed after install.",
@@ -59,5 +96,39 @@
     "push_deploy_publish": "Closed until explicit repo/branch/rollback/readback authority exists.",
     "destructive": "Closed until exact resource, backup/restore, receipt, and readback exist.",
     "secrets_payments": "Human-only entry; never type or store secrets in repo."
+  },
+  "current_version": "private-home-2026.07.06.1-candidate",
+  "issue_reporting": {
+    "script": "scripts/private_home_update_check.py",
+    "default_github_repo": "Charles-beta-he/hermes-home-private",
+    "default_mode": "local_packet_only",
+    "submit_requires": [
+      "--submit",
+      "--github-repo OWNER/REPO",
+      "gh auth status ok"
+    ],
+    "labels": [
+      "installed-system",
+      "automated-report"
+    ],
+    "dedupe": "fingerprint under ~/.hermes/state/private-home-issue-reports/",
+    "redaction": "token/private-key shaped values are redacted before issue body is written"
+  },
+  "maintainer_issue_flow": {
+    "doc": "docs/private/version-ops/installed-system-issue-flow.md",
+    "states": [
+      "needs-triage",
+      "home-pack",
+      "runtime-fork",
+      "upstream-candidate",
+      "environment-specific",
+      "fixed-pending-version",
+      "released"
+    ],
+    "target_branch_matrix": {
+      "home-pack": "Charles-beta-he/hermes-home-private:master",
+      "runtime-fork": "Charles-beta-he/hermes-agent-private:private/main",
+      "upstream-candidate": "NousResearch/hermes-agent:main"
+    }
   }
 }

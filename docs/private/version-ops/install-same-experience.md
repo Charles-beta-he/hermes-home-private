@@ -96,6 +96,7 @@ Use `--ignore-existing` for first install so local user edits are not overwritte
 
 ```bash
 python3 ~/.hermes/scripts/private_version_doctor.py ~/.hermes-private-home --json
+python3 ~/.hermes/scripts/private_home_update_check.py check --repo-root ~/.hermes-private-home --remote origin --json
 python3 -m py_compile ~/.hermes/scripts/dynamic_selfcheck_coverage.py
 python3 -m pytest ~/.hermes/scripts/tests/test_dynamic_selfcheck_coverage.py -q
 ```
@@ -125,6 +126,30 @@ Then verify:
 ```bash
 hermes doctor
 python3 ~/.hermes/scripts/post-update-check.py --fix
+```
+
+### L4b. Configure installed-system issue reporting
+
+Default local-only report:
+
+```bash
+python3 ~/.hermes/scripts/private_home_update_check.py report \
+  --repo-root ~/.hermes-private-home \
+  --hermes-home ~/.hermes \
+  --reason "private-home install problem" \
+  --json
+```
+
+Optional GitHub submit, only after `gh auth status` works and the target repo is allowed:
+
+```bash
+python3 ~/.hermes/scripts/private_home_update_check.py report \
+  --repo-root ~/.hermes-private-home \
+  --hermes-home ~/.hermes \
+  --reason "private-home install problem" \
+  --github-repo Charles-beta-he/hermes-home-private \
+  --submit \
+  --json
 ```
 
 ### L5. Recreate optional local-only jobs

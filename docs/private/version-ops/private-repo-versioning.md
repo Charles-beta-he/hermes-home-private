@@ -135,6 +135,34 @@ Another person cannot get the exact same experience by cloning the repo alone. T
 
 The install process must be staged because the smoothness comes from safe local activation, not from shipping live state.
 
+## Installed-system issue and update loop
+
+The intended maintenance loop is:
+
+```text
+installer update-checks private-home tags
+→ local doctors detect problem
+→ `scripts/private_home_update_check.py report` writes a sanitized issue packet
+→ optional `--submit --github-repo Charles-beta-he/hermes-home-private` creates a GitHub issue
+→ maintainer triages target repo/branch
+→ maintainer patches in a clean worktree
+→ tests/readbacks pass
+→ private-home version tag is cut
+→ installer update-check sees the new tag
+```
+
+Issue submission is an external side effect and is therefore disabled by default. The default mode writes local packets under:
+
+```text
+~/.hermes/state/private-home-issue-reports/
+```
+
+For the full flow, see:
+
+```text
+docs/private/version-ops/installed-system-issue-flow.md
+```
+
 ## Release checklist
 
 - [ ] `git status --short --branch` clean in the release worktree.

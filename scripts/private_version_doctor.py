@@ -22,8 +22,13 @@ REQUIRED_PATHS = [
     "PRIVATE_VERSIONING.md",
     "docs/private/version-ops/private-repo-versioning.md",
     "docs/private/version-ops/install-same-experience.md",
+    "docs/private/version-ops/installed-system-issue-flow.md",
     "docs/private/version-ops/private-version-manifest.json",
     "scripts/private_version_doctor.py",
+    "scripts/private_home_update_check.py",
+    "scripts/test_private_version_doctor.py",
+    "scripts/test_private_home_update_check.py",
+    ".github/ISSUE_TEMPLATE/installed-system-report.yml",
     "scripts/dynamic_selfcheck_coverage.py",
     "scripts/tests/test_dynamic_selfcheck_coverage.py",
     "skills/autonomous-ai-agents/hermes-agent/SKILL.md",
@@ -88,7 +93,7 @@ class Finding:
 
 def git_files(root: Path) -> list[str]:
     try:
-        out = subprocess.check_output(["git", "-C", str(root), "ls-files"], text=True)
+        out = subprocess.check_output(["git", "-C", str(root), "ls-files"], text=True, stderr=subprocess.DEVNULL)
     except (subprocess.CalledProcessError, FileNotFoundError):
         files = []
         for dirpath, dirnames, filenames in os.walk(root):
