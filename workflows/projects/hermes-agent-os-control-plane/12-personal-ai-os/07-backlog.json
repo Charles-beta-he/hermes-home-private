@@ -117,6 +117,17 @@
       "artifact": "hermes_cli/agent_os.py + hermes_cli/main.py + tests/hermes_cli/test_agent_os.py",
       "verification": "pytest tests/hermes_cli/test_agent_os.py -q -> 2 passed; py_compile; venv/bin/python -m hermes_cli.main agent-os status --json -> AGENT_OS_CLI_PASS True 299 ... L3",
       "boundary": "read-only CLI surface; no capability execution, scheduler/taskpool lifecycle writes, external dispatch, secret/payment, or physical-device effects"
+    },
+    {
+      "id": "PAIOS-P10-001",
+      "title": "Expose Personal AI OS projection through dashboard REST endpoint",
+      "phase": "P10",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "hermes_cli/web_server.py /api/agent-os/status + tests/hermes_cli/test_dashboard_agent_os_endpoint.py",
+      "verification": "pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q -> 3 passed; py_compile web_server/agent_os/tests",
+      "boundary": "authenticated dashboard read-only endpoint; no public allowlist exposure, no executor/lifecycle/external/device side effects"
     }
   ]
 }

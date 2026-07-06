@@ -571,3 +571,13 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - `venv/bin/python -m hermes_cli.main agent-os status --json` -> `AGENT_OS_CLI_PASS True 299 {'completed': 8, 'completed_local_equivalent': 1, 'external_dependency_open': 1} L3`.
 - Boundaries preserved: command reads the Personal AI OS packet only; it never invokes capabilities, external dispatch, scheduler/taskpool lifecycle writes, secret entry, payment, or physical-device effects.
 - Backlog update: P9 completed; external dependency remains a structured boundary, not an execution stop.
+
+## 2026-07-06T15:32:00+08:00 — P10 dashboard REST read-only Agent OS endpoint wired
+
+- Scope: dashboard API read-only projection surface only.
+- Code artifact: `/Users/charles/.hermes/hermes-agent/hermes_cli/web_server.py` endpoint `GET /api/agent-os/status`.
+- Test artifact: `/Users/charles/.hermes/hermes-agent/tests/hermes_cli/test_dashboard_agent_os_endpoint.py`.
+- Verification: `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `3 passed`; `py_compile` -> pass.
+- Security boundary: endpoint is not added to the public dashboard allowlist; test uses `X-Hermes-Session-Token`.
+- Side-effect boundary: endpoint mirrors `hermes agent-os status --json`; no capability invocation, lifecycle write, external dispatch, secret/payment/legal action, or physical-device effect.
+- Backlog update: P10 completed; continuing safe internal projection surfaces instead of stopping at phase labels.
