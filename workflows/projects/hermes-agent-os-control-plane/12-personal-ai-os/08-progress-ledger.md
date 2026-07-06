@@ -84,3 +84,15 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
 - Invariants: `raw_secret_exported=false`, `global_memory_wip_write=false`, `runtime_mutation=false`, `external_side_effects_executed=false`, `findings=[]`.
 - Backlog update: P4 completed; P5 Mission Runtime + Evidence DAG sample is now `ready_next`.
 - Next safe slice: create MissionRuntimeState and EvidenceDAG for this Personal AI OS upgrade mission; local state only, no external side effects.
+
+## 2026-07-06T14:42:00+08:00 — P5 Mission Runtime + Evidence DAG projection validated
+
+- Scope: local MissionRuntimeState and EvidenceNode projection only; no cron/taskpool/gateway/external mutation.
+- Code artifact: `build_mission_runtime_state.py`.
+- State artifact: `13-mission-runtime-state.json`.
+- Live verification: `MISSION_RUNTIME_PASS 5 executing`; `PAIOS_P5_STATUS_PASS 5 executing`.
+- Evidence DAG nodes: doctor, capability projection, authority ledger, data vault, progress ledger.
+- Open external ecosystem boundary recorded as `boundary.external_did_wallet_payment_legal_hardware`, not as generic human stop.
+- Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `taskpool_lifecycle_write_executed=false`, `cron_mutation_executed=false`.
+- Backlog update: P5 completed; P6 Multi-model Governance RouteReview/EvidencePacket projection is now `ready_next`.
+- Next safe slice: create model review projection with RouteReview and EvidencePacket records; no live model fanout required for projection.

@@ -199,6 +199,31 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.assertNotIn("browser_console", route["evidence_state"]["required_evidence"])
 
 
+    def test_personal_ai_os_packet_mission_projection_is_local_write_not_lifecycle(self):
+        route = preflight.build_route_review_record(
+            summary="git pre-commit staged files: workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/13-mission-runtime-state.json, workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/build_mission_runtime_state.py",
+            files=[
+                "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/13-mission-runtime-state.json",
+                "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/build_mission_runtime_state.py",
+            ],
+            evidence=[
+                "diff:git diff --cached --name-only readback",
+                "tests:projection smoke OK",
+                "py_compile_or_build:staged python py_compile OK",
+                "design_doc:staged packet files are scoped design/projection docs",
+                "gate_readback:doctor/status readback OK",
+                "file_readback:mission runtime state read back",
+                "exact_target:local git repository staged files only",
+                "rollback:git reset staged changes or git revert resulting commit",
+                "post_action_readback:control command exits zero",
+            ],
+        )
+
+        self.assertEqual(route["classification"]["side_effect_class"], "local_write")
+        self.assertNotIn("task_record", route["evidence_state"]["required_evidence"])
+        self.assertNotIn("proof_log", route["evidence_state"]["required_evidence"])
+        self.assertNotIn("lifecycle_readback", route["evidence_state"]["required_evidence"])
+
     def test_cli_json_emits_parseable_record_and_never_executes_side_effects(self):
         proc = subprocess.run(
             [

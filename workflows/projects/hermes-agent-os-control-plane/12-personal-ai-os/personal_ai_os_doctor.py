@@ -32,6 +32,8 @@ REQUIRED_FILES = [
     "11-authority-ledger-report.json",
     "build_data_vault_projection.py",
     "12-data-vault-projection.json",
+    "build_mission_runtime_state.py",
+    "13-mission-runtime-state.json",
 ]
 
 REQUIRED_DOMAIN_ENTITIES = [

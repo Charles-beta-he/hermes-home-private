@@ -30,6 +30,7 @@ CAPABILITY = PACKET / "10-capability-projection.json"
 AUTHORITY_REPORT = PACKET / "11-authority-ledger-report.json"
 AUTHORITY_LEDGER = PACKET / "11-authority-ledger-projection.jsonl"
 DATA_VAULT = PACKET / "12-data-vault-projection.json"
+MISSION_STATE = PACKET / "13-mission-runtime-state.json"
 
 
 def load_json(path: Path):
@@ -59,6 +60,7 @@ def cmd_status(args) -> int:
     capability = load_json(CAPABILITY) if CAPABILITY.exists() else None
     authority = load_json(AUTHORITY_REPORT) if AUTHORITY_REPORT.exists() else None
     data_vault = load_json(DATA_VAULT) if DATA_VAULT.exists() else None
+    mission_state = load_json(MISSION_STATE) if MISSION_STATE.exists() else None
     doctor = run_doctor_json() if args.with_doctor else None
     items = backlog.get("items", [])
     by_status = {}
@@ -100,6 +102,16 @@ def cmd_status(args) -> int:
             "raw_secret_exported": data_vault.get("raw_secret_exported"),
             "global_memory_wip_write": data_vault.get("global_memory_wip_write"),
             "external_side_effects_executed": data_vault.get("external_side_effects_executed"),
+        },
+        "mission_runtime": None if mission_state is None else {
+            "ok": mission_state.get("ok"),
+            "id": mission_state.get("id"),
+            "stage": mission_state.get("stage"),
+            "evidence_node_count": len(mission_state.get("evidence_dag", [])),
+            "runtime_mutation": mission_state.get("runtime_mutation"),
+            "external_side_effects_executed": mission_state.get("external_side_effects_executed"),
+            "taskpool_lifecycle_write_executed": mission_state.get("taskpool_lifecycle_write_executed"),
+            "generic_human_intervention_interface": mission_state.get("success_metrics", {}).get("generic_human_intervention_interface"),
         },
         "backlog_by_status": by_status,
         "backlog_by_phase": by_phase,

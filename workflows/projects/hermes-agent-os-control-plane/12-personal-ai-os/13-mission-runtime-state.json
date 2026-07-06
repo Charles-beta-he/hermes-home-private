@@ -1,0 +1,107 @@
+{
+  "budget": {
+    "external_spend": 0,
+    "mode": "local_autonomous_safe_slices",
+    "secret_entry": 0
+  },
+  "cron_mutation_executed": false,
+  "evidence_dag": [
+    "evidence.09_doctor_report",
+    "evidence.10_capability_projection",
+    "evidence.11_authority_ledger_report",
+    "evidence.12_data_vault_projection",
+    "evidence.08_progress_ledger"
+  ],
+  "evidence_nodes": [
+    {
+      "artifact_path": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/09-doctor-report.json",
+      "claim": "Personal AI OS packet doctor passes",
+      "id": "evidence.09_doctor_report",
+      "method": "file_exists_nonempty_and_domain_script_validated",
+      "schema": "EvidenceNode.v0",
+      "source": "local_file_readback",
+      "timestamp": "2026-07-06T06:27:33.232486+00:00",
+      "verdict": "pass"
+    },
+    {
+      "artifact_path": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/10-capability-projection.json",
+      "claim": "Capability Graph projection exists and is read-only",
+      "id": "evidence.10_capability_projection",
+      "method": "file_exists_nonempty_and_domain_script_validated",
+      "schema": "EvidenceNode.v0",
+      "source": "local_file_readback",
+      "timestamp": "2026-07-06T06:27:33.232615+00:00",
+      "verdict": "pass"
+    },
+    {
+      "artifact_path": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/11-authority-ledger-report.json",
+      "claim": "Authority Ledger projection exists and forbids secret/payment/external side effects",
+      "id": "evidence.11_authority_ledger_report",
+      "method": "file_exists_nonempty_and_domain_script_validated",
+      "schema": "EvidenceNode.v0",
+      "source": "local_file_readback",
+      "timestamp": "2026-07-06T06:27:33.232628+00:00",
+      "verdict": "pass"
+    },
+    {
+      "artifact_path": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/12-data-vault-projection.json",
+      "claim": "Data Vault projection exists and exports no raw secrets",
+      "id": "evidence.12_data_vault_projection",
+      "method": "file_exists_nonempty_and_domain_script_validated",
+      "schema": "EvidenceNode.v0",
+      "source": "local_file_readback",
+      "timestamp": "2026-07-06T06:27:33.232646+00:00",
+      "verdict": "pass"
+    },
+    {
+      "artifact_path": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/08-progress-ledger.md",
+      "claim": "Progress ledger records P0-P4 validated slices",
+      "id": "evidence.08_progress_ledger",
+      "method": "file_exists_nonempty_and_domain_script_validated",
+      "schema": "EvidenceNode.v0",
+      "source": "local_file_readback",
+      "timestamp": "2026-07-06T06:27:33.232657+00:00",
+      "verdict": "pass"
+    }
+  ],
+  "external_side_effects_executed": false,
+  "findings": [],
+  "id": "mission.personal_ai_os_web4_upgrade",
+  "next_action_policy": "Continue P6 RouteReview/EvidencePacket projection locally; represent external gaps as AuthorityBoundary/ExternalDependency artifacts, not chat stops.",
+  "objective": "Upgrade Hermes Agent OS control plane toward Personal AI OS / Web4.0 Agent OS direction through safe autonomous local slices",
+  "ok": true,
+  "open_boundaries": [
+    {
+      "blocked_action": "DID/VC/wallet/payment/legal/hardware-native execution",
+      "id": "boundary.external_did_wallet_payment_legal_hardware",
+      "missing_authority_or_support": "external ecosystem/provider/legal/hardware support",
+      "receipt_requirements": "provider receipt, signed grant, rollback/readback, no agent-typed secret",
+      "safe_local_substitute": "schema, projection, local simulation, draft, and exact authority packet",
+      "schema": "AuthorityBoundary.v0",
+      "status": "externally_blocked_not_generic_human_stop"
+    }
+  ],
+  "risk_limits": {
+    "agent_typed_secret": false,
+    "max_automation_without_exact_external_authority": "L3",
+    "payment_or_legal_signature": false,
+    "unbounded_external_fanout": false
+  },
+  "runtime_mutation": false,
+  "schema": "MissionRuntimeState.v0",
+  "stage": "executing",
+  "stop_conditions": [
+    "attempt_to_type_secret",
+    "attempt_to_pay_or_sign_without_external_safe_channel",
+    "irreversible_production_or_destructive_action_without_exact_target_backup_readback",
+    "unbounded_external_fanout"
+  ],
+  "success_metrics": {
+    "authority_records_min": 1,
+    "capability_projection_nodes_min": 1,
+    "data_vault_items_min": 1,
+    "generic_human_intervention_interface": false,
+    "ssot_packet_valid": true
+  },
+  "taskpool_lifecycle_write_executed": false
+}

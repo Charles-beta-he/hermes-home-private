@@ -128,6 +128,20 @@ def is_docs_only_change(files: Sequence[str]) -> bool:
 def classify_surfaces(summary: str, files: Sequence[str]) -> list[str]:
     blob = text_blob(summary, files)
     surfaces = [name for name, markers in SURFACE_RULES.items() if any(marker.lower() in blob for marker in markers)]
+    if files and all(
+        f.startswith("workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/")
+        or f == "workflows/projects/hermes-agent-os-control-plane/progress-ledger.md"
+        for f in files
+    ):
+        # These packet artifacts may contain words like mission/runtime/task in
+        # schema names, but they are read-only/local projection docs/scripts.
+        surfaces = [s for s in surfaces if s != "taskpool"]
+        if "architecture" not in surfaces:
+            surfaces.append("architecture")
+    if any(f.startswith("scripts/local_brain_change_preflight.py") or f.startswith("scripts/test_local_brain_change_preflight.py") for f in files):
+        surfaces = [s for s in surfaces if s != "taskpool"]
+        if "retrieval" not in surfaces:
+            surfaces.append("retrieval")
     return surfaces or ["docs"]
 
 
@@ -165,6 +179,19 @@ def classify_side_effect(summary: str, files: Sequence[str]) -> str:
         or any(marker in files_blob for marker in ["gateway/", "gateway_", "outbox", "sender", "platforms/"])
     ):
         return "external_dispatch"
+    if files and all(
+        f.startswith("workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/")
+        or f == "workflows/projects/hermes-agent-os-control-plane/progress-ledger.md"
+        for f in files
+    ):
+        # Personal AI OS packet files are local SSOT/projection artifacts. Terms
+        # such as "mission runtime state" describe schema/projection, not live
+        # taskpool/mission lifecycle mutation.
+        return "local_write"
+    if any(f.startswith("scripts/local_brain_change_preflight.py") or f.startswith("scripts/test_local_brain_change_preflight.py") for f in files):
+        # Editing the dry-run preflight classifier changes local gate logic but is
+        # still a local script/test write, not a taskpool/mission lifecycle write.
+        return "local_write"
     if any(marker in text_blob(summary, files) for marker in ["taskpool", "lifecycle", "mission", "cron", "done transition", "任务池", "生命周期"]):
         return "lifecycle_write"
     if any(marker in text_blob(summary, files) for marker in ["write", "commit", "patch", "file", "本地写入", "提交"]):
