@@ -188,3 +188,23 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
   - Browser console after interaction: 0 messages / 0 JS errors.
 - Boundary preserved: UI remains read-only; no capability execution, lifecycle writes, external dispatch, secret/payment/legal action, or physical-device effect.
 - Backlog update: P13 completed.
+
+## 2026-07-06T16:58:00+08:00 — P14 Agent OS receipt packet landed
+
+- Scope: add a read-only receipt export packet surface across CLI, API, and dashboard UI.
+- TDD evidence:
+  - RED: `test_agent_os_receipt_command_emits_read_only_packet` failed because `receipt` was not a valid subcommand.
+  - RED: `test_dashboard_agent_os_receipt_endpoint_is_read_only_packet` failed with HTTP 404 for `/api/agent-os/receipt`.
+  - GREEN: both receipt tests pass after implementation.
+- Code artifacts:
+  - `hermes_cli/agent_os.py`: `build_agent_os_receipt()` and `hermes agent-os receipt --json`.
+  - `hermes_cli/web_server.py`: authenticated `GET /api/agent-os/receipt`.
+  - `web/src/lib/api.ts`: `AgentOsReceiptResponse` and `api.getAgentOsReceipt()`.
+  - `web/src/pages/AgentOsPage.tsx`: Receipt export packet panel and Build receipt action.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `5 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - `hermes agent-os receipt --json` emits `PersonalAIOSReceipt.v0`, `ok=true`, capability count 299, all boundary flags false.
+  - Browser readback at `http://127.0.0.1:9123/agent-os`: Build receipt renders `PersonalAIOSReceipt.v0` and `capability_execution`; browser console 0 messages / 0 JS errors.
+- Boundary preserved: receipt construction is read-only; no file export, external dispatch, execution, lifecycle write, secret/payment/legal action, or physical-device effect.
+- Backlog update: P14 completed.

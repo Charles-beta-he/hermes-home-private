@@ -161,6 +161,17 @@
       "artifact": "web/src/pages/AgentOsPage.tsx filter controls + external dependency inbox; web/src/lib/api.ts typed external dependency records",
       "verification": "pytest agent_os/dashboard endpoint -> 3 passed; web npm run build -> pass; browser /agent-os filter evidence data_vault -> Showing 1 of 5 and evidence.12_data_vault_projection visible; filter authority/proposals/devices and external dependency inbox present; console 0 errors",
       "boundary": "read-only filtering and local display only; no execution/lifecycle/external/secret/payment/device side effects"
+    },
+    {
+      "id": "PAIOS-P14-001",
+      "title": "Add Agent OS read-only receipt packet CLI/API/UI builder",
+      "phase": "P14",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "hermes agent-os receipt --json; /api/agent-os/receipt; dashboard Receipt export packet panel",
+      "verification": "TDD red tests failed for missing receipt command and endpoint; green tests 5 passed; web npm run build -> pass; CLI receipt emits PersonalAIOSReceipt.v0; browser Build receipt renders receipt and boundary flags with console 0 errors",
+      "boundary": "read-only receipt construction only; no file export, dispatch, execution, lifecycle write, secret/payment/legal/physical-device side effects"
     }
   ]
 }
