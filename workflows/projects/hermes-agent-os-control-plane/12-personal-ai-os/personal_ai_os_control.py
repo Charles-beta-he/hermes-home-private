@@ -29,6 +29,7 @@ BACKLOG = PACKET / "07-backlog.json"
 CAPABILITY = PACKET / "10-capability-projection.json"
 AUTHORITY_REPORT = PACKET / "11-authority-ledger-report.json"
 AUTHORITY_LEDGER = PACKET / "11-authority-ledger-projection.jsonl"
+DATA_VAULT = PACKET / "12-data-vault-projection.json"
 
 
 def load_json(path: Path):
@@ -57,6 +58,7 @@ def cmd_status(args) -> int:
     backlog = load_json(BACKLOG)
     capability = load_json(CAPABILITY) if CAPABILITY.exists() else None
     authority = load_json(AUTHORITY_REPORT) if AUTHORITY_REPORT.exists() else None
+    data_vault = load_json(DATA_VAULT) if DATA_VAULT.exists() else None
     doctor = run_doctor_json() if args.with_doctor else None
     items = backlog.get("items", [])
     by_status = {}
@@ -90,6 +92,14 @@ def cmd_status(args) -> int:
             "external_side_effects_executed": authority.get("external_side_effects_executed"),
             "payment_or_credential_action_executed": authority.get("payment_or_credential_action_executed"),
             "agent_typed_secret": authority.get("agent_typed_secret"),
+        },
+        "data_vault": None if data_vault is None else {
+            "ok": data_vault.get("ok"),
+            "item_count": data_vault.get("item_count"),
+            "sensitivity_counts": data_vault.get("sensitivity_counts"),
+            "raw_secret_exported": data_vault.get("raw_secret_exported"),
+            "global_memory_wip_write": data_vault.get("global_memory_wip_write"),
+            "external_side_effects_executed": data_vault.get("external_side_effects_executed"),
         },
         "backlog_by_status": by_status,
         "backlog_by_phase": by_phase,

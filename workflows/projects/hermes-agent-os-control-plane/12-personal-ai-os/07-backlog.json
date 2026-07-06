@@ -52,17 +52,17 @@
       "title": "Create DataVault classification projection for project profile and packet files",
       "phase": "P4",
       "automation_level": "L1",
-      "status": "ready_next",
+      "status": "completed",
       "safe_without_additional_authority": true,
-      "artifact": "data_vault_projection.json",
-      "verification": "D0-D6 classification, D5 export never, WIP not memory"
+      "artifact": "12-personal-ai-os/12-data-vault-projection.json",
+      "verification": "build_data_vault_projection.py + status readback -> DATA_VAULT_PASS / PAIOS_P4_STATUS_PASS, raw_secret_exported=false, global_memory_wip_write=false"
     },
     {
       "id": "PAIOS-P5-001",
       "title": "Create sample MissionRuntimeState and EvidenceDAG for Personal AI OS upgrade mission",
       "phase": "P5",
       "automation_level": "L3",
-      "status": "ready_after_P4",
+      "status": "ready_next",
       "safe_without_additional_authority": true,
       "artifact": "mission_runtime_state_personal_ai_os.json",
       "verification": "local tick updates evidence only; no external side effects"

@@ -515,3 +515,13 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
 - Invariants: `runtime_mutation=false`, `external_side_effects_executed=false`, `payment_or_credential_action_executed=false`, `agent_typed_secret=false`.
 - Backlog update: P3 completed; P4 Data Vault classification projection is now `ready_next`.
 - Next safe slice: classify project profile/packet artifacts into DataVaultItem records with D0-D6 sensitivity and export policy; no raw secret export.
+
+## 2026-07-06T14:34:00+08:00 — P4 Data Vault projection validated
+
+- Scope: read-only classification over Personal AI OS packet/profile artifacts; no secret read/export; no memory mutation.
+- Code artifact: `build_data_vault_projection.py`.
+- Projection artifact: `12-data-vault-projection.json`.
+- Live verification: `DATA_VAULT_PASS 19 {'D1': 8, 'D2': 11}`; `PAIOS_P4_STATUS_PASS 19 {'D1': 8, 'D2': 11}`.
+- Invariants: `raw_secret_exported=false`, `global_memory_wip_write=false`, `runtime_mutation=false`, `external_side_effects_executed=false`, `findings=[]`.
+- Backlog update: P4 completed; P5 Mission Runtime + Evidence DAG sample is now `ready_next`.
+- Next safe slice: create MissionRuntimeState and EvidenceDAG for this Personal AI OS upgrade mission; local state only, no external side effects.
