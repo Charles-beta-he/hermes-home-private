@@ -150,6 +150,17 @@
       "artifact": "hermes_cli/agent_os.py detailed projections + web/src/pages/AgentOsPage.tsx detail sections",
       "verification": "pytest agent_os/dashboard endpoint -> 3 passed; web npm run build -> pass; browser /agent-os contains Mission evidence DAG, Authority ledger detail, Proposal inbox, Device / service contracts; console 0 errors",
       "boundary": "read-only detail surfacing only; no execution/lifecycle/external/secret/payment/device side effects"
+    },
+    {
+      "id": "PAIOS-P13-001",
+      "title": "Add Agent OS control-room filters and external dependency inbox",
+      "phase": "P13",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "web/src/pages/AgentOsPage.tsx filter controls + external dependency inbox; web/src/lib/api.ts typed external dependency records",
+      "verification": "pytest agent_os/dashboard endpoint -> 3 passed; web npm run build -> pass; browser /agent-os filter evidence data_vault -> Showing 1 of 5 and evidence.12_data_vault_projection visible; filter authority/proposals/devices and external dependency inbox present; console 0 errors",
+      "boundary": "read-only filtering and local display only; no execution/lifecycle/external/secret/payment/device side effects"
     }
   ]
 }

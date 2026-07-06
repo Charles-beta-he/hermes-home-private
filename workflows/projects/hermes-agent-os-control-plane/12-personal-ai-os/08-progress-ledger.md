@@ -170,3 +170,21 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
   - Browser console after page load: 0 messages / 0 JS errors.
 - Boundary preserved: dashboard remains read-only; no capability execution, lifecycle writes, external dispatch, secret/payment/legal action, or physical-device effect.
 - Backlog update: P12 completed.
+
+## 2026-07-06T16:32:00+08:00 — P13 Agent OS filters and dependency inbox landed
+
+- Scope: add read-only operator filtering to `/agent-os` control-room panels and expose the external dependency inbox.
+- Frontend additions:
+  - Mission evidence filter.
+  - Authority ledger filter.
+  - Proposal inbox filter.
+  - Device node filter.
+  - External dependency inbox with status and automation-level badges.
+- Type surface: `web/src/lib/api.ts` now types backlog external dependencies as read-only record arrays.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `3 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - Browser readback at `http://127.0.0.1:9122/agent-os`: filtering `data_vault` shows `Showing 1 of 5 evidence nodes.` and `evidence.12_data_vault_projection`; authority/proposal/device filters and external dependency inbox are present.
+  - Browser console after interaction: 0 messages / 0 JS errors.
+- Boundary preserved: UI remains read-only; no capability execution, lifecycle writes, external dispatch, secret/payment/legal action, or physical-device effect.
+- Backlog update: P13 completed.
