@@ -29,6 +29,8 @@ Use this when Claude Code changes its default/high-end model and Hermes-local sc
 
 `hermes chat --provider claude-code -m claude-fable-5 ...` may still exercise Hermes' Anthropic/OAuth adapter path rather than the direct Claude CLI subprocess path. If it reports Anthropic-style extra-usage/quota errors while `claude -p --model fable` succeeds, do not conclude Claude Code is unavailable. For Claude Code orchestration smoke, prefer the direct CLI path or the scripts that explicitly use `claude -p`.
 
+An interactive Claude Code banner that says `Fable 5 · API Usage Billing`, or `claude auth status --text` showing a Max account, is not sufficient proof that Fable inference is usable. Treat the path as available only after a real prompt returns `is_error=false` and `modelUsage` contains `claude-fable-5` (or equivalent). If print mode returns `Not logged in`/401 and interactive mode renders `Not logged in · Run /login`, report the run as blocked/degraded instead of treating the banner as a successful model call.
+
 ## Commit-guard pitfall
 
 Local commit guards may flag redaction-test fixtures that intentionally contain secret-shaped strings. Split those fixture strings across concatenated literals so the scanner does not block the commit while the test still reconstructs the same runtime payload.
