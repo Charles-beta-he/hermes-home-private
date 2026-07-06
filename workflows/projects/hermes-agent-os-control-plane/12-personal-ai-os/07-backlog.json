@@ -139,6 +139,17 @@
       "artifact": "web/src/pages/AgentOsPage.tsx + web/src/App.tsx + web/src/lib/api.ts + hermes_cli/agent_os.py readback fix",
       "verification": "npm run build -> pass; pytest test_agent_os.py test_dashboard_agent_os_endpoint.py -> 3 passed; browser /agent-os shows cards and boundary rows; browser console 0 errors",
       "boundary": "dashboard UI read-only; no capability execution, lifecycle write, external dispatch, secret/payment/legal action, or physical-device effect"
+    },
+    {
+      "id": "PAIOS-P12-001",
+      "title": "Promote Agent OS dashboard from status cards to read-only control-room details",
+      "phase": "P12",
+      "automation_level": "L2",
+      "status": "completed",
+      "safe_without_additional_authority": true,
+      "artifact": "hermes_cli/agent_os.py detailed projections + web/src/pages/AgentOsPage.tsx detail sections",
+      "verification": "pytest agent_os/dashboard endpoint -> 3 passed; web npm run build -> pass; browser /agent-os contains Mission evidence DAG, Authority ledger detail, Proposal inbox, Device / service contracts; console 0 errors",
+      "boundary": "read-only detail surfacing only; no execution/lifecycle/external/secret/payment/device side effects"
     }
   ]
 }

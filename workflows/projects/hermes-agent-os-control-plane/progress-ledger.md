@@ -597,3 +597,17 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Browser console after page load: 0 messages / 0 JS errors.
 - Boundary preserved: page is read-only; capability execution, lifecycle writes, external dispatch, secret/payment/legal action, and physical-device effects remain false/none.
 - Backlog update: P11 completed.
+
+## 2026-07-06T16:08:00+08:00 — P12 Agent OS read-only control-room details landed
+
+- Scope: promote `/agent-os` from status cards to a read-only control-room shell.
+- Backend projection additions: `hermes_cli/agent_os.py` now exposes authority records, mission objective/evidence/open boundaries/stop conditions, device nodes, proposal inbox, and service-contract stubs.
+- Frontend additions: `web/src/pages/AgentOsPage.tsx` now renders Mission evidence DAG, Authority ledger detail, Proposal inbox, and Device / service contract panels.
+- Type surface: `web/src/lib/api.ts` extended `AgentOsStatusResponse` with detailed read-only arrays.
+- Verification:
+  - `venv/bin/python -m pytest tests/hermes_cli/test_agent_os.py tests/hermes_cli/test_dashboard_agent_os_endpoint.py -q` -> `3 passed`.
+  - `cd web && npm run build` -> TypeScript + Vite build pass.
+  - Browser readback at `http://127.0.0.1:9121/agent-os` confirms detail sections present.
+  - Browser console after page load: 0 messages / 0 JS errors.
+- Boundary preserved: dashboard remains read-only; no capability execution, lifecycle writes, external dispatch, secret/payment/legal action, or physical-device effect.
+- Backlog update: P12 completed.
