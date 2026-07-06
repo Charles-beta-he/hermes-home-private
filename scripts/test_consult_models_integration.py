@@ -37,6 +37,34 @@ class TestConsultModelsIntegration(unittest.TestCase):
         """Communication packet truth gate summaries should defensively handle malformed values."""
         self.assertEqual(consult._summarize_truth_gate("bad"), {})
 
+    def test_discussion_result_preserves_target_task_binding_from_state_context(self):
+        state = {
+            "context": {
+                "task_id": "task-123",
+                "task_path": "/tmp/task-123.md",
+                "large_context": "must-not-be-copied",
+            },
+            "claims": ["C-001:Bound claim"],
+            "evidence": [{"id": "E-001", "type": "file", "supports": ["C-001"]}],
+        }
+        bundle = consult.build_evidence_bundle(state)
+
+        discussion = consult.run_discussion_rounds(
+            plans=[],
+            current_best={"patches": []},
+            models=["model-a", "model-b"],
+            max_rounds=1,
+            offline=True,
+            evidence_bundle=bundle,
+        )
+
+        self.assertEqual(discussion["task_id"], "task-123")
+        self.assertEqual(discussion["target_task_id"], "task-123")
+        self.assertEqual(discussion["task_path"], "/tmp/task-123.md")
+        self.assertEqual(discussion["target_task_path"], "/tmp/task-123.md")
+        self.assertEqual(discussion["evidence_bundle"]["context"]["task_id"], "task-123")
+        self.assertNotIn("large_context", discussion["evidence_bundle"]["context"])
+
     def test_safe_numeric_parsers_reject_bool_and_nonfinite_values(self):
         """Certification-critical numeric parsing must fail closed on bool/NaN/Infinity."""
         self.assertEqual(consult._safe_int(True, 3), 3)

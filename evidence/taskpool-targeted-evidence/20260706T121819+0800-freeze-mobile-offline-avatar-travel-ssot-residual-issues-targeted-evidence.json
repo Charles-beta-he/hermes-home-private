@@ -1,0 +1,22 @@
+{
+  "schema": "parent_residual_issues_targeted_evidence_v1",
+  "created_at": "2026-07-06T12:18:19+08:00",
+  "task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot",
+  "target_task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot",
+  "target_task_path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-21-freeze-mobile-offline-avatar--travel-ssot.md",
+  "source_parent_discussion": "/Users/charles/.hermes/tick-20260706-035315-716534-p8451-de11b8df-bd2272ef/discussion_result.json",
+  "source_parent_gate": "/tmp/moat-ratification-gate-after-claude-login.json",
+  "human_acceptance": "User said 认可，继续推进，直至无下一步; consumed as authorization to create targeted evidence and one bounded retry, not as done authority.",
+  "addressed_items": {
+    "I-002": "relay_ordering child now has independent certified verifier discussion_result",
+    "I-003": "fallback threshold brief defines tiered noop-vs-change criteria",
+    "I-004": "fallback threshold brief explicitly excludes parent-scoped global router mutation; split/defer required",
+    "target_task_binding_missing": "next parent state must carry target_task_id/target_task_path; this packet carries both"
+  },
+  "artifacts": {
+    "relay_ordering_verifier_discussion": "/Users/charles/.hermes/tick-20260706-041544-911000-p23347-35d2d5a6-bd57e51e/discussion_result.json",
+    "fallback_threshold_brief": "/Users/charles/.hermes/evidence/taskpool/2026-07-06-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-fallback-threshold-收敛前/fallback-threshold-brief.md",
+    "fallback_threshold_readback": "/Users/charles/.hermes/evidence/taskpool/2026-07-06-为-2026-06-21-freeze-mobile-offline-avatar--travel-ssot-细化-fallback-threshold-收敛前/fallback-threshold-readback.json"
+  },
+  "boundary": "not completion authority; opens only one bounded parent ratification retry if economy gate accepts fresh targeted evidence"
+}

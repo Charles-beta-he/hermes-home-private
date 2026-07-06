@@ -1,0 +1,29 @@
+{
+  "schema": "provider_recovery_targeted_rerun_evidence_v1",
+  "created_at": "2026-07-06T11:44:40+08:00",
+  "task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot",
+  "human_signal": "user reported: claude code 已经登陆成功",
+  "provider_recovery": {
+    "model": "claude-opus-4-8",
+    "provider": "claude-code",
+    "smoke_tick": "/Users/charles/.hermes/tick-20260706-034246-010312-p99008-3b16ec6e-0be791e2/",
+    "fanout_certification": "fanout_quorum_met",
+    "success_count": 2,
+    "fail_count": 0,
+    "planner_set": [
+      "claude-opus-4-8",
+      "mimo-v2.5-pro"
+    ]
+  },
+  "authority_boundary": {
+    "opens": "one bounded parent ratification refresh",
+    "does_not_open": [
+      "done",
+      "certified",
+      "lifecycle closeout",
+      "quorum lowering",
+      "reviewer replacement"
+    ],
+    "fail_closed": "if no discussion_result is produced, keep/reblock task blocked"
+  }
+}

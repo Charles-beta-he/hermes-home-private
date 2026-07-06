@@ -1177,7 +1177,18 @@ def build_evidence_bundle(state: dict) -> dict:
 
     verified_count = sum(1 for g in grounding.values() if g["truth_status"] == "verified_by_evidence")
     coverage = (verified_count / len(claims)) if claims else 1.0
-    return {
+    binding_context: Dict[str, Any] = {}
+    if isinstance(context, dict):
+        for key in ("task_id", "target_task_id", "source_task_id", "canonical_task_id", "task_path", "target_task_path", "canonical_task_path"):
+            value = context.get(key)
+            if isinstance(value, (str, int)) and str(value).strip():
+                binding_context[key] = str(value).strip()
+        if "target_task_id" not in binding_context and "task_id" in binding_context:
+            binding_context["target_task_id"] = binding_context["task_id"]
+        if "target_task_path" not in binding_context and "task_path" in binding_context:
+            binding_context["target_task_path"] = binding_context["task_path"]
+
+    bundle = {
         "schema_version": EVIDENCE_BUNDLE_SCHEMA_VERSION,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "claims": claims,
@@ -1187,6 +1198,9 @@ def build_evidence_bundle(state: dict) -> dict:
         "verified_claim_count": verified_count,
         "claim_count": len(claims),
     }
+    if binding_context:
+        bundle["context"] = binding_context
+    return bundle
 
 
 def evaluate_truth_gate(evidence_bundle: Optional[dict]) -> dict:
@@ -3114,7 +3128,13 @@ def run_discussion_rounds(
         "estimated_tokens_saved": sum(r.get("estimated_tokens_saved", 0) for r in communication_rounds),
         "policy": "send manifest+delta packets; keep full artifacts in tick files; request omitted evidence explicitly",
     }
-    return {
+    binding_context = evidence_bundle.get("context") if isinstance(evidence_bundle, dict) else {}
+    binding_fields = {k: v for k, v in (binding_context or {}).items() if k in {"task_id", "target_task_id", "source_task_id", "canonical_task_id", "task_path", "target_task_path", "canonical_task_path"}}
+    if "target_task_id" not in binding_fields and "task_id" in binding_fields:
+        binding_fields["target_task_id"] = binding_fields["task_id"]
+    if "target_task_path" not in binding_fields and "task_path" in binding_fields:
+        binding_fields["target_task_path"] = binding_fields["task_path"]
+    result = {
         "status": final_status["status"],
         "models_consulted": models,
         "expected_participants": models,
@@ -3132,6 +3152,8 @@ def run_discussion_rounds(
         "provenance": [f"{_plan_model(plan, f'model_{i}')} contributed seed proposal" for i, plan in enumerate(plans)],
         "reasons": final_status.get("reasons", []),
     }
+    result.update(binding_fields)
+    return result
 
 
 def _artifact_entry(path: str, base: str) -> dict:

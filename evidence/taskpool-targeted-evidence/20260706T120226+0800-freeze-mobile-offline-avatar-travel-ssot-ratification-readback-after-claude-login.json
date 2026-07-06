@@ -1,0 +1,62 @@
+{
+  "schema": "parent_ratification_readback_after_provider_recovery_v1",
+  "created_at": "2026-07-06T12:02:26+08:00",
+  "task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot",
+  "discussion_result": "/Users/charles/.hermes/tick-20260706-035315-716534-p8451-de11b8df-bd2272ef/discussion_result.json",
+  "gate_result": "/tmp/moat-ratification-gate-after-claude-login.json",
+  "discussion_status": "not_certified",
+  "models_consulted": [
+    "claude-opus-4-8",
+    "gpt-5.5",
+    "deepseek-v4-pro",
+    "mimo-v2.5-pro"
+  ],
+  "agreement_matrix": {
+    "framing": 0.65,
+    "approach": 0.65,
+    "implementation_order": 0.65
+  },
+  "ratification_votes": [
+    {
+      "model": "claude-opus-4-8",
+      "vote": "amend",
+      "best_within_constraints": true,
+      "reasoning": "I-003 noop-vs-change resolves by tier, not blanket noop. P-002/P-003 (I-001,I-002) are safe meta+verifier adds → land as advisory. P-004 is a global router mutation on 1/4 planners with system side effects → reject at task scope, needs own quorum (see evidence_request). Truth gate grounded but grounding≠authority to certify a config change. Hence amend, not approve/reject."
+    },
+    {
+      "model": "gpt-5.5",
+      "vote": "amend",
+      "best_within_constraints": true,
+      "reasoning": "Truth gate is grounded, but approval is blocked by unresolved I-001/I-002/I-003. P-002/P-004 support stuck_convergence plus an evidence-gap amendment; P-003 supports adding a relay_ordering verifier artifact. I-003 noop-vs-change conflict must be resolved before certification."
+    },
+    {
+      "model": "deepseek-v4-pro",
+      "vote": "amend",
+      "best_within_constraints": true,
+      "reasoning": "All three issues lack resolution and missing model inputs (claude-opus-4-8, gpt-5.5, mimo-v2.5-pro). I-001 (severity 4) proposes two patches but needs file verification. I-002 (severity 3) add_verifier patch is plausible but unconfirmed. I-003 (severity 3) has contradictory votes from missing models. Cannot approve without evidence; reject is too harsh given partial patches. Amend: gather evidence first, then decide."
+    },
+    {
+      "model": "mimo-v2.5-pro",
+      "vote": "amend",
+      "best_within_constraints": true,
+      "reasoning": "P-002/P-003/P-004 address real convergence issues (infinite advisory loops, missing verification). Noop votes from claude-opus-4-8 and gpt-5.5 lack justification. Recommend accepting patches with minor refinement: ensure 'stuck_convergence' status is properly defined and discussion_result.json schema is specified."
+    }
+  ],
+  "gate_status": "FAIL",
+  "gate_decision": "continue_loop",
+  "gate_failures": [
+    "agreement_below_threshold:approach:0.65",
+    "agreement_below_threshold:framing:0.65",
+    "agreement_below_threshold:implementation_order:0.65",
+    "non_approve_vote:claude-opus-4-8:amend",
+    "non_approve_vote:deepseek-v4-pro:amend",
+    "non_approve_vote:mimo-v2.5-pro:amend",
+    "status_not_passed:not_certified",
+    "target_task_binding_missing",
+    "unresolved_severity_3:I-002",
+    "unresolved_severity_3:I-003",
+    "unresolved_severity_3:I-004",
+    "unresolved_severity_4:I-001"
+  ],
+  "boundary": "not certified; task remains blocked; no done/lifecycle promotion"
+}
