@@ -10,6 +10,8 @@ created: "2026-05-11T07:05:00+08:00"
 gates:
   pre_task_claim:
     description: "Validate task is claimable before allowing claim transition"
+    hook_class: gate
+    fail_policy: fail-closed
     fail_closed: true
     checks:
       - task_exists_in_pool
@@ -20,6 +22,8 @@ gates:
 
   pre_task_done:
     description: "Require structured proof before done transition"
+    hook_class: gate
+    fail_policy: fail-closed
     fail_closed: true
     checks:
       - proof_artifact_exists
@@ -30,6 +34,8 @@ gates:
 
   pre_final_response:
     description: "Hermes-hosted OpenClaw SE-AOS final accountability gate: require P10 self-check, benchmark green, fusion status, and evidence before claiming completion"
+    hook_class: gate
+    fail_policy: fail-closed
     fail_closed: true
     command: ~/.hermes/scripts/pua_loop_self_optimize.py final-gate
     checks:
@@ -42,6 +48,8 @@ gates:
 
   post_task_fail:
     description: "Handle task failure gracefully"
+    hook_class: observer
+    fail_policy: fail-open
     fail_closed: false
     checks:
       - increment_retry_count
@@ -51,6 +59,8 @@ gates:
 
   post_task_block:
     description: "Trigger notifications when tasks transition to blocked"
+    hook_class: observer
+    fail_policy: fail-open
     fail_closed: false
     checks:
       - auth_blocked_telegram_notify
@@ -62,28 +72,42 @@ shell_hooks:
   post_tool_call:
     - command: ~/.hermes/agent-hooks/record-trace.sh
       matcher: "read_file|write_file|patch|search_files|terminal"
+      hook_class: observer
+      fail_policy: fail-open
       timeout: 5
     - command: ~/.hermes/agent-hooks/pua-loop-hook-ingest.sh
       matcher: "error|failure|exception|user_correction|pua-loop|OpenClaw|self-evolution"
+      hook_class: observer
+      fail_policy: fail-open
       timeout: 10
       note: "Hermes-hosted OpenClaw SE-AOS MVP: quiet PUA-loop hook ingestion for failures/corrections/evolution events"
     - command: ~/.hermes/scripts/log-route-outcome.sh
       matcher: ".*"
+      hook_class: observer
+      fail_policy: fail-open
       timeout: 5
 
   post_task_block:
     - command: "python3 ~/.hermes/scripts/auth_blocked_notifier.py"
       matcher: "auth-required|auth-missing|登录凭证|登录态|凭据"
+      hook_class: observer
+      fail_policy: fail-open
       timeout: 15
       note: "Real-time TG notification when tasks block due to missing auth material"
     - command: "python3 ~/.hermes/scripts/iteration_budget_triage.py --json"
       matcher: "Iteration budget exhausted"
+      hook_class: observer
+      fail_policy: fail-open
       timeout: 30
       note: "Trigger triage analysis when tasks exhaust iteration budget"
 
 # --- Plugin hooks (registered per plugin) ---
 plugin_hooks:
   pre_llm_call:
-    - git-branch-inject
+    - name: git-branch-inject
+      hook_class: advisor
+      fail_policy: fail-open
   post_skill_install:
-    - skill-tracker
+    - name: skill-tracker
+      hook_class: observer
+      fail_policy: fail-open

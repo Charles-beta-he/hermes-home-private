@@ -108,6 +108,57 @@ security:
         self.assertTrue(saved["nodes"][0]["token_configured"])
         self.assertNotIn("secret-token-value", json.dumps(saved, ensure_ascii=False))
 
+    def test_register_local_replaces_same_local_node_when_bind_host_changes(self):
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            cfg = home / "edge-worker" / "config.yaml"
+            registry = home / "state" / "edge_node_registry.json"
+            cfg.parent.mkdir(parents=True)
+            cfg.write_text(
+                """
+worker:
+  name: "node-a"
+  host: "127.0.0.1"
+  port: 9001
+  standalone_mode: true
+security:
+  token: "secret-token-value"
+  allowed_commands: ["date"]
+  lease_policy: "local-readonly-smoke-allowlist-v1"
+""".strip(),
+                encoding="utf-8",
+            )
+            registry.parent.mkdir(parents=True)
+            registry.write_text(
+                json.dumps(
+                    {
+                        "schema": "edge_node_registry_v1",
+                        "dispatch_enabled": True,
+                        "nodes": [
+                            {
+                                "worker_id": "local:node-a:0.0.0.0:9001",
+                                "name": "node-a",
+                                "source": "local_config",
+                                "bind_host": "0.0.0.0",
+                                "port": 9001,
+                                "endpoint": "http://127.0.0.1:9001",
+                                "dispatch_enabled": True,
+                                "token_configured": True,
+                                "allowed_commands_configured": True,
+                                "lease_policy": "local-readonly-smoke-allowlist-v1",
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with patch.object(edge_node_registry, "EDGE_CONFIG_PATH", cfg):
+                result = edge_node_registry.register_local(path=registry)
+            saved = json.loads(registry.read_text(encoding="utf-8"))
+        self.assertEqual(result["status"], "OK")
+        self.assertEqual([node["worker_id"] for node in saved["nodes"]], ["local:node-a:127.0.0.1:9001"])
+        self.assertEqual(saved["nodes"][0]["bind_host"], "127.0.0.1")
+
     def test_unsafe_unauthenticated_lan_binding_is_fail_in_edge_selfcheck_only(self):
         node = {
             "worker_id": "w1",

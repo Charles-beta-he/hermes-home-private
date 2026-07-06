@@ -1,9 +1,9 @@
 # Hermes Edge Worker Configuration
-# 本机作为主节点，监听所有网络接口
+# 本机作为主节点，仅监听本机回环地址
 
 worker:
   name: "charlesdeMacBook-Pro"
-  host: "0.0.0.0"  # 监听所有接口
+  host: "127.0.0.1"  # 仅监听本机，避免 LAN 暴露 run_command/write_file 能力
   port: 9001
   brain_url: ""
   standalone_mode: true  # local read-only smoke node; no remote brain callback

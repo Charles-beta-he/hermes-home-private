@@ -310,7 +310,17 @@ def register_local(*, path: Path = REGISTRY_PATH) -> dict[str, Any]:
     if not local:
         return {"status": "FAIL", "error": f"edge worker config missing: {EDGE_CONFIG_PATH}", "registry_path": str(path)}
     registry = load_registry(path)
-    nodes = [node for node in registry_nodes(registry) if node.get("worker_id") != local.get("worker_id")]
+    def _same_local_worker(node: dict[str, Any]) -> bool:
+        return (
+            node.get("source") == "local_config"
+            and node.get("name") == local.get("name")
+            and int(node.get("port") or 0) == int(local.get("port") or 0)
+        )
+
+    nodes = [
+        node for node in registry_nodes(registry)
+        if node.get("worker_id") != local.get("worker_id") and not _same_local_worker(node)
+    ]
     now = utc_now_iso()
     node = dict(local)
     node.update({
