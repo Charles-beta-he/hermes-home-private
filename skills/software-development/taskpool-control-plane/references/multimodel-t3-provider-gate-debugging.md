@@ -30,6 +30,7 @@ Use when a taskpool parent closeout is ready for T3 certification but the parent
    - align dispatch capacity probes with required certification participants (for example include required MiMo in `taskpool.api_quota_models`) so taskpool summaries show the model in `models_checked` and expose pass/soft-unknown/hard-blocker status;
    - when this happens, keep the parent not certified, classify it as provider/adapter-budget degradation, and repair the adapter budget/prompt/health state before rerunning target-bound T3.
 8. If a required participant failed due to provider/account/quota/auth, stop at a human gate unless existing governance explicitly permits substitution or quorum change.
+   - Treat CLI login/auth messages such as `Not logged in`, `Please run /login`, `authentication credentials`, `unauthorized`, or `forbidden` as hard provider-health gates, not transient planner failures; they should not be restored merely to satisfy `min_quorum`.
    - Do not silently remove the model.
    - Do not lower quorum.
    - Do not claim certification from the remaining approvals.
