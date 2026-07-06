@@ -1,0 +1,176 @@
+{
+  "schema_version": "personal_ai_os_domain_model_v0",
+  "updated": "2026-07-06T13:57:39+08:00",
+  "automation_levels": {
+    "L0": "answer_only_no_tools",
+    "L1": "local_read_only",
+    "L2": "local_reversible_write",
+    "L3": "local_scheduled_or_long_running",
+    "L4": "external_read_only",
+    "L5": "external_draft_or_staged_write_not_sent",
+    "L6": "external_write_send_publish_exact_authority_required",
+    "L7": "payment_contract_production_or_sensitive_state_strong_gate",
+    "L8": "physical_world_or_secret_boundary_non_agent_typed_or_exact_safety_gate"
+  },
+  "entities": {
+    "UserGoal": {
+      "required": ["id", "objective", "success_criteria", "constraints", "risk_tier", "created_at"],
+      "fields": {
+        "id": "stable goal id",
+        "objective": "natural-language and normalized objective",
+        "success_criteria": "observable completion criteria",
+        "constraints": "hard constraints and red lines",
+        "risk_tier": "T0-T5",
+        "created_at": "ISO-8601 timestamp",
+        "mission_id": "optional Mission id"
+      }
+    },
+    "CapabilityNode": {
+      "required": ["id", "name", "goal_patterns", "required_tools", "required_permissions", "side_effect_level", "verification_method", "rollback_method", "automation_level"],
+      "fields": {
+        "id": "capability id",
+        "name": "human-readable capability name",
+        "goal_patterns": "goal classes this capability can serve",
+        "required_tools": "tool/service/device/model ids",
+        "required_permissions": "authority scopes",
+        "side_effect_level": "S0-S7 compatible side-effect taxonomy",
+        "data_sensitivity": "D0-D6 max data class",
+        "verification_method": "command/API/readback/screenshot/test/receipt",
+        "rollback_method": "none/idempotent/revert/compensation/manual-external",
+        "automation_level": "L0-L8 ceiling",
+        "model_preferences": "model roles suitable for this node"
+      }
+    },
+    "AuthorityRecord": {
+      "required": ["id", "action", "target", "scope", "risk_level", "authorization_source", "status", "evidence_refs"],
+      "fields": {
+        "id": "authority/action id",
+        "action": "intended action",
+        "target": "exact resource/channel/service/path",
+        "scope": "allowed operations and exclusions",
+        "risk_level": "S0-S7/T0-T5",
+        "authorization_source": "user grant/config/preexisting allowlist/none",
+        "expires_at": "optional expiration",
+        "input_digest": "hash/summary of input",
+        "output_digest": "hash/summary of result",
+        "evidence_refs": "receipts/readback/tests/logs",
+        "rollback_refs": "rollback or compensation record",
+        "status": "proposed|authorized|executed|verified|blocked|expired|revoked"
+      }
+    },
+    "DataVaultItem": {
+      "required": ["id", "category", "sensitivity", "source", "allowed_use", "allowed_export", "retention"],
+      "fields": {
+        "id": "data item id",
+        "category": "preference|project|contact|calendar|financial|credential|health|legal|other",
+        "sensitivity": "D0 public, D1 preference, D2 project, D3 private personal, D4 financial/legal/id, D5 secret, D6 medical/high-sensitive",
+        "source": "memory/profile/file/api/user/tool",
+        "owner": "user/project/system",
+        "allowed_use": "reasoning|local_execution|external_draft|external_send|forbidden",
+        "allowed_export": "never|redacted|summary|exact_with_authority",
+        "retention": "ephemeral|session|project|durable|expires",
+        "last_verified": "optional ISO timestamp",
+        "stale_after": "optional duration/date"
+      }
+    },
+    "MissionRuntimeState": {
+      "required": ["id", "objective", "stage", "success_metrics", "budget", "risk_limits", "evidence_dag", "next_action_policy", "stop_conditions"],
+      "fields": {
+        "id": "mission id",
+        "objective": "long-running goal",
+        "stage": "intake|planning|executing|blocked|review|done|retired",
+        "success_metrics": "measurable outcomes",
+        "budget": "time/tick/token/money ceilings",
+        "risk_limits": "authority ceilings",
+        "evidence_dag": "EvidenceNode ids",
+        "open_boundaries": "AuthorityBoundary/ExternalDependency ids",
+        "next_action_policy": "how to continue without generic human interface",
+        "stop_conditions": "hard fail-closed conditions"
+      }
+    },
+    "EvidenceNode": {
+      "required": ["id", "claim", "source", "method", "timestamp", "verdict"],
+      "fields": {
+        "id": "evidence id",
+        "claim": "claim supported by evidence",
+        "source": "command/file/api/screenshot/model_review/user_statement",
+        "method": "how it was obtained",
+        "artifact_path": "optional local path",
+        "digest": "optional hash",
+        "timestamp": "ISO timestamp",
+        "verdict": "pass|warn|fail|advisory|degraded"
+      }
+    },
+    "ServiceContract": {
+      "required": ["id", "service", "capabilities", "auth_required", "input_schema", "output_schema", "side_effects", "verification", "rollback"],
+      "fields": {
+        "id": "contract id",
+        "service": "tool/API/provider/platform",
+        "capabilities": "machine-readable capability list",
+        "auth_required": "auth scopes/identity/wallet/credentials",
+        "input_schema": "accepted inputs",
+        "output_schema": "outputs/receipts",
+        "side_effects": "none/local/external/financial/physical",
+        "price_model": "optional",
+        "rate_limits": "optional",
+        "privacy_policy": "data handling summary",
+        "verification": "readback endpoint/test/receipt",
+        "rollback": "rollback/cancel/compensate path"
+      }
+    },
+    "AgentProposal": {
+      "required": ["id", "proposer", "objective", "proposed_action", "required_permissions", "expected_result", "evidence", "risk", "status"],
+      "fields": {
+        "id": "proposal id",
+        "proposer": "subagent/external-agent/model/tool",
+        "objective": "goal served",
+        "proposed_action": "action suggested, not auto-executed",
+        "required_permissions": "authority scopes needed",
+        "expected_result": "observable outcome",
+        "evidence": "supporting evidence refs",
+        "risk": "risk tier and side effects",
+        "rollback": "proposed rollback",
+        "expiration": "optional",
+        "status": "submitted|reviewing|accepted|rejected|executed|superseded"
+      }
+    },
+    "DeviceNode": {
+      "required": ["id", "type", "capabilities", "safety_level", "owner", "mode"],
+      "fields": {
+        "id": "device id",
+        "type": "desktop|phone|glasses|smart_home|vehicle|robot|sensor|other",
+        "location": "optional location scope",
+        "capabilities": "observe/suggest/draft/execute_local/execute_external/physical_effect",
+        "input_streams": "screen/audio/video/sensor/etc",
+        "output_actions": "available actuation",
+        "safety_level": "S0-S7",
+        "owner": "user/household/org",
+        "mode": "observe_first|draft_only|exact_authority_required|disabled"
+      }
+    },
+    "ModelReview": {
+      "required": ["id", "route_review", "model_roles", "evidence_packet", "verdict", "degraded"],
+      "fields": {
+        "id": "review id",
+        "route_review": "RouteReview decision",
+        "model_roles": "planner/implementer/architect/reviewer/arbiter/router/visual",
+        "evidence_packet": "bounded input evidence refs",
+        "verdict": "certified|advisory|blocked|degraded_not_certified",
+        "dissent": "dissent records",
+        "degraded": "provider/model/tool degradation status",
+        "automation_ceiling": "max allowed automation level after review"
+      }
+    },
+    "AuthorityBoundary": {
+      "required": ["id", "blocked_action", "missing_authority_or_support", "safe_local_substitute", "receipt_requirements", "status"],
+      "fields": {
+        "id": "boundary id",
+        "blocked_action": "exact action not executed",
+        "missing_authority_or_support": "secret/payment/legal/external-standard/hardware/exact-target/etc",
+        "safe_local_substitute": "draft/simulation/schema/decision packet/read-only projection",
+        "receipt_requirements": "what would prove execution if authority/support existed",
+        "status": "open|simulated|externally_blocked|closed|do_not_do"
+      }
+    }
+  }
+}

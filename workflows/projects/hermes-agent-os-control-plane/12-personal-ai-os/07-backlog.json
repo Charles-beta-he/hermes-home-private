@@ -1,0 +1,111 @@
+{
+  "backlog_version": "personal_ai_os_v0_2026_07_06",
+  "policy": {
+    "default_interface": "autonomous_local_progress_with_structured_boundary_artifacts",
+    "no_generic_human_intervention_stop": true,
+    "secrets_payments_legal_irreversible_external": "represent_as_boundary_or_external_dependency_unless_exact_safe_gate_exists"
+  },
+  "items": [
+    {
+      "id": "PAIOS-P0-001",
+      "title": "Validate Personal AI OS SSOT packet",
+      "phase": "P0",
+      "automation_level": "L2",
+      "status": "in_progress",
+      "safe_without_additional_authority": true,
+      "artifact": "12-personal-ai-os/*",
+      "verification": "JSON validation + file readback + project profile readback"
+    },
+    {
+      "id": "PAIOS-P1-001",
+      "title": "Add read-only personal AI OS status/doctor/schema projection",
+      "phase": "P1",
+      "automation_level": "L2",
+      "status": "ready_next",
+      "safe_without_additional_authority": true,
+      "artifact": "Hermes CLI read-only projection or script",
+      "verification": "focused tests + live status/doctor/schema command",
+      "boundary": "no runtime routing/tool invocation/scheduler/external side effects"
+    },
+    {
+      "id": "PAIOS-P2-001",
+      "title": "Project current tools/skills/profile into CapabilityNode records",
+      "phase": "P2",
+      "automation_level": "L2",
+      "status": "ready_after_P1",
+      "safe_without_additional_authority": true,
+      "artifact": "capability_graph_personal_ai_os_projection.json",
+      "verification": "node count + required-field doctor + sample route no-execute proof"
+    },
+    {
+      "id": "PAIOS-P3-001",
+      "title": "Map local receipts to AuthorityRecord schema",
+      "phase": "P3",
+      "automation_level": "L2",
+      "status": "ready_after_P2",
+      "safe_without_additional_authority": true,
+      "artifact": "authority_ledger_projection.jsonl",
+      "verification": "local disposable write receipt + idempotent readback"
+    },
+    {
+      "id": "PAIOS-P4-001",
+      "title": "Create DataVault classification projection for project profile and packet files",
+      "phase": "P4",
+      "automation_level": "L1",
+      "status": "ready_after_P3",
+      "safe_without_additional_authority": true,
+      "artifact": "data_vault_projection.json",
+      "verification": "D0-D6 classification, D5 export never, WIP not memory"
+    },
+    {
+      "id": "PAIOS-P5-001",
+      "title": "Create sample MissionRuntimeState and EvidenceDAG for Personal AI OS upgrade mission",
+      "phase": "P5",
+      "automation_level": "L3",
+      "status": "ready_after_P4",
+      "safe_without_additional_authority": true,
+      "artifact": "mission_runtime_state_personal_ai_os.json",
+      "verification": "local tick updates evidence only; no external side effects"
+    },
+    {
+      "id": "PAIOS-P6-001",
+      "title": "Implement RouteReview and EvidencePacket schema projection for multi-model governance",
+      "phase": "P6",
+      "automation_level": "L2",
+      "status": "ready_after_P5",
+      "safe_without_additional_authority": true,
+      "artifact": "model_review_projection.json",
+      "verification": "synthetic T3 task review packet + degraded-mode sample"
+    },
+    {
+      "id": "PAIOS-P7-001",
+      "title": "Generate read-only UX shell panel projections",
+      "phase": "P7",
+      "automation_level": "L2",
+      "status": "ready_after_P6",
+      "safe_without_additional_authority": true,
+      "artifact": "ux_shell_projection.md",
+      "verification": "each panel has source artifact and unsupported claims list"
+    },
+    {
+      "id": "PAIOS-P8-001",
+      "title": "Add DeviceNode and AgentProposal inbox projection",
+      "phase": "P8",
+      "automation_level": "L2",
+      "status": "ready_after_P7",
+      "safe_without_additional_authority": true,
+      "artifact": "device_and_agent_proposal_projection.json",
+      "verification": "observe-first devices and proposal-only external agents"
+    },
+    {
+      "id": "PAIOS-EXT-001",
+      "title": "DID/VC/wallet/payment/legal authority ecosystem support",
+      "phase": "external_dependency",
+      "automation_level": "L7",
+      "status": "external_dependency_open",
+      "safe_without_additional_authority": false,
+      "artifact": "ExternalDependency record only",
+      "verification": "requires external provider/legal/payment support; local simulation only"
+    }
+  ]
+}

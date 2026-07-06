@@ -1,0 +1,60 @@
+{
+  "backlog_count": 10,
+  "domain_entity_count": 11,
+  "external_side_effects_executed": false,
+  "file_status": {
+    "00-index.md": {
+      "bytes": 2688,
+      "exists": true,
+      "non_empty": true
+    },
+    "01-objective-model.md": {
+      "bytes": 2745,
+      "exists": true,
+      "non_empty": true
+    },
+    "02-web4-gap-to-local-workstreams.md": {
+      "bytes": 2581,
+      "exists": true,
+      "non_empty": true
+    },
+    "03-domain-model-v0.json": {
+      "bytes": 8365,
+      "exists": true,
+      "non_empty": true
+    },
+    "04-multimodel-governance.md": {
+      "bytes": 2748,
+      "exists": true,
+      "non_empty": true
+    },
+    "05-implementation-roadmap.md": {
+      "bytes": 4317,
+      "exists": true,
+      "non_empty": true
+    },
+    "06-non-human-interface-boundary.md": {
+      "bytes": 2204,
+      "exists": true,
+      "non_empty": true
+    },
+    "07-backlog.json": {
+      "bytes": 4400,
+      "exists": true,
+      "non_empty": true
+    },
+    "08-progress-ledger.md": {
+      "bytes": 1088,
+      "exists": true,
+      "non_empty": true
+    }
+  },
+  "findings": [],
+  "generic_human_intervention_interface": false,
+  "mode": "read_only_personal_ai_os_packet_doctor",
+  "ok": true,
+  "packet": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os",
+  "profile": "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
+  "runtime_mutation": false,
+  "timestamp": "2026-07-06T06:03:15.782786+00:00"
+}

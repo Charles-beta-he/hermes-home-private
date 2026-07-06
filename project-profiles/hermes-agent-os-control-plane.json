@@ -1,0 +1,18 @@
+{
+  "id": "hermes-agent-os-control-plane",
+  "name": "Hermes Agent OS Control Plane",
+  "status": "personal-ai-os-web4-upgrade-ssot-active",
+  "ssot": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/00-index.md",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/progress-ledger.md",
+  "personal_ai_os_packet": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/",
+  "target_architecture": "personal_ai_os_web4_agent_os",
+  "kernel_direction": "goal_context_capability_authority_execution_evidence_mission_multimodel",
+  "boundaries": {
+    "default_interface": "autonomous_local_progress_with_structured_boundary_artifacts",
+    "not_generic_human_intervention": true,
+    "agent_typed_secrets": false,
+    "payment_or_legal_signature_without_external_support": false,
+    "unbounded_external_fanout": false
+  },
+  "updated": "2026-07-06T13:57:39+08:00"
+}
