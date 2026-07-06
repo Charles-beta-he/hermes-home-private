@@ -84,6 +84,35 @@ class LocalBrainChangePreflightTestCase(unittest.TestCase):
         self.assertEqual(verdict["status"], "block")
         self.assertIn("missing_required_evidence", verdict["reasons"])
 
+    def test_lark_skill_reference_docs_are_local_write_not_external_dispatch(self):
+        route = preflight.build_route_review_record(
+            summary="git pre-commit staged files: skills/software-development/lark-task-reading/SKILL.md, skills/software-development/lark-task-reading/references/lark-task-comment-complete-closeout.md",
+            files=[
+                "skills/software-development/lark-task-reading/SKILL.md",
+                "skills/software-development/lark-task-reading/references/lark-task-comment-complete-closeout.md",
+            ],
+            evidence=[
+                "file_readback:skill reference read back",
+                "exact_target:local git repository staged files only",
+                "rollback:git reset staged changes or git revert resulting commit",
+                "post_action_readback:hook readback",
+            ],
+        )
+
+        self.assertEqual(route["classification"]["side_effect_class"], "local_write")
+        self.assertEqual(route["classification"]["risk_tier"], "T1")
+        self.assertEqual(route["verdict"]["status"], "pass")
+
+    def test_gateway_code_path_still_classifies_as_external_dispatch(self):
+        route = preflight.build_route_review_record(
+            summary="git pre-commit staged files: gateway/platforms/feishu.py",
+            files=["gateway/platforms/feishu.py"],
+            evidence=[],
+        )
+
+        self.assertEqual(route["classification"]["side_effect_class"], "external_dispatch")
+        self.assertEqual(route["classification"]["risk_tier"], "T3")
+
     def test_t3_precommit_with_full_deterministic_evidence_gets_local_certification_not_multimodel(self):
         evidence = [
             "diff:git diff --cached --name-only readback",

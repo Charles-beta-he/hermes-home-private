@@ -108,6 +108,20 @@ def text_blob(summary: str, files: Sequence[str]) -> str:
     return (summary + "\n" + "\n".join(files)).lower()
 
 
+DOC_SUFFIXES = {".md", ".markdown", ".txt", ".rst", ".adoc"}
+
+
+def is_docs_only_change(files: Sequence[str]) -> bool:
+    """Return true when every touched file is documentation/reference prose.
+
+    Pre-commit summaries include file paths. A path such as
+    ``skills/.../lark-task-reading/...`` names the domain being documented; it
+    is not evidence that the change will dispatch to Lark. Keep domain nouns in
+    documentation paths from escalating to live side-effect classes.
+    """
+    return bool(files) and all(Path(f).suffix.lower() in DOC_SUFFIXES for f in files)
+
+
 def classify_surfaces(summary: str, files: Sequence[str]) -> list[str]:
     blob = text_blob(summary, files)
     surfaces = [name for name, markers in SURFACE_RULES.items() if any(marker.lower() in blob for marker in markers)]
@@ -115,10 +129,43 @@ def classify_surfaces(summary: str, files: Sequence[str]) -> list[str]:
 
 
 def classify_side_effect(summary: str, files: Sequence[str]) -> str:
-    blob = text_blob(summary, files)
-    for name, markers in SIDE_EFFECT_RULES:
-        if any(marker.lower() in blob for marker in markers):
-            return name
+    summary_blob = summary.lower()
+    files_blob = "\n".join(files).lower()
+    if is_docs_only_change(files):
+        # Documentation edits are local writes even when the documented domain is
+        # Lark, gateway, deployment, credentials, or deletion policy. Escalate
+        # only when the human summary itself explicitly describes a live action;
+        # generated summaries contain file paths, so domain nouns like "lark" are
+        # intentionally ignored here.
+        if any(marker in summary_blob for marker in ["credential", "password", "secret", "payment", "凭证", "密码", "支付"]):
+            return "credential_payment"
+        if any(marker in summary_blob for marker in ["delete", "remove", "drop", "destroy", "destructive", "删除", "销毁"]):
+            return "destructive"
+        if any(marker in summary_blob for marker in ["push", "deploy", "publish", "release", "发布", "部署"]):
+            return "publish_deploy_push"
+        if any(marker in summary_blob for marker in ["send", "external_dispatch", "外发", "发送"]):
+            return "external_dispatch"
+        return "local_write"
+
+    # Non-doc code/config paths can be side-effect surfaces, but avoid treating
+    # domain nouns in filenames (for example "lark") as external dispatch unless
+    # they appear with an actual sender/gateway/outbox surface or explicit action
+    # intent in the summary.
+    if any(marker in summary_blob for marker in ["credential", "password", "secret", "payment", "凭证", "密码", "支付"]):
+        return "credential_payment"
+    if any(marker in summary_blob for marker in ["delete", "remove", "drop", "destroy", "destructive", "删除", "清理", "销毁"]):
+        return "destructive"
+    if any(marker in summary_blob for marker in ["push", "deploy", "publish", "release", "发布", "部署"]):
+        return "publish_deploy_push"
+    if (
+        any(marker in summary_blob for marker in ["send", "external_dispatch", "外发", "发送"])
+        or any(marker in files_blob for marker in ["gateway/", "gateway_", "outbox", "sender", "platforms/"])
+    ):
+        return "external_dispatch"
+    if any(marker in text_blob(summary, files) for marker in ["taskpool", "lifecycle", "mission", "cron", "done transition", "任务池", "生命周期"]):
+        return "lifecycle_write"
+    if any(marker in text_blob(summary, files) for marker in ["write", "commit", "patch", "file", "本地写入", "提交"]):
+        return "local_write"
     return "read_only"
 
 
@@ -128,6 +175,8 @@ def classify_risk(summary: str, files: Sequence[str], surfaces: Sequence[str], s
         return "T3"
     if side_effect_class == "lifecycle_write" or any(marker in blob for marker in ["runtime", "hard gate", "canonical", "全局", "不可逆"]):
         return "T3"
+    if is_docs_only_change(files) and (side_effect_class == "local_write" or "docs" in surfaces):
+        return "T1"
     if {"taskpool", "architecture", "retrieval"} & set(surfaces) or len(files) > 1:
         return "T2"
     if side_effect_class == "local_write" or "docs" in surfaces:

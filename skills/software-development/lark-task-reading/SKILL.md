@@ -132,6 +132,12 @@ Load it when executing a specific Lark task, reconciling taskpool/Lark status, o
 
 Minimum in-root rule: finish or explicitly gate the current task with evidence before branching into broad exploration.
 
+## Lark comment and completion closeout
+
+Detailed Lark task evidence comment, completion gating, GUID-based task identification, safe comment format, API/CLI writeback, and readback requirements live in `references/lark-task-comment-complete-closeout.md`.
+
+Load it only after a concrete Lark/Feishu task or GUID/URL is in scope and the user intends writeback, closeout, or completion. Do not use it for simple task listing or generic code submission without a Lark task boundary.
+
 ## Multi-model routing
 
 Use multi-model thinking by risk level, not by habit:
@@ -295,6 +301,8 @@ Detailed Lark-task pitfalls were moved to `references/pitfalls-and-verification.
 Load it when authentication, project routing, MCP token mode, taskpool quarantine, or Lark/brain projection behavior is surprising.
 
 Minimum in-root rule: read the live Lark/taskpool source and preserve auto-authorize/token-mode boundaries before mutating state.
+
+When absorbing a draft Lark closeout workflow, do not create a narrow one-session sibling skill by default. Prefer a scoped reference under this umbrella plus a root pointer; keep routing in `lark-task-reading`, and put comment/complete details behind the reference so ordinary task listing does not load closeout-specific writeback rules.
 
 ## Verification checklist
 
