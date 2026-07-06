@@ -6,145 +6,328 @@
   "dimension_count": 15,
   "covered_dimension_count": 15,
   "source_packets": [
-    "/tmp/ongoing_projects_evidence.txt",
+    "/Users/charles/.hermes/evidence/a-plus-fable-repair/2026-07-07-coverage-freshness-readback.md",
+    "/Users/charles/.hermes/evidence/a-plus-fable-repair/2026-07-07-cron-and-blocker-readback.md",
+    "/tmp/a_plus_coverage_freshness_readback.txt",
+    "/tmp/fable_coverage_completion_evidence.txt",
     "/tmp/fable_repair_evidence.txt",
-    "/tmp/fable_coverage_completion_evidence.txt"
+    "/tmp/ongoing_projects_evidence.txt"
   ],
   "dimensions": [
     {
       "id": "system_runtime",
       "label": "系统运行",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "healthy_with_long_term_attention",
-      "evidence": ["post-update 16 OK / 2 need attention", "edge selfcheck PASS", "brain validate passed", "gateway fd watchdog OK"],
-      "known_gaps": ["single-time snapshot; restart/crash history not fully modeled"],
-      "next_action": "add freshness window and crash/restart history to recurring coverage registry"
+      "verdict": "healthy_after_fresh_health_check",
+      "evidence": [
+        "hermes-health-check cron rerun ok",
+        "edge localhost hardening retained",
+        "brain/portfolio verifies OK"
+      ],
+      "known_gaps": [
+        "restart/crash history still not fully modeled"
+      ],
+      "next_action": "add crash/restart history to recurring health registry",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "tool_discipline",
       "label": "工具纪律 / hook gate",
       "coverage_status": "covered_by_current_readback",
       "verdict": "healthy_after_repair",
-      "evidence": ["hermes_hook_registry_selfcheck ok=true issues=[]", "hooks/registry.yaml declares hook_class/fail_policy", "continuation_fragmentation_guard OK"],
-      "known_gaps": ["hook trigger coverage matrix not exhaustively replayed"],
-      "next_action": "add hook replay samples for high-risk gates"
+      "evidence": [
+        "hermes_hook_registry_selfcheck ok=true issues=[]",
+        "hooks/registry.yaml declares hook_class/fail_policy",
+        "continuation_fragmentation_guard OK"
+      ],
+      "known_gaps": [
+        "hook trigger coverage matrix not exhaustively replayed"
+      ],
+      "next_action": "add hook replay samples for high-risk gates",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     },
     {
       "id": "authority_boundaries",
       "label": "权限边界 / Authority Ledger",
       "coverage_status": "covered_by_current_readback",
       "verdict": "safe_for_local_projection_only",
-      "evidence": ["authority ledger report ok=true runtime_mutation=false external_side_effects_executed=false", "HEWOS high-risk boundary coverage 100% governance, live_execution_enabled=false"],
-      "known_gaps": ["live adapter authority remains closed; exact target packets not supplied"],
-      "next_action": "keep adapter execution gated by exact target/readback/rollback"
+      "evidence": [
+        "authority ledger report ok=true runtime_mutation=false external_side_effects_executed=false",
+        "HEWOS high-risk boundary coverage 100% governance, live_execution_enabled=false"
+      ],
+      "known_gaps": [
+        "live adapter authority remains closed; exact target packets not supplied"
+      ],
+      "next_action": "keep adapter execution gated by exact target/readback/rollback",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     },
     {
       "id": "memory_skills",
       "label": "记忆/技能",
       "coverage_status": "covered_by_current_readback",
       "verdict": "memory_healthy_skill_quality_debt",
-      "evidence": ["memory_ghosts OK", "multi_brain_registry OK", "skill_quality MISSING 141/295 no tests"],
-      "known_gaps": ["141 skills lack tests", "skill_tracking installed but no data", "steward dormant"],
-      "next_action": "taskpool top-10 skill test tranche and activate first steward data collection slice"
+      "evidence": [
+        "memory_ghosts OK",
+        "multi_brain_registry OK",
+        "skill_quality MISSING 141/295 no tests"
+      ],
+      "known_gaps": [
+        "141 skills lack tests",
+        "skill_tracking installed but no data",
+        "steward dormant"
+      ],
+      "next_action": "taskpool top-10 skill test tranche and activate first steward data collection slice",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     },
     {
       "id": "project_portfolio",
       "label": "项目组合 / 愿景进度",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "evidence_collected_but_portfolio_doctor_broken",
-      "evidence": ["portfolio registry 15 projects", "project profiles read", "portfolio doctor latest returns missing script path", "Fable project audit completed"],
-      "known_gaps": ["portfolio_doctor.py and portfolio_os_verify.py missing at registered path", "registry/profile mismatch", "persona-wake-stage status not backed by files"],
-      "next_action": "repair portfolio doctor path, reconcile registry/profile set, downgrade or restore missing persona SSOT"
+      "verdict": "healthy_after_doctor_repair_and_profile_reconcile",
+      "evidence": [
+        "portfolio_os_verify ok=true error=0 warning=0",
+        "portfolio registry/profile set reconciled to 16 projects",
+        "persona-wake-stage downgraded to candidate_without_verified_ssot",
+        "hermes-fitness-posture-coach added to portfolio"
+      ],
+      "known_gaps": [
+        "current profile/docs may still include historical fields; doctor now catches registry/profile/ledger but not every canonical doc by default"
+      ],
+      "next_action": "extend doctor to optional canonical_docs freshness audit",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "taskpool_cron",
       "label": "任务池/cron/自动化",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "running_but_needs_cron_error_closure",
-      "evidence": ["cron jobs summary read", "brain_task_orchestrator selfcheck PASS", "snapshot-GC job error observed", "launchd Hermes/edge plists read"],
-      "known_gaps": ["snapshot-GC error root cause not yet inspected", "cron role overlap not yet rationalized"],
-      "next_action": "read failing cron output and build cron owner/purpose inventory"
+      "verdict": "healthy_after_cron_error_closure",
+      "evidence": [
+        "snapshot-GC cron 0eb700202918 last_status ok after no-agent reversible script",
+        "portfolio-os-doctor cron 124af8e50119 last_status ok",
+        "hermes-health-check cron 5061c026bc76 last_status ok",
+        "multi-brain wrapper direct exit 0 with timeout_recorded degraded receipt"
+      ],
+      "known_gaps": [
+        "multi-brain scheduler last_status may remain historical until scheduler tick despite script-level fix",
+        "some unrelated taskpool follow-through/evidence-autoclose cron jobs still report historical errors and need separate pool-drain audit"
+      ],
+      "next_action": "rerun remaining taskpool-specific cron jobs after taskpool drain loop; keep no-agent wrappers bounded",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "provider_routes",
       "label": "Provider / model routing",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "operational_with_known_skip_risk",
-      "evidence": ["Claude Code Fable probe is_error=false modelUsage claude-fable-5", "consult/model status evidence in previous packet", "provider non-secret config read attempted/redacted"],
-      "known_gaps": ["gemini-3.1-pro-preview skip and google-gemini-cli unknown provider remain project risk", "exact route table needs cleaner redacted export"],
-      "next_action": "add provider route redacted snapshot command and skip-drift alert"
+      "verdict": "fresh_redacted_snapshot_and_fable_available",
+      "evidence": [
+        "redacted config/provider snapshot captured",
+        "Claude Code Fable 5 prior receipts modelUsage claude-fable-5",
+        "multi-brain wrapper records bounded timeout as degraded ok"
+      ],
+      "known_gaps": [
+        "Gemini/optional provider gaps remain degraded-mode risks",
+        "redacted route snapshot is config-level, not full live provider quorum exercise"
+      ],
+      "next_action": "add live provider smoke matrix with no secret output and degraded ceilings",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "multimodel_governance",
       "label": "多模型治理",
       "coverage_status": "covered_by_current_readback",
       "verdict": "projection_and_fable_available",
-      "evidence": ["Fable system/project/repair audits succeeded", "model-review-projection exists", "conductor runtime regression OK"],
-      "known_gaps": ["real route decision log sampling not yet automated", "Gemini route gap reduces quorum resilience"],
-      "next_action": "sample actual RouteReview decisions and register degraded-mode ceilings"
+      "evidence": [
+        "Fable system/project/repair audits succeeded",
+        "model-review-projection exists",
+        "conductor runtime regression OK"
+      ],
+      "known_gaps": [
+        "real route decision log sampling not yet automated",
+        "Gemini route gap reduces quorum resilience"
+      ],
+      "next_action": "sample actual RouteReview decisions and register degraded-mode ceilings",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     },
     {
       "id": "git_release",
       "label": "git/发布/回滚",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "runtime_clean_with_broad_home_dirty_state",
-      "evidence": ["hermes-agent private/main clean and origin synced", "protected detached branch created", "stash preserved", ".hermes scoped commit 603acfbd"],
-      "known_gaps": ["top-level ~/.hermes still has broad unrelated dirty/untracked state", "embodied commit_status blocker requires full readback"],
-      "next_action": "dirty-worktree bucketing and project-specific commit unblock packet"
+      "verdict": "project_scoped_commits_and_stale_blocker_repaired",
+      "evidence": [
+        "HEWOS git log shows scoped commits through ordered high-risk drain",
+        "local brain change preflight unittest 9 tests OK",
+        "HEWOS profile commit_status updated to committed_and_verified_local_brain_governance"
+      ],
+      "known_gaps": [
+        "top-level ~/.hermes still has unrelated dirty/untracked state",
+        "no remote push performed by design"
+      ],
+      "next_action": "bucket unrelated dirty state before any future repo-wide release claim",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "user_profile_alignment",
       "label": "用户画像/偏好一致性",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "aligned_in_this_session_but_persona_project_missing",
-      "evidence": ["responses used Chinese, evidence receipts, no secret typing, no push", "persona-wake-stage files not found"],
-      "known_gaps": ["persona-wake-stage profile/SSOT missing despite memory hint", "explicit user-profile artifact consistency not fully audited"],
-      "next_action": "restore/downgrade persona-wake-stage and add user-preference consistency check to coverage registry"
+      "verdict": "aligned_and_persona_downgraded",
+      "evidence": [
+        "Chinese/evidence/no-secret/no-push discipline preserved",
+        "persona-wake-stage downgraded when SSOT/ledger missing rather than overstated"
+      ],
+      "known_gaps": [
+        "user profile consistency audit remains partial"
+      ],
+      "next_action": "add explicit user-profile consistency readback only when materially relevant",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "external_side_effects",
       "label": "外部副作用 / outbox",
       "coverage_status": "covered_by_current_readback",
       "verdict": "closed_or_simulated_by_evidence",
-      "evidence": ["HEWOS external-outbox/simulation-ledger tails read", "high-risk boundary says no live external dispatch", "no push performed this session"],
-      "known_gaps": ["Lark/gateway outbound inventory not fully linked into one outbox view"],
-      "next_action": "add unified external-outbox summary across lark/gateway/telegram/cron"
+      "evidence": [
+        "HEWOS external-outbox/simulation-ledger tails read",
+        "high-risk boundary says no live external dispatch",
+        "no push performed this session"
+      ],
+      "known_gaps": [
+        "Lark/gateway outbound inventory not fully linked into one outbox view"
+      ],
+      "next_action": "add unified external-outbox summary across lark/gateway/telegram/cron",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     },
     {
       "id": "security",
       "label": "安全",
       "coverage_status": "covered_by_current_readback",
       "verdict": "improved_after_edge_localhost_repair",
-      "evidence": ["edge worker now listens on 127.0.0.1:9001", "hook registry fail policies explicit", "no secret values read or stored"],
-      "known_gaps": ["full secret scan not run", "red-teaming/godmode untracked directory should be content-audited before registry inclusion"],
-      "next_action": "run scoped no-value secret-shape scan and red-team skill content audit"
+      "evidence": [
+        "edge worker now listens on 127.0.0.1:9001",
+        "hook registry fail policies explicit",
+        "no secret values read or stored"
+      ],
+      "known_gaps": [
+        "full secret scan not run",
+        "red-teaming/godmode untracked directory should be content-audited before registry inclusion"
+      ],
+      "next_action": "run scoped no-value secret-shape scan and red-team skill content audit",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     },
     {
       "id": "cost",
       "label": "成本/token/存储",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "cost_evidence_partial_but_registered",
-      "evidence": ["Fable calls reported costUSD in tool receipts", "model-quota.jsonl has quota snapshots", "disk summary / du readback gathered"],
-      "known_gaps": ["no consolidated daily/weekly model cost budget ledger", "Fable high context calls are relatively expensive"],
-      "next_action": "add model-cost daily rollup and per-audit budget cap receipt"
+      "verdict": "fresh_usage_readback_budget_sensitive",
+      "evidence": [
+        "usage wrapper score=93.75 grade=A",
+        "multi-brain wrapper usage canonical path present",
+        "Fable high context use intentionally budgeted for A+ certification"
+      ],
+      "known_gaps": [
+        "no weekly model cost ledger yet",
+        "Fable audits can be expensive if repeated without cap"
+      ],
+      "next_action": "add daily/weekly model cost rollup and per-audit token budget",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "ui_browser_desktop",
       "label": "UI/浏览器/桌面能力",
       "coverage_status": "covered_by_current_readback",
-      "verdict": "project_ui_evidence_exists_current_runtime_not_fully_resmoked",
-      "evidence": ["UIMAX report/metrics and web-workbench runtime verification files read", "Agent OS browser proof appears in progress ledger"],
-      "known_gaps": ["current browser live resmoke not run in this coverage pass", "desktop computer_use permissions not audited"],
-      "next_action": "add optional live browser smoke lane for UI projects when claiming UI freshness"
+      "verdict": "fresh_local_browser_smoke_passed",
+      "evidence": [
+        "HEWOS local static workbench browser smoke title/H1/regions read back",
+        "browser console total_errors=0",
+        "server terminated after local smoke"
+      ],
+      "known_gaps": [
+        "proves local static artifact only, not production/browser fleet/mobile device install"
+      ],
+      "next_action": "gate future UI freshness claims behind live browser smoke plus screenshot/console readback",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:51:01Z",
+        "stale_after_hours": 24,
+        "stale_action": "downgrade_to_stale_covered_until_rerun"
+      }
     },
     {
       "id": "continuous_learning",
       "label": "持续学习/经验落地",
       "coverage_status": "covered_by_current_readback",
       "verdict": "installed_but_not_active",
-      "evidence": ["skill_tracking INSTALLED_NO_DATA_YET", "steward_liveness DORMANT", "agent-boundary-audit landing classifier used"],
-      "known_gaps": ["no first real skill tracking data", "no active steward rule fired"],
-      "next_action": "create first local-only steward sample and skill tracking receipt"
+      "evidence": [
+        "skill_tracking INSTALLED_NO_DATA_YET",
+        "steward_liveness DORMANT",
+        "agent-boundary-audit landing classifier used"
+      ],
+      "known_gaps": [
+        "no first real skill tracking data",
+        "no active steward rule fired"
+      ],
+      "next_action": "create first local-only steward sample and skill tracking receipt",
+      "freshness": {
+        "last_readback_at": "2026-07-06T17:14:11Z",
+        "stale_after_hours": 168,
+        "stale_action": "requires_refresh_before_A_plus_claim"
+      }
     }
-  ]
+  ],
+  "updated_at": "2026-07-06T17:51:01Z",
+  "freshness_policy": {
+    "fresh_until_hours": 24,
+    "stale_rule": "A dimension remains covered only if evidence has a timestamp/readback within the freshness window or explicitly declares itself historical/advisory with next_action.",
+    "a_plus_gate": "No P0/P1 known gap may remain as an uninspected blocker; hard external/credential/push/hardware gates must be classified, not bypassed."
+  }
 }

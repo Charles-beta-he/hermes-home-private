@@ -104,12 +104,12 @@
       "boundary": "not enterprise beta/release certification; next engineering slice is client-side wipe/readback UX proof on RN/PWA, while native install/distribution remain separate human gates"
     },
     "dev_closure_loop": {
-      "status": "blocked-after-auth-refresh-certification-command-terminated",
+      "status": "historical_blocker_resolved_by_taskpool_closeout_done_certified",
       "path": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/09-dev-closure",
       "test": "after auth refresh, canonical multimodel-intervention-step foreground exit -15 and background exit 143 with no output; task was repaired running->blocked; latest completed certification still FAIL/not_certified and economy throttle downgrades to T2 advisory after repeated T3 failures",
       "evidence": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/09-dev-closure/packets/2026-06-21-land-interactive-mobile-shell-mvp.closure-packet.md",
-      "last_verified_at": "2026-06-23T00:28:25+08:00",
-      "boundary": "No safe review/certified/done path while canonical certification is not PASS; inspect/repair post-refresh command termination and provider_parse_error/not_certified before another certification rerun.",
+      "last_verified_at": "2026-07-06T17:47:14.203107+00:00",
+      "boundary": "Historical certification-command-terminated packet is retained as evidence, but current profile taskpool_closeout shows parent task done/certified. Do not use the old blocker as current project status.",
       "runner": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/09-dev-closure/scripts/dev_closure_runner.py",
       "taskpool_closeout_adapter": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/09-dev-closure/scripts/taskpool_closeout_adapter.py",
       "latest_packet_sha256": "39911c43014b6881983ede00039961f180a3350421a7dab26d0dcd73aacb0d90",
@@ -1008,7 +1008,7 @@
     ],
     "enforcement": "warn_only_profile_contract; lifecycle proof gates remain authoritative"
   },
-  "updated_at": "2026-06-29T16:55:00+08:00",
+  "updated_at": "2026-07-06T17:47:14.203107+00:00",
   "platform_expansion": {
     "status": "approved_direction/ssot_metadata_landed",
     "approved_at": "2026-06-29T16:55:00+08:00",
@@ -1041,5 +1041,12 @@
       "provider/router fail-closed readiness refresh",
       "device/simulator UI evidence refresh when permitted"
     ]
+  },
+  "id": "mobile-offline-avatar-travel",
+  "display_name": "Mobile Offline Avatar Travel",
+  "status": "platform-framed+validated-local-slices",
+  "role": "Hermes Pocket Mobile Platform: mobile edge runtime/companion platform; travel is first vertical module.",
+  "governance_readbacks": {
+    "a_plus_repair_20260707": "dev_closure_loop stale blocker reclassified from historical pre-closeout failure; current taskpool_closeout is done/certified per same profile lines 189-196."
   }
 }

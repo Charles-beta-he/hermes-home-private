@@ -3,7 +3,7 @@
   "display_name": "Hermes Fitness Posture Coach（自用健身体态/动作教练）",
   "project_type": "self-use/visual-conversation-domain-pack",
   "created_at": "2026-07-03T12:12:40+08:00",
-  "updated_at": "2026-07-03T12:18:30+08:00",
+  "updated_at": "2026-07-06T17:53:29Z",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md",
   "portfolio_profile": true,
@@ -99,5 +99,67 @@
     "2026-07-03-fitness-posture-p1-local-pose-adapter-spike-with-no-stub-receipt",
     "2026-07-03-fitness-posture-p1-low-risk-squat-pilot-phase-rule-contract",
     "2026-07-03-fitness-posture-p2-local-self-use-review-ui-for-exercise-seed-and-pose-evidence"
-  ]
+  ],
+  "id": "hermes-fitness-posture-coach",
+  "backend_contract_policy": {
+    "contract_scope": "Self-use fitness posture domain pack, exercise metadata, local pose adapter, low-risk coaching contracts, review UI, and safety gates.",
+    "schema_rule": "Changes must preserve existing evidence/projection records; migrations must tolerate historical sparse profiles and malformed task evidence without global failure.",
+    "compatibility_rule": "Projection/control-plane additions remain additive and fail closed; no external dispatch, hardware, deploy, credential, or lifecycle write without exact authority/readback.",
+    "side_effect_boundary": "No push/deploy/external send/hardware action/credential entry/destructive mutation by default."
+  },
+  "regression_coverage_policy": {
+    "required_checks": [
+      "exercise seed build/readback",
+      "pose adapter smoke with no-stub fail-closed receipt",
+      "low-risk movement fixture tests before runtime claims",
+      "UI/browser smoke when review UI changes"
+    ],
+    "blocked_closeout_conditions": [
+      "missing current proof/readback",
+      "authority boundary ambiguity",
+      "unreviewed external side effect",
+      "failed focused regression"
+    ],
+    "last_policy_refresh_at": "2026-07-06T17:53:29Z"
+  },
+  "lark_task_execution_policy": {
+    "primary_goal": "Advance this project only through evidence-backed, profile-scoped local slices while preserving hard authority gates.",
+    "default_classification": "fitness-posture-visual-domain-pack",
+    "classification_required": [
+      "fitness-posture-visual-domain-pack",
+      "evidence-only/regression-proof-already-satisfied",
+      "governance-profile-refresh"
+    ],
+    "execution_order": [
+      "read project profile and progress ledger",
+      "gather baseline/readback",
+      "apply smallest scoped local change",
+      "run focused verification",
+      "write evidence/ledger/profile receipt"
+    ],
+    "closeout_rule": "Closeout requires structured evidence, focused verification output, and explicit boundary notes; advisory/model agreement alone is not completion authority."
+  },
+  "lark_evidence_policy": {
+    "closeout_required_labels": [
+      "baseline",
+      "implementation_delta",
+      "verification",
+      "boundary_or_rollback_guard"
+    ],
+    "accepted_evidence_prefixes": [
+      "artifact:",
+      "file:",
+      "proof:",
+      "command:",
+      "commit:"
+    ],
+    "minimum_closeout_evidence": [
+      "baseline",
+      "implementation_delta",
+      "verification"
+    ]
+  },
+  "governance_readbacks": {
+    "a_plus_semantic_policy_refresh_20260707": "Added scoped semantic control-plane policies after selfcheck WARN readback; WARN-only policy preserved, no fail-closed downgrade."
+  }
 }

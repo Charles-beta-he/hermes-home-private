@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-02T18:43:34+08:00",
+  "updated_at": "2026-07-06T17:33:11.521568+00:00",
   "schema_version": 2,
   "source": "project profiles in /Users/charles/.hermes/project-profiles",
   "projects": [
@@ -9,7 +9,9 @@
       "type": "platform",
       "status": "ledgered",
       "role": "agent runtime / tools / gateway / taskpool / core platform",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "hermes-skill-learning",
@@ -17,7 +19,9 @@
       "type": "knowledge-system",
       "status": "ledgered",
       "role": "skills / semantic control plane / workflow learning",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "lark",
@@ -25,7 +29,9 @@
       "type": "integration",
       "status": "ledgered",
       "role": "Feishu/Lark OAuth MCP and bot-send boundary",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/lark",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "mobile-offline-avatar-travel",
@@ -33,7 +39,9 @@
       "type": "mobile-platform/edge-runtime",
       "status": "platform-framed+validated-local-slices",
       "role": "Hermes Pocket Mobile Platform: mobile edge runtime/companion platform; travel is first vertical module.",
-      "progress_ledger": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "project-portfolio-os",
@@ -41,7 +49,9 @@
       "type": "portfolio-governance",
       "status": "ledgered",
       "role": "portfolio graph, project relation, progress-ledger, and ratchet governance",
-      "progress_ledger": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "uvisa-app-2.0",
@@ -49,7 +59,9 @@
       "type": "application",
       "status": "work-project/excluded-unless-user-switches",
       "role": "UVISA work application; excluded from autonomous non-work full-advance unless user switches to UVISA.",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "hermes-self-extension-os",
@@ -58,7 +70,7 @@
       "status": "validated-active-control-loop-slice",
       "role": "Hermes long-term self-extension mission/control-plane: research → plan → local proof → human handoff → review/fix/verify → skill/CLI/runtime promotion.",
       "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
-      "updated_at": "2026-06-21T16:38:00+08:00",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00",
       "current_components": {
         "mission_control": "validated-active-control-loop-slice",
         "objective_ledger": "contract-ready-metadata-slice",
@@ -67,7 +79,8 @@
         "skill_runtime_promotion": "proposal/needs-evidence",
         "stage_report_schema": "contract-ready",
         "stale_signal_recovery": "validated-local-ledger-slice"
-      }
+      },
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os"
     },
     {
       "id": "hermes-control-console",
@@ -75,7 +88,9 @@
       "type": "operator-console",
       "status": "validated-local-slice",
       "role": "Desktop local Hermes control console: projection health, capability ladder, mission/taskpool/human inbox/evidence/cron operator surface.",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-control-console",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "career-ops",
@@ -83,7 +98,9 @@
       "type": "personal-productivity-product",
       "status": "ledgered",
       "role": "Career/JD/resume/story-bank/job-search tracker direction surfaced in control console capability directions.",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/career-ops",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "single-session-multitopic-trace",
@@ -91,7 +108,9 @@
       "type": "hermes-self-architecture",
       "status": "initiated",
       "role": "single-session multi-topic trace/query/current-state projection capability",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "hermes-capability-model-router",
@@ -99,16 +118,18 @@
       "type": "hermes-self-architecture",
       "status": "validated-local-slice",
       "role": "capability-granular specialist model primary routing with risk-layer verification",
-      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md"
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00"
     },
     {
       "id": "hermes-persona-wake-stage",
       "profile": "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
       "type": "cross-end-ai-assistant-ux-system",
-      "status": "profiled+ledgered+contract-ready",
+      "status": "claim-unverified-files-missing",
       "role": "Cross-end AI assistant wake ritual, agent core, mode-specific stage, and ritual command binding system for Hermes-facing web/PWA/RN/desktop/Telegram surfaces.",
       "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
-      "updated_at": "2026-06-25T10:11:41+08:00",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00",
       "current_components": {
         "source_absorption": "source-observed",
         "project_profile": "profiled",
@@ -117,7 +138,8 @@
         "runtime_implementation": "planned/needs-code-evidence",
         "visual_prototype": "planned/needs-screenshot-evidence",
         "voice_projection": "planned/explicit-authorization-required"
-      }
+      },
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage"
     },
     {
       "id": "uaec-h5",
@@ -126,7 +148,8 @@
       "status": "work-project/excluded-unless-user-switches",
       "role": "UAEC H5 work application; excluded from autonomous non-work full-advance unless user switches to UAEC.",
       "progress_ledger": "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md",
-      "updated_at": "2026-06-25T11:20:51+08:00"
+      "updated_at": "2026-07-06T17:33:11.521568+00:00",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/uaec-h5"
     },
     {
       "id": "hermes-agent-os-control-plane",
@@ -135,7 +158,7 @@
       "status": "p0-read-only-projection-validated+p1-sample-shadow-validated",
       "role": "YodaOS-inspired Hermes Agent OS control-plane project: Context Graph, CapabilityGraph, Evidence DAG, AuthorityGate, Control Surface, Edge Event pipeline, and worker lease governance.",
       "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/progress-ledger.md",
-      "updated_at": "2026-06-26T23:29:27+08:00",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00",
       "current_components": {
         "source_absorption": "chat+image-analysis/advisory-evidence",
         "project_profile": "profiled",
@@ -151,7 +174,8 @@
         "capability_intent": "sample-shadow-replay-validated/8-records-3-policy-blocked",
         "resume_layer": "shadow-contract-ready",
         "interruptibility_policy": "shadow-draft-ready"
-      }
+      },
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane"
     },
     {
       "id": "hermes-embodied-workflow-os",
@@ -160,7 +184,7 @@
       "status": "competitor-evaluated+implementation-ready-packet",
       "role": "Long-term outer-tool/body layer for Hermes: stable workflow core plus adapters for Web/PWA/App/PC, glasses, voice, embedded devices, robots, NAS archive, proxy connectivity, and physical/external-control gates.",
       "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
-      "updated_at": "2026-07-02T18:58:00+08:00",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00",
       "current_components": {
         "project_profile": "profiled",
         "progress_ledger": "ledgered",
@@ -181,7 +205,24 @@
         "prd_p1_p2": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/07-product/prd-p1-p2-contract-core.md",
         "task_candidates": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/08-tasks/task-candidates.json"
       },
-      "next_gate": "human approval for P1 code implementation or taskpool ingest"
+      "next_gate": "human approval for P1 code implementation or taskpool ingest",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os"
+    },
+    {
+      "id": "hermes-fitness-posture-coach",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-fitness-posture-coach.json",
+      "type": "self-use/visual-conversation-domain-pack",
+      "status": "projectized_metadata_seed_built_pose_adapter_smoked_fail_closed",
+      "role": "Self-use fitness posture coach capability pack; exercise taxonomy, local pose evidence, low-risk posture cues; commercial/media/cloud/camera defaults closed.",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md",
+      "updated_at": "2026-07-06T17:33:11.521568+00:00",
+      "current_components": {
+        "project_profile": "created",
+        "exercise_metadata_seed": "built_from_verified_github_dataset",
+        "pose_adapter": "local_smoke_fail_closed_no_pose_detected",
+        "runtime": "self_use_static_review_and_contract_only"
+      }
     }
   ],
   "relations": [
