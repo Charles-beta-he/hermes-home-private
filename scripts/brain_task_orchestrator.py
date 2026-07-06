@@ -2637,13 +2637,40 @@ def model_health_recovered_after(task: "Task", models: list[str]) -> list[str]:
     return recovered
 
 
+def task_has_fresh_targeted_evidence_acceptance(task: "Task") -> bool:
+    """Return true when a human-accepted targeted evidence packet is newer than the failed T3 round.
+
+    This is intentionally narrow: targeted evidence alone is not completion
+    authority.  It only opens one bounded parent-ratification refresh after the
+    economy gate paused repeated failed T3 rounds.  A later failed multimodel
+    round updates multimodel_last_checked_at and automatically consumes this
+    allowance unless a newer targeted_evidence_accepted_at is recorded.
+    """
+    accepted_at = parse_dt(task.fm.get("targeted_evidence_accepted_at"))
+    last_checked_at = parse_dt(task.fm.get("multimodel_last_checked_at"))
+    if accepted_at is None:
+        return False
+    if last_checked_at is not None and accepted_at <= last_checked_at:
+        return False
+    evidence_text = "\n".join(str(x) for x in list_value(task.fm.get("evidence")))
+    has_targeted_packet = (
+        "proof:targeted_evidence_fix_" in evidence_text
+        or "command:targeted_evidence_fix_readback" in evidence_text
+    )
+    has_human_acceptance = "proof:human_accepted_targeted_evidence_parent_ratification_refresh_authorized" in evidence_text
+    return has_targeted_packet and has_human_acceptance
+
+
 def task_multimodel_economy_gate(task: "Task") -> dict[str, Any]:
     """Apply loop economy rules: throttle or pause tasks with too many failed rounds."""
     rounds = task_multimodel_round_count(task)
     last_status = str(task.fm.get("multimodel_round_status") or "")
     last_decision = str(task.fm.get("multimodel_last_decision") or "").upper()
 
-    if rounds >= MAX_T3_ROUNDS_BEFORE_PAUSE and last_status == "failed":
+    exhausted_status = last_status == "failed" or (
+        last_status == "skipped" and "no_discussion_result" in [str(x) for x in list_value(task.fm.get("multimodel_last_failures"))]
+    )
+    if rounds >= MAX_T3_ROUNDS_BEFORE_PAUSE and exhausted_status:
         missing_models = missing_required_models_from_failures(task.fm.get("multimodel_last_failures"))
         recovered_models = model_health_recovered_after(task, missing_models)
         if missing_models and set(recovered_models) == set(missing_models):
@@ -2653,6 +2680,14 @@ def task_multimodel_economy_gate(task: "Task") -> dict[str, Any]:
                 "allowed_tier": "any",
                 "rounds": rounds,
                 "recovered_models": recovered_models,
+            }
+        if task_has_fresh_targeted_evidence_acceptance(task):
+            return {
+                "action": "recovery_rerun",
+                "reason": "human-accepted targeted evidence packet is newer than the failed T3 round; allow one bounded parent ratification refresh",
+                "allowed_tier": "any",
+                "rounds": rounds,
+                "targeted_evidence_fix": True,
             }
         return {
             "action": "pause",
@@ -8850,6 +8885,26 @@ def finish_multimodel_step_running(task_id: str, result: dict[str, Any], actor: 
         )
         refresh_reason = "multimodel-advisory-review"
         to_status = "review"
+    elif normalized_status == "SKIP" and gate.get("reason") == "no_discussion_result" and task_multimodel_round_count(task) >= MAX_T3_ROUNDS_BEFORE_PAUSE:
+        # A post-targeted-evidence refresh can fail before producing a discussion
+        # artifact when every planner errors/quota-gates out.  Requeuing such a
+        # task to pending creates an infinite no-discussion retry loop; keep it
+        # blocked so a human/model-health repair can provide fresh evidence.
+        pause_reason = f"task has {task_multimodel_round_count(task)} failed T3 rounds (max={MAX_T3_ROUNDS_BEFORE_PAUSE}); requires human review or targeted evidence fix"
+        apply_lifecycle_status(
+            task,
+            "blocked",
+            actor,
+            evidence=[evidence, "classification:multimodel-no-discussion-result-after-targeted-refresh"],
+            reason=pause_reason,
+            force=True,
+        )
+        task.fm["blocked_resolve_last_action"] = "multimodel_no_discussion_reblocked"
+        task.fm["blocked_resolve_reason"] = pause_reason
+        task.fm["blocker_status"] = "flow_paused_targeted_evidence_review"
+        task.fm["blocker_summary"] = pause_reason
+        refresh_reason = "multimodel-no-discussion-reblocked"
+        to_status = "blocked"
     else:
         gap_kind = "multimodel_certification_lacks_project_closeout_evidence" if strong_certification else "multimodel_advisory_or_failed_not_completion"
         gap_evidence = (

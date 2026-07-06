@@ -1,0 +1,100 @@
+{
+  "aggregator_summary": {
+    "action": "keep_blocked_certification_required",
+    "axis_summary": {
+      "framing": "done",
+      "patch_normalization": "done",
+      "quota_observability": "done",
+      "relay_ordering": "done"
+    },
+    "child_count": 13,
+    "done_count": 13,
+    "missing_children": [],
+    "open_children": [],
+    "ready_for_parent": true,
+    "remaining_gate_reasons": [
+      "agreement_below_threshold:approach:0.65",
+      "agreement_below_threshold:framing:0.65",
+      "agreement_below_threshold:implementation_order:0.65",
+      "architecture_target",
+      "evidence_bundle_contract",
+      "expected_participants_contract",
+      "explicit_multimodel_reason",
+      "explicit_requires_multimodel",
+      "long_term_goal_alignment_missing",
+      "loop_non_convergence",
+      "mission_envelope",
+      "multimodel_gate:FAIL",
+      "non_approve_vote:deepseek-v4-pro:amend",
+      "non_approve_vote:mimo-v2.5-pro:amend",
+      "status_not_passed:degraded_not_certified",
+      "truth_gate_contract",
+      "unresolved_severity_3:I-001"
+    ],
+    "stale_evidence": []
+  },
+  "artifact_inventory": {
+    "expected_acceptance_paths": {
+      "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/00-intake/intent-card.md": false,
+      "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/04-prd/prd.md": false,
+      "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/decision-log.md": false
+    },
+    "progress_ledger": {
+      "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md": true
+    },
+    "referenced_kanban_closeout_artifacts": {
+      "/Users/charles/.hermes/kanban/workspaces/t_6c711983/freeze-mobile-offline-avatar-travel-ssot-root-closeout-20260703T1149+0800.md": false,
+      "/Users/charles/.hermes/kanban/workspaces/t_6c711983/freeze-ssot-pre-freeze-reconciliation-20260703T1133+0800.md": false,
+      "/Users/charles/.hermes/kanban/workspaces/t_6c711983/frozen-canonical-mobile-offline-avatar-travel-ssot-plan-20260703T1142+0800.md": false,
+      "/Users/charles/.hermes/kanban/workspaces/t_6c711983/runtime-decision-gates-boundary-validation-20260703.md": false
+    }
+  },
+  "blocked_resolve_summary": {
+    "kept_blocked_count": 1,
+    "parent_aggregation": {
+      "action": "keep_blocked_certification_required",
+      "axis_summary": {
+        "framing": "done",
+        "patch_normalization": "done",
+        "quota_observability": "done",
+        "relay_ordering": "done"
+      },
+      "child_count": 13,
+      "done_count": 13,
+      "missing_children": [],
+      "open_children": [],
+      "ready_for_parent": true,
+      "safety": "read-only aggregation; does not mutate parent lifecycle state",
+      "schema": "taskpool_parent_evidence_aggregation_v1",
+      "stale_evidence": [],
+      "stale_evidence_count": 0,
+      "suggested_next": "parent_ratification_refresh"
+    },
+    "reason": "task has 6 failed T3 rounds (max=5); requires human review or targeted evidence fix",
+    "resolved_count": 0,
+    "status": "OK"
+  },
+  "generated_at": "2026-07-06T02:29:27.525097+00:00",
+  "multimodel_dry_run_summary": {
+    "actionable_count": 0,
+    "intervention_required": false,
+    "paused_count": 1,
+    "status": "OK"
+  },
+  "objective": "Resolve blocked parent by narrowing evidence/certification blocker without bypassing done gate.",
+  "schema": "taskpool_targeted_evidence_fix_v1",
+  "targeted_evidence_fix": {
+    "fixed_or_narrowed": [
+      "child convergence is clean: ready_for_parent=true, open_children=[], missing_children=[], stale_evidence_count=0",
+      "taxonomy axes are represented by done child axes; no further child backfill is justified before parent review",
+      "residual blocker is no longer stale child evidence; it is parent certification/evidence artifact inventory/human review"
+    ],
+    "next_safe_options": [
+      "human accepts progress-ledger + child evidence as replacement for pruned canonical intent/PRD/decision-log artifacts and authorizes a scoped ratification rerun",
+      "restore missing acceptance/kanban artifacts, then rerun blocked-resolve and multimodel ratification",
+      "keep blocked with this targeted evidence packet attached; do not ordinary-worker redispatch the parent"
+    ],
+    "remaining_blocker": "economy_gate pause after failed T3 rounds; requires human review or a fresh parent ratification artifact. Current deterministic readback cannot mark done."
+  },
+  "task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot"
+}

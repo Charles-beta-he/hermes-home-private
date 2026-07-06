@@ -2650,6 +2650,98 @@ def test_economy_gate_allows_recovery_rerun_after_missing_required_model_smoke_p
         assert gate["recovered_models"] == ["mimo-v2.5-pro"], gate
 
 
+def test_economy_gate_allows_one_rerun_after_human_accepted_targeted_evidence():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        task = mod.Task(
+            Path(td) / "targeted-evidence.md",
+            {
+                "status": "blocked",
+                "retry_count": 9,
+                "multimodel_round_status": "failed",
+                "multimodel_last_checked_at": "2026-07-02T14:24:04+08:00",
+                "targeted_evidence_accepted_at": "2026-07-06T10:50:00+08:00",
+                "blocked_resolve_reason": "task has 6 failed T3 rounds (max=5); requires human review or targeted evidence fix",
+                "evidence": [
+                    "artifact:/tmp/targeted-evidence.json",
+                    "proof:targeted_evidence_fix_final_consensus_framing_relay_ordering",
+                    "command:targeted_evidence_fix_readback child_convergence_clean residual_parent_certification_artifact_inventory_gap",
+                    "proof:human_accepted_targeted_evidence_parent_ratification_refresh_authorized",
+                ],
+            },
+            "\n".join([f"- Multimodel PUA-loop round {i}: failed" for i in range(6)]),
+        )
+
+        gate = mod.task_multimodel_economy_gate(task)
+
+        assert gate["action"] == "recovery_rerun", gate
+        assert gate["allowed_tier"] == "any", gate
+        assert gate["targeted_evidence_fix"] is True, gate
+
+
+
+def test_economy_gate_pauses_after_targeted_evidence_rerun_produces_no_discussion_result():
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        task = mod.Task(
+            Path(td) / "targeted-evidence-consumed.md",
+            {
+                "status": "pending",
+                "retry_count": 9,
+                "multimodel_round_status": "skipped",
+                "multimodel_last_checked_at": "2026-07-06T11:00:37+08:00",
+                "multimodel_last_failures": ["no_discussion_result"],
+                "targeted_evidence_accepted_at": "2026-07-06T10:57:32+08:00",
+                "blocked_resolve_reason": "task has 6 failed T3 rounds (max=5); requires human review or targeted evidence fix",
+                "evidence": [
+                    "proof:targeted_evidence_fix_final_consensus_framing_relay_ordering",
+                    "proof:human_accepted_targeted_evidence_parent_ratification_refresh_authorized",
+                ],
+            },
+            "\n".join([f"- Multimodel PUA-loop round {i}: failed" for i in range(6)]),
+        )
+
+        gate = mod.task_multimodel_economy_gate(task)
+
+        assert gate["action"] == "pause", gate
+        assert "requires human review or targeted evidence fix" in gate["reason"], gate
+
+
+
+def test_multimodel_no_discussion_after_exhausted_targeted_refresh_reblocks_parent(monkeypatch):
+    mod = load_orchestrator_module()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        task_path = root / "exhausted-parent.md"
+        body = "\n".join([f"- Multimodel PUA-loop round {i}: failed" for i in range(6)])
+        task_path.write_text(body, encoding="utf-8")
+        task = mod.Task(
+            path=task_path,
+            fm={
+                "status": "running",
+                "priority": "P1",
+                "multimodel_round_status": "skipped",
+                "multimodel_last_failures": ["no_discussion_result"],
+                "targeted_evidence_accepted_at": "2026-07-06T10:57:32+08:00",
+                "blocked_resolve_reason": "task has 6 failed T3 rounds (max=5); requires human review or targeted evidence fix",
+            },
+            body=body,
+        )
+        monkeypatch.setattr(mod, "find_task", lambda task_id: task if task_id == task.id else None)
+        monkeypatch.setattr(mod, "completion_gate_failures", lambda task, evidence: [])
+        monkeypatch.setattr(mod, "refresh_derived_task_views", lambda reason: {"status": "OK", "reason": reason})
+
+        result = mod.finish_multimodel_step_running(
+            task.id,
+            {"gate": {"status": "SKIP", "reason": "no_discussion_result"}, "discussion_path": ""},
+        )
+
+        assert result["to_status"] == "blocked", result
+        assert task.fm["status"] == "blocked", task.fm
+        assert task.fm["blocker_status"] == "flow_paused_targeted_evidence_review", task.fm
+
+
+
 def test_finish_multimodel_advisory_only_pass_enters_review_without_done_authority(monkeypatch):
     mod = load_orchestrator_module()
     with tempfile.TemporaryDirectory() as td:

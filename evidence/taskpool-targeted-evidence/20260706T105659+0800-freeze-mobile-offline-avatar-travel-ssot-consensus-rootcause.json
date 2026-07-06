@@ -1,0 +1,67 @@
+{
+  "consensus_regions": [
+    {
+      "claim": "Parent objective stays frozen: review and accept canonical project model, constraints, and runtime decision gates; do not broaden into new implementation work.",
+      "id": "C-001"
+    },
+    {
+      "claim": "Child convergence is clean: 13/13 children done, no open/missing children, stale child evidence count is zero.",
+      "id": "C-002"
+    },
+    {
+      "claim": "Historical split axes have been covered by done child evidence: framing, patch_normalization, quota_observability, relay_ordering.",
+      "id": "C-003"
+    },
+    {
+      "claim": "Mobile/offline avatar/travel runtime remains projection/draft/handoff only; it must not write canonical facts or create a second source of truth.",
+      "id": "C-004"
+    },
+    {
+      "claim": "This packet and the targeted evidence packet are ratification inputs only; they are not done authority.",
+      "id": "C-005"
+    }
+  ],
+  "final_consensus_points": [
+    "The only authorized automatic move is one bounded parent ratification refresh; completion remains gated by ratification PASS and local proof/lifecycle checks.",
+    "A later failed ratification round consumes this allowance because multimodel_last_checked_at becomes newer than targeted_evidence_accepted_at.",
+    "If ratification still fails or the missing discussion artifact remains decisive, keep blocked and report the exact remaining axis; do not loop indefinitely."
+  ],
+  "generated_at": "2026-07-06T02:56:59.175740+00:00",
+  "operator_acceptance": "user accepted splitting consensus/inconsistency regions and authorized root-cause repair + next-step testing in current session",
+  "previous_disagreement_regions": [
+    {
+      "axis": "approach",
+      "historical_failure": "agreement_below_threshold:approach:0.65",
+      "resolution": "Constrain the approach to parent ratification refresh using frozen objective + completed child evidence; no ordinary worker redispatch and no scope expansion."
+    },
+    {
+      "axis": "framing",
+      "historical_failure": "agreement_below_threshold:framing:0.65 / non_approve_vote / no_claims",
+      "resolution": "Frame the parent as SSOT/runtime-gate acceptance, not product feature completion; child framing evidence is done and stale child evidence is zero."
+    },
+    {
+      "axis": "implementation_order",
+      "historical_failure": "agreement_below_threshold:implementation_order:0.65",
+      "resolution": "Next step order is deterministic: targeted evidence accepted -> one bounded parent ratification refresh -> ratification-gate readback; if fail, pause again."
+    },
+    {
+      "axis": "long_term_goal_alignment",
+      "historical_failure": "long_term_goal_alignment_missing",
+      "resolution": "Explicitly bind to MOAT authority chain: Hermes/Brain canonical facts remain SSOT; mobile/Gateway are projections/sync boundaries only."
+    },
+    {
+      "axis": "I-001",
+      "historical_failure": "unresolved_severity_3:I-001",
+      "resolution": "Original discussion artifact is missing, so I-001 cannot be replayed directly; treat residual issue as artifact-inventory/readback gap and require ratification to either close it or name exact remaining axis."
+    }
+  ],
+  "safety_boundaries": [
+    "no force done",
+    "no lifecycle completion from model advice alone",
+    "no external dispatch",
+    "no ordinary worker redispatch of paused parent",
+    "one-shot refresh allowance only"
+  ],
+  "schema": "taskpool_parent_certification_consensus_rootcause_v1",
+  "task_id": "2026-06-21-freeze-mobile-offline-avatar--travel-ssot"
+}
