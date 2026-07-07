@@ -730,3 +730,17 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - JSON schema readback parsed all 3 schema files.
   - Live smoke workspace `external-jspace-p0-smoke-20260707033612`: init/status/objective gate/add-evidence/reflect/reflection gate/closure-packet all returned ok; closure status `verified_local`; negative evidence recorded `no_hidden_state_access`, `no_external_dispatch`, `no_taskpool_lifecycle_write`.
 - Boundary preserved: P1 taskpool event bridge, P2 control room, and multi-model surface review remain unimplemented design/backlog boundaries.
+
+## 2026-07-07T11:55:47+08:00 — External J-space Layer P1 local event bridge landed
+
+- User authority: “已授权，继续推进” after P0 skeleton; consumed only for safe local projection/event bridge work.
+- Scope: local `attach-task` and `on-event` projection commands in `/Users/charles/.hermes/scripts/hermes_jspace.py`; no canonical taskpool/Kanban/Mission lifecycle mutation.
+- Code landing: added `event_ledger.jsonl`, task attachment, taskpool lifecycle-name to workspace-state projection, derived gate actions, and `before_review` / `before_done` gates.
+- SSOT update: `13-external-jspace-layer/specs/external-jspace-layer-v0.1.md` and `00-index.md` now describe P1 projection-only bridge boundary.
+- Verification:
+  - Agent OS preflight: `hermes agent-os status --json` ok true; route preflight for P1 returned `would_execute=false`.
+  - `python3 -m py_compile /Users/charles/.hermes/scripts/hermes_jspace.py /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> pass.
+  - `python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> 6 passed.
+  - Live smoke workspace `external-jspace-p1-smoke-20260707035547`: init, attach-task, on-event running->review, before_review fail before reflection, reflect, before_review pass, on-event review->done, before_done pass, closure-packet ok.
+- Closure packet status: `verified_local`; excluded claims include `not_taskpool_real_lifecycle_write`; negative evidence includes `no_hidden_state_access`, `no_external_dispatch`, `no_taskpool_lifecycle_write`.
+- Boundary preserved: P1 is event projection only. Learning candidates, real taskpool lifecycle write-through, P2 control room, runtime router integration, and multi-model surface review remain future gated work.

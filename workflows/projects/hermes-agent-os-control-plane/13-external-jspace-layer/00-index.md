@@ -25,3 +25,7 @@ The script is local-file only. It creates workspaces under `~/.hermes/workflows/
 ## Current boundary
 
 P0 is a local projection/evidence skeleton. P1 taskpool event bridge, P2 control room, and multi-model surface review remain design/backlog boundaries until separately implemented and verified.
+
+## P1 local event projection
+
+P1 now includes local projection-only `attach-task` and `on-event` commands in `/Users/charles/.hermes/scripts/hermes_jspace.py`. These commands write `event_ledger.jsonl` and map task lifecycle names to workspace states. They do not mutate the canonical taskpool/Kanban/Mission lifecycle.

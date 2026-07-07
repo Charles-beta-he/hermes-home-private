@@ -73,5 +73,24 @@ blocked_policy_violation
 
 ## P1/P2 backlog
 
-- P1: taskpool event bridge, event ledger, before_review/before_done gate checks, learning candidates.
+- P1: projection-only task/event bridge, event ledger, before_review/before_done gate checks (implemented locally); learning candidates remain future work.
 - P2: read-only control room, CapabilityGraph projection, surface model router, advisory multi-model review, dry-run learning promotion.
+
+## P1 event bridge slice
+
+P1 adds a local projection-only task/event bridge to the P0 helper:
+
+```text
+attach-task -> on-event -> workspace_state projection -> before_review/before_done gates -> closure packet event count
+```
+
+Supported commands:
+
+```bash
+hermes_jspace.py attach-task <workspace_id> --task-id <task_id>
+hermes_jspace.py on-event <workspace_id> --event-json '{"source":"taskpool","type":"task.status_changed","from":"running","to":"review"}'
+hermes_jspace.py gate-check <workspace_id> --gate before_review
+hermes_jspace.py gate-check <workspace_id> --gate before_done
+```
+
+Boundary: this is not real taskpool lifecycle write-through. It records task references and projected lifecycle events in `event_ledger.jsonl` only.

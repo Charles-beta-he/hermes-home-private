@@ -18,6 +18,7 @@ from typing import Any, Sequence
 SCHEMA_WORKSPACE = "workspace_projection_v0_1"
 SCHEMA_EVIDENCE = "evidence_dag_v0_1"
 SCHEMA_COMPLETION = "completion_claim_packet_v0_1"
+SCHEMA_EVENT = "jspace_event_ledger_v0_1"
 DEFAULT_ROOT = Path.home() / ".hermes" / "workflows" / "jspace"
 
 
@@ -86,6 +87,7 @@ def init_workspace(root: Path, title: str, goal: str, *, workspace_id: Any = Non
     write_json(wdir / "workspace_state.json", workspace)
     write_json(wdir / "evidence_dag.json", evidence)
     write_json(wdir / "gates.json", {"schema": "jspace_gates_v0_1", "workspace_id": wid, "gate_results": []})
+    (wdir / "event_ledger.jsonl").write_text("", encoding="utf-8")
     return {"ok": True, "workspace_id": wid, "path": str(wdir), "workspace": workspace}
 
 
@@ -100,6 +102,8 @@ def status(root: Path, workspace_id: str) -> dict[str, Any]:
     wdir, workspace, evidence = load_workspace(root, workspace_id)
     verified = [e for e in evidence.get("evidence", []) if e.get("status") == "verified"]
     advisory = [e for e in evidence.get("evidence", []) if e.get("authority") == "model_judgment"]
+    event_path = wdir / "event_ledger.jsonl"
+    event_count = len([line for line in event_path.read_text(encoding="utf-8").splitlines() if line.strip()]) if event_path.exists() else 0
     return {
         "ok": True,
         "workspace_id": workspace_id,
@@ -111,7 +115,64 @@ def status(root: Path, workspace_id: str) -> dict[str, Any]:
         "evidence_count": len(evidence.get("evidence", [])),
         "verified_evidence_count": len(verified),
         "model_judgment_evidence_count": len(advisory),
+        "event_count": event_count,
     }
+
+
+def append_event(wdir: Path, event: dict[str, Any]) -> dict[str, Any]:
+    event = dict(event)
+    event.setdefault("schema", SCHEMA_EVENT)
+    event.setdefault("event_id", f"evt-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')}")
+    event.setdefault("timestamp", utc_now())
+    event.setdefault("side_effect_boundary", "local_projection_only")
+    event.setdefault("external_side_effects_executed", False)
+    with (wdir / "event_ledger.jsonl").open("a", encoding="utf-8") as f:
+        f.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + "\n")
+    return event
+
+
+def taskpool_to_workspace_state(lifecycle_state: Any) -> Any:
+    mapping = {
+        "pending": "dormant",
+        "selected": "objective_model",
+        "claimed": "objective_model",
+        "running": "executing",
+        "review": "reflective",
+        "blocked": "gated",
+        "done": "closed",
+        "reopened": "contested",
+    }
+    return mapping.get(lifecycle_state or "")
+
+
+def attach_task(root: Path, workspace_id: str, task_id: str) -> dict[str, Any]:
+    wdir, workspace, evidence = load_workspace(root, workspace_id)
+    workspace["task_id"] = task_id
+    workspace["updated_at"] = utc_now()
+    write_json(wdir / "workspace_state.json", workspace)
+    event = append_event(wdir, {"source": "jspace", "type": "task.attached", "task_id": task_id, "workspace_id": workspace_id})
+    return {"ok": True, "workspace_id": workspace_id, "task_id": task_id, "event_id": event["event_id"]}
+
+
+def record_event(root: Path, workspace_id: str, event: dict[str, Any]) -> dict[str, Any]:
+    wdir, workspace, evidence = load_workspace(root, workspace_id)
+    event.setdefault("workspace_id", workspace_id)
+    if workspace.get("task_id") and not event.get("task_id"):
+        event["task_id"] = workspace.get("task_id")
+    to_state = event.get("to") or event.get("lifecycle_state")
+    projected = taskpool_to_workspace_state(to_state)
+    derived_actions: list[str] = []
+    if projected:
+        workspace["workspace_state"] = projected
+        workspace["updated_at"] = utc_now()
+    if event.get("type") in {"task.review_requested", "task.status_changed"} and to_state == "review":
+        derived_actions.extend(["gate_check:before_review", "reflection:evidence_review"])
+    if event.get("type") == "task.done" or to_state == "done":
+        derived_actions.append("gate_check:before_done")
+    event.setdefault("derived_actions", derived_actions)
+    recorded = append_event(wdir, event)
+    write_json(wdir / "workspace_state.json", workspace)
+    return {"ok": True, "workspace_id": workspace_id, "event_id": recorded["event_id"], "workspace_state": workspace.get("workspace_state"), "derived_actions": recorded.get("derived_actions", [])}
 
 
 def add_evidence(root: Path, workspace_id: str, ev_type: str, ref: str, claim: str, *, authority: str, status_value: str) -> dict[str, Any]:
@@ -145,6 +206,22 @@ def gate_check(root: Path, workspace_id: str, gate: str) -> dict[str, Any]:
         if not evidence.get("evidence"):
             missing.append("evidence")
     elif gate == "reflection_readback":
+        log = wdir / "reflection_log.md"
+        text = log.read_text(encoding="utf-8") if log.exists() else ""
+        if "## Reflection Readback" not in text:
+            missing.append("reflection_log.readback")
+    elif gate == "before_review":
+        objective_verified = [e for e in evidence.get("evidence", []) if e.get("authority") == "objective" and e.get("status") == "verified"]
+        if not objective_verified:
+            missing.append("verified_objective_evidence")
+        log = wdir / "reflection_log.md"
+        text = log.read_text(encoding="utf-8") if log.exists() else ""
+        if "## Reflection Readback" not in text:
+            missing.append("reflection_log.readback")
+    elif gate == "before_done":
+        objective_verified = [e for e in evidence.get("evidence", []) if e.get("authority") == "objective" and e.get("status") == "verified"]
+        if not objective_verified:
+            missing.append("verified_objective_evidence")
         log = wdir / "reflection_log.md"
         text = log.read_text(encoding="utf-8") if log.exists() else ""
         if "## Reflection Readback" not in text:
@@ -203,12 +280,12 @@ def closure_packet(root: Path, workspace_id: str) -> dict[str, Any]:
     packet = {
         "schema": SCHEMA_COMPLETION,
         "workspace_id": workspace_id,
-        "claim": "External J-space P0 workspace has a local projection/evidence packet",
+        "claim": "External J-space workspace has a local projection/evidence/event packet",
         "scope": "local_projection_only_no_runtime_mutation",
         "evidence_refs": sorted(objective_verified_ids),
         "missing_evidence": [] if objective_verified_ids else ["objective_evidence"],
         "negative_evidence": ["no_hidden_state_access", "no_external_dispatch", "no_taskpool_lifecycle_write"],
-        "excluded_claims": ["not_full_multimodel_certified", "not_integrated_with_runtime_router", "not_taskpool_event_bridge"],
+        "excluded_claims": ["not_full_multimodel_certified", "not_integrated_with_runtime_router", "not_taskpool_real_lifecycle_write"],
         "status": status_value,
     }
     write_json(wdir / "completion_claim_packet.json", packet)
@@ -221,6 +298,7 @@ def closure_packet(root: Path, workspace_id: str) -> dict[str, Any]:
         f"- Claims: {len(evidence.get('claims', []))}",
         f"- Evidence: {len(evidence.get('evidence', []))}",
         f"- Gate results: {len(gates.get('gate_results', []))}",
+        f"- Events: {status(root, workspace_id).get('event_count')}",
         f"- Completion status: `{status_value}`",
         "- Boundary: local projection only; no hidden-state access or external side effects.",
         "",
@@ -251,9 +329,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--claim", required=True)
     p.add_argument("--authority", choices=["objective", "model_judgment", "user_statement"], default="objective")
     p.add_argument("--status", choices=["verified", "advisory", "failed", "blocked"], default="verified")
+    p = sub.add_parser("attach-task")
+    p.add_argument("workspace_id")
+    p.add_argument("--task-id", required=True)
+    p = sub.add_parser("on-event")
+    p.add_argument("workspace_id")
+    p.add_argument("--event-json", required=True, help="JSON object or path")
     p = sub.add_parser("gate-check")
     p.add_argument("workspace_id")
-    p.add_argument("--gate", required=True, choices=["objective_defined", "evidence_dag_exists", "reflection_readback", "completion_claim"])
+    p.add_argument("--gate", required=True, choices=["objective_defined", "evidence_dag_exists", "reflection_readback", "before_review", "before_done", "completion_claim"])
     p = sub.add_parser("reflect")
     p.add_argument("workspace_id")
     p = sub.add_parser("closure-packet")
@@ -270,6 +354,12 @@ def main(argv: Any = None) -> int:
         data = status(root, args.workspace_id)
     elif args.cmd == "add-evidence":
         data = add_evidence(root, args.workspace_id, args.type, args.ref, args.claim, authority=args.authority, status_value=args.status)
+    elif args.cmd == "attach-task":
+        data = attach_task(root, args.workspace_id, args.task_id)
+    elif args.cmd == "on-event":
+        event_arg = Path(args.event_json).expanduser()
+        event = json.loads(event_arg.read_text(encoding="utf-8")) if event_arg.exists() else json.loads(args.event_json)
+        data = record_event(root, args.workspace_id, event)
     elif args.cmd == "gate-check":
         data = gate_check(root, args.workspace_id, args.gate)
     elif args.cmd == "reflect":

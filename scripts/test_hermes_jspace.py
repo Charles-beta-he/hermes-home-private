@@ -46,7 +46,7 @@ class HermesJSpaceTestCase(unittest.TestCase):
         packet = hermes_jspace.closure_packet(self.root, "jspace-test")["packet"]
         self.assertEqual(packet["status"], "verified_local")
         self.assertIn("no_hidden_state_access", packet["negative_evidence"])
-        self.assertIn("not_taskpool_event_bridge", packet["excluded_claims"])
+        self.assertIn("not_taskpool_real_lifecycle_write", packet["excluded_claims"])
 
     def test_completion_claim_gate_requires_objective_evidence_for_completion_critical_claim(self):
         hermes_jspace.init_workspace(self.root, "J-space P0", "prove completion gate", workspace_id="jspace-test")
@@ -57,6 +57,26 @@ class HermesJSpaceTestCase(unittest.TestCase):
         gate = hermes_jspace.gate_check(self.root, "jspace-test", "completion_claim")
         self.assertEqual(gate["result"], "fail")
         self.assertIn("objective_evidence_for_C-CRIT", gate["missing"])
+
+
+    def test_attach_task_and_record_status_event_projects_workspace_state(self):
+        hermes_jspace.init_workspace(self.root, "J-space P1", "project task events", workspace_id="jspace-test")
+        attached = hermes_jspace.attach_task(self.root, "jspace-test", "task-123")
+        self.assertTrue(attached["ok"])
+        event = hermes_jspace.record_event(self.root, "jspace-test", {"source": "taskpool", "type": "task.status_changed", "from": "running", "to": "review"})
+        self.assertEqual(event["workspace_state"], "reflective")
+        self.assertIn("gate_check:before_review", event["derived_actions"])
+        status = hermes_jspace.status(self.root, "jspace-test")
+        self.assertEqual(status["event_count"], 2)
+
+    def test_before_review_gate_requires_reflection_and_verified_objective_evidence(self):
+        hermes_jspace.init_workspace(self.root, "J-space P1", "gate review", workspace_id="jspace-test")
+        before = hermes_jspace.gate_check(self.root, "jspace-test", "before_review")
+        self.assertEqual(before["result"], "fail")
+        self.assertIn("reflection_log.readback", before["missing"])
+        hermes_jspace.reflect(self.root, "jspace-test")
+        after = hermes_jspace.gate_check(self.root, "jspace-test", "before_review")
+        self.assertEqual(after["result"], "pass")
 
 
 if __name__ == "__main__":

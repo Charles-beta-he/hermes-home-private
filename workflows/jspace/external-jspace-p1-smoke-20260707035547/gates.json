@@ -1,0 +1,26 @@
+{
+  "gate_results": [
+    {
+      "gate": "before_review",
+      "missing": [
+        "reflection_log.readback"
+      ],
+      "result": "fail",
+      "timestamp": "2026-07-07T03:55:47+00:00"
+    },
+    {
+      "gate": "before_review",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-07T03:55:47+00:00"
+    },
+    {
+      "gate": "before_done",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-07T03:55:47+00:00"
+    }
+  ],
+  "schema": "jspace_gates_v0_1",
+  "workspace_id": "external-jspace-p1-smoke-20260707035547"
+}
