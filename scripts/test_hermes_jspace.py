@@ -79,5 +79,19 @@ class HermesJSpaceTestCase(unittest.TestCase):
         self.assertEqual(after["result"], "pass")
 
 
+
+    def test_learning_candidates_are_candidate_only_no_auto_apply(self):
+        hermes_jspace.init_workspace(self.root, "J-space P1", "learning candidate", workspace_id="jspace-test")
+        hermes_jspace.reflect(self.root, "jspace-test")
+        hermes_jspace.gate_check(self.root, "jspace-test", "before_done")
+        result = hermes_jspace.learning_candidates(self.root, "jspace-test")
+        candidate = result["candidate"]
+        self.assertTrue(candidate["requires_human_review"])
+        self.assertFalse(candidate["auto_apply_executed"])
+        self.assertFalse(candidate["global_memory_write_executed"])
+        self.assertFalse(candidate["skill_patch_executed"])
+        self.assertEqual(candidate["boundary"], "candidate_only_no_persistent_learning_write")
+
+
 if __name__ == "__main__":
     unittest.main()

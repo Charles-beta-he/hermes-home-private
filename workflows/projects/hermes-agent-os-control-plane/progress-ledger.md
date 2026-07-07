@@ -744,3 +744,15 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Live smoke workspace `external-jspace-p1-smoke-20260707035547`: init, attach-task, on-event running->review, before_review fail before reflection, reflect, before_review pass, on-event review->done, before_done pass, closure-packet ok.
 - Closure packet status: `verified_local`; excluded claims include `not_taskpool_real_lifecycle_write`; negative evidence includes `no_hidden_state_access`, `no_external_dispatch`, `no_taskpool_lifecycle_write`.
 - Boundary preserved: P1 is event projection only. Learning candidates, real taskpool lifecycle write-through, P2 control room, runtime router integration, and multi-model surface review remain future gated work.
+
+## 2026-07-07T11:57:14+08:00 — External J-space Layer P1 learning candidate projection landed
+
+- Scope: candidate-only learning projection; no skill patch, no global memory write, no runtime promotion, no taskpool lifecycle mutation.
+- Code landing: added `learning-candidates` command to `/Users/charles/.hermes/scripts/hermes_jspace.py`; emits `learning_candidate.json` with `requires_human_review=true` and all auto-apply/write flags false.
+- SSOT update: `13-external-jspace-layer/specs/external-jspace-layer-v0.1.md` and `00-index.md` now document learning candidate boundary.
+- Verification:
+  - `python3 -m py_compile /Users/charles/.hermes/scripts/hermes_jspace.py /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> pass.
+  - `python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> 7 passed.
+  - Live smoke workspace `external-jspace-p1-learning-smoke-20260707035714`: init, reflect, before_done gate pass, learning-candidates ok.
+  - Readback: `requires_human_review=True`, `auto_apply_executed=False`, `skill_patch_executed=False`, `global_memory_write_executed=False`.
+- Boundary preserved: reusable learning is recorded as project-ref proposal only; promotion to skill/memory/runtime remains a separate review gate.

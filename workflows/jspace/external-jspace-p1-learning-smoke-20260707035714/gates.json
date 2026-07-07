@@ -1,0 +1,12 @@
+{
+  "gate_results": [
+    {
+      "gate": "before_done",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-07T03:57:14+00:00"
+    }
+  ],
+  "schema": "jspace_gates_v0_1",
+  "workspace_id": "external-jspace-p1-learning-smoke-20260707035714"
+}

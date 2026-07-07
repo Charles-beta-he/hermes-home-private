@@ -91,6 +91,11 @@ hermes_jspace.py attach-task <workspace_id> --task-id <task_id>
 hermes_jspace.py on-event <workspace_id> --event-json '{"source":"taskpool","type":"task.status_changed","from":"running","to":"review"}'
 hermes_jspace.py gate-check <workspace_id> --gate before_review
 hermes_jspace.py gate-check <workspace_id> --gate before_done
+hermes_jspace.py learning-candidates <workspace_id>
 ```
 
 Boundary: this is not real taskpool lifecycle write-through. It records task references and projected lifecycle events in `event_ledger.jsonl` only.
+
+## Learning candidate boundary
+
+`learning-candidates` writes `learning_candidate.json` as a project-ref proposal only. It does not patch skills, write global memory, alter taskpool lifecycle, or promote runtime behavior.

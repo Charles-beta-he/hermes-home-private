@@ -307,6 +307,30 @@ def closure_packet(root: Path, workspace_id: str) -> dict[str, Any]:
     return {"ok": True, "path": str(wdir / "closure_packet.md"), "packet": packet}
 
 
+def learning_candidates(root: Path, workspace_id: str) -> dict[str, Any]:
+    wdir, workspace, evidence = load_workspace(root, workspace_id)
+    gates = read_json(wdir / "gates.json")
+    verified_refs = [e["id"] for e in evidence.get("evidence", []) if e.get("authority") == "objective" and e.get("status") == "verified"]
+    passed_gates = [g["gate"] for g in gates.get("gate_results", []) if g.get("result") in {"pass", "advisory"}]
+    candidate = {
+        "schema": "jspace_learning_candidate_v0_1",
+        "workspace_id": workspace_id,
+        "timestamp": utc_now(),
+        "scope": "project_ref",
+        "claim": "External J-space workflow produced a reusable local projection/evidence/gate pattern",
+        "evidence_refs": verified_refs,
+        "gate_refs": passed_gates,
+        "recommended_action": "review_before_skill_or_runtime_promotion",
+        "requires_human_review": True,
+        "auto_apply_executed": False,
+        "global_memory_write_executed": False,
+        "skill_patch_executed": False,
+        "boundary": "candidate_only_no_persistent_learning_write",
+    }
+    write_json(wdir / "learning_candidate.json", candidate)
+    return {"ok": True, "workspace_id": workspace_id, "path": str(wdir / "learning_candidate.json"), "candidate": candidate}
+
+
 def emit(data: Any) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True))
 
@@ -342,6 +366,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("workspace_id")
     p = sub.add_parser("closure-packet")
     p.add_argument("workspace_id")
+    p = sub.add_parser("learning-candidates")
+    p.add_argument("workspace_id")
     return parser
 
 
@@ -366,6 +392,8 @@ def main(argv: Any = None) -> int:
         data = reflect(root, args.workspace_id)
     elif args.cmd == "closure-packet":
         data = closure_packet(root, args.workspace_id)
+    elif args.cmd == "learning-candidates":
+        data = learning_candidates(root, args.workspace_id)
     else:
         raise AssertionError(args.cmd)
     emit(data)

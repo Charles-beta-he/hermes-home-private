@@ -1,0 +1,19 @@
+{
+  "auto_apply_executed": false,
+  "boundary": "candidate_only_no_persistent_learning_write",
+  "claim": "External J-space workflow produced a reusable local projection/evidence/gate pattern",
+  "evidence_refs": [
+    "E-ROOT"
+  ],
+  "gate_refs": [
+    "before_done"
+  ],
+  "global_memory_write_executed": false,
+  "recommended_action": "review_before_skill_or_runtime_promotion",
+  "requires_human_review": true,
+  "schema": "jspace_learning_candidate_v0_1",
+  "scope": "project_ref",
+  "skill_patch_executed": false,
+  "timestamp": "2026-07-07T03:57:14+00:00",
+  "workspace_id": "external-jspace-p1-learning-smoke-20260707035714"
+}

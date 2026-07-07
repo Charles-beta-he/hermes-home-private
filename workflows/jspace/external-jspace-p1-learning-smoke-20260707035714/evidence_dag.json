@@ -1,0 +1,26 @@
+{
+  "claims": [
+    {
+      "criticality": "medium",
+      "id": "C-ROOT",
+      "status": "supported",
+      "text": "Workspace initialized as local external projection"
+    }
+  ],
+  "evidence": [
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-ROOT",
+      "ref": "workspace_state.yaml",
+      "status": "verified",
+      "supports": [
+        "C-ROOT"
+      ],
+      "timestamp": "2026-07-07T03:57:14+00:00",
+      "type": "artifact"
+    }
+  ],
+  "schema": "evidence_dag_v0_1",
+  "workspace_id": "external-jspace-p1-learning-smoke-20260707035714"
+}
