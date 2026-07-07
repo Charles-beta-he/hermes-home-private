@@ -99,3 +99,7 @@ Boundary: this is not real taskpool lifecycle write-through. It records task ref
 ## Learning candidate boundary
 
 `learning-candidates` writes `learning_candidate.json` as a project-ref proposal only. It does not patch skills, write global memory, alter taskpool lifecycle, or promote runtime behavior.
+
+## P2 read-only dashboard data slice
+
+`dashboard-data` summarizes active workspaces, blocked gate results, evidence health, and learning candidate records from the local J-space root. It is read-only and sets all runtime/taskpool/external side-effect flags false.

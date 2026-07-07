@@ -756,3 +756,14 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - Live smoke workspace `external-jspace-p1-learning-smoke-20260707035714`: init, reflect, before_done gate pass, learning-candidates ok.
   - Readback: `requires_human_review=True`, `auto_apply_executed=False`, `skill_patch_executed=False`, `global_memory_write_executed=False`.
 - Boundary preserved: reusable learning is recorded as project-ref proposal only; promotion to skill/memory/runtime remains a separate review gate.
+
+## 2026-07-07T11:58:30+08:00 — External J-space Layer P2 dashboard-data projection landed
+
+- Scope: read-only local control-room data packet only; no web UI, no runtime router integration, no capability invocation, no taskpool lifecycle mutation, no external side effects.
+- Code landing: added `dashboard-data` command to `/Users/charles/.hermes/scripts/hermes_jspace.py`; summarizes active workspaces, blocked gates, evidence health, and learning candidates under the J-space root.
+- SSOT update: `13-external-jspace-layer/specs/external-jspace-layer-v0.1.md` and `00-index.md` now document P2 read-only dashboard-data boundary.
+- Verification:
+  - `python3 -m py_compile /Users/charles/.hermes/scripts/hermes_jspace.py /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> pass.
+  - `python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> 8 passed.
+  - Live readback: `hermes_jspace.py --root ~/.hermes/workflows/jspace dashboard-data` -> ok true, active_jspaces=3, blocked_gates=1, `runtime_mutation=false`, `external_side_effects_executed=false`, `taskpool_lifecycle_write_executed=false`.
+- Boundary preserved: this is local read-only projection data, not a served dashboard, runtime integration, taskpool write-through, or multi-model certification surface.

@@ -93,5 +93,19 @@ class HermesJSpaceTestCase(unittest.TestCase):
         self.assertEqual(candidate["boundary"], "candidate_only_no_persistent_learning_write")
 
 
+
+    def test_dashboard_data_is_read_only_summary(self):
+        hermes_jspace.init_workspace(self.root, "J-space P2", "dashboard data", workspace_id="jspace-test")
+        hermes_jspace.reflect(self.root, "jspace-test")
+        hermes_jspace.learning_candidates(self.root, "jspace-test")
+        data = hermes_jspace.dashboard_data(self.root)
+        self.assertTrue(data["ok"])
+        self.assertFalse(data["runtime_mutation"])
+        self.assertFalse(data["external_side_effects_executed"])
+        self.assertFalse(data["taskpool_lifecycle_write_executed"])
+        self.assertEqual(len(data["active_jspaces"]), 1)
+        self.assertEqual(len(data["learning_candidates"]), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

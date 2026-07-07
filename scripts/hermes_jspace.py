@@ -331,6 +331,47 @@ def learning_candidates(root: Path, workspace_id: str) -> dict[str, Any]:
     return {"ok": True, "workspace_id": workspace_id, "path": str(wdir / "learning_candidate.json"), "candidate": candidate}
 
 
+def dashboard_data(root: Path) -> dict[str, Any]:
+    root_path = root.expanduser().resolve()
+    active: list[dict[str, Any]] = []
+    blocked_gates: list[dict[str, Any]] = []
+    learning: list[dict[str, Any]] = []
+    evidence_health = {"verified": 0, "advisory": 0, "failed": 0, "blocked": 0}
+    if root_path.exists():
+        for wdir in sorted([p for p in root_path.iterdir() if p.is_dir()]):
+            try:
+                workspace = read_json(wdir / "workspace_state.json")
+                evidence = read_json(wdir / "evidence_dag.json")
+            except Exception:
+                continue
+            active.append({"workspace_id": workspace.get("id"), "title": workspace.get("title"), "task_id": workspace.get("task_id"), "state": workspace.get("workspace_state"), "path": str(wdir)})
+            for ev in evidence.get("evidence", []):
+                status_key = ev.get("status")
+                if status_key in evidence_health:
+                    evidence_health[status_key] += 1
+            gates_path = wdir / "gates.json"
+            if gates_path.exists():
+                for gate in read_json(gates_path).get("gate_results", []):
+                    if gate.get("result") in {"fail", "blocked"}:
+                        blocked_gates.append({"workspace_id": workspace.get("id"), **gate})
+            candidate_path = wdir / "learning_candidate.json"
+            if candidate_path.exists():
+                candidate = read_json(candidate_path)
+                learning.append({"workspace_id": workspace.get("id"), "requires_human_review": candidate.get("requires_human_review"), "auto_apply_executed": candidate.get("auto_apply_executed"), "path": str(candidate_path)})
+    return {
+        "ok": True,
+        "schema": "jspace_dashboard_data_v0_1",
+        "root": str(root_path),
+        "active_jspaces": active,
+        "blocked_gates": blocked_gates,
+        "evidence_health": evidence_health,
+        "learning_candidates": learning,
+        "runtime_mutation": False,
+        "external_side_effects_executed": False,
+        "taskpool_lifecycle_write_executed": False,
+    }
+
+
 def emit(data: Any) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True))
 
@@ -339,6 +380,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Hermes External J-space P0 projection helper")
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     sub = parser.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("dashboard-data")
     p = sub.add_parser("init")
     p.add_argument("--title", required=True)
     p.add_argument("--goal", required=True)
@@ -374,7 +416,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Any = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(args.root)
-    if args.cmd == "init":
+    if args.cmd == "dashboard-data":
+        data = dashboard_data(root)
+    elif args.cmd == "init":
         data = init_workspace(root, args.title, args.goal, workspace_id=args.id, task_id=args.task_id)
     elif args.cmd == "status":
         data = status(root, args.workspace_id)

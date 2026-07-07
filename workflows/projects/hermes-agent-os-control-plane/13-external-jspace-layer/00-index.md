@@ -33,3 +33,7 @@ P1 now includes local projection-only `attach-task` and `on-event` commands in `
 ## Learning candidate projection
 
 The helper now emits `learning_candidate.json` as a candidate-only project reference. It preserves the boundary that reusable learnings require review before skill, memory, or runtime promotion.
+
+## P2 read-only dashboard data
+
+The helper now exposes `dashboard-data` as a local read-only operator/control-room data packet. It does not serve a UI, invoke capabilities, or mutate taskpool lifecycle.
