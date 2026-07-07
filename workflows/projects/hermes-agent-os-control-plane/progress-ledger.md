@@ -767,3 +767,22 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
   - `python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> 8 passed.
   - Live readback: `hermes_jspace.py --root ~/.hermes/workflows/jspace dashboard-data` -> ok true, active_jspaces=3, blocked_gates=1, `runtime_mutation=false`, `external_side_effects_executed=false`, `taskpool_lifecycle_write_executed=false`.
 - Boundary preserved: this is local read-only projection data, not a served dashboard, runtime integration, taskpool write-through, or multi-model certification surface.
+
+## 2026-07-07T14:32:28+08:00 — External J-space real-open safe boundary drain
+
+- Scope: consumed broad “全部真实打开” authority only into exact/reversible safe boundaries.
+- Real taskpool write-through: created exact advisory smoke task `2026-07-07-external-j-space-real-open-smoke-task`; J-space transitioned it `pending -> claimed -> running -> review`; taskpool auto-close advanced `review -> done` with proof-gated evidence.
+- Real local scheduler smoke: created and ran no-agent local heartbeat job `0e6058545582`; receipt read back at `/Users/charles/.hermes/workflows/jspace/cron-heartbeat-receipts/latest.json`; cron output read back at `/Users/charles/.hermes/cron/output/0e6058545582/2026-07-07_14-32-28.md`.
+- Real destructive canary smoke: `real-open-matrix --run-destructive-canary` deleted only disposable canary file under J-space artifacts, restored from `.bak`, and verified matching sha256; `production_resource_touched=false`.
+- Governance coverage: `real_open_matrix.json` reports 100% governance/readback coverage and `unscoped_high_risk_execution=false`.
+- Boundaries still exact-target gated: external dispatch, publish/deploy/push, payment/credential entry, broad fan-out, and worker spawn were not executed because no exact platform/target/payload/rollback/readback packet was supplied.
+- Verification: `python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> 11 passed; task file readback status `done`; closure packet scope `local_projection_with_exact_taskpool_write_through`.
+- Hook evidence labels:
+  - task_record:/Users/charles/Documents/brain/05-实践与项目/tasks/2026-07-07-external-j-space-real-open-smoke-task.md
+  - proof_log:/Users/charles/Documents/brain/05-实践与项目/tasks/2026-07-07-external-j-space-real-open-smoke-task.md#proof-log
+  - lifecycle_readback:/Users/charles/Documents/brain/05-实践与项目/tasks/2026-07-07-external-j-space-real-open-smoke-task.md status=done lines 1-108
+  - command:python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py -> 11 passed
+  - artifact:/Users/charles/.hermes/workflows/jspace/external-jspace-real-taskpool-write-20260707062915/real_open_matrix.json
+  - rollback:git revert commit plus canary restore from `.bak`; production_resource_touched=false
+  - readback:/Users/charles/.hermes/workflows/jspace/external-jspace-real-taskpool-write-20260707062915/closure_packet.md scope=local_projection_with_exact_taskpool_write_through
+

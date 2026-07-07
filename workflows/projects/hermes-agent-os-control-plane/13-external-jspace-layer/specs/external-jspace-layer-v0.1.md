@@ -103,3 +103,7 @@ Boundary: this is not real taskpool lifecycle write-through. It records task ref
 ## P2 read-only dashboard data slice
 
 `dashboard-data` summarizes active workspaces, blocked gate results, evidence health, and learning candidate records from the local J-space root. It is read-only and sets all runtime/taskpool/external side-effect flags false.
+
+## Real-open boundary matrix
+
+`real-open-matrix` reports governance/readback coverage across high-risk side-effect classes. It may execute only scoped safe smokes: exact local taskpool lifecycle write-through, local no-agent cron heartbeat readback, and disposable destructive canary delete/restore. External dispatch, publish/deploy/push, credential/payment entry, broad fan-out, and worker spawn remain blocked until exact target/payload/rollback/readback packets exist.

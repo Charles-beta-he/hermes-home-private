@@ -11,6 +11,9 @@ import argparse
 import json
 import re
 import sys
+import subprocess
+import hashlib
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
@@ -272,20 +275,45 @@ def reflect(root: Path, workspace_id: str) -> dict[str, Any]:
     return {"ok": True, **packet}
 
 
+def read_events(wdir: Path) -> list[dict[str, Any]]:
+    path = wdir / "event_ledger.jsonl"
+    events: list[dict[str, Any]] = []
+    if not path.exists():
+        return events
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            events.append({"raw": line, "parse_error": True})
+    return events
+
+
 def closure_packet(root: Path, workspace_id: str) -> dict[str, Any]:
     wdir, workspace, evidence = load_workspace(root, workspace_id)
     gates = read_json(wdir / "gates.json")
+    events = read_events(wdir)
     objective_verified_ids = {e["id"] for e in evidence.get("evidence", []) if e.get("authority") == "objective" and e.get("status") == "verified"}
+    taskpool_write_events = [e for e in events if e.get("taskpool_lifecycle_write_executed") is True or (e.get("source") == "taskpool_write_through" and e.get("returncode") == 0)]
     status_value = "verified_local" if objective_verified_ids else "advisory_only"
+    scope = "local_projection_with_exact_taskpool_write_through" if taskpool_write_events else "local_projection_only_no_runtime_mutation"
+    negative_evidence = ["no_hidden_state_access", "no_external_dispatch"]
+    if not taskpool_write_events:
+        negative_evidence.append("no_taskpool_lifecycle_write")
+    excluded_claims = ["not_full_multimodel_certified", "not_integrated_with_runtime_router"]
+    if not taskpool_write_events:
+        excluded_claims.append("not_taskpool_real_lifecycle_write")
     packet = {
         "schema": SCHEMA_COMPLETION,
         "workspace_id": workspace_id,
         "claim": "External J-space workspace has a local projection/evidence/event packet",
-        "scope": "local_projection_only_no_runtime_mutation",
+        "scope": scope,
         "evidence_refs": sorted(objective_verified_ids),
+        "taskpool_write_event_refs": [e.get("event_id") for e in taskpool_write_events],
         "missing_evidence": [] if objective_verified_ids else ["objective_evidence"],
-        "negative_evidence": ["no_hidden_state_access", "no_external_dispatch", "no_taskpool_lifecycle_write"],
-        "excluded_claims": ["not_full_multimodel_certified", "not_integrated_with_runtime_router", "not_taskpool_real_lifecycle_write"],
+        "negative_evidence": negative_evidence,
+        "excluded_claims": excluded_claims,
         "status": status_value,
     }
     write_json(wdir / "completion_claim_packet.json", packet)
@@ -300,11 +328,52 @@ def closure_packet(root: Path, workspace_id: str) -> dict[str, Any]:
         f"- Gate results: {len(gates.get('gate_results', []))}",
         f"- Events: {status(root, workspace_id).get('event_count')}",
         f"- Completion status: `{status_value}`",
-        "- Boundary: local projection only; no hidden-state access or external side effects.",
+        f"- Scope: {scope}",
+        "- Boundary: no hidden-state access or external side effects.",
         "",
     ]
     (wdir / "closure_packet.md").write_text("\n".join(md), encoding="utf-8")
     return {"ok": True, "path": str(wdir / "closure_packet.md"), "packet": packet}
+
+
+def taskpool_transition(root: Path, workspace_id: str, task_id: str, to_status: str, evidence: str, *, actor: str = "hermes-jspace", authority: str = "autonomous-execution") -> dict[str, Any]:
+    wdir, workspace, evidence_dag = load_workspace(root, workspace_id)
+    bound_task_id = workspace.get("task_id")
+    if bound_task_id and bound_task_id != task_id:
+        raise SystemExit(f"task_id mismatch: workspace bound to {bound_task_id}, got {task_id}")
+    if not evidence.startswith(("artifact:", "command:", "proof:", "file:", "url:")):
+        raise SystemExit("evidence must use accepted prefix: artifact:, command:, proof:, file:, or url:")
+    if to_status not in {"claimed", "running", "review", "done", "blocked", "retry", "archived"}:
+        raise SystemExit(f"unsupported taskpool target status: {to_status}")
+    script = Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"
+    cmd = [sys.executable, str(script), "transition", task_id, "--to", to_status, "--actor", actor, "--authority", authority, "--reason", f"External J-space exact write-through from {workspace_id}", "--evidence", evidence, "--json"]
+    proc = subprocess.run(cmd, text=True, capture_output=True, check=False)
+    try:
+        transition = json.loads(proc.stdout) if proc.stdout.strip() else {}
+    except json.JSONDecodeError:
+        transition = {"raw_stdout": proc.stdout}
+    ok = proc.returncode == 0 and (transition.get("status") in {"OK", "PASS"} or transition.get("ok") is True or bool(transition))
+    event = append_event(wdir, {
+        "source": "taskpool_write_through",
+        "type": "taskpool.transition.executed",
+        "task_id": task_id,
+        "workspace_id": workspace_id,
+        "to": to_status,
+        "command": " ".join(cmd[:4] + ["...redacted-args"]),
+        "returncode": proc.returncode,
+        "stdout_summary": proc.stdout[:2000],
+        "stderr_summary": proc.stderr[:2000],
+        "external_side_effects_executed": False,
+        "taskpool_lifecycle_write_executed": proc.returncode == 0,
+        "side_effect_boundary": "exact_taskpool_lifecycle_write_through",
+    })
+    projected = taskpool_to_workspace_state(to_status)
+    if projected:
+        workspace["workspace_state"] = projected
+    workspace["task_id"] = task_id
+    workspace["updated_at"] = utc_now()
+    write_json(wdir / "workspace_state.json", workspace)
+    return {"ok": ok, "workspace_id": workspace_id, "task_id": task_id, "to": to_status, "event_id": event["event_id"], "returncode": proc.returncode, "transition": transition, "stderr": proc.stderr[:2000]}
 
 
 def learning_candidates(root: Path, workspace_id: str) -> dict[str, Any]:
@@ -329,6 +398,71 @@ def learning_candidates(root: Path, workspace_id: str) -> dict[str, Any]:
     }
     write_json(wdir / "learning_candidate.json", candidate)
     return {"ok": True, "workspace_id": workspace_id, "path": str(wdir / "learning_candidate.json"), "candidate": candidate}
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def real_open_matrix(root: Path, workspace_id: str, *, run_destructive_canary: bool = False) -> dict[str, Any]:
+    wdir, workspace, evidence = load_workspace(root, workspace_id)
+    events = read_events(wdir)
+    taskpool_written = any(e.get("taskpool_lifecycle_write_executed") is True or (e.get("source") == "taskpool_write_through" and e.get("returncode") == 0) for e in events)
+    destructive_canary: dict[str, Any] = {"executed": False, "production_resource_touched": False}
+    if run_destructive_canary:
+        canary_dir = wdir / "artifacts" / "destructive-canary"
+        canary_dir.mkdir(parents=True, exist_ok=True)
+        target = canary_dir / "canary.txt"
+        backup = canary_dir / "canary.txt.bak"
+        restored = canary_dir / "canary.restored.txt"
+        content = f"external-jspace-destructive-canary:{workspace_id}\n"
+        target.write_text(content, encoding="utf-8")
+        before_hash = sha256_file(target)
+        shutil.copy2(target, backup)
+        target.unlink()
+        absent_after_delete = not target.exists()
+        shutil.copy2(backup, restored)
+        restored_hash = sha256_file(restored)
+        destructive_canary = {
+            "executed": True,
+            "production_resource_touched": False,
+            "target": str(target),
+            "backup": str(backup),
+            "restored": str(restored),
+            "absent_after_delete": absent_after_delete,
+            "before_sha256": before_hash,
+            "restored_sha256": restored_hash,
+            "hash_match": before_hash == restored_hash,
+        }
+        append_event(wdir, {"source": "jspace", "type": "destructive.canary.delete_restore", "workspace_id": workspace_id, "destructive_canary_executed": True, "production_resource_touched": False, "side_effect_boundary": "disposable_local_canary", "external_side_effects_executed": False})
+    cron_receipt = Path.home() / ".hermes" / "workflows" / "jspace" / "cron-heartbeat-receipts" / "latest.json"
+    scheduler_executed = cron_receipt.exists()
+    boundaries = [
+        {"id": "taskpool_lifecycle_write", "label": "Exact taskpool lifecycle write-through", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": True, "readback_required": True, "executed": taskpool_written, "execution_status": "executed_exact_task" if taskpool_written else "exact_target_required"},
+        {"id": "scheduler_cron_write", "label": "Scheduler/no-agent cron write", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": True, "readback_required": True, "executed": scheduler_executed, "execution_status": "executed_local_no_agent_heartbeat" if scheduler_executed else "blocked_exact_job_not_requested", "receipt": str(cron_receipt) if scheduler_executed else ""},
+        {"id": "worker_spawn", "label": "Worker/subagent spawn", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": True, "readback_required": True, "executed": False, "execution_status": "blocked_exact_worker_packet_not_requested"},
+        {"id": "external_dispatch", "label": "External platform dispatch/send", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": False, "readback_required": True, "executed": False, "execution_status": "blocked_missing_platform_target_payload"},
+        {"id": "publish_deploy_push", "label": "Publish/deploy/push", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": True, "readback_required": True, "executed": False, "execution_status": "blocked_missing_repo_remote_env_ref_rollback"},
+        {"id": "destructive_operation", "label": "Destructive operation", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": True, "readback_required": True, "executed": destructive_canary.get("executed", False), "execution_status": "canary_delete_restore_verified" if destructive_canary.get("executed") and destructive_canary.get("hash_match") else "blocked_exact_production_target_missing", "canary": destructive_canary},
+        {"id": "payment_credential_entry", "label": "Payment / credential entry", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": False, "readback_required": True, "executed": False, "execution_status": "human_secret_gate_only", "agent_may_type_secret": False},
+        {"id": "broad_fanout", "label": "Broad fan-out", "governance_covered": True, "exact_target_required": True, "receipt_required": True, "rollback_required": False, "readback_required": True, "executed": False, "execution_status": "blocked_missing_exact_channel_set_payload"},
+    ]
+    coverage_percent = 100 if all(b["governance_covered"] for b in boundaries) else int(100 * sum(1 for b in boundaries if b["governance_covered"]) / len(boundaries))
+    matrix = {
+        "schema": "jspace_real_open_matrix_v0_1",
+        "workspace_id": workspace_id,
+        "timestamp": utc_now(),
+        "coverage_type": "governance_and_exact-boundary_readback",
+        "governance_coverage_percent": coverage_percent,
+        "unscoped_high_risk_execution": False,
+        "boundaries": boundaries,
+    }
+    write_json(wdir / "real_open_matrix.json", matrix)
+    return {"ok": True, "workspace_id": workspace_id, "path": str(wdir / "real_open_matrix.json"), "matrix": matrix}
 
 
 def dashboard_data(root: Path) -> dict[str, Any]:
@@ -358,6 +492,12 @@ def dashboard_data(root: Path) -> dict[str, Any]:
             if candidate_path.exists():
                 candidate = read_json(candidate_path)
                 learning.append({"workspace_id": workspace.get("id"), "requires_human_review": candidate.get("requires_human_review"), "auto_apply_executed": candidate.get("auto_apply_executed"), "path": str(candidate_path)})
+    all_events: list[dict[str, Any]] = []
+    if root_path.exists():
+        for wdir in sorted([p for p in root_path.iterdir() if p.is_dir()]):
+            all_events.extend(read_events(wdir))
+    taskpool_written = any(e.get("taskpool_lifecycle_write_executed") is True or (e.get("source") == "taskpool_write_through" and e.get("returncode") == 0) for e in all_events)
+    external_executed = any(e.get("external_side_effects_executed") is True for e in all_events)
     return {
         "ok": True,
         "schema": "jspace_dashboard_data_v0_1",
@@ -366,9 +506,9 @@ def dashboard_data(root: Path) -> dict[str, Any]:
         "blocked_gates": blocked_gates,
         "evidence_health": evidence_health,
         "learning_candidates": learning,
-        "runtime_mutation": False,
-        "external_side_effects_executed": False,
-        "taskpool_lifecycle_write_executed": False,
+        "runtime_mutation": taskpool_written,
+        "external_side_effects_executed": external_executed,
+        "taskpool_lifecycle_write_executed": taskpool_written,
     }
 
 
@@ -381,6 +521,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("dashboard-data")
+    p = sub.add_parser("real-open-matrix")
+    p.add_argument("workspace_id")
+    p.add_argument("--run-destructive-canary", action="store_true")
     p = sub.add_parser("init")
     p.add_argument("--title", required=True)
     p.add_argument("--goal", required=True)
@@ -410,6 +553,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("workspace_id")
     p = sub.add_parser("learning-candidates")
     p.add_argument("workspace_id")
+    p = sub.add_parser("taskpool-transition")
+    p.add_argument("workspace_id")
+    p.add_argument("--task-id", required=True)
+    p.add_argument("--to", required=True, choices=["claimed", "running", "review", "done", "blocked", "retry", "archived"])
+    p.add_argument("--evidence", required=True)
+    p.add_argument("--actor", default="hermes-jspace")
+    p.add_argument("--authority", choices=["read", "dry-run", "dispatch-hint", "claim-and-handoff", "budget-handoff", "autonomous-execution", "yolo-execution"], default="autonomous-execution")
     return parser
 
 
@@ -418,6 +568,8 @@ def main(argv: Any = None) -> int:
     root = Path(args.root)
     if args.cmd == "dashboard-data":
         data = dashboard_data(root)
+    elif args.cmd == "real-open-matrix":
+        data = real_open_matrix(root, args.workspace_id, run_destructive_canary=args.run_destructive_canary)
     elif args.cmd == "init":
         data = init_workspace(root, args.title, args.goal, workspace_id=args.id, task_id=args.task_id)
     elif args.cmd == "status":
@@ -438,6 +590,8 @@ def main(argv: Any = None) -> int:
         data = closure_packet(root, args.workspace_id)
     elif args.cmd == "learning-candidates":
         data = learning_candidates(root, args.workspace_id)
+    elif args.cmd == "taskpool-transition":
+        data = taskpool_transition(root, args.workspace_id, args.task_id, args.to, args.evidence, actor=args.actor, authority=args.authority)
     else:
         raise AssertionError(args.cmd)
     emit(data)

@@ -37,3 +37,7 @@ The helper now emits `learning_candidate.json` as a candidate-only project refer
 ## P2 read-only dashboard data
 
 The helper now exposes `dashboard-data` as a local read-only operator/control-room data packet. It does not serve a UI, invoke capabilities, or mutate taskpool lifecycle.
+
+## Real-open boundary matrix
+
+The helper now emits `real_open_matrix.json` for class-level high-risk coverage. Current safe real smokes are exact taskpool lifecycle write-through, local no-agent cron heartbeat, and disposable destructive canary restore proof. Class-only external/deploy/payment/fanout requests remain exact-target gated.

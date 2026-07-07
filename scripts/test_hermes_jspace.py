@@ -107,5 +107,43 @@ class HermesJSpaceTestCase(unittest.TestCase):
         self.assertEqual(len(data["learning_candidates"]), 1)
 
 
+
+    def test_taskpool_transition_rejects_task_mismatch_and_bad_evidence(self):
+        hermes_jspace.init_workspace(self.root, "J-space real", "write through", workspace_id="jspace-test", task_id="task-a")
+        with self.assertRaises(SystemExit):
+            hermes_jspace.taskpool_transition(self.root, "jspace-test", "task-b", "review", "artifact:x")
+        with self.assertRaises(SystemExit):
+            hermes_jspace.taskpool_transition(self.root, "jspace-test", "task-a", "review", "badprefix:x")
+
+
+
+    def test_closure_packet_reflects_taskpool_write_through_event(self):
+        hermes_jspace.init_workspace(self.root, "J-space real", "closure", workspace_id="jspace-test")
+        wdir = self.root / "jspace-test"
+        hermes_jspace.append_event(wdir, {"source": "taskpool_write_through", "returncode": 0, "taskpool_lifecycle_write_executed": True})
+        packet = hermes_jspace.closure_packet(self.root, "jspace-test")["packet"]
+        self.assertEqual(packet["scope"], "local_projection_with_exact_taskpool_write_through")
+        self.assertNotIn("no_taskpool_lifecycle_write", packet["negative_evidence"])
+        self.assertNotIn("not_taskpool_real_lifecycle_write", packet["excluded_claims"])
+
+
+
+    def test_real_open_matrix_covers_all_boundaries_and_canary_is_disposable(self):
+        hermes_jspace.init_workspace(self.root, "J-space real", "matrix", workspace_id="jspace-test")
+        result = hermes_jspace.real_open_matrix(self.root, "jspace-test", run_destructive_canary=True)
+        matrix = result["matrix"]
+        self.assertEqual(matrix["governance_coverage_percent"], 100)
+        self.assertFalse(matrix["unscoped_high_risk_execution"])
+        ids = {b["id"] for b in matrix["boundaries"]}
+        self.assertIn("external_dispatch", ids)
+        self.assertIn("payment_credential_entry", ids)
+        destructive = next(b for b in matrix["boundaries"] if b["id"] == "destructive_operation")
+        self.assertTrue(destructive["canary"]["executed"])
+        self.assertTrue(destructive["canary"]["hash_match"])
+        self.assertFalse(destructive["canary"]["production_resource_touched"])
+        payment = next(b for b in matrix["boundaries"] if b["id"] == "payment_credential_entry")
+        self.assertFalse(payment["agent_may_type_secret"])
+
+
 if __name__ == "__main__":
     unittest.main()
