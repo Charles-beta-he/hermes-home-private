@@ -1,0 +1,18 @@
+{
+  "gate_results": [
+    {
+      "gate": "objective_defined",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-07T03:36:12+00:00"
+    },
+    {
+      "gate": "reflection_readback",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-07T03:36:12+00:00"
+    }
+  ],
+  "schema": "jspace_gates_v0_1",
+  "workspace_id": "external-jspace-p0-smoke-20260707033612"
+}

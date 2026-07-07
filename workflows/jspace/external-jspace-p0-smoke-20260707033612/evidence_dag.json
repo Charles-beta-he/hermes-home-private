@@ -1,0 +1,44 @@
+{
+  "claims": [
+    {
+      "criticality": "medium",
+      "id": "C-ROOT",
+      "status": "supported",
+      "text": "Workspace initialized as local external projection"
+    },
+    {
+      "criticality": "medium",
+      "id": "C-002",
+      "status": "supported",
+      "text": "Focused P0 helper tests passed"
+    }
+  ],
+  "evidence": [
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-ROOT",
+      "ref": "workspace_state.yaml",
+      "status": "verified",
+      "supports": [
+        "C-ROOT"
+      ],
+      "timestamp": "2026-07-07T03:36:12+00:00",
+      "type": "artifact"
+    },
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-002",
+      "ref": "python3 ~/.hermes/scripts/test_hermes_jspace.py",
+      "status": "verified",
+      "supports": [
+        "C-002"
+      ],
+      "timestamp": "2026-07-07T03:36:12+00:00",
+      "type": "command"
+    }
+  ],
+  "schema": "evidence_dag_v0_1",
+  "workspace_id": "external-jspace-p0-smoke-20260707033612"
+}

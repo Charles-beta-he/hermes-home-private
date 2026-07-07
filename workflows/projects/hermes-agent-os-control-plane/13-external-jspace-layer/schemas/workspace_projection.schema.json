@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WorkspaceProjection",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "goal",
+    "non_goals",
+    "constraints",
+    "authority_boundary",
+    "workspace_state",
+    "created_at"
+  ],
+  "properties": {
+    "schema": {
+      "const": "workspace_projection_v0_1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1
+    },
+    "non_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_boundary": {
+      "type": "object",
+      "required": [
+        "allowed",
+        "requires_auth",
+        "forbidden"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires_auth": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "intermediate_beliefs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_action_contract": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "expected_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "workspace_state": {
+      "enum": [
+        "dormant",
+        "objective_model",
+        "executing",
+        "reflective",
+        "contested",
+        "gated",
+        "certifiable",
+        "closed"
+      ]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

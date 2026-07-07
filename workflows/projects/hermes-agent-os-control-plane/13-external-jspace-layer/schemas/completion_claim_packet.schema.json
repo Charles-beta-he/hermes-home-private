@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CompletionClaimPacket",
+  "type": "object",
+  "required": [
+    "schema",
+    "workspace_id",
+    "claim",
+    "scope",
+    "evidence_refs",
+    "missing_evidence",
+    "status"
+  ],
+  "properties": {
+    "schema": {
+      "const": "completion_claim_packet_v0_1"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "claim": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "negative_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "excluded_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "certified",
+        "verified_local",
+        "truth_grounded_but_not_certified",
+        "advisory_only",
+        "degraded_not_certified",
+        "blocked_missing_evidence",
+        "blocked_missing_authority",
+        "blocked_provider_unavailable",
+        "blocked_policy_violation"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

@@ -701,3 +701,32 @@ Run router shadow replay on a bounded set of historical sessions and compare sug
 - Local read-only dashboard slice: `/agent-os` can now verify a generated or pasted handoff summary against an expected SHA-256 hash in-browser.
 - Evidence: dashboard source RED/GREEN test added; focused pytest returned `7 passed`; web build passed; browser readback returned `verification_status: match`; browser console 0 errors.
 - Boundaries still closed: no capability execution, lifecycle mutation, external dispatch, clipboard/file export, secret/payment/legal action, or physical-device effect.
+
+
+## 2026-07-07T11:18:00+08:00 — Fable 5-led Agent OS system/architecture/multi-angle P0 repair audited
+
+- Scope: local reversible native Agent OS readback artifacts only; no external dispatch, publish/deploy/push, destructive action, payment/credential entry, unbounded fan-out, or real capability execution.
+- Fable 5 lead analysis: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable-system-arch-multi-audit-output-tiny-20260707T030926Z.md`.
+- Native projection repaired: `06-projection/capability_graph_projection.json` with `node_count=299`, `runtime_mutation=false`, `external_side_effects_executed=false`.
+- Native doctor repaired: `06-projection/doctor_report.json`, `ok=true`, `findings=[]`.
+- Native shadow report repaired: `07-shadow/router-shadow-report.json`, `records=6`, `blocked_by_policy=3`, `would_execute_anything=false`.
+- Quota divergence readback: `06-projection/quota-root-profile-diff.json`; Fable remains unobservable/no-header and not budget-handoff-certified; DeepSeek root/profile divergence is reported but not synced by this P0 repair.
+- Coverage registry updated with `agent-os-projection-health` dimension.
+- Verification: `hermes agent-os status --json` -> ok true, missing []; `hermes agent-os doctor --json` -> ok true, findings []; `hermes agent-os route --json ...` -> suggested nodes present and `would_execute=false`; JSON validation pass; focused pytest `tests/hermes_cli/test_agent_os_control_plane.py` -> 27 passed.
+- Fable final audit: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable-final-audit-output-20260707T031307Z.md` -> PASS (有条件通过).
+- Extra assertions: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable5-p0-extra-assertions-v2-20260707T031800Z.json` -> ok true.
+- Manifest: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable5-agent-os-system-arch-repair-audit-manifest-20260707T031800Z.json`.
+
+## 2026-07-07T11:36:12+08:00 — External J-space Layer P0 skeleton landed
+
+- User direction: “推进” after J-space / Global Workspace multi-model analysis; consumed as safe local reversible projection work only.
+- Scope: local External J-space design packet + helper CLI script; no hidden-state access, no taskpool lifecycle mutation, no external dispatch, no publish/deploy/push, no destructive action, no credential/payment action.
+- SSOT packet: `13-external-jspace-layer/` with v0.1 spec and JSON schemas for `WorkspaceProjection`, `EvidenceDAG`, and `CompletionClaimPacket`.
+- Runtime-adjacent helper: `/Users/charles/.hermes/scripts/hermes_jspace.py` implements local-only `init`, `status`, `add-evidence`, `gate-check`, `reflect`, and `closure-packet`.
+- Test artifact: `/Users/charles/.hermes/scripts/test_hermes_jspace.py`.
+- Verification:
+  - `python3 -m py_compile /Users/charles/.hermes/scripts/hermes_jspace.py /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> pass.
+  - `python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py` -> 4 passed.
+  - JSON schema readback parsed all 3 schema files.
+  - Live smoke workspace `external-jspace-p0-smoke-20260707033612`: init/status/objective gate/add-evidence/reflect/reflection gate/closure-packet all returned ok; closure status `verified_local`; negative evidence recorded `no_hidden_state_access`, `no_external_dispatch`, `no_taskpool_lifecycle_write`.
+- Boundary preserved: P1 taskpool event bridge, P2 control room, and multi-model surface review remain unimplemented design/backlog boundaries.

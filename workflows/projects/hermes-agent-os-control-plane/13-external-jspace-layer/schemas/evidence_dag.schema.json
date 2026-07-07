@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidenceDAG",
+  "type": "object",
+  "required": [
+    "schema",
+    "workspace_id",
+    "claims",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "evidence_dag_v0_1"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "criticality",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "criticality": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "completion_critical"
+            ]
+          },
+          "status": {
+            "enum": [
+              "unverified",
+              "supported",
+              "contradicted",
+              "certified"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "authority",
+          "supports",
+          "contradicts",
+          "timestamp",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "authority": {
+            "enum": [
+              "objective",
+              "model_judgment",
+              "user_statement"
+            ]
+          },
+          "ref": {
+            "type": "string"
+          },
+          "supports": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contradicts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "advisory",
+              "failed",
+              "blocked"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
