@@ -151,4 +151,14 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Verification: `python3 -m unittest discover -s implementation/tests -v` => 57 tests OK.
 - Report: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/EGO_NEUROLOOP_LOOP_CORE_REPORT_20260708.md`.
 - Boundary preserved: deterministic contract helper only; no real ML model quality claim, taskpool ingestion, external dispatch, hardware/device action, deploy/push, credential entry, payment, or destructive operation.
+## Update — 2026-07-08T20:20:29+08:00
+- Continued Ego-NeuroLoop from local LoopCore contract into runtime UI projection.
+- Added read-only LoopCore receipt projection helpers and dashboard aggregates in `implementation/hewos_core/projections.py`.
+- Added local runtime endpoint `/projection/ego-neuroloop` in `implementation/hewos_core/workbench_runtime.py`.
+- Added static Workbench `Ego-NeuroLoop LoopCore` card in `implementation/hewos_core/workbench_static.py` and regenerated `artifacts/workbench-static-fixture.html`.
+- Added/updated tests for projection DTOs, runtime endpoint, static HTML, and uIMax-safe no-execution UI constraints.
+- Verification: `python3 -m unittest discover -s implementation/tests -v` => 58 tests OK.
+- Runtime readback: `/healthz` loop_projection_enabled=true and execution_enabled=false; `/projection/ego-neuroloop` returned schema `ego_neuroloop_core_receipt_v0`, exit `stable`, side_effect_open=false; dashboard returned loop_receipt_count=1.
+- Browser visual smoke: Runtime UI Projection card visible with loop depth/exit/confidence/receipt/boundary flags; no execution controls visible.
+- Boundary preserved: projection-only; no model routing, taskpool ingestion, external dispatch, hardware actuation, deploy/publish/push, secret entry, payment, or destructive action.
 

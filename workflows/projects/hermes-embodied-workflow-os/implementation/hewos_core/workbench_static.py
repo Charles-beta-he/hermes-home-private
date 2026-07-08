@@ -2,7 +2,8 @@ from html import escape
 from pathlib import Path
 
 from .ledger import EvidenceLedger
-from .projections import build_dashboard_projection, action_intent_projection
+from .loop_core import run_loop_core
+from .projections import build_dashboard_projection, action_intent_projection, loop_receipt_projection
 
 
 def _fixture_data():
@@ -43,8 +44,39 @@ def _fixture_data():
             "evidence_refs": ["ev.1"],
         }
     )
-    dashboard = build_dashboard_projection(capabilities, ledger.entries(), [action])
-    return dashboard, action
+    loop_receipt = run_loop_core(
+        {
+            "state_id": "world.fixture.loop",
+            "confidence": 0.65,
+            "uncertainty": 0.2,
+            "risk_level": "low",
+            "evidence_refs": ["sha256:fixture"],
+            "derived": {"visible_parts": ["fixture-part"]},
+            "contradictions": [],
+        },
+        {
+            "intent_id": "ai.fixture.loop.review",
+            "session_id": "fixture",
+            "taskgraph_node_id": "node.loop.review",
+            "actor_id": "hermes.local",
+            "capability_id": "cap.web.text_observation",
+            "verb": "advise",
+            "target": {"surface": "workbench"},
+            "parameters": {"text": "projection only"},
+            "risk_level": "low",
+            "preconditions": ["evidence_present"],
+            "expected_observation_delta": {"loop_projection_visible": True},
+            "verification_plan": ["receipt_readback", "static_html_readback"],
+            "evidence_refs": ["ev.loop.fixture"],
+            "requested_authority": ["local_projection"],
+            "dry_run": True,
+            "idempotency_key": "ai-fixture-loop-review",
+            "rollback_or_abort": "discard projection",
+        },
+        loop_budget=4,
+    )
+    dashboard = build_dashboard_projection(capabilities, ledger.entries(), [action], [loop_receipt])
+    return dashboard, action, loop_receipt
 
 
 def _li(items):
@@ -52,7 +84,7 @@ def _li(items):
 
 
 def render_workbench_html():
-    dashboard, action = _fixture_data()
+    dashboard, action, loop_receipt = _fixture_data()
     caps = _li(
         [
             (
@@ -78,6 +110,14 @@ def render_workbench_html():
             "<span class=\"item-title\">SafetyGate</span><span>logic and risk</span><strong>closed</strong>",
             "<span class=\"item-title\">ExternalControlGate</span><span>identity and readback</span><strong>closed</strong>",
             "<span class=\"item-title\">OnsiteHumanGate</span><span>required for physical risk</span><strong>required</strong>",
+        ]
+    )
+    loop_projection = loop_receipt_projection(loop_receipt)
+    loop_limits = _li([escape(item) for item in loop_projection["known_limits"]] or ["no known limits in fixture receipt"])
+    loop_flags = _li(
+        [
+            f"<span class=\"item-title\">{escape(name.replace('credential_entry', 'secret_entry'))}</span><span>side effect flag</span><strong>{str(value).lower()}</strong>"
+            for name, value in loop_projection["boundary_flags"].items()
         ]
     )
     visible = ", ".join(escape(part) for part in dashboard["world_state"].get("visible_parts", [])) or "none"
@@ -189,7 +229,8 @@ def render_workbench_html():
     .item-list strong {{ justify-self: end; color: var(--accent-strong); font-size: .88rem; }}
     .callout {{ border-left: 4px solid var(--accent); padding: 12px 14px; background: rgba(142, 231, 255, .07); border-radius: 14px; color: var(--muted); }}
     .review-card {{ display: grid; gap: 12px; }}
-    .review-row {{ display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }}
+    .review-row {{ display: grid; grid-template-columns: minmax(120px, .45fr) minmax(0, 1fr); align-items: start; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }}
+    .review-row strong {{ justify-self: end; text-align: right; overflow-wrap: anywhere; min-width: 0; }}
     footer[role="contentinfo"] {{ margin-top: 24px; color: var(--subtle); font-size: .9rem; }}
     @media (max-width: 760px) {{
       .shell {{ width: min(100% - 24px, 680px); padding-top: 18px; }}
@@ -228,6 +269,7 @@ def render_workbench_html():
 
     <nav aria-label="Workbench sections">
       <a href="#dashboard">Dashboard</a>
+      <a href="#loop-core">Ego-NeuroLoop</a>
       <a href="#action-review">Action review</a>
       <a href="#evidence-ledger">Evidence ledger</a>
       <a href="#gate-ladder">Gate ladder</a>
@@ -241,10 +283,31 @@ def render_workbench_html():
           <div class="metrics" aria-label="Dashboard metrics">
             <div class="metric"><strong>{dashboard['capability_count']}</strong><span>Capabilities</span></div>
             <div class="metric"><strong>{dashboard['ledger_entry_count']}</strong><span>Ledger entries</span></div>
-            <div class="metric"><strong>{len(dashboard['world_state'].get('visible_parts', []))}</strong><span>Visible parts</span></div>
+            <div class="metric"><strong>{dashboard['loop_receipt_count']}</strong><span>Loop receipts</span></div>
           </div>
           <p class="callout">Visible parts from replay: <strong>{visible}</strong></p>
           <ul class="item-list" aria-label="Capability projection list">{caps}</ul>
+        </section>
+
+        <section id="loop-core" class="span-5" aria-labelledby="loop-core-title" tabindex="-1">
+          <p class="eyebrow">Runtime UI projection</p>
+          <h2 id="loop-core-title">Ego-NeuroLoop LoopCore</h2>
+          <p class="muted">Read-only projection of the local loop receipt. It shows prediction state, exit reason, and safety flags without exposing an execution control.</p>
+          <div class="metrics" aria-label="Loop receipt metrics">
+            <div class="metric"><strong>{loop_projection['loop_count']}/{loop_projection['loop_budget']}</strong><span>Loop depth</span></div>
+            <div class="metric"><strong>{escape(loop_projection['exit_reason'])}</strong><span>Exit reason</span></div>
+            <div class="metric"><strong>{escape(str(loop_projection['confidence']))}</strong><span>Confidence</span></div>
+          </div>
+          <div class="review-card" aria-label="LoopCore receipt details">
+            <div class="review-row"><span>Receipt schema</span><strong>{escape(loop_projection['schema'])}</strong></div>
+            <div class="review-row"><span>ActionIntent</span><strong>{escape(loop_projection['action_intent_id'] or 'none')}</strong></div>
+            <div class="review-row"><span>Decode label</span><strong>{escape(loop_projection['deferred_decode_label'])}</strong></div>
+            <div class="review-row"><span>Recommended action</span><strong>{escape(loop_projection['recommended_action'] or 'none')}</strong></div>
+          </div>
+          <h3>Boundary flags</h3>
+          <ul class="item-list" aria-label="LoopCore side-effect flags">{loop_flags}</ul>
+          <h3>Known limits</h3>
+          <ul class="item-list" aria-label="LoopCore known limits">{loop_limits}</ul>
         </section>
 
         <section id="action-review" class="span-5" aria-labelledby="action-review-title" tabindex="-1">

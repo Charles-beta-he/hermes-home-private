@@ -15,6 +15,9 @@ class StaticWorkbenchTest(unittest.TestCase):
         self.assertIn("Dashboard", html)
         self.assertIn("ActionIntent Review", html)
         self.assertIn("EvidenceLedger", html)
+        self.assertIn("Ego-NeuroLoop LoopCore", html)
+        self.assertIn("ego_neuroloop_core_receipt_v0", html)
+        self.assertIn("prediction_not_verified_fact", html)
         self.assertIn("Simulation-only", html)
         forbidden = ["/execute", "taskpool", "deploy", "publish", "gateway", "credential"]
         lowered = html.lower()
@@ -28,6 +31,7 @@ class StaticWorkbenchTest(unittest.TestCase):
         html = out.read_text()
         self.assertIn("HEWOS Workbench", html)
         self.assertIn("simulated", html.lower())
+        self.assertIn("loop depth", html.lower())
         out.unlink()
 
 

@@ -12,6 +12,7 @@ from hewos_core.projections import (
     build_dashboard_projection,
     capability_projection,
     evidence_entry_projection,
+    loop_receipt_projection,
     task_graph_projection,
 )
 
@@ -46,11 +47,19 @@ class ProjectionFixtureTest(unittest.TestCase):
             payload={"session_id": "session.1", "derived_facts": {"visible_parts": ["part-a"]}},
         )
 
-        dashboard = build_dashboard_projection(capabilities, ledger.entries(), pending_action_intents=[{"risk_level": "physical_action"}])
+        dashboard = build_dashboard_projection(
+            capabilities,
+            ledger.entries(),
+            pending_action_intents=[{"risk_level": "physical_action"}],
+            loop_receipts=[{"schema": "ego_neuroloop_core_receipt_v0", "exit_reason": "stable", "boundary_flags": {"external_dispatch": False}}],
+        )
 
         self.assertEqual(dashboard["capability_count"], 2)
         self.assertEqual(dashboard["ledger_entry_count"], 1)
         self.assertEqual(dashboard["pending_action_intents_by_risk"], {"physical_action": 1})
+        self.assertEqual(dashboard["loop_receipt_count"], 1)
+        self.assertEqual(dashboard["loop_receipts_by_exit"], {"stable": 1})
+        self.assertEqual(dashboard["latest_loop_receipts"][0]["side_effect_open"], False)
         self.assertEqual(dashboard["world_state"]["visible_parts"], ["part-a"])
         self.assertEqual(evidence_entry_projection(entry)["redaction_status"], "checked")
 
@@ -81,6 +90,25 @@ class ProjectionFixtureTest(unittest.TestCase):
         self.assertEqual(capability["status"], "simulated")
         self.assertEqual(task_graph["world_state_ref"], "replay:latest")
         self.assertEqual(action["status"], "blocked")
+        loop = loop_receipt_projection({
+            "schema": "ego_neuroloop_core_receipt_v0",
+            "action_intent_id": "ai.example",
+            "loop_count": 2,
+            "loop_budget": 4,
+            "exit_reason": "stable",
+            "risk_level": "low",
+            "confidence": 0.83,
+            "state_delta": 0.03,
+            "recommended_action": "recommend_low_risk_next_step",
+            "deferred_decode_surface": "user_text",
+            "deferred_decode_label": "prediction_not_verified_fact",
+            "boundary_flags": {"external_dispatch": False, "hardware_actuation": False},
+            "evidence_refs": ["ev.loop"],
+            "known_limits": [],
+        })
+        self.assertEqual(loop["schema"], "ego_neuroloop_core_receipt_v0")
+        self.assertFalse(loop["side_effect_open"])
+        self.assertEqual(loop["deferred_decode_label"], "prediction_not_verified_fact")
 
     def test_projection_module_has_no_external_side_effect_calls_or_hardware_imports(self):
         module = ROOT / "hewos_core" / "projections.py"

@@ -44,6 +44,7 @@ class WorkbenchRuntimeTest(unittest.TestCase):
             "/projection/dashboard",
             "/projection/action-intents",
             "/projection/evidence-ledger",
+            "/projection/ego-neuroloop",
         ]:
             status, headers, body = self.request("GET", path)
             self.assertEqual(status, 200, path)
@@ -73,6 +74,20 @@ class WorkbenchRuntimeTest(unittest.TestCase):
         self.assertEqual(payload["ledger_entry_count"], before_count + 1)
         self.assertIn("external-part", payload["world_state"]["visible_parts"])
         self.assertEqual(len(self.state.ledger.entries()), before_count + 1)
+
+    def test_loop_projection_endpoint_is_read_only_and_visible_on_dashboard(self):
+        status, _, body = self.request("GET", "/projection/ego-neuroloop")
+        self.assertEqual(status, 200)
+        loop_payload = json.loads(body)
+        self.assertEqual(loop_payload[0]["schema"], "ego_neuroloop_core_receipt_v0")
+        self.assertEqual(loop_payload[0]["exit_reason"], "stable")
+        self.assertFalse(loop_payload[0]["side_effect_open"])
+
+        status, _, body = self.request("GET", "/projection/dashboard")
+        self.assertEqual(status, 200)
+        dashboard = json.loads(body)
+        self.assertEqual(dashboard["loop_receipt_count"], 1)
+        self.assertEqual(dashboard["loop_receipts_by_exit"], {"stable": 1})
 
     def test_post_and_simulation_are_not_enabled(self):
         status, _, body = self.request("POST", "/simulation/observations")

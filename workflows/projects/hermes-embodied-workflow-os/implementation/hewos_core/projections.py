@@ -58,9 +58,34 @@ def evidence_entry_projection(entry):
     }
 
 
-def build_dashboard_projection(capabilities, ledger_entries, pending_action_intents=None):
+def loop_receipt_projection(receipt):
+    boundary_flags = dict(receipt.get("boundary_flags") or {})
+    side_effect_open = any(boundary_flags.values())
+    return {
+        "schema": receipt["schema"],
+        "action_intent_id": receipt.get("action_intent_id"),
+        "mode": receipt.get("mode", "runtime_mock"),
+        "loop_count": receipt.get("loop_count", 0),
+        "loop_budget": receipt.get("loop_budget", 0),
+        "exit_reason": receipt.get("exit_reason", "error"),
+        "risk_level": receipt.get("risk_level", "blocked"),
+        "confidence": receipt.get("confidence"),
+        "state_delta": receipt.get("state_delta"),
+        "recommended_action": receipt.get("recommended_action"),
+        "deferred_decode_surface": receipt.get("deferred_decode_surface", "none"),
+        "deferred_decode_label": receipt.get("deferred_decode_label", "prediction_not_verified_fact"),
+        "evidence_refs": list(receipt.get("evidence_refs", [])),
+        "known_limits": list(receipt.get("known_limits", [])),
+        "side_effect_open": side_effect_open,
+        "boundary_flags": boundary_flags,
+    }
+
+
+def build_dashboard_projection(capabilities, ledger_entries, pending_action_intents=None, loop_receipts=None):
     pending_action_intents = list(pending_action_intents or [])
+    loop_receipts = list(loop_receipts or [])
     risks = Counter(intent.get("risk_level", "none") for intent in pending_action_intents)
+    loop_exits = Counter(receipt.get("exit_reason", "error") for receipt in loop_receipts)
     projected_capabilities = [capability_projection(item) for item in capabilities]
     projected_entries = [evidence_entry_projection(item) for item in ledger_entries]
     return {
@@ -69,5 +94,8 @@ def build_dashboard_projection(capabilities, ledger_entries, pending_action_inte
         "ledger_entry_count": len(projected_entries),
         "latest_evidence_entries": projected_entries[-10:],
         "pending_action_intents_by_risk": dict(risks),
+        "loop_receipt_count": len(loop_receipts),
+        "loop_receipts_by_exit": dict(loop_exits),
+        "latest_loop_receipts": [loop_receipt_projection(item) for item in loop_receipts[-10:]],
         "world_state": replay_world_state(ledger_entries),
     }

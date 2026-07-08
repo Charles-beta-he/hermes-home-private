@@ -13,11 +13,13 @@ import json
 from urllib.parse import urlparse
 
 from .ledger import EvidenceLedger
+from .loop_core import run_loop_core
 from .projections import (
     action_intent_projection,
     build_dashboard_projection,
     capability_projection,
     evidence_entry_projection,
+    loop_receipt_projection,
 )
 from .workbench_static import render_workbench_html
 
@@ -27,6 +29,7 @@ class WorkbenchState:
     capabilities: list
     ledger: EvidenceLedger
     action_intents: list
+    loop_receipts: list
 
 
 def create_fixture_state():
@@ -67,7 +70,46 @@ def create_fixture_state():
             "evidence_refs": ["ev.1"],
         }
     ]
-    return WorkbenchState(capabilities=capabilities, ledger=ledger, action_intents=action_intents)
+    loop_intent = {
+        "intent_id": "ai.runtime.loop.review",
+        "session_id": "runtime-fixture",
+        "taskgraph_node_id": "node.loop.review",
+        "actor_id": "hermes.local",
+        "capability_id": "cap.web.text_observation",
+        "verb": "advise",
+        "target": {"surface": "workbench"},
+        "parameters": {"text": "projection only"},
+        "risk_level": "low",
+        "preconditions": ["evidence_present"],
+        "expected_observation_delta": {"loop_projection_visible": True},
+        "verification_plan": ["receipt_readback", "browser_smoke"],
+        "evidence_refs": ["ev.loop.runtime"],
+        "requested_authority": ["local_projection"],
+        "dry_run": True,
+        "idempotency_key": "ai-runtime-loop-review",
+        "rollback_or_abort": "discard projection",
+    }
+    loop_receipts = [
+        run_loop_core(
+            {
+                "state_id": "world.runtime.fixture",
+                "confidence": 0.65,
+                "uncertainty": 0.2,
+                "risk_level": "low",
+                "evidence_refs": ["sha256:runtime-fixture"],
+                "derived": {"visible_parts": ["runtime-fixture-part"]},
+                "contradictions": [],
+            },
+            loop_intent,
+            loop_budget=4,
+        )
+    ]
+    return WorkbenchState(
+        capabilities=capabilities,
+        ledger=ledger,
+        action_intents=action_intents,
+        loop_receipts=loop_receipts,
+    )
 
 
 class WorkbenchHTTPServer(HTTPServer):
@@ -80,15 +122,22 @@ def _json_snapshot(payload):
 
 def _projection_payload(state, path):
     if path == "/healthz":
-        return {"ok": True, "mode": "local_projection_only", "execution_enabled": False}
+        return {"ok": True, "mode": "local_projection_only", "execution_enabled": False, "loop_projection_enabled": True}
     if path == "/projection/capabilities":
         return [capability_projection(item) for item in state.capabilities]
     if path == "/projection/action-intents":
         return [action_intent_projection(item) for item in state.action_intents]
     if path == "/projection/evidence-ledger":
         return [evidence_entry_projection(item) for item in state.ledger.entries()]
+    if path == "/projection/ego-neuroloop":
+        return [loop_receipt_projection(item) for item in state.loop_receipts]
     if path == "/projection/dashboard":
-        return build_dashboard_projection(state.capabilities, state.ledger.entries(), state.action_intents)
+        return build_dashboard_projection(
+            state.capabilities,
+            state.ledger.entries(),
+            state.action_intents,
+            state.loop_receipts,
+        )
     raise KeyError(path)
 
 
