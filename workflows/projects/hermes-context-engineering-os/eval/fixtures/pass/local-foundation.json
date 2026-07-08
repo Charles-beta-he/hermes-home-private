@@ -1,0 +1,93 @@
+{
+  "objective": "Create a local Context Engineering OS SSOT and validate a reusable Context Packet schema.",
+  "non_goals": [
+    "Do not modify Hermes core runtime",
+    "Do not schedule jobs",
+    "Do not send external messages"
+  ],
+  "constraints": [
+    "Local reversible artifacts only",
+    "No WIP durable memory",
+    "Claim-linked evidence required"
+  ],
+  "sources": [
+    {
+      "id": "SRC_SURVEY",
+      "type": "url",
+      "locator": "https://arxiv.org/abs/2507.13334",
+      "freshness": "2026-07-08 readback",
+      "claims": [
+        "Context Engineering optimizes the LLM information payload and includes retrieval, processing, management, RAG, memory, tool reasoning, multi-agent systems."
+      ]
+    },
+    {
+      "id": "SRC_SKILL",
+      "type": "skill",
+      "locator": "/Users/charles/.hermes/skills/context-engineering-os/SKILL.md",
+      "freshness": "2026-07-08 local file",
+      "claims": [
+        "Hermes should assemble objective, evidence, memory, skills, project state, tools, authority, execution, and verification into a minimal context packet."
+      ]
+    }
+  ],
+  "selected_context": {
+    "skills": [
+      "context-engineering-os",
+      "spec-stateful-sdd-workflow",
+      "objective-model-path-verification"
+    ],
+    "memory": [
+      "User prefers full safe advancement with evidence gates"
+    ],
+    "project_profile": [
+      "/Users/charles/.hermes/project-profiles/hermes-context-engineering-os.json"
+    ],
+    "evidence_ids": [
+      "SRC_SURVEY",
+      "SRC_SKILL"
+    ]
+  },
+  "authority": {
+    "allowed": [
+      "local reversible work"
+    ],
+    "closed": [
+      "external dispatch",
+      "deploy",
+      "credentials",
+      "destructive operations"
+    ],
+    "readback_required": [
+      "file/stat/test/API/UI/log evidence depending on task"
+    ]
+  },
+  "execution_plan": [
+    "Create SSOT files",
+    "Create schema/template/sample",
+    "Run local lint validation",
+    "Read back artifacts"
+  ],
+  "validation_plan": [
+    "python3 scripts/context_packet_lint.py examples/sample-context-packet.json",
+    "read back profile/SSOT/skill files"
+  ],
+  "negative_cases": [
+    "No external dispatch",
+    "No runtime integration claim",
+    "No task progress saved to durable memory"
+  ],
+  "learning_boundary": {
+    "durable_memory_allowed": [],
+    "skill_update_allowed": [
+      "Only reusable procedure changes"
+    ],
+    "ssot_update_allowed": [
+      "Task-local evidence and decisions"
+    ],
+    "do_not_save": [
+      "WIP status",
+      "artifact IDs likely stale",
+      "temporary TODOs"
+    ]
+  }
+}

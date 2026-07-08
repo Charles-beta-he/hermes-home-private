@@ -9,3 +9,5 @@
 | Skill captures reusable procedure | skill_view(context-engineering-os) and reference file readback | PASS after readback | None |
 | Runtime integration complete | No Hermes core code changed | BLOCKED | Requires exact repo/runtime edit authority |
 | Taskpool/cron/dashboard integration complete | No lifecycle/scheduler/UI mutation performed | BLOCKED | Requires exact target and readback authority |
+
+| Standalone Context Regression Eval exists | `eval/fixtures`, `scripts/context_regression_eval.py` | PASS after command | Core Hermes CLI integration remains future boundary |

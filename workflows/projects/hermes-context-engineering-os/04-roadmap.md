@@ -21,14 +21,18 @@ Tasks:
 - Add tests for enabled/disabled/tool-unavailable paths.
 - Verify built prompt/readback and prompt-cache invariants.
 
-## P2 — Context Regression Eval (local tests, safe after repo target resolved)
+## P2 — Context Regression Eval (standalone local harness)
 
-Authority needed: permission to add tests/eval fixtures in Hermes repo or a standalone eval harness.
+Status: P2 local standalone harness landed. Core Hermes CLI integration remains future/authority-gated.
 
-Tasks:
-- Fixture set: stale memory, missing evidence, over-broad authority, source laundering, long-context pollution.
-- Expected behavior: refuse/ask/tool-readback/context packet generation.
-- CLI: `hermes context-eval run --fixture ...` or standalone script.
+Landed tasks:
+- Fixture set for pass/fail packet behavior.
+- Expected behavior checks for unknown evidence id, missing do-not-save boundary, and missing authority readback.
+- Standalone command: `python3 scripts/context_regression_eval.py`.
+
+Future tasks:
+- Add stale memory, over-broad authority, source laundering, and long-context pollution fixtures.
+- Optionally expose through `hermes context-eval run` after Hermes core target and tests are authorized.
 
 ## P3 — Taskpool / Mission Integration (lifecycle boundary)
 
