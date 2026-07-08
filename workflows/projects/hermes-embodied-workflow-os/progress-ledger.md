@@ -135,3 +135,12 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Hardware gate used exact virtual device id and fresh virtual telemetry; physical-risk path blocked without onsite gate; no hardware touched.
 - Auth gate recorded human-secret-entry only; no secret typed/read/stored.
 - Report: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ORDERED_HIGH_RISK_DRAIN_REPORT_20260703.md`; machine receipt: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ordered-high-risk-drain-20260703.json`.
+
+## Update — 2026-07-08T20:20:29+08:00
+- Absorbed arXiv:2606.18208v1 `Looped World Models` into HEWOS as an advisory Loop-layer pattern, not as direct Ego-NeuroLoop provenance.
+- Added research note: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/02-research/looped-world-models-absorption-20260708.md`.
+- Added architecture contract: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/ego-neuroloop-looped-latent-core-v0.md`.
+- Updated evidence index with `W-LOOPWM-2606-18208` and explicit non-support boundaries: no direct Ego-NeuroLoop, neuro, egocentric, brain, wearable, or runtime proof.
+- Added local task candidate `hewos-ego-neuroloop-loopcore-contract-helper` for a future deterministic receipt/test slice.
+- Boundary preserved: docs/profile/task-candidate only; no runtime code, taskpool ingestion, external dispatch, hardware/device action, deploy/push, credential entry, payment, destructive operation, or model-quality claim.
+

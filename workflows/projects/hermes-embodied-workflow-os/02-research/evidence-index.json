@@ -157,6 +157,27 @@
       "supports": [
         "mobile/PC/glasses surfaces should be experience-specific renderers over same core contract"
       ]
+    },
+    {
+      "id": "W-LOOPWM-2606-18208",
+      "title": "Looped World Models",
+      "url": "https://arxiv.org/abs/2606.18208",
+      "pdf_url": "https://arxiv.org/pdf/2606.18208v1",
+      "evidence_status": "arXiv API readback; HTML/PDF HTTP 200; PDF extracted 34 pages; keyword scan found no Ego-NeuroLoop/NeuroLoop/neuro/egocentric/brain direct evidence",
+      "supports": [
+        "looped latent world-model pattern",
+        "parameter-shared recurrent transformer update core",
+        "adaptive early exit for budgeted computation",
+        "deferred latent rollout before decoding",
+        "stability-bounded action-conditioned state prediction"
+      ],
+      "does_not_support": [
+        "direct Ego-NeuroLoop provenance",
+        "egocentric perception proof",
+        "neuroscience/brain mechanism proof",
+        "wearable/runtime/device authority proof"
+      ],
+      "local_absorption_note": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/02-research/looped-world-models-absorption-20260708.md"
     }
   ],
   "boundaries": [

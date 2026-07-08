@@ -1,8 +1,8 @@
 {
   "schema": "product_workflow_task_candidates_v1",
   "project": "hermes-embodied-workflow-os",
-  "generated_at": "2026-07-02T18:58:00+08:00",
-  "write_status": "not_ingested_requires_human_approval",
+  "generated_at": "2026-07-08T20:20:29+08:00",
+  "write_status": "local_candidates_not_ingested_requires_human_or_taskpool_authority",
   "candidates": [
     {
       "dedupe_key": "hewos-p1-contract-validators",
@@ -68,6 +68,30 @@
       "dependency_order": 3,
       "external_side_effect_intent": "none/spec only until implementation approval",
       "human_gate": "approval required for UI implementation"
+    },
+    {
+      "dedupe_key": "hewos-ego-neuroloop-loopcore-contract-helper",
+      "title": "P2: Implement Ego-NeuroLoop LoopCore contract helper and receipt tests",
+      "priority": "P2",
+      "project": "hermes-embodied-workflow-os",
+      "objective": "Add a local-only deterministic LoopCore contract helper that emits ego_neuroloop_core_receipt_v0 from fixture ActionIntent/WorldState inputs, proving adaptive exit, deferred decode labels, and high-risk fail-closed boundaries.",
+      "acceptance_evidence": [
+        "unit tests prove stable early exit when delta is low and confidence sufficient",
+        "unit tests prove high-risk intents exit via risk_gate/human_gate with side-effect flags false",
+        "unit tests prove missing evidence, contradiction, and budget exhaustion negative cases",
+        "AST/import guard proves core helper has no adapter/platform imports",
+        "existing HEWOS unittest suite remains green"
+      ],
+      "anti_drift_check": "Contract/mock only; no real ML quality claim, no hardware/external dispatch/deploy/auth/destructive action, no durable memory write from NeuroState.",
+      "parallel_boundary": "Depends on HEWOS contract/replay core; can be implemented as local reversible tests and helper only.",
+      "evidence_bundle": [
+        "02-research/looped-world-models-absorption-20260708.md",
+        "01-architecture/ego-neuroloop-looped-latent-core-v0.md",
+        "02-research/evidence-index.json"
+      ],
+      "dependency_order": 4,
+      "external_side_effect_intent": "none/local files/tests only",
+      "human_gate": "not required for local reversible contract helper; required for taskpool ingestion, runtime model use, device integration, or external side effects"
     }
   ]
 }
