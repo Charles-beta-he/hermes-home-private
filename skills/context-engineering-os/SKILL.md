@@ -144,6 +144,7 @@ When the run produces reusable learning, choose one landing zone:
 ## References
 
 - `references/core-works-and-landing.md` — core Context Engineering works, transferable claims, Hermes landing map, and authority boundaries.
+- `references/full-landing-ladder.md` — full safe landing ladder for approved Context Engineering evolution: canon → skill → SSOT/profile → packet contract → deterministic eval → converge matrix → scoped commit → runtime boundary analysis.
 
 ## Verification Checklist
 
