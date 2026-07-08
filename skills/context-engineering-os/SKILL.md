@@ -145,6 +145,7 @@ When the run produces reusable learning, choose one landing zone:
 
 - `references/core-works-and-landing.md` — core Context Engineering works, transferable claims, Hermes landing map, and authority boundaries.
 - `references/full-landing-ladder.md` — full safe landing ladder for approved Context Engineering evolution: canon → skill → SSOT/profile → packet contract → deterministic eval → converge matrix → scoped commit → runtime boundary analysis.
+- `references/edge-cli-validator-pattern.md` — safe Hermes integration pattern for promoting Context Packet/local validators into read-only `hermes context ...` CLI commands before any runtime prompt or agent-loop gate.
 
 ## Verification Checklist
 
