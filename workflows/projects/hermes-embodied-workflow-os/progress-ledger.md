@@ -144,3 +144,11 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Added local task candidate `hewos-ego-neuroloop-loopcore-contract-helper` for a future deterministic receipt/test slice.
 - Boundary preserved: docs/profile/task-candidate only; no runtime code, taskpool ingestion, external dispatch, hardware/device action, deploy/push, credential entry, payment, destructive operation, or model-quality claim.
 
+## Update — 2026-07-08T20:32:00+08:00
+- Continued safe local slice from LoopWM/Ego-NeuroLoop contract into deterministic implementation scaffolding.
+- Added `implementation/hewos_core/loop_core.py` with local-only `ego_neuroloop_core_receipt_v0` receipt generation, adaptive early exit, human/risk gate exits, deferred decode labelling, and all side-effect flags false.
+- Added `implementation/tests/test_loop_core.py` covering stable early exit, high-risk human gate, missing evidence error receipt, contradiction/budget exhaustion, and AST import guard against adapter/platform dependencies.
+- Verification: `python3 -m unittest discover -s implementation/tests -v` => 57 tests OK.
+- Report: `/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/EGO_NEUROLOOP_LOOP_CORE_REPORT_20260708.md`.
+- Boundary preserved: deterministic contract helper only; no real ML model quality claim, taskpool ingestion, external dispatch, hardware/device action, deploy/push, credential entry, payment, or destructive operation.
+

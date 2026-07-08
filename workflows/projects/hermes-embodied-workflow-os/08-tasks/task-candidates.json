@@ -91,7 +91,14 @@
       ],
       "dependency_order": 4,
       "external_side_effect_intent": "none/local files/tests only",
-      "human_gate": "not required for local reversible contract helper; required for taskpool ingestion, runtime model use, device integration, or external side effects"
+      "human_gate": "required for real model use, taskpool ingestion, device integration, or external side effects; local contract slice completed",
+      "implementation_status": "validated_local_contract_slice",
+      "implementation_artifacts": [
+        "implementation/hewos_core/loop_core.py",
+        "implementation/tests/test_loop_core.py",
+        "06-verification/EGO_NEUROLOOP_LOOP_CORE_REPORT_20260708.md"
+      ],
+      "verification": "python3 -m unittest discover -s implementation/tests -v => 57 tests OK"
     }
   ]
 }
