@@ -1,7 +1,7 @@
 ---
 name: root-cause-ownership-council
 description: Use when repeated fixes, multi-controller state conflicts, high-risk shared runtime changes, or multi-model/multi-agent review are needed to reframe symptoms into owner contracts, evidence ledgers, falsifiers, minimal implementation boundaries, and final verification gates.
-version: 1.1.0
+version: 1.2.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -24,6 +24,16 @@ Core principle:
 Do not ask five agents for five fixes. Ask orthogonal roles for framing, ownership, falsifiers, evidence, implementation boundaries, and verification.
 ```
 
+## v1.2 Development Experience Coverage
+
+Scope: class-level routing expansion for reusable frontend, backend, fullstack, UI/UX, and release-development experience. Applicability: use only when normal development risk signals require a specialist reviewer or escalation gate. Anti-condition: do not encode one project, customer, repository, route, issue, or product incident as global truth.
+
+This release expands the council module beyond repeated root-cause cases into a routed development-experience coverage layer. Normal development tasks should first choose the smallest route that covers the risk: direct fix, specialist reviewer, ownership audit, lightweight council, full council, or release certification.
+
+New specialist coverage includes API Contract, Migration & Data Integrity, Security & Permission, Concurrency & Idempotency, Observability, Performance, Accessibility & Localization, Release Readiness, Fullstack Coordination, UIMax Auditor, and Xianggua UI/UX Reviewer.
+
+See `references/development-experience-coverage-matrix.md`, `references/frontend-backend-trigger-map.md`, `references/normal-dev-vs-council-escalation.md`, and `references/xianggua-ui-ux-role.md`.
+
 ## v1.1 Always-callable Agent Module
 
 This skill can be used as an always-callable module contract, but it should not be always fully loaded.
@@ -39,6 +49,8 @@ Use a progressive loading model:
 3. Full council: load this SKILL.md plus session/templates/references only for high-risk or repeated tasks that need owner contracts, falsifiers, evidence ledgers, and final certification.
 
 The module may recommend roles and gates, but it does not grant push, deploy, external dispatch, destructive, credential, memory-write, taskpool-lifecycle, or scheduler authority. See `references/always-callable-agent-module.md` and `references/council-router-contract.md`.
+
+When publishing a new version of this module as a repo-reviewed release, use `references/agent-module-release-issue-pr-loop.md` for the scoped branch, validation, issue, PR, and readback loop.
 
 ## When to Use
 
@@ -79,6 +91,26 @@ For small tasks, use a 3-role cut:
 1. Framing Lead + Ownership Auditor
 2. Skeptic + Evidence Accountant
 3. Minimal Implementer + Regression Designer
+
+### v1.2 Specialist reviewers
+
+Scope: class-level specialist roles for reusable development review. Applicability: invoke these roles only when their trigger signals appear in the current task. Anti-condition: do not encode one project, product, customer, repository, endpoint, schema, issue, or incident as global truth.
+
+These roles are invoked by the development experience coverage matrix before escalating to a full council:
+
+- API Contract Reviewer — request/response schema, DTO, enum, pagination, sorting, filtering, error contract.
+- Migration & Data Integrity Reviewer — entity/table/column/index/constraint/native SQL/persisted-data changes.
+- Security & Permission Reviewer — endpoint/role/object permission, sensitive data, upload, token/session, XSS/CSRF/CORS.
+- Concurrency & Idempotency Reviewer — payment/order/status, webhook/callback, retry, queue/job, double-submit, external side effect.
+- Observability Reviewer — trace/log/metric/audit/redaction gaps.
+- Performance Reviewer — large lists, dashboards, charts, exports, slow query, N+1, missing index, bundle/render bottleneck.
+- Accessibility & Localization Reviewer — forms, dialogs, keyboard, ARIA, contrast, screen reader, currency/date/timezone, long text, multi-language labels.
+- Release Readiness Reviewer — merge/release/publish/deploy/readiness, branch merge, issue closure, deploy order.
+- Fullstack Coordination Reviewer — frontend/backend/mobile/admin/shared schema compatibility and deploy ordering.
+- UIMax Auditor — A/A+, uIMax grade, screenshot matrix, console health, systematic UI release gate.
+- Xianggua UI/UX Reviewer — visual taste, product scenario fit, premium/professional polish, screenshot acceptance, design consistency.
+
+See `references/development-experience-coverage-matrix.md` and `references/xianggua-ui-ux-role.md`.
 
 ## Stage Gate Workflow
 
@@ -222,7 +254,7 @@ See `references/github-agent-repos-evidence.md` for the initial researched repos
 
 ```yaml
 root_cause_ownership_council:
-  version: "1.1.0"
+  version: "1.2.0"
   problem: "..."
   scope: []
   non_goals: []
@@ -250,13 +282,14 @@ root_cause_ownership_council:
   residual_risk: []
 ```
 
-## Release v1.1.0 Contract
+## Release v1.2.0 Contract
 
-This v1.1.0 release promotes the council from a single skill into an always-callable agent module specification:
+This v1.2.0 release adds development-experience coverage and UI/UX specialist routing on top of the v1.1 always-callable module contract:
 
-- a micro-router can be exposed broadly to models and workflows;
-- role cards remain progressively loaded;
-- full council sessions are reserved for confirmed high-risk/repeated problems;
+- frontend, backend, fullstack, UI/UX, and release triggers can route to lightweight specialist reviewers;
+- normal deterministic work can stay on direct-fix or specialist-review routes instead of full council ceremony;
+- Xianggua UI/UX Reviewer is available for taste/scenario-fit/polish/screenshot acceptance, while UIMax Auditor remains the evidence-backed grading gate;
+- full council escalation remains reserved for repeated fixes, shared-state ownership conflicts, cross-domain ambiguity, or release certification;
 - all execution authority remains outside the module and must follow Hermes tool/user/evidence gates.
 
 It remains stable for use as a development role template when:
@@ -267,7 +300,7 @@ It remains stable for use as a development role template when:
 - ownership and evidence ledgers are emitted;
 - implementation remains separately verified.
 
-It is not a production runtime, scheduler, external-dispatch authority, or autonomous side-effect executor. It is a reusable Hermes role/council skill and module contract for structuring multi-agent analysis, code review, implementation planning, and certification.
+It is not a production runtime, scheduler, external-dispatch authority, or autonomous side-effect executor. It is a reusable Hermes role/council skill and module contract for structuring specialist review, multi-agent analysis, code review, implementation planning, UI/UX acceptance, and certification.
 
 ## Common Pitfalls
 

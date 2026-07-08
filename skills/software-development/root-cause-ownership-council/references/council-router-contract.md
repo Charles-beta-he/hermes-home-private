@@ -45,7 +45,7 @@ council_router_input:
 council_router_output:
   invoke: true|false
   reason: ""
-  mode: none|micro|lightweight_3_role|full_9_role|domain_specialist_only|final_certifier_only
+  mode: none|micro|direct_fix|specialist_review|ownership_audit|lightweight_3_role|full_9_role|domain_specialist_only|final_certifier_only|release_certification
   roles:
     - id: framing-lead
       required: true
@@ -81,6 +81,24 @@ Use when the model only needs a reminder:
 - ask for owner before patching;
 - require falsifier;
 - separate evidence from model opinion.
+
+### Specialist review mode
+
+Use when a normal development task has one or more clear specialist risks but does not yet need a full council:
+
+- API contract/schema/DTO/mock-live drift;
+- database migration or persisted data integrity;
+- security/permission/upload/sensitive data;
+- concurrency/idempotency/webhook/job/retry;
+- observability/incident evidence;
+- performance/scalability;
+- accessibility/localization;
+- UI/UX polish, screenshot acceptance, Xianggua review, or uIMax grade;
+- release readiness or fullstack coordination.
+
+### Ownership audit mode
+
+Use when the first real question is who owns a state variable, lifecycle transition, user-facing decision, or side effect.
 
 ### Lightweight 3-role mode
 

@@ -172,3 +172,135 @@ Output fields:
 - `residual_risks`
 - `not_verified`
 - `required_next_gate`
+
+## v1.2 Specialist Reviewers
+
+Scope: class-level optional reviewer roles for frontend, backend, fullstack, UI/UX, and release development experience. Applicability: load these roles only when a current task provides matching trigger signals. Anti-condition: do not encode one project, customer, repository, product path, database table, endpoint, issue, or incident as global truth.
+
+### 10. API Contract Reviewer
+
+Trigger: request/response schema, DTO, enum, pagination, sorting, filtering, generated client, mock/live API drift, or error contract changes.
+
+Output fields:
+- `contract_delta`
+- `compatibility_risk`
+- `required_fixtures`
+- `frontend_backend_handoff`
+- `negative_cases`
+
+### 11. Migration & Data Integrity Reviewer
+
+Trigger: entity, table, column, index, constraint, enum/status, native SQL, validation, or existing-data impact.
+
+Output fields:
+- `migration_required`
+- `schema_compatibility`
+- `existing_data_risk`
+- `rollback_or_forward_plan`
+- `migration_evidence`
+
+### 12. Security & Permission Reviewer
+
+Trigger: endpoint, role, object-level permission, sensitive data, upload, token/session, CORS/CSRF/XSS risk, or admin/user boundary.
+
+Output fields:
+- `permission_matrix`
+- `backend_guard_evidence`
+- `frontend_not_authority`
+- `sensitive_data_risks`
+- `security_tests`
+
+### 13. Concurrency & Idempotency Reviewer
+
+Trigger: payment/order/status mutation, webhook/callback, retry, queue/job, double submit, or external provider side effect.
+
+Output fields:
+- `state_transition_table`
+- `idempotency_key_strategy`
+- `retry_ordering_cases`
+- `race_risks`
+- `side_effect_evidence`
+
+### 14. Observability Reviewer
+
+Trigger: issue diagnosis needs logs, trace id, metrics, audit trail, redaction, client/server error capture, or incident readback.
+
+Output fields:
+- `traceability_gap`
+- `log_metric_audit_plan`
+- `redaction_requirements`
+- `incident_readback`
+
+### 15. Performance Reviewer
+
+Trigger: large list, dashboard, chart, image, export, search, slow query, N+1, missing index, bundle size, render bottleneck, memory leak, or polling/realtime load.
+
+Output fields:
+- `performance_risk`
+- `measurement_plan`
+- `budget_or_threshold`
+- `optimization_boundary`
+
+### 16. Accessibility & Localization Reviewer
+
+Trigger: forms, dialogs, sheets, navigation, icon buttons, keyboard path, contrast, screen reader, currency/date/timezone, long text, or multi-language labels.
+
+Output fields:
+- `a11y_findings`
+- `locale_findings`
+- `keyboard_path`
+- `contrast_or_label_evidence`
+- `required_fixes`
+
+### 17. Release Readiness Reviewer
+
+Trigger: merge, release, publish, deploy, readiness, branch-to-branch merge, issue closure, feature flag rollout, migration deploy order, or rollback planning.
+
+Output fields:
+- `target_refs`
+- `verification_commands`
+- `deploy_order`
+- `rollback_plan`
+- `readback_evidence`
+
+### 18. Fullstack Coordination Reviewer
+
+Trigger: frontend/backend/mobile/admin/shared schema changes must land together or remain compatible across deploy order.
+
+Output fields:
+- `repo_branch_map`
+- `contract_sync`
+- `deploy_order_risk`
+- `generated_client_status`
+- `cross_repo_tests`
+
+### 19. UIMax Auditor
+
+Trigger: uIMax, A/A+, UI grade, systematic UI quality gate, release-quality visual acceptance, screenshot matrix, or console-health gate.
+
+Output fields:
+- `dimension_scores`
+- `screenshot_matrix`
+- `console_health`
+- `a11y_status`
+- `grade_blockers`
+
+### 20. Xianggua UI/UX Reviewer
+
+Trigger: UI/UX polish, premium/professional feel, not ugly, benchmark, screenshot acceptance, design consistency, or 香瓜 role.
+
+Responsibilities:
+- Classify the UI surface and scenario fit.
+- Review visual hierarchy, density, spacing, typography, motion, state affordance, and interaction polish.
+- Require screenshot or visual readback before final UI PASS.
+- Hand off to UIMax Auditor for A+/grade claims and Accessibility & Localization Reviewer for keyboard/contrast/screen reader evidence.
+
+Output fields:
+- `surface_class`
+- `expected_experience`
+- `visual_hierarchy_findings`
+- `interaction_polish_findings`
+- `design_system_findings`
+- `scenario_fit_risks`
+- `screenshot_evidence_required`
+- `verdict`
