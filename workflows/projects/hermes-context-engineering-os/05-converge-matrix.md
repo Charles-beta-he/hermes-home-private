@@ -11,3 +11,4 @@
 | Taskpool/cron/dashboard integration complete | No lifecycle/scheduler/UI mutation performed | BLOCKED | Requires exact target and readback authority |
 
 | Standalone Context Regression Eval exists | `eval/fixtures`, `scripts/context_regression_eval.py` | PASS after command | Core Hermes CLI integration remains future boundary |
+| P1 runtime target analyzed | `06-p1-runtime-target-analysis.md`, Hermes repo status/readback | PASS for read-only analysis | Core runtime mutation closed pending exact target/test/rollback authority |

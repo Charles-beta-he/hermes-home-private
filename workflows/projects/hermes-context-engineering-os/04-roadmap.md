@@ -10,16 +10,18 @@ Status: landed in this session.
 - Skill reference with core works.
 - Evidence and boundary docs.
 
-## P1 — Runtime Prompt / Context Packet Preflight (requires Hermes core repo work)
+## P1 — Edge CLI first, runtime prompt only after cache-safe gate
 
-Authority needed: exact target repo/worktree and permission to edit Hermes runtime prompt assembly.
+Status: read-only Hermes repo inspection completed in `06-p1-runtime-target-analysis.md`; core runtime mutation not performed.
+
+Decision:
+- Prefer edge CLI/helper + skill routing first because Hermes AGENTS.md says prompt caching is sacred and core is a narrow waist.
+- Direct system-prompt injection remains future/authority-gated.
 
 Tasks:
-- Locate prompt-builder/context assembly path.
-- Add default-off config flag, e.g. `agent.context_engineering_packet_preflight`.
-- Inject compact packet guidance only for complex/high-risk tasks.
-- Add tests for enabled/disabled/tool-unavailable paths.
-- Verify built prompt/readback and prompt-cache invariants.
+- Candidate CLI: `hermes context packet lint <packet.json>`.
+- Candidate CLI: `hermes context eval run <fixtures>`.
+- Later, only with exact authority: add default-off `agent.context_engineering_packet_preflight`; test enabled/disabled/tool-unavailable paths and prompt-cache invariants.
 
 ## P2 — Context Regression Eval (standalone local harness)
 
