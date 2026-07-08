@@ -86,7 +86,8 @@
     "ordered_high_risk_drain_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ORDERED_HIGH_RISK_DRAIN_REPORT_20260703.md",
     "ordered_high_risk_drain_receipt_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ordered-high-risk-drain-20260703.json",
     "loopwm_absorption_20260708": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/02-research/looped-world-models-absorption-20260708.md",
-    "ego_neuroloop_looped_latent_core_v0": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/ego-neuroloop-looped-latent-core-v0.md"
+    "ego_neuroloop_looped_latent_core_v0": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/ego-neuroloop-looped-latent-core-v0.md",
+    "ego_neuroloop_loop_core_report_20260708": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/EGO_NEUROLOOP_LOOP_CORE_REPORT_20260708.md"
   },
   "current_components": {
     "project_profile": "profiled",
@@ -118,7 +119,7 @@
     "high_risk_boundary_governance": "taskpool/external/hardware/deploy/auth covered by local exact-gated control plane and simulation ledger; no live execution",
     "local_harness_write_through": "disposable local harness receipts for taskpool/external/hardware/deploy/auth; no live adapter touched",
     "ordered_high_risk_drain": "taskpool local write executed; external outbox dry-run; deploy push dry-run blocked non-fast-forward; hardware virtual gate; auth human-secret-entry only",
-    "ego_neuroloop_looped_latent_core": "contract-ready/advisory-research-absorbed-no-runtime-claim"
+    "ego_neuroloop_looped_latent_core": "validated-local-contract-slice-57-tests-ok-no-runtime-model-claim"
   },
   "boundaries": [
     "metadata/profile/ledger/research only in this slice",
@@ -144,7 +145,8 @@
   "governance_readbacks": {
     "a_plus_repair_20260707": "git log shows HEWOS scoped commits present; python3 -m unittest scripts/test_local_brain_change_preflight.py passed 9 tests; stale blocked_by_local_brain_governance status removed.",
     "a_plus_semantic_policy_refresh_20260707": "Added scoped semantic control-plane policies after selfcheck WARN readback; WARN-only policy preserved, no fail-closed downgrade.",
-    "loopwm_absorption_20260708": "arXiv/PDF readback supports Loop sub-layer absorption only; no direct Ego-NeuroLoop/neuro/egocentric proof; local architecture contract and task candidate landed."
+    "loopwm_absorption_20260708": "arXiv/PDF readback supports Loop sub-layer absorption only; no direct Ego-NeuroLoop/neuro/egocentric proof; local architecture contract and task candidate landed.",
+    "ego_neuroloop_loop_core_20260708": "Local deterministic LoopCore helper and tests landed; unittest discover ran 57 tests OK; all side-effect flags remain false."
   },
   "backend_contract_policy": {
     "contract_scope": "HEWOS stable core, adapters, workbench projection, evidence ledger, high-risk boundary gates, and local-only harnesses.",
