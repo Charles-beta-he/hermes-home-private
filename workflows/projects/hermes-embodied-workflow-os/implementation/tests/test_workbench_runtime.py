@@ -82,12 +82,16 @@ class WorkbenchRuntimeTest(unittest.TestCase):
         self.assertEqual(loop_payload[0]["schema"], "ego_neuroloop_core_receipt_v0")
         self.assertEqual(loop_payload[0]["exit_reason"], "stable")
         self.assertFalse(loop_payload[0]["side_effect_open"])
+        self.assertEqual(len(loop_payload), 3)
+        exits = {item["exit_reason"] for item in loop_payload}
+        self.assertEqual(exits, {"stable", "human_gate", "budget_exhausted"})
+        self.assertTrue(all(not item["side_effect_open"] for item in loop_payload))
 
         status, _, body = self.request("GET", "/projection/dashboard")
         self.assertEqual(status, 200)
         dashboard = json.loads(body)
-        self.assertEqual(dashboard["loop_receipt_count"], 1)
-        self.assertEqual(dashboard["loop_receipts_by_exit"], {"stable": 1})
+        self.assertEqual(dashboard["loop_receipt_count"], 3)
+        self.assertEqual(dashboard["loop_receipts_by_exit"], {"budget_exhausted": 1, "human_gate": 1, "stable": 1})
 
     def test_post_and_simulation_are_not_enabled(self):
         status, _, body = self.request("POST", "/simulation/observations")

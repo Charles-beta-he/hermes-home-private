@@ -70,7 +70,7 @@ def create_fixture_state():
             "evidence_refs": ["ev.1"],
         }
     ]
-    loop_intent = {
+    base_loop_intent = {
         "intent_id": "ai.runtime.loop.review",
         "session_id": "runtime-fixture",
         "taskgraph_node_id": "node.loop.review",
@@ -89,6 +89,22 @@ def create_fixture_state():
         "idempotency_key": "ai-runtime-loop-review",
         "rollback_or_abort": "discard projection",
     }
+    authority_loop_intent = dict(base_loop_intent)
+    authority_loop_intent.update(
+        {
+            "intent_id": "ai.runtime.loop.human_gate",
+            "risk_level": "medium",
+            "requested_authority": ["external_dispatch"],
+            "idempotency_key": "ai-runtime-loop-human-gate",
+        }
+    )
+    budget_loop_intent = dict(base_loop_intent)
+    budget_loop_intent.update(
+        {
+            "intent_id": "ai.runtime.loop.budget_exhausted",
+            "idempotency_key": "ai-runtime-loop-budget-exhausted",
+        }
+    )
     loop_receipts = [
         run_loop_core(
             {
@@ -100,9 +116,35 @@ def create_fixture_state():
                 "derived": {"visible_parts": ["runtime-fixture-part"]},
                 "contradictions": [],
             },
-            loop_intent,
+            base_loop_intent,
             loop_budget=4,
-        )
+        ),
+        run_loop_core(
+            {
+                "state_id": "world.runtime.authority-boundary",
+                "confidence": 0.42,
+                "uncertainty": 0.47,
+                "risk_level": "medium",
+                "evidence_refs": ["sha256:runtime-fixture-authority"],
+                "derived": {"visible_parts": ["operator-review-required"]},
+                "contradictions": [],
+            },
+            authority_loop_intent,
+            loop_budget=4,
+        ),
+        run_loop_core(
+            {
+                "state_id": "world.runtime.contradiction-boundary",
+                "confidence": 0.44,
+                "uncertainty": 0.72,
+                "risk_level": "medium",
+                "evidence_refs": ["sha256:runtime-fixture-contradiction"],
+                "derived": {"visible_parts": ["conflicting-observation"]},
+                "contradictions": ["fixture_conflicting_motion_signal"],
+            },
+            budget_loop_intent,
+            loop_budget=2,
+        ),
     ]
     return WorkbenchState(
         capabilities=capabilities,

@@ -44,7 +44,43 @@ def _fixture_data():
             "evidence_refs": ["ev.1"],
         }
     )
-    loop_receipt = run_loop_core(
+    loop_intent = {
+        "intent_id": "ai.fixture.loop.review",
+        "session_id": "fixture",
+        "taskgraph_node_id": "node.loop.review",
+        "actor_id": "hermes.local",
+        "capability_id": "cap.web.text_observation",
+        "verb": "advise",
+        "target": {"surface": "workbench"},
+        "parameters": {"text": "projection only"},
+        "risk_level": "low",
+        "preconditions": ["evidence_present"],
+        "expected_observation_delta": {"loop_projection_visible": True},
+        "verification_plan": ["receipt_readback", "static_html_readback"],
+        "evidence_refs": ["ev.loop.fixture"],
+        "requested_authority": ["local_projection"],
+        "dry_run": True,
+        "idempotency_key": "ai-fixture-loop-review",
+        "rollback_or_abort": "discard projection",
+    }
+    human_gate_intent = dict(loop_intent)
+    human_gate_intent.update(
+        {
+            "intent_id": "ai.fixture.loop.human_gate",
+            "risk_level": "medium",
+            "requested_authority": ["external_dispatch"],
+            "idempotency_key": "ai-fixture-loop-human-gate",
+        }
+    )
+    budget_intent = dict(loop_intent)
+    budget_intent.update(
+        {
+            "intent_id": "ai.fixture.loop.budget_exhausted",
+            "idempotency_key": "ai-fixture-loop-budget-exhausted",
+        }
+    )
+    loop_receipts = [
+        run_loop_core(
         {
             "state_id": "world.fixture.loop",
             "confidence": 0.65,
@@ -54,29 +90,38 @@ def _fixture_data():
             "derived": {"visible_parts": ["fixture-part"]},
             "contradictions": [],
         },
-        {
-            "intent_id": "ai.fixture.loop.review",
-            "session_id": "fixture",
-            "taskgraph_node_id": "node.loop.review",
-            "actor_id": "hermes.local",
-            "capability_id": "cap.web.text_observation",
-            "verb": "advise",
-            "target": {"surface": "workbench"},
-            "parameters": {"text": "projection only"},
-            "risk_level": "low",
-            "preconditions": ["evidence_present"],
-            "expected_observation_delta": {"loop_projection_visible": True},
-            "verification_plan": ["receipt_readback", "static_html_readback"],
-            "evidence_refs": ["ev.loop.fixture"],
-            "requested_authority": ["local_projection"],
-            "dry_run": True,
-            "idempotency_key": "ai-fixture-loop-review",
-            "rollback_or_abort": "discard projection",
-        },
+        loop_intent,
         loop_budget=4,
-    )
-    dashboard = build_dashboard_projection(capabilities, ledger.entries(), [action], [loop_receipt])
-    return dashboard, action, loop_receipt
+        ),
+        run_loop_core(
+            {
+                "state_id": "world.fixture.human-gate",
+                "confidence": 0.42,
+                "uncertainty": 0.47,
+                "risk_level": "medium",
+                "evidence_refs": ["sha256:fixture-authority"],
+                "derived": {"visible_parts": ["operator-review-required"]},
+                "contradictions": [],
+            },
+            human_gate_intent,
+            loop_budget=4,
+        ),
+        run_loop_core(
+            {
+                "state_id": "world.fixture.budget-exhausted",
+                "confidence": 0.44,
+                "uncertainty": 0.72,
+                "risk_level": "medium",
+                "evidence_refs": ["sha256:fixture-contradiction"],
+                "derived": {"visible_parts": ["conflicting-observation"]},
+                "contradictions": ["fixture_conflicting_motion_signal"],
+            },
+            budget_intent,
+            loop_budget=2,
+        ),
+    ]
+    dashboard = build_dashboard_projection(capabilities, ledger.entries(), [action], loop_receipts)
+    return dashboard, action, loop_receipts
 
 
 def _li(items):
@@ -84,7 +129,7 @@ def _li(items):
 
 
 def render_workbench_html():
-    dashboard, action, loop_receipt = _fixture_data()
+    dashboard, action, loop_receipts = _fixture_data()
     caps = _li(
         [
             (
@@ -112,7 +157,17 @@ def render_workbench_html():
             "<span class=\"item-title\">OnsiteHumanGate</span><span>required for physical risk</span><strong>required</strong>",
         ]
     )
-    loop_projection = loop_receipt_projection(loop_receipt)
+    loop_projection = loop_receipt_projection(loop_receipts[0])
+    loop_gallery = _li(
+        [
+            (
+                f"<span class=\"item-title\">{escape(item['action_intent_id'] or 'none')}</span>"
+                f"<span>{escape(item['exit_reason'])} · {escape(item['risk_level'])}</span>"
+                f"<strong>{item['loop_count']}/{item['loop_budget']}</strong>"
+            )
+            for item in [loop_receipt_projection(receipt) for receipt in loop_receipts]
+        ]
+    )
     loop_limits = _li([escape(item) for item in loop_projection["known_limits"]] or ["no known limits in fixture receipt"])
     loop_flags = _li(
         [
@@ -306,6 +361,9 @@ def render_workbench_html():
           </div>
           <h3>Boundary flags</h3>
           <ul class="item-list" aria-label="LoopCore side-effect flags">{loop_flags}</ul>
+          <h3>Authorized local-state gallery</h3>
+          <p class="muted">Safe promotable states are visible for review; closed states stay projected as blocked/read-only evidence, not controls.</p>
+          <ul class="item-list" aria-label="LoopCore authorized local-state gallery">{loop_gallery}</ul>
           <h3>Known limits</h3>
           <ul class="item-list" aria-label="LoopCore known limits">{loop_limits}</ul>
         </section>

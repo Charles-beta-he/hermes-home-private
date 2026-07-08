@@ -51,14 +51,17 @@ class ProjectionFixtureTest(unittest.TestCase):
             capabilities,
             ledger.entries(),
             pending_action_intents=[{"risk_level": "physical_action"}],
-            loop_receipts=[{"schema": "ego_neuroloop_core_receipt_v0", "exit_reason": "stable", "boundary_flags": {"external_dispatch": False}}],
+            loop_receipts=[
+                {"schema": "ego_neuroloop_core_receipt_v0", "exit_reason": "stable", "boundary_flags": {"external_dispatch": False}},
+                {"schema": "ego_neuroloop_core_receipt_v0", "exit_reason": "human_gate", "boundary_flags": {"external_dispatch": False}},
+            ],
         )
 
         self.assertEqual(dashboard["capability_count"], 2)
         self.assertEqual(dashboard["ledger_entry_count"], 1)
         self.assertEqual(dashboard["pending_action_intents_by_risk"], {"physical_action": 1})
-        self.assertEqual(dashboard["loop_receipt_count"], 1)
-        self.assertEqual(dashboard["loop_receipts_by_exit"], {"stable": 1})
+        self.assertEqual(dashboard["loop_receipt_count"], 2)
+        self.assertEqual(dashboard["loop_receipts_by_exit"], {"stable": 1, "human_gate": 1})
         self.assertEqual(dashboard["latest_loop_receipts"][0]["side_effect_open"], False)
         self.assertEqual(dashboard["world_state"]["visible_parts"], ["part-a"])
         self.assertEqual(evidence_entry_projection(entry)["redaction_status"], "checked")

@@ -111,7 +111,9 @@
         "/projection/ego-neuroloop returns read-only projection with side_effect_open=false",
         "dashboard projection aggregates loop receipt count and exit reasons",
         "UI/static tests prove no execution path and forbidden side-effect language remains absent",
-        "browser visual smoke confirms card visible and no execution controls visible"
+        "browser visual smoke confirms card visible and no execution controls visible",
+        "authorized local-state gallery renders stable, human_gate, and budget_exhausted LoopCore receipt states",
+        "/projection/ego-neuroloop returns three receipts with side_effect_open=false for all entries"
       ],
       "anti_drift_check": "Projection only; no model routing, no taskpool ingestion, no hardware/external dispatch/deploy/auth/destructive side effect; UI remains non-authoritative.",
       "parallel_boundary": "Depends on local LoopCore receipt helper and Workbench projection runtime; independent from real model/adapter integration.",
@@ -125,7 +127,7 @@
       "dependency_order": 5,
       "external_side_effect_intent": "none/local runtime smoke and browser readback only",
       "human_gate": "required for real model use, taskpool ingestion, device integration, or external side effects; local UI projection slice completed",
-      "implementation_status": "validated_local_runtime_ui_projection_slice",
+      "implementation_status": "validated_local_runtime_ui_projection_slice_with_authorized_state_gallery",
       "implementation_artifacts": [
         "implementation/hewos_core/projections.py",
         "implementation/hewos_core/workbench_runtime.py",
@@ -136,7 +138,7 @@
         "artifacts/workbench-static-fixture.html",
         "06-verification/RUNTIME_UI_PROJECTION_REPORT_20260708.md"
       ],
-      "verification": "python3 -m unittest discover -s implementation/tests -v => 58 tests OK; runtime smoke GET /healthz, /projection/ego-neuroloop, /projection/dashboard passed; browser visual smoke passed"
+      "verification": "python3 -m unittest discover -s implementation/tests -v => 58 tests OK; runtime smoke GET /projection/ego-neuroloop returned 3 receipts for stable/human_gate/budget_exhausted with side_effect_open=false; browser visual smoke confirmed gallery visible and no execution controls"
     }
   ]
 }

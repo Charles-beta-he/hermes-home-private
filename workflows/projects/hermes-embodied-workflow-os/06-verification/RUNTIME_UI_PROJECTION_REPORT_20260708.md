@@ -91,3 +91,33 @@ The next meaningful gate is either:
 
 1. richer runtime UI states for high-risk/human-gate/budget-exhausted receipts, or
 2. real model/adapter integration, which requires separate exact authority, evidence readback, and side-effect boundary review.
+
+## Authorized local-state progression — same date
+
+After the runtime UI projection card was validated, the next authorized local/reversible item was advanced without opening external authority:
+
+- Added a local-state gallery for all safe promotable LoopCore receipt states.
+- Runtime fixture now projects three receipt classes:
+  - `stable`
+  - `human_gate`
+  - `budget_exhausted`
+- Dashboard aggregate now reports `loop_receipt_count=3` and exit distribution `stable=1`, `human_gate=1`, `budget_exhausted=1`.
+- Browser visual readback confirmed the gallery is visible and no execution controls are present.
+
+Additional runtime readback:
+
+```text
+GET /projection/ego-neuroloop -> count=3; exits=['budget_exhausted', 'human_gate', 'stable']; side_effects=[False, False, False]
+GET /projection/dashboard -> loop_receipt_count=3; loop_receipts_by_exit={'budget_exhausted': 1, 'human_gate': 1, 'stable': 1}
+```
+
+Additional test readback:
+
+```text
+python3 -m unittest discover -s implementation/tests -v
+Ran 58 tests in 3.042s
+OK
+```
+
+Boundary remains unchanged: read-only projection, no model routing, no taskpool ingestion, no external dispatch, no hardware actuation, no deploy/publish/push, no secret entry, payment, or destructive action.
+

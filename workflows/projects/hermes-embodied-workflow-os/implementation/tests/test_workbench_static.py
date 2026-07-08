@@ -18,6 +18,9 @@ class StaticWorkbenchTest(unittest.TestCase):
         self.assertIn("Ego-NeuroLoop LoopCore", html)
         self.assertIn("ego_neuroloop_core_receipt_v0", html)
         self.assertIn("prediction_not_verified_fact", html)
+        self.assertIn("Authorized local-state gallery", html)
+        self.assertIn("human_gate", html)
+        self.assertIn("budget_exhausted", html)
         self.assertIn("Simulation-only", html)
         forbidden = ["/execute", "taskpool", "deploy", "publish", "gateway", "credential"]
         lowered = html.lower()

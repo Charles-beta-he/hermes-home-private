@@ -162,3 +162,12 @@ Every material future step must update this ledger with evidence. Chat summaries
 - Browser visual smoke: Runtime UI Projection card visible with loop depth/exit/confidence/receipt/boundary flags; no execution controls visible.
 - Boundary preserved: projection-only; no model routing, taskpool ingestion, external dispatch, hardware actuation, deploy/publish/push, secret entry, payment, or destructive action.
 
+## Update — 2026-07-08T20:20:29+08:00
+- Advanced the next authorized local/reversible runtime UI item: LoopCore authorized local-state projection gallery.
+- Runtime fixture now emits three projected LoopCore receipt classes: `stable`, `human_gate`, and `budget_exhausted`.
+- Static Workbench now shows an `Authorized local-state gallery` under Ego-NeuroLoop LoopCore; closed states remain read-only evidence rows, not controls.
+- Verification: `python3 -m unittest discover -s implementation/tests -v` => 58 tests OK.
+- Runtime readback: `/projection/ego-neuroloop` returned count=3 with exits `budget_exhausted`, `human_gate`, `stable`, and side_effect_open=false for all entries; dashboard returned loop_receipt_count=3 and matching exit distribution.
+- Browser visual smoke: gallery visible with stable/human_gate/budget_exhausted entries and no execution controls.
+- Boundary preserved: projection-only; no taskpool ingestion, model routing, external dispatch, hardware actuation, deploy/publish/push, secret entry, payment, or destructive action.
+
