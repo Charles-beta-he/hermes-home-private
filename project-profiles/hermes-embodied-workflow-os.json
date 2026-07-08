@@ -3,7 +3,7 @@
   "display_name": "Hermes Embodied Workflow OS",
   "project_type": "outer-tooling/embodied-workflow-platform",
   "created_at": "2026-07-02T18:43:34+08:00",
-  "updated_at": "2026-07-06T17:53:29Z",
+  "updated_at": "2026-07-08T20:20:29+08:00",
   "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os",
   "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
   "portfolio_profile": true,
@@ -84,7 +84,9 @@
     "high_risk_boundary_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/HIGH_RISK_BOUNDARY_REPORT_20260703.md",
     "local_harness_write_through_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/LOCAL_HARNESS_WRITE_THROUGH_REPORT_20260703.md",
     "ordered_high_risk_drain_report_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ORDERED_HIGH_RISK_DRAIN_REPORT_20260703.md",
-    "ordered_high_risk_drain_receipt_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ordered-high-risk-drain-20260703.json"
+    "ordered_high_risk_drain_receipt_20260703": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/06-verification/ordered-high-risk-drain-20260703.json",
+    "loopwm_absorption_20260708": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/02-research/looped-world-models-absorption-20260708.md",
+    "ego_neuroloop_looped_latent_core_v0": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/01-architecture/ego-neuroloop-looped-latent-core-v0.md"
   },
   "current_components": {
     "project_profile": "profiled",
@@ -115,7 +117,8 @@
     "uimax_local_workbench": "A+ scoped local projection-only Workbench; responsive subscore A due to desktop-only screenshot harness",
     "high_risk_boundary_governance": "taskpool/external/hardware/deploy/auth covered by local exact-gated control plane and simulation ledger; no live execution",
     "local_harness_write_through": "disposable local harness receipts for taskpool/external/hardware/deploy/auth; no live adapter touched",
-    "ordered_high_risk_drain": "taskpool local write executed; external outbox dry-run; deploy push dry-run blocked non-fast-forward; hardware virtual gate; auth human-secret-entry only"
+    "ordered_high_risk_drain": "taskpool local write executed; external outbox dry-run; deploy push dry-run blocked non-fast-forward; hardware virtual gate; auth human-secret-entry only",
+    "ego_neuroloop_looped_latent_core": "contract-ready/advisory-research-absorbed-no-runtime-claim"
   },
   "boundaries": [
     "metadata/profile/ledger/research only in this slice",
@@ -140,7 +143,8 @@
   "id": "hermes-embodied-workflow-os",
   "governance_readbacks": {
     "a_plus_repair_20260707": "git log shows HEWOS scoped commits present; python3 -m unittest scripts/test_local_brain_change_preflight.py passed 9 tests; stale blocked_by_local_brain_governance status removed.",
-    "a_plus_semantic_policy_refresh_20260707": "Added scoped semantic control-plane policies after selfcheck WARN readback; WARN-only policy preserved, no fail-closed downgrade."
+    "a_plus_semantic_policy_refresh_20260707": "Added scoped semantic control-plane policies after selfcheck WARN readback; WARN-only policy preserved, no fail-closed downgrade.",
+    "loopwm_absorption_20260708": "arXiv/PDF readback supports Loop sub-layer absorption only; no direct Ego-NeuroLoop/neuro/egocentric proof; local architecture contract and task candidate landed."
   },
   "backend_contract_policy": {
     "contract_scope": "HEWOS stable core, adapters, workbench projection, evidence ledger, high-risk boundary gates, and local-only harnesses.",
