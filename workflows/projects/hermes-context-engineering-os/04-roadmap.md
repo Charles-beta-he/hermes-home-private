@@ -71,7 +71,9 @@ Remaining future enhancement:
 - P1-P4 local engineering closure evidence is consolidated in `11-certification-packet.md`.
 - Independent verifier vote is recorded in `12-independent-verifier-vote.md` with verdict `approve` and blockers `[]`.
 - Current certification state: certified for bounded P1-P4 read-only Context Engineering preflight projection.
-- Not certified: full product, uIMax/A+ UI acceptance, runtime prompt injection/prompt-cache integration, agent loop mutation, taskpool/scheduler/external/publish/destructive surfaces.
+- Not certified: full product, full uIMax/A+ UI acceptance, runtime prompt injection/prompt-cache integration, agent loop mutation, taskpool/scheduler/external/publish/destructive surfaces.
+- Remaining-scope authority/cooperation matrix is recorded in `13-authority-cooperation-matrix.md`; future not-claimed items must state what user cooperation is required.
+- Targeted uIMax audit for the Context Engineering preflight panel is recorded in `14-uimax-targeted-audit.md`; result: `A- / local-operator-ready`, not full A+ dashboard certification.
 
 ## P5 — Scheduler / Watchdog (cron boundary)
 
