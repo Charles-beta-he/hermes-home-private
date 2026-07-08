@@ -24,8 +24,10 @@ Landed tasks:
 - Targeted tests: `./venv/bin/python -m pytest tests/hermes_cli/test_context_engineering_cmd.py -q` -> 5 passed.
 - Real CLI readback against the SSOT sample and fixtures -> packet lint PASS, regression PASS checked=4.
 
-Future runtime-gated task:
-- Later, only with exact authority: add default-off `agent.context_engineering_packet_preflight`; test enabled/disabled/tool-unavailable paths and prompt-cache invariants.
+Runtime-gated task status:
+- Landed default-off `agent.context_engineering_packet_preflight` as a local CLI preflight projection, not runtime prompt injection. See `08-runtime-preflight-projection.md`.
+- Tested disabled/enabled/missing-packet/invalid-packet behavior and verified `runtime_prompt_injection=false`, side effects closed, and no writes.
+- Actual prompt assembly remains untouched; prompt-cache invariant tests are still required before any future injection into stable/context/volatile prompt parts.
 
 ## P2 — Context Regression Eval (standalone local harness)
 
