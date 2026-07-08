@@ -1,0 +1,25 @@
+{
+  "claim": "External J-space workspace has a local projection/evidence/event packet",
+  "evidence_refs": [
+    "E-002",
+    "E-003",
+    "E-004",
+    "E-ROOT"
+  ],
+  "excluded_claims": [
+    "not_full_multimodel_certified",
+    "not_integrated_with_runtime_router",
+    "not_taskpool_real_lifecycle_write"
+  ],
+  "missing_evidence": [],
+  "negative_evidence": [
+    "no_hidden_state_access",
+    "no_external_dispatch",
+    "no_taskpool_lifecycle_write"
+  ],
+  "schema": "completion_claim_packet_v0_1",
+  "scope": "local_projection_only_no_runtime_mutation",
+  "status": "verified_local",
+  "taskpool_write_event_refs": [],
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}

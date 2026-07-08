@@ -1,0 +1,20 @@
+{
+  "gate_results": [
+    {
+      "gate": "before_done",
+      "missing": [
+        "reflection_log.readback"
+      ],
+      "result": "fail",
+      "timestamp": "2026-07-08T04:44:56+00:00"
+    },
+    {
+      "gate": "before_done",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-08T04:45:03+00:00"
+    }
+  ],
+  "schema": "jspace_gates_v0_1",
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}

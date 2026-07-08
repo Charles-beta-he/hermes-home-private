@@ -1,0 +1,55 @@
+{
+  "anti_conditions": [
+    "do not claim phenomenal consciousness",
+    "do not claim hidden-state evidence without actual internals access",
+    "do not replace tests, receipts, static checks, or external readback",
+    "do not apply noisy preflight packets to trivial read-only actions"
+  ],
+  "applicability": [
+    "tool-using agents with material side effects",
+    "browser/web tasks where source content is untrusted",
+    "verification gates that need evidence assimilation after observations",
+    "agent-workflow specs that already use authority/evidence/readback boundaries"
+  ],
+  "context": {
+    "domain": "agent-runtime-safety, interpretability, workflow-control-plane",
+    "project": "Hermes agent workflow governance",
+    "tools_used": [
+      "skill_view",
+      "skill_manage",
+      "hermes_jspace.py",
+      "git"
+    ]
+  },
+  "created_at": "2026-07-08T04:45:27+00:00",
+  "evidence": {
+    "confidence": 0.72,
+    "ref": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/closure_packet.md",
+    "supporting_refs": [
+      "https://www.anthropic.com/research/global-workspace",
+      "http://transformer-circuits.pub/2026/workspace/index.html",
+      "/Users/charles/.hermes/skills/research/references/j-space-agent-audit-translation.md"
+    ],
+    "type": "manual+artifact"
+  },
+  "falsifiers": [
+    "proxy preflight packets do not correlate with safer actions in evals",
+    "models verbalize control packets while hidden behavior remains unchanged",
+    "unsafe automatic/hardwired behavior bypasses reportable-workspace checks",
+    "open-model replication fails to find analogous J-space properties"
+  ],
+  "id": "3beffa1e-03a2-453c-bd45-82a9fa6701a8",
+  "pattern": "For high-risk agent actions, use J-space-inspired material-boundary audits: make control concepts explicit before action and discrepancy concepts explicit after observation; treat this as a behavioral proxy unless real model-internal J-lens/J-space access exists.",
+  "ratchet": {
+    "demote_count": 0,
+    "last_transition": "2026-07-08T04:45:27+00:00",
+    "promote_count": 0,
+    "promotion_threshold": 2
+  },
+  "source_skill": "research/references/j-space-agent-audit-translation.md",
+  "source_task_id": "anthropic-global-workspace-absorption-20260708",
+  "state": "draft",
+  "ttl_days": 90,
+  "updated_at": "2026-07-08T04:45:27+00:00",
+  "version": 1
+}

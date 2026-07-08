@@ -1,0 +1,80 @@
+{
+  "claims": [
+    {
+      "criticality": "medium",
+      "id": "C-ROOT",
+      "status": "supported",
+      "text": "Workspace initialized as local external projection"
+    },
+    {
+      "criticality": "medium",
+      "id": "C-002",
+      "status": "supported",
+      "text": "Anthropic summary describes J-space as a reportable/modulatable/reasoning workspace and separates access-consciousness from phenomenal consciousness"
+    },
+    {
+      "criticality": "medium",
+      "id": "C-003",
+      "status": "supported",
+      "text": "Full Transformer Circuits paper provides technical claims for Jacobian lens, J-space properties, safety auditing, and counterfactual reflection training"
+    },
+    {
+      "criticality": "medium",
+      "id": "C-004",
+      "status": "supported",
+      "text": "Reusable Hermes agent-audit translation has been landed as a research skill reference"
+    }
+  ],
+  "evidence": [
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-ROOT",
+      "ref": "workspace_state.yaml",
+      "status": "verified",
+      "supports": [
+        "C-ROOT"
+      ],
+      "timestamp": "2026-07-08T04:44:56+00:00",
+      "type": "artifact"
+    },
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-002",
+      "ref": "https://www.anthropic.com/research/global-workspace",
+      "status": "verified",
+      "supports": [
+        "C-002"
+      ],
+      "timestamp": "2026-07-08T04:44:56+00:00",
+      "type": "source"
+    },
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-003",
+      "ref": "http://transformer-circuits.pub/2026/workspace/index.html",
+      "status": "verified",
+      "supports": [
+        "C-003"
+      ],
+      "timestamp": "2026-07-08T04:44:56+00:00",
+      "type": "source"
+    },
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-004",
+      "ref": "/Users/charles/.hermes/skills/research/references/j-space-agent-audit-translation.md",
+      "status": "verified",
+      "supports": [
+        "C-004"
+      ],
+      "timestamp": "2026-07-08T04:44:56+00:00",
+      "type": "artifact"
+    }
+  ],
+  "schema": "evidence_dag_v0_1",
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}
