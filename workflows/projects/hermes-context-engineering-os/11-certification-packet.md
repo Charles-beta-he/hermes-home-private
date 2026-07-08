@@ -123,22 +123,48 @@ Dashboard process cleanup readback:
 | Dashboard UI renders and is interactive | browser readback and console readback | verified |
 | No obvious dashboard JS error | browser console readback `total_errors=0` | verified |
 | Full uIMax/A+ visual certification | targeted browser readback exists but full uIMax matrix not run | not claimed |
-| Multi-model/independent verifier certification | independent verifier dispatched; final vote pending until result is recorded | pending |
+| Multi-model/independent verifier certification | independent verifier vote recorded in `12-independent-verifier-vote.md`; verdict `approve`; blockers `[]` | verified |
+
+## Independent Verifier Vote
+
+Source artifact:
+
+- `/Users/charles/.hermes/cache/delegation/subagent-summary-0-20260708_120837_243023.txt`
+
+Recorded vote:
+
+- `12-independent-verifier-vote.md`
+
+Verifier verdict:
+
+```json
+{
+  "verdict": "approve",
+  "scope": "Hermes Context Engineering preflight P1-P4 closure, bounded to read-only CLI/API/dashboard projection",
+  "blockers": []
+}
+```
+
+Verifier summary:
+
+> Approved bounded P1-P4 certification. No blockers found for security, logic, read-only boundary, or targeted UI evidence. Full P1-P4 read-only certification can be claimed; full uIMax/A+ or runtime prompt-injection certification cannot.
 
 ## Verdict
 
-Certification readiness: evidence-complete for P1-P4 local engineering closure.
+Certification status: certified for bounded P1-P4 read-only Context Engineering preflight projection.
 
-Certification status: pending independent verifier vote. Do not claim full certified until verifier output is recorded and any blocker is resolved.
+Allowed certified claim:
 
-Allowed wording before verifier returns:
+- `P1-P4 read-only Context Engineering preflight projection is certified within the bounded scope.`
 
-- `certification-ready evidence package for P1-P4`
-- `P1-P4 locally verified and committed`
-- `full certification pending independent verifier vote`
+Scope boundaries still closed and not certified:
 
-Forbidden wording before verifier returns:
-
-- `certified`
-- `fully certified`
-- `A+ UI certified`
+- Full product certification.
+- uIMax/A+ UI acceptance.
+- Runtime prompt injection / prompt-cache integration.
+- Agent loop mutation.
+- Taskpool lifecycle writes.
+- Scheduler/cron/watchdog actions.
+- External dispatch.
+- Publish/deploy/push.
+- Destructive operations.

@@ -69,7 +69,9 @@ Remaining future enhancement:
 ## Certification Packet
 
 - P1-P4 local engineering closure evidence is consolidated in `11-certification-packet.md`.
-- Current certification state: certification-ready evidence package; independent verifier vote pending before the word `certified` may be used.
+- Independent verifier vote is recorded in `12-independent-verifier-vote.md` with verdict `approve` and blockers `[]`.
+- Current certification state: certified for bounded P1-P4 read-only Context Engineering preflight projection.
+- Not certified: full product, uIMax/A+ UI acceptance, runtime prompt injection/prompt-cache integration, agent loop mutation, taskpool/scheduler/external/publish/destructive surfaces.
 
 ## P5 — Scheduler / Watchdog (cron boundary)
 
