@@ -54,17 +54,17 @@ Tasks:
 
 ## P4 — Dashboard / Control Room Projection (read-only UI boundary)
 
-Status: API projection landed; UI panel remains next. See `09-dashboard-api-projection.md`.
+Status: API and read-only UI projection landed. See `09-dashboard-api-projection.md` and `10-dashboard-ui-projection.md`.
 
 Landed tasks:
 - Read-only dashboard API: `GET /api/context/preflight?packet=<packet.json>`.
 - Existing dashboard session-token auth protects the endpoint.
 - Endpoint reuses the default-off preflight gate and preserves side-effect flags: no LLM, no writes, no runtime prompt injection.
-- Tests and API smoke readback completed.
+- System page read-only panel with Context Packet path input, `Check preflight` button, gate/status badges, result counts, and side-effect readback.
+- Tests, frontend typecheck/build, API smoke, browser readback, and console-error readback completed.
 
-Remaining UI task:
-- Add a read-only panel: Context Packet, Evidence DAG summary, Authority closed/open, Converge matrix.
-- No executor buttons until separately authorized.
+Remaining future enhancement:
+- Optional richer Evidence DAG / Converge matrix visualization, still without executor buttons unless separately authorized.
 
 ## P5 — Scheduler / Watchdog (cron boundary)
 
