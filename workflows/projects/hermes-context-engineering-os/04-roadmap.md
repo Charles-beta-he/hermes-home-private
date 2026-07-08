@@ -66,6 +66,11 @@ Landed tasks:
 Remaining future enhancement:
 - Optional richer Evidence DAG / Converge matrix visualization, still without executor buttons unless separately authorized.
 
+## Certification Packet
+
+- P1-P4 local engineering closure evidence is consolidated in `11-certification-packet.md`.
+- Current certification state: certification-ready evidence package; independent verifier vote pending before the word `certified` may be used.
+
 ## P5 — Scheduler / Watchdog (cron boundary)
 
 Authority needed: exact local-only no-agent cron target and script path.
