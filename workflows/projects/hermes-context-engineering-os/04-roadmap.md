@@ -12,15 +12,19 @@ Status: landed in this session.
 
 ## P1 — Edge CLI first, runtime prompt only after cache-safe gate
 
-Status: read-only Hermes repo inspection completed in `06-p1-runtime-target-analysis.md`; core runtime mutation not performed.
+Status: landed as local edge CLI. See `07-edge-cli-integration.md`.
 
 Decision:
 - Prefer edge CLI/helper + skill routing first because Hermes AGENTS.md says prompt caching is sacred and core is a narrow waist.
 - Direct system-prompt injection remains future/authority-gated.
 
-Tasks:
-- Candidate CLI: `hermes context packet lint <packet.json>`.
-- Candidate CLI: `hermes context eval run <fixtures>`.
+Landed tasks:
+- `hermes context packet lint <packet.json>`.
+- `hermes context eval run --root <project-root>`.
+- Targeted tests: `./venv/bin/python -m pytest tests/hermes_cli/test_context_engineering_cmd.py -q` -> 5 passed.
+- Real CLI readback against the SSOT sample and fixtures -> packet lint PASS, regression PASS checked=4.
+
+Future runtime-gated task:
 - Later, only with exact authority: add default-off `agent.context_engineering_packet_preflight`; test enabled/disabled/tool-unavailable paths and prompt-cache invariants.
 
 ## P2 — Context Regression Eval (standalone local harness)
