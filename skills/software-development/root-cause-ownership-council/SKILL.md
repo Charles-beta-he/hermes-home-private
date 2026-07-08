@@ -1,7 +1,7 @@
 ---
 name: root-cause-ownership-council
 description: Use when repeated fixes, multi-controller state conflicts, high-risk shared runtime changes, or multi-model/multi-agent review are needed to reframe symptoms into owner contracts, evidence ledgers, falsifiers, minimal implementation boundaries, and final verification gates.
-version: 1.2.0
+version: 1.2.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -23,6 +23,10 @@ Core principle:
 ```text
 Do not ask five agents for five fixes. Ask orthogonal roles for framing, ownership, falsifiers, evidence, implementation boundaries, and verification.
 ```
+
+## v1.2.1 Autonomous Merge Correction
+
+For Hermes self-evolution/private-home PRs in a user-approved autonomous lane, the release loop should not stop at PR creation waiting for a second merge prompt. The correct path is evidence-first multi-model review, then automated merge when objective evidence is grounded, review is non-blocking, PR is mergeable, scope is clean, and post-merge readback/rollback are available. This does not apply to project repos, external dispatch, runtime deploy, destructive changes, credentials, broad fanout, or unclear target authority.
 
 ## v1.2 Development Experience Coverage
 
