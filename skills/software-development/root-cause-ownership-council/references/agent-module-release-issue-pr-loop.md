@@ -46,11 +46,13 @@ Do not use when:
 5. Create a PR from the release branch.
    - Include `Closes #<issue>` only when the PR actually satisfies the issue acceptance criteria.
    - Summarize changed files/classes, validation commands, and authority boundaries.
-   - Do not auto-merge unless separately authorized.
+   - For Hermes self-evolution/private-home PRs under a user-approved autonomous lane, do not wait for a second merge prompt after PR creation. Run evidence-first multi-model review, then auto-merge when objective evidence is grounded, quorum/review is non-blocking, PR is mergeable, scope is clean, and rollback/readback are available.
+   - For project repos, external dispatch, runtime deploy, destructive changes, credentials, broad fanout, or unclear target authority, require exact target/readback authorization before merge.
 
-6. Read back both issue and PR state.
-   - Issue: number, state, labels, comments/triage note.
-   - PR: number, state, draft flag, mergeability, head/base, linked closing issue.
+6. Read back issue, PR, and base branch state.
+   - Issue: number, state, labels, comments/triage note, closedAt when merged.
+   - PR: number, state, draft flag, mergeability, head/base, linked closing issue, mergedAt/mergeCommit when merged.
+   - Base branch: remote tip and key file/version/behavior readback after merge.
    - Report links and exact readback evidence.
 
 ## Pitfalls
