@@ -1,0 +1,12 @@
+{
+  "artifact": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/external_dispatch_boundary.json",
+  "execution_status": "blocked_missing_platform_target_payload",
+  "external_dispatch_executed": false,
+  "external_dispatch_requested": true,
+  "external_side_effects_executed": false,
+  "send_executed": false,
+  "source": "external_dispatch_boundary",
+  "token_read": false,
+  "type": "external_dispatch.preflight.blocked_exact_target_required",
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}

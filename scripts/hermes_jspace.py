@@ -296,12 +296,20 @@ def closure_packet(root: Path, workspace_id: str) -> dict[str, Any]:
     events = read_events(wdir)
     objective_verified_ids = {e["id"] for e in evidence.get("evidence", []) if e.get("authority") == "objective" and e.get("status") == "verified"}
     taskpool_write_events = [e for e in events if e.get("taskpool_lifecycle_write_executed") is True or (e.get("source") == "taskpool_write_through" and e.get("returncode") == 0)]
+    runtime_router_events = [e for e in events if e.get("runtime_router_jspace_integrated") is True]
     status_value = "verified_local" if objective_verified_ids else "advisory_only"
-    scope = "local_projection_with_exact_taskpool_write_through" if taskpool_write_events else "local_projection_only_no_runtime_mutation"
+    if taskpool_write_events and runtime_router_events:
+        scope = "local_projection_with_exact_taskpool_write_through_and_runtime_router"
+    elif taskpool_write_events:
+        scope = "local_projection_with_exact_taskpool_write_through"
+    else:
+        scope = "local_projection_only_no_runtime_mutation"
     negative_evidence = ["no_hidden_state_access", "no_external_dispatch"]
     if not taskpool_write_events:
         negative_evidence.append("no_taskpool_lifecycle_write")
-    excluded_claims = ["not_full_multimodel_certified", "not_integrated_with_runtime_router"]
+    excluded_claims = ["not_full_multimodel_certified"]
+    if not runtime_router_events:
+        excluded_claims.append("not_integrated_with_runtime_router")
     if not taskpool_write_events:
         excluded_claims.append("not_taskpool_real_lifecycle_write")
     packet = {
@@ -465,18 +473,31 @@ def real_open_matrix(root: Path, workspace_id: str, *, run_destructive_canary: b
     return {"ok": True, "workspace_id": workspace_id, "path": str(wdir / "real_open_matrix.json"), "matrix": matrix}
 
 
-def dashboard_data(root: Path) -> dict[str, Any]:
+def _workspace_effect_flags(events: list[dict[str, Any]]) -> dict[str, bool]:
+    taskpool_written = any(e.get("taskpool_lifecycle_write_executed") is True or (e.get("source") == "taskpool_write_through" and e.get("returncode") == 0) for e in events)
+    external_executed = any(e.get("external_side_effects_executed") is True for e in events)
+    return {
+        "runtime_mutation": taskpool_written,
+        "external_side_effects_executed": external_executed,
+        "taskpool_lifecycle_write_executed": taskpool_written,
+    }
+
+
+def dashboard_data(root: Path, workspace_id: str | None = None) -> dict[str, Any]:
     root_path = root.expanduser().resolve()
     active: list[dict[str, Any]] = []
     blocked_gates: list[dict[str, Any]] = []
     learning: list[dict[str, Any]] = []
     evidence_health = {"verified": 0, "advisory": 0, "failed": 0, "blocked": 0}
+    current_workspace_effects: dict[str, Any] | None = None
     if root_path.exists():
         for wdir in sorted([p for p in root_path.iterdir() if p.is_dir()]):
             try:
                 workspace = read_json(wdir / "workspace_state.json")
                 evidence = read_json(wdir / "evidence_dag.json")
             except Exception:
+                continue
+            if workspace_id and workspace.get("id") != workspace_id:
                 continue
             active.append({"workspace_id": workspace.get("id"), "title": workspace.get("title"), "task_id": workspace.get("task_id"), "state": workspace.get("workspace_state"), "path": str(wdir)})
             for ev in evidence.get("evidence", []):
@@ -492,23 +513,41 @@ def dashboard_data(root: Path) -> dict[str, Any]:
             if candidate_path.exists():
                 candidate = read_json(candidate_path)
                 learning.append({"workspace_id": workspace.get("id"), "requires_human_review": candidate.get("requires_human_review"), "auto_apply_executed": candidate.get("auto_apply_executed"), "path": str(candidate_path)})
+            if workspace_id and workspace.get("id") == workspace_id:
+                events = read_events(wdir)
+                current_workspace_effects = {
+                    "workspace_id": workspace_id,
+                    "event_count": len(events),
+                    **_workspace_effect_flags(events),
+                }
     all_events: list[dict[str, Any]] = []
     if root_path.exists():
         for wdir in sorted([p for p in root_path.iterdir() if p.is_dir()]):
             all_events.extend(read_events(wdir))
-    taskpool_written = any(e.get("taskpool_lifecycle_write_executed") is True or (e.get("source") == "taskpool_write_through" and e.get("returncode") == 0) for e in all_events)
-    external_executed = any(e.get("external_side_effects_executed") is True for e in all_events)
+    aggregate_effects = _workspace_effect_flags(all_events)
+    if workspace_id and current_workspace_effects is None:
+        current_workspace_effects = {
+            "workspace_id": workspace_id,
+            "event_count": 0,
+            "runtime_mutation": False,
+            "external_side_effects_executed": False,
+            "taskpool_lifecycle_write_executed": False,
+            "not_found": True,
+        }
     return {
         "ok": True,
         "schema": "jspace_dashboard_data_v0_1",
         "root": str(root_path),
+        "filter_workspace_id": workspace_id,
         "active_jspaces": active,
         "blocked_gates": blocked_gates,
         "evidence_health": evidence_health,
         "learning_candidates": learning,
-        "runtime_mutation": taskpool_written,
-        "external_side_effects_executed": external_executed,
-        "taskpool_lifecycle_write_executed": taskpool_written,
+        "current_workspace_effects": current_workspace_effects,
+        "aggregate_effects": aggregate_effects,
+        "runtime_mutation": aggregate_effects["runtime_mutation"],
+        "external_side_effects_executed": aggregate_effects["external_side_effects_executed"],
+        "taskpool_lifecycle_write_executed": aggregate_effects["taskpool_lifecycle_write_executed"],
     }
 
 
@@ -521,6 +560,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", default=str(DEFAULT_ROOT))
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("dashboard-data")
+    p.add_argument("--workspace-id", default=None, help="Limit projection/readback to one workspace and include current_workspace_effects")
     p = sub.add_parser("real-open-matrix")
     p.add_argument("workspace_id")
     p.add_argument("--run-destructive-canary", action="store_true")
@@ -567,7 +607,7 @@ def main(argv: Any = None) -> int:
     args = build_parser().parse_args(argv)
     root = Path(args.root)
     if args.cmd == "dashboard-data":
-        data = dashboard_data(root)
+        data = dashboard_data(root, workspace_id=args.workspace_id)
     elif args.cmd == "real-open-matrix":
         data = real_open_matrix(root, args.workspace_id, run_destructive_canary=args.run_destructive_canary)
     elif args.cmd == "init":

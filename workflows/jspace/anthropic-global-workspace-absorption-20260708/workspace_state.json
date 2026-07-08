@@ -39,8 +39,8 @@
   ],
   "risks": [],
   "schema": "workspace_projection_v0_1",
-  "task_id": null,
+  "task_id": "2026-07-08-j-space-absorption-lifecycle-write-smoke-20260708",
   "title": "Anthropic global workspace absorption",
-  "updated_at": "2026-07-08T04:44:56+00:00",
-  "workspace_state": "objective_model"
+  "updated_at": "2026-07-08T04:57:28+00:00",
+  "workspace_state": "closed"
 }

@@ -1,0 +1,12 @@
+{
+  "external_side_effects_executed": false,
+  "readback": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-07-08-j-space-absorption-lifecycle-write-smoke-20260708.md",
+  "returncode": 0,
+  "side_effect_boundary": "exact_taskpool_lifecycle_write_through",
+  "source": "taskpool_write_through",
+  "task_id": "2026-07-08-j-space-absorption-lifecycle-write-smoke-20260708",
+  "taskpool_lifecycle_write_executed": true,
+  "to": "done",
+  "type": "taskpool.transition.readback_done",
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}

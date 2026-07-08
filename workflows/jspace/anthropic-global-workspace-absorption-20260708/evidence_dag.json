@@ -23,6 +23,12 @@
       "id": "C-004",
       "status": "supported",
       "text": "Reusable Hermes agent-audit translation has been landed as a research skill reference"
+    },
+    {
+      "criticality": "medium",
+      "id": "C-005",
+      "status": "supported",
+      "text": "Second independent deterministic eval passed for J-space absorption, router classification, projection gates, lifecycle write-through, and exact-target external dispatch boundary"
     }
   ],
   "evidence": [
@@ -73,6 +79,18 @@
       ],
       "timestamp": "2026-07-08T04:44:56+00:00",
       "type": "artifact"
+    },
+    {
+      "authority": "objective",
+      "contradicts": [],
+      "id": "E-005",
+      "ref": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/independent_eval_2.json",
+      "status": "verified",
+      "supports": [
+        "C-005"
+      ],
+      "timestamp": "2026-07-08T04:57:28+00:00",
+      "type": "eval"
     }
   ],
   "schema": "evidence_dag_v0_1",

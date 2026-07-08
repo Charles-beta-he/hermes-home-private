@@ -1,0 +1,76 @@
+{
+  "atom_before": {
+    "id": "3beffa1e-03a2-453c-bd45-82a9fa6701a8",
+    "promote_count": 0,
+    "state": "draft"
+  },
+  "checks": {
+    "atom_json": {
+      "command": "python3 -m json.tool /Users/charles/.hermes/experience/atoms/3beffa1e-03a2-453c-bd45-82a9fa6701a8.json >/dev/null && echo atom-json-ok",
+      "exit_code": 0,
+      "output_tail": "atom-json-ok"
+    },
+    "hermes_jspace": {
+      "command": "python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py",
+      "exit_code": 0,
+      "output_tail": "............\n----------------------------------------------------------------------\nRan 12 tests in 0.020s\n\nOK"
+    },
+    "task_classifier_jspace_router": {
+      "command": "python3 /Users/charles/.hermes/scripts/test_task_classifier_jspace_router.py",
+      "exit_code": 0,
+      "output_tail": "PASS"
+    },
+    "workspace_projection_gate": {
+      "command": "python3 /Users/charles/.hermes/scripts/test_workspace_projection_gate.py",
+      "exit_code": 0,
+      "output_tail": "PASS"
+    },
+    "workspace_status": {
+      "command": "python3 /Users/charles/.hermes/scripts/hermes_jspace.py status anthropic-global-workspace-absorption-20260708",
+      "exit_code": 0,
+      "output_tail": "{\n  \"authority_boundary\": {\n    \"allowed\": [\n      \"local_read\",\n      \"local_write_workspace\",\n      \"advisory_review\"\n    ],\n    \"forbidden\": [\n      \"credential_entry\",\n      \"payment\",\n      \"secret_exfiltration\"\n    ],\n    \"requires_auth\": [\n      \"external_dispatch\",\n      \"publish_deploy_push\",\n      \"taskpool_lifecycle_write\",\n      \"destructive_operation\"\n    ]\n  },\n  \"claim_count\": 4,\n  \"event_count\": 5,\n  \"evidence_count\": 4,\n  \"goal\": \"Translate Anthropic J-space/global-workspace research into Hermes agent audit optimization candidates with evidence, boundaries, and reusable skill reference\",\n  \"model_judgment_evidence_count\": 0,\n  \"ok\": true,\n  \"path\": \"/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708\",\n  \"verified_evidence_count\": 4,\n  \"workspace_id\": \"anthropic-global-workspace-absorption-20260708\",\n  \"workspace_state\": \"closed\"\n}"
+    }
+  },
+  "claims_supported": [
+    "skill reference exists and is readable via prior skill_view readback",
+    "runtime router classifies J-space/workspace-projection work into hermes-jspace-router conflict group",
+    "workspace projection gates pass focused tests",
+    "taskpool lifecycle write-through reached done with proof-gated evidence",
+    "external dispatch remained exact-target blocked with send_executed=false"
+  ],
+  "independence": "deterministic command/readback eval independent of original article-summary analysis",
+  "schema": "jspace_absorption_independent_eval_v0_1",
+  "timestamp": "2026-07-08T04:57:19+00:00",
+  "verdict": "PASS",
+  "workspace_id": "anthropic-global-workspace-absorption-20260708",
+  "workspace_status": {
+    "authority_boundary": {
+      "allowed": [
+        "local_read",
+        "local_write_workspace",
+        "advisory_review"
+      ],
+      "forbidden": [
+        "credential_entry",
+        "payment",
+        "secret_exfiltration"
+      ],
+      "requires_auth": [
+        "external_dispatch",
+        "publish_deploy_push",
+        "taskpool_lifecycle_write",
+        "destructive_operation"
+      ]
+    },
+    "claim_count": 4,
+    "event_count": 5,
+    "evidence_count": 4,
+    "goal": "Translate Anthropic J-space/global-workspace research into Hermes agent audit optimization candidates with evidence, boundaries, and reusable skill reference",
+    "model_judgment_evidence_count": 0,
+    "ok": true,
+    "path": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708",
+    "verified_evidence_count": 4,
+    "workspace_id": "anthropic-global-workspace-absorption-20260708",
+    "workspace_state": "closed"
+  }
+}

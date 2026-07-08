@@ -1,0 +1,23 @@
+{
+  "authority_config_readback": "hermes agent-os status --json shows agent_os_external_dispatch=true and external_dispatch=true",
+  "exact_target": null,
+  "execution_status": "blocked_missing_platform_target_payload",
+  "external_side_effects_executed": false,
+  "payload_hash": null,
+  "platform": null,
+  "reason": "CLI origin has no gateway delivery target; user did not name platform, recipient/channel, payload, receipt, and readback tuple required for real send.",
+  "requested_class": "external_dispatch",
+  "required_for_real_send": [
+    "platform",
+    "target_id_or_channel",
+    "payload",
+    "payload_hash",
+    "receipt_path",
+    "post_send_readback_command"
+  ],
+  "schema": "external_dispatch_boundary_v0_1",
+  "send_executed": false,
+  "timestamp": "2026-07-08T04:56:09+00:00",
+  "token_read": false,
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}

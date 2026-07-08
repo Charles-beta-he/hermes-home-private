@@ -40,16 +40,30 @@
   ],
   "id": "3beffa1e-03a2-453c-bd45-82a9fa6701a8",
   "pattern": "For high-risk agent actions, use J-space-inspired material-boundary audits: make control concepts explicit before action and discrepancy concepts explicit after observation; treat this as a behavioral proxy unless real model-internal J-lens/J-space access exists.",
+  "promotion_note": "Promoted after initial artifact validation plus independent deterministic eval/readback. Promotion covers the behavioral proxy pattern only; it does not claim hidden-state/J-lens access or real external dispatch.",
   "ratchet": {
     "demote_count": 0,
-    "last_transition": "2026-07-08T04:45:27+00:00",
-    "promote_count": 0,
+    "last_transition": "2026-07-08T04:57:44+00:00",
+    "promote_count": 2,
     "promotion_threshold": 2
   },
   "source_skill": "research/references/j-space-agent-audit-translation.md",
   "source_task_id": "anthropic-global-workspace-absorption-20260708",
-  "state": "draft",
+  "state": "promoted",
   "ttl_days": 90,
-  "updated_at": "2026-07-08T04:45:27+00:00",
+  "updated_at": "2026-07-08T04:57:44+00:00",
+  "validation_refs": [
+    {
+      "evidence_id": "E-004",
+      "ref": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/closure_packet.md",
+      "type": "initial_artifact_validation"
+    },
+    {
+      "evidence_id": "E-005",
+      "ref": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/independent_eval_2.json",
+      "type": "independent_deterministic_eval",
+      "verdict": "PASS"
+    }
+  ],
   "version": 1
 }

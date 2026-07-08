@@ -13,6 +13,12 @@
       "missing": [],
       "result": "pass",
       "timestamp": "2026-07-08T04:45:03+00:00"
+    },
+    {
+      "gate": "before_done",
+      "missing": [],
+      "result": "pass",
+      "timestamp": "2026-07-08T04:57:28+00:00"
     }
   ],
   "schema": "jspace_gates_v0_1",

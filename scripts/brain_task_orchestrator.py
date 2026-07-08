@@ -75,6 +75,10 @@ AUTONOMY_WRITE_GUARD = HERMES_HOME / "scripts" / "autonomy-write-guard.py"
 AUTONOMY_WRITE_ALLOWLIST = Path(
     os.environ.get("HERMES_AUTONOMY_WRITE_ALLOWLIST", str(HERMES_HOME / "config" / "autonomy-write-allowlist.json"))
 ).expanduser()
+COMPOUND_LOOP_PREFLIGHT_ENV_FLAG = "HERMES_TASKPOOL_COMPOUND_PREFLIGHT_ENABLED"
+COMPOUND_LOOP_PREFLIGHT_SCRIPT = SCRIPTS_DIR / "compound_loop_preflight.py"
+COMPOUND_LOOP_PREFLIGHT_SURFACES = {"compound_loop_preflight"}
+COMPOUND_LOOP_PREFLIGHT_CONCEPTS = {"compound-agent-loop", "compound_agent_loop"}
 CRON_JOBS_PATH = Path(os.environ.get("HERMES_CRON_JOBS_PATH", str(HERMES_HOME / "cron" / "jobs.json"))).expanduser()
 TASKPOOL_CRON_JOB_NAMES = [
     "task-pool-guardian-10m",
@@ -624,6 +628,73 @@ def parse_guard_error(exc: BaseException) -> dict[str, Any]:
     except Exception:
         pass
     return {"status": "FAIL_CLOSED", "ok": False, "error": str(exc)}
+
+
+def compound_loop_preflight_enabled() -> bool:
+    raw = os.environ.get(COMPOUND_LOOP_PREFLIGHT_ENV_FLAG, "0").strip().lower()
+    return raw not in {"", "0", "false", "no", "off", "never"}
+
+
+def task_requires_compound_loop_preflight(task: "Task") -> bool:
+    harness_surfaces = {str(v or "").strip().lower() for v in list_value(task.fm.get("harness_surfaces"))}
+    concepts = {str(v or "").strip().lower() for v in list_value(task.fm.get("concepts"))}
+    if harness_surfaces & COMPOUND_LOOP_PREFLIGHT_SURFACES:
+        return True
+    if concepts & COMPOUND_LOOP_PREFLIGHT_CONCEPTS:
+        return True
+    if "## compound agent loop" in task.body.lower():
+        return True
+    return False
+
+
+def evaluate_compound_loop_preflight(task: "Task") -> dict[str, Any]:
+    enabled = compound_loop_preflight_enabled()
+    applicable = task_requires_compound_loop_preflight(task)
+    script_path = COMPOUND_LOOP_PREFLIGHT_SCRIPT if COMPOUND_LOOP_PREFLIGHT_SCRIPT.exists() else Path(__file__).resolve().with_name("compound_loop_preflight.py")
+    result: dict[str, Any] = {
+        "enabled": enabled,
+        "applicable": applicable,
+        "task_id": task.id,
+        "task_path": str(task.path),
+        "script_path": str(script_path),
+        "safety": "read-only advisory pre-dispatch check; does not claim, execute, or grant authority",
+    }
+    if not enabled:
+        return {"status": "SKIPPED", "reason": "disabled", **result}
+    if not applicable:
+        return {"status": "SKIPPED", "reason": "not_applicable", **result}
+    if not script_path.exists():
+        return {
+            "status": "FAIL",
+            "reason": "script_missing",
+            "schema": "compound_loop_preflight_v1",
+            "missing": ["compound_loop_preflight_script"],
+            "warnings": {},
+            **result,
+        }
+    try:
+        spec = importlib.util.spec_from_file_location("compound_loop_preflight_runtime", script_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"unable to load spec from {script_path}")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        scan = getattr(module, "scan", None)
+        if not callable(scan):
+            raise RuntimeError("scan() missing from compound_loop_preflight.py")
+        payload = scan(task.path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise RuntimeError("compound_loop_preflight scan() returned non-dict payload")
+        return {**payload, **result}
+    except Exception as exc:
+        return {
+            "status": "FAIL",
+            "reason": "runtime_error",
+            "schema": "compound_loop_preflight_v1",
+            "error": str(exc),
+            "missing": [],
+            "warnings": {},
+            **result,
+        }
 
 
 def slugify(text: str) -> str:
@@ -7438,6 +7509,7 @@ def infer_conflict_group_from_task(task: Task) -> str:
         (r"(?i)(plugin|插件)", "hermes-plugins"),
         (r"(?i)(gateway|网关)", "hermes-gateway"),
         (r"(?i)(cron|定时|调度)", "hermes-cron"),
+        (r"(?i)(j.?space|global.?workspace|workspace.?projection|jacobian.?lens)", "hermes-jspace-router"),
         (r"(?i)(task.?pool|任务池|task.?boundary|任务边界|dispatch|分派)", "hermes-taskpool"),
         (r"(?i)(orchestrat|编排)", "hermes-orchestrator"),
         (r"(?i)(agent.?team|multi.?agent|多agent|并行)", "hermes-agent-team"),
@@ -7456,6 +7528,9 @@ def infer_conflict_group_from_task(task: Task) -> str:
         ("~/.hermes/scripts/agent_team_", "hermes-agent-team"),
         ("~/.hermes/scripts/sync-brain", "hermes-brain-sync"),
         ("~/.hermes/scripts/model_", "hermes-model-router"),
+        ("~/.hermes/scripts/hermes_jspace.py", "hermes-jspace-router"),
+        ("~/.hermes/scripts/workspace_projection_gate.py", "hermes-jspace-router"),
+        ("~/.hermes/workflows/jspace/", "hermes-jspace-router"),
         ("~/.hermes/cron/", "hermes-cron"),
         ("~/.hermes/memory/", "hermes-memory"),
     ]
@@ -8516,6 +8591,20 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
     if not nxt.get("next"):
         return {"status": "OK", "dry_run": True, "dispatchable": False, "message": nxt["message"]}
     row = nxt["next"]
+    task = find_task(row["id"])
+    compound_preflight = evaluate_compound_loop_preflight(task)
+    if compound_preflight.get("status") == "FAIL":
+        return {
+            "status": "OK",
+            "dry_run": True,
+            "dispatchable": False,
+            "blocked_by_compound_loop_preflight": True,
+            "next": row,
+            "blocked_actions": ["dispatch_claim_and_execute"],
+            "safe_actions": ["fix compound loop contract fields", "rerun dispatch-dry-run after read-only preflight PASS/WARN"],
+            "compound_loop_preflight": compound_preflight,
+            "safety": "dry-run only; read-only compound loop preflight FAIL suppresses claim command and execution prompt",
+        }
     flow_payload = command_execution_flow_dry_run(argparse.Namespace(task=[row["id"]], limit=1, report="", fail_on_blocked=False, json=True))
     flow_decision = execution_flow_dispatch_decision(flow_payload)
     prompt = dispatch_prompt_for_row(row)
@@ -8531,10 +8620,11 @@ def command_dispatch_dry_run(args: argparse.Namespace) -> dict[str, Any]:
             "safe_actions": ["inspect execution_flow", "resolve boundary before claim", "rerun dispatch-dry-run after evidence or authorization"],
             "execution_flow": flow_payload,
             "execution_flow_dispatch_decision": flow_decision,
+            "compound_loop_preflight": compound_preflight,
             "safety": "dry-run only; blocked execution-flow decision suppresses claim command, execution prompt, and nested intervention plans",
         }
     intervention = command_multimodel_intervention_dry_run(argparse.Namespace(task=row["id"], max_tasks=1, json=True))
-    return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "multimodel_intervention": intervention, "execution_flow": flow_payload, "execution_flow_dispatch_decision": flow_decision, "safety": "dry-run only; does not claim or execute"}
+    return {"status": "OK", "dry_run": True, "dispatchable": True, "next": row, "claim_command": nxt["claim_command"], "execution_prompt": prompt, "multimodel_intervention": intervention, "execution_flow": flow_payload, "execution_flow_dispatch_decision": flow_decision, "compound_loop_preflight": compound_preflight, "safety": "dry-run only; does not claim or execute"}
 
 
 def execution_flow_dispatch_decision(flow_payload: dict[str, Any]) -> dict[str, Any]:
@@ -10030,6 +10120,11 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
     if not proof_ok:
         reasons.append("proof_chain_invalid")
         warnings.extend(proof_failures)
+    compound_preflight = evaluate_compound_loop_preflight(task) if task else {"status": "SKIPPED", "reason": "no_task", "enabled": compound_loop_preflight_enabled(), "applicable": False}
+    if task and compound_preflight.get("status") == "FAIL":
+        reasons.append("compound_loop_preflight_failed")
+    compound_warning_keys = sorted((compound_preflight.get("warnings") or {}).keys()) if isinstance(compound_preflight, dict) else []
+    warnings.extend(f"compound_loop_preflight_warning:{key}" for key in compound_warning_keys)
     if task and not reasons and not bool(getattr(args, "skip_selfcheck", False)):
         selfcheck = command_selfcheck(argparse.Namespace(json=True))
         if selfcheck.get("status") != "PASS":
@@ -10054,6 +10149,7 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
         "kill_switch": bool(os.environ.get(AUTORUN_ENV_FLAG) != "1" or os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1" or AUTORUN_KILL_SWITCH.exists()),
         "required_proof": ["proof:<sha256:...> required before autorun-originated done"],
         "budget_ceiling": None,
+        "compound_loop_preflight": compound_preflight,
     }
 
 
@@ -11218,6 +11314,9 @@ def command_selfcheck(args: argparse.Namespace) -> dict[str, Any]:
     for p in required:
         if not p.exists():
             failures.append(f"missing required path: {p}")
+    compound_preflight_script = COMPOUND_LOOP_PREFLIGHT_SCRIPT if COMPOUND_LOOP_PREFLIGHT_SCRIPT.exists() else Path(__file__).resolve().with_name("compound_loop_preflight.py")
+    if compound_loop_preflight_enabled() and not compound_preflight_script.exists():
+        failures.append(f"compound loop preflight enabled but script missing: {compound_preflight_script}")
     for t in iter_tasks():
         missing_alignment = architecture_alignment_missing(t.fm)
         if missing_alignment:

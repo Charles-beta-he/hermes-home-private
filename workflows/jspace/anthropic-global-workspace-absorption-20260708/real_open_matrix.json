@@ -1,0 +1,111 @@
+{
+  "boundaries": [
+    {
+      "exact_target_required": true,
+      "executed": true,
+      "execution_status": "executed_exact_task",
+      "governance_covered": true,
+      "id": "taskpool_lifecycle_write",
+      "label": "Exact taskpool lifecycle write-through",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": true
+    },
+    {
+      "exact_target_required": true,
+      "executed": true,
+      "execution_status": "executed_local_no_agent_heartbeat",
+      "governance_covered": true,
+      "id": "scheduler_cron_write",
+      "label": "Scheduler/no-agent cron write",
+      "readback_required": true,
+      "receipt": "/Users/charles/.hermes/workflows/jspace/cron-heartbeat-receipts/latest.json",
+      "receipt_required": true,
+      "rollback_required": true
+    },
+    {
+      "exact_target_required": true,
+      "executed": false,
+      "execution_status": "blocked_exact_worker_packet_not_requested",
+      "governance_covered": true,
+      "id": "worker_spawn",
+      "label": "Worker/subagent spawn",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": true
+    },
+    {
+      "exact_target_required": true,
+      "executed": false,
+      "execution_status": "blocked_missing_platform_target_payload",
+      "governance_covered": true,
+      "id": "external_dispatch",
+      "label": "External platform dispatch/send",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": false
+    },
+    {
+      "exact_target_required": true,
+      "executed": false,
+      "execution_status": "blocked_missing_repo_remote_env_ref_rollback",
+      "governance_covered": true,
+      "id": "publish_deploy_push",
+      "label": "Publish/deploy/push",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": true
+    },
+    {
+      "canary": {
+        "absent_after_delete": true,
+        "backup": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/artifacts/destructive-canary/canary.txt.bak",
+        "before_sha256": "353795ee9a92c351de43d6a660672913269dd238592e70c59e9cd75541929b09",
+        "executed": true,
+        "hash_match": true,
+        "production_resource_touched": false,
+        "restored": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/artifacts/destructive-canary/canary.restored.txt",
+        "restored_sha256": "353795ee9a92c351de43d6a660672913269dd238592e70c59e9cd75541929b09",
+        "target": "/Users/charles/.hermes/workflows/jspace/anthropic-global-workspace-absorption-20260708/artifacts/destructive-canary/canary.txt"
+      },
+      "exact_target_required": true,
+      "executed": true,
+      "execution_status": "canary_delete_restore_verified",
+      "governance_covered": true,
+      "id": "destructive_operation",
+      "label": "Destructive operation",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": true
+    },
+    {
+      "agent_may_type_secret": false,
+      "exact_target_required": true,
+      "executed": false,
+      "execution_status": "human_secret_gate_only",
+      "governance_covered": true,
+      "id": "payment_credential_entry",
+      "label": "Payment / credential entry",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": false
+    },
+    {
+      "exact_target_required": true,
+      "executed": false,
+      "execution_status": "blocked_missing_exact_channel_set_payload",
+      "governance_covered": true,
+      "id": "broad_fanout",
+      "label": "Broad fan-out",
+      "readback_required": true,
+      "receipt_required": true,
+      "rollback_required": false
+    }
+  ],
+  "coverage_type": "governance_and_exact-boundary_readback",
+  "governance_coverage_percent": 100,
+  "schema": "jspace_real_open_matrix_v0_1",
+  "timestamp": "2026-07-08T04:56:19+00:00",
+  "unscoped_high_risk_execution": false,
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}

@@ -1,0 +1,19 @@
+{
+  "changed_files": [
+    "/Users/charles/.hermes/scripts/task_classifier.py",
+    "/Users/charles/.hermes/scripts/brain_task_orchestrator.py",
+    "/Users/charles/.hermes/scripts/hermes_jspace.py",
+    "/Users/charles/.hermes/scripts/test_task_classifier_jspace_router.py"
+  ],
+  "external_side_effects_executed": false,
+  "runtime_router_jspace_integrated": true,
+  "source": "runtime_router",
+  "timestamp": "2026-07-08T04:56:56+00:00",
+  "type": "runtime_router.jspace_conflict_group_integrated",
+  "verification": [
+    "python3 /Users/charles/.hermes/scripts/test_task_classifier_jspace_router.py PASS",
+    "python3 /Users/charles/.hermes/scripts/test_workspace_projection_gate.py PASS",
+    "python3 /Users/charles/.hermes/scripts/test_hermes_jspace.py OK"
+  ],
+  "workspace_id": "anthropic-global-workspace-absorption-20260708"
+}
