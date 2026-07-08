@@ -1,0 +1,33 @@
+{
+  "id": "hermes-context-engineering-os",
+  "title": "Hermes Context Engineering OS",
+  "status": "active-local-ssot",
+  "owner": "charles",
+  "created_at": "2026-07-08",
+  "ssot": "/Users/charles/.hermes/workflows/projects/hermes-context-engineering-os/README.md",
+  "canon": "/Users/charles/context-engineering-landing/context-engineering-canon.md",
+  "diagram": "/Users/charles/context-engineering-landing/context-engineering-runtime.html",
+  "skill": "/Users/charles/.hermes/skills/context-engineering-os/SKILL.md",
+  "purpose": "Turn Context Engineering into a governed Hermes context runtime: objective, sources, evidence, memory/profile, skills, tools/authority, execution, and verification.",
+  "red_lines": [
+    "No external dispatch, deploy, push, credential entry, destructive cleanup, scheduler/worker enablement, or task lifecycle mutation without exact target, rollback/readback, and explicit authority.",
+    "Do not store WIP/progress in durable memory; use SSOT/task evidence/session transcript.",
+    "Do not reduce Context Engineering to vector RAG or long-context dumping."
+  ],
+  "safe_current_scope": [
+    "local docs",
+    "local templates",
+    "local scripts",
+    "local skill references",
+    "read-only validation"
+  ],
+  "next_authority_boundaries": [
+    "Hermes core runtime prompt injection",
+    "taskpool lifecycle integration",
+    "cron/scheduler enablement",
+    "dashboard UI integration",
+    "external gateway delivery"
+  ],
+  "canon_ssot_copy": "/Users/charles/.hermes/workflows/projects/hermes-context-engineering-os/artifacts/context-engineering-canon.md",
+  "diagram_ssot_copy": "/Users/charles/.hermes/workflows/projects/hermes-context-engineering-os/artifacts/context-engineering-runtime.html"
+}

@@ -1,0 +1,67 @@
+{
+  "objective": "Describe the observable success criteria for the current task.",
+  "non_goals": [
+    "List what must not be changed or claimed."
+  ],
+  "constraints": [
+    "Safety, product, precision, privacy, authority, and rollback constraints."
+  ],
+  "sources": [
+    {
+      "id": "SRC1",
+      "type": "file",
+      "locator": "/absolute/path/or/url",
+      "freshness": "current|date|unknown",
+      "claims": [
+        "Claim directly supported by this source."
+      ]
+    }
+  ],
+  "selected_context": {
+    "skills": [
+      "context-engineering-os"
+    ],
+    "memory": [],
+    "project_profile": [],
+    "evidence_ids": [
+      "SRC1"
+    ]
+  },
+  "authority": {
+    "allowed": [
+      "local reversible work"
+    ],
+    "closed": [
+      "external dispatch",
+      "deploy",
+      "credentials",
+      "destructive operations"
+    ],
+    "readback_required": [
+      "file/stat/test/API/UI/log evidence depending on task"
+    ]
+  },
+  "execution_plan": [
+    "Small reversible step 1"
+  ],
+  "validation_plan": [
+    "Command/readback proving the step"
+  ],
+  "negative_cases": [
+    "Forbidden fallback/side-effect/regression to prove absent"
+  ],
+  "learning_boundary": {
+    "durable_memory_allowed": [],
+    "skill_update_allowed": [
+      "Only reusable procedure changes"
+    ],
+    "ssot_update_allowed": [
+      "Task-local evidence and decisions"
+    ],
+    "do_not_save": [
+      "WIP status",
+      "artifact IDs likely stale",
+      "temporary TODOs"
+    ]
+  }
+}

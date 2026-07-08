@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hermes Context Engineering Runtime</title>
+<style>
+  body{margin:0;background:#f7f3ea;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Inter","PingFang SC",sans-serif}
+  .wrap{max-width:1280px;margin:0 auto;padding:28px}
+  h1{font-size:32px;margin:0 0 6px;font-weight:850;letter-spacing:-.03em}
+  .sub{color:#526070;margin-bottom:22px;font-size:15px}
+  svg{width:100%;height:auto;background:#fffaf0;border:3px solid #1b1b1b;border-radius:28px;box-shadow:10px 10px 0 #1b1b1b}
+  .card{fill:#fff;stroke:#111;stroke-width:3}
+  .title{font-weight:850;font-size:18px;fill:#111}
+  .small{font-size:12px;fill:#253044;font-weight:650}
+  .tiny{font-size:10px;fill:#435064;font-weight:550}
+  .badge{fill:#111}.badgeText{fill:white;font-weight:800;font-size:13px}
+  .arrow{stroke:#111;stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+  .dash{stroke-dasharray:8 8}
+  .note{background:#fff;border:2px solid #111;border-radius:18px;padding:16px;margin-top:20px;box-shadow:5px 5px 0 #111;line-height:1.65}
+  code{background:#eee2ff;padding:2px 6px;border-radius:6px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Hermes Context Engineering Runtime</h1>
+<div class="sub">从 Prompt 到 Context OS：目标、证据、记忆、工具权限、执行与验证的闭环。</div>
+<svg viewBox="0 0 1240 760" role="img" aria-label="Hermes Context Engineering Runtime diagram">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#111"/></marker>
+</defs>
+<rect x="28" y="30" width="1184" height="690" rx="28" fill="#fff6dc" stroke="#111" stroke-width="0"/>
+
+<!-- center -->
+<rect class="card" x="455" y="285" width="330" height="150" rx="28" fill="#d9f99d"/>
+<circle class="badge" cx="492" cy="322" r="18"/><text class="badgeText" x="487" y="327">0</text>
+<text class="title" x="525" y="320">Context Assembly Runtime</text>
+<text class="small" x="485" y="354">Assemble(instructions, knowledge, tools,</text>
+<text class="small" x="485" y="375">memory, state, query, evidence)</text>
+<text class="tiny" x="485" y="405">目标：最小充分、可追溯、可验证、权限安全</text>
+
+<!-- nodes -->
+<rect class="card" x="70" y="80" width="260" height="108" rx="24" fill="#bae6fd"/>
+<circle class="badge" cx="105" cy="113" r="17"/><text class="badgeText" x="101" y="118">1</text>
+<text class="title" x="132" y="114">Intent / Spec Gate</text>
+<text class="small" x="95" y="146">目标、非目标、约束、验收</text>
+<text class="tiny" x="95" y="168">Spec Brief · Negative Cases</text>
+
+<rect class="card" x="490" y="72" width="260" height="118" rx="24" fill="#ddd6fe"/>
+<circle class="badge" cx="525" cy="108" r="17"/><text class="badgeText" x="521" y="113">2</text>
+<text class="title" x="552" y="108">Evidence Graph</text>
+<text class="small" x="515" y="140">网页、文件、PRD、截图、日志</text>
+<text class="tiny" x="515" y="163">source → claim → decision → readback</text>
+
+<rect class="card" x="910" y="80" width="260" height="108" rx="24" fill="#fecdd3"/>
+<circle class="badge" cx="945" cy="113" r="17"/><text class="badgeText" x="941" y="118">3</text>
+<text class="title" x="972" y="114">Knowledge Index</text>
+<text class="small" x="935" y="146">RAG / GraphRAG / Code Map</text>
+<text class="tiny" x="935" y="168">检索不是全塞，先筛再组装</text>
+
+<rect class="card" x="72" y="316" width="260" height="120" rx="24" fill="#fef08a"/>
+<circle class="badge" cx="107" cy="352" r="17"/><text class="badgeText" x="103" y="357">4</text>
+<text class="title" x="134" y="352">Memory / Skill Router</text>
+<text class="small" x="97" y="384">user · project · skill · session</text>
+<text class="tiny" x="97" y="407">Landing zone gate 防 ghost memory</text>
+
+<rect class="card" x="908" y="316" width="260" height="120" rx="24" fill="#bbf7d0"/>
+<circle class="badge" cx="943" cy="352" r="17"/><text class="badgeText" x="939" y="357">5</text>
+<text class="title" x="970" y="352">Tool & Authority</text>
+<text class="small" x="933" y="384">工具 schema、权限、rollback</text>
+<text class="tiny" x="933" y="407">知道 ≠ 可做；readback 开门</text>
+
+<rect class="card" x="185" y="575" width="300" height="110" rx="24" fill="#fed7aa"/>
+<circle class="badge" cx="220" cy="610" r="17"/><text class="badgeText" x="216" y="615">6</text>
+<text class="title" x="247" y="610">Execution Loop</text>
+<text class="small" x="210" y="642">patch · command · browser · API · UI</text>
+<text class="tiny" x="210" y="664">小步行动，实时观测，失败回退</text>
+
+<rect class="card" x="755" y="575" width="300" height="110" rx="24" fill="#c7d2fe"/>
+<circle class="badge" cx="790" cy="610" r="17"/><text class="badgeText" x="786" y="615">7</text>
+<text class="title" x="817" y="610">Verification & Learning</text>
+<text class="small" x="780" y="642">test · screenshot · log · receipt</text>
+<text class="tiny" x="780" y="664">Converge check → skill/profile/SSOT</text>
+
+<!-- arrows -->
+<path class="arrow" d="M330 138 C405 160 405 265 455 318"/>
+<path class="arrow" d="M620 190 C620 230 620 250 620 285"/>
+<path class="arrow" d="M910 138 C835 160 835 265 785 318"/>
+<path class="arrow" d="M332 376 C380 376 410 360 455 360"/>
+<path class="arrow" d="M908 376 C860 376 830 360 785 360"/>
+<path class="arrow" d="M530 435 C445 500 385 535 335 575"/>
+<path class="arrow" d="M710 435 C795 500 855 535 905 575"/>
+<path class="arrow dash" d="M755 630 C620 705 500 705 370 685"/>
+<text class="tiny" x="530" y="707">学习反馈：只保存可复用、已分层、可反证的上下文经验</text>
+
+<!-- bottom belt -->
+<rect x="98" y="490" width="1044" height="44" rx="22" fill="#111"/>
+<text x="132" y="519" fill="#fff" font-weight="850" font-size="16">Context Packet = Objective + Sources + Selected Skills + Memory/Profile + Authority + Validation + Evidence Map</text>
+</svg>
+<div class="note">
+  <b>落地策略：</b>先实现 Context Packet 与 Evidence DAG；再把 memory/skill/profile/tool 权限纳入同一个 assembly score；最后做 context regression eval，检测丢约束、过期事实、越权行动和无证据输出。
+</div>
+</div></body></html>

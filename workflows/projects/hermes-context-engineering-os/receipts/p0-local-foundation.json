@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-07-08",
+  "scope": "local-foundation",
+  "side_effects": {
+    "external_dispatch": false,
+    "deploy": false,
+    "push": false,
+    "cron_enabled": false,
+    "taskpool_lifecycle_mutation": false,
+    "credentials": false,
+    "destructive": false
+  },
+  "artifacts": [
+    "/Users/charles/.hermes/workflows/projects/hermes-context-engineering-os/README.md",
+    "/Users/charles/.hermes/workflows/projects/hermes-context-engineering-os/schemas/context-packet.schema.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-context-engineering-os/scripts/context_packet_lint.py",
+    "/Users/charles/.hermes/project-profiles/hermes-context-engineering-os.json"
+  ]
+}
