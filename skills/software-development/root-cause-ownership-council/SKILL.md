@@ -1,7 +1,7 @@
 ---
 name: root-cause-ownership-council
 description: Use when repeated fixes, multi-controller state conflicts, high-risk shared runtime changes, or multi-model/multi-agent review are needed to reframe symptoms into owner contracts, evidence ledgers, falsifiers, minimal implementation boundaries, and final verification gates.
-version: 1.0.0
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -23,6 +23,22 @@ Core principle:
 ```text
 Do not ask five agents for five fixes. Ask orthogonal roles for framing, ownership, falsifiers, evidence, implementation boundaries, and verification.
 ```
+
+## v1.1 Always-callable Agent Module
+
+This skill can be used as an always-callable module contract, but it should not be always fully loaded.
+
+```text
+Always callable, not always loaded.
+```
+
+Use a progressive loading model:
+
+1. Micro-router: a tiny trigger contract visible to broad model/workflow routing surfaces.
+2. Role registry: load `references/agent-role-registry.md` only when council roles may be needed.
+3. Full council: load this SKILL.md plus session/templates/references only for high-risk or repeated tasks that need owner contracts, falsifiers, evidence ledgers, and final certification.
+
+The module may recommend roles and gates, but it does not grant push, deploy, external dispatch, destructive, credential, memory-write, taskpool-lifecycle, or scheduler authority. See `references/always-callable-agent-module.md` and `references/council-router-contract.md`.
 
 ## When to Use
 
@@ -206,7 +222,7 @@ See `references/github-agent-repos-evidence.md` for the initial researched repos
 
 ```yaml
 root_cause_ownership_council:
-  version: "1.0.0"
+  version: "1.1.0"
   problem: "..."
   scope: []
   non_goals: []
@@ -234,9 +250,16 @@ root_cause_ownership_council:
   residual_risk: []
 ```
 
-## Release v1.0.0 Contract
+## Release v1.1.0 Contract
 
-This v1.0.0 release is stable enough to use as a development role template when:
+This v1.1.0 release promotes the council from a single skill into an always-callable agent module specification:
+
+- a micro-router can be exposed broadly to models and workflows;
+- role cards remain progressively loaded;
+- full council sessions are reserved for confirmed high-risk/repeated problems;
+- all execution authority remains outside the module and must follow Hermes tool/user/evidence gates.
+
+It remains stable for use as a development role template when:
 
 - the task is high-risk or repeated;
 - user-path evidence matters;
@@ -244,7 +267,7 @@ This v1.0.0 release is stable enough to use as a development role template when:
 - ownership and evidence ledgers are emitted;
 - implementation remains separately verified.
 
-It is not a production runtime, scheduler, or external-dispatch authority. It is a reusable Hermes role/council skill and can be used to structure multi-agent analysis, code review, and implementation planning.
+It is not a production runtime, scheduler, external-dispatch authority, or autonomous side-effect executor. It is a reusable Hermes role/council skill and module contract for structuring multi-agent analysis, code review, implementation planning, and certification.
 
 ## Common Pitfalls
 
