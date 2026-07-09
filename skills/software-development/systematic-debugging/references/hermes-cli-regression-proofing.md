@@ -17,6 +17,13 @@ Thin-wrapper migration note
 - When a script only shells to another local wrapper which then shells to the native CLI, collapse the outer script to call the native CLI directly.
 - Preserve a `--dry-run` mode during thinning so you can verify generated commands without side effects.
 
+Post-update bootstrap import guard
+- A post-pull `py_compile` guard is necessary but insufficient: it catches syntax/conflict-marker failures, but not missing imported modules.
+- If `hermes_cli/main.py` registers a new subcommand, add a fresh-interpreter import smoke for `hermes_cli.main` in the update guard before declaring update success.
+- The import smoke must point `PYTHONPATH` at the just-pulled tree and run in a subprocess, because the current update process may still have old modules cached.
+- On import-smoke failure, rollback to the pre-pull SHA just like syntax failures.
+- Regression shape to preserve: a temporary tree where `main.py` imports `hermes_cli.subcommands.context`, the file is absent, `py_compile` passes, and `_validate_critical_imports()` fails with `No module named ...`.
+
 Session example
 - `hermes_cli.kanban._cmd_create()` gained template/capability metadata merge logic; older tests built a `Namespace` without `capability`, so direct `args.capability` access crashed. Switching optional reads to `getattr(..., None)` restored compatibility while keeping native template behavior intact.
 - `taskpool_run_validation_suite.py` was thinned from `validation_suite -> taskpool_create_standard_task.py -> hermes kanban create` to direct `hermes kanban create --template ... --json` calls, plus a `--dry-run` command preview.
