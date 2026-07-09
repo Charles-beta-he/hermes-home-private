@@ -2,6 +2,24 @@
 
 This reference records the stabilized local implementation contract.
 
+## End-to-end local loop CLI
+
+Path: `~/.hermes/scripts/workflow_kernel_loop.py`
+
+Commands:
+
+```bash
+# Run the safe local loop once: decide -> module plan -> optional asset scaffold -> usage ledger.
+python3 ~/.hermes/scripts/workflow_kernel_loop.py run-once \
+  --seed '<seed>' \
+  --observed-repetition 3
+
+# Mine the local usage ledger for candidate composite modules.
+python3 ~/.hermes/scripts/workflow_kernel_loop.py synthesize
+```
+
+The end-to-end loop writes only local receipts under `~/.hermes/workflows/workflow-kernel-loop/` unless `--root` is supplied. It keeps external/cron/taskpool/AgentOS side-effect flags false.
+
 ## Helper CLI
 
 Path: `~/.hermes/scripts/workflow_asset_decision.py`
