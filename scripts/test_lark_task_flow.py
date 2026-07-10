@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import json
 import sys
+import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -72,6 +74,110 @@ class LarkTaskFlowTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn('"stage": "auth"', out.getvalue())
         self.assertEqual(fake.calls, [])
+
+    def test_durable_oauth_recovery_grant_enables_auto_authorize_without_task_scope(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            grant = root / "grant.json"
+            profile = root / "profile.json"
+            grant.write_text(json.dumps({
+                "schema": "lark_oauth_recovery_authority_grant_v1",
+                "status": "active",
+                "action": "auto_singleflight_oauth_recovery",
+                "scope": "oauth_recovery_only",
+                "ordinary_selfcheck_may_execute": False,
+                "no_task_read": True,
+                "no_lark_write": True,
+                "no_secret_entry": True,
+                "no_password_or_otp_entry": True,
+                "no_external_message_send": True,
+                "max_concurrent_recoveries": 1,
+                "max_oauth_pages_per_execution": 1,
+                "per_execution_authorization_ttl_seconds": 300,
+                "expires_at": None,
+            }), encoding="utf-8")
+            profile.write_text(json.dumps({
+                "schema": "profile_policy_contract_v1",
+                "automation_policy": {
+                    "lark_oauth_recovery": {
+                        "status": "enabled",
+                        "authority_grant_ref": str(grant),
+                        "ordinary_selfcheck_may_execute": False,
+                        "task_read_authorized": False,
+                        "lark_write_authorized": False,
+                    }
+                },
+            }), encoding="utf-8")
+            self.assertTrue(self.mod.oauth_recovery_auto_authorized(profile, root))
+            revoked = json.loads(grant.read_text(encoding="utf-8"))
+            revoked["status"] = "revoked"
+            grant.write_text(json.dumps(revoked), encoding="utf-8")
+            self.assertFalse(self.mod.oauth_recovery_auto_authorized(profile, root))
+
+    def test_oauth_recovery_policy_rejects_grant_outside_allowed_root(self):
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            root = base / "authority-grants"
+            root.mkdir()
+            outside = base / "outside-grant.json"
+            outside.write_text(json.dumps({
+                "schema": "lark_oauth_recovery_authority_grant_v1",
+                "status": "active",
+            }), encoding="utf-8")
+            profile = base / "lark.json"
+            profile.write_text(json.dumps({
+                "schema": "profile_policy_contract_v1",
+                "automation_policy": {
+                    "lark_oauth_recovery": {
+                        "status": "enabled",
+                        "authority_grant_ref": str(outside),
+                        "ordinary_selfcheck_may_execute": False,
+                        "task_read_authorized": False,
+                        "lark_write_authorized": False,
+                    }
+                },
+            }), encoding="utf-8")
+            self.assertFalse(self.mod.oauth_recovery_auto_authorized(profile, root))
+
+    def test_oauth_recovery_policy_fails_closed_without_valid_grant(self):
+        with tempfile.TemporaryDirectory() as td:
+            profile = Path(td) / "profile.json"
+            profile.write_text(json.dumps({
+                "schema": "profile_policy_contract_v1",
+                "automation_policy": {"lark_oauth_recovery": {"status": "enabled", "authority_grant_ref": ""}},
+            }), encoding="utf-8")
+            self.assertFalse(self.mod.oauth_recovery_auto_authorized(profile))
+
+    def test_parser_uses_durable_policy_but_explicit_disable_wins(self):
+        with mock.patch.object(self.mod, "oauth_recovery_auto_authorized", return_value=True):
+            enabled = self.mod.build_parser().parse_args(["--auth-only"])
+            disabled = self.mod.build_parser().parse_args(["--auth-only", "--no-auto-authorize"])
+        self.assertTrue(enabled.auto_authorize)
+        self.assertFalse(disabled.auto_authorize)
+
+    def test_auth_only_uses_durable_auto_authorize_without_reading_tasks(self):
+        fake = FakeReader()
+        observed = {}
+
+        def guard(args):
+            observed["auto_authorize"] = args.auto_authorize
+            return {"ok": True, "action": "login_success"}
+
+        with mock.patch.object(self.mod, "oauth_recovery_auto_authorized", return_value=True), \
+             mock.patch.object(self.mod, "load_reader", return_value=fake), \
+             mock.patch.object(self.mod, "run_guard", side_effect=guard):
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = self.mod.main(["--auth-only"])
+        payload = json.loads(out.getvalue())
+        self.assertEqual(code, 0)
+        self.assertTrue(observed["auto_authorize"])
+        self.assertEqual(fake.calls, [])
+        self.assertEqual(payload["side_effect_boundary"], {
+            "auto_authorize_enabled": True,
+            "task_read_executed": False,
+            "lark_write_executed": False,
+        })
 
     def test_health_check_guard_command_never_enables_stale_cleanup(self):
         args = self.mod.build_parser().parse_args(["--health-check"])

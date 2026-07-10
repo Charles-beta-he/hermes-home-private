@@ -1,0 +1,65 @@
+{
+  "schema": "lark_oauth_recovery_authority_grant_v1",
+  "grant_id": "lark-oauth-recovery-persistent-20260710",
+  "status": "active",
+  "granted_at": "2026-07-10T15:07:53+08:00",
+  "granted_by": "user_direct_selection",
+  "action": "auto_singleflight_oauth_recovery",
+  "scope": "oauth_recovery_only",
+  "trigger": "token_missing_invalid_or_expired_during_non_health_lark_flow",
+  "ordinary_selfcheck_may_execute": false,
+  "allowed_entrypoints": [
+    "/Users/charles/.hermes/scripts/lark_task_flow.py"
+  ],
+  "allowed_side_effects": [
+    "singleflight_lock",
+    "proven_stale_oauth_listener_cleanup",
+    "open_one_lark_oauth_page",
+    "click_visible_primary_authorize_control",
+    "persist_user_token_in_existing_runtime_auth_store",
+    "token_lock_port_readback"
+  ],
+  "no_task_read": true,
+  "no_lark_write": true,
+  "no_secret_entry": true,
+  "no_password_or_otp_entry": true,
+  "no_external_message_send": true,
+  "max_concurrent_recoveries": 1,
+  "max_oauth_pages_per_execution": 1,
+  "per_execution_authorization_ttl_seconds": 300,
+  "expires_at": null,
+  "revocation": {
+    "method": "set status to revoked or disable project profile automation_policy.lark_oauth_recovery",
+    "effect": "future flows fail closed to manual authorization"
+  },
+  "rollback": {
+    "code": "git revert the scoped implementation commit",
+    "runtime": "disable the profile policy; terminate only the owned OAuth listener; verify lock and callback port are released"
+  },
+  "post_action_verification": [
+    "guard action is token_valid or login_success",
+    "token_status.valid is true",
+    "singleflight lock is absent",
+    "callback port has no owned listener",
+    "task_read_count is zero for auth-only recovery",
+    "no Lark write occurred",
+    "no secret was printed or persisted outside the existing auth store"
+  ],
+  "review": {
+    "status": "degraded_review_packet",
+    "reason": "Agent OS route classified the domain ambiguously and existing T2 fan-out was below quorum; deterministic authority and safety boundaries are recorded instead of treating model agreement as permission.",
+    "evidence_refs": [
+      "/Users/charles/.hermes/scripts/lark_task_flow.py",
+      "/Users/charles/.hermes/scripts/lark_oauth_guard.py",
+      "/Users/charles/.hermes/scripts/test_lark_task_flow.py",
+      "/Users/charles/.hermes/scripts/test_lark_oauth_guard.py",
+      "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/procedure-definitions.json"
+    ],
+    "invariants": [
+      "ordinary selfcheck remains status-only",
+      "durable grant is consumed only by non-health Lark flow",
+      "explicit --no-auto-authorize overrides the durable grant",
+      "task read and Lark write are outside this grant"
+    ]
+  }
+}

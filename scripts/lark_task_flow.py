@@ -27,6 +27,8 @@ from typing import Any
 SCRIPTS_DIR = Path.home() / ".hermes" / "scripts"
 GUARD = SCRIPTS_DIR / "lark_oauth_guard.py"
 READER = SCRIPTS_DIR / "lark_task_reader.py"
+LARK_PROFILE = Path.home() / ".hermes" / "project-profiles" / "lark.json"
+LARK_AUTHORITY_GRANT_ROOT = Path.home() / ".hermes" / "workflows" / "projects" / "lark" / "authority-grants"
 GUID_RE = re.compile(r"guid=([0-9a-fA-F-]{32,36})|/tasks/([0-9a-fA-F-]{32,36})")
 
 
@@ -50,6 +52,51 @@ def extract_guid(value: str | None) -> str:
     if not m:
         raise ValueError(f"cannot extract Lark task guid from: {value}")
     return next(g for g in m.groups() if g)
+
+
+def oauth_recovery_auto_authorized(
+    profile_path: Path = LARK_PROFILE,
+    allowed_grant_root: Path = LARK_AUTHORITY_GRANT_ROOT,
+) -> bool:
+    """Fail closed unless the profile points to a bounded active grant."""
+    try:
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        policy = (profile.get("automation_policy") or {}).get("lark_oauth_recovery") or {}
+        if (
+            profile.get("schema") != "profile_policy_contract_v1"
+            or policy.get("status") != "enabled"
+            or policy.get("ordinary_selfcheck_may_execute") is not False
+            or policy.get("task_read_authorized") is not False
+            or policy.get("lark_write_authorized") is not False
+        ):
+            return False
+        grant_ref = policy.get("authority_grant_ref")
+        if not isinstance(grant_ref, str) or not grant_ref.strip():
+            return False
+        grant_path = Path(grant_ref).expanduser()
+        if grant_path.is_symlink() or not grant_path.is_file():
+            return False
+        resolved_grant = grant_path.resolve()
+        resolved_grant.relative_to(allowed_grant_root.expanduser().resolve())
+        grant = json.loads(resolved_grant.read_text(encoding="utf-8"))
+        return bool(
+            grant.get("schema") == "lark_oauth_recovery_authority_grant_v1"
+            and grant.get("status") == "active"
+            and grant.get("action") == "auto_singleflight_oauth_recovery"
+            and grant.get("scope") == "oauth_recovery_only"
+            and grant.get("ordinary_selfcheck_may_execute") is False
+            and grant.get("no_task_read") is True
+            and grant.get("no_lark_write") is True
+            and grant.get("no_secret_entry") is True
+            and grant.get("no_password_or_otp_entry") is True
+            and grant.get("no_external_message_send") is True
+            and grant.get("max_concurrent_recoveries") == 1
+            and grant.get("max_oauth_pages_per_execution") == 1
+            and 0 < int(grant.get("per_execution_authorization_ttl_seconds") or 0) <= 600
+            and grant.get("expires_at") is None
+        )
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return False
 
 
 def run_guard(args: argparse.Namespace) -> dict[str, Any]:
@@ -147,7 +194,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--force-refresh", action="store_true")
     p.add_argument("--auth-timeout", type=int, default=120)
     p.add_argument("--auto-authorize-timeout", type=int, default=25)
-    p.set_defaults(auto_authorize=True)
+    p.set_defaults(auto_authorize=oauth_recovery_auto_authorized())
     return p
 
 
@@ -167,7 +214,16 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
             return 1
         if args.auth_only:
-            print(json.dumps({"ok": True, "stage": "auth", "auth": auth}, ensure_ascii=False, indent=2, sort_keys=True))
+            print(json.dumps({
+                "ok": True,
+                "stage": "auth",
+                "auth": auth,
+                "side_effect_boundary": {
+                    "auto_authorize_enabled": bool(args.auto_authorize),
+                    "task_read_executed": False,
+                    "lark_write_executed": False,
+                },
+            }, ensure_ascii=False, indent=2, sort_keys=True))
             return 0
         reader = load_reader()
         token = reader.get_token(auto_auth=False)
