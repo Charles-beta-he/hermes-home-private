@@ -1099,6 +1099,12 @@ def _normalize_evidence(raw_evidence: List[dict]) -> List[dict]:
         item["id"] = str(item.get("id") or f"E-{i:03d}")
         item["supports"] = [str(x) for x in (item.get("supports") or [])]
         item["contradicts"] = [str(x) for x in (item.get("contradicts") or [])]
+        claim_id = str(item.get("claim_id") or "").strip()
+        relation = str(item.get("status") or "").strip().casefold()
+        if claim_id and relation == "supports" and claim_id not in item["supports"]:
+            item["supports"].append(claim_id)
+        if claim_id and relation == "contradicts" and claim_id not in item["contradicts"]:
+            item["contradicts"].append(claim_id)
         # A failed command may still be evidence, but it must not support a claim.
         if item.get("type") == "command" and item.get("exit_code") not in (None, 0):
             item["supports"] = []

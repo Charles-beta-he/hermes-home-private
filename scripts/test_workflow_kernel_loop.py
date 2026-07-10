@@ -43,6 +43,19 @@ class WorkflowKernelLoopTests(unittest.TestCase):
             self.assertEqual(decision["decision"], "reusable_candidate")
             self.assertIn("business_analysis", plan["capability_needs"])
             self.assertFalse(plan["side_effects"]["external"])
+            self.assertEqual(result["engineering_coverage"]["kernel_stages"], {"covered": 9, "total": 9, "percent": 100.0})
+            self.assertEqual(result["engineering_coverage"]["control_moves"], {"covered": 5, "total": 5, "percent": 100.0})
+            self.assertEqual(result["engineering_coverage"]["system_parts"], {"covered": 6, "total": 6, "percent": 100.0})
+            self.assertEqual(result["engineering_coverage"]["overall_percent"], 100.0)
+            self.assertEqual([stage["id"] for stage in result["stages"]], [
+                "observe", "orient", "compile", "simulate", "execute", "verify", "ratchet", "monitor", "cleanup"
+            ])
+            self.assertTrue(all(stage["status"] == "PASS" and stage["evidence_refs"] for stage in result["stages"]))
+            self.assertEqual(result["evaluation"]["status"], "PASS")
+            self.assertFalse(result["evaluation"]["veto"])
+            self.assertTrue((run_dir / "evaluation.json").exists())
+            self.assertTrue(all(value > 0 for value in result["budgets"].values()))
+            self.assertTrue(result["kill_switch"])
 
     def test_one_off_seed_does_not_scaffold_durable_asset(self):
         with tempfile.TemporaryDirectory() as td:

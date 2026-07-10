@@ -133,6 +133,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--image-cache-dir", default=str(load_reader().DEFAULT_IMAGE_CACHE_DIR))
     p.add_argument("--summary", action="store_true", help="Print compact human-readable summary instead of JSON")
     p.add_argument("--auth-only", action="store_true", help="Only run/verify OAuth guard; do not read tasks")
+    p.add_argument(
+        "--health-check",
+        action="store_true",
+        help="Status-only OAuth/token check: never opens a browser, auto-authorizes, or reads tasks",
+    )
     p.add_argument("--no-auto-authorize", dest="auto_authorize", action="store_false", help="Open auth URL but do not auto-click visible 授权 button")
     p.add_argument("--no-open", action="store_true", help="Status-only/no browser; incompatible with auto-authorize when refresh is needed")
     p.add_argument("--force-refresh", action="store_true")
@@ -144,6 +149,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.health_check:
+        args.auth_only = True
+        args.no_open = True
+        args.auto_authorize = False
+        args.force_refresh = False
+        args.auth_timeout = min(args.auth_timeout, 15)
     try:
         guid = extract_guid(args.guid or args.url)
         auth = run_guard(args)

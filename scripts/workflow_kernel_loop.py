@@ -15,12 +15,23 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 SIDE_EFFECTS_DISABLED = {"external": False, "cron": False, "taskpool": False, "agentos": False}
+KILL_SWITCH = "HERMES_WORKFLOW_LOOP_DISABLE"
+BUDGETS = {
+    "max_iterations": 3,
+    "max_runtime_seconds": 120,
+    "max_retries": 2,
+    "max_evidence_files": 64,
+}
+STAGE_IDS = ("observe", "orient", "compile", "simulate", "execute", "verify", "ratchet", "monitor", "cleanup")
+CONTROL_MOVES = ("discovery", "handoff", "verification", "persistence", "scheduling")
+SYSTEM_PARTS = ("automations", "worktrees", "skills", "connectors", "subagents", "memory")
 
 
 def utc_now() -> str:
@@ -56,7 +67,7 @@ def root_paths(root: Path) -> dict[str, Path]:
     }
 
 
-def run_loop_once(
+def _run_loop_once_v1(
     seed: str,
     root: Path | None = None,
     observed_repetition: int = 0,
@@ -115,6 +126,18 @@ def run_loop_once(
     }
     _write_json(run_dir / "loop-receipt.json", receipt)
     return receipt
+
+
+def run_loop_once(
+    seed: str,
+    root: Path | None = None,
+    observed_repetition: int = 0,
+    task_scope: str = "unknown",
+) -> dict[str, Any]:
+    """Run the evidence-complete v2 kernel while preserving the v1 CLI surface."""
+    v2 = _load_script("workflow_kernel_loop_v2")
+    effective_root = root or (Path.home() / ".hermes" / "workflows" / "workflow-kernel-loop")
+    return v2.run_loop_once(seed, effective_root, observed_repetition, task_scope)
 
 
 def synthesize_from_root(root: Path | None = None) -> dict[str, Any]:

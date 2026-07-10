@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -125,12 +127,22 @@ def discover_user_system_profile(home: Path | None = None) -> dict[str, Any]:
 
     profile_dir = root / "project-profiles"
     for profile in sorted(profile_dir.glob("*.json")) if profile_dir.exists() else []:
+        profile_evidence: dict[str, Any] = {"path": str(profile)}
+        if profile.stem == "lark":
+            lark_flow = root / "scripts" / "lark_task_flow.py"
+            lark_flow_text = lark_flow.read_text(encoding="utf-8", errors="ignore") if lark_flow.exists() else ""
+            profile_evidence.update({
+                "reader_script": str(lark_flow),
+                "reader_script_exists": lark_flow.exists(),
+                "health_check_supported": "--health-check" in lark_flow_text,
+                "health_check_command": f"python3 {lark_flow} --health-check",
+            })
         systems.append({
             "system_id": f"profile:{profile.stem}",
             "kind": "project_profile",
             "detected_from": [str(profile)],
             "enabled": True,
-            "evidence": {"path": str(profile)},
+            "evidence": profile_evidence,
         })
 
     scripts_dir = root / "scripts"
@@ -145,6 +157,61 @@ def discover_user_system_profile(home: Path | None = None) -> dict[str, Any]:
             "detected_from": [str(scripts_dir)],
             "enabled": True,
             "evidence": {"key_scripts": key_scripts},
+        })
+
+    experience_home = root / "experience-ratchet"
+    if experience_home.exists() or (scripts_dir / "experience-ratchet-maze.py").exists() or (scripts_dir / "experience_ratchet_watchdog.py").exists():
+        atoms_dir = experience_home / "atoms"
+        proposals_dir = experience_home / "proposals"
+        atoms = []
+        for atom_path in sorted(atoms_dir.glob("*.json")) if atoms_dir.exists() else []:
+            atom = read_json(atom_path, {})
+            if isinstance(atom, dict):
+                atoms.append(atom)
+        enabled_watchdog_jobs = []
+        for job in enabled_jobs:
+            haystack = " ".join(str(job.get(k) or "") for k in ["name", "script", "prompt"]).lower()
+            if "experience_ratchet_watchdog" in haystack or "experience-ratchet" in haystack:
+                enabled_watchdog_jobs.append(job.get("id") or job.get("name"))
+        staging_dir = root / "evidence" / "skill-evolution-candidates"
+        staged_keys = set()
+        if staging_dir.exists():
+            for staged_path in list(staging_dir.glob("*.json")) + list(staging_dir.glob("*.md")):
+                try:
+                    staged_text = staged_path.read_text(encoding="utf-8", errors="ignore").lower()
+                except Exception:
+                    continue
+                staged_keys.update(re.findall(r"[a-z0-9][a-z0-9._-]+-[0-9a-f]{12}", staged_text))
+                if staged_path.suffix == ".json":
+                    payload = read_json(staged_path, {})
+                    if isinstance(payload, dict) and payload.get("title"):
+                        staged_keys.add(str(payload.get("title")).strip().lower())
+        unstaged_skill_candidates = []
+        for atom in atoms:
+            if atom.get("status") not in {"validated", "promoted_candidate"}:
+                continue
+            if (atom.get("classification") or {}).get("target_landing_zone") != "skill":
+                continue
+            atom_id = str(atom.get("atom_id") or "").lower()
+            title = str(atom.get("title") or "").strip().lower()
+            if atom_id not in staged_keys and title not in staged_keys:
+                unstaged_skill_candidates.append(atom.get("atom_id") or title)
+        systems.append({
+            "system_id": "experience-ratchet",
+            "kind": "experience_overlay",
+            "detected_from": [str(experience_home), str(scripts_dir / "experience-ratchet-maze.py"), str(scripts_dir / "experience_ratchet_watchdog.py")],
+            "enabled": experience_home.exists(),
+            "evidence": {
+                "home_exists": experience_home.exists(),
+                "cli_exists": (scripts_dir / "experience-ratchet-maze.py").exists(),
+                "watchdog_script_exists": (scripts_dir / "experience_ratchet_watchdog.py").exists(),
+                "watchdog_job_ids": enabled_watchdog_jobs,
+                "atom_count": len(atoms),
+                "proposal_count": len(list(proposals_dir.glob("*.json"))) if proposals_dir.exists() else 0,
+                "promoted_candidate_count": sum(1 for atom in atoms if atom.get("status") == "promoted_candidate"),
+                "unstaged_skill_candidate_count": len(unstaged_skill_candidates),
+                "unstaged_skill_candidate_ids": unstaged_skill_candidates[:20],
+            },
         })
 
     providers = []
@@ -179,34 +246,75 @@ def discover_user_system_profile(home: Path | None = None) -> dict[str, Any]:
 
 def current_checks_for(system: dict[str, Any]) -> list[str]:
     sid = system["system_id"]
+    evidence = system.get("evidence", {})
     if sid == "hermes-core":
-        return ["hermes_doctor", "post_update_check"]
+        return ["hermes_doctor", "post_update_check", "dirty_worktree_awareness"]
     if sid == "cron":
-        return ["cron_list_readback"]
-    if sid.startswith("delivery:local"):
-        return ["cron_output_readback"]
+        return ["cron_list_readback", "cron_error_cluster_watch"]
+    if sid.startswith("delivery:"):
+        checks = ["delivery_job_config_readback", "delivery_failure_watch"]
+        if sid == "delivery:local":
+            checks.append("cron_output_readback")
+        return checks
     if sid == "scripts:selfcheck":
         return ["script_presence_scan"]
-    return []
+    if sid == "model-providers":
+        return ["provider_static_readiness", "provider_health_watch"]
+    if system.get("kind") == "project_profile":
+        checks = ["project_profile_json_readback"]
+        if sid == "profile:lark" and evidence.get("health_check_supported"):
+            checks.append("lark_auth_and_reader_watch")
+        return checks
+    if sid == "experience-ratchet":
+        checks = ["experience_ratchet_cli_present"] if evidence.get("cli_exists") else []
+        if evidence.get("watchdog_script_exists"):
+            checks.append("experience_ratchet_watchdog_script_present")
+        if evidence.get("watchdog_job_ids"):
+            checks.append("experience_ratchet_watchdog_cron")
+        return checks or ["system_detection_evidence_readback"]
+    if system.get("detected_from"):
+        return ["system_detection_evidence_readback"]
+    return ["system_registration_readback"]
 
 
 def missing_checks_for(system: dict[str, Any]) -> list[str]:
     sid = system["system_id"]
     evidence = system.get("evidence", {})
     missing: list[str] = []
-    if sid.startswith("delivery:") and sid != "delivery:local" and evidence.get("delivery_error_jobs"):
-        missing.append("delivery_failure_watch")
-    if sid == "model-providers":
-        missing.append("provider_health_watch")
-    if sid == "cron" and evidence.get("error_count"):
-        missing.append("cron_error_cluster_watch")
-    if sid.startswith("profile:lark"):
+    if sid == "profile:lark" and not evidence.get("health_check_supported"):
         missing.append("lark_auth_and_reader_watch")
-    if sid == "hermes-core":
-        repo = evidence.get("repo", {})
-        if repo.get("status_short"):
-            missing.append("dirty_worktree_awareness")
+    if sid == "experience-ratchet":
+        if not evidence.get("home_exists") or not evidence.get("cli_exists"):
+            missing.append("experience_ratchet_store_or_cli_missing")
+        if not evidence.get("watchdog_script_exists"):
+            missing.append("experience_ratchet_watchdog_script_missing")
+        if not evidence.get("watchdog_job_ids"):
+            missing.append("experience_ratchet_watchdog_cron_missing")
+        if int(evidence.get("unstaged_skill_candidate_count") or 0) > 0:
+            missing.append("experience_ratchet_skill_candidate_staging_watch")
     return missing
+
+
+def operational_findings_for(system: dict[str, Any], snapshots: dict[str, Any] | None = None) -> list[str]:
+    sid = system["system_id"]
+    evidence = system.get("evidence", {})
+    snapshots = snapshots or {}
+    findings: list[str] = []
+    if sid == "hermes-core" and (evidence.get("repo") or {}).get("status_short"):
+        findings.append("dirty_worktree_observed")
+    if sid == "cron" and int(evidence.get("error_count") or 0) > 0:
+        findings.append("cron_errors_observed")
+    if sid.startswith("delivery:") and evidence.get("delivery_error_jobs"):
+        findings.append("delivery_errors_observed")
+    if sid == "model-providers":
+        provider = snapshots.get("provider_health") or {}
+        if provider and not (provider.get("summary") or {}).get("ok"):
+            findings.append("provider_runtime_not_verified_or_degraded")
+    if sid == "profile:lark":
+        lark = snapshots.get("lark_health") or {}
+        if lark and not (lark.get("summary") or {}).get("ok"):
+            findings.append("lark_auth_or_reader_degraded")
+    return findings
 
 
 def risk_for(system: dict[str, Any], missing: list[str]) -> str:
@@ -215,24 +323,34 @@ def risk_for(system: dict[str, Any], missing: list[str]) -> str:
         return "high"
     if sid in {"model-providers", "cron"} and missing:
         return "medium"
+    if sid == "experience-ratchet" and any(item in missing for item in {"experience_ratchet_store_or_cli_missing", "experience_ratchet_promoted_candidate_backlog", "experience_ratchet_skill_candidate_staging_watch"}):
+        return "medium"
+    if sid == "experience-ratchet" and missing:
+        return "low"
     if sid.startswith("profile:lark") and missing:
         return "medium"
     return "low"
 
 
-def build_coverage_registry(profile: dict[str, Any]) -> dict[str, Any]:
+def build_coverage_registry(profile: dict[str, Any], snapshots: dict[str, Any] | None = None) -> dict[str, Any]:
     systems = []
     for system in profile.get("systems", []):
         current = current_checks_for(system)
         missing = missing_checks_for(system)
+        operational_findings = operational_findings_for(system, snapshots)
+        coverage_state = "gap" if missing else "covered"
         systems.append({
             "system_id": system["system_id"],
             "kind": system.get("kind"),
             "enabled": system.get("enabled", True),
+            "coverage_state": coverage_state,
+            "classification_reason": "explicit_missing_checks" if missing else "current_checks_attached",
             "detected_from": system.get("detected_from", []),
             "risk_level": risk_for(system, missing),
             "current_checks": current,
             "missing_checks": missing,
+            "operational_state": "warning" if operational_findings else "healthy_or_not_observed_degraded",
+            "operational_findings": operational_findings,
             "stale_checks": [],
             "evidence_refs": system.get("detected_from", []),
             "last_observed_at": profile.get("generated_at"),
@@ -245,8 +363,16 @@ def build_coverage_registry(profile: dict[str, Any]) -> dict[str, Any]:
         "systems": systems,
         "summary": {
             "systems": len(systems),
+            "classified_systems": sum(1 for s in systems if s["coverage_state"] in {"covered", "gap", "not_applicable"}),
+            "unclassified_systems": sum(1 for s in systems if s["coverage_state"] not in {"covered", "gap", "not_applicable"}),
+            "classification_coverage_percent": round(100.0 * sum(1 for s in systems if s["coverage_state"] in {"covered", "gap", "not_applicable"}) / len(systems), 1) if systems else 100.0,
+            "check_attachment_percent": round(100.0 * sum(1 for s in systems if s["current_checks"]) / len(systems), 1) if systems else 100.0,
+            "engineering_gap_systems": sum(1 for s in systems if s["coverage_state"] == "gap"),
+            "operational_gap_systems": sum(1 for s in systems if s["operational_findings"]),
+            "operational_findings": sum(len(s["operational_findings"]) for s in systems),
             "missing_checks": sum(len(s["missing_checks"]) for s in systems),
             "high_risk_systems": sum(1 for s in systems if s["risk_level"] == "high"),
+            "score_semantics": "classification coverage is separate from operational health",
         },
     }
 
@@ -297,7 +423,8 @@ def plan_from_events(events: Iterable[dict[str, Any]]) -> dict[str, Any]:
 def generate_proposals(registry: dict[str, Any]) -> list[dict[str, Any]]:
     proposals: list[dict[str, Any]] = []
     missing_all = {m for s in registry.get("systems", []) for m in s.get("missing_checks", [])}
-    if "delivery_failure_watch" in missing_all:
+    findings_all = {m for s in registry.get("systems", []) for m in s.get("operational_findings", [])}
+    if "delivery_failure_watch" in missing_all or "delivery_errors_observed" in findings_all:
         proposals.append({
             "id": "proposal.delivery_failure_watch",
             "reason": "External delivery jobs have recent delivery errors; monitor locally and emit actionable repair packets only on failure.",
@@ -317,7 +444,7 @@ def generate_proposals(registry: dict[str, Any]) -> list[dict[str, Any]]:
             },
             "rollback": "hermes cron remove <job_id>",
         })
-    if "provider_health_watch" in missing_all:
+    if "provider_health_watch" in missing_all or "provider_runtime_not_verified_or_degraded" in findings_all:
         proposals.append({
             "id": "proposal.provider_health_watch",
             "reason": "Model/provider health gates affect multi-model certification and autonomous promotion safety.",
@@ -333,7 +460,7 @@ def generate_proposals(registry: dict[str, Any]) -> list[dict[str, Any]]:
             "promotion": {"auto_promotable": True, "authority_required": "none_for_local_read_monitor", "forbidden_without_authority": ["model_certification_claim"]},
             "rollback": "hermes cron remove <job_id>",
         })
-    if "lark_auth_and_reader_watch" in missing_all:
+    if "lark_auth_and_reader_watch" in missing_all or "lark_auth_or_reader_degraded" in findings_all:
         proposals.append({
             "id": "proposal.lark_auth_and_reader_watch",
             "reason": "Lark profile exists; auth/reader health should be covered without sending messages.",
@@ -347,6 +474,26 @@ def generate_proposals(registry: dict[str, Any]) -> list[dict[str, Any]]:
             "failure_behavior": "print local auth/reader boundary only",
             "side_effects": "local_read",
             "promotion": {"auto_promotable": False, "authority_required": "exact_command_verified_first", "forbidden_without_authority": ["lark_send", "token_write"]},
+            "rollback": "hermes cron remove <job_id>",
+        })
+    if any(item in missing_all for item in {"experience_ratchet_watchdog_script_missing", "experience_ratchet_watchdog_cron_missing", "experience_ratchet_promoted_candidate_backlog", "experience_ratchet_skill_candidate_staging_watch"}):
+        proposals.append({
+            "id": "proposal.experience_ratchet_watchdog",
+            "reason": "Experience Ratchet is the dev-brain overlay for cross-project lessons; it needs local validation/backlog coverage before experience can safely promote into skills or profiles.",
+            "target_system": "experience-ratchet",
+            "workflow_type": "no_agent_cron",
+            "schedule": "every 6h",
+            "script": "experience_ratchet_watchdog.py --quiet-success --require-cron",
+            "deliver": "local",
+            "no_agent": True,
+            "success_behavior": "silent",
+            "failure_behavior": "print local JSON with validate/backlog/staging evidence; do not mutate skills/memory/profiles/taskpool",
+            "side_effects": "local_read",
+            "promotion": {
+                "auto_promotable": True,
+                "authority_required": "none_for_local_read_monitor",
+                "forbidden_without_authority": ["direct_skill_edit", "direct_memory_write", "direct_profile_edit", "direct_taskpool_add", "external_send", "push", "deploy", "delete", "credential_entry"],
+            },
             "rollback": "hermes cron remove <job_id>",
         })
     return proposals
@@ -423,7 +570,99 @@ def run_command(cmd: list[str], timeout: int = 45) -> dict[str, Any]:
         return {"cmd": cmd, "exit_code": 124, "output": (output + "\nTIMEOUT")[-4000:]}
 
 
-def build_provider_health_snapshot(home: Path | None = None, runner: Any | None = None) -> dict[str, Any]:
+def build_lark_health_snapshot(home: Path | None = None, runner: Any | None = None) -> dict[str, Any]:
+    home = Path(home or Path.home())
+    root = hermes_root(home)
+    profile = root / "project-profiles" / "lark.json"
+    script = root / "scripts" / "lark_task_flow.py"
+    if not profile.exists():
+        return {
+            "schema": "hermes_lark_health_snapshot_v1",
+            "generated_at": utc_now(),
+            "status": "not_applicable",
+            "side_effects": "local_read",
+            "summary": {"ok": True, "configured": False},
+        }
+    if not script.exists():
+        return {
+            "schema": "hermes_lark_health_snapshot_v1",
+            "generated_at": utc_now(),
+            "status": "reader_missing",
+            "side_effects": "local_read",
+            "summary": {"ok": False, "configured": True},
+        }
+    command_runner = runner or (lambda cmd: run_command(cmd, timeout=45))
+    result = command_runner([sys.executable, str(script), "--health-check"])
+    try:
+        payload = json.loads(str(result.get("output") or "{}"))
+    except json.JSONDecodeError:
+        payload = {}
+    ok = result.get("exit_code") == 0 and payload.get("ok") is True and payload.get("stage") == "auth"
+    auth_payload = payload.get("auth")
+    auth: dict[str, Any] = auth_payload if isinstance(auth_payload, dict) else {}
+    return {
+        "schema": "hermes_lark_health_snapshot_v1",
+        "generated_at": utc_now(),
+        "status": "ready" if ok else "degraded",
+        "side_effects": "local_read",
+        "may_open_browser": False,
+        "may_read_tasks": False,
+        "may_write_lark": False,
+        "command": f"{sys.executable} {script} --health-check",
+        "exit_code": result.get("exit_code"),
+        "stage": payload.get("stage"),
+        "auth_action": auth.get("action"),
+        "summary": {"ok": ok, "configured": True},
+    }
+
+
+def discover_recent_provider_runtime_evidence(home: Path | None = None, freshness_seconds: int = 3600, min_quorum: int = 2) -> dict[str, Any] | None:
+    home = Path(home or Path.home())
+    candidates = sorted(home.glob(".hermes/tick-*/final/certification_manifest.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    now = datetime.now(timezone.utc)
+    for manifest_path in candidates:
+        manifest = read_json(manifest_path, {})
+        if not isinstance(manifest, dict):
+            continue
+        generated_raw = str(manifest.get("generated_at") or "")
+        try:
+            generated = datetime.fromisoformat(generated_raw.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        age_seconds = max(0.0, (now - generated).total_seconds())
+        if age_seconds > freshness_seconds:
+            continue
+        gates_payload = manifest.get("gates")
+        gates: dict[str, Any] = gates_payload if isinstance(gates_payload, dict) else {}
+        actual_calls = int(gates.get("planner_count") or 0)
+        successful_calls = int(gates.get("success_count") or 0)
+        artifacts_payload = manifest.get("artifacts")
+        artifacts: dict[str, Any] = artifacts_payload if isinstance(artifacts_payload, dict) else {}
+        plans_payload = artifacts.get("plans")
+        plans: dict[str, Any] = plans_payload if isinstance(plans_payload, dict) else {}
+        plan_files = [Path(item.get("path", "")) for item in plans.get("files", []) if isinstance(item, dict)]
+        tick_dir = manifest_path.parents[1]
+        refs = [str(manifest_path)] + [str(tick_dir / path) for path in plan_files if path and (tick_dir / path).exists()]
+        if actual_calls >= min_quorum and successful_calls >= min_quorum and len(refs) >= min_quorum + 1:
+            return {
+                "status": "PASS",
+                "actual_calls": actual_calls,
+                "successful_calls": successful_calls,
+                "min_quorum": min_quorum,
+                "evidence_refs": refs,
+                "observed_at": generated_raw,
+                "freshness_seconds": freshness_seconds,
+                "age_seconds": round(age_seconds, 1),
+                "global_certification_status": manifest.get("status"),
+            }
+    return None
+
+
+def build_provider_health_snapshot(
+    home: Path | None = None,
+    runner: Any | None = None,
+    runtime_evidence: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     home = Path(home or Path.home())
     command_runner = runner or (lambda cmd: run_command(cmd, timeout=45))
     script = hermes_root(home) / "scripts" / "consult_models.py"
@@ -436,18 +675,43 @@ def build_provider_health_snapshot(home: Path | None = None, runner: Any | None 
             commands.append(result)
     else:
         commands.append({"cmd": ["python3", str(script), "selfcheck"], "exit_code": 127, "output": "consult_models.py not found"})
-    ok = all(c.get("exit_code") == 0 for c in commands)
+
+    static_ready = bool(commands) and all(c.get("exit_code") == 0 for c in commands)
     combined = "\n".join(str(c.get("output", "")) for c in commands).lower()
     degraded_markers = ["no planners", "below min_quorum", "quota", "unhealthy", "timeout", "rate limit", "429", "fail_closed"]
-    degraded = (not ok) or any(marker in combined for marker in degraded_markers)
+    static_degraded = (not static_ready) or any(marker in combined for marker in degraded_markers)
+
+    supplied = runtime_evidence or {}
+    actual_calls = int(supplied.get("actual_calls") or 0)
+    successful_calls = int(supplied.get("successful_calls") or 0)
+    min_quorum = int(supplied.get("min_quorum") or 1)
+    runtime_verified = (
+        str(supplied.get("status", "")).upper() == "PASS"
+        and actual_calls > 0
+        and successful_calls >= min_quorum
+        and min_quorum > 0
+        and bool(supplied.get("evidence_refs"))
+    )
+    runtime = {
+        "status": "verified" if runtime_verified else ("degraded" if supplied else "not_verified"),
+        "actual_calls": actual_calls,
+        "successful_calls": successful_calls,
+        "min_quorum": min_quorum,
+        "evidence_refs": list(supplied.get("evidence_refs") or []),
+        "source_status": supplied.get("status", "absent"),
+    }
+    degraded = static_degraded or not runtime_verified
+    ok = static_ready and runtime_verified and not static_degraded
     return {
-        "schema": "hermes_provider_health_snapshot_v1",
+        "schema": "hermes_provider_health_snapshot_v2",
         "generated_at": utc_now(),
         "side_effects": "local_read",
         "commands": commands,
-        "certification_status": "not_certified" if degraded else "local_health_commands_ok_not_certification",
-        "routing_safety": "fail_closed_for_model_quorum_automation" if degraded else "deterministic_checks_may_continue_model_certification_still_requires_quorum",
-        "summary": {"commands": len(commands), "ok": ok, "degraded": degraded},
+        "readiness": {"status": "ready" if static_ready and not static_degraded else "degraded", "static_only": True},
+        "runtime": runtime,
+        "certification_status": "runtime_quorum_verified_not_global_certification" if ok else "not_certified",
+        "routing_safety": "deterministic_checks_may_continue_model_certification_still_requires_quorum" if ok else "fail_closed_for_model_quorum_automation",
+        "summary": {"commands": len(commands), "static_ready": static_ready and not static_degraded, "runtime_verified": runtime_verified, "ok": ok, "degraded": degraded},
     }
 
 
@@ -506,7 +770,20 @@ def active_lifecycle_items_from_registry(registry: dict[str, Any]) -> dict[str, 
                 "key": key,
                 "system_id": system_id,
                 "check_id": check_id,
+                "issue_type": "engineering_gap",
                 "risk_level": system.get("risk_level", "low"),
+                "kind": system.get("kind"),
+                "evidence_refs": system.get("evidence_refs", []),
+            }
+        for finding_id in system.get("operational_findings", []):
+            key = f"{system_id}::operational::{finding_id}"
+            risk = "high" if finding_id == "delivery_errors_observed" else "medium" if finding_id in {"cron_errors_observed", "provider_runtime_not_verified_or_degraded", "lark_auth_or_reader_degraded"} else "low"
+            active[key] = {
+                "key": key,
+                "system_id": system_id,
+                "check_id": finding_id,
+                "issue_type": "operational_finding",
+                "risk_level": risk,
                 "kind": system.get("kind"),
                 "evidence_refs": system.get("evidence_refs", []),
             }
@@ -526,6 +803,7 @@ def update_coverage_lifecycle(registry: dict[str, Any], previous: dict[str, Any]
             "key": key,
             "system_id": current["system_id"],
             "check_id": current["check_id"],
+            "issue_type": current.get("issue_type", "engineering_gap"),
             "kind": current.get("kind"),
             "status": "active",
             "risk_level": current.get("risk_level", "low"),
@@ -639,7 +917,10 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
     root = hermes_root(home)
     output_dir = Path(output_dir or (root / "state" / "selfcheck"))
     profile = discover_user_system_profile(home)
-    registry = build_coverage_registry(profile)
+    provider_runtime_evidence = discover_recent_provider_runtime_evidence(home)
+    provider_health = build_provider_health_snapshot(home, runtime_evidence=provider_runtime_evidence)
+    lark_health = build_lark_health_snapshot(home)
+    registry = build_coverage_registry(profile, snapshots={"provider_health": provider_health, "lark_health": lark_health})
     if events is None:
         events = default_events_from_git(home)
     plan = plan_from_events(events)
@@ -647,7 +928,6 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
     cron_data = read_json(root / "cron" / "jobs.json", {"jobs": []})
     jobs = cron_data.get("jobs", []) if isinstance(cron_data, dict) else []
     cron_clusters = cluster_cron_errors(jobs)
-    provider_health = build_provider_health_snapshot(home)
     repair_packets = generate_repair_packets(registry, cron_clusters)
     delivery_diagnostics = build_delivery_proxy_diagnostics(home, cron_clusters)
     previous_lifecycle = read_json(output_dir / "coverage_lifecycle.json", {})
@@ -662,6 +942,7 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
         "proposals_path": write_json(output_dir / "coverage_proposals.json", {"schema": PROPOSAL_SCHEMA, "generated_at": utc_now(), "proposals": proposals}),
         "cron_error_clusters_path": write_json(output_dir / "cron_error_clusters.json", cron_clusters),
         "provider_health_path": write_json(output_dir / "provider_health_snapshot.json", provider_health),
+        "lark_health_path": write_json(output_dir / "lark_health_snapshot.json", lark_health),
         "repair_packets_path": write_json(output_dir / "repair_packets.json", repair_packets),
         "delivery_proxy_diagnostics_path": write_json(output_dir / "delivery_proxy_diagnostics.json", delivery_diagnostics),
         "coverage_lifecycle_path": write_json(output_dir / "coverage_lifecycle.json", lifecycle),
@@ -674,6 +955,8 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
             "cron_error_clusters": cron_clusters["summary"]["clusters"],
             "repair_packets": repair_packets["summary"]["packets"],
             "provider_health_degraded": provider_health["summary"]["degraded"],
+            "lark_health_degraded": not lark_health["summary"]["ok"],
+            "operational_findings": registry["summary"]["operational_findings"],
             "delivery_diagnostics_jobs": delivery_diagnostics["summary"]["diagnosed_jobs"],
             "lifecycle_active": lifecycle["summary"]["active"],
             "lifecycle_resolved": lifecycle["summary"]["resolved"],
@@ -681,7 +964,7 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
         },
     }
     write_json(output_dir / "last_run.json", result)
-    if quiet_success and not (result["summary"]["missing_checks"] or result["summary"]["high_risk_systems"] or result["summary"]["cron_error_clusters"] or result["summary"]["provider_health_degraded"]):
+    if quiet_success and not (result["summary"]["missing_checks"] or result["summary"]["high_risk_systems"] or result["summary"]["cron_error_clusters"] or result["summary"]["provider_health_degraded"] or result["summary"]["lark_health_degraded"]):
         return result
     return result
 

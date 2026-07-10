@@ -878,6 +878,55 @@ class TestConsultModelsIntegration(unittest.TestCase):
         self.assertIn('"truth_gate"', prompt)
         self.assertIn('"state_truncated": true', prompt)
 
+    def test_evidence_bundle_normalizes_claim_id_status_supports(self):
+        state = {
+            "claims": [{"id": "C-001", "text": "focused tests passed", "severity": 3}],
+            "evidence": [{
+                "id": "E-001",
+                "type": "command",
+                "claim_id": "C-001",
+                "status": "supports",
+                "exit_code": 0,
+            }],
+        }
+
+        bundle = consult.build_evidence_bundle(state)
+
+        self.assertEqual(bundle["evidence"][0]["supports"], ["C-001"])
+        self.assertEqual(bundle["grounding"]["C-001"]["truth_status"], "verified_by_evidence")
+        self.assertEqual(bundle["evidence_coverage"], 1.0)
+
+    def test_evidence_bundle_normalizes_claim_id_status_contradicts(self):
+        state = {
+            "claims": [{"id": "C-002", "text": "all runtime dependencies are healthy", "severity": 4}],
+            "evidence": [{
+                "id": "E-002",
+                "claim_id": "C-002",
+                "status": "contradicts",
+                "summary": "lark health degraded",
+            }],
+        }
+
+        bundle = consult.build_evidence_bundle(state)
+        gate = consult.evaluate_truth_gate(bundle)
+
+        self.assertEqual(bundle["evidence"][0]["contradicts"], ["C-002"])
+        self.assertEqual(bundle["grounding"]["C-002"]["truth_status"], "contradicted_by_evidence")
+        self.assertEqual(gate["truth_status"], "contradicted")
+        self.assertIn("C-002", gate["contradicted_high_severity_claim_ids"])
+
+    def test_evidence_bundle_unmatched_claim_id_status_fails_closed(self):
+        state = {
+            "claims": [{"id": "C-001", "text": "bound claim", "severity": 3}],
+            "evidence": [{"id": "E-OTHER", "claim_id": "C-999", "status": "supports"}],
+        }
+
+        bundle = consult.build_evidence_bundle(state)
+        gate = consult.evaluate_truth_gate(bundle)
+
+        self.assertEqual(bundle["grounding"]["C-001"]["truth_status"], "unsupported")
+        self.assertFalse(gate["can_certify_truth"])
+
     def test_evidence_bundle_marks_unsupported_claims(self):
         """Truth gate should separate model agreement from evidence-backed truth."""
         state = {

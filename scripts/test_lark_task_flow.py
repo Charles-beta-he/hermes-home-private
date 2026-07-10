@@ -73,6 +73,24 @@ class LarkTaskFlowTest(unittest.TestCase):
         self.assertIn('"stage": "auth"', out.getvalue())
         self.assertEqual(fake.calls, [])
 
+    def test_health_check_is_status_only_and_never_opens_browser_or_reads_tasks(self):
+        fake = FakeReader()
+        observed = {}
+
+        def guard(args):
+            observed.update({"no_open": args.no_open, "auto_authorize": args.auto_authorize, "auth_only": args.auth_only, "auth_timeout": args.auth_timeout})
+            return {"ok": True, "action": "token_valid"}
+
+        with mock.patch.object(self.mod, "load_reader", return_value=fake), mock.patch.object(self.mod, "run_guard", side_effect=guard):
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = self.mod.main(["--health-check"])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(observed, {"no_open": True, "auto_authorize": False, "auth_only": True, "auth_timeout": 15})
+        self.assertEqual(fake.calls, [])
+        self.assertIn('"stage": "auth"', out.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

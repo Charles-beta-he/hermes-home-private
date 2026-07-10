@@ -63,15 +63,17 @@ def test_discovers_user_system_profile_from_cron_and_profiles(tmp_path):
     assert profile["summary"]["delivery_error_jobs"] == 1
 
 
-def test_registry_marks_missing_delivery_failure_coverage(tmp_path):
+def test_registry_separates_delivery_monitor_coverage_from_observed_failure(tmp_path):
     home = make_home(tmp_path)
     profile = dsc.discover_user_system_profile(home=home)
 
     registry = dsc.build_coverage_registry(profile)
 
     telegram = next(s for s in registry["systems"] if s["system_id"] == "delivery:telegram")
-    assert telegram["risk_level"] in {"high", "medium"}
-    assert "delivery_failure_watch" in telegram["missing_checks"]
+    assert telegram["coverage_state"] == "covered"
+    assert "delivery_failure_watch" in telegram["current_checks"]
+    assert telegram["missing_checks"] == []
+    assert "delivery_errors_observed" in telegram["operational_findings"]
     assert telegram["evidence_refs"]
 
 
@@ -117,6 +119,27 @@ def test_cron_errors_are_clustered_into_actionable_local_groups(tmp_path):
     assert clusters["summary"]["error_jobs"] == 2
 
 
+def test_lark_health_snapshot_is_status_only_and_redacted(tmp_path):
+    home = make_home(tmp_path)
+    flow = home / ".hermes" / "scripts" / "lark_task_flow.py"
+    flow.write_text("# --health-check\n", encoding="utf-8")
+    snapshot = dsc.build_lark_health_snapshot(
+        home=home,
+        runner=lambda cmd: {
+            "exit_code": 0,
+            "output": json.dumps({"ok": True, "stage": "auth", "auth": {"ok": True, "action": "token_valid"}}),
+        },
+    )
+
+    assert snapshot["status"] == "ready"
+    assert snapshot["summary"]["ok"] is True
+    assert snapshot["may_open_browser"] is False
+    assert snapshot["may_read_tasks"] is False
+    assert snapshot["may_write_lark"] is False
+    assert snapshot["auth_action"] == "token_valid"
+    assert "token" not in snapshot
+
+
 def test_provider_health_snapshot_is_fail_closed_without_certification_claim(tmp_path):
     home = make_home(tmp_path)
     snapshot = dsc.build_provider_health_snapshot(home=home, runner=lambda cmd: {"exit_code": 1, "output": "no planners available after quota gate"})
@@ -125,6 +148,82 @@ def test_provider_health_snapshot_is_fail_closed_without_certification_claim(tmp
     assert snapshot["routing_safety"] == "fail_closed_for_model_quorum_automation"
     assert snapshot["side_effects"] == "local_read"
     assert snapshot["commands"][0]["exit_code"] == 1
+
+
+def test_provider_static_readiness_cannot_become_runtime_health(tmp_path):
+    home = make_home(tmp_path)
+    snapshot = dsc.build_provider_health_snapshot(
+        home=home,
+        runner=lambda cmd: {"exit_code": 0, "output": "selfcheck PASS static config ready"},
+    )
+
+    assert snapshot["readiness"]["status"] == "ready"
+    assert snapshot["runtime"]["status"] == "not_verified"
+    assert snapshot["summary"]["ok"] is False
+    assert snapshot["summary"]["degraded"] is True
+    assert snapshot["certification_status"] == "not_certified"
+
+
+def test_provider_runtime_health_requires_actual_quorum_evidence(tmp_path):
+    home = make_home(tmp_path)
+    snapshot = dsc.build_provider_health_snapshot(
+        home=home,
+        runner=lambda cmd: {"exit_code": 0, "output": "selfcheck PASS static config ready"},
+        runtime_evidence={
+            "status": "PASS",
+            "actual_calls": 3,
+            "successful_calls": 2,
+            "min_quorum": 2,
+            "evidence_refs": ["tick/example/result.json"],
+        },
+    )
+
+    assert snapshot["runtime"]["status"] == "verified"
+    assert snapshot["summary"] == {"commands": 2, "static_ready": True, "runtime_verified": True, "ok": True, "degraded": False}
+    assert snapshot["certification_status"] == "runtime_quorum_verified_not_global_certification"
+
+
+def test_recent_real_planner_calls_are_runtime_evidence_not_global_certification(tmp_path):
+    home = make_home(tmp_path)
+    tick = home / ".hermes" / "tick-example"
+    plans = tick / "plans"
+    final = tick / "final"
+    plans.mkdir(parents=True)
+    final.mkdir(parents=True)
+    for model in ["claude.json", "mimo.json"]:
+        (plans / model).write_text("{}", encoding="utf-8")
+    (final / "certification_manifest.json").write_text(json.dumps({
+        "generated_at": dsc.utc_now(),
+        "status": "degraded_not_certified",
+        "gates": {"planner_count": 2, "success_count": 2},
+        "artifacts": {"plans": {"files": [{"path": "plans/claude.json"}, {"path": "plans/mimo.json"}]}},
+    }), encoding="utf-8")
+
+    evidence = dsc.discover_recent_provider_runtime_evidence(home=home, min_quorum=2)
+
+    assert evidence is not None
+    assert evidence["status"] == "PASS"
+    assert evidence["actual_calls"] == 2
+    assert evidence["successful_calls"] == 2
+    assert evidence["global_certification_status"] == "degraded_not_certified"
+    snapshot = dsc.build_provider_health_snapshot(
+        home=home,
+        runner=lambda cmd: {"exit_code": 0, "output": "selfcheck PASS static config ready"},
+        runtime_evidence=evidence,
+    )
+    assert snapshot["summary"]["ok"] is True
+    assert snapshot["certification_status"] == "runtime_quorum_verified_not_global_certification"
+
+
+def test_registry_has_full_explicit_classification_and_no_empty_check_attachment(tmp_path):
+    home = make_home(tmp_path)
+    registry = dsc.build_coverage_registry(dsc.discover_user_system_profile(home=home))
+
+    assert registry["summary"]["classification_coverage_percent"] == 100.0
+    assert registry["summary"]["unclassified_systems"] == 0
+    assert registry["summary"]["check_attachment_percent"] == 100.0
+    assert all(system["coverage_state"] in {"covered", "gap", "not_applicable"} for system in registry["systems"])
+    assert all(system["current_checks"] for system in registry["systems"])
 
 
 def test_repair_packets_are_local_only_and_do_not_send(tmp_path):
@@ -166,7 +265,7 @@ def test_lifecycle_marks_new_persistent_and_resolved_coverage_items(tmp_path):
     registry = dsc.build_coverage_registry(profile)
 
     first = dsc.update_coverage_lifecycle(registry, previous=None, now="2026-07-06T00:00:00Z")
-    delivery_key = "delivery:telegram::delivery_failure_watch"
+    delivery_key = "delivery:telegram::operational::delivery_errors_observed"
     assert first["items"][delivery_key]["status"] == "active"
     assert first["items"][delivery_key]["first_seen_at"] == "2026-07-06T00:00:00Z"
     assert first["items"][delivery_key]["seen_count"] == 1
@@ -221,6 +320,7 @@ def test_cli_writes_registry_plan_proposals_and_operational_artifacts(tmp_path):
     assert Path(result["proposals_path"]).exists()
     assert Path(result["cron_error_clusters_path"]).exists()
     assert Path(result["provider_health_path"]).exists()
+    assert Path(result["lark_health_path"]).exists()
     assert Path(result["repair_packets_path"]).exists()
     assert Path(result["coverage_lifecycle_path"]).exists()
     loaded = json.loads(Path(result["registry_path"]).read_text(encoding="utf-8"))
