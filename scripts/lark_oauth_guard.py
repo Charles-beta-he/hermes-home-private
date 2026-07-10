@@ -15,13 +15,14 @@ Default behavior is conservative:
 """
 
 import argparse
+import importlib.util
 import json
 import os
 import platform
 import re
+import select
 import signal
 import subprocess
-import sys
 import tempfile
 import time
 from dataclasses import dataclass, asdict
@@ -40,6 +41,20 @@ DEFAULT_APP_ID = "cli_a96f6a6211f91ed2"
 DEFAULT_PORT = 8765
 DEFAULT_SCOPES = "auth:user.id:read task:task:read task:tasklist:read"
 AUTH_URL_RE = re.compile(r"https?://localhost:\d+/authorize\?[^\s\r\n]+")
+NODE_LOGIN_BRIDGE = r"""
+let raw = '';
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', chunk => { raw += chunk; });
+process.stdin.on('end', async () => {
+  try {
+    const options = JSON.parse(raw);
+    const { LoginHandler } = require(process.argv[1]);
+    await LoginHandler.handleLogin(options);
+  } catch (_) {
+    process.exit(1);
+  }
+});
+""".strip()
 
 
 @dataclass(frozen=True)
@@ -59,18 +74,35 @@ class LoginPlan:
 
 
 class SingleFlightLock:
-    def __init__(self, path: Path, stale_seconds: int = 180) -> None:
+    def __init__(self, path: Path, stale_seconds: int = 330) -> None:
         self.path = path
         self.stale_seconds = stale_seconds
         self.acquired = False
 
-    def is_active(self, now: float | None = None) -> bool:
+    def is_active(self, now: float | None = None, *, cleanup_stale: bool = True) -> bool:
         now = time.time() if now is None else now
         try:
             stat = self.path.stat()
         except FileNotFoundError:
             return False
         if now - stat.st_mtime > self.stale_seconds:
+            owner_pid = 0
+            try:
+                payload = json.loads(self.path.read_text(encoding="utf-8"))
+                if isinstance(payload, dict) and isinstance(payload.get("pid"), int):
+                    owner_pid = payload["pid"]
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                owner_pid = 0
+            if owner_pid > 0:
+                try:
+                    os.kill(owner_pid, 0)
+                    return True
+                except PermissionError:
+                    return True
+                except ProcessLookupError:
+                    pass
+            if not cleanup_stale:
+                return False
             try:
                 self.path.unlink()
             except FileNotFoundError:
@@ -139,6 +171,11 @@ def token_status_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_A
         if isinstance(token, dict):
             return TokenStatus(False, "local_token_expired", str(local_key), token.get("expiresAt"), token_count)
         return TokenStatus(False, "local_token_missing", str(local_key), None, token_count)
+    # A configured app identity is a hard binding.  Tokens belonging to another
+    # app must never attest readiness for this app merely because they are
+    # unexpired.
+    if app_id:
+        return TokenStatus(False, "local_token_unbound", token_count=token_count)
     for key, token in tokens.items():
         if isinstance(token, dict) and _is_unexpired(token, now):
             exp = token.get("expiresAt")
@@ -211,7 +248,7 @@ def credentials_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_AP
     # Support both Lark and Feishu aliases because Hermes profiles/docs use both names.
     env_id = _scalar_string(os.environ.get("LARK_APP_ID") or os.environ.get("FEISHU_APP_ID") or os.environ.get("APP_ID"))
     env_secret = _scalar_string(os.environ.get("LARK_APP_SECRET") or os.environ.get("FEISHU_APP_SECRET") or os.environ.get("APP_SECRET"))
-    if env_id and env_secret:
+    if env_id and env_secret and (not app_id or env_id == app_id):
         return env_id, env_secret
     for token in (snapshot.get("tokens") or {}).values():
         if not isinstance(token, dict):
@@ -226,7 +263,7 @@ def credentials_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_AP
             continue
         cid = _scalar_string(client.get("appId") or client.get("app_id") or client.get("client_id"))
         sec = _scalar_string(client.get("appSecret") or client.get("app_secret") or client.get("client_secret"))
-        if cid and sec and not cid.startswith("client_id_for_local_auth"):
+        if cid and sec and (not app_id or cid == app_id) and not cid.startswith("client_id_for_local_auth"):
             return cid, sec
     return "", ""
 
@@ -351,7 +388,7 @@ def _click_screenshot_pixel(x: int, y: int, screenshot_width: int, screenshot_he
         time.sleep(0.05)
 
 
-def auto_click_authorize(timeout: int = 25) -> dict[str, Any]:
+def auto_click_authorize(timeout: int = 25, *, deadline: float | None = None) -> dict[str, Any]:
     """Best-effort click of the visible Lark 授权 button in the user's browser.
 
     This intentionally clicks only the large Lark-blue primary button on the
@@ -360,16 +397,27 @@ def auto_click_authorize(timeout: int = 25) -> dict[str, Any]:
     """
     if platform.system() != "Darwin":
         return {"ok": False, "reason": "unsupported_platform"}
-    deadline = time.time() + max(1, timeout)
+    local_deadline = time.monotonic() + max(1, timeout)
+    deadline = min(local_deadline, deadline) if deadline is not None else local_deadline
     last_reason = "not_started"
     attempts = 0
-    while time.time() < deadline:
+    while time.monotonic() < deadline:
         attempts += 1
         path = Path(tempfile.gettempdir()) / f"hermes_lark_oauth_screen_{os.getpid()}.png"
-        shot = subprocess.run(["screencapture", "-x", str(path)], capture_output=True, text=True, timeout=10)
+        remaining = max(0.001, deadline - time.monotonic())
+        try:
+            shot = subprocess.run(
+                ["screencapture", "-x", str(path)],
+                capture_output=True,
+                text=True,
+                timeout=min(10, remaining),
+            )
+        except subprocess.TimeoutExpired:
+            last_reason = "screencapture_timeout"
+            break
         if shot.returncode != 0:
             last_reason = (shot.stderr or shot.stdout or "screencapture_failed").strip()
-            time.sleep(0.5)
+            time.sleep(min(0.5, max(0.0, deadline - time.monotonic())))
             continue
         try:
             from PIL import Image
@@ -378,7 +426,7 @@ def auto_click_authorize(timeout: int = 25) -> dict[str, Any]:
             bbox = _blue_authorize_button_bbox(path)
             if not bbox:
                 last_reason = "authorize_button_not_found"
-                time.sleep(0.7)
+                time.sleep(min(0.7, max(0.0, deadline - time.monotonic())))
                 continue
             min_x, min_y, max_x, max_y = bbox
             click_x = (min_x + max_x) // 2
@@ -387,7 +435,7 @@ def auto_click_authorize(timeout: int = 25) -> dict[str, Any]:
             return {"ok": True, "reason": "clicked", "bbox": [min_x, min_y, max_x, max_y], "attempts": attempts}
         except Exception as exc:
             last_reason = str(exc)
-            time.sleep(0.7)
+            time.sleep(min(0.7, max(0.0, deadline - time.monotonic())))
         finally:
             try:
                 path.unlink()
@@ -396,65 +444,160 @@ def auto_click_authorize(timeout: int = 25) -> dict[str, Any]:
     return {"ok": False, "reason": last_reason, "attempts": attempts}
 
 
-def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, scopes: str, open_browser: bool, timeout: int, auto_authorize: bool = False, auto_authorize_timeout: int = 25) -> dict[str, Any]:
+def _process_group_alive(pgid: int) -> bool:
+    try:
+        os.killpg(pgid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def _terminate_login_tree(
+    proc: subprocess.Popen[str],
+    grace_seconds: int = 2,
+    *,
+    deadline: float | None = None,
+) -> None:
+    pgid = proc.pid
+    deadline = time.monotonic() + max(0, grace_seconds) if deadline is None else deadline
+
+    def wait_with_budget() -> None:
+        remaining = max(0.0, deadline - time.monotonic())
+        try:
+            proc.wait(timeout=remaining)
+        except subprocess.TimeoutExpired:
+            pass
+
+    try:
+        os.killpg(pgid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    wait_with_budget()
+    if _process_group_alive(pgid):
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    wait_with_budget()
+
+
+def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, scopes: str, open_browser: bool, timeout: int, auto_authorize: bool = False, auto_authorize_timeout: int = 25, handler_path: Path | None = None) -> dict[str, Any]:
+    effective_timeout = min(max(1, int(timeout)), 300)
+    overall_deadline = time.monotonic() + effective_timeout
+    cleanup_reserve = min(0.25, effective_timeout / 4)
+    work_deadline = overall_deadline - cleanup_reserve
     real_app_id, app_secret = credentials_from_snapshot(snapshot, app_id=app_id)
     if not real_app_id or not app_secret:
         return {"ok": False, "action": "credentials_missing"}
-    args = [
-        "lark-mcp", "login",
-        "--app-id", _scalar_string(real_app_id),
-        "--app-secret", _scalar_string(app_secret),
-        "--domain", _scalar_string(domain),
-        "--port", str(port),
-        "--scope", _scalar_string(scopes),
-    ]
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+    handler_path = handler_path or DEFAULT_ROOT / "dist/cli/login-handler.js"
+    args = ["node", "-e", NODE_LOGIN_BRIDGE, str(handler_path)]
+    child_env = {
+        key: os.environ[key]
+        for key in ("PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "LC_CTYPE")
+        if key in os.environ
+    }
+    proc = subprocess.Popen(
+        args,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        start_new_session=True,
+        env=child_env,
+    )
+    if proc.stdin is None:
+        _terminate_login_tree(proc, deadline=overall_deadline)
+        return {"ok": False, "action": "login_failed"}
+    try:
+        proc.stdin.write(json.dumps({
+            "appId": _scalar_string(real_app_id),
+            "appSecret": _scalar_string(app_secret),
+            "domain": _scalar_string(domain),
+            "host": "localhost",
+            "port": str(port),
+            "scope": _scalar_string(scopes),
+            "timeout": effective_timeout * 1000,
+        }))
+        proc.stdin.close()
+    except (BrokenPipeError, OSError):
+        _terminate_login_tree(proc, deadline=overall_deadline)
+        return {"ok": False, "action": "login_failed"}
     opened = False
     auto_authorize_result: dict[str, Any] | None = None
     auth_url = ""
     output: list[str] = []
-    deadline = time.time() + timeout
+    output_buffer = ""
     while True:
-        if proc.stdout is not None:
-            line = proc.stdout.readline()
-        else:
-            line = ""
-        if line:
-            output.append(line.rstrip("\n"))
-            if not auth_url:
-                auth_url = extract_auth_url(line)
-            if auth_url and open_browser and not opened:
-                subprocess.run(["open", auth_url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                opened = True
-                if auto_authorize:
-                    auto_authorize_result = auto_click_authorize(timeout=auto_authorize_timeout)
         if proc.poll() is not None:
             break
-        if time.time() > deadline:
-            proc.terminate()
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                proc.kill()
+        remaining = work_deadline - time.monotonic()
+        if remaining <= 0:
+            _terminate_login_tree(proc, deadline=overall_deadline)
             return {"ok": False, "action": "login_timeout", "auth_url": auth_url, "opened": opened, "auto_authorize": auto_authorize_result, "output_tail": output[-10:]}
-        if not line:
-            time.sleep(0.1)
+        line = ""
+        if proc.stdout is not None:
+            readable, _, _ = select.select([proc.stdout], [], [], min(0.1, remaining))
+            if readable:
+                try:
+                    line = os.read(proc.stdout.fileno(), 4096).decode("utf-8", errors="replace")
+                except (BlockingIOError, OSError):
+                    line = ""
+        if line:
+            output.append(line.rstrip("\n"))
+            output_buffer = (output_buffer + line)[-16384:]
+            if not auth_url:
+                auth_url = extract_auth_url(output_buffer)
+            if auth_url and open_browser and not opened:
+                try:
+                    subprocess.run(
+                        ["open", auth_url],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=max(0.001, work_deadline - time.monotonic()),
+                    )
+                except subprocess.TimeoutExpired:
+                    _terminate_login_tree(proc, deadline=overall_deadline)
+                    return {"ok": False, "action": "login_timeout", "auth_url": auth_url, "opened": False, "auto_authorize": auto_authorize_result, "output_tail": output[-10:]}
+                opened = True
+                if auto_authorize:
+                    auto_authorize_result = auto_click_authorize(
+                        timeout=min(max(1, int(auto_authorize_timeout)), max(1, int(work_deadline - time.monotonic()))),
+                        deadline=work_deadline,
+                    )
     return {"ok": proc.returncode == 0, "action": "login_completed", "returncode": proc.returncode, "auth_url": auth_url, "opened": opened, "auto_authorize": auto_authorize_result, "output_tail": output[-10:]}
 
 
 def redact_secret(value: Any, keep_start: int = 8, keep_end: int = 4) -> Any:
     if not isinstance(value, str):
         return value
-    if len(value) <= keep_start + keep_end + 3:
+    if not value:
         return value
+    if len(value) <= keep_start + keep_end + 3:
+        return "***"
     return f"{value[:keep_start]}...{value[-keep_end:]}"
 
 
 def redact_result(result: dict[str, Any]) -> dict[str, Any]:
     redacted = json.loads(json.dumps(result, ensure_ascii=False))
+    for unsafe_key in ("output_tail", "auth_url", "error"):
+        redacted.pop(unsafe_key, None)
     token_status = redacted.get("token_status")
     if isinstance(token_status, dict) and token_status.get("token_key"):
         token_status["token_key"] = redact_secret(token_status["token_key"])
+    auto_authorize = redacted.get("auto_authorize")
+    if isinstance(auto_authorize, dict):
+        safe_auto: dict[str, Any] = {}
+        if isinstance(auto_authorize.get("ok"), bool):
+            safe_auto["ok"] = auto_authorize["ok"]
+        reason = auto_authorize.get("reason")
+        allowed_reasons = {"clicked", "unsupported_platform", "authorize_button_not_found", "not_started"}
+        safe_auto["reason"] = reason if reason in allowed_reasons else "auto_authorize_failed"
+        if isinstance(auto_authorize.get("attempts"), int):
+            safe_auto["attempts"] = auto_authorize["attempts"]
+        redacted["auto_authorize"] = safe_auto
     for key in ("app_secret", "client_secret", "access_token", "refresh_token", "token"):
         if key in redacted:
             redacted[key] = "***"
@@ -462,10 +605,12 @@ def redact_result(result: dict[str, Any]) -> dict[str, Any]:
 
 
 def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
+    # Token-store inspection is read-only and is required for status-only to
+    # distinguish a valid bound token from an actual recovery requirement.
     snapshot = auth_snapshot(Path(args.root))
     token_status = token_status_from_snapshot(snapshot, app_id=args.app_id)
     lock = SingleFlightLock(Path(args.lock), stale_seconds=args.lock_stale_seconds)
-    active = lock.is_active()
+    active = lock.is_active(cleanup_stale=not args.status_only)
     busy = port_busy(args.port)
     plan = plan_login(token_status.valid, active, busy, args.cleanup_stale, args.force_refresh)
     result: dict[str, Any] = {
@@ -512,6 +657,7 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
             args.timeout,
             args.auto_authorize,
             args.auto_authorize_timeout,
+            Path(args.root) / "dist/cli/login-handler.js",
         )
         final_snapshot = auth_snapshot(Path(args.root))
         final_status = token_status_from_snapshot(final_snapshot, app_id=args.app_id)
@@ -525,6 +671,21 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
         lock.release()
 
 
+def _durable_auto_authorize_valid(profile_value: str | None, grant_root_value: str | None) -> bool:
+    if not profile_value or not grant_root_value:
+        return False
+    flow_path = Path(__file__).with_name("lark_task_flow.py")
+    try:
+        spec = importlib.util.spec_from_file_location("hermes_lark_task_flow_authority", flow_path)
+        if not spec or not spec.loader:
+            return False
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return bool(module.oauth_recovery_auto_authorized(Path(profile_value), Path(grant_root_value)))
+    except (OSError, ImportError, AttributeError, TypeError, ValueError):
+        return False
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Single-flight Lark OAuth login guard")
     parser.add_argument("--json", action="store_true", help="print JSON result")
@@ -534,32 +695,70 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--port", type=int, default=int(os.environ.get("LARK_OAUTH_PORT", DEFAULT_PORT)))
     parser.add_argument("--scope", default=os.environ.get("LARK_OAUTH_SCOPE", DEFAULT_SCOPES))
     parser.add_argument("--lock", default=str(DEFAULT_LOCK))
-    parser.add_argument("--lock-stale-seconds", type=int, default=180)
+    parser.add_argument("--lock-stale-seconds", type=int, default=330)
     parser.add_argument("--cleanup-stale", action="store_true", help="terminate stale lark-mcp login on the chosen port before spawning")
     parser.add_argument("--force-refresh", action="store_true", help="run OAuth login even when the current token is still valid; useful for explicit token refresh tests")
     parser.add_argument("--status-only", action="store_true", help="read token, lock, and callback-port state without starting or cleaning up OAuth login")
     parser.add_argument("--no-open", action="store_true", help="do not open browser when auth URL appears")
-    parser.add_argument("--auto-authorize", action="store_true", default=os.environ.get("LARK_AUTO_AUTHORIZE", "").lower() in {"1", "true", "yes", "on"}, help="after opening the Lark OAuth URL, click the visible 授权 button on macOS")
+    parser.add_argument("--no-auto-authorize", dest="auto_authorize", action="store_false", help="explicitly disable auto-authorization, overriding ambient environment")
+    parser.set_defaults(auto_authorize=False)
+    parser.add_argument("--authorized-auto-authorize-profile", help=argparse.SUPPRESS)
+    parser.add_argument("--authorized-auto-authorize-grant-root", help=argparse.SUPPRESS)
     parser.add_argument("--auto-authorize-timeout", type=int, default=int(os.environ.get("LARK_AUTO_AUTHORIZE_TIMEOUT", "25")))
     parser.add_argument("--timeout", type=int, default=90)
+    parser.add_argument("--bound-defaults", action="store_true", help=argparse.SUPPRESS)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.bound_defaults:
+        args.app_id = DEFAULT_APP_ID
+        args.domain = DEFAULT_DOMAIN
+        args.port = DEFAULT_PORT
+        args.scope = DEFAULT_SCOPES
+        args.auto_authorize_timeout = min(max(1, args.auto_authorize_timeout), 300)
+    authority_profile = args.authorized_auto_authorize_profile
+    authority_root = args.authorized_auto_authorize_grant_root
+    authority_requested = bool(authority_profile or authority_root)
+    authority_valid = bool(
+        authority_profile
+        and authority_root
+        and not args.status_only
+        and _durable_auto_authorize_valid(authority_profile, authority_root)
+    )
+    args.auto_authorize = authority_valid
     try:
-        result = ensure_login(args)
-    except Exception as exc:
-        result = {"ok": False, "action": "error", "error": str(exc)}
+        if authority_requested and not authority_valid:
+            result = {"ok": False, "action": "authority_grant_invalid", "status_only": args.status_only}
+        else:
+            result = ensure_login(args)
+    except Exception:
+        result = {"ok": False, "action": "error", "error_code": "unhandled_guard_error"}
+    try:
+        result["lock_active_after"] = SingleFlightLock(
+            Path(args.lock), stale_seconds=args.lock_stale_seconds
+        ).is_active(cleanup_stale=not args.status_only and not (authority_requested and not authority_valid))
+    except Exception:
+        result["lock_active_after"] = False
+        result.update({"ok": False, "action": "error", "error_code": "post_readback_failed"})
+    try:
+        result["port_busy_after"] = port_busy(args.port)
+    except Exception:
+        result["port_busy_after"] = False
+        result.update({"ok": False, "action": "error", "error_code": "post_readback_failed"})
     if args.json:
         print(json.dumps(redact_result(result), ensure_ascii=False, indent=2, sort_keys=True))
     else:
-        print(result.get("action", "unknown"))
-        if result.get("auth_url"):
-            print(result["auth_url"])
-        if result.get("error"):
-            print(result["error"], file=sys.stderr)
+        public_actions = {
+            "auth_required", "authority_grant_invalid", "cleanup_stale_then_login", "credentials_missing", "error",
+            "force_refresh_login", "invalid_args", "login_already_in_progress",
+            "login_completed", "login_failed", "login_success", "login_timeout",
+            "port_busy", "start_login", "token_became_valid", "token_valid",
+        }
+        action = result.get("action")
+        print(action if action in public_actions else "operation_failed")
     return 0 if result.get("ok") else 1
 
 
