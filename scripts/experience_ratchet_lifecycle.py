@@ -80,7 +80,25 @@ def plan_actions(
 ) -> list[dict[str, Any]]:
     status = str(atom.get("status") or "")
     actions: list[dict[str, Any]] = []
-    failures = int((atom.get("metrics") or {}).get("failure_count") or 0)
+    metrics = atom.get("metrics")
+    if metrics is None:
+        failures = 0
+    elif not isinstance(metrics, dict):
+        return [{
+            "action": "invalid_atom",
+            "from": status,
+            "to": status,
+            "reason": "failure_count must be a nonnegative non-boolean integer",
+        }]
+    else:
+        failures = metrics.get("failure_count", 0)
+        if not isinstance(failures, int) or isinstance(failures, bool) or failures < 0:
+            return [{
+                "action": "invalid_atom",
+                "from": status,
+                "to": status,
+                "reason": "failure_count must be a nonnegative non-boolean integer",
+            }]
     last_at = last_atom_time(atom)
 
     if status in FAILURE_REOPEN_STATES and failures >= failure_threshold:
@@ -121,6 +139,11 @@ def apply_action(atom: dict[str, Any], action: dict[str, Any], *, now: datetime,
     event = action["action"]
     if event in {"stale_demoted", "failure_reopened"}:
         atom["status"] = action["to"]
+        promotion = atom.setdefault("promotion", {})
+        promotion["previous_state"] = promotion.get("state")
+        promotion["state"] = "none"
+        promotion["last_transition"] = event
+        promotion["last_transition_at"] = iso(now)
         atom.setdefault("lifecycle", {})["last_action"] = event
         atom["lifecycle"]["last_action_at"] = iso(now)
         if event == "failure_reopened":
@@ -184,6 +207,8 @@ def reconcile_store(
             retention_days=retention_days,
         )
         for action in actions:
+            if action["action"] == "invalid_atom":
+                continue
             summary[action["action"]] += 1
             if action["to"] in PROMOTION_STATES:
                 summary["promotion_actions"] += 1
@@ -194,7 +219,7 @@ def reconcile_store(
         if after_history[: len(before_history)] != before_history:
             summary["history_erased"] += 1
             raise RuntimeError(f"history preservation violated: {path}")
-        if apply and actions:
+        if apply and any(action["action"] != "invalid_atom" for action in actions):
             write_json_atomic(path, atom)
         decisions.append({
             "atom_id": atom.get("atom_id"),
@@ -207,7 +232,13 @@ def reconcile_store(
         })
 
     return {
-        "ok": summary["promotion_actions"] == 0 and summary["history_erased"] == 0,
+        "ok": summary["promotion_actions"] == 0
+        and summary["history_erased"] == 0
+        and not any(
+            action["action"] == "invalid_atom"
+            for decision in decisions
+            for action in decision["actions"]
+        ),
         "schema": "hermes_experience_ratchet_lifecycle_v1",
         "generated_at": iso(current),
         "mode": "apply" if apply else "dry_run",
@@ -221,7 +252,11 @@ def reconcile_store(
         },
         "summary": summary,
         "decisions": decisions,
-        "side_effects_observed": ["local_write"] if apply and any(d["actions"] for d in decisions) else ["local_read"],
+        "side_effects_observed": ["local_write"] if apply and any(
+            action["action"] != "invalid_atom"
+            for decision in decisions
+            for action in decision["actions"]
+        ) else ["local_read"],
         "forbidden_side_effects": ["landing_zone_write", "silent_promotion", "history_deletion", "external_send", "credential_entry"],
     }
 

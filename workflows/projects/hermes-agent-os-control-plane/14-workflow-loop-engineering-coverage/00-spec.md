@@ -86,3 +86,72 @@ AC7. No external send, deploy, push, destructive operation, credential entry, pr
 - Operational boundary: Provider runtime is currently not degraded. Lark remains degraded (`no_tokens` / existing login in progress), and the root repository is dirty until scoped commits are written. These are operational findings, not missing engineering checks.
 
 Closure state: `waiting_acceptance`. Engineering-contract coverage is converged; global operational-health/full-certification claims remain blocked by Lark human OAuth and independent certification quorum.
+
+## V2 Spec Brief — Procedure-Level E2E Truth and Ratchet
+
+### Goal
+
+Make every enabled runtime procedure explicitly distinguishable as fully landed and freshly end-to-end verified, landed but unverified/stale, partially landed, pending, authority-blocked, degraded, or N/A. A system may be operationally ready while its procedures remain uncertified; aggregate health must fail closed for any required procedure lacking fresh E2E evidence.
+
+### Non-goals
+
+- Do not execute browser/OAuth, external reads/writes, delivery, deploy, destructive, credential, payment, or production flows from ordinary selfcheck.
+- Do not convert unit/contract tests, check attachment, token readiness, model votes, or historical chat into a fresh E2E receipt.
+- Do not classify authority-blocked procedures as runtime failures; expose them as distinct pending boundaries.
+- Do not delete or rewrite the existing engineering and operational axes.
+
+### Source facts and boundaries
+
+- The current Coverage Registry has engineering coverage and operational findings but no generic procedure/E2E axis.
+- Lark `--health-check` proves current auth readiness only and intentionally cannot open a browser, auto-authorize, read tasks, or write Lark.
+- A real OAuth recovery was previously exercised under exact user authority, but no durable, standardized, fresh receipt exists that this control plane can independently verify now.
+- Provider runtime evidence already demonstrates a useful pattern: discover a recent real artifact, enforce quorum and freshness, and explicitly deny global certification.
+- The Workflow Loop evaluator already demonstrates independent fail-closed receipt evaluation.
+
+### Candidate paths and decision
+
+1. Extend each system row with ad-hoc E2E fields. Rejected: conflates systems, checks, and procedures and cannot model multiple procedures per system.
+2. Execute every E2E flow on every selfcheck. Rejected: unsafe, noisy, expensive, and impossible for authority-gated side effects.
+3. Add a separate Procedure Validation Registry and project it into existing control-plane surfaces. Selected: preserves current behavior, supports multiple procedures per system, keeps selfcheck read-only, and permits receipt freshness/expiry and authority boundaries.
+
+### Required procedure contract
+
+Each procedure declaration must include a stable ID, owning system, requirement class, side-effect class, authority policy, implementation state, validation policy, freshness TTL, required evidence kinds, failure/recovery expectations, and propagation targets. Each receipt must include procedure ID, schema/version, started/completed timestamps, result, evidence refs, execution mode, side-effect declaration, authority reference when required, negative assertions, and cleanup/readback results.
+
+For `exact_grant_required`, the declaration also names an independently controlled authority root and issuer. The receipt must bind the grant artifact SHA-256; the verifier rejects paths outside that root, symlinked path components, non-regular files, issuer or identity mismatch, and grants whose validity interval does not enclose the receipt execution interval. A receipt producer cannot satisfy this boundary by creating a matching grant in its own temporary directory.
+
+### Canonical states
+
+- `implementation_state`: `missing | scaffolded | landed | enabled`
+- `validation_state`: `untested | contract_passed | integration_passed | e2e_passed | e2e_failed | stale | blocked_by_authority`
+- `delivery_state`: `pending | in_progress | partially_landed | landed_unverified | fully_connected | blocked | not_applicable`
+- `operational_state`: `unknown | ready | healthy | degraded | failed | not_running`
+
+`fully_connected` requires enabled implementation, a fresh successful E2E receipt with existing evidence refs, all mandatory acceptance atoms satisfied, cleanup/readback success, no unresolved mandatory finding, and no forbidden side effect. `certified_healthy` additionally requires every required enabled procedure to be `fully_connected` and an independent evaluator to pass.
+
+### Acceptance criteria
+
+- AC8. A standalone procedure registry/evaluator loads declarations and receipts without executing procedures.
+- AC9. Missing, malformed, contradictory, failed, or expired receipts fail closed and cannot produce `fully_connected`.
+- AC10. Authority-blocked procedures remain distinct from operational failures and generate actionable local-only pending items.
+- AC11. Every enabled discovered system is mapped to at least one procedure or has an explicit N/A reason; inventory gaps are visible.
+- AC12. Procedure findings propagate to Coverage Registry, lifecycle, repair packets, quiet-success, Loop/evaluator input, and certification/readback summaries without collapsing existing axes.
+- AC13. Real safe local/read-only procedures may produce receipts; external/authority-gated procedures are only represented and never silently executed.
+- AC14. Independent multi-model review is advisory until deterministic tests, fresh artifact readback, and evidence-linked certification gates pass.
+
+### Negative cases
+
+- 100% check attachment with no procedure inventory cannot claim complete health.
+- Current token validity cannot certify OAuth recovery or Task API read procedures.
+- A mock/contract pass cannot be relabeled as E2E.
+- An expired receipt becomes `stale`, reopens lifecycle state, and blocks certified health without auto-running the procedure.
+- A missing authority grant becomes `blocked_by_authority`, not `healthy`, `failed`, or silently skipped.
+- A receipt whose evidence path does not exist, whose procedure ID is unknown, or whose side-effect declaration contradicts policy is rejected.
+- An inventory attestation whose `reviewed_at` is materially in the future is rejected; clock skew cannot be clamped into permanent freshness.
+- A Workflow Loop receipt with a non-canonical schema, generator, or top-level status is vetoed even when its stage fields look complete.
+- Ratchet demotion or failure reopen must clear the active promotion state while preserving the previous state as audit metadata; top-level lifecycle and promotion state cannot contradict each other.
+- Agent OS procedure projections must validate nested axis and procedure-entry contracts at the Python trust boundary; malformed nested values are omitted and mark the projection untrusted before Dashboard consumption.
+
+### Evidence required
+
+RED/GREEN tests; schema/readback artifacts; failure injection for missing, expired, failed, authority-blocked, unknown-procedure, and forbidden-side-effect cases; live local/read-only receipt generation; dynamic selfcheck readback; Loop evaluator veto/readback; scoped diff and commit. External E2E remains at exact authority gates.

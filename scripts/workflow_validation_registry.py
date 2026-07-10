@@ -8,7 +8,10 @@ external authority.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
+import stat
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -18,6 +21,14 @@ DEFINITIONS_SCHEMA = "hermes_procedure_definitions_v1"
 RECEIPT_SCHEMA = "hermes_procedure_e2e_receipt_v1"
 IMPLEMENTATION_STATES = {"missing", "scaffolded", "landed", "enabled"}
 AUTHORITY_POLICIES = {"none", "exact_grant_required"}
+VALIDATION_POLICIES = {"fresh_live_e2e_receipt"}
+EVIDENCE_KINDS = {"evidence_refs", "acceptance_atoms", "negative_assertions", "cleanup_readback"}
+FAILURE_EXPECTATIONS = {"fail_closed_and_surface_finding"}
+RECOVERY_EXPECTATIONS = {"revalidate_after_local_remediation", "wait_for_exact_grant_then_revalidate"}
+PROPAGATION_TARGETS = {
+    "procedure_registry", "coverage_registry", "agent_os_projection", "lifecycle",
+    "repair_packet", "workflow_loop_evaluator",
+}
 
 
 def utc_now() -> str:
@@ -51,20 +62,84 @@ def write_json(path: Path, payload: Any) -> None:
 def _string_list(value: Any) -> list[str]:
     if not isinstance(value, list):
         return []
-    return [str(item).strip() for item in value if str(item).strip()]
+    return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+
+
+def _nonempty_string(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _strict_string_list(value: Any, *, allow_empty: bool = False) -> bool:
+    return (
+        isinstance(value, list)
+        and (allow_empty or bool(value))
+        and all(isinstance(item, str) and bool(item.strip()) for item in value)
+    )
+
+
+def _has_symlink_component(path: Path) -> bool:
+    candidate = path.expanduser().absolute()
+    return any(part.is_symlink() for part in (candidate, *candidate.parents))
+
+
+def _read_regular_file_no_symlinks(path: Path, *, max_bytes: int = 1_048_576) -> bytes:
+    absolute = path.expanduser().absolute()
+    parts = absolute.parts
+    if len(parts) < 2:
+        raise ValueError("invalid authority artifact path")
+    fd = os.open(parts[0], os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for component in parts[1:-1]:
+            next_fd = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+        file_fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=fd)
+        try:
+            before = os.fstat(file_fd)
+            if not stat.S_ISREG(before.st_mode) or before.st_size > max_bytes:
+                raise ValueError("authority artifact is not a bounded regular file")
+            chunks: list[bytes] = []
+            total = 0
+            while True:
+                chunk = os.read(file_fd, min(65_536, max_bytes + 1 - total))
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                total += len(chunk)
+                if total > max_bytes:
+                    raise ValueError("authority artifact exceeds size limit")
+            after = os.fstat(file_fd)
+            if (
+                before.st_dev, before.st_ino, before.st_mode, before.st_size, before.st_mtime_ns, before.st_ctime_ns
+            ) != (
+                after.st_dev, after.st_ino, after.st_mode, after.st_size, after.st_mtime_ns, after.st_ctime_ns
+            ):
+                raise ValueError("authority artifact changed while reading")
+            return b"".join(chunks)
+        finally:
+            os.close(file_fd)
+    finally:
+        os.close(fd)
 
 
 def validate_declaration(declaration: dict[str, Any]) -> list[str]:
     issues: list[str] = []
-    if not str(declaration.get("procedure_id") or "").strip():
+    if not isinstance(declaration.get("required"), bool):
+        issues.append("invalid_required")
+    if not _nonempty_string(declaration.get("procedure_id")):
         issues.append("missing_procedure_id")
-    if not str(declaration.get("system_id") or "").strip():
+    if not _nonempty_string(declaration.get("system_id")):
         issues.append("missing_system_id")
     if declaration.get("implementation_state") not in IMPLEMENTATION_STATES:
         issues.append("invalid_implementation_state")
     if declaration.get("authority_policy") not in AUTHORITY_POLICIES:
         issues.append("invalid_authority_policy")
-    if not str(declaration.get("side_effect_class") or "").strip():
+    elif declaration.get("authority_policy") == "exact_grant_required":
+        if not _nonempty_string(declaration.get("authority_grant_root")):
+            issues.append("missing_authority_grant_root")
+        if not _nonempty_string(declaration.get("authority_issuer")):
+            issues.append("missing_authority_issuer")
+    if not _nonempty_string(declaration.get("side_effect_class")):
         issues.append("missing_side_effect_class")
     freshness = declaration.get("freshness_seconds")
     if not isinstance(freshness, int) or isinstance(freshness, bool) or freshness <= 0:
@@ -72,11 +147,91 @@ def validate_declaration(declaration: dict[str, Any]) -> list[str]:
     threshold = declaration.get("min_independent_successes", 1)
     if not isinstance(threshold, int) or isinstance(threshold, bool) or threshold <= 0:
         issues.append("invalid_min_independent_successes")
-    if not _string_list(declaration.get("required_acceptance_atoms")):
+    if not _strict_string_list(declaration.get("required_acceptance_atoms")):
         issues.append("missing_required_acceptance_atoms")
-    if not isinstance(declaration.get("required_negative_assertions"), list):
+    if not _strict_string_list(declaration.get("required_negative_assertions"), allow_empty=True):
         issues.append("invalid_required_negative_assertions")
+    validation_policy = declaration.get("validation_policy")
+    if not _nonempty_string(validation_policy):
+        issues.append("missing_validation_policy")
+    elif validation_policy not in VALIDATION_POLICIES:
+        issues.append("invalid_validation_policy")
+    raw_evidence_kinds = declaration.get("required_evidence_kinds")
+    evidence_kinds = _string_list(raw_evidence_kinds)
+    if not evidence_kinds:
+        issues.append("missing_required_evidence_kinds")
+    elif (
+        not _strict_string_list(raw_evidence_kinds)
+        or len(evidence_kinds) != len(set(evidence_kinds))
+        or set(evidence_kinds) != EVIDENCE_KINDS
+    ):
+        issues.append("invalid_required_evidence_kinds")
+    failure_expectation = declaration.get("failure_expectation")
+    if not _nonempty_string(failure_expectation):
+        issues.append("missing_failure_expectation")
+    elif failure_expectation not in FAILURE_EXPECTATIONS:
+        issues.append("invalid_failure_expectation")
+    recovery_expectation = declaration.get("recovery_expectation")
+    if not _nonempty_string(recovery_expectation):
+        issues.append("missing_recovery_expectation")
+    elif recovery_expectation not in RECOVERY_EXPECTATIONS:
+        issues.append("invalid_recovery_expectation")
+    raw_propagation_targets = declaration.get("propagation_targets")
+    propagation_targets = _string_list(raw_propagation_targets)
+    if not propagation_targets:
+        issues.append("missing_propagation_targets")
+    elif (
+        not _strict_string_list(raw_propagation_targets)
+        or len(propagation_targets) != len(set(propagation_targets))
+        or not set(propagation_targets).issubset(PROPAGATION_TARGETS)
+    ):
+        issues.append("invalid_propagation_targets")
     return sorted(set(issues))
+
+
+def _exact_authority_grant_valid(
+    authority: dict[str, Any],
+    declaration: dict[str, Any],
+    started: datetime | None,
+    completed: datetime | None,
+    receipt_id: Any,
+) -> bool:
+    ref = authority.get("ref")
+    root_ref = declaration.get("authority_grant_root")
+    if not _nonempty_string(ref) or not _nonempty_string(root_ref) or started is None or completed is None:
+        return False
+    path = Path(str(ref)).expanduser()
+    root = Path(str(root_ref)).expanduser()
+    absolute_path = path.absolute()
+    absolute_root = root.absolute()
+    if _has_symlink_component(absolute_root) or _has_symlink_component(absolute_path) or not absolute_root.is_dir():
+        return False
+    try:
+        absolute_path.relative_to(absolute_root)
+        raw_grant = _read_regular_file_no_symlinks(absolute_path)
+        digest = hashlib.sha256(raw_grant).hexdigest()
+        grant = json.loads(raw_grant.decode("utf-8"))
+    except (OSError, ValueError, UnicodeDecodeError, json.JSONDecodeError):
+        return False
+    if authority.get("sha256") != digest or not isinstance(grant, dict):
+        return False
+    valid_from = parse_time(grant.get("valid_from"))
+    expires_at = parse_time(grant.get("expires_at"))
+    return bool(
+        grant.get("schema") == "hermes_procedure_authority_grant_v1"
+        and grant.get("grant_id") == path.stem
+        and grant.get("status") == "active"
+        and grant.get("procedure_id") == declaration.get("procedure_id")
+        and grant.get("system_id") == declaration.get("system_id")
+        and grant.get("action") == "execute_live_e2e_validation"
+        and grant.get("scope") == declaration.get("procedure_id")
+        and _nonempty_string(receipt_id)
+        and grant.get("receipt_id") == receipt_id
+        and grant.get("issued_by") == declaration.get("authority_issuer")
+        and valid_from is not None
+        and expires_at is not None
+        and valid_from <= started <= completed <= expires_at
+    )
 
 
 def validate_receipt(receipt: dict[str, Any], declaration: dict[str, Any], now_dt: datetime | None = None) -> list[str]:
@@ -85,7 +240,7 @@ def validate_receipt(receipt: dict[str, Any], declaration: dict[str, Any], now_d
         issues.append("invalid_receipt_schema")
     if receipt.get("procedure_id") != declaration.get("procedure_id"):
         issues.append("procedure_id_mismatch")
-    if not str(receipt.get("receipt_id") or "").strip():
+    if not _nonempty_string(receipt.get("receipt_id")):
         issues.append("missing_receipt_id")
     started = parse_time(receipt.get("started_at"))
     completed = parse_time(receipt.get("completed_at"))
@@ -102,10 +257,12 @@ def validate_receipt(receipt: dict[str, Any], declaration: dict[str, Any], now_d
     if receipt.get("execution_mode") != "live_e2e":
         issues.append("execution_mode_not_live_e2e")
 
-    refs = _string_list(receipt.get("evidence_refs"))
-    if not refs:
-        issues.append("missing_evidence_ref")
-    elif any(not Path(ref).exists() for ref in refs):
+    raw_refs = receipt.get("evidence_refs")
+    refs = _string_list(raw_refs)
+    if (
+        not _strict_string_list(raw_refs)
+        or any(_has_symlink_component(Path(ref)) or not Path(ref).is_file() for ref in refs)
+    ):
         issues.append("missing_evidence_ref")
 
     acceptance = receipt.get("acceptance_atoms") if isinstance(receipt.get("acceptance_atoms"), dict) else {}
@@ -121,13 +278,19 @@ def validate_receipt(receipt: dict[str, Any], declaration: dict[str, Any], now_d
     if receipt.get("cleanup_readback") != "PASS":
         issues.append("cleanup_readback_not_pass")
 
-    authority = receipt.get("authority") if isinstance(receipt.get("authority"), dict) else {}
+    raw_authority = receipt.get("authority")
+    authority: dict[str, Any] = raw_authority if isinstance(raw_authority, dict) else {}
     if declaration.get("authority_policy") == "exact_grant_required":
-        if authority.get("status") != "granted" or not str(authority.get("ref") or "").strip():
+        if authority.get("status") != "granted" or not _exact_authority_grant_valid(
+            authority, declaration, started, completed, receipt.get("receipt_id")
+        ):
             issues.append("authority_not_granted")
 
     declared_effect = str(declaration.get("side_effect_class") or "")
-    observed_effects = _string_list(receipt.get("side_effects_observed"))
+    raw_observed_effects = receipt.get("side_effects_observed")
+    observed_effects = _string_list(raw_observed_effects)
+    if not _strict_string_list(raw_observed_effects, allow_empty=True):
+        issues.append("invalid_side_effects_observed")
     allowed_effects = set(_string_list(declaration.get("allowed_additional_side_effects")))
     if declared_effect not in {"", "none"}:
         allowed_effects.add(declared_effect)
@@ -150,7 +313,10 @@ def _evaluate_procedure(
 ) -> dict[str, Any]:
     procedure_id = str(declaration.get("procedure_id") or "")
     implementation_state = str(declaration.get("implementation_state") or "missing")
-    required = bool(declaration.get("required", True))
+    required_value = declaration.get("required", True)
+    # Invalid values fail closed as required rather than escaping inventory
+    # accounting through Python truthiness.
+    required = required_value if isinstance(required_value, bool) else True
     declaration_issues = validate_declaration(declaration)
     matching = sorted((r for r in receipts if r.get("procedure_id") == procedure_id), key=_receipt_sort_key)
     evaluated = [{"receipt": item, "issues": validate_receipt(item, declaration, now_dt)} for item in matching]
@@ -161,10 +327,12 @@ def _evaluate_procedure(
     latest_receipt = latest["receipt"] if latest else None
     latest_issues = list(latest["issues"]) if latest else []
     latest_completed = parse_time(latest_receipt.get("completed_at")) if latest_receipt else None
-    freshness_seconds = int(declaration.get("freshness_seconds") or 0)
+    freshness_value = declaration.get("freshness_seconds")
+    freshness_seconds = freshness_value if isinstance(freshness_value, int) and not isinstance(freshness_value, bool) and freshness_value > 0 else 0
     age_seconds = max(0.0, (now_dt - latest_completed).total_seconds()) if latest_completed else None
     latest_is_fresh = bool(latest_completed and freshness_seconds > 0 and age_seconds <= freshness_seconds)
-    threshold = int(declaration.get("min_independent_successes") or 1)
+    threshold_value = declaration.get("min_independent_successes", 1)
+    threshold = threshold_value if isinstance(threshold_value, int) and not isinstance(threshold_value, bool) and threshold_value > 0 else 1
 
     findings: list[str] = []
     validation_state = "untested"
@@ -277,6 +445,7 @@ def evaluate_registry(
         reviewed_at = parse_time(attestation.get("reviewed_at"))
         freshness = attestation.get("freshness_seconds")
         age_seconds = max(0.0, (now_dt - reviewed_at).total_seconds()) if reviewed_at else None
+        future_dated = bool(reviewed_at and reviewed_at > now_dt)
         valid = bool(
             attestation.get("scope_complete") is True
             and str(attestation.get("basis") or "").strip()
@@ -285,10 +454,12 @@ def evaluate_registry(
             and freshness > 0
             and age_seconds is not None
             and age_seconds <= freshness
+            and not future_dated
         )
         attestation_states[system_id] = {
             **attestation,
             "valid": valid,
+            "future_dated": future_dated,
             "age_seconds": round(age_seconds, 1) if age_seconds is not None else None,
         }
         if not valid:
@@ -302,7 +473,7 @@ def evaluate_registry(
     required = [item for item in procedures if item.get("required")]
     fully_connected = [item for item in required if item.get("delivery_state") == "fully_connected"]
     inventory_complete = not unmapped and not unattested and not unknown_receipts
-    all_required_connected = len(fully_connected) == len(required)
+    all_required_connected = bool(required) and len(fully_connected) == len(required)
     can_claim = inventory_complete and all_required_connected
 
     return {

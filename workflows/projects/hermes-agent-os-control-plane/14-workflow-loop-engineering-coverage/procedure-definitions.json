@@ -1,9 +1,476 @@
 {
-  "schema": "hermes_procedure_definitions_v1",
+  "procedures": [
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 14400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 1,
+      "procedure_id": "hermes.core.selfcheck.readback",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "profile_discovered",
+        "coverage_registry_written",
+        "last_run_readback"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_external_send",
+        "no_external_procedure_execution"
+      ],
+      "side_effect_class": "local_write",
+      "system_id": "hermes-core",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 86400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 1,
+      "procedure_id": "cron.scheduler.status_readback",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "jobs_loaded",
+        "status_read",
+        "output_refs_resolved"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_job_run",
+        "no_schedule_write"
+      ],
+      "side_effect_class": "local_read",
+      "system_id": "cron",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 86400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 1,
+      "procedure_id": "delivery.local.output",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "payload_written",
+        "receipt_readback"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_external_send"
+      ],
+      "side_effect_class": "local_write",
+      "system_id": "delivery:local",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_grant_root": "~/.hermes/workflows/projects/hermes-agent-os-control-plane/authority-grants",
+      "authority_issuer": "human_authority",
+      "authority_policy": "exact_grant_required",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 604800,
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "delivery.origin.send",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "wait_for_exact_grant_then_revalidate",
+      "required": true,
+      "required_acceptance_atoms": [
+        "exact_target_bound",
+        "send_receipt",
+        "post_send_readback"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_broad_fanout",
+        "no_payload_drift"
+      ],
+      "side_effect_class": "external_send",
+      "system_id": "delivery:origin",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_grant_root": "~/.hermes/workflows/projects/hermes-agent-os-control-plane/authority-grants",
+      "authority_issuer": "human_authority",
+      "authority_policy": "exact_grant_required",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 604800,
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "delivery.telegram.send",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "wait_for_exact_grant_then_revalidate",
+      "required": true,
+      "required_acceptance_atoms": [
+        "exact_chat_bound",
+        "message_receipt",
+        "post_send_readback"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_broad_fanout",
+        "no_secret_exposure"
+      ],
+      "side_effect_class": "external_send",
+      "system_id": "delivery:telegram",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 86400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "agent_os.workflow_loop.v2",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "receipt_written",
+        "deterministic_evaluator_passed",
+        "state_readback"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_external_dispatch",
+        "no_certification_overclaim"
+      ],
+      "side_effect_class": "local_write",
+      "system_id": "profile:hermes-agent-os-control-plane",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 14400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 1,
+      "procedure_id": "lark.auth.health_monitor",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "token_status_read",
+        "lock_state_read",
+        "callback_port_state_read",
+        "status_only_guard_confirmed"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_oauth_listener_spawned",
+        "no_browser_open",
+        "no_task_read",
+        "no_lark_write"
+      ],
+      "side_effect_class": "local_read",
+      "system_id": "profile:lark",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [
+        "local_write"
+      ],
+      "authority_grant_root": "~/.hermes/workflows/projects/hermes-agent-os-control-plane/authority-grants",
+      "authority_issuer": "human_authority",
+      "authority_policy": "exact_grant_required",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 2592000,
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "lark.oauth.recovery",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "wait_for_exact_grant_then_revalidate",
+      "required": true,
+      "required_acceptance_atoms": [
+        "singleflight_lock",
+        "callback_received",
+        "token_persisted",
+        "token_readback",
+        "lock_released",
+        "callback_port_released"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_duplicate_browser",
+        "no_secret_exposure",
+        "no_lark_write"
+      ],
+      "side_effect_class": "browser_auth",
+      "system_id": "profile:lark",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_grant_root": "~/.hermes/workflows/projects/hermes-agent-os-control-plane/authority-grants",
+      "authority_issuer": "human_authority",
+      "authority_policy": "exact_grant_required",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 604800,
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "lark.task.readonly",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "wait_for_exact_grant_then_revalidate",
+      "required": true,
+      "required_acceptance_atoms": [
+        "identity_read",
+        "task_list_read",
+        "pagination_readback",
+        "detail_read"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_lark_write",
+        "no_secret_exposure"
+      ],
+      "side_effect_class": "external_read",
+      "system_id": "profile:lark",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 14400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 1,
+      "procedure_id": "scripts.dynamic_selfcheck.run",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "all_artifacts_written",
+        "procedure_projection_written",
+        "lifecycle_projection_written"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_external_send",
+        "no_gated_procedure_execution"
+      ],
+      "side_effect_class": "local_write",
+      "system_id": "scripts:selfcheck",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_policy": "none",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 86400,
+      "implementation_basis": "explicit lifecycle reconciler defaults to dry-run; isolated apply rehearsals cover stale demotion, failure reopen, audit retention, immutable receipts, no silent promotion, and no history erasure",
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "experience.ratchet.lifecycle",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "revalidate_after_local_remediation",
+      "required": true,
+      "required_acceptance_atoms": [
+        "promotion_guarded",
+        "stale_demoted",
+        "failure_reopened",
+        "retention_applied"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_silent_promotion",
+        "no_history_erasure"
+      ],
+      "side_effect_class": "local_write",
+      "system_id": "experience-ratchet",
+      "validation_policy": "fresh_live_e2e_receipt"
+    },
+    {
+      "allowed_additional_side_effects": [],
+      "authority_grant_root": "~/.hermes/workflows/projects/hermes-agent-os-control-plane/authority-grants",
+      "authority_issuer": "human_authority",
+      "authority_policy": "exact_grant_required",
+      "failure_expectation": "fail_closed_and_surface_finding",
+      "freshness_seconds": 86400,
+      "implementation_state": "enabled",
+      "min_independent_successes": 2,
+      "procedure_id": "providers.multimodel.quorum",
+      "propagation_targets": [
+        "procedure_registry",
+        "coverage_registry",
+        "agent_os_projection",
+        "lifecycle",
+        "repair_packet",
+        "workflow_loop_evaluator"
+      ],
+      "recovery_expectation": "wait_for_exact_grant_then_revalidate",
+      "required": true,
+      "required_acceptance_atoms": [
+        "minimum_quorum_met",
+        "consensus_artifact_written",
+        "model_failures_recorded"
+      ],
+      "required_evidence_kinds": [
+        "evidence_refs",
+        "acceptance_atoms",
+        "negative_assertions",
+        "cleanup_readback"
+      ],
+      "required_negative_assertions": [
+        "no_fake_quorum",
+        "no_single_model_certification"
+      ],
+      "side_effect_class": "model_call",
+      "system_id": "model-providers",
+      "validation_policy": "fresh_live_e2e_receipt"
+    }
+  ],
   "registry_scope": "Hermes dynamic selfcheck and Agent OS control-plane runtime surfaces",
+  "schema": "hermes_procedure_definitions_v1",
   "scope_boundary": "Project-specific business workflows require their own linked procedure registries; profile artifacts are not treated as running procedures.",
   "system_exemptions": {
     "profile:career-ops": "project profile artifact only; runtime procedures belong to its project registry",
+    "profile:hermes": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-capability-model-router": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-context-engineering-os": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-control-console": "project profile artifact only; runtime procedures belong to its project registry",
@@ -12,7 +479,6 @@
     "profile:hermes-persona-wake-stage": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-self-extension-os": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:hermes-skill-learning": "project profile artifact only; runtime procedures belong to its project registry",
-    "profile:hermes": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:mobile-offline-avatar-travel": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:openwiki-evaluation": "project profile artifact only; runtime procedures belong to its project registry",
     "profile:project-portfolio-os": "project profile artifact only; runtime procedures belong to its project registry",
@@ -22,174 +488,65 @@
     "profile:uvisa-app-2.0": "project profile artifact only; runtime procedures belong to its project registry"
   },
   "system_inventory_attestations": {
-    "hermes-core": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 2592000, "basis": "dynamic_selfcheck_coverage.py entrypoint and readback audit"},
-    "cron": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "cron jobs.json plus output/status readback surface audit"},
-    "delivery:local": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "local-only delivery path and repair packet boundary audit"},
-    "delivery:origin": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "origin delivery declaration and authority boundary audit"},
-    "delivery:telegram": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "Telegram delivery declaration and authority boundary audit"},
-    "profile:hermes-agent-os-control-plane": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "workflow_kernel_loop_v2 and workflow_loop_evaluator contract audit"},
-    "profile:lark": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "lark_task_flow OAuth, auth health, and readonly task entrypoint audit"},
-    "scripts:selfcheck": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "dynamic selfcheck run and artifact readback audit"},
-    "experience-ratchet": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 604800, "basis": "experience ratchet watchdog and lifecycle projection audit"},
-    "model-providers": {"scope_complete": true, "reviewed_at": "2026-07-10T10:00:00Z", "freshness_seconds": 86400, "basis": "consult_models planner/quorum/runtime-evidence audit"}
-  },
-  "procedures": [
-    {
-      "procedure_id": "hermes.core.selfcheck.readback",
-      "system_id": "hermes-core",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "none",
-      "side_effect_class": "local_write",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 14400,
-      "min_independent_successes": 1,
-      "required_acceptance_atoms": ["profile_discovered", "coverage_registry_written", "last_run_readback"],
-      "required_negative_assertions": ["no_external_send", "no_external_procedure_execution"]
-    },
-    {
-      "procedure_id": "cron.scheduler.status_readback",
-      "system_id": "cron",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "none",
-      "side_effect_class": "local_read",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 86400,
-      "min_independent_successes": 1,
-      "required_acceptance_atoms": ["jobs_loaded", "status_read", "output_refs_resolved"],
-      "required_negative_assertions": ["no_job_run", "no_schedule_write"]
-    },
-    {
-      "procedure_id": "delivery.local.output",
-      "system_id": "delivery:local",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "none",
-      "side_effect_class": "local_write",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 86400,
-      "min_independent_successes": 1,
-      "required_acceptance_atoms": ["payload_written", "receipt_readback"],
-      "required_negative_assertions": ["no_external_send"]
-    },
-    {
-      "procedure_id": "delivery.origin.send",
-      "system_id": "delivery:origin",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "exact_grant_required",
-      "side_effect_class": "external_send",
-      "allowed_additional_side_effects": [],
+    "cron": {
+      "basis": "cron jobs.json plus output/status readback surface audit",
       "freshness_seconds": 604800,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["exact_target_bound", "send_receipt", "post_send_readback"],
-      "required_negative_assertions": ["no_broad_fanout", "no_payload_drift"]
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "delivery.telegram.send",
-      "system_id": "delivery:telegram",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "exact_grant_required",
-      "side_effect_class": "external_send",
-      "allowed_additional_side_effects": [],
+    "delivery:local": {
+      "basis": "local-only delivery path and repair packet boundary audit",
       "freshness_seconds": 604800,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["exact_chat_bound", "message_receipt", "post_send_readback"],
-      "required_negative_assertions": ["no_broad_fanout", "no_secret_exposure"]
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "agent_os.workflow_loop.v2",
-      "system_id": "profile:hermes-agent-os-control-plane",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "none",
-      "side_effect_class": "local_write",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 86400,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["receipt_written", "deterministic_evaluator_passed", "state_readback"],
-      "required_negative_assertions": ["no_external_dispatch", "no_certification_overclaim"]
+    "delivery:origin": {
+      "basis": "origin delivery declaration and authority boundary audit",
+      "freshness_seconds": 604800,
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "lark.auth.health_monitor",
-      "system_id": "profile:lark",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "none",
-      "side_effect_class": "local_read",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 14400,
-      "min_independent_successes": 1,
-      "required_acceptance_atoms": ["token_status_read", "lock_state_read", "callback_port_state_read", "status_only_guard_confirmed"],
-      "required_negative_assertions": ["no_oauth_listener_spawned", "no_browser_open", "no_task_read", "no_lark_write"]
+    "delivery:telegram": {
+      "basis": "Telegram delivery declaration and authority boundary audit",
+      "freshness_seconds": 604800,
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "lark.oauth.recovery",
-      "system_id": "profile:lark",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "exact_grant_required",
-      "side_effect_class": "browser_auth",
-      "allowed_additional_side_effects": ["local_write"],
+    "experience-ratchet": {
+      "basis": "experience ratchet watchdog and lifecycle projection audit",
+      "freshness_seconds": 604800,
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
+    },
+    "hermes-core": {
+      "basis": "dynamic_selfcheck_coverage.py entrypoint and readback audit",
       "freshness_seconds": 2592000,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["singleflight_lock", "callback_received", "token_persisted", "token_readback", "lock_released", "callback_port_released"],
-      "required_negative_assertions": ["no_duplicate_browser", "no_secret_exposure", "no_lark_write"]
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "lark.task.readonly",
-      "system_id": "profile:lark",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "exact_grant_required",
-      "side_effect_class": "external_read",
-      "allowed_additional_side_effects": [],
+    "model-providers": {
+      "basis": "consult_models planner/quorum/runtime-evidence audit",
+      "freshness_seconds": 86400,
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
+    },
+    "profile:hermes-agent-os-control-plane": {
+      "basis": "workflow_kernel_loop_v2 and workflow_loop_evaluator contract audit",
       "freshness_seconds": 604800,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["identity_read", "task_list_read", "pagination_readback", "detail_read"],
-      "required_negative_assertions": ["no_lark_write", "no_secret_exposure"]
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "scripts.dynamic_selfcheck.run",
-      "system_id": "scripts:selfcheck",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "none",
-      "side_effect_class": "local_write",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 14400,
-      "min_independent_successes": 1,
-      "required_acceptance_atoms": ["all_artifacts_written", "procedure_projection_written", "lifecycle_projection_written"],
-      "required_negative_assertions": ["no_external_send", "no_gated_procedure_execution"]
+    "profile:lark": {
+      "basis": "lark_task_flow OAuth, auth health, and readonly task entrypoint audit",
+      "freshness_seconds": 604800,
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     },
-    {
-      "procedure_id": "experience.ratchet.lifecycle",
-      "system_id": "experience-ratchet",
-      "required": true,
-      "implementation_state": "enabled",
-      "implementation_basis": "explicit lifecycle reconciler defaults to dry-run; isolated apply rehearsals cover stale demotion, failure reopen, audit retention, immutable receipts, no silent promotion, and no history erasure",
-      "authority_policy": "none",
-      "side_effect_class": "local_write",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 86400,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["promotion_guarded", "stale_demoted", "failure_reopened", "retention_applied"],
-      "required_negative_assertions": ["no_silent_promotion", "no_history_erasure"]
-    },
-    {
-      "procedure_id": "providers.multimodel.quorum",
-      "system_id": "model-providers",
-      "required": true,
-      "implementation_state": "enabled",
-      "authority_policy": "exact_grant_required",
-      "side_effect_class": "model_call",
-      "allowed_additional_side_effects": [],
-      "freshness_seconds": 86400,
-      "min_independent_successes": 2,
-      "required_acceptance_atoms": ["minimum_quorum_met", "consensus_artifact_written", "model_failures_recorded"],
-      "required_negative_assertions": ["no_fake_quorum", "no_single_model_certification"]
+    "scripts:selfcheck": {
+      "basis": "dynamic selfcheck run and artifact readback audit",
+      "freshness_seconds": 604800,
+      "reviewed_at": "2026-07-10T10:00:00Z",
+      "scope_complete": true
     }
-  ]
+  }
 }

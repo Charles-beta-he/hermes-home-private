@@ -28,7 +28,7 @@ class WorkflowKernelLoopTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             result = self.mod.run_loop_once(
                 seed="以后给我外链就自动做事实、商业、风险分析，并保留证据和美化输出",
-                root=Path(td),
+                root=Path(td).resolve(),
                 observed_repetition=3,
             )
             self.assertEqual(result["status"], "ok")
@@ -63,7 +63,7 @@ class WorkflowKernelLoopTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             result = self.mod.run_loop_once(
                 seed="创建工作流：今天把这三个文件整理一下",
-                root=Path(td),
+                root=Path(td).resolve(),
                 task_scope="one_off",
             )
             self.assertEqual(result["decision"], "session_plan")
@@ -75,7 +75,7 @@ class WorkflowKernelLoopTests(unittest.TestCase):
 
     def test_repeated_successful_loop_runs_emit_synthesis_candidate(self):
         with tempfile.TemporaryDirectory() as td:
-            root = Path(td)
+            root = Path(td).resolve()
             for i in range(3):
                 self.mod.run_loop_once(
                     seed="以后给我外链就自动做事实、商业、风险分析，并保留证据和美化输出",

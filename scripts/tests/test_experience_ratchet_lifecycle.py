@@ -82,6 +82,10 @@ def test_apply_demotes_stale_reopens_failures_and_applies_audit_retention(tmp_pa
     retained = json.loads(retained_path.read_text(encoding="utf-8"))
     assert stale["status"] == "validated"
     assert failed["status"] == "deprecated"
+    assert stale["promotion"]["state"] == "none"
+    assert stale["promotion"]["previous_state"] == "candidate"
+    assert failed["promotion"]["state"] == "none"
+    assert failed["promotion"]["previous_state"] == "promoted"
     assert failed["lifecycle"]["review_state"] == "reopened_after_failure"
     assert retained["retention"]["state"] == "retained_for_audit"
     assert retained["retention"]["deletion_permitted"] is False
@@ -114,3 +118,35 @@ def test_second_apply_is_idempotent_for_retention_and_does_not_promote(tmp_path)
     assert second["summary"]["retention_applied"] == 0
     assert second["summary"]["promotion_actions"] == 0
     assert second["summary"]["history_erased"] == 0
+
+
+def test_malformed_failure_counters_fail_closed_without_mutation(tmp_path):
+    mod = load_module()
+    now = datetime(2026, 7, 10, tzinfo=timezone.utc)
+
+    for index, malformed in enumerate(("not-an-int", True, -1, [], {})):
+        payload = atom(f"malformed-{index}", "promoted", iso(now - timedelta(days=1)))
+        payload["metrics"]["failure_count"] = malformed
+        path = write_atom(tmp_path, payload)
+        original = path.read_bytes()
+
+        actions = mod.plan_actions(
+            payload,
+            now=now,
+            stale_days=14,
+            failure_threshold=1,
+            retention_days=30,
+        )
+        assert actions == [{
+            "action": "invalid_atom",
+            "from": "promoted",
+            "to": "promoted",
+            "reason": "failure_count must be a nonnegative non-boolean integer",
+        }]
+
+        result = mod.reconcile_store(tmp_path, now=now, apply=True)
+        decision = next(item for item in result["decisions"] if item["atom_id"] == payload["atom_id"])
+        assert result["ok"] is False
+        assert decision["actions"] == actions
+        assert path.read_bytes() == original
+        assert result["side_effects_observed"] == ["local_read"]
