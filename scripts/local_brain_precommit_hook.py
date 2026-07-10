@@ -54,6 +54,10 @@ def is_procedure_governance_change(files: Sequence[str]) -> bool:
     """Match the bounded Agent OS procedure-validation control-plane slice."""
     exact = {
         "scripts/dynamic_selfcheck_coverage.py",
+        "scripts/lark_oauth_guard.py",
+        "scripts/lark_task_flow.py",
+        "scripts/test_lark_oauth_guard.py",
+        "scripts/test_lark_task_flow.py",
         "scripts/experience_ratchet_lifecycle.py",
         "scripts/procedure_rehearsals.py",
         "scripts/workflow_kernel_loop_v2.py",
@@ -158,6 +162,8 @@ def relevant_tests(files: Sequence[str]) -> list[Path]:
     if is_procedure_governance_change(files):
         wanted.extend([
             SCRIPTS_DIR / "tests" / "test_dynamic_selfcheck_coverage.py",
+            SCRIPTS_DIR / "test_lark_oauth_guard.py",
+            SCRIPTS_DIR / "test_lark_task_flow.py",
             SCRIPTS_DIR / "tests" / "test_experience_ratchet_lifecycle.py",
             SCRIPTS_DIR / "tests" / "test_procedure_rehearsals.py",
             SCRIPTS_DIR / "test_workflow_kernel_loop.py",

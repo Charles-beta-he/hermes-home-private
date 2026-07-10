@@ -53,7 +53,11 @@ def extract_guid(value: str | None) -> str:
 
 
 def run_guard(args: argparse.Namespace) -> dict[str, Any]:
-    cmd = [sys.executable, str(GUARD), "--json", "--cleanup-stale", "--timeout", str(args.auth_timeout)]
+    cmd = [sys.executable, str(GUARD), "--json", "--timeout", str(args.auth_timeout)]
+    if getattr(args, "health_check", False):
+        cmd.append("--status-only")
+    else:
+        cmd.append("--cleanup-stale")
     if args.force_refresh:
         cmd.append("--force-refresh")
     if args.no_open:

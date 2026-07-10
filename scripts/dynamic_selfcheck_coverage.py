@@ -686,11 +686,18 @@ def build_lark_health_snapshot(home: Path | None = None, runner: Any | None = No
     ok = result.get("exit_code") == 0 and payload.get("ok") is True and payload.get("stage") == "auth"
     auth_payload = payload.get("auth")
     auth: dict[str, Any] = auth_payload if isinstance(auth_payload, dict) else {}
+    status_only = auth.get("status_only") is True
+    lock_state_read = isinstance(auth.get("lock_active"), bool)
+    callback_port_state_read = isinstance(auth.get("port_busy"), bool)
+    monitor_executed = payload.get("stage") == "auth" and status_only and lock_state_read and callback_port_state_read
     return {
         "schema": "hermes_lark_health_snapshot_v1",
         "generated_at": utc_now(),
         "status": "ready" if ok else "degraded",
         "side_effects": "local_read",
+        "status_only": status_only,
+        "monitor_executed": monitor_executed,
+        "may_start_oauth_listener": False if status_only else None,
         "may_open_browser": False,
         "may_read_tasks": False,
         "may_write_lark": False,
@@ -1194,12 +1201,11 @@ def emit_selfcheck_procedure_receipts(result: dict[str, Any], output_dir: Path, 
     if (
         isinstance(lark_health, dict)
         and lark_health.get("schema") == "hermes_lark_health_snapshot_v1"
-        and lark_health.get("status") == "ready"
         and lark_health.get("side_effects") == "local_read"
-        and lark_health.get("token_status_valid") is True
-        and lark_health.get("lock_active") is False
-        and lark_health.get("callback_port_busy") is False
+        and lark_health.get("status_only") is True
+        and lark_health.get("monitor_executed") is True
         and lark_health.get("cleanup_stale_enabled") is False
+        and lark_health.get("may_start_oauth_listener") is False
         and lark_health.get("may_open_browser") is False
         and lark_health.get("may_read_tasks") is False
         and lark_health.get("may_write_lark") is False
@@ -1211,8 +1217,10 @@ def emit_selfcheck_procedure_receipts(result: dict[str, Any], output_dir: Path, 
                 "token_status_read": True,
                 "lock_state_read": True,
                 "callback_port_state_read": True,
+                "status_only_guard_confirmed": True,
             },
             "negative_assertions": {
+                "no_oauth_listener_spawned": True,
                 "no_browser_open": True,
                 "no_task_read": True,
                 "no_lark_write": True,

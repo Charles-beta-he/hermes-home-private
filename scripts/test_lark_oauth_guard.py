@@ -246,6 +246,22 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertEqual(result["action"], "token_valid")
         run_login.assert_not_called()
 
+    def test_status_only_never_spawns_login_when_token_is_invalid(self):
+        args = self.mod.build_parser().parse_args(["--json", "--status-only", "--no-open"])
+        snapshot = {"tokens": {}, "localTokens": {}}
+        with mock.patch.object(self.mod, "auth_snapshot", return_value=snapshot), \
+             mock.patch.object(self.mod, "port_busy", return_value=False), \
+             mock.patch.object(self.mod.SingleFlightLock, "is_active", return_value=False), \
+             mock.patch.object(self.mod.SingleFlightLock, "acquire") as acquire, \
+             mock.patch.object(self.mod, "run_login") as run_login:
+            result = self.mod.ensure_login(args)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["action"], "auth_required")
+        self.assertEqual(result["planned_action"], "start_login")
+        self.assertTrue(result["status_only"])
+        acquire.assert_not_called()
+        run_login.assert_not_called()
+
     def test_ensure_login_force_refresh_does_not_skip_valid_token(self):
         args = self.mod.build_parser().parse_args(["--json", "--no-open", "--force-refresh"])
         snapshot = {

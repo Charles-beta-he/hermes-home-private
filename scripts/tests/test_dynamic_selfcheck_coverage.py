@@ -130,6 +130,7 @@ def test_lark_health_snapshot_is_status_only_and_redacted(tmp_path):
             "output": json.dumps({"ok": True, "stage": "auth", "auth": {
                 "ok": True,
                 "action": "token_valid",
+                "status_only": True,
                 "token_status": {"valid": True, "token_key": "must-not-project"},
                 "lock_active": False,
                 "port": 8765,
@@ -149,6 +150,9 @@ def test_lark_health_snapshot_is_status_only_and_redacted(tmp_path):
     assert snapshot["callback_port"] == 8765
     assert snapshot["callback_port_busy"] is False
     assert snapshot["cleanup_stale_enabled"] is False
+    assert snapshot["status_only"] is True
+    assert snapshot["monitor_executed"] is True
+    assert snapshot["may_start_oauth_listener"] is False
     assert "token" not in snapshot
     assert "must-not-project" not in json.dumps(snapshot)
 
@@ -478,12 +482,15 @@ def test_emit_lark_health_receipt_only_from_explicit_status_only_readback(tmp_pa
     lark_path = out / "lark_health_snapshot.json"
     lark_path.write_text(json.dumps({
         "schema": "hermes_lark_health_snapshot_v1",
-        "status": "ready",
+        "status": "degraded",
         "side_effects": "local_read",
-        "token_status_valid": True,
+        "status_only": True,
+        "monitor_executed": True,
+        "token_status_valid": False,
         "lock_active": False,
         "callback_port_busy": False,
         "cleanup_stale_enabled": False,
+        "may_start_oauth_listener": False,
         "may_open_browser": False,
         "may_read_tasks": False,
         "may_write_lark": False,
@@ -496,7 +503,12 @@ def test_emit_lark_health_receipt_only_from_explicit_status_only_readback(tmp_pa
     payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in emitted]
     lark = next(item for item in payloads if item["procedure_id"] == "lark.auth.health_monitor")
     assert lark["side_effects_observed"] == ["local_read"]
-    assert lark["negative_assertions"] == {"no_browser_open": True, "no_task_read": True, "no_lark_write": True}
+    assert lark["negative_assertions"] == {
+        "no_oauth_listener_spawned": True,
+        "no_browser_open": True,
+        "no_task_read": True,
+        "no_lark_write": True,
+    }
 
 
 def test_emit_cron_status_receipt_requires_readback_without_job_execution(tmp_path):

@@ -475,7 +475,13 @@ def ensure_login(args: argparse.Namespace) -> dict[str, Any]:
         "port": args.port,
         "port_busy": busy,
         "lock_active": active,
+        "status_only": args.status_only,
     }
+    if args.status_only:
+        result["planned_action"] = plan.action
+        if plan.should_spawn:
+            result["action"] = "auth_required"
+        return result
     if not plan.should_spawn:
         return result
     if args.auto_authorize and args.no_open:
@@ -531,6 +537,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--lock-stale-seconds", type=int, default=180)
     parser.add_argument("--cleanup-stale", action="store_true", help="terminate stale lark-mcp login on the chosen port before spawning")
     parser.add_argument("--force-refresh", action="store_true", help="run OAuth login even when the current token is still valid; useful for explicit token refresh tests")
+    parser.add_argument("--status-only", action="store_true", help="read token, lock, and callback-port state without starting or cleaning up OAuth login")
     parser.add_argument("--no-open", action="store_true", help="do not open browser when auth URL appears")
     parser.add_argument("--auto-authorize", action="store_true", default=os.environ.get("LARK_AUTO_AUTHORIZE", "").lower() in {"1", "true", "yes", "on"}, help="after opening the Lark OAuth URL, click the visible 授权 button on macOS")
     parser.add_argument("--auto-authorize-timeout", type=int, default=int(os.environ.get("LARK_AUTO_AUTHORIZE_TIMEOUT", "25")))

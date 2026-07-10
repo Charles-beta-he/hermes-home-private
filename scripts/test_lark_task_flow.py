@@ -73,6 +73,23 @@ class LarkTaskFlowTest(unittest.TestCase):
         self.assertIn('"stage": "auth"', out.getvalue())
         self.assertEqual(fake.calls, [])
 
+    def test_health_check_guard_command_never_enables_stale_cleanup(self):
+        args = self.mod.build_parser().parse_args(["--health-check"])
+        args.auth_only = True
+        args.no_open = True
+        args.auto_authorize = False
+        args.force_refresh = False
+        args.auth_timeout = 5
+        completed = mock.Mock(returncode=0, stdout='{"ok": true, "action": "token_valid"}', stderr="")
+        with mock.patch.object(self.mod.subprocess, "run", return_value=completed) as run:
+            result = self.mod.run_guard(args)
+        cmd = run.call_args.args[0]
+        self.assertTrue(result["ok"])
+        self.assertNotIn("--cleanup-stale", cmd)
+        self.assertIn("--status-only", cmd)
+        self.assertIn("--no-open", cmd)
+        self.assertNotIn("--auto-authorize", cmd)
+
     def test_health_check_is_status_only_and_never_opens_browser_or_reads_tasks(self):
         fake = FakeReader()
         observed = {}

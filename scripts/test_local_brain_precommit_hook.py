@@ -104,6 +104,8 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
     def test_procedure_governance_files_collect_exact_tests_and_t3_evidence(self):
         files = [
             "scripts/dynamic_selfcheck_coverage.py",
+            "scripts/lark_oauth_guard.py",
+            "scripts/lark_task_flow.py",
             "scripts/experience_ratchet_lifecycle.py",
             "scripts/procedure_rehearsals.py",
             "scripts/workflow_kernel_loop_v2.py",
@@ -117,6 +119,8 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
             tests,
             {
                 "test_dynamic_selfcheck_coverage.py",
+                "test_lark_oauth_guard.py",
+                "test_lark_task_flow.py",
                 "test_experience_ratchet_lifecycle.py",
                 "test_procedure_rehearsals.py",
                 "test_workflow_kernel_loop.py",

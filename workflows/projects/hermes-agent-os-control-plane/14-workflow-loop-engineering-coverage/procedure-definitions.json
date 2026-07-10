@@ -122,8 +122,8 @@
       "allowed_additional_side_effects": [],
       "freshness_seconds": 14400,
       "min_independent_successes": 1,
-      "required_acceptance_atoms": ["token_status_read", "lock_state_read", "callback_port_state_read"],
-      "required_negative_assertions": ["no_browser_open", "no_task_read", "no_lark_write"]
+      "required_acceptance_atoms": ["token_status_read", "lock_state_read", "callback_port_state_read", "status_only_guard_confirmed"],
+      "required_negative_assertions": ["no_oauth_listener_spawned", "no_browser_open", "no_task_read", "no_lark_write"]
     },
     {
       "procedure_id": "lark.oauth.recovery",
