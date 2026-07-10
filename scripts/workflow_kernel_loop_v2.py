@@ -178,9 +178,19 @@ def run_loop_once(seed: str, root: Path, observed_repetition: int = 0, task_scop
         "module_plan_ref": str(plan_path), "usage_ledger": str(paths["ledger"]), "stages": stages,
         "control_moves": controls, "system_parts": parts, "engineering_coverage": coverage, "budgets": dict(BUDGETS),
         "kill_switch": KILL_SWITCH, "side_effects": dict(SIDE_EFFECTS), "created_at": utc_now(),
+        "claims": {"global_certification": False, "canonical_ratchet_promotion": False},
     }
+    procedure_registry_path = Path.home() / ".hermes" / "state" / "selfcheck" / "procedure_validation_registry.json"
+    procedure_registry = None
+    if procedure_registry_path.exists():
+        try:
+            procedure_registry = json.loads(procedure_registry_path.read_text(encoding="utf-8"))
+            receipt["procedure_validation_ref"] = str(procedure_registry_path)
+        except (OSError, json.JSONDecodeError):
+            receipt["procedure_validation_ref"] = str(procedure_registry_path)
+            receipt["procedure_validation_read_error"] = True
     _write(receipt_path, receipt)
-    evaluation = evaluator.evaluate_receipt(receipt)
+    evaluation = evaluator.evaluate_receipt(receipt, procedure_registry=procedure_registry)
     _write(run_dir / "evaluation.json", evaluation)
     receipt["evaluation"] = evaluation
     receipt["status"] = "ok" if evaluation["status"] == "PASS" else "blocked_by_evaluator"

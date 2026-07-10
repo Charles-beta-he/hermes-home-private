@@ -20,6 +20,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+import workflow_validation_registry as workflow_validation
+
 SCHEMA = "hermes_dynamic_selfcheck_coverage_v1"
 PLAN_SCHEMA = "hermes_dynamic_selfcheck_plan_v1"
 PROPOSAL_SCHEMA = "hermes_dynamic_selfcheck_proposals_v1"
@@ -332,12 +334,88 @@ def risk_for(system: dict[str, Any], missing: list[str]) -> str:
     return "low"
 
 
-def build_coverage_registry(profile: dict[str, Any], snapshots: dict[str, Any] | None = None) -> dict[str, Any]:
+def procedure_state_for_system(system_id: str, procedure_registry: dict[str, Any] | None) -> dict[str, Any]:
+    registry = procedure_registry or {}
+    procedures = [
+        item for item in registry.get("procedures", [])
+        if isinstance(item, dict) and item.get("system_id") == system_id
+    ]
+    inventory = registry.get("inventory") if isinstance(registry.get("inventory"), dict) else {}
+    unmapped = set(inventory.get("unmapped_system_ids") or [])
+    unattested = set(inventory.get("unattested_system_ids") or [])
+    exemptions = inventory.get("system_exemptions") if isinstance(inventory.get("system_exemptions"), dict) else {}
+    findings = [
+        f"{item.get('procedure_id')}:{finding}"
+        for item in procedures
+        for finding in item.get("findings", [])
+    ]
+    if system_id in unmapped or system_id in unattested:
+        findings.append(f"{system_id}:procedure_inventory_gap")
+        state = "inventory_gap"
+    elif not procedures and system_id in exemptions:
+        state = "not_applicable"
+    elif not procedures:
+        state = "not_observed"
+    elif all((not item.get("required")) or item.get("delivery_state") == "fully_connected" for item in procedures):
+        state = "fully_connected"
+    elif any(item.get("validation_state") == "e2e_failed" for item in procedures):
+        state = "failed"
+    elif any(item.get("validation_state") == "stale" for item in procedures):
+        state = "stale"
+    elif any(item.get("validation_state") == "blocked_by_authority" for item in procedures):
+        state = "blocked"
+    else:
+        state = "pending"
+    return {
+        "state": state,
+        "procedures": [str(item.get("procedure_id")) for item in procedures],
+        "findings": sorted(set(findings)),
+        "evidence_refs": sorted({ref for item in procedures for ref in item.get("evidence_refs", [])}),
+    }
+
+
+def build_procedure_validation_registry(
+    home: Path,
+    profile: dict[str, Any],
+    output_dir: Path,
+) -> dict[str, Any]:
+    root = hermes_root(home)
+    definitions_path = root / "workflows" / "projects" / "hermes-agent-os-control-plane" / "14-workflow-loop-engineering-coverage" / "procedure-definitions.json"
+    definitions = read_json(definitions_path, {})
+    if not isinstance(definitions, dict) or definitions.get("schema") != workflow_validation.DEFINITIONS_SCHEMA:
+        definitions = {"procedures": [], "system_exemptions": {}}
+    receipts_dir = output_dir / "procedure-receipts"
+    previous = read_json(output_dir / "procedure_validation_registry.json", {})
+    enabled_systems = [
+        str(item.get("system_id"))
+        for item in profile.get("systems", [])
+        if isinstance(item, dict) and item.get("enabled", True) and item.get("system_id")
+    ]
+    registry = workflow_validation.evaluate_registry(
+        declarations=definitions.get("procedures", []),
+        receipts=workflow_validation.load_receipts(receipts_dir),
+        enabled_system_ids=enabled_systems,
+        system_exemptions=definitions.get("system_exemptions", {}),
+        system_inventory_attestations=definitions.get("system_inventory_attestations", {}),
+        previous_registry=previous if isinstance(previous, dict) else None,
+    )
+    registry["definitions_path"] = str(definitions_path)
+    registry["receipts_dir"] = str(receipts_dir)
+    registry["definitions_loaded"] = definitions_path.exists() and bool(definitions.get("procedures") or definitions.get("system_exemptions"))
+    return registry
+
+
+def build_coverage_registry(
+    profile: dict[str, Any],
+    snapshots: dict[str, Any] | None = None,
+    procedure_registry: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     systems = []
     for system in profile.get("systems", []):
         current = current_checks_for(system)
         missing = missing_checks_for(system)
         operational_findings = operational_findings_for(system, snapshots)
+        procedure_projection = procedure_state_for_system(str(system["system_id"]), procedure_registry)
         coverage_state = "gap" if missing else "covered"
         systems.append({
             "system_id": system["system_id"],
@@ -351,6 +429,10 @@ def build_coverage_registry(profile: dict[str, Any], snapshots: dict[str, Any] |
             "missing_checks": missing,
             "operational_state": "warning" if operational_findings else "healthy_or_not_observed_degraded",
             "operational_findings": operational_findings,
+            "procedure_validation_state": procedure_projection["state"],
+            "procedure_ids": procedure_projection["procedures"],
+            "procedure_findings": procedure_projection["findings"],
+            "procedure_evidence_refs": procedure_projection["evidence_refs"],
             "stale_checks": [],
             "evidence_refs": system.get("detected_from", []),
             "last_observed_at": profile.get("generated_at"),
@@ -370,6 +452,10 @@ def build_coverage_registry(profile: dict[str, Any], snapshots: dict[str, Any] |
             "engineering_gap_systems": sum(1 for s in systems if s["coverage_state"] == "gap"),
             "operational_gap_systems": sum(1 for s in systems if s["operational_findings"]),
             "operational_findings": sum(len(s["operational_findings"]) for s in systems),
+            "procedure_validation_attention": sum(len(s["procedure_findings"]) for s in systems),
+            "procedure_fully_connected_systems": sum(1 for s in systems if s["procedure_validation_state"] == "fully_connected"),
+            "procedure_inventory_gap_systems": sum(1 for s in systems if s["procedure_validation_state"] == "inventory_gap"),
+            "can_claim_complete_procedure_validation": bool((procedure_registry or {}).get("summary", {}).get("can_claim_complete_procedure_validation", False)),
             "missing_checks": sum(len(s["missing_checks"]) for s in systems),
             "high_risk_systems": sum(1 for s in systems if s["risk_level"] == "high"),
             "score_semantics": "classification coverage is separate from operational health",
@@ -612,6 +698,11 @@ def build_lark_health_snapshot(home: Path | None = None, runner: Any | None = No
         "exit_code": result.get("exit_code"),
         "stage": payload.get("stage"),
         "auth_action": auth.get("action"),
+        "token_status_valid": bool((auth.get("token_status") or {}).get("valid")) if isinstance(auth.get("token_status"), dict) else False,
+        "lock_active": auth.get("lock_active") if isinstance(auth.get("lock_active"), bool) else None,
+        "callback_port": auth.get("port") if isinstance(auth.get("port"), int) else None,
+        "callback_port_busy": auth.get("port_busy") if isinstance(auth.get("port_busy"), bool) else None,
+        "cleanup_stale_enabled": False,
         "summary": {"ok": ok, "configured": True},
     }
 
@@ -715,7 +806,11 @@ def build_provider_health_snapshot(
     }
 
 
-def generate_repair_packets(registry: dict[str, Any], cron_clusters: dict[str, Any]) -> dict[str, Any]:
+def generate_repair_packets(
+    registry: dict[str, Any],
+    cron_clusters: dict[str, Any],
+    procedure_registry: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     packets: list[dict[str, Any]] = []
     cluster_ids = {c.get("cluster_id") for c in cron_clusters.get("clusters", [])}
     if "delivery_proxy" in cluster_ids:
@@ -743,6 +838,35 @@ def generate_repair_packets(registry: dict[str, Any], cron_clusters: dict[str, A
             "requires_authority_for": ["credential_entry", "provider_config_change", "model_certification_claim"],
             "next_local_actions": ["run provider health snapshot", "route deterministic checks around model quorum", "only re-enable certification after quorum evidence"],
             "evidence_refs": [c for c in cron_clusters.get("clusters", []) if c.get("cluster_id") == "model_provider_or_quota"],
+        })
+    procedure_attention = [
+        item for item in (procedure_registry or {}).get("procedures", [])
+        if isinstance(item, dict) and item.get("required") and item.get("delivery_state") != "fully_connected"
+    ]
+    inventory = (procedure_registry or {}).get("inventory") if isinstance((procedure_registry or {}).get("inventory"), dict) else {}
+    if procedure_attention or inventory.get("unmapped_system_ids") or inventory.get("unattested_system_ids") or inventory.get("unknown_receipt_procedure_ids"):
+        authority_classes = sorted({
+            str(item.get("side_effect_class"))
+            for item in procedure_attention
+            if item.get("side_effect_class") not in {None, "", "none", "local_read", "local_write"}
+        })
+        packets.append({
+            "packet_id": "repair.procedure_validation",
+            "deliver": "local",
+            "may_send_external": False,
+            "may_execute_procedures": False,
+            "side_effects": "local_read",
+            "reason": "Required procedure E2E validation is pending, stale, failed, authority-blocked, or incompletely inventoried.",
+            "requires_authority_for": authority_classes,
+            "next_local_actions": [
+                "repair invalid declaration or receipt evidence locally",
+                "refresh safe local/read-only procedure receipts",
+                "prepare exact authority packet for gated procedures without executing them",
+            ],
+            "procedure_ids": [str(item.get("procedure_id")) for item in procedure_attention],
+            "inventory_gap_system_ids": sorted(set(inventory.get("unmapped_system_ids") or []) | set(inventory.get("unattested_system_ids") or [])),
+            "unknown_receipt_procedure_ids": list(inventory.get("unknown_receipt_procedure_ids") or []),
+            "evidence_refs": sorted({ref for item in procedure_attention for ref in item.get("evidence_refs", [])}),
         })
     return {
         "schema": "hermes_local_repair_packets_v1",
@@ -786,6 +910,22 @@ def active_lifecycle_items_from_registry(registry: dict[str, Any]) -> dict[str, 
                 "risk_level": risk,
                 "kind": system.get("kind"),
                 "evidence_refs": system.get("evidence_refs", []),
+            }
+        for procedure_finding in system.get("procedure_findings", []):
+            procedure_id, separator, finding_id = str(procedure_finding).partition(":")
+            if not separator:
+                procedure_id, finding_id = "inventory", procedure_id
+            key = f"{system_id}::procedure::{procedure_id}::{finding_id}"
+            risk = "high" if finding_id == "procedure_e2e_failed" else "medium"
+            active[key] = {
+                "key": key,
+                "system_id": system_id,
+                "check_id": finding_id,
+                "procedure_id": procedure_id,
+                "issue_type": "procedure_validation",
+                "risk_level": risk,
+                "kind": system.get("kind"),
+                "evidence_refs": system.get("procedure_evidence_refs", []),
             }
     return active
 
@@ -912,15 +1052,295 @@ def default_events_from_git(home: Path) -> list[dict[str, Any]]:
     return [{"kind": "changed_file", "path": line.strip()} for line in out.splitlines() if line.strip()]
 
 
+def adapt_local_workflow_loop_receipts(root: Path, output_dir: Path) -> list[str]:
+    """Project verified local Workflow Loop runs into standard procedure receipts.
+
+    Only already-completed local runs with independent evaluator PASS, cleanup
+    readback, disabled side effects, and explicit non-certification claims qualify.
+    The adapter performs no workflow execution and no external action.
+    """
+    runs_dir = (
+        root
+        / "workflows"
+        / "projects"
+        / "hermes-agent-os-control-plane"
+        / "14-workflow-loop-engineering-coverage"
+        / "runtime"
+        / "runs"
+    )
+    if not runs_dir.exists():
+        return []
+    receipt_dir = output_dir / "procedure-receipts"
+    adapted: list[str] = []
+    for run_dir in sorted(path for path in runs_dir.iterdir() if path.is_dir()):
+        source_receipt_path = run_dir / "loop-receipt.json"
+        evaluation_path = run_dir / "evaluation.json"
+        cleanup_path = run_dir / "cleanup.json"
+        ratchet_path = run_dir / "ratchet.json"
+        if not all(path.exists() for path in (source_receipt_path, evaluation_path, cleanup_path, ratchet_path)):
+            continue
+        source = read_json(source_receipt_path, {})
+        evaluation = read_json(evaluation_path, {})
+        cleanup = read_json(cleanup_path, {})
+        ratchet = read_json(ratchet_path, {})
+        if not all(isinstance(item, dict) for item in (source, evaluation, cleanup, ratchet)):
+            continue
+        side_effects = source.get("side_effects") if isinstance(source.get("side_effects"), dict) else {}
+        claims = source.get("claims") if isinstance(source.get("claims"), dict) else {}
+        eligible = (
+            source.get("schema") == "hermes_workflow_kernel_loop_receipt_v2"
+            and source.get("status") == "ok"
+            and evaluation.get("status") == "PASS"
+            and evaluation.get("veto") is False
+            and evaluation.get("would_execute_anything") is False
+            and cleanup.get("status") == "PASS"
+            and not any(side_effects.values())
+            and claims.get("global_certification") is False
+            and claims.get("canonical_ratchet_promotion") is False
+            and ratchet.get("canonical_promotion") is False
+            and ratchet.get("external_mutation") is False
+        )
+        if not eligible:
+            continue
+        created_at = str(source.get("created_at") or "")
+        if workflow_validation.parse_time(created_at) is None:
+            continue
+        completed_at = datetime.fromtimestamp(evaluation_path.stat().st_mtime, timezone.utc).isoformat().replace("+00:00", "Z")
+        receipt_id = f"agent_os.workflow_loop.v2-{run_dir.name}"
+        payload = {
+            "schema": workflow_validation.RECEIPT_SCHEMA,
+            "procedure_id": "agent_os.workflow_loop.v2",
+            "receipt_id": receipt_id,
+            "started_at": created_at,
+            "completed_at": completed_at,
+            "result": "PASS",
+            "execution_mode": "live_e2e",
+            "evidence_refs": [str(source_receipt_path), str(evaluation_path), str(cleanup_path), str(ratchet_path)],
+            "acceptance_atoms": {
+                "receipt_written": True,
+                "deterministic_evaluator_passed": True,
+                "state_readback": True,
+            },
+            "negative_assertions": {
+                "no_external_dispatch": True,
+                "no_certification_overclaim": True,
+            },
+            "cleanup_readback": "PASS",
+            "authority": {"status": "not_required", "ref": "local-workflow-loop-boundary"},
+            "side_effects_observed": ["local_write"],
+            "emitter": "dynamic_selfcheck_coverage.adapt_local_workflow_loop_receipts",
+        }
+        path = receipt_dir / f"{receipt_id}.json"
+        if not path.exists():
+            write_json(path, payload)
+        adapted.append(str(path))
+    return adapted
+
+
+def emit_selfcheck_procedure_receipts(result: dict[str, Any], output_dir: Path, last_run_path: Path) -> list[str]:
+    """Emit receipts only for procedures executed by this selfcheck run.
+
+    This adapter cannot execute external/gated procedures. It emits only for
+    operations this run actually performed: selfcheck/local projection writes
+    and explicitly status-only Lark/Cron readbacks whose negative boundaries
+    are present in fresh artifacts.
+    """
+    evidence = [
+        str(result.get("profile_path") or ""),
+        str(result.get("registry_path") or ""),
+        str(result.get("procedure_validation_registry_path") or ""),
+        str(result.get("coverage_lifecycle_path") or ""),
+        str(last_run_path),
+    ]
+    agent_os_projection_path = str(result.get("agent_os_procedure_projection_path") or "").strip()
+    if agent_os_projection_path:
+        evidence.append(agent_os_projection_path)
+    if any(not path or not Path(path).exists() for path in evidence):
+        return []
+    completed_at = utc_now()
+    stamp = completed_at.replace(":", "").replace("-", "").replace(".", "")
+    receipt_dir = output_dir / "procedure-receipts"
+    definitions = {
+        "hermes.core.selfcheck.readback": {
+            "evidence_refs": evidence,
+            "side_effects_observed": ["local_write"],
+            "acceptance_atoms": {
+                "profile_discovered": True,
+                "coverage_registry_written": True,
+                "last_run_readback": True,
+            },
+            "negative_assertions": {
+                "no_external_send": True,
+                "no_external_procedure_execution": True,
+            },
+        },
+        "scripts.dynamic_selfcheck.run": {
+            "evidence_refs": evidence,
+            "side_effects_observed": ["local_write"],
+            "acceptance_atoms": {
+                "all_artifacts_written": True,
+                "procedure_projection_written": True,
+                "lifecycle_projection_written": True,
+            },
+            "negative_assertions": {
+                "no_external_send": True,
+                "no_gated_procedure_execution": True,
+            },
+        },
+    }
+    lark_health_raw = str(result.get("lark_health_path") or "").strip()
+    lark_health_path = Path(lark_health_raw) if lark_health_raw else None
+    lark_health = read_json(lark_health_path, {}) if lark_health_path is not None else {}
+    if (
+        isinstance(lark_health, dict)
+        and lark_health.get("schema") == "hermes_lark_health_snapshot_v1"
+        and lark_health.get("status") == "ready"
+        and lark_health.get("side_effects") == "local_read"
+        and lark_health.get("token_status_valid") is True
+        and lark_health.get("lock_active") is False
+        and lark_health.get("callback_port_busy") is False
+        and lark_health.get("cleanup_stale_enabled") is False
+        and lark_health.get("may_open_browser") is False
+        and lark_health.get("may_read_tasks") is False
+        and lark_health.get("may_write_lark") is False
+    ):
+        definitions["lark.auth.health_monitor"] = {
+            "evidence_refs": [str(lark_health_path)],
+            "side_effects_observed": ["local_read"],
+            "acceptance_atoms": {
+                "token_status_read": True,
+                "lock_state_read": True,
+                "callback_port_state_read": True,
+            },
+            "negative_assertions": {
+                "no_browser_open": True,
+                "no_task_read": True,
+                "no_lark_write": True,
+            },
+        }
+    cron_jobs_raw = str(result.get("cron_jobs_path") or "").strip()
+    cron_clusters_raw = str(result.get("cron_error_clusters_path") or "").strip()
+    delivery_diagnostics_raw = str(result.get("delivery_proxy_diagnostics_path") or "").strip()
+    cron_paths = [Path(value) for value in (cron_jobs_raw, cron_clusters_raw, delivery_diagnostics_raw) if value]
+    if len(cron_paths) == 3 and all(path.exists() for path in cron_paths):
+        cron_data = read_json(cron_paths[0], {})
+        cron_clusters = read_json(cron_paths[1], {})
+        delivery_diagnostics = read_json(cron_paths[2], {})
+        jobs = cron_data.get("jobs") if isinstance(cron_data, dict) else None
+        diagnosed = delivery_diagnostics.get("jobs") if isinstance(delivery_diagnostics, dict) else None
+        error_jobs = (cron_clusters.get("summary") or {}).get("error_jobs") if isinstance(cron_clusters, dict) else None
+        status_fields_readable = isinstance(jobs, list) and all(isinstance(job, dict) and job.get("id") and "last_status" in job for job in jobs)
+        output_refs_resolved = (
+            isinstance(error_jobs, int)
+            and isinstance(diagnosed, list)
+            and len(diagnosed) == error_jobs
+            and all(str(item.get("output_path") or "").strip() for item in diagnosed if isinstance(item, dict))
+        )
+        if status_fields_readable and output_refs_resolved:
+            definitions["cron.scheduler.status_readback"] = {
+                "evidence_refs": [str(path) for path in cron_paths],
+                "side_effects_observed": ["local_read"],
+                "acceptance_atoms": {
+                    "jobs_loaded": True,
+                    "status_read": True,
+                    "output_refs_resolved": True,
+                },
+                "negative_assertions": {
+                    "no_job_run": True,
+                    "no_schedule_write": True,
+                },
+            }
+    emitted: list[str] = []
+    for procedure_id, assertions in definitions.items():
+        receipt_id = f"{procedure_id}-{stamp}"
+        payload = {
+            "schema": workflow_validation.RECEIPT_SCHEMA,
+            "procedure_id": procedure_id,
+            "receipt_id": receipt_id,
+            "started_at": result.get("generated_at") or completed_at,
+            "completed_at": completed_at,
+            "result": "PASS",
+            "execution_mode": "live_e2e",
+            "evidence_refs": assertions["evidence_refs"],
+            "acceptance_atoms": assertions["acceptance_atoms"],
+            "negative_assertions": assertions["negative_assertions"],
+            "cleanup_readback": "PASS",
+            "authority": {"status": "not_required", "ref": "local-selfcheck-boundary"},
+            "side_effects_observed": assertions["side_effects_observed"],
+            "emitter": "dynamic_selfcheck_coverage.emit_selfcheck_procedure_receipts",
+        }
+        path = receipt_dir / f"{receipt_id}.json"
+        if path.exists():
+            continue
+        emitted.append(write_json(path, payload))
+    return emitted
+
+
+def build_agent_os_procedure_projection(
+    coverage_registry: dict[str, Any],
+    procedure_registry: dict[str, Any],
+    *,
+    source_registry_path: Path,
+) -> dict[str, Any]:
+    procedure_summary = procedure_registry.get("summary", {}) if isinstance(procedure_registry, dict) else {}
+    coverage_summary = coverage_registry.get("summary", {}) if isinstance(coverage_registry, dict) else {}
+    procedures = procedure_registry.get("procedures", []) if isinstance(procedure_registry, dict) else []
+    return {
+        "schema": "agent_os_procedure_validation_projection_v1",
+        "generated_at": utc_now(),
+        "source_registry_path": str(source_registry_path),
+        "mode": "read_only_projection",
+        "axes": {
+            "engineering_coverage": {
+                "systems": coverage_summary.get("systems"),
+                "missing_checks": coverage_summary.get("missing_checks"),
+                "high_risk_systems": coverage_summary.get("high_risk_systems"),
+            },
+            "operational_health": {
+                "findings": coverage_summary.get("operational_findings"),
+                "state": "degraded" if (coverage_summary.get("operational_findings") or 0) > 0 else "healthy",
+            },
+            "procedure_validation": dict(procedure_summary),
+            "certification": {
+                "certified_healthy": False,
+                "eligible": bool(procedure_summary.get("can_claim_complete_procedure_validation")) and (coverage_summary.get("operational_findings") or 0) == 0,
+                "boundary": "independent certification receipt required",
+            },
+        },
+        "procedures": [
+            {
+                "procedure_id": item.get("procedure_id"),
+                "system_id": item.get("system_id"),
+                "required": item.get("required"),
+                "implementation_state": item.get("implementation_state"),
+                "validation_state": item.get("validation_state"),
+                "delivery_state": item.get("delivery_state"),
+                "latest_receipt_fresh": item.get("latest_receipt_fresh"),
+                "findings": item.get("findings", []),
+            }
+            for item in procedures
+            if isinstance(item, dict)
+        ],
+        "runtime_mutation": False,
+        "would_execute_anything": False,
+    }
+
+
 def run_once(home: Path | None = None, output_dir: Path | None = None, events: list[dict[str, Any]] | None = None, quiet_success: bool = False) -> dict[str, Any]:
     home = Path(home or Path.home())
     root = hermes_root(home)
     output_dir = Path(output_dir or (root / "state" / "selfcheck"))
+    adapted_loop_receipts = adapt_local_workflow_loop_receipts(root, output_dir)
     profile = discover_user_system_profile(home)
     provider_runtime_evidence = discover_recent_provider_runtime_evidence(home)
     provider_health = build_provider_health_snapshot(home, runtime_evidence=provider_runtime_evidence)
     lark_health = build_lark_health_snapshot(home)
-    registry = build_coverage_registry(profile, snapshots={"provider_health": provider_health, "lark_health": lark_health})
+    procedure_registry = build_procedure_validation_registry(home, profile, output_dir)
+    registry = build_coverage_registry(
+        profile,
+        snapshots={"provider_health": provider_health, "lark_health": lark_health},
+        procedure_registry=procedure_registry,
+    )
     if events is None:
         events = default_events_from_git(home)
     plan = plan_from_events(events)
@@ -928,24 +1348,35 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
     cron_data = read_json(root / "cron" / "jobs.json", {"jobs": []})
     jobs = cron_data.get("jobs", []) if isinstance(cron_data, dict) else []
     cron_clusters = cluster_cron_errors(jobs)
-    repair_packets = generate_repair_packets(registry, cron_clusters)
+    repair_packets = generate_repair_packets(registry, cron_clusters, procedure_registry=procedure_registry)
     delivery_diagnostics = build_delivery_proxy_diagnostics(home, cron_clusters)
     previous_lifecycle = read_json(output_dir / "coverage_lifecycle.json", {})
     lifecycle = update_coverage_lifecycle(registry, previous=previous_lifecycle if isinstance(previous_lifecycle, dict) else None)
+    procedure_registry_path = output_dir / "procedure_validation_registry.json"
+    agent_os_procedure_projection = build_agent_os_procedure_projection(
+        registry,
+        procedure_registry,
+        source_registry_path=procedure_registry_path,
+    )
+    agent_os_procedure_projection_path = root / "workflows" / "projects" / "hermes-agent-os-control-plane" / "06-projection" / "procedure_validation_projection.json"
     ts = datetime.now().strftime("%Y%m%dT%H%M%S")
     result = {
         "schema": "hermes_dynamic_selfcheck_run_v1",
         "generated_at": utc_now(),
         "profile_path": write_json(output_dir / "user_system_profile.json", profile),
         "registry_path": write_json(output_dir / "coverage_registry.json", registry),
+        "procedure_validation_registry_path": write_json(procedure_registry_path, procedure_registry),
+        "agent_os_procedure_projection_path": write_json(agent_os_procedure_projection_path, agent_os_procedure_projection),
         "plan_path": write_json(output_dir / f"coverage_plan_{ts}.json", plan),
         "proposals_path": write_json(output_dir / "coverage_proposals.json", {"schema": PROPOSAL_SCHEMA, "generated_at": utc_now(), "proposals": proposals}),
         "cron_error_clusters_path": write_json(output_dir / "cron_error_clusters.json", cron_clusters),
+        "cron_jobs_path": str(root / "cron" / "jobs.json"),
         "provider_health_path": write_json(output_dir / "provider_health_snapshot.json", provider_health),
         "lark_health_path": write_json(output_dir / "lark_health_snapshot.json", lark_health),
         "repair_packets_path": write_json(output_dir / "repair_packets.json", repair_packets),
         "delivery_proxy_diagnostics_path": write_json(output_dir / "delivery_proxy_diagnostics.json", delivery_diagnostics),
         "coverage_lifecycle_path": write_json(output_dir / "coverage_lifecycle.json", lifecycle),
+        "adapted_loop_receipt_paths": adapted_loop_receipts,
         "summary": {
             "systems": registry["summary"]["systems"],
             "missing_checks": registry["summary"]["missing_checks"],
@@ -957,14 +1388,37 @@ def run_once(home: Path | None = None, output_dir: Path | None = None, events: l
             "provider_health_degraded": provider_health["summary"]["degraded"],
             "lark_health_degraded": not lark_health["summary"]["ok"],
             "operational_findings": registry["summary"]["operational_findings"],
+            "procedure_validation_attention": registry["summary"]["procedure_validation_attention"],
+            "procedure_validation_inventory_complete": procedure_registry["summary"]["inventory_complete"],
+            "procedure_validation_complete": procedure_registry["summary"]["can_claim_complete_procedure_validation"],
+            "certified_healthy": False,
+            "certified_healthy_eligible": bool(
+                procedure_registry["summary"]["can_claim_complete_procedure_validation"]
+                and registry["summary"]["missing_checks"] == 0
+                and registry["summary"]["operational_findings"] == 0
+                and cron_clusters["summary"]["clusters"] == 0
+                and provider_health["summary"]["degraded"] == 0
+                and lark_health["summary"]["ok"]
+            ),
+            "certification_boundary": "independent certification receipt required before certified_healthy=true",
             "delivery_diagnostics_jobs": delivery_diagnostics["summary"]["diagnosed_jobs"],
             "lifecycle_active": lifecycle["summary"]["active"],
             "lifecycle_resolved": lifecycle["summary"]["resolved"],
             "lifecycle_retired": lifecycle["summary"]["retired"],
         },
     }
-    write_json(output_dir / "last_run.json", result)
-    if quiet_success and not (result["summary"]["missing_checks"] or result["summary"]["high_risk_systems"] or result["summary"]["cron_error_clusters"] or result["summary"]["provider_health_degraded"] or result["summary"]["lark_health_degraded"]):
+    last_run_path = output_dir / "last_run.json"
+    write_json(last_run_path, result)
+    result["emitted_procedure_receipt_paths"] = emit_selfcheck_procedure_receipts(result, output_dir, last_run_path)
+    write_json(last_run_path, result)
+    if quiet_success and not (
+        result["summary"]["missing_checks"]
+        or result["summary"]["high_risk_systems"]
+        or result["summary"]["cron_error_clusters"]
+        or result["summary"]["provider_health_degraded"]
+        or result["summary"]["lark_health_degraded"]
+        or result["summary"]["procedure_validation_attention"]
+    ):
         return result
     return result
 
@@ -992,7 +1446,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd in {None, "run"}:
         events = parse_event(args.event) if args.event else None
         result = run_once(home=args.home, output_dir=args.output_dir, events=events, quiet_success=args.quiet_success)
-        if not args.quiet_success or result["summary"]["missing_checks"] or result["summary"]["high_risk_systems"]:
+        if (
+            not args.quiet_success
+            or result["summary"]["missing_checks"]
+            or result["summary"]["high_risk_systems"]
+            or result["summary"]["procedure_validation_attention"]
+        ):
             print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
     parser.error("unknown command")

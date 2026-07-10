@@ -53,6 +53,8 @@ class WorkflowKernelLoopTests(unittest.TestCase):
             self.assertTrue(all(stage["status"] == "PASS" and stage["evidence_refs"] for stage in result["stages"]))
             self.assertEqual(result["evaluation"]["status"], "PASS")
             self.assertFalse(result["evaluation"]["veto"])
+            self.assertEqual(result["claims"], {"global_certification": False, "canonical_ratchet_promotion": False})
+            self.assertIn(result["evaluation"]["procedure_validation"]["state"], {"not_provided", "attention_required", "complete_candidate"})
             self.assertTrue((run_dir / "evaluation.json").exists())
             self.assertTrue(all(value > 0 for value in result["budgets"].values()))
             self.assertTrue(result["kill_switch"])

@@ -50,6 +50,20 @@ def is_taskpool_control_plane_change(files: Sequence[str]) -> bool:
     return any(f.startswith(markers) for f in files)
 
 
+def is_procedure_governance_change(files: Sequence[str]) -> bool:
+    """Match the bounded Agent OS procedure-validation control-plane slice."""
+    exact = {
+        "scripts/dynamic_selfcheck_coverage.py",
+        "scripts/experience_ratchet_lifecycle.py",
+        "scripts/procedure_rehearsals.py",
+        "scripts/workflow_kernel_loop_v2.py",
+        "scripts/workflow_loop_evaluator.py",
+        "scripts/workflow_validation_registry.py",
+        "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/procedure-definitions.json",
+    }
+    return any(f in exact for f in files)
+
+
 def is_local_architecture_control_plane_change(files: Sequence[str]) -> bool:
     markers = (
         "scripts/consult_models.py",
@@ -141,6 +155,15 @@ def relevant_tests(files: Sequence[str]) -> list[Path]:
         wanted.append(SCRIPTS_DIR / "test_local_brain_precommit_hook.py")
     if any(f.startswith("scripts/task_preflight.py") or f.startswith("scripts/test_task_preflight_local_brain.py") for f in files):
         wanted.append(SCRIPTS_DIR / "test_task_preflight_local_brain.py")
+    if is_procedure_governance_change(files):
+        wanted.extend([
+            SCRIPTS_DIR / "tests" / "test_dynamic_selfcheck_coverage.py",
+            SCRIPTS_DIR / "tests" / "test_experience_ratchet_lifecycle.py",
+            SCRIPTS_DIR / "tests" / "test_procedure_rehearsals.py",
+            SCRIPTS_DIR / "test_workflow_kernel_loop.py",
+            SCRIPTS_DIR / "test_workflow_loop_evaluator.py",
+            SCRIPTS_DIR / "tests" / "test_workflow_validation_registry.py",
+        ])
     if is_taskpool_control_plane_change(files):
         wanted.extend([
             SCRIPTS_DIR / "test_brain_task_autorun_step.py",
@@ -173,7 +196,11 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
         "post_action_readback:pre-commit hook exits zero only after local preflight verdict is non-blocking",
     ]
     errors: list[str] = []
-    if is_local_architecture_control_plane_change(files) or is_architecture_evidence_change(files):
+    if (
+        is_local_architecture_control_plane_change(files)
+        or is_architecture_evidence_change(files)
+        or is_procedure_governance_change(files)
+    ):
         evidence.extend([
             "design_doc:staged design/profile/architecture/ADR files are the scoped design document; rollback by git reset/revert",
             "gate_readback:local pre-commit BrainConstraintGate reads staged files, evidence labels, deterministic checks, and exits nonzero on missing gates",
@@ -209,12 +236,21 @@ def hook_evidence(root: Path, files: Sequence[str]) -> tuple[list[str], list[str
             if proc.returncode != 0:
                 errors.append(f"test failed: {test}\n{proc.stdout}\n{proc.stderr}")
         if not errors:
-            evidence.append("tests:targeted local-brain pre-commit tests OK")
+            if is_procedure_governance_change(files):
+                evidence.append("tests:targeted procedure-governance tests OK")
+            else:
+                evidence.append("tests:targeted local-brain pre-commit tests OK")
             if is_taskpool_control_plane_change(files):
                 evidence.extend([
                     "task_record:local git staged taskpool change record includes exact touched files and rollback target",
                     "proof_log:targeted taskpool regression tests and py_compile completed under pre-commit hook",
                     "lifecycle_readback:focused tests cover fail-closed eligibility, claim precheck, review close gating, cron wrapper dedupe, and no force-done path",
+                ])
+            if is_procedure_governance_change(files):
+                evidence.extend([
+                    "task_record:staged Agent OS procedure-governance files are enumerated with an exact local rollback target",
+                    "proof_log:targeted registry, selfcheck, ratchet, rehearsal, kernel, and evaluator tests completed in the hook",
+                    "lifecycle_readback:focused tests cover fail-closed receipt freshness, authority blocking, isolated lifecycle rehearsal, and promotion veto",
                 ])
     elif is_hewos_implementation_change(files):
         hewos_tests = root / "workflows" / "projects" / "hermes-embodied-workflow-os" / "implementation" / "tests"

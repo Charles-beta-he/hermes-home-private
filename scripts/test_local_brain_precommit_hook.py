@@ -100,6 +100,46 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertIn("task_record:", joined)
         self.assertIn("proof_log:", joined)
         self.assertIn("lifecycle_readback:", joined)
+
+    def test_procedure_governance_files_collect_exact_tests_and_t3_evidence(self):
+        files = [
+            "scripts/dynamic_selfcheck_coverage.py",
+            "scripts/experience_ratchet_lifecycle.py",
+            "scripts/procedure_rehearsals.py",
+            "scripts/workflow_kernel_loop_v2.py",
+            "scripts/workflow_loop_evaluator.py",
+            "scripts/workflow_validation_registry.py",
+            "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/procedure-definitions.json",
+        ]
+        self.assertTrue(hook.is_procedure_governance_change(files))
+        tests = {path.name for path in hook.relevant_tests(files)}
+        self.assertEqual(
+            tests,
+            {
+                "test_dynamic_selfcheck_coverage.py",
+                "test_experience_ratchet_lifecycle.py",
+                "test_procedure_rehearsals.py",
+                "test_workflow_kernel_loop.py",
+                "test_workflow_loop_evaluator.py",
+                "test_workflow_validation_registry.py",
+            },
+        )
+
+        old_run = hook.run
+        try:
+            def fake_run(cmd, *, cwd=None, timeout=180):
+                return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+            hook.run = fake_run
+            evidence, errors = hook.hook_evidence(self.repo, files)
+        finally:
+            hook.run = old_run
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        for label in ("design_doc:", "gate_readback:", "task_record:", "proof_log:", "lifecycle_readback:"):
+            self.assertIn(label, joined)
+        self.assertIn("tests:targeted procedure-governance tests OK", joined)
+
     def test_architecture_and_research_project_files_collect_design_and_source_evidence(self):
         files = [
             "project-profiles/hermes-embodied-workflow-os.json",

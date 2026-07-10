@@ -127,7 +127,14 @@ def test_lark_health_snapshot_is_status_only_and_redacted(tmp_path):
         home=home,
         runner=lambda cmd: {
             "exit_code": 0,
-            "output": json.dumps({"ok": True, "stage": "auth", "auth": {"ok": True, "action": "token_valid"}}),
+            "output": json.dumps({"ok": True, "stage": "auth", "auth": {
+                "ok": True,
+                "action": "token_valid",
+                "token_status": {"valid": True, "token_key": "must-not-project"},
+                "lock_active": False,
+                "port": 8765,
+                "port_busy": False,
+            }}),
         },
     )
 
@@ -137,7 +144,13 @@ def test_lark_health_snapshot_is_status_only_and_redacted(tmp_path):
     assert snapshot["may_read_tasks"] is False
     assert snapshot["may_write_lark"] is False
     assert snapshot["auth_action"] == "token_valid"
+    assert snapshot["token_status_valid"] is True
+    assert snapshot["lock_active"] is False
+    assert snapshot["callback_port"] == 8765
+    assert snapshot["callback_port_busy"] is False
+    assert snapshot["cleanup_stale_enabled"] is False
     assert "token" not in snapshot
+    assert "must-not-project" not in json.dumps(snapshot)
 
 
 def test_provider_health_snapshot_is_fail_closed_without_certification_claim(tmp_path):
@@ -327,3 +340,246 @@ def test_cli_writes_registry_plan_proposals_and_operational_artifacts(tmp_path):
     assert loaded["schema"] == "hermes_dynamic_selfcheck_coverage_v1"
     lifecycle = json.loads(Path(result["coverage_lifecycle_path"]).read_text(encoding="utf-8"))
     assert lifecycle["schema"] == "hermes_coverage_lifecycle_v1"
+    assert Path(result["procedure_validation_registry_path"]).exists()
+    procedure_registry = json.loads(Path(result["procedure_validation_registry_path"]).read_text(encoding="utf-8"))
+    assert procedure_registry["schema"] == "hermes_procedure_validation_registry_v1"
+    assert "procedure_validation_attention" in result["summary"]
+
+
+def test_procedure_validation_projects_without_collapsing_existing_axes(tmp_path):
+    home = make_home(tmp_path)
+    profile = dsc.discover_user_system_profile(home=home)
+    procedure_registry = {
+        "procedures": [
+            {
+                "procedure_id": "lark.oauth.recovery",
+                "system_id": "profile:lark",
+                "required": True,
+                "validation_state": "blocked_by_authority",
+                "delivery_state": "blocked",
+                "operational_state": "unknown",
+                "findings": ["procedure_authority_blocked"],
+                "evidence_refs": [],
+                "side_effect_class": "browser_auth",
+            }
+        ],
+        "inventory": {"unmapped_system_ids": []},
+        "summary": {"can_claim_complete_procedure_validation": False},
+    }
+
+    baseline = dsc.build_coverage_registry(profile)
+    baseline_lark = next(item for item in baseline["systems"] if item["system_id"] == "profile:lark")
+    registry = dsc.build_coverage_registry(profile, procedure_registry=procedure_registry)
+    lark = next(item for item in registry["systems"] if item["system_id"] == "profile:lark")
+
+    assert lark["coverage_state"] == baseline_lark["coverage_state"]
+    assert lark["operational_findings"] == []
+    assert lark["procedure_validation_state"] == "blocked"
+    assert lark["procedure_findings"] == ["lark.oauth.recovery:procedure_authority_blocked"]
+    assert registry["summary"]["procedure_validation_attention"] == 1
+    assert registry["summary"]["can_claim_complete_procedure_validation"] is False
+
+
+def test_procedure_findings_propagate_to_lifecycle_and_local_repair_packet(tmp_path):
+    home = make_home(tmp_path)
+    profile = dsc.discover_user_system_profile(home=home)
+    procedure_registry = {
+        "procedures": [
+            {
+                "procedure_id": "lark.task.readonly",
+                "system_id": "profile:lark",
+                "required": True,
+                "validation_state": "stale",
+                "delivery_state": "landed_unverified",
+                "operational_state": "unknown",
+                "findings": ["procedure_validation_stale"],
+                "evidence_refs": ["receipt.json"],
+                "side_effect_class": "external_read",
+            }
+        ],
+        "inventory": {"unmapped_system_ids": []},
+        "summary": {"can_claim_complete_procedure_validation": False},
+    }
+    registry = dsc.build_coverage_registry(profile, procedure_registry=procedure_registry)
+
+    lifecycle = dsc.update_coverage_lifecycle(registry, previous=None, now="2026-07-10T00:00:00Z")
+    key = "profile:lark::procedure::lark.task.readonly::procedure_validation_stale"
+    assert lifecycle["items"][key]["issue_type"] == "procedure_validation"
+    packets = dsc.generate_repair_packets(registry, {"clusters": []}, procedure_registry=procedure_registry)
+    packet = next(item for item in packets["packets"] if item["packet_id"] == "repair.procedure_validation")
+    assert packet["deliver"] == "local"
+    assert packet["may_execute_procedures"] is False
+    assert "external_read" in packet["requires_authority_for"]
+
+
+def test_adapt_local_workflow_loop_receipts_requires_pass_and_negative_boundaries(tmp_path):
+    root = tmp_path / ".hermes"
+    run_dir = root / "workflows" / "projects" / "hermes-agent-os-control-plane" / "14-workflow-loop-engineering-coverage" / "runtime" / "runs" / "run-1"
+    run_dir.mkdir(parents=True)
+    receipt_path = run_dir / "loop-receipt.json"
+    evaluation_path = run_dir / "evaluation.json"
+    cleanup_path = run_dir / "cleanup.json"
+    ratchet_path = run_dir / "ratchet.json"
+    receipt_path.write_text(json.dumps({
+        "schema": "hermes_workflow_kernel_loop_receipt_v2",
+        "status": "ok",
+        "created_at": "2026-07-10T10:00:00Z",
+        "side_effects": {"external": False, "cron": False, "taskpool": False, "agentos": False},
+        "claims": {"global_certification": False, "canonical_ratchet_promotion": False},
+    }), encoding="utf-8")
+    evaluation_path.write_text(json.dumps({"status": "PASS", "veto": False, "would_execute_anything": False}), encoding="utf-8")
+    cleanup_path.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
+    ratchet_path.write_text(json.dumps({"canonical_promotion": False, "external_mutation": False}), encoding="utf-8")
+
+    emitted = dsc.adapt_local_workflow_loop_receipts(root, tmp_path / "out")
+
+    assert len(emitted) == 1
+    payload = json.loads(Path(emitted[0]).read_text(encoding="utf-8"))
+    assert payload["procedure_id"] == "agent_os.workflow_loop.v2"
+    assert payload["result"] == "PASS"
+    assert payload["negative_assertions"] == {"no_external_dispatch": True, "no_certification_overclaim": True}
+    assert payload["cleanup_readback"] == "PASS"
+
+
+def test_emit_selfcheck_receipts_are_immutable_valid_and_local_only(tmp_path):
+    out = tmp_path / "out"
+    out.mkdir()
+    paths = {}
+    for name in ("profile_path", "registry_path", "procedure_validation_registry_path", "coverage_lifecycle_path"):
+        path = out / f"{name}.json"
+        path.write_text("{}\n", encoding="utf-8")
+        paths[name] = str(path)
+    last_run = out / "last_run.json"
+    last_run.write_text("{}\n", encoding="utf-8")
+    result = {"generated_at": "2026-07-10T10:00:00Z", **paths}
+
+    emitted = dsc.emit_selfcheck_procedure_receipts(result, out, last_run)
+
+    assert len(emitted) == 2
+    assert all(Path(path).exists() for path in emitted)
+    payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in emitted]
+    assert {item["procedure_id"] for item in payloads} == {
+        "hermes.core.selfcheck.readback",
+        "scripts.dynamic_selfcheck.run",
+    }
+    assert all(item["execution_mode"] == "live_e2e" for item in payloads)
+    assert all(item["negative_assertions"]["no_external_send"] is True for item in payloads)
+    assert all(item["side_effects_observed"] == ["local_write"] for item in payloads)
+
+
+def test_emit_lark_health_receipt_only_from_explicit_status_only_readback(tmp_path):
+    out = tmp_path / "out"
+    out.mkdir()
+    paths = {}
+    for name in ("profile_path", "registry_path", "procedure_validation_registry_path", "coverage_lifecycle_path"):
+        path = out / f"{name}.json"
+        path.write_text("{}\n", encoding="utf-8")
+        paths[name] = str(path)
+    lark_path = out / "lark_health_snapshot.json"
+    lark_path.write_text(json.dumps({
+        "schema": "hermes_lark_health_snapshot_v1",
+        "status": "ready",
+        "side_effects": "local_read",
+        "token_status_valid": True,
+        "lock_active": False,
+        "callback_port_busy": False,
+        "cleanup_stale_enabled": False,
+        "may_open_browser": False,
+        "may_read_tasks": False,
+        "may_write_lark": False,
+    }), encoding="utf-8")
+    last_run = out / "last_run.json"
+    last_run.write_text("{}\n", encoding="utf-8")
+    result = {"generated_at": "2026-07-10T10:00:00Z", "lark_health_path": str(lark_path), **paths}
+
+    emitted = dsc.emit_selfcheck_procedure_receipts(result, out, last_run)
+    payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in emitted]
+    lark = next(item for item in payloads if item["procedure_id"] == "lark.auth.health_monitor")
+    assert lark["side_effects_observed"] == ["local_read"]
+    assert lark["negative_assertions"] == {"no_browser_open": True, "no_task_read": True, "no_lark_write": True}
+
+
+def test_emit_cron_status_receipt_requires_readback_without_job_execution(tmp_path):
+    out = tmp_path / "out"
+    out.mkdir()
+    paths = {}
+    for name in ("profile_path", "registry_path", "procedure_validation_registry_path", "coverage_lifecycle_path"):
+        path = out / f"{name}.json"
+        path.write_text("{}\n", encoding="utf-8")
+        paths[name] = str(path)
+    jobs_path = out / "jobs.json"
+    clusters_path = out / "cron_error_clusters.json"
+    diagnostics_path = out / "delivery_proxy_diagnostics.json"
+    jobs_path.write_text(json.dumps({"jobs": [{"id": "job-1", "last_status": "ok"}]}), encoding="utf-8")
+    clusters_path.write_text(json.dumps({"summary": {"error_jobs": 0}}), encoding="utf-8")
+    diagnostics_path.write_text(json.dumps({"jobs": []}), encoding="utf-8")
+    last_run = out / "last_run.json"
+    last_run.write_text("{}\n", encoding="utf-8")
+    result = {
+        "generated_at": "2026-07-10T10:00:00Z",
+        "cron_jobs_path": str(jobs_path),
+        "cron_error_clusters_path": str(clusters_path),
+        "delivery_proxy_diagnostics_path": str(diagnostics_path),
+        **paths,
+    }
+
+    emitted = dsc.emit_selfcheck_procedure_receipts(result, out, last_run)
+    payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in emitted]
+    cron = next(item for item in payloads if item["procedure_id"] == "cron.scheduler.status_readback")
+    assert cron["side_effects_observed"] == ["local_read"]
+    assert cron["negative_assertions"] == {"no_job_run": True, "no_schedule_write": True}
+
+
+def test_agent_os_procedure_projection_keeps_four_axes_and_certification_closed(tmp_path):
+    projection = dsc.build_agent_os_procedure_projection(
+        {
+            "summary": {
+                "systems": 27,
+                "missing_checks": 0,
+                "high_risk_systems": 0,
+                "operational_findings": 1,
+            }
+        },
+        {
+            "summary": {
+                "fully_connected": 6,
+                "pending": 1,
+                "blocked_by_authority": 5,
+                "can_claim_complete_procedure_validation": False,
+            },
+            "procedures": [
+                {
+                    "procedure_id": "delivery.local.output",
+                    "system_id": "delivery:local",
+                    "required": True,
+                    "implementation_state": "enabled",
+                    "validation_state": "e2e_passed",
+                    "delivery_state": "fully_connected",
+                    "latest_receipt_fresh": True,
+                    "findings": [],
+                }
+            ],
+        },
+        source_registry_path=tmp_path / "procedure_validation_registry.json",
+    )
+
+    assert projection["mode"] == "read_only_projection"
+    assert projection["axes"]["engineering_coverage"]["missing_checks"] == 0
+    assert projection["axes"]["operational_health"]["state"] == "degraded"
+    assert projection["axes"]["procedure_validation"]["fully_connected"] == 6
+    assert projection["axes"]["certification"] == {
+        "certified_healthy": False,
+        "eligible": False,
+        "boundary": "independent certification receipt required",
+    }
+    assert projection["runtime_mutation"] is False
+    assert projection["would_execute_anything"] is False
+
+
+def test_quiet_success_is_blocked_by_procedure_validation_attention(tmp_path, capsys):
+    home = make_home(tmp_path)
+    out = home / ".hermes" / "state" / "selfcheck"
+    result = dsc.run_once(home=home, output_dir=out, events=[], quiet_success=True)
+
+    assert result["summary"]["procedure_validation_attention"] > 0
+    assert result["summary"]["certified_healthy"] is False

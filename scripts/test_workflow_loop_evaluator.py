@@ -89,6 +89,63 @@ class WorkflowLoopEvaluatorTests(unittest.TestCase):
             self.assertTrue(result["veto"])
             self.assertIn("invalid_budget:max_retries", result["issues"])
 
+    def test_procedure_validation_is_projected_as_separate_axis_without_implicit_veto(self):
+        with tempfile.TemporaryDirectory() as td:
+            receipt = complete_receipt(Path(td))
+            receipt["claims"] = {"global_certification": False, "canonical_ratchet_promotion": False}
+            registry = {
+                "schema": "hermes_procedure_validation_registry_v1",
+                "summary": {
+                    "inventory_complete": True,
+                    "can_claim_complete_procedure_validation": False,
+                    "pending": 2,
+                    "stale": 1,
+                    "failed": 0,
+                    "blocked_by_authority": 1,
+                },
+            }
+            result = self.mod.evaluate_receipt(receipt, procedure_registry=registry)
+            self.assertEqual(result["status"], "PASS")
+            self.assertFalse(result["veto"])
+            self.assertEqual(result["procedure_validation"]["state"], "attention_required")
+            self.assertFalse(result["procedure_validation"]["can_claim_complete"])
+
+    def test_global_certification_claim_is_vetoed_when_procedures_are_incomplete(self):
+        with tempfile.TemporaryDirectory() as td:
+            receipt = complete_receipt(Path(td))
+            receipt["claims"] = {"global_certification": True, "canonical_ratchet_promotion": False}
+            registry = {
+                "schema": "hermes_procedure_validation_registry_v1",
+                "summary": {"inventory_complete": True, "can_claim_complete_procedure_validation": False},
+            }
+            result = self.mod.evaluate_receipt(receipt, procedure_registry=registry)
+            self.assertTrue(result["veto"])
+            self.assertIn("procedure_global_certification_not_allowed", result["issues"])
+
+    def test_canonical_ratchet_promotion_is_vetoed_by_stale_procedure(self):
+        with tempfile.TemporaryDirectory() as td:
+            receipt = complete_receipt(Path(td))
+            receipt["claims"] = {"global_certification": False, "canonical_ratchet_promotion": True}
+            registry = {
+                "schema": "hermes_procedure_validation_registry_v1",
+                "summary": {
+                    "inventory_complete": True,
+                    "can_claim_complete_procedure_validation": False,
+                    "stale": 1,
+                },
+            }
+            result = self.mod.evaluate_receipt(receipt, procedure_registry=registry)
+            self.assertTrue(result["veto"])
+            self.assertIn("procedure_canonical_promotion_not_allowed", result["issues"])
+
+    def test_claim_without_procedure_registry_fails_closed(self):
+        with tempfile.TemporaryDirectory() as td:
+            receipt = complete_receipt(Path(td))
+            receipt["claims"] = {"global_certification": True, "canonical_ratchet_promotion": False}
+            result = self.mod.evaluate_receipt(receipt)
+            self.assertTrue(result["veto"])
+            self.assertIn("procedure_registry_missing_for_claim", result["issues"])
+
 
 if __name__ == "__main__":
     unittest.main()
