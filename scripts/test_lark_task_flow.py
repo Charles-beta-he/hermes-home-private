@@ -87,7 +87,7 @@ class LarkTaskFlowTest(unittest.TestCase):
                 code = self.mod.main(["--health-check"])
 
         self.assertEqual(code, 0)
-        self.assertEqual(observed, {"no_open": True, "auto_authorize": False, "auth_only": True, "auth_timeout": 15})
+        self.assertEqual(observed, {"no_open": True, "auto_authorize": False, "auth_only": True, "auth_timeout": 5})
         self.assertEqual(fake.calls, [])
         self.assertIn('"stage": "auth"', out.getvalue())
 

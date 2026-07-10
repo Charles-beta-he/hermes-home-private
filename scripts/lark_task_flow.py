@@ -154,7 +154,7 @@ def main(argv: list[str] | None = None) -> int:
         args.no_open = True
         args.auto_authorize = False
         args.force_refresh = False
-        args.auth_timeout = min(args.auth_timeout, 15)
+        args.auth_timeout = min(args.auth_timeout, 5)
     try:
         guid = extract_guid(args.guid or args.url)
         auth = run_guard(args)
