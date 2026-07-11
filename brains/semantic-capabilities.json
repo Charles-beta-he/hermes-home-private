@@ -1,0 +1,189 @@
+{
+  "schema_version": "external_brain_capability_registry_v1",
+  "capabilities": {
+    "source_grounded_research": {
+      "brain": "research",
+      "allowed_intents": [
+        "investigate",
+        "observe",
+        "decide"
+      ],
+      "lane": "advisory",
+      "task_classes": [
+        "evidence-only"
+      ],
+      "brain_profiles": [
+        "research"
+      ]
+    },
+    "workflow_governance": {
+      "brain": "workflow",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "govern",
+        "evolve"
+      ],
+      "lane": "evolution",
+      "task_classes": [
+        "governance"
+      ],
+      "brain_profiles": [
+        "workflow"
+      ]
+    },
+    "software_delivery": {
+      "brain": "dev",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "deliver"
+      ],
+      "lane": "work",
+      "task_classes": [
+        "delivery"
+      ],
+      "brain_profiles": [
+        "engineering",
+        "frontend",
+        "backend",
+        "fullstack",
+        "contract",
+        "devops"
+      ]
+    },
+    "hermes_control_plane": {
+      "brain": "hermes-core",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "govern",
+        "evolve",
+        "deliver"
+      ],
+      "lane": "evolution",
+      "task_classes": [
+        "governance",
+        "delivery"
+      ],
+      "brain_profiles": [
+        "hermes-core"
+      ]
+    },
+    "design_system_governance": {
+      "brain": "design",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "govern",
+        "deliver"
+      ],
+      "lane": "work",
+      "task_classes": [
+        "delivery",
+        "governance"
+      ],
+      "brain_profiles": [
+        "design"
+      ]
+    },
+    "model_runtime_governance": {
+      "brain": "mlops",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "govern",
+        "evolve",
+        "deliver"
+      ],
+      "lane": "evolution",
+      "task_classes": [
+        "governance",
+        "delivery"
+      ],
+      "brain_profiles": [
+        "mlops"
+      ]
+    },
+    "media_systems": {
+      "brain": "media",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "deliver"
+      ],
+      "lane": "work",
+      "task_classes": [
+        "delivery",
+        "evidence-only"
+      ],
+      "brain_profiles": [
+        "media"
+      ]
+    },
+    "physical_control": {
+      "brain": "external-control",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "deliver"
+      ],
+      "lane": "work",
+      "task_classes": [
+        "delivery"
+      ],
+      "brain_profiles": [
+        "external-control"
+      ]
+    },
+    "electrical_engineering": {
+      "brain": "electrical",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "deliver"
+      ],
+      "lane": "work",
+      "task_classes": [
+        "delivery",
+        "evidence-only"
+      ],
+      "brain_profiles": [
+        "electrical"
+      ]
+    },
+    "manufacturing": {
+      "brain": "manufacturing",
+      "allowed_intents": [
+        "observe",
+        "investigate",
+        "decide",
+        "deliver"
+      ],
+      "lane": "work",
+      "task_classes": [
+        "delivery",
+        "evidence-only"
+      ],
+      "brain_profiles": [
+        "manufacturing"
+      ]
+    }
+  },
+  "enforcement": {
+    "mode": "strict_active_tasks",
+    "strict_task_roots": [
+      "/Users/charles/Documents/brain/05-实践与项目/tasks"
+    ],
+    "missing_semantic_intent": "needs_review",
+    "legacy_terminal_tasks": "compatibility_only"
+  }
+}

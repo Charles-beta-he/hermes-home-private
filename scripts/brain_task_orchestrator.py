@@ -47,6 +47,9 @@ HERMES_HOME = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).
 PROJECT_PROFILES_DIR = Path(os.environ.get("HERMES_PROJECT_PROFILES_DIR", str(HERMES_HOME / "project-profiles"))).expanduser()
 BRAINS_DIR = Path(os.environ.get("HERMES_BRAINS_DIR", str(HERMES_HOME / "brains"))).expanduser()
 BRAIN_REGISTRY = Path(os.environ.get("HERMES_BRAIN_REGISTRY", str(BRAINS_DIR / "registry.yaml"))).expanduser()
+BRAIN_SEMANTIC_CAPABILITIES = Path(
+    os.environ.get("HERMES_BRAIN_SEMANTIC_CAPABILITIES", str(BRAINS_DIR / "semantic-capabilities.json"))
+).expanduser()
 SCRIPTS_DIR = HERMES_HOME / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
@@ -55,6 +58,7 @@ if str(HERMES_AGENT_DIR) not in sys.path:
     sys.path.insert(0, str(HERMES_AGENT_DIR))
 
 import permission_taxonomy as taxonomy  # noqa: E402
+from external_brain_semantic_contract import evaluate_semantic_intent, semantic_contract_selfcheck, validate_capability_registry  # noqa: E402
 try:
     from dynamic_n import get_smoothed_n  # noqa: E402
 except Exception:
@@ -962,6 +966,11 @@ def _semantic_blob(task: "Task") -> str:
 
 
 def infer_task_brain_profile(task: "Task") -> str:
+    semantic = semantic_task_decision(task)
+    if isinstance(semantic, dict):
+        routing = semantic.get("routing")
+        profile = str(routing.get("brain_profile") or "") if isinstance(routing, dict) else ""
+        return profile if semantic.get("decision") == "route" and profile else "needs_review"
     text = _semantic_blob(task)
     if any(tok in text for tok in ("migration", "flyway", "controller", "service", "domain", "后端", "api", "dto", "schema")):
         return "backend"
@@ -977,6 +986,10 @@ def infer_task_brain_profile(task: "Task") -> str:
 
 
 def infer_task_brain(task: "Task") -> str:
+    semantic = semantic_task_decision(task)
+    if isinstance(semantic, dict):
+        brain = str(semantic.get("brain") or "")
+        return brain if semantic.get("decision") == "route" and brain else "main"
     explicit = str(task.fm.get("brain") or "").strip()
     if explicit:
         return explicit
@@ -1029,8 +1042,365 @@ def format_brain_overlay_contract(task_or_row: Any) -> str:
     return "BRAIN OVERLAY: " + str(contract.get("brain") or "") + "\n" + json.dumps(contract, ensure_ascii=False, indent=2, sort_keys=True)
 
 
+def task_brain_semantic_registry() -> dict[str, Any]:
+    """Load the declarative capability graph used by structured intent routing."""
+    try:
+        payload = json.loads(BRAIN_SEMANTIC_CAPABILITIES.read_text(encoding="utf-8"))
+    except Exception:
+        return {"capabilities": {}}
+    if not isinstance(payload, dict) or not isinstance(payload.get("capabilities"), dict):
+        return {"capabilities": {}}
+    return payload
+
+
+def semantic_task_decision_from_fm(fm: dict[str, Any]) -> dict[str, Any] | None:
+    envelope = fm.get("semantic_intent")
+    if not isinstance(envelope, dict):
+        return None
+    return evaluate_semantic_intent(envelope, task_brain_semantic_registry(), surface_text="")
+
+
+def semantic_task_decision(task: "Task") -> dict[str, Any] | None:
+    return semantic_task_decision_from_fm(task.fm)
+
+
+def semantic_envelope_hash(envelope: dict[str, Any]) -> str:
+    canonical = json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _knowledge_context_refs_from_hits(hits: Any) -> list[str] | None:
+    if not isinstance(hits, list) or len(hits) > 8:
+        return None
+    refs: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    allowed_keys = {"path", "heading", "content_hash", "score"}
+    for hit in hits:
+        if not isinstance(hit, dict) or set(hit) - allowed_keys:
+            return None
+        path = str(hit.get("path") or "").strip()
+        content_hash = str(hit.get("content_hash") or "").strip().lower()
+        if not path or any(char in path for char in ("\n", "\r", "#")):
+            return None
+        if re.fullmatch(r"[0-9a-f]{64}", content_hash) is None:
+            return None
+        key = (path, content_hash)
+        if key in seen:
+            return None
+        seen.add(key)
+        source_ref = path if path.startswith("brain:") else f"brain:{path}"
+        refs.append(f"{source_ref}#{content_hash}")
+    return refs
+
+
+def semantic_knowledge_recall_validation_failures(
+    envelope: dict[str, Any],
+    recall: Any,
+    refs: Any,
+    evidence_refs: Any,
+    *,
+    search_fn: Any = None,
+) -> list[str]:
+    if not isinstance(recall, dict) or recall.get("status") != "PASS":
+        return ["semantic_knowledge_recall_required"]
+    failures: list[str] = []
+    if recall.get("schema") != "semantic_knowledge_recall_v1" or recall.get("authority") != "context_only_no_authority":
+        failures.append("semantic_knowledge_recall_invalid")
+    if recall.get("semantic_envelope_hash") != semantic_envelope_hash(envelope):
+        failures.append("semantic_knowledge_recall_envelope_mismatch")
+    if recall.get("queries") != semantic_knowledge_queries(envelope):
+        failures.append("semantic_knowledge_recall_queries_mismatch")
+    expected_refs = _knowledge_context_refs_from_hits(recall.get("hits"))
+    if expected_refs is None or recall.get("errors") != []:
+        failures.append("semantic_knowledge_recall_hits_invalid")
+        expected_refs = []
+    if recall.get("context_refs") != expected_refs:
+        failures.append("semantic_knowledge_recall_hit_refs_mismatch")
+    if not isinstance(refs, list) or refs != expected_refs:
+        failures.append("semantic_knowledge_recall_refs_mismatch")
+    persisted_evidence = set(list_value(evidence_refs))
+    missing_evidence = [ref for ref in expected_refs if f"proof:{ref}" not in persisted_evidence]
+    if missing_evidence:
+        failures.append("semantic_knowledge_recall_evidence_refs_missing")
+    if not failures and expected_refs:
+        source_search = search_fn or _brainctl_semantic_search
+        live_refs: set[str] = set()
+        try:
+            for query in semantic_knowledge_queries(envelope):
+                raw_hits = source_search(query, 10)
+                if not isinstance(raw_hits, list):
+                    raise TypeError("semantic knowledge source search must return a list")
+                for raw in raw_hits:
+                    if not isinstance(raw, dict):
+                        continue
+                    path = str(raw.get("path") or "").strip()
+                    content_hash = str(raw.get("content_hash") or "").strip().lower()
+                    if not path or re.fullmatch(r"[0-9a-f]{64}", content_hash) is None:
+                        continue
+                    source_ref = path if path.startswith("brain:") else f"brain:{path}"
+                    live_refs.add(f"{source_ref}#{content_hash}")
+        except Exception:
+            failures.append("semantic_knowledge_recall_source_verification_failed")
+        else:
+            if not set(expected_refs).issubset(live_refs):
+                failures.append("semantic_knowledge_recall_sources_unverified")
+    return list(dict.fromkeys(failures))
+
+
+def semantic_knowledge_queries(envelope: dict[str, Any]) -> list[str]:
+    """Build bounded recall queries from validated semantic fields, never task prose."""
+    candidates: list[str] = []
+    outcome = str(envelope.get("requested_outcome") or "").strip()
+    if outcome:
+        candidates.append(outcome)
+    capabilities = envelope.get("domain_capabilities")
+    if isinstance(capabilities, list):
+        for capability in capabilities:
+            value = str(capability or "").strip()
+            if value:
+                candidates.extend([value, value.replace("_", " ")])
+    routing_value = envelope.get("routing")
+    routing = routing_value if isinstance(routing_value, dict) else {}
+    capability_terms = " ".join(str(item).replace("_", " ") for item in capabilities) if isinstance(capabilities, list) else ""
+    for key in ("brain_profile", "task_class"):
+        value = str(routing.get(key) or "").strip().replace("_", " ")
+        if value and value not in {"main", "general", "governance"} and value not in capability_terms.split():
+            candidates.append(value)
+    queries: list[str] = []
+    for candidate in candidates:
+        normalized = " ".join(candidate.split())
+        if normalized and normalized not in queries:
+            queries.append(normalized)
+    return queries[:6]
+
+
+def _brainctl_semantic_search(query: str, limit: int) -> list[dict[str, Any]]:
+    brainctl = Path(__file__).resolve().with_name("brainctl.py")
+    proc = subprocess.run(
+        [sys.executable, str(brainctl), "--json", "search", query, "--limit", str(limit)],
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError("brainctl_search_failed")
+    payload = json.loads(proc.stdout or "[]")
+    if not isinstance(payload, list):
+        raise RuntimeError("brainctl_search_invalid_payload")
+    return [item for item in payload if isinstance(item, dict)]
+
+
+def recall_semantic_knowledge(
+    envelope: dict[str, Any],
+    *,
+    search_fn: Any | None = None,
+    per_query_limit: int = 3,
+    max_hits: int = 8,
+) -> dict[str, Any]:
+    """Recall hash-bound local sources without importing excerpts or authority."""
+    queries = semantic_knowledge_queries(envelope)
+    search = search_fn or _brainctl_semantic_search
+    hits: list[dict[str, Any]] = []
+    context_refs: list[str] = []
+    seen: set[tuple[str, str]] = set()
+    errors: list[dict[str, str]] = []
+    for query in queries:
+        try:
+            raw_hits = search(query, per_query_limit)
+        except Exception as exc:
+            errors.append({"query": query, "error_type": type(exc).__name__})
+            break
+        for raw in raw_hits:
+            path = str(raw.get("path") or "").strip()
+            content_hash = str(raw.get("content_hash") or "").strip().lower()
+            if not path or re.fullmatch(r"[0-9a-f]{64}", content_hash) is None:
+                continue
+            key = (path, content_hash)
+            if key in seen:
+                continue
+            seen.add(key)
+            hit = {
+                "path": path,
+                "heading": str(raw.get("heading") or "").strip(),
+                "content_hash": content_hash,
+                "score": raw.get("score"),
+            }
+            hits.append(hit)
+            source_ref = path if path.startswith("brain:") else f"brain:{path}"
+            context_refs.append(f"{source_ref}#{content_hash}")
+            if len(hits) >= max_hits:
+                break
+        if len(hits) >= max_hits:
+            break
+    return {
+        "schema": "semantic_knowledge_recall_v1",
+        "status": "ERROR" if errors else "PASS",
+        "authority": "context_only_no_authority",
+        "semantic_envelope_hash": semantic_envelope_hash(envelope),
+        "queries": queries,
+        "hits": hits,
+        "context_refs": context_refs,
+        "errors": errors,
+    }
+
+
+def semantic_knowledge_recall_selfcheck() -> dict[str, Any]:
+    envelope = {
+        "schema_version": "external_brain_semantic_intent_v1",
+        "intent_class": "govern",
+        "domain_capabilities": ["workflow_governance"],
+        "requested_outcome": "governed lifecycle",
+        "risk_dimensions": ["authority"],
+        "evidence_requirements": ["proof_ref"],
+        "learning_scope": "ratchet_candidate",
+        "side_effect_class": "none",
+        "confidence": 0.92,
+        "source_refs": ["artifact:selfcheck"],
+        "routing": {"lane": "evolution", "task_class": "governance", "brain_profile": "workflow"},
+        "multimodel": {"mode": "required", "purpose": "certification", "triggers": ["governed_change"]},
+    }
+
+    def fixture_search(query: str, limit: int) -> list[dict[str, Any]]:
+        return [
+            {"path": "selfcheck.md", "heading": "Boundary", "content_hash": "c" * 64, "score": 1.0, "excerpt": "never persist me"},
+            {"path": "selfcheck.md", "heading": "Boundary", "content_hash": "c" * 64, "score": 0.5, "excerpt": "duplicate"},
+        ][:limit]
+
+    receipt = recall_semantic_knowledge(envelope, search_fn=fixture_search, per_query_limit=2, max_hits=1)
+    before = evaluate_semantic_intent(envelope, task_brain_semantic_registry(), surface_text="")
+    after = semantic_task_decision_from_fm({"semantic_intent": envelope, "knowledge_recall": receipt})
+    bounded = len(receipt.get("hits", [])) <= 1
+    deduplicated = len(receipt.get("context_refs", [])) == len(set(receipt.get("context_refs", [])))
+    excerpt_excluded = all("excerpt" not in hit for hit in receipt.get("hits", []))
+    authority_neutral = before == after and receipt.get("authority") == "context_only_no_authority"
+    validation_failures = semantic_knowledge_recall_validation_failures(
+        envelope,
+        receipt,
+        receipt.get("context_refs"),
+        [f"proof:{ref}" for ref in receipt.get("context_refs", [])],
+        search_fn=fixture_search,
+    )
+    sources_verified = not validation_failures
+    passed = receipt.get("status") == "PASS" and bounded and deduplicated and excerpt_excluded and authority_neutral and sources_verified
+    return {
+        "status": "PASS" if passed else "FAIL",
+        "bounded": bounded,
+        "deduplicated": deduplicated,
+        "excerpt_excluded": excerpt_excluded,
+        "authority_neutral": authority_neutral,
+        "sources_verified": sources_verified,
+        "validation_failures": validation_failures,
+    }
+
+
+def semantic_intent_strict_for_live_intake() -> bool:
+    registry = task_brain_semantic_registry()
+    enforcement_value = registry.get("enforcement")
+    enforcement = enforcement_value if isinstance(enforcement_value, dict) else {}
+    if str(enforcement.get("mode") or "") != "strict_active_tasks":
+        return False
+    roots = enforcement.get("strict_task_roots")
+    if not isinstance(roots, list) or not roots:
+        return False
+    try:
+        current = TASKS_DIR.resolve()
+        return any(current == Path(str(root)).expanduser().resolve() for root in roots if str(root).strip())
+    except OSError:
+        return False
+
+
+def semantic_intent_lifecycle_failures(task: "Task", to_status: str = "claimed") -> list[str]:
+    """Fail closed before executable lifecycle states on configured strict task roots."""
+    target = STATUS_ALIASES.get(to_status, to_status)
+    if target not in {"claimed", "running", "review", "certified", "done"}:
+        return []
+    if not semantic_intent_strict_for_live_intake():
+        return []
+    semantic = semantic_task_decision(task)
+    if semantic is None:
+        return ["semantic_intent_missing_needs_review"]
+    if semantic.get("decision") != "route":
+        gates = ",".join(str(item) for item in semantic.get("required_gates", []))
+        return [f"semantic_intent_invalid_needs_review:{gates or 'valid_semantic_intent_required'}"]
+    policy = semantic.get("policy")
+    if not isinstance(policy, dict) or policy.get("may_execute") is not True:
+        return ["semantic_intent_execute_authority_required"]
+    if task.fm.get("semantic_contract_status") == "validated":
+        recall_failures = semantic_knowledge_recall_validation_failures(
+            task.fm["semantic_intent"],
+            task.fm.get("knowledge_recall"),
+            task.fm.get("knowledge_context_refs"),
+            task.fm.get("evidence_refs"),
+        )
+        if recall_failures:
+            return recall_failures
+    return []
+
+
+def semantic_live_queue_observation(tasks: list["Task"], *, strict: bool) -> dict[str, Any]:
+    active_tasks = [task for task in tasks if task.status not in TERMINAL_STATUSES]
+    missing: list[str] = []
+    invalid: list[str] = []
+    for task in active_tasks:
+        decision = semantic_task_decision(task)
+        if decision is None:
+            missing.append(task.id)
+        elif decision.get("decision") != "route":
+            invalid.append(task.id)
+    return {
+        "status": "PASS" if not strict or (not missing and not invalid) else "FAIL",
+        "active": len(active_tasks),
+        "missing": missing,
+        "invalid": invalid,
+    }
+
+
+def parse_semantic_intent_argument(raw: str) -> dict[str, Any] | None:
+    value = str(raw or "").strip()
+    if not value:
+        return None
+    if value.startswith("@"):
+        payload = json.loads(Path(value[1:]).expanduser().read_text(encoding="utf-8"))
+    else:
+        payload = json.loads(value)
+    if not isinstance(payload, dict):
+        raise SystemExit("semantic intent must be a JSON object")
+    return payload
+
+
 def classify_task_with_profile_policy(task: "Task", contract: dict[str, Any] | None = None) -> dict[str, Any]:
-    contract = contract or profile_policy_contract(task.project)
+    contract = contract or profile_policy_contract(task.project) or {}
+    semantic_envelope = task.fm.get("semantic_intent")
+    if isinstance(semantic_envelope, dict):
+        routed = evaluate_semantic_intent(semantic_envelope, task_brain_semantic_registry(), surface_text=_semantic_blob(task))
+        policy = routed.get("policy") if isinstance(routed.get("policy"), dict) else {}
+        routing_value = routed.get("routing")
+        semantic_routing: dict[str, Any] = routing_value if isinstance(routing_value, dict) else {}
+        canonical_risks = list(routed.get("risk_dimensions") or semantic_envelope.get("risk_dimensions") or [])
+        return {
+            "schema": "semantic_task_classification_v2",
+            "task_id": task.id,
+            "task_path": str(task.path),
+            "project": task.project,
+            "lane": task.lane,
+            "priority": task.priority,
+            "task_class": str(semantic_routing.get("task_class") or "needs_review"),
+            "intent_class": str(semantic_envelope.get("intent_class") or "unknown"),
+            "risk_dimensions": canonical_risks,
+            "risk_tier": "T3" if canonical_risks else "T1",
+            "required_evidence_labels": list(semantic_envelope.get("evidence_requirements") or []),
+            "runtime_consumers": list(contract.get("runtime_consumers") or PROFILE_POLICY_RUNTIME_CONSUMERS),
+            "enforcement": "fail_closed_structured_semantics",
+            "semantic_authority": routed.get("semantic_authority"),
+            "decision": routed.get("decision"),
+            "brain": routed.get("brain"),
+            "may_execute": bool(policy.get("may_execute")),
+            "may_write_learning": bool(policy.get("may_write_learning")),
+            "content_processing": policy.get("content_processing"),
+            "required_gates": list(routed.get("required_gates") or []),
+            "reasons": ["structured_semantic_intent"],
+            "warnings": [],
+        }
     text = _semantic_blob(task)
     classes = set(contract.get("task_classes") or SEMANTIC_TASK_CLASSES)
     default_class = str(contract.get("default_task_class") or "fullstack-integrated")
@@ -1142,7 +1512,7 @@ def semantic_control_plane_report(*, task_id: str = "", project: str = "", max_t
         "classifications": classifications,
         "classification_count": len(classifications),
         "warnings": sorted(set(str(w) for w in warnings if w)),
-        "safety": "advisory soft-launch only; does not claim, mutate, complete, or fail-close tasks",
+        "safety": "read-only report; strict configured roots fail closed at intake, dispatch, and executable lifecycle states; terminal legacy and non-strict roots remain compatibility-only",
     }
 
 
@@ -1160,7 +1530,7 @@ def semantic_control_plane_selfcheck() -> dict[str, Any]:
         "project_count": len(projects),
         "contracts_checked": len(contracts),
         "warnings": sorted(set(warnings)),
-        "policy": "WARN-only soft gate; missing semantic linkage must not fail closed without fresh ratification and rollout",
+        "policy": "strict configured roots fail closed for missing or invalid semantic linkage before executable states; WARN-only compatibility applies only to terminal legacy or non-strict roots",
     }
 
 
@@ -1201,6 +1571,12 @@ def parse_yamlish(raw: str) -> dict[str, Any]:
                 i = j
                 continue
             data[key] = ""
+        elif val.startswith("{") and val.endswith("}"):
+            try:
+                parsed_object = json.loads(val)
+            except json.JSONDecodeError:
+                parsed_object = None
+            data[key] = parsed_object if isinstance(parsed_object, dict) else val
         elif val.startswith("[") and val.endswith("]"):
             inside = val[1:-1].strip()
             data[key] = [] if not inside else [x.strip().strip('"').strip("'") for x in inside.split(",")]
@@ -1217,6 +1593,8 @@ def yaml_scalar(v: Any) -> str:
         return "true" if v else "false"
     if isinstance(v, list):
         return "[" + ", ".join(json.dumps(str(x), ensure_ascii=False) for x in v) + "]"
+    if isinstance(v, dict):
+        return json.dumps(v, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
     s = str(v)
     if s == "":
         return ""
@@ -1416,6 +1794,12 @@ def list_value(value: Any) -> list[str]:
 
 
 def infer_lane(fm: dict[str, Any]) -> str:
+    semantic = semantic_task_decision_from_fm(fm)
+    if isinstance(semantic, dict):
+        routing_value = semantic.get("routing")
+        routing = routing_value if isinstance(routing_value, dict) else {}
+        lane = str(routing.get("lane") or "")
+        return lane if semantic.get("decision") == "route" and lane in VALID_LANES else "advisory"
     raw = str(fm.get("lane") or "").strip().lower()
     if raw in VALID_LANES:
         return raw
@@ -2517,6 +2901,26 @@ def task_multimodel_intervention_reasons(task: "Task") -> list[str]:
     """
     if task.status in TERMINAL_STATUSES or task_multimodel_passed(task):
         return []
+    semantic = semantic_task_decision(task)
+    if isinstance(semantic, dict):
+        if semantic.get("decision") != "route":
+            return []
+        contract = semantic.get("multimodel")
+        if not isinstance(contract, dict):
+            return []
+        mode = str(contract.get("mode") or "")
+        semantic_reasons = [f"semantic:{item}" for item in contract.get("triggers", []) if str(item).strip()]
+        strong_runtime: list[str] = []
+        if task.retry_count() >= 2:
+            strong_runtime.append("runtime:loop_non_convergence")
+        if task.is_stale_claim():
+            strong_runtime.append("runtime:stale_claim")
+        if mode == "required":
+            base_reasons = semantic_reasons or ["semantic:multimodel_required"]
+            return sorted(set(base_reasons + strong_runtime))
+        if mode == "forbidden":
+            return []
+        return sorted(set(semantic_reasons + strong_runtime))
     reasons: list[str] = []
 
     # --- Explicit contract triggers (native task/intake contract, not heuristic) ---
@@ -2739,6 +3143,8 @@ class Task:
         if self.is_expired(at):
             return False
         if self.status not in {"pending", "retry"}:
+            return False
+        if semantic_intent_lifecycle_failures(self, "claimed"):
             return False
         if any(self.fm.get(field) for field in ("claimed_by", "claim_expires_at", "run_id")):
             return False
@@ -4610,6 +5016,7 @@ def lifecycle_gate(task: Task, to_status: str, actor: str, evidence: list[str] |
     missing_profile = project_profile_failures(task)
     if missing_profile and to_status in PROFILE_GATED_STATUSES and not force:
         failures.extend(missing_profile)
+    failures.extend(semantic_intent_lifecycle_failures(task, to_status))
     missing_mission = mission_envelope_missing(task.fm)
     if missing_mission and to_status in PROFILE_GATED_STATUSES and not force:
         failures.append(f"mission envelope missing {missing_mission}: {task.id}")
@@ -4744,12 +5151,36 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
     title = args.title.strip()
     if args.status not in INITIAL_TASK_STATUSES:
         raise SystemExit(f"add can only create initial statuses {sorted(INITIAL_TASK_STATUSES)}; use transition/reconcile for lifecycle changes")
+    semantic_intent = parse_semantic_intent_argument(getattr(args, "semantic_intent_json", ""))
+    if semantic_intent is None and semantic_intent_strict_for_live_intake():
+        raise SystemExit("live task intake requires --semantic-intent-json; missing intent routes to needs_review and cannot create an executable task")
+    semantic_decision = evaluate_semantic_intent(semantic_intent, task_brain_semantic_registry(), surface_text="") if semantic_intent is not None else None
+    if semantic_intent is not None and (not isinstance(semantic_decision, dict) or semantic_decision.get("decision") != "route"):
+        reasons = semantic_decision.get("required_gates", []) if isinstance(semantic_decision, dict) else ["valid_semantic_intent_required"]
+        raise SystemExit(f"semantic intent rejected; needs_review={reasons}")
+    knowledge_recall = recall_semantic_knowledge(semantic_intent) if semantic_intent is not None else None
+    if (
+        isinstance(knowledge_recall, dict)
+        and knowledge_recall.get("status") != "PASS"
+        and semantic_intent_strict_for_live_intake()
+    ):
+        raise SystemExit("local brain knowledge recall failed; strict intake remains fail-closed and no task was created")
     lane_arg = (getattr(args, "lane", "auto") or "auto").strip().lower()
     if lane_arg != "auto" and lane_arg not in VALID_LANES:
         raise SystemExit(f"lane must be one of {['auto', *VALID_LANES]}")
     normalized_priority_layer = (getattr(args, "priority_layer", "") or "").strip()
     dependency_order = [x.strip() for x in (getattr(args, "dependency_order", "") or "").split(",") if x.strip()]
     normalized_multimodel_triage_result = (getattr(args, "multimodel_triage_result", "") or "").strip()
+    if isinstance(semantic_decision, dict):
+        semantic_mm = semantic_decision.get("multimodel")
+        semantic_mm_mode = str(semantic_mm.get("mode") or "") if isinstance(semantic_mm, dict) else ""
+        legacy_mm_requested = bool(
+            getattr(args, "requires_multimodel", False)
+            or str(getattr(args, "multimodel_reason", "") or "").strip()
+            or str(getattr(args, "expected_participants", "") or "").strip()
+        )
+        if semantic_mm_mode == "forbidden" and legacy_mm_requested:
+            raise SystemExit("legacy multimodel fields conflict with semantic_intent multimodel.mode=forbidden")
     missing_required_fields: list[str] = []
     if not normalized_priority_layer:
         missing_required_fields.append("priority_layer")
@@ -4774,7 +5205,11 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         i += 1
     concepts = [x.strip() for x in (args.concepts or "task").split(",") if x.strip()]
     preliminary = {"lane": "" if lane_arg == "auto" else lane_arg, "project": args.project, "concepts": concepts, "type": "task"}
+    if semantic_intent is not None:
+        preliminary["semantic_intent"] = semantic_intent
     lane = infer_lane(preliminary)
+    if semantic_intent is not None and lane_arg != "auto" and lane_arg != lane:
+        raise SystemExit(f"explicit lane conflicts with semantic intent: explicit={lane_arg} semantic={lane}")
     source_weighting_policy_ref = source_weighting_policy_ref_for_project(args.project) if lane == "work" and args.project else ""
     fm = {
         "type": "task",
@@ -4793,7 +5228,10 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "acceptance_criteria": [args.accept] if args.accept else [],
         "red_lines": split_csv_frontmatter_value(",".join(getattr(args, "red_line", []) or [])),
         "non_goals": split_csv_frontmatter_value(",".join(getattr(args, "non_goal", []) or [])),
-        "evidence_refs": split_csv_frontmatter_value(",".join(getattr(args, "evidence_ref", []) or [])),
+        "evidence_refs": list(dict.fromkeys([
+            *split_csv_frontmatter_value(",".join(getattr(args, "evidence_ref", []) or [])),
+            *((knowledge_recall or {}).get("context_refs", []) if isinstance(knowledge_recall, dict) else []),
+        ])),
         "capability_delta": getattr(args, "capability_delta", "") or "",
         "anti_drift_check": getattr(args, "anti_drift_check", "") or "",
         "acceptance_evidence": getattr(args, "acceptance_evidence", "") or "",
@@ -4820,6 +5258,11 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
         "evidence": [],
         "concepts": concepts,
     }
+    if semantic_intent is not None:
+        fm["semantic_intent"] = semantic_intent
+        fm["semantic_contract_status"] = "validated"
+        fm["knowledge_recall"] = knowledge_recall
+        fm["knowledge_context_refs"] = list((knowledge_recall or {}).get("context_refs", []))
     for optional_execution_flow_key in (
         "workflow_stage",
         "completion_boundary",
@@ -4843,7 +5286,19 @@ def command_add(args: argparse.Namespace) -> dict[str, Any]:
     missing_mission = mission_envelope_missing(fm)
     if missing_mission:
         raise SystemExit(f"mission-envelope task add produced invalid envelope; missing/invalid={missing_mission}")
-    body = f"# Task - {title}\n\n## Objective\n\n{args.objective or title}\n\n## Acceptance Criteria\n\n- [ ] {args.accept or 'Observable result is recorded in Proof Log.'}\n\n## Plan / Workpad\n\n- [ ] Reconcile current state, dependency order, and architecture boundaries before execution.\n- [ ] Advance the long-term maintainable mainline plan with the next bounded step and staged evidence.\n- [ ] Record proof, status, and any next dependency or handoff required.\n\n## Validation\n\n| Command / Check | Status | Evidence |\n|---|---|---|\n| brain_task_orchestrator list | pending | |\n\n## Proof Log\n\n- {iso(created)}: Task created from local-brain control point.\n\n## Blockers / Confusions\n\n- None.\n\n## Final Handoff\n\n- Status:\n- Evidence:\n- Residual risk:\n"
+    recall_queries = list((knowledge_recall or {}).get("queries", [])) if isinstance(knowledge_recall, dict) else []
+    recall_refs = list((knowledge_recall or {}).get("context_refs", [])) if isinstance(knowledge_recall, dict) else []
+    recall_section = "\n".join([
+        "## Local Knowledge Recall",
+        "",
+        f"- Status: `{(knowledge_recall or {}).get('status', 'not_applicable') if isinstance(knowledge_recall, dict) else 'not_applicable'}`",
+        "- Authority: context only; these sources cannot grant route, execution, lifecycle, side-effect, multimodel, or learning authority.",
+        f"- Queries: {json.dumps(recall_queries, ensure_ascii=False)}",
+        f"- Context refs: {json.dumps(recall_refs, ensure_ascii=False)}",
+        "- Worker gate: inspect relevant hash-bound sources before execution and record which refs informed the plan.",
+        "",
+    ])
+    body = f"# Task - {title}\n\n## Objective\n\n{args.objective or title}\n\n{recall_section}\n## Acceptance Criteria\n\n- [ ] {args.accept or 'Observable result is recorded in Proof Log.'}\n\n## Plan / Workpad\n\n- [ ] Reconcile current state, dependency order, and architecture boundaries before execution.\n- [ ] Advance the long-term maintainable mainline plan with the next bounded step and staged evidence.\n- [ ] Record proof, status, and any next dependency or handoff required.\n\n## Validation\n\n| Command / Check | Status | Evidence |\n|---|---|---|\n| brain_task_orchestrator list | pending | |\n\n## Proof Log\n\n- {iso(created)}: Task created from local-brain control point.\n\n## Blockers / Confusions\n\n- None.\n\n## Final Handoff\n\n- Status:\n- Evidence:\n- Residual risk:\n"
     atomic_write(path, render_frontmatter(fm) + "\n" + body)
     derived_refresh = refresh_derived_task_views("add")
     event_hook = maybe_fire_taskpool_event_hook("task_added", task_id=path.stem, reason="command_add")
@@ -4959,6 +5414,7 @@ def command_add_repo_capability_absorption(args: argparse.Namespace) -> dict[str
         red_line=args.red_line,
         non_goal=args.non_goal,
         evidence_ref=args.evidence_ref,
+        semantic_intent_json=getattr(args, "semantic_intent_json", ""),
     )
     if args.dry_run:
         return {"status": "OK", "dry_run": True, "delegated_add_args": vars(add_args)}
@@ -5018,6 +5474,7 @@ def command_add_work_closeout_pair(args: argparse.Namespace) -> dict[str, Any]:
         workspace="",
         parallel_boundary=args.project or "work-closeout",
         json=True,
+        semantic_intent_json=getattr(args, "semantic_intent_json", ""),
     )
     impl_args = argparse.Namespace(
         title=f"{title}｜已发补/实现发回闭环",
@@ -5429,7 +5886,8 @@ def command_ingest_inbox(args: argparse.Namespace) -> dict[str, Any]:
             lane=meta.get("lane", "auto"), architecture_target=meta.get("architecture_target", ""), capability_delta=meta.get("capability_delta", ""), anti_drift_check=meta.get("anti_drift_check", ""), acceptance_evidence=meta.get("acceptance_evidence", ""), parallel_boundary=meta.get("parallel_boundary", ""),
             priority_layer=meta.get("priority_layer", ""), dependency_order=meta.get("dependency_order", ""), multimodel_triage_result=meta.get("multimodel_triage_result", ""),
             requires_multimodel=truthy_frontmatter_value(meta.get("requires_multimodel")), multimodel_reason=meta.get("multimodel_reason", ""), expected_participants=meta.get("expected_participants", ""), truth_gate=meta.get("truth_gate", ""), evidence_bundle=meta.get("evidence_bundle", ""),
-            layer="L3", workflow_contract=DEFAULT_WORKFLOW, workspace="", objective=meta.get("objective") or meta["title"], accept="Task has proof log and terminal status."
+            layer="L3", workflow_contract=DEFAULT_WORKFLOW, workspace="", objective=meta.get("objective") or meta["title"], accept="Task has proof log and terminal status.",
+            semantic_intent_json=getattr(args, "semantic_intent_json", ""),
         )
         result = command_add(ns) if args.write else {"id": slugify(meta["title"]), "link": "dry-run"}
         created.append(result)
@@ -5718,6 +6176,12 @@ def create_review_gap_repair_child(parent: Task, gap: dict[str, Any], *, actor: 
         f"Parent `{parent.id}` has structured evidence for: {required_text}. "
         "The repair child records command/file/artifact/proof evidence and does not directly transition the parent to done."
     )
+    parent_semantic_intent = parent.fm.get("semantic_intent")
+    inherited_semantic_intent = (
+        json.dumps(parent_semantic_intent, ensure_ascii=False)
+        if parent.fm.get("semantic_contract_status") == "validated" and isinstance(parent_semantic_intent, dict)
+        else ""
+    )
     add_kwargs = dict(
         title=title,
         priority=priority,
@@ -5748,6 +6212,7 @@ def create_review_gap_repair_child(parent: Task, gap: dict[str, Any], *, actor: 
         red_line=["no direct done permission", "do not weaken lifecycle_gate", "do not fabricate implementation evidence"],
         non_goal=["bypass review", "mark parent done without evidence"],
         evidence_ref=[f"task:{parent.id}"],
+        semantic_intent_json=inherited_semantic_intent,
         json=True,
     )
     previous_hook_disabled = os.environ.get("HERMES_TASKPOOL_EVENT_HOOK_DISABLED")
@@ -9643,6 +10108,13 @@ def command_eligibility_check(args: argparse.Namespace) -> dict[str, Any]:
             warnings.append(f"raw_next_allowlist_miss:{task.id}; using allowlisted fallback:{fallback.id}")
             task = fallback
     allowlist_hit = bool(task and autorun_allowlist_matches(task, allowlist))
+    if task and semantic_intent_strict_for_live_intake():
+        semantic = semantic_task_decision(task)
+        if semantic is None:
+            reasons.append("semantic_intent_missing_needs_review")
+        elif semantic.get("decision") != "route":
+            reasons.append("semantic_intent_invalid_needs_review")
+            warnings.extend(f"semantic_gate:{item}" for item in semantic.get("required_gates", []))
     if os.environ.get(AUTORUN_ENV_FLAG) != "1":
         reasons.append("autorun_disabled")
     if os.environ.get("HERMES_LOCAL_BRAIN_AUTORUN_KILL") == "1":
@@ -10675,6 +11147,25 @@ def ratification_verifier_selftest() -> dict[str, Any]:
     }
 
 
+def priority_preemption_ready(counts: dict[str, Any], selected_lanes: set[str], priority_lane: str) -> bool:
+    """Idle is neutral; otherwise the active priority lane must be selected."""
+    if int(counts.get("active") or 0) == 0 and int(counts.get("dispatchable") or 0) == 0:
+        return True
+    by_lane = counts.get("by_lane") or {}
+    return bool(by_lane.get(priority_lane, 0)) and priority_lane in selected_lanes
+
+
+def autorun_bridge_ready(eligibility: dict[str, Any]) -> bool:
+    """Accept an explicit safe-idle denial, never an error-shaped denial."""
+    if eligibility.get("status") != "PASS":
+        return False
+    if eligibility.get("eligible") is True:
+        return True
+    safe_denials = {"autorun_disabled", "allowlist_empty", "allowlist_miss", "no_dispatchable_task"}
+    reasons = {str(reason) for reason in eligibility.get("reasons", [])}
+    return bool(reasons & safe_denials) and reasons <= safe_denials
+
+
 def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
     """Read-only readiness report for long-running unattended taskpool autonomy.
 
@@ -10687,6 +11178,15 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
     eligibility = command_eligibility_check(argparse.Namespace(task="", actor=getattr(args, "actor", "hermes-autorun"), no_reconcile=True, json=True))
     proof_ok, proof_failures = verify_autorun_proof_chain()
     verifier = ratification_verifier_selftest()
+    semantic_gate = semantic_contract_selfcheck()
+    semantic_recall_gate = semantic_knowledge_recall_selfcheck()
+    semantic_registry = task_brain_semantic_registry()
+    semantic_registry_reasons = validate_capability_registry(semantic_registry)
+    semantic_runtime_config_valid = not semantic_registry_reasons and semantic_intent_strict_for_live_intake()
+    live_observation = semantic_live_queue_observation(iter_tasks(), strict=semantic_intent_strict_for_live_intake())
+    live_active_count = int(live_observation["active"])
+    live_missing_semantics = list(live_observation["missing"])
+    live_invalid_semantics = list(live_observation["invalid"])
     autorun_allowlist = load_autorun_allowlist()
     multimodel_allowlist = load_multimodel_allowlist()
     write_allowlist, write_allowlist_status = load_json_list_file(AUTONOMY_WRITE_ALLOWLIST)
@@ -10703,17 +11203,21 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
     selected_lanes = set(spine_summary.get("parallel_selected_lanes") or [])
     by_lane = counts.get("by_lane") or {}
     priority_lane = "evolution" if priority_mode == "evolution-first" else "work"
-    priority_lane_available = bool(by_lane.get(priority_lane, 0))
-    priority_lane_selected = priority_lane in selected_lanes or (not selected_lanes and int(spine_summary.get("parallel_selected_count") or 0) >= 1)
+    priority_ready = priority_preemption_ready(counts, selected_lanes, priority_lane)
+    bridge_ready = autorun_bridge_ready(eligibility)
     checks = [
         {"id": "CHK-EVIDENCE-SPINE", "passed": evidence_spine.get("status") == "OK" and required_evidence_ids <= evidence_ids, "evidence": "E-TP-* stable IDs"},
         {"id": "CHK-GATES", "passed": evidence_spine.get("gate_status") == "PASS" and spine_summary.get("selfcheck") == "PASS" and spine_summary.get("proof_check") == "PASS" and spine_summary.get("boundary_check") == "PASS", "evidence": "selfcheck/proof-check/boundary-check"},
         {"id": "CHK-CRON-OBSERVABILITY", "passed": spine_summary.get("cron_status") == "OK" and not spine_summary.get("cron_required_missing"), "evidence": "required taskpool cron jobs are readable and present", "missing": spine_summary.get("cron_required_missing", [])},
         {"id": "CHK-AUTO-COMPLETER-SEMANTICS", "passed": spine_summary.get("auto_completer_semantic_status") in SAFE_AUTO_COMPLETER_SEMANTIC_STATUSES and spine_summary.get("auto_completer_safe_for_next_tick") is True, "evidence": "auto-completer cron status is semantically safe"},
         {"id": "CHK-PROOF-CHAIN", "passed": proof_ok, "evidence": str(AUTORUN_PROOF_LOG), "failures": proof_failures},
-        {"id": "CHK-PRIORITY-MODE-PREEMPTION", "passed": priority_lane_available and priority_lane_selected, "evidence": f"parallel-dispatch-dry-run selected priority lane {priority_lane}", "priority_mode": priority_mode, "selected_lanes": sorted(selected_lanes)},
+        {"id": "CHK-PRIORITY-MODE-PREEMPTION", "passed": priority_ready, "evidence": f"priority lane {priority_lane} is selected when dispatchable work exists; idle is neutral", "priority_mode": priority_mode, "selected_lanes": sorted(selected_lanes), "idle": int(counts.get("active") or 0) == 0 and int(counts.get("dispatchable") or 0) == 0},
         {"id": "CHK-STALE-CLAIMS", "passed": int(counts.get("stale_claims") or 0) == 0, "evidence": "canonical task counts"},
-        {"id": "CHK-AUTORUN-BRIDGE", "passed": eligibility.get("status") == "PASS" and (eligibility.get("eligible") is True or "autorun_disabled" in eligibility.get("reasons", []) or "allowlist_empty" in eligibility.get("reasons", []) or "allowlist_miss" in eligibility.get("reasons", [])), "evidence": "eligibility-check is fail-closed and non-mutating"},
+        {"id": "CHK-AUTORUN-BRIDGE", "passed": bridge_ready, "evidence": "eligibility-check is fail-closed, non-mutating, and explicitly idle-safe"},
+        {"id": "CHK-SEMANTIC-INTENT-CONTRACT", "passed": semantic_gate.get("status") == "PASS", "evidence": "TaskSemanticEnvelope evaluator is surface-text invariant and unsafe side effects fail closed"},
+        {"id": "CHK-SEMANTIC-KNOWLEDGE-RECALL", "passed": semantic_recall_gate.get("status") == "PASS", "evidence": "bounded hash-bound recall excludes excerpts and remains authority-neutral", **semantic_recall_gate},
+        {"id": "CHK-SEMANTIC-RUNTIME-CONFIG", "passed": semantic_runtime_config_valid or not semantic_intent_strict_for_live_intake(), "evidence": "capability registry schema and brain/allowed-intents/lane/task-class/profile contracts are valid; live intake is strict", "strict_live_intake": semantic_intent_strict_for_live_intake(), "failures": semantic_registry_reasons},
+        {"id": "CHK-SEMANTIC-LIVE-QUEUE", "passed": not semantic_intent_strict_for_live_intake() or (not live_missing_semantics and not live_invalid_semantics), "evidence": "active live tasks have valid structured envelopes", "active": live_active_count, "missing": live_missing_semantics, "invalid": live_invalid_semantics},
         {"id": "CHK-RATIFICATION-VERIFIER", "passed": verifier.get("status") == "PASS", "evidence": "ratification verifier pass+hollow-shell fail selftest"},
         {"id": "CHK-DEFAULT-NO-DONE", "passed": True, "evidence": "autorun-runner/auto-claim-and-handoff code path stops at claim+handoff; lifecycle gate requires review->done and proof:<sha256>"},
     ]
@@ -10759,6 +11263,18 @@ def command_autonomy_readiness(args: argparse.Namespace) -> dict[str, Any]:
         "activation_policy": "Architecture PASS is safe fail-closed. Full unattended runtime requires explicit env vars, non-empty allowlist, write surface allowlist, no kill switch, and continuing proof/multimodel gates.",
         "evidence_spine_summary": spine_summary,
         "eligibility_probe": {k: eligibility.get(k) for k in ("status", "eligible", "mode", "reasons", "task_id", "allowlist_hit")},
+        "semantic_intent_contract": semantic_gate,
+        "semantic_knowledge_recall": semantic_recall_gate,
+        "semantic_control_plane": {
+            "architecture_capability": semantic_gate.get("status"),
+            "runtime_config": "PASS" if semantic_runtime_config_valid else ("COMPAT" if not semantic_intent_strict_for_live_intake() else "FAIL"),
+            "live_queue_observation": {
+                "status": "PASS" if not live_missing_semantics and not live_invalid_semantics else "FAIL",
+                "active": live_active_count,
+                "missing": live_missing_semantics,
+                "invalid": live_invalid_semantics,
+            },
+        },
         "ratification_verifier_selftest": verifier,
         "allowlists": {
             "autorun_path": str(AUTORUN_ALLOWLIST),
@@ -10986,6 +11502,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--red-line", action="append", default=[])
     ap.add_argument("--non-goal", action="append", default=[])
     ap.add_argument("--evidence-ref", action="append", default=[])
+    ap.add_argument("--semantic-intent-json", default="", help="versioned TaskSemanticEnvelope JSON or @path; required for live strict intake")
     ap.add_argument("--json", action="store_true")
 
     wcp = sub.add_parser("add-work-closeout-pair")
@@ -10996,6 +11513,7 @@ def build_parser() -> argparse.ArgumentParser:
     wcp.add_argument("--expires-days", type=int, default=30)
     wcp.add_argument("--objective", default="")
     wcp.add_argument("--accept", default="")
+    wcp.add_argument("--semantic-intent-json", default="", help="versioned TaskSemanticEnvelope JSON or @path; required for live strict intake")
     wcp.add_argument("--json", action="store_true")
 
     rcap = sub.add_parser("add-repo-capability-absorption", help="Create a governed task for absorbing an external repo/source capability")
@@ -11027,6 +11545,7 @@ def build_parser() -> argparse.ArgumentParser:
     rcap.add_argument("--evidence-ref", action="append", default=[])
     rcap.add_argument("--expires-at", default="")
     rcap.add_argument("--expires-days", type=int, default=30)
+    rcap.add_argument("--semantic-intent-json", default="", help="versioned TaskSemanticEnvelope JSON or @path; required for live strict intake")
     rcap.add_argument("--dry-run", action="store_true")
     rcap.add_argument("--json", action="store_true")
 
@@ -11056,6 +11575,7 @@ def build_parser() -> argparse.ArgumentParser:
     ip = sub.add_parser("ingest-inbox")
     ip.add_argument("--write", action="store_true")
     ip.add_argument("--expires-days", type=int, default=30)
+    ip.add_argument("--semantic-intent-json", default="", help="versioned TaskSemanticEnvelope JSON or @path applied to every ingested draft")
     ip.add_argument("--json", action="store_true")
 
     recp = sub.add_parser("reconcile")
