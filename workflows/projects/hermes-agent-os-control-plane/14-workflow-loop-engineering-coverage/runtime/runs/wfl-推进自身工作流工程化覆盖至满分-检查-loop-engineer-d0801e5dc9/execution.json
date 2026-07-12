@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_loop_execution_v1",
+  "status": "PASS",
+  "action": "local_asset_scaffold",
+  "asset_workdir": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/runtime/assets/wfa-推进自身工作流工程化覆盖至满分-检查-loop-engineer-16697d6499",
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-07-09T11:29:56.118731+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot drawer row semantics locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/drawer-favorite-mutation/PWA/production certified",
+  "slice": "spot-coin-drawer-row-semantics",
+  "targetCommit": "a3cb019 fix: expose spot drawer rows as buttons",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_75ab7bac",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_6254e5c1"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-row-semantics/spot-coin-drawer-row-semantics-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-row-semantics/spot-coin-drawer-row-semantics-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "drawer ListItem rows are button type=button",
+    "drawer row aria-label selects trading pair",
+    "favorite IconButton is button type=button and stops propagation",
+    "row selection closes drawer",
+    "no order/password mutation, no credential/session read, no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no drawer favorite mutation certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

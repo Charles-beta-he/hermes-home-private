@@ -1,0 +1,47 @@
+{
+  "audit_semantics": {
+    "evidence_freshness_days": 14,
+    "known_negative_status": false,
+    "maturity_verdict": "validated_local_safe_boundary_operator_a_minus_not_a_plus",
+    "next_audit_action": "mobile IA reduction and semantic screen-reader pass before A+ claim"
+  },
+  "current_components": {
+    "desktop_control_console": "pnpm_verify_pass_after_safe_boundary_fixes",
+    "focus_trace": "36/36 visible",
+    "human_inbox_ui_harness": "pass_zero_issue",
+    "mobile_ia": "0 horizontal overflow, 0 small visible targets, 17.2 scroll screens",
+    "safe_boundary_uimax": "A- local operator audit / B+ visual polish",
+    "sampled_contrast": "0 low contrast findings",
+    "topology_ui_harness": "pass_zero_issue_sparse_route_aware"
+  },
+  "display_name": "Hermes Control Console",
+  "id": "hermes-control-console",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/control-console-pnpm-verify-after-safe-boundary-harness-20260707T084800Z.log",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/control-console-safe-boundary-uimax-audit-final-20260707T085000Z.log",
+    "/Users/charles/Desktop/folder/hermes-control-console/artifacts/uimax/safe-boundary-20260707T082600Z/summary.json",
+    "/Users/charles/Desktop/folder/hermes-control-console/artifacts/uimax/safe-boundary-20260707T082600Z/desktop-focus-contrast.png",
+    "/Users/charles/Desktop/folder/hermes-control-console/artifacts/uimax/safe-boundary-20260707T082600Z/mobile-ia.png",
+    "/Users/charles/Desktop/folder/hermes-control-console/artifacts/ui-harness/2026-07-07_08-37-36-824/summary.json",
+    "/Users/charles/Desktop/folder/hermes-control-console/artifacts/human-inbox-harness/2026-07-07_08-38-22-364/summary.json",
+    "/Users/charles/Desktop/folder/hermes-control-console/artifacts/uimax/UIMAX_REPORT_20260707T085500Z.md",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/control-console-uimax-report-20260707T085500Z.md"
+  ],
+  "portfolio_profile": true,
+  "previous_status": "validated-local-slice",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md",
+  "project": "hermes-control-console",
+  "project_type": "operator-console",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [
+    {
+      "merge_policy": "portfolio_metadata_only",
+      "relation": "governed_by",
+      "target": "project-portfolio-os"
+    }
+  ],
+  "role": "Desktop local Hermes control console: projection health, capability ladder, mission/taskpool/human inbox/evidence/cron operator surface.",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-control-console",
+  "status": "validated-local-safe-boundary-operator-a-minus",
+  "updated_at": "2026-07-07T16:58:00+08:00"
+}

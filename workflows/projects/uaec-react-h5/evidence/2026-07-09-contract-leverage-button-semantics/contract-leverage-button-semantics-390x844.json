@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:59:10.557Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tag": "button",
+    "type": "button",
+    "ariaLabel": "调整合约杠杆，当前10x",
+    "text": "10x",
+    "visible": true,
+    "hasDrawerTitle": true,
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "hasDrawerTitle": true,
+    "hasLeverageOption": true,
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-button-semantics/contract-leverage-button-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterOpen": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true,
+    "noLeverageValueSubmitted": true
+  },
+  "forbiddenRequests": []
+}

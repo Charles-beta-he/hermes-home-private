@@ -1,0 +1,92 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T08:53:29.031Z",
+  "before": {
+    "url": "http://127.0.0.1:4173/market?tab=0",
+    "textSample": "自选\n全部\n主板区\nRWA区\nUSDT\n24H量\n最新价\n日涨跌\nBTC\nUSDT\n2746.14\n62,899.11\n$62,899.11\n-0.73%\nETH\nUSDT\n5.19万\n1,754.12\n$1,754.12\n-0.97%\nTRX\nUSDT\n2.58亿\n0.33\n$0.33\n-0.12%\nSOL\nUSDT\n169.46万\n78.12\n$78.12\n-4.66%\nPENDLE\nUSDT\n1504.86万\n1.57\n$1.57\n+5.14%\nUSD1\nUSDT\n1.64亿\n1.00\n$1.00\n+0.03%\n添加自选\n首页\n行情\n交易\n合约\n资产\n首页\n行情\n交易\n合约\n资产",
+    "btcRow": {
+      "text": "BTC\nUSDT\n2746.14\n62,899.11\n$62,899.11\n-0.73%",
+      "rect": {
+        "x": 0,
+        "y": 175,
+        "width": 390,
+        "height": 58.796875
+      }
+    },
+    "rows": [
+      {
+        "text": "BTC\nUSDT\n2746.14\n62,899.11\n$62,899.11\n-0.73%",
+        "rect": {
+          "x": 0,
+          "y": 175,
+          "width": 390,
+          "height": 58.796875
+        }
+      },
+      {
+        "text": "ETH\nUSDT\n5.19万\n1,754.12\n$1,754.12\n-0.97%",
+        "rect": {
+          "x": 0,
+          "y": 233.796875,
+          "width": 390,
+          "height": 58.796875
+        }
+      },
+      {
+        "text": "TRX\nUSDT\n2.58亿\n0.33\n$0.33\n-0.12%",
+        "rect": {
+          "x": 0,
+          "y": 292.59375,
+          "width": 390,
+          "height": 58.796875
+        }
+      },
+      {
+        "text": "SOL\nUSDT\n169.46万\n78.12\n$78.12\n-4.66%",
+        "rect": {
+          "x": 0,
+          "y": 351.390625,
+          "width": 390,
+          "height": 58.796875
+        }
+      },
+      {
+        "text": "PENDLE\nUSDT\n1504.86万\n1.57\n$1.57\n+5.14%",
+        "rect": {
+          "x": 0,
+          "y": 410.1875,
+          "width": 390,
+          "height": 58.796875
+        }
+      },
+      {
+        "text": "USD1\nUSDT\n1.64亿\n1.00\n$1.00\n+0.03%",
+        "rect": {
+          "x": 0,
+          "y": 468.984375,
+          "width": 390,
+          "height": 58.796875
+        }
+      }
+    ]
+  },
+  "after": {
+    "url": "http://127.0.0.1:4173/market/market-interface?symbol=btcusdt&tradeName=BTC%2FUSDT&partnerTradeId=619477309505671168",
+    "pathname": "/market/market-interface",
+    "symbol": "btcusdt",
+    "tradeName": "BTC/USDT",
+    "partnerTradeIdPresent": true,
+    "hasSlashTitle": true,
+    "hasTabs": true,
+    "hasBuySell": true,
+    "hasBrokenCompactTitle": false,
+    "textSample": "BTC/USDT\n62899.12\n≈62899.12 USD\n-0.73%\n24h高\n63,263.06\n24h成交量\n2746.14\n24h低\n61,547.71\n24h成交额\n1.71亿\n1分\n5分\n15分\n1小时\n4小时\n日线\n深度图\n盘口\n成交\n简介\n买量(BTC)\n价格(USDT)\n卖量(BTC)\n7.75209\n62899.11\n0.00034\n62899.1\n0.00016\n62899.09\n0.00018\n62899\n0.00018\n62898.89\n0.004\n62898.88\n0.47664\n62897.86\n0.50239\n62897.84\n0.07518\n62897.83\n1.42553\n62897.82\n0.18626\n62897.81\n0.004\n62897.52\n0.04024\n62897.44\n0.01731\n62897.38\n0.00008\n62897.35\n0.00008\n62897.21\n0.02384\n62896.85\n0.01264\n62896.13\n0.00009\n62896.09\n0.00008\n62895.99\n62899.12\n0.06426\n62899.13\n0.00097\n62899.14\n0.00016\n62899.22\n0.00009\n62899.59\n0.00032\n62899.85\n0.00009\n62899.99\n0.00018\n62900\n0.03517\n62900.17\n0.00016\n62900.48\n0.00026\n62900.98\n0.00032\n62901.05\n0.00008\n62901.14\n0.00581\n62901.33\n0.00008\n62901.36\n0.00009\n62901.47\n0.00032\n62901.99\n0.00018\n62902\n0.02418\n62902.2\n0.00008\n62902.26\n0.00018\n买入\n卖出"
+  },
+  "expectations": {
+    "wholeRowClickable": true,
+    "tradeNameDisplayWithSlash": "BTC/USDT",
+    "symbolRequestParamPreserved": true,
+    "marketInterfaceTabsVisible": true,
+    "bottomBuySellVisible": true
+  }
+}

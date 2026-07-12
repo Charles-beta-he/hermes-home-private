@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-07-09T15:34:47.966312+00:00",
+  "sourceDelegation": "deleg_1ea35a32",
+  "verifierVerdict": "AMEND",
+  "classification": "stale-environment-amend-not-product-blocker",
+  "targetSlice": "contract-leverage-drawer-a11y",
+  "targetCommit": "b0a286f",
+  "currentHead": "1a09de4",
+  "freshGitStatus": "## dev...origin/dev [ahead 49]",
+  "targetContainedInHead": true,
+  "targetEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-drawer-a11y/contract-leverage-drawer-a11y-390x844.json",
+  "targetLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-drawer-a11y-loop-2026-07-09T15-24-21-797713+00-00.json",
+  "objectiveBlockerFromVerifier": "verifier final read saw unstaged src/pages/ContractPage/ContractPositionPage.tsx from an auth-gated exploratory candidate",
+  "currentResolution": "exploratory ContractPositionPage WIP was rolled back; current fresh readback is clean and target commit b0a286f is contained in HEAD",
+  "action": "do not upgrade from AMEND; re-dispatch clean-window verifier and pause further repo edits until retry can read clean state",
+  "closedGates": [
+    "no push",
+    "no deploy",
+    "no device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

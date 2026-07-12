@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:47:13.400Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "triggerExpanded": "true",
+    "rowTag": "button",
+    "rowType": "button",
+    "rowLabel": "选择交易对 BTC/USDT",
+    "rowVisible": true,
+    "favoriteTag": "button",
+    "favoriteType": "button",
+    "favoriteLabel": "收藏 BTC/USDT",
+    "favoriteVisible": true,
+    "hasDrawerTitle": true,
+    "hasSearch": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "triggerExpanded": "false",
+    "hasTradeTitle": true,
+    "hasDrawerTitle": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-row-semantics/spot-coin-drawer-row-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSelect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

@@ -1,0 +1,62 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:44:53.524Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tablistLabel": "合约委托类型筛选",
+    "tabs": [
+      {
+        "label": "合约委托筛选：限价/市价",
+        "type": "button",
+        "selected": "true",
+        "text": "限价/市价",
+        "visible": true
+      },
+      {
+        "label": "合约委托筛选：高级限价委托",
+        "type": "button",
+        "selected": "false",
+        "text": "高级限价委托",
+        "visible": true
+      },
+      {
+        "label": "合约委托筛选：止盈止损",
+        "type": "button",
+        "selected": "false",
+        "text": "止盈止损",
+        "visible": true
+      }
+    ],
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tabs": [
+      {
+        "label": "合约委托筛选：限价/市价",
+        "selected": "false"
+      },
+      {
+        "label": "合约委托筛选：高级限价委托",
+        "selected": "false"
+      },
+      {
+        "label": "合约委托筛选：止盈止损",
+        "selected": "true"
+      }
+    ],
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-entrust-tabs-semantics/contract-entrust-tabs-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterTabChange": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

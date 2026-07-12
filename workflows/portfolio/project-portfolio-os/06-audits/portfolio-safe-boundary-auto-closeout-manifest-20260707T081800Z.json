@@ -1,0 +1,115 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4724,
+      "path": "/Users/charles/Desktop/folder/hermes-control-console/artifacts/uimax/UIMAX_REPORT_20260707T080800Z.md",
+      "sha256": "57826c5eeb8d904212838c9892befd3cf410a88589036722370a8c8d2bae9eb8"
+    },
+    {
+      "bytes": 1884,
+      "path": "/Users/charles/Desktop/folder/hermes-control-console/artifacts/ui-harness/2026-07-07_06-47-32-415/summary.json",
+      "sha256": "ca40eda186e5983085ea34b7d5db25e6f057660d779e40fb0b8c72ecc3019766"
+    },
+    {
+      "bytes": 180,
+      "path": "/Users/charles/Desktop/folder/hermes-control-console/artifacts/human-inbox-harness/2026-07-07_06-48-19-715/summary.json",
+      "sha256": "75cdb5ae390f7d94443f048bc46d01a0f32b516bf4f7e13c179db6e7c289a76e"
+    },
+    {
+      "bytes": 106,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-local-demo-test-20260707T080100Z.json",
+      "sha256": "d7ddc9e4abb2fa9f69f583c81e9fb03902917aeab2d84fac99477b9fcf1fb239"
+    },
+    {
+      "bytes": 950,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-cli-readback-20260707T080100Z.json",
+      "sha256": "118a5b9791fea7945e2a23550fad01d998ac90eb755a38eedbb891f1cb0e3566"
+    },
+    {
+      "bytes": 752,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-browser-readback-20260707T081000Z.json",
+      "sha256": "49ced575d7f7b525606b3e55bf40864b257472d377c1d6c3284f93cd6bb15c13"
+    },
+    {
+      "bytes": 3361,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-stale-recovery-loop-20260707T080200Z.jsonl",
+      "sha256": "b33e95b38d3bd6be4498a2b9c9a048fab40a2c86f6218cbe19588b92f7631555"
+    },
+    {
+      "bytes": 3232,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-mission-doctor-after-full-stale-recovery-20260707T080500Z.json",
+      "sha256": "2d0d000a58c16749a9af5b639ef47bedc5488c9fd86a5590ac647bf64311ce67"
+    },
+    {
+      "bytes": 17048,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-semantic-audit-after-safe-boundary-auto-20260707T081500Z.json",
+      "sha256": "0f5c32ac24608cef576fd352f456d8f1ae649ba5e2598ac32c19c715da3decb7"
+    },
+    {
+      "bytes": 319,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/hermes-portfolio-verify-after-safe-boundary-auto-20260707T081500Z.json",
+      "sha256": "45cc13a86a4b6992a400be343d1d1b85cd21be8a7b04c1a283ef0495252d1c02"
+    },
+    {
+      "bytes": 442,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-doctor-after-safe-boundary-auto-20260707T081500Z.json",
+      "sha256": "8dfe94b70098e08f2d5a737c6cb21fd229fe6b23f609716f32642cb6ee316283"
+    },
+    {
+      "bytes": 674,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-strict-verify-after-safe-boundary-auto-20260707T081500Z.json",
+      "sha256": "fdeabe88ea72cce9c97dab16faafcafd54b82bcbaa3158598a0f46d258207fb7"
+    }
+  ],
+  "blocked_boundaries_preserved": [
+    "push",
+    "deploy",
+    "external_dispatch",
+    "credential_entry",
+    "payment",
+    "destructive_action",
+    "production_runtime_promotion",
+    "A+ UI acceptance"
+  ],
+  "completed_slices": {
+    "control_console_uimax_local_report": {
+      "grade": "B+ / local-operator-ready",
+      "not_a_plus": true,
+      "status": "pass"
+    },
+    "persona_wake_local_runtime_demo": {
+      "external_send_enabled": false,
+      "external_side_effects": [],
+      "status": "pass",
+      "voice_enabled": false
+    },
+    "portfolio_verification": {
+      "coverage_percent": 100.0,
+      "doctor_ok": true,
+      "portfolio_verify_ok": true,
+      "semantic_ok": true,
+      "strict_ok": true
+    },
+    "self_extension_stale_signal_recovery": {
+      "after_pending": 0,
+      "batches": 11,
+      "before_pending": 2122,
+      "selected_total": 2122,
+      "status": "pass"
+    }
+  },
+  "created_at": "2026-07-07T16:18:00+08:00",
+  "independent_review": {
+    "blocking_notes": [],
+    "bytes": 1507,
+    "minor_notes": [
+      "Mission doctor green encoded via artifact pointer and slice status; artifact hashes not independently verified by reviewer."
+    ],
+    "model": "claude-fable-5",
+    "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/fable-portfolio-safe-boundary-auto-review-output-20260707T081900Z.md",
+    "sha256": "a7274818926472c60d10b85e12a5dc1a527164606d4ebdfbf025a635fc7b2445",
+    "verdict": "PASS"
+  },
+  "schema": "portfolio_safe_boundary_auto_closeout_v1",
+  "scope": "local reversible safe boundary automation after user authorization"
+}

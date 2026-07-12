@@ -1,0 +1,6 @@
+{
+  "returncode": 2,
+  "stderr": "/Users/charles/.hermes/hermes-agent/venv/bin/python: can't open file '/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_doctor.py': [Errno 2] No such file or directory\n",
+  "ok": false,
+  "checked_at": "2026-07-06T12:17:36.145967+08:00"
+}

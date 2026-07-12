@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-09T11:09:29.886827+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot buy/sell tab semantic button slice locally certified with independent verifier APPROVE; not push/device/auth/PWA/production certified",
+  "slice": "spot-tab-semantics",
+  "targetCommit": "57c4eee fix: use semantic spot side tabs",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_3d34a25f",
+    "verdict": "APPROVE",
+    "objectiveBlockers": []
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-tab-semantics/spot-tab-semantics-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-tab-semantics/spot-tab-semantics-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "buy/sell controls are button elements",
+    "type=button/aria-pressed/aria-label covered by verifier/code readback",
+    "side and buyselltype URL sync preserved",
+    "negative no credential/session read and no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated account certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

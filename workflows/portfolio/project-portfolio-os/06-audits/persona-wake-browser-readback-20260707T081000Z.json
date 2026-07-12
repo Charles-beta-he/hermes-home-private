@@ -1,0 +1,24 @@
+{
+  "blocked_by_design": [
+    "send",
+    "speak",
+    "deploy",
+    "push",
+    "pay",
+    "secret",
+    "delete"
+  ],
+  "created_at": "2026-07-07T16:10:00+08:00",
+  "external_side_effects": [],
+  "interaction": "clicked Wake local stage",
+  "rendered_title": "Hermes Persona Wake — Local Demo",
+  "schema": "persona_wake_browser_readback_v1",
+  "status_after_click": "Local wake acknowledged. No external side effects were invoked.",
+  "url": "file:///Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/persona-wake-local.html",
+  "visible_boundary_copy": [
+    "LOCAL ONLY",
+    "NO EXTERNAL SEND",
+    "NO VOICE DEFAULT",
+    "不包含语音输出、外部发送、部署、密钥、支付或删除能力"
+  ]
+}

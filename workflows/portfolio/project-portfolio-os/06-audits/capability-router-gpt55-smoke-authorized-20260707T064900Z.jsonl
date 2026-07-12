@@ -1,0 +1,2 @@
+{"ts": "2026-07-07T06:39:30Z", "run_id": "77d146f4", "iteration": 1, "model": "gpt-5.5", "provider": "openai-codex", "ok": true, "duration_s": 14.985, "tokens_in": 17, "tokens_out": 24, "cost_usd": 1e-08, "route": "probe:smoke", "task_id": "smoke-77d146f4-1-gpt-5.5", "error": "session_id: 20260707_143918_7ba577", "output_preview": "ACK\n\n[Hermes verification gate] 门禁未认证：不能声明已完成/已验收；需要补充客观证据和独立 verifier vote 后再提升为 certified。"}
+{"status": "pass", "models": 1, "passed": 1, "run_id": "77d146f4"}

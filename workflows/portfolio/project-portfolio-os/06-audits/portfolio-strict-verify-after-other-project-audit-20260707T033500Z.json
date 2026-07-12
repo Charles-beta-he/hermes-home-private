@@ -1,0 +1,27 @@
+{
+  "schema": "portfolio_os_strict_verify_v1",
+  "ok": true,
+  "doctor_ok": true,
+  "doctor_returncode": 0,
+  "counts": {
+    "error": 0,
+    "warning": 0
+  },
+  "fail_on_warning": false,
+  "doctor": {
+    "schema": "portfolio_doctor_v1",
+    "ok": true,
+    "checked_at": "2026-07-07T03:35:09.888405+00:00",
+    "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+    "profile_dir": "/Users/charles/.hermes/project-profiles",
+    "project_count": 16,
+    "profile_count": 16,
+    "registry_only": [],
+    "profile_only": [],
+    "counts": {
+      "error": 0,
+      "warning": 0
+    },
+    "findings": []
+  }
+}

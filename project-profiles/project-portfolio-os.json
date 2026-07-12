@@ -1,0 +1,33 @@
+{
+  "id": "project-portfolio-os",
+  "project": "project-portfolio-os",
+  "display_name": "Project Portfolio Os",
+  "status": "ledgered",
+  "project_type": "portfolio-governance",
+  "ssot_root": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os",
+  "progress_ledger": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md",
+  "role": "portfolio graph, project relation, progress-ledger, and ratchet governance",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [],
+  "current_components": {
+    "project_profile": "profiled",
+    "portfolio_registry": "ledgered",
+    "progress_ledger": "ledgered",
+    "portfolio_doctor": "validated_current_readback",
+    "strict_verify": "validated_current_readback",
+    "semantic_audit": "script_added_current_slice"
+  },
+  "updated_at": "2026-07-07T14:39:00+08:00",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_doctor.py",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_os_verify.py",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_semantic_audit.py"
+  ],
+  "audit_semantics": {
+    "maturity_verdict": "portfolio_structural_and_semantic_audit_surface",
+    "next_audit_action": "keep doctor and semantic audit green after registry/profile changes",
+    "evidence_freshness_days": 30
+  },
+  "portfolio_profile": true
+}

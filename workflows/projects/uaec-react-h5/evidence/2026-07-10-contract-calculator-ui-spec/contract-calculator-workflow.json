@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-11T02:32:35+08:00",
+  "project": "uaec-react-h5",
+  "slice": "contract-calculator-three-tab-workflow",
+  "result": "PASS_L3_LOCAL_CERTIFIED_PACKET",
+  "commits": [
+    "6e7b04d feat: add contract calculator workflow",
+    "eeb1984 fix: enforce contract calculator input bounds",
+    "2ccad58 docs: record contract calculator workflow"
+  ],
+  "objective": "Expose the Android contract calculator's three anonymous scenarios with current-trade routing, exact formulas, and isolated BY/cross TOTAL tier isolation.",
+  "sourceFacts": {
+    "androidActivity": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/ContractCalculatorActivity.java",
+    "androidLayout": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/res/layout/activity_contractcalculator.xml",
+    "androidEntry": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/ContractUSDTFragment.java",
+    "route": "/contract/calculator?tradeId=<current contractTradeTypeId>",
+    "positionTypes": {"isolated": "BY", "cross": "TOTAL"}
+  },
+  "implementation": {
+    "tabs": ["收益计算", "平仓价格", "强平价格"],
+    "tierStateIsolation": "One replace-only tiers state is keyed by each requested mode; effect cleanup rejects stale requests. BY and TOTAL responses are never appended or merged.",
+    "headerFix": "Fixed viewport header plus explicit 44px content offset; replaces sticky header whose full-page screenshot composition appeared at the document scroll offset.",
+    "errorBoundary": "Known decimal, tier and eligible-tier failures are translated to concise Chinese UI messages.",
+    "runtimeValidation": "Exported formulas reject invalid side/mode discriminants and leverage outside 1..125. UI mirrors Android by clamping leverage to 1..125 on blur and calculation.",
+    "sideEffectsExcluded": ["order", "funds", "authenticated writes", "push", "deploy", "external publish"]
+  },
+  "verification": {
+    "formulaTests": {"status": "PASS", "count": 18},
+    "typescript": "PASS",
+    "focusedEslint": "PASS",
+    "gitDiffCheck": "PASS",
+    "productionBuild": {
+      "status": "PASS",
+      "modulesTransformed": 12673,
+      "chunk": "ContractCalculatorPage-BHb2b63a.js",
+      "sizeKb": 12.06,
+      "gzipKb": 4.56
+    },
+    "runtimeHarness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-calculator-ui-spec/verify_contract_calculator_runtime.py",
+    "runtimeReadback": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-calculator-ui-spec/contract-calculator-runtime-390x640.json",
+    "runtime": {
+      "viewport": "390x640",
+      "noHorizontalOverflow": true,
+      "headerAtInitialTop": 0,
+      "headerAtScrollY113Top": 0,
+      "invalidInputError": "请填写有效且大于零的计算参数",
+      "targetClose": "150.00 USDT",
+      "profit": {"margin": "20.00 USDT", "pnl": "20.00 USDT", "returnRate": "100.00%"},
+      "leverage126Clamp": {"inputAfterCalculate": "125", "margin": "1.60 USDT", "returnRate": "1250.00%"},
+      "isolatedLiquidation": "88.40 USDT",
+      "crossLiquidation": "无法计算",
+      "entryCurrentTrade": "SOLUSDT 永续",
+      "entryDestination": "/contract/calculator?tradeId=1035922175497863168"
+    },
+    "postCommit": {
+      "gitShowCheck": "PASS",
+      "projectCertification": "PASS_L2_LOCAL_LOOP",
+      "certificationReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T18-06-20-969Z.json"
+    },
+    "independentReview": {
+      "status": "APPROVE",
+      "formulaApproval": "APPROVE deleg_07c59424 for c7cc8c3+6b8d4a3",
+      "aggregateFinding": "AMEND deleg_69d7b04a for unenforced leverage bounds",
+      "remediation": "eeb1984",
+      "replacementReview": "APPROVE deleg_9dc361df for c7cc8c3+6b8d4a3+ece522a+6e7b04d+eeb1984+2ccad58; supplemental corroborating APPROVE deleg_c2664568; Claude Code fallback NO_VERDICT_AUTH_DISABLED_403",
+      "verifierSummary": "/Users/charles/.hermes/cache/delegation/subagent-summary-0-20260711_021253_128326.txt"
+    }
+  },
+  "negativeEvidence": [
+    "No JavaScript Number/toFixed money implementation in formula module",
+    "No BY/TOTAL append or mixed list state",
+    "No horizontal overflow at 390px",
+    "No route-level auth requirement",
+    "No order, funds or credential action"
+  ],
+  "boundary": "PASS_L3_LOCAL_CERTIFIED_PACKET covers only the independently approved local anonymous H5 calculator workflow. Android device/WebView, full Android 1:1, remote CI, deployment, production, authenticated writes, orders and funds remain open."
+}

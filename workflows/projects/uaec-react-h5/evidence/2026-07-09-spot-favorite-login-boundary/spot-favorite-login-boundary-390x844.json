@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T09:41:40.714Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=buy&buyselltype=BUY&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "hasTitle": true,
+    "buttonExists": true,
+    "buttonDisabled": false,
+    "buttonLabel": "收藏",
+    "loginBoundaryVisible": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/login",
+    "pathname": "/login"
+  },
+  "negative": {
+    "noCollectionApiBeforeLogin": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true,
+    "anonymousClickRedirectsToLogin": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.png"
+}

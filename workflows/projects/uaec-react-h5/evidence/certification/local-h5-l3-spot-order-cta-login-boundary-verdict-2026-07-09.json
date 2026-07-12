@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-07-09T11:25:42.453572+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "semantic spot order CTA anonymous login-boundary locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/authenticated-order/PWA/production certified",
+  "slice": "spot-order-cta-login-boundary",
+  "targetCommit": "7c9bf88 fix: use semantic spot order cta",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_e122c456",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_e808021b"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-cta-login-boundary/spot-cta-login-boundary-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-cta-login-boundary/spot-cta-login-boundary-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "order CTA is button type=button with aria-label 去登录",
+    "anonymous CTA click routes to /login before order API",
+    "no order API before login",
+    "no credential/session read and no real order evidence retained",
+    "legacy evidence URL IDs redacted in SSOT artifact"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated order certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

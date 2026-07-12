@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "name": "uaec-owned-absolute-adds-context",
+      "actual": "https://testh5.uaec.cc/activity/bonus?foo=1&token=TEST_TOKEN&language=zh_CN&url=https%3A%2F%2Fapi.example.test%2Fv1%2Frest%2Fapp%2F",
+      "ok": true,
+      "tokenLeak": false
+    },
+    {
+      "name": "relative-owned-keeps-relative-return",
+      "actual": "/activity/bonus?token=TEST_TOKEN&language=zh_CN&url=https%3A%2F%2Fapi.example.test%2Fv1%2Frest%2Fapp%2F",
+      "ok": true,
+      "tokenLeak": false
+    },
+    {
+      "name": "third-party-url-unchanged-no-token-leak",
+      "actual": "https://example.org/promo?foo=1",
+      "ok": true,
+      "tokenLeak": false
+    },
+    {
+      "name": "priority-appRedirectUrl-over-redirectUrl-link",
+      "actual": "/app?language=zh_CN&url=https%3A%2F%2Fapi.example.test%2Fv1%2Frest%2Fapp%2F",
+      "ok": true,
+      "tokenLeak": false
+    }
+  ]
+}

@@ -1,0 +1,6100 @@
+{
+  "generatedAt": "2026-07-09T08:01:55.421150+00:00",
+  "repo": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+  "domains": {
+    "app_shell_navigation": {
+      "terms": [
+        "MainLayout",
+        "TabBar",
+        "tabBar",
+        "router"
+      ],
+      "matches": [
+        {
+          "path": "package-lock.json",
+          "hits": [
+            "router"
+          ],
+          "decls": []
+        },
+        {
+          "path": "package.json",
+          "hits": [
+            "router"
+          ],
+          "decls": []
+        },
+        {
+          "path": "vite.config.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "apiProxy",
+            "prodApiPattern"
+          ]
+        },
+        {
+          "path": "src/App.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "toRouteObjects",
+            "GlobalAuthInit",
+            "GlobalAuthRouteEffect",
+            "token",
+            "refreshUserInfo",
+            "navigate",
+            "location",
+            "matches"
+          ]
+        },
+        {
+          "path": "src/config/tabBar.ts",
+          "hits": [
+            "TabBar",
+            "tabBar"
+          ],
+          "decls": [
+            "defaultTabBarItems"
+          ]
+        },
+        {
+          "path": "src/layout/MainLayout.tsx",
+          "hits": [
+            "MainLayout",
+            "TabBar",
+            "tabBar",
+            "router"
+          ],
+          "decls": [
+            "MainLayout"
+          ]
+        },
+        {
+          "path": "src/layout/Layout.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "LayoutProps",
+            "animationPresets",
+            "Layout",
+            "location",
+            "navigate",
+            "getDepth",
+            "curDepth",
+            "prevDepthRef"
+          ]
+        },
+        {
+          "path": "src/components/forms/TradingPasswordForm.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "TradingPasswordForm",
+            "navigate",
+            "emailTimerRef",
+            "phoneTimerRef",
+            "startCountdown",
+            "showMessage",
+            "validatePassword",
+            "handleGetEmailCode"
+          ]
+        },
+        {
+          "path": "src/components/common/AuthRoute.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "AuthRouteProps",
+            "AuthRoute",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "path": "src/components/common/PrivateRoute.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "PrivateRoute",
+            "token"
+          ]
+        },
+        {
+          "path": "src/components/common/Header.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "HeaderProps",
+            "Header",
+            "navigate",
+            "centerNode"
+          ]
+        },
+        {
+          "path": "src/components/common/TabBar.tsx",
+          "hits": [
+            "TabBar",
+            "tabBar",
+            "router"
+          ],
+          "decls": [
+            "getFirstPath",
+            "match",
+            "getIconColor",
+            "TabBarItem",
+            "TabBarProps",
+            "TabBar",
+            "location",
+            "navigate"
+          ]
+        },
+        {
+          "path": "src/hooks/useLogout.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "useLogout",
+            "navigate",
+            "performLogout",
+            "userLogoutWithOptions",
+            "result",
+            "performSilentLogout",
+            "result",
+            "performForceLogout"
+          ]
+        },
+        {
+          "path": "src/hooks/useAuthStatusCheck.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "UseAuthStatusCheckOptions",
+            "useAuthStatusCheck",
+            "navigate",
+            "user",
+            "checkAuthStatus"
+          ]
+        },
+        {
+          "path": "src/hooks/useSumsub.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "useSumsub",
+            "location",
+            "searchParams",
+            "routeToken",
+            "levelTypeParam",
+            "levelType",
+            "msg",
+            "expirationHandler"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserRefresh.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "UseUserRefreshOptions",
+            "useUserRefresh",
+            "location",
+            "token",
+            "user",
+            "isRefreshing",
+            "refreshUserInfo",
+            "getUserId"
+          ]
+        },
+        {
+          "path": "src/hooks/useTabBiometricAuth.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "UseTabBiometricAuthOptions",
+            "useTabBiometricAuth",
+            "location",
+            "navigate",
+            "token",
+            "refreshUserInfo",
+            "logout",
+            "timeoutRef"
+          ]
+        },
+        {
+          "path": "src/hooks/useConfigManager.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ConfigRouteRule",
+            "ConfigManagerOptions",
+            "UseConfigManagerReturn",
+            "useConfigManager",
+            "allConfigs",
+            "getConfigItem",
+            "getConfigByPath",
+            "matchedRule"
+          ]
+        },
+        {
+          "path": "src/pages/RegisterPage/RegisterPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "COUNTDOWN_SECONDS",
+            "RegisterPhoneSelection",
+            "timerRef",
+            "navigate",
+            "response",
+            "countries",
+            "defaultCountry",
+            "handleCountrySelect"
+          ]
+        },
+        {
+          "path": "src/pages/KycPageWrapper/KycPageWrapper.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "KycPageWrapper",
+            "location",
+            "searchParams",
+            "hasToken"
+          ]
+        },
+        {
+          "path": "src/pages/KycPageWrapper/KycPage/KycPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "KycPage",
+            "location",
+            "navigate",
+            "searchParams",
+            "routeToken",
+            "hasToken",
+            "messageHandler",
+            "errorHandler"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "hits": [
+            "TabBar",
+            "tabBar",
+            "router"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "location",
+            "navigate",
+            "token",
+            "getInitialTab",
+            "searchParams",
+            "updateTabInUrl",
+            "searchParams"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/EditFavoritesPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "SortableRow",
+            "EditFavorites",
+            "navigate",
+            "response",
+            "data",
+            "tradeIds",
+            "result",
+            "handleSave"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketInterface/MarketInterface.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/UserProfile.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "DEFAULT_AVATAR",
+            "COPY_RESET_DELAY",
+            "ArrowRightIcon",
+            "UserInfoProps",
+            "UserInfo",
+            "MenuItemProps",
+            "MenuItem",
+            "UserProfile"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ConfigItem",
+            "CardItemProps",
+            "SelectItemProps",
+            "SelectItem",
+            "fetchOptions",
+            "res",
+            "handleChange",
+            "CardItem"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityCenterPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "SecurityItem",
+            "SecurityLevelConfig",
+            "SECURITY_LEVEL_CONFIGS",
+            "calculateSecurityLevel",
+            "enabledCount",
+            "SecurityCenterPage",
+            "navigate",
+            "fetchSecurityStatus"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/PhoneConfigPage/PhoneConfigPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "PhoneConfigFormData",
+            "PhoneConfigPage",
+            "navigate",
+            "validatePhone",
+            "validateVerificationCode",
+            "handleSendCode",
+            "phoneError",
+            "handleSubmit"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/OrderDetail.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "OrderDetail",
+            "navigate",
+            "handleCopy"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/TradingPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "removeCommas",
+            "defaultTrade",
+            "getCoinDisplayName",
+            "getCoinLogo",
+            "isFavor",
+            "getInitialBottomTab",
+            "searchParams",
+            "tabFromUrl"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/HistoryOrderPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ORDER_TYPE",
+            "getTagStyles",
+            "buyColor",
+            "sellColor",
+            "getTagText",
+            "OrderCardProps",
+            "OrderCard",
+            "orderType"
+          ]
+        },
+        {
+          "path": "src/pages/LoginPage/LoginPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "inputSx",
+            "LoginPhoneSelection",
+            "login",
+            "navigate",
+            "emailSuffixes",
+            "inputRef",
+            "response",
+            "countries"
+          ]
+        },
+        {
+          "path": "src/pages/CustomerServicePage/CustomerServicePage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "CustomerServicePage",
+            "navigate",
+            "redirectToTelegram",
+            "handleClose",
+            "handleBack",
+            "timer"
+          ]
+        },
+        {
+          "path": "src/pages/MessagePage/MessageDetailPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "MessageDetailPage",
+            "navigate",
+            "location",
+            "urlParams",
+            "handleBack",
+            "headerConfig",
+            "formatDateTime",
+            "hasUpdateTime"
+          ]
+        },
+        {
+          "path": "src/pages/CoinSearchPage/CoinSearchPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "Coin",
+            "CoinSelection",
+            "navigate",
+            "location",
+            "urlParams",
+            "searchParams",
+            "coins",
+            "filteredCoins"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPositionPage.tsx",
+          "hits": [
+            "TabBar",
+            "tabBar"
+          ],
+          "decls": [
+            "TAB_CONFIG",
+            "POSITION_TYPE_CONFIG",
+            "FUND_FLOW_CONFIG",
+            "LoadingState",
+            "EmptyState",
+            "PositionTypeTag",
+            "config",
+            "isUp"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "removeCommas",
+            "positionsTypeMap",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "EntrustTabs",
+            "ContractPage",
+            "location"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/FinancePage/FinancePage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "Product",
+            "products",
+            "FinancePage",
+            "navigate",
+            "handleProductClick"
+          ]
+        },
+        {
+          "path": "src/pages/FinancePage/BalanceBaoPage/BalanceBaoPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ProgressStep",
+            "BalanceBaoPage",
+            "financialType",
+            "isSelected",
+            "target",
+            "isSelected"
+          ]
+        },
+        {
+          "path": "src/pages/AnnouncementsPage/AnnouncementsPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "AnnouncementCenter",
+            "navigate",
+            "handleAnnouncementClick"
+          ]
+        },
+        {
+          "path": "src/pages/AnnouncementsPage/AnnouncementDetail.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "AnnouncementDetail"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/DepositPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "DepositPage",
+            "location",
+            "navigate",
+            "searchParams",
+            "coin",
+            "coinId",
+            "coinName",
+            "firstEnabledChain"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/AssetPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "EXCHANGE_RATE_CURRENCY",
+            "DEFAULT_RATE",
+            "DEFAULT_ICON_URL",
+            "Asset",
+            "AssetListProps",
+            "AssetCard",
+            "TabConfig",
+            "cutOutPointLength"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/RecordsPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "RecordsPage",
+            "location",
+            "searchParams",
+            "coinId",
+            "coinName",
+            "tabParam",
+            "pageSize",
+            "type"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WalletBillPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "BillItemData",
+            "WALLET_TYPE_CONFIG",
+            "utils",
+            "num",
+            "year",
+            "month",
+            "day",
+            "hours"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WithdrawPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "WithdrawPage",
+            "location",
+            "searchParams",
+            "coin",
+            "coinId",
+            "coinName",
+            "navigate",
+            "qrScanner"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/AccountTransfer.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "CONSTANTS",
+            "AccountTransferProps",
+            "UrlParams",
+            "TransferFormData",
+            "buildTransferType",
+            "validateAmount",
+            "numericValue",
+            "balance"
+          ]
+        },
+        {
+          "path": "src/pages/ScanPage/ScanPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ScanPage",
+            "navigate",
+            "location",
+            "urlParams",
+            "searchParams",
+            "handleScanSuccess",
+            "target",
+            "returnParams"
+          ]
+        },
+        {
+          "path": "src/pages/IdentityVerificationPage/IdentityVerificationPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "VerificationOption",
+            "IdentityVerificationPage",
+            "navigate",
+            "user",
+            "getIcon",
+            "verificationOptions",
+            "basicStatus",
+            "advancedStatus"
+          ]
+        },
+        {
+          "path": "src/pages/ForgetPasswordPage/ForgetPasswordPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "inputSx",
+            "ForgetPasswordPage",
+            "navigate",
+            "emailSuffixes",
+            "inputRef",
+            "response",
+            "countries",
+            "defaultCountry"
+          ]
+        },
+        {
+          "path": "src/pages/NetworkErrorPage/NetworkErrorPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "NetworkErrorPageProps",
+            "NetworkErrorPage",
+            "navigate",
+            "handleRetry",
+            "handleGoHome"
+          ]
+        },
+        {
+          "path": "src/pages/SearchTradingPairsPage/SearchTradingPairsPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "TradingPair",
+            "RecentViewItem",
+            "STORAGE_KEY",
+            "MAX_RECENT_ITEMS",
+            "SearchTradingPairsPage",
+            "navigate",
+            "location",
+            "token"
+          ]
+        },
+        {
+          "path": "src/pages/ComingSoonPage/ComingSoonPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ComingSoonPageProps",
+            "ComingSoonPage",
+            "navigate",
+            "handleGoBack",
+            "handleGoHome"
+          ]
+        },
+        {
+          "path": "src/pages/ComingSoonPage/NotFoundPage.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "NotFoundPage",
+            "location",
+            "getPageInfo",
+            "path",
+            "pageInfo"
+          ]
+        },
+        {
+          "path": "src/router/router.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "modules",
+            "appRoutes",
+            "renderRoutes",
+            "AppRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/kyc.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "KycPageWrapper",
+            "kycRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/message.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "MessageListPage",
+            "messageRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/announcements.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "AnnouncementsPage",
+            "AnnouncementDetail",
+            "announcementRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/invite.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "InvitePage",
+            "inviteRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/market.route.tsx",
+          "hits": [
+            "MainLayout",
+            "router"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "EditFavoritesPage",
+            "TrdingInterface",
+            "marketRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/trade.route.tsx",
+          "hits": [
+            "MainLayout",
+            "router"
+          ],
+          "decls": [
+            "marketRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/comingSoon.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "comingSoonRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/searchTradingPairs.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "SearchTradingPairsPage",
+            "searchTradingPairsRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/types.ts",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "AppRoute"
+          ]
+        },
+        {
+          "path": "src/router/modules/contract.route.tsx",
+          "hits": [
+            "MainLayout",
+            "router"
+          ],
+          "decls": [
+            "ContractPage",
+            "ContractInterface",
+            "ContractHistoryPage",
+            "ContractPositionPage",
+            "routes"
+          ]
+        },
+        {
+          "path": "src/router/modules/home.route.tsx",
+          "hits": [
+            "MainLayout",
+            "router"
+          ],
+          "decls": [
+            "HomePage",
+            "RegisterPage",
+            "LoginPage",
+            "SecurityCenterPage",
+            "SecurityDetailPage",
+            "PhoneConfigPage",
+            "GoogleAuthConfigPage",
+            "ForgetPasswordPage"
+          ]
+        },
+        {
+          "path": "src/router/modules/search.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "CoinSearchPage",
+            "searchRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/asset.route.tsx",
+          "hits": [
+            "MainLayout",
+            "router"
+          ],
+          "decls": [
+            "assetRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/finance.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "FinancePage",
+            "BalanceBaoPage",
+            "financeRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/networkError.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "NetworkErrorPage",
+            "networkErrorRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/customerService.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "CustomerServicePage",
+            "customerServiceRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/scan.route.tsx",
+          "hits": [
+            "router"
+          ],
+          "decls": [
+            "ScanPage",
+            "scanRoutes"
+          ]
+        }
+      ],
+      "matchCount": 74
+    },
+    "home_discovery": {
+      "terms": [
+        "HomePage",
+        "Banner",
+        "homeService",
+        "homeApi",
+        "androidParityNavigation"
+      ],
+      "matches": [
+        {
+          "path": "vite.config.ts",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "apiProxy",
+            "prodApiPattern"
+          ]
+        },
+        {
+          "path": "src/utils/androidParityNavigation.ts",
+          "hits": [
+            "Banner",
+            "androidParityNavigation"
+          ],
+          "decls": [
+            "UAEC_OWNED_HOST_PATTERNS",
+            "AndroidWebViewContextOptions",
+            "BannerNavigationCandidate",
+            "normalizeBaseUrl",
+            "envBase",
+            "base",
+            "isUaecOwnedUrl",
+            "url"
+          ]
+        },
+        {
+          "path": "src/components/common/Banner.tsx",
+          "hits": [
+            "Banner",
+            "androidParityNavigation"
+          ],
+          "decls": [
+            "BannerItem",
+            "BannerProps",
+            "Banner",
+            "timerRef",
+            "bannersLen",
+            "handlers",
+            "handleClick",
+            "target"
+          ]
+        },
+        {
+          "path": "src/components/common/PageSkeleton.tsx",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "BannerSkeleton",
+            "ListSkeleton",
+            "ProductCardSkeleton",
+            "KingKongSkeleton",
+            "PageSkeletonProps",
+            "PageSkeleton"
+          ]
+        },
+        {
+          "path": "src/hooks/useConfigManager.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "ConfigRouteRule",
+            "ConfigManagerOptions",
+            "UseConfigManagerReturn",
+            "useConfigManager",
+            "allConfigs",
+            "getConfigItem",
+            "getConfigByPath",
+            "matchedRule"
+          ]
+        },
+        {
+          "path": "src/api/financeApi.ts",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "FinancePageData",
+            "AssetItem",
+            "FinancialProduct",
+            "FinancialOrder",
+            "FinancialInterestRecord",
+            "fetchAssetsList",
+            "fetchMyAssets",
+            "fetchFinancialProductList"
+          ]
+        },
+        {
+          "path": "src/api/homeApi.ts",
+          "hits": [
+            "Banner",
+            "homeApi"
+          ],
+          "decls": [
+            "HomeBannerItem",
+            "fetchBannerRaw",
+            "KingKongItem",
+            "fetchKingKongRaw",
+            "fetchHomeRankingRaw",
+            "NewsItem",
+            "fetchNewsCarouselRaw",
+            "PopupItem"
+          ]
+        },
+        {
+          "path": "src/api/index.ts",
+          "hits": [
+            "homeApi"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/api/api.js",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "api"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/UserProfile.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "DEFAULT_AVATAR",
+            "COPY_RESET_DELAY",
+            "ArrowRightIcon",
+            "UserInfoProps",
+            "UserInfo",
+            "MenuItemProps",
+            "MenuItem",
+            "UserProfile"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailConfig.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "createSecurityConfig",
+            "settingsPage"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailPage.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "ConfigItem",
+            "CardItemProps",
+            "SelectItemProps",
+            "SelectItem",
+            "fetchOptions",
+            "res",
+            "handleChange",
+            "CardItem"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/index.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/HomePage/SecurityCenterPage.tsx",
+          "hits": [
+            "HomePage",
+            "Banner"
+          ],
+          "decls": [
+            "SecurityItem",
+            "SecurityLevelConfig",
+            "SECURITY_LEVEL_CONFIGS",
+            "calculateSecurityLevel",
+            "enabledCount",
+            "SecurityCenterPage",
+            "navigate",
+            "fetchSecurityStatus"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "HomePage",
+            "Banner",
+            "homeService",
+            "homeApi"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/types.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "GoogleAuthErrors",
+            "GoogleAuthState",
+            "GoogleAuthQRData",
+            "GoogleAuthQRResponse",
+            "BindGoogleAuthResponse"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/index.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/GoogleAuthConfigPage.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "GoogleAuthConfigPage",
+            "isFormValid",
+            "handleSubmit"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/BindButton.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "BindButtonProps",
+            "BindButton"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/InstructionsSection.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "InstructionsSection",
+            "instructions"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/QRCodeSection.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "QRCodeSectionProps",
+            "QRCodeSection"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/VerificationCodeInput.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "VerificationCodeInputProps",
+            "VerificationCodeInput",
+            "handleChange",
+            "newValue"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/LoadingSpinner.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "LoadingSpinner"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/PlaceholderIcon.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "PlaceholderIcon"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/QRCodeGenerator.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "QRCodeGeneratorProps",
+            "QRCodeGenerator",
+            "abortControllerRef",
+            "generateQRCode",
+            "qrCodeDataUrl"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/index.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/hooks/useGoogleAuthConfig.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "useGoogleAuthConfig",
+            "setStateField",
+            "handleGenerateQR",
+            "response",
+            "handleVerificationCodeChange",
+            "handleBindGoogleAuth",
+            "newErrors",
+            "request"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/hooks/index.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/HomePage/PhoneConfigPage/PhoneConfigPage.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "PhoneConfigFormData",
+            "PhoneConfigPage",
+            "navigate",
+            "validatePhone",
+            "validateVerificationCode",
+            "handleSendCode",
+            "phoneError",
+            "handleSubmit"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/PhoneConfigPage/index.ts",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/FinancePage/FinancePage.tsx",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "Product",
+            "products",
+            "FinancePage",
+            "navigate",
+            "handleProductClick"
+          ]
+        },
+        {
+          "path": "src/pages/AnnouncementsPage/AnnouncementsPage.tsx",
+          "hits": [
+            "homeService",
+            "homeApi"
+          ],
+          "decls": [
+            "AnnouncementCenter",
+            "navigate",
+            "handleAnnouncementClick"
+          ]
+        },
+        {
+          "path": "src/pages/AnnouncementsPage/AnnouncementDetail.tsx",
+          "hits": [
+            "homeService"
+          ],
+          "decls": [
+            "AnnouncementDetail"
+          ]
+        },
+        {
+          "path": "src/services/homeService.ts",
+          "hits": [
+            "HomePage",
+            "Banner",
+            "homeService",
+            "homeApi"
+          ],
+          "decls": [
+            "kingKongLinkMap",
+            "HomeService",
+            "res",
+            "res",
+            "homeItems",
+            "newHome",
+            "reqParams",
+            "res"
+          ]
+        },
+        {
+          "path": "src/services/financeService.ts",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "FinancePageServiceData",
+            "fetchFinanceBanners",
+            "fetchFinanceProducts",
+            "res",
+            "fetchFinanceAssets",
+            "res"
+          ]
+        },
+        {
+          "path": "src/router/modules/home.route.tsx",
+          "hits": [
+            "HomePage"
+          ],
+          "decls": [
+            "HomePage",
+            "RegisterPage",
+            "LoginPage",
+            "SecurityCenterPage",
+            "SecurityDetailPage",
+            "PhoneConfigPage",
+            "GoogleAuthConfigPage",
+            "ForgetPasswordPage"
+          ]
+        }
+      ],
+      "matchCount": 36
+    },
+    "market_quote_center": {
+      "terms": [
+        "MarketCenterPage",
+        "spotApi",
+        "spotService",
+        "Kline",
+        "Market"
+      ],
+      "matches": [
+        {
+          "path": "package-lock.json",
+          "hits": [
+            "Kline"
+          ],
+          "decls": []
+        },
+        {
+          "path": "package.json",
+          "hits": [
+            "Kline"
+          ],
+          "decls": []
+        },
+        {
+          "path": "vite.config.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "apiProxy",
+            "prodApiPattern"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/marketWSManager.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "marketWSManager",
+            "getMarketWSKey",
+            "getTradeTypeFromWSKey",
+            "match"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/tradingWSManager.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "TradingDepthData",
+            "tradingWSManager",
+            "getTradingWSKey",
+            "getTradingDeepWSKey",
+            "getTradeNameFromWSKey",
+            "match"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/WSInstance.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "marketWSManager",
+            "WSInstance",
+            "deserializer",
+            "buf",
+            "compressed",
+            "decompressed",
+            "map",
+            "matchKey"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/types.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "Message"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/createWSManager.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "WSManager",
+            "MarketState",
+            "useMarketStore",
+            "prev",
+            "createWSManager",
+            "wsInstance",
+            "sub"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/MergeStrategies/klineMerge.ts",
+          "hits": [
+            "Kline"
+          ],
+          "decls": [
+            "klineMergeStrategy",
+            "prevList",
+            "newList",
+            "map",
+            "merged"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/ZustandStore/market.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "MarketData",
+            "MarketStoreState",
+            "useMarketStore"
+          ]
+        },
+        {
+          "path": "src/config/tabBar.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "defaultTabBarItems"
+          ]
+        },
+        {
+          "path": "src/config/socketConfig.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "getBaseHost",
+            "host",
+            "base",
+            "socketUrls",
+            "getSocketUrl"
+          ]
+        },
+        {
+          "path": "src/utils/tradingUtils.ts",
+          "hits": [
+            "spotApi",
+            "Market"
+          ],
+          "decls": [
+            "TradingOrderBuilder",
+            "result"
+          ]
+        },
+        {
+          "path": "src/utils/socketUrls.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "getBaseHost",
+            "host",
+            "base",
+            "socketUrls",
+            "getSocketUrl"
+          ]
+        },
+        {
+          "path": "src/components/DepthChart/DepthChart.tsx",
+          "hits": [
+            "spotService",
+            "Market"
+          ],
+          "decls": [
+            "DepthChartProps",
+            "getDepthRenderWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "DepthChartSkeleton",
+            "DepthChart",
+            "dataProcessor",
+            "result"
+          ]
+        },
+        {
+          "path": "src/components/DepthChart/ContractDepthChart.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "ContractDepthChartProps",
+            "ContractDepthResponse",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "ContractDepthChartSkeleton",
+            "ContractDepthChart",
+            "dataProcessor"
+          ]
+        },
+        {
+          "path": "src/components/ChartAdapter/index.tsx",
+          "hits": [
+            "Kline"
+          ],
+          "decls": [
+            "ChartAdapterProps",
+            "ChartAdapter",
+            "implRef"
+          ]
+        },
+        {
+          "path": "src/components/ChartAdapter/types.ts",
+          "hits": [
+            "Kline"
+          ],
+          "decls": [
+            "ChartAdapterRef"
+          ]
+        },
+        {
+          "path": "src/components/ChartAdapter/KLineChartsImpl.tsx",
+          "hits": [
+            "Kline"
+          ],
+          "decls": [
+            "KLineChartsImplProps",
+            "klineCustomStyles",
+            "change",
+            "KLineChartsImpl",
+            "chartRef",
+            "chartInstance",
+            "paneIds",
+            "currentSymbol"
+          ]
+        },
+        {
+          "path": "src/components/common/MarketListSkeleton.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "MarketListSkeletonProps",
+            "MarketListSkeleton"
+          ]
+        },
+        {
+          "path": "src/hooks/useRealtimeMarketData.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "useRealtimeMarketData"
+          ]
+        },
+        {
+          "path": "src/api/optionApi.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "OptionTradingPair",
+            "OptionPriceItem",
+            "OptionPriceListResponse",
+            "MerchantIdResponse",
+            "AvailableBalanceResponse",
+            "OrderRequest",
+            "OrderResponse",
+            "OrderPopupData"
+          ]
+        },
+        {
+          "path": "src/api/spotApi.ts",
+          "hits": [
+            "spotApi",
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "TradePair",
+            "TradeListResponse",
+            "CollectionResponse",
+            "IsCollectionResponse",
+            "CollectionRequest",
+            "EntrustSelectBox",
+            "TradeAsset",
+            "PankouData"
+          ]
+        },
+        {
+          "path": "src/api/homeApi.ts",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "HomeBannerItem",
+            "fetchBannerRaw",
+            "KingKongItem",
+            "fetchKingKongRaw",
+            "fetchHomeRankingRaw",
+            "NewsItem",
+            "fetchNewsCarouselRaw",
+            "PopupItem"
+          ]
+        },
+        {
+          "path": "src/api/contractApi.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "ContractEntrustItem",
+            "CurrentEntrustResponse",
+            "TpslEntrustItem",
+            "CurrentTpslEntrustResponse",
+            "CancelEntrustRequest",
+            "BatchCancelEntrustRequest",
+            "CurrentEntrustCountResponse",
+            "HistoryEntrustResponse"
+          ]
+        },
+        {
+          "path": "src/api/index.ts",
+          "hits": [
+            "spotApi"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/api/api.js",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "api"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "hits": [
+            "MarketCenterPage",
+            "spotApi",
+            "spotService",
+            "Market"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "location",
+            "navigate",
+            "token",
+            "getInitialTab",
+            "searchParams",
+            "updateTabInUrl",
+            "searchParams"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/EditFavoritesPage.tsx",
+          "hits": [
+            "MarketCenterPage",
+            "spotApi",
+            "spotService",
+            "Market"
+          ],
+          "decls": [
+            "SortableRow",
+            "EditFavorites",
+            "navigate",
+            "response",
+            "data",
+            "tradeIds",
+            "result",
+            "handleSave"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/index.ts",
+          "hits": [
+            "MarketCenterPage",
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketInterface/MarketInterface.tsx",
+          "hits": [
+            "MarketCenterPage",
+            "spotService",
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketInterface/index.ts",
+          "hits": [
+            "MarketCenterPage",
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/OrderDetail.tsx",
+          "hits": [
+            "spotApi",
+            "spotService"
+          ],
+          "decls": [
+            "OrderDetail",
+            "navigate",
+            "handleCopy"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/TradingPage.tsx",
+          "hits": [
+            "spotApi",
+            "spotService",
+            "Market"
+          ],
+          "decls": [
+            "removeCommas",
+            "defaultTrade",
+            "getCoinDisplayName",
+            "getCoinLogo",
+            "isFavor",
+            "getInitialBottomTab",
+            "searchParams",
+            "tabFromUrl"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/TradingPageSkeleton.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "MarketSkeleton",
+            "AssetSkeleton",
+            "EntrustSkeleton"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/HistoryOrderPage.tsx",
+          "hits": [
+            "spotApi",
+            "spotService"
+          ],
+          "decls": [
+            "ORDER_TYPE",
+            "getTagStyles",
+            "buyColor",
+            "sellColor",
+            "getTagText",
+            "OrderCardProps",
+            "OrderCard",
+            "orderType"
+          ]
+        },
+        {
+          "path": "src/pages/CoinSearchPage/CoinSearchPage.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "Coin",
+            "CoinSelection",
+            "navigate",
+            "location",
+            "urlParams",
+            "searchParams",
+            "coins",
+            "filteredCoins"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPageSkeleton.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "MarketSkeleton",
+            "AssetSkeleton",
+            "EntrustSkeleton",
+            "PositionSkeleton"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPage.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "removeCommas",
+            "positionsTypeMap",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "EntrustTabs",
+            "ContractPage",
+            "location"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/SearchTradingPairsPage/SearchTradingPairsPage.tsx",
+          "hits": [
+            "spotApi",
+            "spotService"
+          ],
+          "decls": [
+            "TradingPair",
+            "RecentViewItem",
+            "STORAGE_KEY",
+            "MAX_RECENT_ITEMS",
+            "SearchTradingPairsPage",
+            "navigate",
+            "location",
+            "token"
+          ]
+        },
+        {
+          "path": "src/services/optionService.ts",
+          "hits": [
+            "Kline"
+          ],
+          "decls": [
+            "optionService"
+          ]
+        },
+        {
+          "path": "src/services/contractService.ts",
+          "hits": [
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "ContractService",
+            "params"
+          ]
+        },
+        {
+          "path": "src/services/spotService.ts",
+          "hits": [
+            "spotApi",
+            "spotService",
+            "Kline",
+            "Market"
+          ],
+          "decls": [
+            "getPriceDecimalFromName",
+            "parts",
+            "SpotService",
+            "finalParams",
+            "finalParams",
+            "res",
+            "finalParams",
+            "finalParams"
+          ]
+        },
+        {
+          "path": "src/router/modules/market.route.tsx",
+          "hits": [
+            "MarketCenterPage",
+            "Market"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "EditFavoritesPage",
+            "TrdingInterface",
+            "marketRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/trade.route.tsx",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "marketRoutes"
+          ]
+        }
+      ],
+      "matchCount": 47
+    },
+    "spot_trading": {
+      "terms": [
+        "TradingPage",
+        "spotApi",
+        "spotService",
+        "Trade",
+        "Order"
+      ],
+      "matches": [
+        {
+          "path": "vite.config.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "apiProxy",
+            "prodApiPattern"
+          ]
+        },
+        {
+          "path": "src/main.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "initLanguageFromURL",
+            "searchParams",
+            "languageParam",
+            "languageMap",
+            "isStandalone",
+            "btn"
+          ]
+        },
+        {
+          "path": "src/index.css",
+          "hits": [
+            "Order"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/theme.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "theme"
+          ]
+        },
+        {
+          "path": "src/locales/index.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/WebSocketLayer/marketWSManager.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "marketWSManager",
+            "getMarketWSKey",
+            "getTradeTypeFromWSKey",
+            "match"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/tradingWSManager.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "TradingDepthData",
+            "tradingWSManager",
+            "getTradingWSKey",
+            "getTradingDeepWSKey",
+            "getTradeNameFromWSKey",
+            "match"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/WSInstance.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "marketWSManager",
+            "WSInstance",
+            "deserializer",
+            "buf",
+            "compressed",
+            "decompressed",
+            "map",
+            "matchKey"
+          ]
+        },
+        {
+          "path": "src/WebSocketLayer/types.ts",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "Message"
+          ]
+        },
+        {
+          "path": "src/config/tabBar.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "defaultTabBarItems"
+          ]
+        },
+        {
+          "path": "src/config/socketConfig.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "getBaseHost",
+            "host",
+            "base",
+            "socketUrls",
+            "getSocketUrl"
+          ]
+        },
+        {
+          "path": "src/utils/orderBookUtils.ts",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "removeCommas",
+            "ORDER_BOOK_SORT_CONFIG",
+            "ORDER_BOOK_DISPLAY_CONFIG",
+            "processOrderBookData",
+            "priceMap",
+            "formattedPrice",
+            "existing",
+            "newAmount"
+          ]
+        },
+        {
+          "path": "src/utils/format.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "formatToFixed2",
+            "formatToFixed",
+            "num",
+            "formatThousands",
+            "num",
+            "formatNumberAutoFixed",
+            "num",
+            "formatWithUnit"
+          ]
+        },
+        {
+          "path": "src/utils/tradingUtils.ts",
+          "hits": [
+            "spotApi",
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TradingOrderBuilder",
+            "result"
+          ]
+        },
+        {
+          "path": "src/utils/nativeBridge.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "getPlatform",
+            "ua",
+            "androidKycResult",
+            "win",
+            "iosKycResult",
+            "win",
+            "kycResult",
+            "platform"
+          ]
+        },
+        {
+          "path": "src/utils/socketUrls.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "getBaseHost",
+            "host",
+            "base",
+            "socketUrls",
+            "getSocketUrl"
+          ]
+        },
+        {
+          "path": "src/styles/globals.css",
+          "hits": [
+            "Order"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/components/ErrorBoundary.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "ErrorBoundaryState",
+            "ErrorBoundary"
+          ]
+        },
+        {
+          "path": "src/components/DepthChart/DepthChart.tsx",
+          "hits": [
+            "spotService",
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "DepthChartProps",
+            "getDepthRenderWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "DepthChartSkeleton",
+            "DepthChart",
+            "dataProcessor",
+            "result"
+          ]
+        },
+        {
+          "path": "src/components/DepthChart/ContractDepthChart.tsx",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "ContractDepthChartProps",
+            "ContractDepthResponse",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "ContractDepthChartSkeleton",
+            "ContractDepthChart",
+            "dataProcessor"
+          ]
+        },
+        {
+          "path": "src/components/forms/TradingPasswordForm.tsx",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TradingPasswordForm",
+            "navigate",
+            "emailTimerRef",
+            "phoneTimerRef",
+            "startCountdown",
+            "showMessage",
+            "validatePassword",
+            "handleGetEmailCode"
+          ]
+        },
+        {
+          "path": "src/components/forms/LoginPasswordForm.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "LoginPasswordForm",
+            "validatePassword",
+            "handleSubmit",
+            "newErrors",
+            "newPasswordError",
+            "submitPasswordChange",
+            "response",
+            "handleVerificationSubmit"
+          ]
+        },
+        {
+          "path": "src/components/ChartAdapter/KLineChartsImpl.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "KLineChartsImplProps",
+            "klineCustomStyles",
+            "change",
+            "KLineChartsImpl",
+            "chartRef",
+            "chartInstance",
+            "paneIds",
+            "currentSymbol"
+          ]
+        },
+        {
+          "path": "src/components/common/TradePairsDrawer.tsx",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TradePairsDrawerProps",
+            "TradePairsDrawer"
+          ]
+        },
+        {
+          "path": "src/components/common/AuthRoute.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "AuthRouteProps",
+            "AuthRoute",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "path": "src/components/common/VerificationDrawer.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "VerificationData",
+            "VerificationDrawerProps",
+            "VerificationInput",
+            "getLabel",
+            "getPlaceholder",
+            "handlePaste",
+            "text",
+            "numbers"
+          ]
+        },
+        {
+          "path": "src/components/common/WebSocketStatusMonitor.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "WebSocketStatusMonitorProps",
+            "WebSocketStatusMonitor",
+            "stats"
+          ]
+        },
+        {
+          "path": "src/components/common/TransparentSelect.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "TransparentSelectProps",
+            "TransparentSelect",
+            "selectRef",
+            "selectedOption",
+            "handleSelectChange",
+            "handleClick",
+            "select",
+            "handleFocus"
+          ]
+        },
+        {
+          "path": "src/components/common/QRCodeScanner.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "QRCodeScannerProps",
+            "QRCodeScanner",
+            "scannerRef",
+            "cleanupScanner",
+            "qrReaderElement",
+            "forceOverrideStyles",
+            "qrReaderElement",
+            "innerDivs"
+          ]
+        },
+        {
+          "path": "src/components/common/TradingPasswordDrawer.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "TradingPasswordData",
+            "TradingPasswordDrawerProps",
+            "TradingPasswordInput",
+            "inputRef",
+            "timer",
+            "handleInputChange",
+            "inputValue",
+            "handlePaste"
+          ]
+        },
+        {
+          "path": "src/components/common/NotificationIconWithBadge.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "NotificationIconWithBadgeProps",
+            "NotificationIconWithBadge",
+            "displayCount",
+            "showBadge"
+          ]
+        },
+        {
+          "path": "src/components/common/SliderCaptcha.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "SliderCaptchaProps",
+            "SliderCaptchaRef",
+            "SliderCaptcha",
+            "sliderRef",
+            "containerRef",
+            "data",
+            "resetSlider",
+            "setVerificationSuccess"
+          ]
+        },
+        {
+          "path": "src/components/common/SliderCaptchaExample.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "SliderCaptchaExample",
+            "mockCaptchaData",
+            "handleOpenCaptcha",
+            "handleClose",
+            "handleSuccess",
+            "handleError"
+          ]
+        },
+        {
+          "path": "src/components/common/TabBar.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "getFirstPath",
+            "match",
+            "getIconColor",
+            "TabBarItem",
+            "TabBarProps",
+            "TabBar",
+            "location",
+            "navigate"
+          ]
+        },
+        {
+          "path": "src/components/common/CountryCodeSelector.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "CountryCodeSelectorProps",
+            "CountryCodeSelector",
+            "filteredCountries",
+            "term",
+            "handleCountrySelect"
+          ]
+        },
+        {
+          "path": "src/components/help/TradingNoticeContent.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "TradingNoticeContent",
+            "tradingNoticeContent"
+          ]
+        },
+        {
+          "path": "src/components/help/CoinRateTable.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "CoinRateTableProps",
+            "CoinRateTable"
+          ]
+        },
+        {
+          "path": "src/components/help/FeeDescriptionContent.tsx",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "ErrorRetryButton",
+            "LoadingState",
+            "ErrorState",
+            "FeeDescriptionSection",
+            "TabContent",
+            "FeeDescriptionContent",
+            "feeDescriptionContent",
+            "isLoading"
+          ]
+        },
+        {
+          "path": "src/components/help/TradingPairRateTable.tsx",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TradingPairRateTableProps",
+            "TradingPairRateTable"
+          ]
+        },
+        {
+          "path": "src/components/help/FeeTabs.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "FeeTabsProps",
+            "FeeTabs"
+          ]
+        },
+        {
+          "path": "src/hooks/useConfigVerification.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "VerificationConfig",
+            "useConfigVerification",
+            "securityVerification",
+            "tradingPasswordVerification",
+            "openVerification",
+            "closeAllVerifications",
+            "hasOpenVerification",
+            "createVerificationConfig"
+          ]
+        },
+        {
+          "path": "src/hooks/useHelpCenter.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "HelpCenterData",
+            "HelpCenterContent",
+            "UseHelpCenterReturn",
+            "content",
+            "tradingNotice",
+            "tradeRates",
+            "useHelpCenter",
+            "data"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserRefresh.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "UseUserRefreshOptions",
+            "useUserRefresh",
+            "location",
+            "token",
+            "user",
+            "isRefreshing",
+            "refreshUserInfo",
+            "getUserId"
+          ]
+        },
+        {
+          "path": "src/hooks/useTradingPasswordCheck.ts",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "useTradingPasswordCheck",
+            "tradingPasswordVerification",
+            "executeOrderWithPasswordCheck",
+            "needPassword",
+            "checkPasswordRequired"
+          ]
+        },
+        {
+          "path": "src/hooks/useTradingPasswordVerification.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "TradingPasswordVerificationState",
+            "useTradingPasswordVerification",
+            "openTradingPasswordVerification",
+            "closeTradingPasswordVerification",
+            "clearTradingPasswordVerification",
+            "handleTradingPasswordVerificationSuccess"
+          ]
+        },
+        {
+          "path": "src/examples/CurrencyConfigExample.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "CurrencyConfigExample",
+            "currencyConfig",
+            "globalConfig",
+            "handleCurrencyChange",
+            "success"
+          ]
+        },
+        {
+          "path": "src/examples/SignatureTestExample.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "SignatureTestExample",
+            "addResult",
+            "testGetRequest",
+            "response",
+            "testPostObjectRequest",
+            "response",
+            "testPostStringRequest",
+            "response"
+          ]
+        },
+        {
+          "path": "src/examples/WalletTradeTypeExample.tsx",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "WalletTradeTypeExample",
+            "fetchTradeTypes",
+            "data"
+          ]
+        },
+        {
+          "path": "src/examples/SignatureExample.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "SignatureExample",
+            "handleManualSignature",
+            "signedData",
+            "handleValidateSignature",
+            "signedData",
+            "isValid",
+            "handleApiRequest",
+            "response"
+          ]
+        },
+        {
+          "path": "src/api/cmsApi.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "AboutUsResponse",
+            "TermsResponse",
+            "TradeTypeRateResponse",
+            "CoinRateResponse",
+            "CmsApiParams",
+            "TERMS_TYPE_IDS",
+            "getAboutUsInfo",
+            "defaultParams"
+          ]
+        },
+        {
+          "path": "src/api/optionApi.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "OptionTradingPair",
+            "OptionPriceItem",
+            "OptionPriceListResponse",
+            "MerchantIdResponse",
+            "AvailableBalanceResponse",
+            "OrderRequest",
+            "OrderResponse",
+            "OrderPopupData"
+          ]
+        },
+        {
+          "path": "src/api/spotApi.ts",
+          "hits": [
+            "spotApi",
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TradePair",
+            "TradeListResponse",
+            "CollectionResponse",
+            "IsCollectionResponse",
+            "CollectionRequest",
+            "EntrustSelectBox",
+            "TradeAsset",
+            "PankouData"
+          ]
+        },
+        {
+          "path": "src/api/financeApi.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "FinancePageData",
+            "AssetItem",
+            "FinancialProduct",
+            "FinancialOrder",
+            "FinancialInterestRecord",
+            "fetchAssetsList",
+            "fetchMyAssets",
+            "fetchFinancialProductList"
+          ]
+        },
+        {
+          "path": "src/api/ieoApi.ts",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "IEOProject",
+            "IEOProjectListResponse",
+            "NewEntranceResponse",
+            "MiningActivity",
+            "CountResponse",
+            "ProjectDetails",
+            "JointTermCoinResponse",
+            "PayPasswordCheckResponse"
+          ]
+        },
+        {
+          "path": "src/api/commonApi.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "SliderSwitchResponse",
+            "CaptchaGetRequest",
+            "CaptchaGetResponse",
+            "CaptchaCheckRequest",
+            "CaptchaCheckResponse",
+            "UserInfo",
+            "UserRefreshResponse",
+            "UserRefreshRequest"
+          ]
+        },
+        {
+          "path": "src/api/financialApi.ts",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "FinancialProductItem",
+            "FinancialCoinGroup",
+            "FinancialOrderItem",
+            "FinancialHistoryItem",
+            "NewFinancesDetailAndHistoryResponse",
+            "ChangeNickNameRequest",
+            "newFinances",
+            "newFinancesDetailAndHistory"
+          ]
+        },
+        {
+          "path": "src/api/types.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "ApiMeta",
+            "ApiResponse",
+            "HomeRankingItem",
+            "FetchHomeRankingResponse",
+            "PankouBaseInfo",
+            "LatestDone",
+            "DepthList",
+            "DepthResult"
+          ]
+        },
+        {
+          "path": "src/api/contractApi.ts",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "ContractEntrustItem",
+            "CurrentEntrustResponse",
+            "TpslEntrustItem",
+            "CurrentTpslEntrustResponse",
+            "CancelEntrustRequest",
+            "BatchCancelEntrustRequest",
+            "CurrentEntrustCountResponse",
+            "HistoryEntrustResponse"
+          ]
+        },
+        {
+          "path": "src/api/personalApi.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "ShareLinkResponse",
+            "SecurityCenterLoginLogItem",
+            "SecurityCenterIndexResponse",
+            "SetPasswordRequest",
+            "ChangePasswordRequest",
+            "EncryptedSetPasswordRequest",
+            "EncryptedChangePasswordRequest",
+            "CountryItem"
+          ]
+        },
+        {
+          "path": "src/api/index.ts",
+          "hits": [
+            "spotApi"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/api/assetApi.ts",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TradeAreaPriceResponse",
+            "AccountCNYResponse",
+            "WalletAsset",
+            "WalletAssetsResponse",
+            "TransferCoinResponse",
+            "WalletBillItem",
+            "WalletBillResponse",
+            "WalletTradeType"
+          ]
+        },
+        {
+          "path": "src/api/api.js",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "api"
+          ]
+        },
+        {
+          "path": "src/api/spotAssetApi.ts",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "BbLogTypeItem",
+            "BbLogTypeResponse",
+            "BbLogItem",
+            "BbLogPageInfo",
+            "BbLogResponse",
+            "BbRateResponse",
+            "BbFinanceItem",
+            "BbFinanceListResponse"
+          ]
+        },
+        {
+          "path": "src/pages/BiometricTestPage.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "BiometricTestPage",
+            "addTestResult",
+            "timestamp",
+            "handleRegister",
+            "success",
+            "handleVerify",
+            "success",
+            "handleToggle"
+          ]
+        },
+        {
+          "path": "src/pages/RegisterPage/RegisterPage.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "COUNTDOWN_SECONDS",
+            "RegisterPhoneSelection",
+            "timerRef",
+            "navigate",
+            "response",
+            "countries",
+            "defaultCountry",
+            "handleCountrySelect"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "hits": [
+            "spotApi",
+            "spotService",
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "location",
+            "navigate",
+            "token",
+            "getInitialTab",
+            "searchParams",
+            "updateTabInUrl",
+            "searchParams"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/EditFavoritesPage.tsx",
+          "hits": [
+            "spotApi",
+            "spotService",
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "SortableRow",
+            "EditFavorites",
+            "navigate",
+            "response",
+            "data",
+            "tradeIds",
+            "result",
+            "handleSave"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketInterface/MarketInterface.tsx",
+          "hits": [
+            "spotService",
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailPage.tsx",
+          "hits": [
+            "Trade"
+          ],
+          "decls": [
+            "ConfigItem",
+            "CardItemProps",
+            "SelectItemProps",
+            "SelectItem",
+            "fetchOptions",
+            "res",
+            "handleChange",
+            "CardItem"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityCenterPage.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "SecurityItem",
+            "SecurityLevelConfig",
+            "SECURITY_LEVEL_CONFIGS",
+            "calculateSecurityLevel",
+            "enabledCount",
+            "SecurityCenterPage",
+            "navigate",
+            "fetchSecurityStatus"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "Trade",
+            "Order"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/InstructionsSection.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "InstructionsSection",
+            "instructions"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/QRCodeSection.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "QRCodeSectionProps",
+            "QRCodeSection"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/VerificationCodeInput.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "VerificationCodeInputProps",
+            "VerificationCodeInput",
+            "handleChange",
+            "newValue"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/LoadingSpinner.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "LoadingSpinner"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/GoogleAuthConfigPage/components/QRCodeGenerator.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "QRCodeGeneratorProps",
+            "QRCodeGenerator",
+            "abortControllerRef",
+            "generateQRCode",
+            "qrCodeDataUrl"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/PhoneConfigPage/PhoneConfigPage.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "PhoneConfigFormData",
+            "PhoneConfigPage",
+            "navigate",
+            "validatePhone",
+            "validateVerificationCode",
+            "handleSendCode",
+            "phoneError",
+            "handleSubmit"
+          ]
+        },
+        {
+          "path": "src/pages/InvitePage/InvitePage.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "ExtendedUser",
+            "TabPanelProps",
+            "TabPanel",
+            "InvitePage",
+            "res",
+            "res",
+            "extendedUser",
+            "inviteCode"
+          ]
+        },
+        {
+          "path": "src/pages/InvitePage/components/PosterGenerator.tsx",
+          "hits": [
+            "Order"
+          ],
+          "decls": [
+            "PosterGeneratorProps",
+            "PosterGenerator",
+            "posterRef",
+            "generateQRCode",
+            "qrCodeUrl",
+            "handleGenerateAndSave",
+            "canvas",
+            "blob"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/index.tsx",
+          "hits": [
+            "TradingPage"
+          ],
+          "decls": []
+        }
+      ],
+      "matchCount": 123
+    },
+    "contract_trading": {
+      "terms": [
+        "ContractPage",
+        "contractApi",
+        "contractService",
+        "ContractCalculator",
+        "Funding"
+      ],
+      "matches": [
+        {
+          "path": "package-lock.json",
+          "hits": [
+            "Funding"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/components/DepthChart/ContractDepthChart.tsx",
+          "hits": [
+            "contractApi",
+            "contractService"
+          ],
+          "decls": [
+            "ContractDepthChartProps",
+            "ContractDepthResponse",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "ContractDepthChartSkeleton",
+            "ContractDepthChart",
+            "dataProcessor"
+          ]
+        },
+        {
+          "path": "src/api/contractApi.ts",
+          "hits": [
+            "contractApi"
+          ],
+          "decls": [
+            "ContractEntrustItem",
+            "CurrentEntrustResponse",
+            "TpslEntrustItem",
+            "CurrentTpslEntrustResponse",
+            "CancelEntrustRequest",
+            "BatchCancelEntrustRequest",
+            "CurrentEntrustCountResponse",
+            "HistoryEntrustResponse"
+          ]
+        },
+        {
+          "path": "src/api/index.ts",
+          "hits": [
+            "contractApi"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/ContractPage/index.tsx",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPositionPage.tsx",
+          "hits": [
+            "ContractPage",
+            "contractService"
+          ],
+          "decls": [
+            "TAB_CONFIG",
+            "POSITION_TYPE_CONFIG",
+            "FUND_FLOW_CONFIG",
+            "LoadingState",
+            "EmptyState",
+            "PositionTypeTag",
+            "config",
+            "isUp"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/positionUtils.ts",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": [
+            "getPositionTypeLabel",
+            "getTradeModeShortLabel"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractHistoryPage.tsx",
+          "hits": [
+            "ContractPage",
+            "contractService"
+          ],
+          "decls": [
+            "ContractHistoryPage",
+            "fundBillFilterOptions",
+            "renderCurrentEntrust",
+            "renderHistoryEntrust",
+            "renderFundFlow"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/PositionList.tsx",
+          "hits": [
+            "ContractPage",
+            "contractApi"
+          ],
+          "decls": [
+            "POSITION_ACTIONS",
+            "OPEN_TYPE_COLOR",
+            "PositionListProps",
+            "PositionList",
+            "profitColor"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPageSkeleton.tsx",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": [
+            "MarketSkeleton",
+            "AssetSkeleton",
+            "EntrustSkeleton",
+            "PositionSkeleton"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/LeverageSelector.tsx",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": [
+            "LeverageSelectorItem",
+            "LeverageSelectorProps",
+            "defaultLeverageOptions",
+            "LeverageSelector",
+            "handleDecrease",
+            "arr",
+            "handleIncrease",
+            "arr"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/index.ts",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPage.tsx",
+          "hits": [
+            "ContractPage",
+            "contractApi",
+            "contractService"
+          ],
+          "decls": [
+            "removeCommas",
+            "positionsTypeMap",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "EntrustTabs",
+            "ContractPage",
+            "location"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+          "hits": [
+            "ContractPage",
+            "contractApi",
+            "contractService"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractInterface/index.ts",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/AssetPage/AssetPage.tsx",
+          "hits": [
+            "contractService"
+          ],
+          "decls": [
+            "EXCHANGE_RATE_CURRENCY",
+            "DEFAULT_RATE",
+            "DEFAULT_ICON_URL",
+            "Asset",
+            "AssetListProps",
+            "AssetCard",
+            "TabConfig",
+            "cutOutPointLength"
+          ]
+        },
+        {
+          "path": "src/services/contractService.ts",
+          "hits": [
+            "contractApi",
+            "contractService"
+          ],
+          "decls": [
+            "ContractService",
+            "params"
+          ]
+        },
+        {
+          "path": "src/router/modules/contract.route.tsx",
+          "hits": [
+            "ContractPage"
+          ],
+          "decls": [
+            "ContractPage",
+            "ContractInterface",
+            "ContractHistoryPage",
+            "ContractPositionPage",
+            "routes"
+          ]
+        }
+      ],
+      "matchCount": 18
+    },
+    "assets_wallet": {
+      "terms": [
+        "AssetPage",
+        "assetApi",
+        "assetService",
+        "Withdraw",
+        "Deposit",
+        "Transfer",
+        "Wallet"
+      ],
+      "matches": [
+        {
+          "path": "src/components/forms/TradingPasswordForm.tsx",
+          "hits": [
+            "assetService"
+          ],
+          "decls": [
+            "TradingPasswordForm",
+            "navigate",
+            "emailTimerRef",
+            "phoneTimerRef",
+            "startCountdown",
+            "showMessage",
+            "validatePassword",
+            "handleGetEmailCode"
+          ]
+        },
+        {
+          "path": "src/components/common/TradePairsDrawer.tsx",
+          "hits": [
+            "assetApi"
+          ],
+          "decls": [
+            "TradePairsDrawerProps",
+            "TradePairsDrawer"
+          ]
+        },
+        {
+          "path": "src/components/common/VerificationDrawer.tsx",
+          "hits": [
+            "assetService"
+          ],
+          "decls": [
+            "VerificationData",
+            "VerificationDrawerProps",
+            "VerificationInput",
+            "getLabel",
+            "getPlaceholder",
+            "handlePaste",
+            "text",
+            "numbers"
+          ]
+        },
+        {
+          "path": "src/components/help/CoinRateTable.tsx",
+          "hits": [
+            "Withdraw"
+          ],
+          "decls": [
+            "CoinRateTableProps",
+            "CoinRateTable"
+          ]
+        },
+        {
+          "path": "src/hooks/useBalanceBao.ts",
+          "hits": [
+            "assetApi",
+            "Wallet"
+          ],
+          "decls": [
+            "ProgressStep",
+            "generateSteps",
+            "today",
+            "formatDate",
+            "year",
+            "month",
+            "day",
+            "hours"
+          ]
+        },
+        {
+          "path": "src/examples/WalletTradeTypeExample.tsx",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": [
+            "WalletTradeTypeExample",
+            "fetchTradeTypes",
+            "data"
+          ]
+        },
+        {
+          "path": "src/api/cmsApi.ts",
+          "hits": [
+            "Withdraw"
+          ],
+          "decls": [
+            "AboutUsResponse",
+            "TermsResponse",
+            "TradeTypeRateResponse",
+            "CoinRateResponse",
+            "CmsApiParams",
+            "TERMS_TYPE_IDS",
+            "getAboutUsInfo",
+            "defaultParams"
+          ]
+        },
+        {
+          "path": "src/api/spotApi.ts",
+          "hits": [
+            "Transfer"
+          ],
+          "decls": [
+            "TradePair",
+            "TradeListResponse",
+            "CollectionResponse",
+            "IsCollectionResponse",
+            "CollectionRequest",
+            "EntrustSelectBox",
+            "TradeAsset",
+            "PankouData"
+          ]
+        },
+        {
+          "path": "src/api/commonApi.ts",
+          "hits": [
+            "Withdraw"
+          ],
+          "decls": [
+            "SliderSwitchResponse",
+            "CaptchaGetRequest",
+            "CaptchaGetResponse",
+            "CaptchaCheckRequest",
+            "CaptchaCheckResponse",
+            "UserInfo",
+            "UserRefreshResponse",
+            "UserRefreshRequest"
+          ]
+        },
+        {
+          "path": "src/api/userApi.ts",
+          "hits": [
+            "Withdraw"
+          ],
+          "decls": [
+            "LoginForStep2Request",
+            "LoginForStep2Response",
+            "LoginForStep1Request",
+            "EncryptedLoginForStep1Request",
+            "LoginForStep1Response",
+            "RegisterRequest",
+            "EncryptedRegisterRequest",
+            "RegisterResponse"
+          ]
+        },
+        {
+          "path": "src/api/financialApi.ts",
+          "hits": [
+            "Transfer"
+          ],
+          "decls": [
+            "FinancialProductItem",
+            "FinancialCoinGroup",
+            "FinancialOrderItem",
+            "FinancialHistoryItem",
+            "NewFinancesDetailAndHistoryResponse",
+            "ChangeNickNameRequest",
+            "newFinances",
+            "newFinancesDetailAndHistory"
+          ]
+        },
+        {
+          "path": "src/api/types.ts",
+          "hits": [
+            "Withdraw"
+          ],
+          "decls": [
+            "ApiMeta",
+            "ApiResponse",
+            "HomeRankingItem",
+            "FetchHomeRankingResponse",
+            "PankouBaseInfo",
+            "LatestDone",
+            "DepthList",
+            "DepthResult"
+          ]
+        },
+        {
+          "path": "src/api/personalApi.ts",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": [
+            "ShareLinkResponse",
+            "SecurityCenterLoginLogItem",
+            "SecurityCenterIndexResponse",
+            "SetPasswordRequest",
+            "ChangePasswordRequest",
+            "EncryptedSetPasswordRequest",
+            "EncryptedChangePasswordRequest",
+            "CountryItem"
+          ]
+        },
+        {
+          "path": "src/api/index.ts",
+          "hits": [
+            "assetApi"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/api/assetApi.ts",
+          "hits": [
+            "assetApi",
+            "Withdraw",
+            "Transfer",
+            "Wallet"
+          ],
+          "decls": [
+            "TradeAreaPriceResponse",
+            "AccountCNYResponse",
+            "WalletAsset",
+            "WalletAssetsResponse",
+            "TransferCoinResponse",
+            "WalletBillItem",
+            "WalletBillResponse",
+            "WalletTradeType"
+          ]
+        },
+        {
+          "path": "src/api/api.js",
+          "hits": [
+            "Withdraw",
+            "Transfer",
+            "Wallet"
+          ],
+          "decls": [
+            "api"
+          ]
+        },
+        {
+          "path": "src/api/spotAssetApi.ts",
+          "hits": [
+            "assetApi",
+            "Wallet"
+          ],
+          "decls": [
+            "BbLogTypeItem",
+            "BbLogTypeResponse",
+            "BbLogItem",
+            "BbLogPageInfo",
+            "BbLogResponse",
+            "BbRateResponse",
+            "BbFinanceItem",
+            "BbFinanceListResponse"
+          ]
+        },
+        {
+          "path": "src/assets/home/index.ts",
+          "hits": [
+            "Deposit"
+          ],
+          "decls": [
+            "homeImages"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "hits": [
+            "assetService"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "location",
+            "navigate",
+            "token",
+            "getInitialTab",
+            "searchParams",
+            "updateTabInUrl",
+            "searchParams"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "assetService"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/TradingPage.tsx",
+          "hits": [
+            "assetService",
+            "Deposit",
+            "Transfer"
+          ],
+          "decls": [
+            "removeCommas",
+            "defaultTrade",
+            "getCoinDisplayName",
+            "getCoinLogo",
+            "isFavor",
+            "getInitialBottomTab",
+            "searchParams",
+            "tabFromUrl"
+          ]
+        },
+        {
+          "path": "src/pages/CoinSearchPage/CoinSearchPage.tsx",
+          "hits": [
+            "assetService",
+            "Wallet"
+          ],
+          "decls": [
+            "Coin",
+            "CoinSelection",
+            "navigate",
+            "location",
+            "urlParams",
+            "searchParams",
+            "coins",
+            "filteredCoins"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractHistoryPage.tsx",
+          "hits": [
+            "Transfer"
+          ],
+          "decls": [
+            "ContractHistoryPage",
+            "fundBillFilterOptions",
+            "renderCurrentEntrust",
+            "renderHistoryEntrust",
+            "renderFundFlow"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPage.tsx",
+          "hits": [
+            "AssetPage",
+            "assetService",
+            "Transfer"
+          ],
+          "decls": [
+            "removeCommas",
+            "positionsTypeMap",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "EntrustTabs",
+            "ContractPage",
+            "location"
+          ]
+        },
+        {
+          "path": "src/pages/FinancePage/BalanceBaoPage/BalanceBaoPage.tsx",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": [
+            "ProgressStep",
+            "BalanceBaoPage",
+            "financialType",
+            "isSelected",
+            "target",
+            "isSelected"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/AssetPageSkeletons.tsx",
+          "hits": [
+            "AssetPage",
+            "Wallet"
+          ],
+          "decls": [
+            "AssetPageSkeleton",
+            "WalletSkeleton",
+            "SpotSkeleton",
+            "FuturesSkeleton",
+            "C2CSkeleton"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/DepositPage.tsx",
+          "hits": [
+            "AssetPage",
+            "assetApi",
+            "assetService",
+            "Deposit",
+            "Wallet"
+          ],
+          "decls": [
+            "DepositPage",
+            "location",
+            "navigate",
+            "searchParams",
+            "coin",
+            "coinId",
+            "coinName",
+            "firstEnabledChain"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/AssetPage.tsx",
+          "hits": [
+            "AssetPage",
+            "assetApi",
+            "assetService",
+            "Withdraw",
+            "Deposit",
+            "Transfer",
+            "Wallet"
+          ],
+          "decls": [
+            "EXCHANGE_RATE_CURRENCY",
+            "DEFAULT_RATE",
+            "DEFAULT_ICON_URL",
+            "Asset",
+            "AssetListProps",
+            "AssetCard",
+            "TabConfig",
+            "cutOutPointLength"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/RecordsPage.tsx",
+          "hits": [
+            "AssetPage",
+            "assetApi",
+            "assetService",
+            "Withdraw"
+          ],
+          "decls": [
+            "RecordsPage",
+            "location",
+            "searchParams",
+            "coinId",
+            "coinName",
+            "tabParam",
+            "pageSize",
+            "type"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/NetworkSelectionModal.tsx",
+          "hits": [
+            "AssetPage",
+            "assetApi"
+          ],
+          "decls": [
+            "NetworkSelectionModalProps",
+            "NetworkSelectionModal",
+            "networkOptions"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WalletBillPage.tsx",
+          "hits": [
+            "AssetPage",
+            "assetApi",
+            "Wallet"
+          ],
+          "decls": [
+            "BillItemData",
+            "WALLET_TYPE_CONFIG",
+            "utils",
+            "num",
+            "year",
+            "month",
+            "day",
+            "hours"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WithdrawPage.tsx",
+          "hits": [
+            "AssetPage",
+            "assetService",
+            "Withdraw",
+            "Wallet"
+          ],
+          "decls": [
+            "WithdrawPage",
+            "location",
+            "searchParams",
+            "coin",
+            "coinId",
+            "coinName",
+            "navigate",
+            "qrScanner"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/index.ts",
+          "hits": [
+            "AssetPage"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/pages/AssetPage/AccountTransfer.tsx",
+          "hits": [
+            "AssetPage",
+            "assetService",
+            "Transfer",
+            "Wallet"
+          ],
+          "decls": [
+            "CONSTANTS",
+            "AccountTransferProps",
+            "UrlParams",
+            "TransferFormData",
+            "buildTransferType",
+            "validateAmount",
+            "numericValue",
+            "balance"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/components/AssetSummaryCard.tsx",
+          "hits": [
+            "AssetPage"
+          ],
+          "decls": [
+            "AssetSummaryCardProps",
+            "AssetSummaryCard"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/components/AssetTabs.tsx",
+          "hits": [
+            "AssetPage",
+            "Wallet"
+          ],
+          "decls": [
+            "TABS",
+            "AssetTabsProps",
+            "AssetTabs"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/components/AssetSearchInput.tsx",
+          "hits": [
+            "AssetPage"
+          ],
+          "decls": [
+            "AssetSearchInputProps",
+            "AssetSearchInput",
+            "handleClear"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/components/AssetItemButtons.tsx",
+          "hits": [
+            "AssetPage",
+            "Withdraw",
+            "Deposit",
+            "Transfer"
+          ],
+          "decls": [
+            "AssetItemButtonsProps",
+            "AssetItemButtons"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/components/AssetActionButtons.tsx",
+          "hits": [
+            "AssetPage",
+            "Withdraw",
+            "Deposit",
+            "Transfer"
+          ],
+          "decls": [
+            "AssetActionButtonsProps",
+            "AssetActionButtons"
+          ]
+        },
+        {
+          "path": "src/services/otcAssetService.ts",
+          "hits": [
+            "assetService"
+          ],
+          "decls": [
+            "otcAssetService"
+          ]
+        },
+        {
+          "path": "src/services/homeService.ts",
+          "hits": [
+            "Deposit"
+          ],
+          "decls": [
+            "kingKongLinkMap",
+            "HomeService",
+            "res",
+            "res",
+            "homeItems",
+            "newHome",
+            "reqParams",
+            "res"
+          ]
+        },
+        {
+          "path": "src/services/assetService.ts",
+          "hits": [
+            "assetApi",
+            "assetService",
+            "Withdraw",
+            "Transfer",
+            "Wallet"
+          ],
+          "decls": [
+            "assetService"
+          ]
+        },
+        {
+          "path": "src/services/spotAssetService.ts",
+          "hits": [
+            "assetApi",
+            "assetService"
+          ],
+          "decls": [
+            "spotAssetService"
+          ]
+        },
+        {
+          "path": "src/router/modules/asset.route.tsx",
+          "hits": [
+            "AssetPage",
+            "Withdraw",
+            "Deposit",
+            "Transfer",
+            "Wallet"
+          ],
+          "decls": [
+            "assetRoutes"
+          ]
+        }
+      ],
+      "matchCount": 44
+    },
+    "mine_settings_security": {
+      "terms": [
+        "UserProfile",
+        "SecurityCenter",
+        "SecurityDetail",
+        "settings",
+        "authStore",
+        "realNameAuth",
+        "advancedAuth",
+        "googleEnable"
+      ],
+      "matches": [
+        {
+          "path": "src/App.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "toRouteObjects",
+            "GlobalAuthInit",
+            "GlobalAuthRouteEffect",
+            "token",
+            "refreshUserInfo",
+            "navigate",
+            "location",
+            "matches"
+          ]
+        },
+        {
+          "path": "src/types/security.ts",
+          "hits": [
+            "SecurityDetail"
+          ],
+          "decls": [
+            "SecurityDetailConfigItem",
+            "OptionType"
+          ]
+        },
+        {
+          "path": "src/config/apiConfig.ts",
+          "hits": [
+            "settings"
+          ],
+          "decls": [
+            "getOs",
+            "ua",
+            "getCurrentBrowser",
+            "ua",
+            "getRuntimeEnv",
+            "ua",
+            "apiConfig"
+          ]
+        },
+        {
+          "path": "src/utils/sumsubConfig.ts",
+          "hits": [
+            "settings"
+          ],
+          "decls": [
+            "defaultOptions",
+            "supportedLanguages",
+            "getDefaultLanguage",
+            "lang",
+            "defaultConfig"
+          ]
+        },
+        {
+          "path": "src/utils/apiConfig.ts",
+          "hits": [
+            "settings"
+          ],
+          "decls": [
+            "getOs",
+            "ua",
+            "getCurrentBrowser",
+            "ua",
+            "apiConfig"
+          ]
+        },
+        {
+          "path": "src/utils/settingsConfigGenerator.ts",
+          "hits": [
+            "SecurityDetail",
+            "settings"
+          ],
+          "decls": [
+            "SecurityConfigItem",
+            "generateSecurityConfigItems",
+            "generateGeneralConfigItems"
+          ]
+        },
+        {
+          "path": "src/components/forms/TradingPasswordForm.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "TradingPasswordForm",
+            "navigate",
+            "emailTimerRef",
+            "phoneTimerRef",
+            "startCountdown",
+            "showMessage",
+            "validatePassword",
+            "handleGetEmailCode"
+          ]
+        },
+        {
+          "path": "src/components/common/AuthRoute.tsx",
+          "hits": [
+            "authStore",
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "AuthRouteProps",
+            "AuthRoute",
+            "token",
+            "user"
+          ]
+        },
+        {
+          "path": "src/components/common/ColorThemeSettings.tsx",
+          "hits": [
+            "settings"
+          ],
+          "decls": [
+            "ColorThemeSettingsProps",
+            "ColorThemeSettings",
+            "handleModeChange"
+          ]
+        },
+        {
+          "path": "src/components/common/VerificationDrawer.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "VerificationData",
+            "VerificationDrawerProps",
+            "VerificationInput",
+            "getLabel",
+            "getPlaceholder",
+            "handlePaste",
+            "text",
+            "numbers"
+          ]
+        },
+        {
+          "path": "src/components/common/PrivateRoute.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "PrivateRoute",
+            "token"
+          ]
+        },
+        {
+          "path": "src/hooks/useGoogleAuthConfig.ts",
+          "hits": [
+            "SecurityCenter",
+            "googleEnable"
+          ],
+          "decls": [
+            "useGoogleAuthConfig",
+            "fetchGoogleAuthStatus",
+            "status",
+            "toggleGoogleAuthStatus",
+            "response",
+            "as"
+          ]
+        },
+        {
+          "path": "src/hooks/useLogout.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "useLogout",
+            "navigate",
+            "performLogout",
+            "userLogoutWithOptions",
+            "result",
+            "performSilentLogout",
+            "result",
+            "performForceLogout"
+          ]
+        },
+        {
+          "path": "src/hooks/useAuthStatusCheck.ts",
+          "hits": [
+            "authStore",
+            "realNameAuth"
+          ],
+          "decls": [
+            "UseAuthStatusCheckOptions",
+            "useAuthStatusCheck",
+            "navigate",
+            "user",
+            "checkAuthStatus"
+          ]
+        },
+        {
+          "path": "src/hooks/useSettingsPage.ts",
+          "hits": [
+            "SecurityDetail",
+            "settings"
+          ],
+          "decls": [
+            "SettingOption",
+            "SettingItem",
+            "UserSettingsConfig",
+            "DEFAULT_SETTINGS",
+            "SETTINGS_STORAGE_KEY",
+            "useSettingsPage",
+            "currencyConfig",
+            "userSettings"
+          ]
+        },
+        {
+          "path": "src/hooks/useEmailVerification.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "useEmailVerification",
+            "updateVerificationStatus",
+            "result",
+            "result"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserRefresh.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "UseUserRefreshOptions",
+            "useUserRefresh",
+            "location",
+            "token",
+            "user",
+            "isRefreshing",
+            "refreshUserInfo",
+            "getUserId"
+          ]
+        },
+        {
+          "path": "src/hooks/useTabBiometricAuth.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "UseTabBiometricAuthOptions",
+            "useTabBiometricAuth",
+            "location",
+            "navigate",
+            "token",
+            "refreshUserInfo",
+            "logout",
+            "timeoutRef"
+          ]
+        },
+        {
+          "path": "src/hooks/useNoPasswordSettings.ts",
+          "hits": [
+            "settings"
+          ],
+          "decls": [
+            "NoPasswordSettingsState",
+            "NoPasswordSettingItem",
+            "NoPasswordSettingsReturn",
+            "noPasswordSettingsReducer",
+            "useNoPasswordSettings",
+            "statusMapping",
+            "fetchCurrentStatus",
+            "response"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserConfigStorage.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "useUserConfigStorage",
+            "userId",
+            "getUserStorageKey",
+            "getUserConfig",
+            "storageKey",
+            "storedValue",
+            "setUserConfig",
+            "storageKey"
+          ]
+        },
+        {
+          "path": "src/hooks/useConfigManager.ts",
+          "hits": [
+            "SecurityDetail",
+            "settings"
+          ],
+          "decls": [
+            "ConfigRouteRule",
+            "ConfigManagerOptions",
+            "UseConfigManagerReturn",
+            "useConfigManager",
+            "allConfigs",
+            "getConfigItem",
+            "getConfigByPath",
+            "matchedRule"
+          ]
+        },
+        {
+          "path": "src/hooks/index.ts",
+          "hits": [
+            "settings"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/hooks/useUserVerificationMethods.ts",
+          "hits": [
+            "SecurityCenter",
+            "googleEnable"
+          ],
+          "decls": [
+            "VerificationMethods",
+            "UseVerificationMethodsReturn",
+            "useUserVerificationMethods",
+            "fetchVerificationMethods",
+            "status",
+            "methods",
+            "defaultMethods",
+            "refetch"
+          ]
+        },
+        {
+          "path": "src/hooks/useMeiqiaCustomerService.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "UseMeiqiaCustomerServiceOptions",
+            "languageMap",
+            "useMeiqiaCustomerService",
+            "language",
+            "isInitialized",
+            "isSDKLoaded",
+            "loadSDK",
+            "script"
+          ]
+        },
+        {
+          "path": "src/examples/TypeInferenceExample.tsx",
+          "hits": [
+            "UserProfile",
+            "authStore",
+            "realNameAuth",
+            "advancedAuth",
+            "googleEnable"
+          ],
+          "decls": [
+            "UserProfileProps",
+            "UserProfileState",
+            "useUserRefresh",
+            "refreshUser",
+            "response",
+            "useAuthStoreTyped",
+            "user",
+            "refreshUserInfo"
+          ]
+        },
+        {
+          "path": "src/examples/LogoutExample.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "LogoutExample",
+            "handleLogout"
+          ]
+        },
+        {
+          "path": "src/api/commonApi.ts",
+          "hits": [
+            "realNameAuth",
+            "advancedAuth",
+            "googleEnable"
+          ],
+          "decls": [
+            "SliderSwitchResponse",
+            "CaptchaGetRequest",
+            "CaptchaGetResponse",
+            "CaptchaCheckRequest",
+            "CaptchaCheckResponse",
+            "UserInfo",
+            "UserRefreshResponse",
+            "UserRefreshRequest"
+          ]
+        },
+        {
+          "path": "src/api/userApi.ts",
+          "hits": [
+            "authStore",
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "LoginForStep2Request",
+            "LoginForStep2Response",
+            "LoginForStep1Request",
+            "EncryptedLoginForStep1Request",
+            "LoginForStep1Response",
+            "RegisterRequest",
+            "EncryptedRegisterRequest",
+            "RegisterResponse"
+          ]
+        },
+        {
+          "path": "src/api/types.ts",
+          "hits": [
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "ApiMeta",
+            "ApiResponse",
+            "HomeRankingItem",
+            "FetchHomeRankingResponse",
+            "PankouBaseInfo",
+            "LatestDone",
+            "DepthList",
+            "DepthResult"
+          ]
+        },
+        {
+          "path": "src/api/apiClient.ts",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "interceptorHandles",
+            "getBaseURL",
+            "configuredBaseUrl",
+            "hostname",
+            "isLocalPreview",
+            "baseURL",
+            "apiClient",
+            "registerInterceptor"
+          ]
+        },
+        {
+          "path": "src/api/personalApi.ts",
+          "hits": [
+            "SecurityCenter",
+            "realNameAuth",
+            "advancedAuth",
+            "googleEnable"
+          ],
+          "decls": [
+            "ShareLinkResponse",
+            "SecurityCenterLoginLogItem",
+            "SecurityCenterIndexResponse",
+            "SetPasswordRequest",
+            "ChangePasswordRequest",
+            "EncryptedSetPasswordRequest",
+            "EncryptedChangePasswordRequest",
+            "CountryItem"
+          ]
+        },
+        {
+          "path": "src/api/index.ts",
+          "hits": [
+            "realNameAuth"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/api/assetApi.ts",
+          "hits": [
+            "advancedAuth"
+          ],
+          "decls": [
+            "TradeAreaPriceResponse",
+            "AccountCNYResponse",
+            "WalletAsset",
+            "WalletAssetsResponse",
+            "TransferCoinResponse",
+            "WalletBillItem",
+            "WalletBillResponse",
+            "WalletTradeType"
+          ]
+        },
+        {
+          "path": "src/api/api.js",
+          "hits": [
+            "SecurityCenter",
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "api"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "location",
+            "navigate",
+            "token",
+            "getInitialTab",
+            "searchParams",
+            "updateTabInUrl",
+            "searchParams"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/UserProfile.tsx",
+          "hits": [
+            "UserProfile",
+            "SecurityCenter",
+            "settings",
+            "authStore"
+          ],
+          "decls": [
+            "DEFAULT_AVATAR",
+            "COPY_RESET_DELAY",
+            "ArrowRightIcon",
+            "UserInfoProps",
+            "UserInfo",
+            "MenuItemProps",
+            "MenuItem",
+            "UserProfile"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailConfig.tsx",
+          "hits": [
+            "SecurityDetail",
+            "settings"
+          ],
+          "decls": [
+            "createSecurityConfig",
+            "settingsPage"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailPage.tsx",
+          "hits": [
+            "SecurityDetail"
+          ],
+          "decls": [
+            "ConfigItem",
+            "CardItemProps",
+            "SelectItemProps",
+            "SelectItem",
+            "fetchOptions",
+            "res",
+            "handleChange",
+            "CardItem"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityCenterPage.tsx",
+          "hits": [
+            "SecurityCenter",
+            "settings",
+            "googleEnable"
+          ],
+          "decls": [
+            "SecurityItem",
+            "SecurityLevelConfig",
+            "SECURITY_LEVEL_CONFIGS",
+            "calculateSecurityLevel",
+            "enabledCount",
+            "SecurityCenterPage",
+            "navigate",
+            "fetchSecurityStatus"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "UserProfile"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/InvitePage/components/PromotionStats.tsx",
+          "hits": [
+            "advancedAuth"
+          ],
+          "decls": [
+            "PromotionStats",
+            "PAGE_SIZE",
+            "res",
+            "handlePromotionTypeChange",
+            "newType",
+            "scrollContainerRef",
+            "handleScroll",
+            "isNearBottom"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/TradingPage.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "removeCommas",
+            "defaultTrade",
+            "getCoinDisplayName",
+            "getCoinLogo",
+            "isFavor",
+            "getInitialBottomTab",
+            "searchParams",
+            "tabFromUrl"
+          ]
+        },
+        {
+          "path": "src/pages/LoginPage/LoginPage.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "inputSx",
+            "LoginPhoneSelection",
+            "login",
+            "navigate",
+            "emailSuffixes",
+            "inputRef",
+            "response",
+            "countries"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WithdrawPage.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "WithdrawPage",
+            "location",
+            "searchParams",
+            "coin",
+            "coinId",
+            "coinName",
+            "navigate",
+            "qrScanner"
+          ]
+        },
+        {
+          "path": "src/pages/IdentityVerificationPage/IdentityVerificationPage.tsx",
+          "hits": [
+            "authStore",
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "VerificationOption",
+            "IdentityVerificationPage",
+            "navigate",
+            "user",
+            "getIcon",
+            "verificationOptions",
+            "basicStatus",
+            "advancedStatus"
+          ]
+        },
+        {
+          "path": "src/pages/SearchTradingPairsPage/SearchTradingPairsPage.tsx",
+          "hits": [
+            "authStore"
+          ],
+          "decls": [
+            "TradingPair",
+            "RecentViewItem",
+            "STORAGE_KEY",
+            "MAX_RECENT_ITEMS",
+            "SearchTradingPairsPage",
+            "navigate",
+            "location",
+            "token"
+          ]
+        },
+        {
+          "path": "src/services/personalService.ts",
+          "hits": [
+            "SecurityCenter",
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "PersonalService",
+            "res",
+            "res",
+            "res",
+            "res",
+            "res",
+            "res",
+            "res"
+          ]
+        },
+        {
+          "path": "src/services/commonService.ts",
+          "hits": [
+            "advancedAuth"
+          ],
+          "decls": [
+            "CommonService",
+            "token",
+            "res",
+            "promises",
+            "promises",
+            "rate",
+            "results",
+            "commonService"
+          ]
+        },
+        {
+          "path": "src/services/settingsService.ts",
+          "hits": [
+            "settings"
+          ],
+          "decls": [
+            "getRiseFallOptions",
+            "getLanguageOptions",
+            "getDarkModeOptions"
+          ]
+        },
+        {
+          "path": "src/store/authStore.ts",
+          "hits": [
+            "authStore",
+            "realNameAuth",
+            "advancedAuth",
+            "googleEnable"
+          ],
+          "decls": [
+            "isUser",
+            "obj",
+            "isUserWithAuth",
+            "isUserWithoutAuth",
+            "isUserWithAdvancedAuth",
+            "isUserWithoutRealNameAuth",
+            "isUserWithoutAdvancedAuth",
+            "isUserWithPayPassword"
+          ]
+        },
+        {
+          "path": "src/router/router.tsx",
+          "hits": [
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "modules",
+            "appRoutes",
+            "renderRoutes",
+            "AppRoutes"
+          ]
+        },
+        {
+          "path": "src/router/modules/types.ts",
+          "hits": [
+            "realNameAuth",
+            "advancedAuth"
+          ],
+          "decls": [
+            "AppRoute"
+          ]
+        },
+        {
+          "path": "src/router/modules/home.route.tsx",
+          "hits": [
+            "SecurityCenter",
+            "SecurityDetail",
+            "settings",
+            "realNameAuth"
+          ],
+          "decls": [
+            "HomePage",
+            "RegisterPage",
+            "LoginPage",
+            "SecurityCenterPage",
+            "SecurityDetailPage",
+            "PhoneConfigPage",
+            "GoogleAuthConfigPage",
+            "ForgetPasswordPage"
+          ]
+        }
+      ],
+      "matchCount": 53
+    },
+    "pwa_shell": {
+      "terms": [
+        "manifest",
+        "service-worker",
+        "sw",
+        "pwa",
+        "vite.config",
+        "index.html"
+      ],
+      "matches": [
+        {
+          "path": "tsconfig.node.json",
+          "hits": [
+            "sw",
+            "vite.config"
+          ],
+          "decls": []
+        },
+        {
+          "path": "index.html",
+          "hits": [
+            "manifest",
+            "index.html"
+          ],
+          "decls": []
+        },
+        {
+          "path": "tailwind.config.js",
+          "hits": [
+            "index.html"
+          ],
+          "decls": []
+        },
+        {
+          "path": "tsconfig.app.json",
+          "hits": [
+            "sw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "package-lock.json",
+          "hits": [
+            "sw",
+            "pwa"
+          ],
+          "decls": []
+        },
+        {
+          "path": "package.json",
+          "hits": [
+            "sw",
+            "pwa"
+          ],
+          "decls": []
+        },
+        {
+          "path": "vite.config.ts",
+          "hits": [
+            "manifest",
+            "sw",
+            "pwa",
+            "vite.config",
+            "index.html"
+          ],
+          "decls": [
+            "apiProxy",
+            "prodApiPattern"
+          ]
+        },
+        {
+          "path": "public/manifest.json",
+          "hits": [
+            "manifest"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/main.tsx",
+          "hits": [
+            "sw",
+            "pwa"
+          ],
+          "decls": [
+            "initLanguageFromURL",
+            "searchParams",
+            "languageParam",
+            "languageMap",
+            "isStandalone",
+            "btn"
+          ]
+        },
+        {
+          "path": "src/index.html",
+          "hits": [
+            "index.html"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/contexts/SliderCaptchaContextSimple.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "SliderCaptchaContext",
+            "SliderCaptchaProviderProps",
+            "SliderCaptchaProvider",
+            "sliderCaptcha",
+            "useSliderCaptchaContext",
+            "context",
+            "useSliderVerification",
+            "sliderCaptcha"
+          ]
+        },
+        {
+          "path": "src/config/socketConfig.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "getBaseHost",
+            "host",
+            "base",
+            "socketUrls",
+            "getSocketUrl"
+          ]
+        },
+        {
+          "path": "src/config/apiConfig.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "getOs",
+            "ua",
+            "getCurrentBrowser",
+            "ua",
+            "getRuntimeEnv",
+            "ua",
+            "apiConfig"
+          ]
+        },
+        {
+          "path": "src/layout/MainLayout.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "MainLayout"
+          ]
+        },
+        {
+          "path": "src/utils/androidParityNavigation.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "UAEC_OWNED_HOST_PATTERNS",
+            "AndroidWebViewContextOptions",
+            "BannerNavigationCandidate",
+            "normalizeBaseUrl",
+            "envBase",
+            "base",
+            "isUaecOwnedUrl",
+            "url"
+          ]
+        },
+        {
+          "path": "src/utils/webauthn.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "webauthnRegister",
+            "webauthnLogin",
+            "isWebAuthnSupported"
+          ]
+        },
+        {
+          "path": "src/utils/networkUtils.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "isNetworkError",
+            "message",
+            "networkKeywords",
+            "checkNetworkConnection",
+            "testUrl",
+            "timeout",
+            "controller",
+            "timeoutId"
+          ]
+        },
+        {
+          "path": "src/utils/format.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "formatToFixed2",
+            "formatToFixed",
+            "num",
+            "formatThousands",
+            "num",
+            "formatNumberAutoFixed",
+            "num",
+            "formatWithUnit"
+          ]
+        },
+        {
+          "path": "src/utils/rsaEncrypt.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "RSAEncrypt",
+            "encryptor",
+            "encrypted",
+            "encryptedData",
+            "passwordFields",
+            "value",
+            "encryptPassword",
+            "encryptPasswordFields"
+          ]
+        },
+        {
+          "path": "src/utils/apiConfig.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "getOs",
+            "ua",
+            "getCurrentBrowser",
+            "ua",
+            "apiConfig"
+          ]
+        },
+        {
+          "path": "src/utils/nativeBridge.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "getPlatform",
+            "ua",
+            "androidKycResult",
+            "win",
+            "iosKycResult",
+            "win",
+            "kycResult",
+            "platform"
+          ]
+        },
+        {
+          "path": "src/utils/socketUrls.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "getBaseHost",
+            "host",
+            "base",
+            "socketUrls",
+            "getSocketUrl"
+          ]
+        },
+        {
+          "path": "src/components/DepthChart/DepthChart.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "DepthChartProps",
+            "getDepthRenderWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "DepthChartSkeleton",
+            "DepthChart",
+            "dataProcessor",
+            "result"
+          ]
+        },
+        {
+          "path": "src/components/DepthChart/ContractDepthChart.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ContractDepthChartProps",
+            "ContractDepthResponse",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "ContractDepthChartSkeleton",
+            "ContractDepthChart",
+            "dataProcessor"
+          ]
+        },
+        {
+          "path": "src/components/forms/TradingPasswordForm.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "TradingPasswordForm",
+            "navigate",
+            "emailTimerRef",
+            "phoneTimerRef",
+            "startCountdown",
+            "showMessage",
+            "validatePassword",
+            "handleGetEmailCode"
+          ]
+        },
+        {
+          "path": "src/components/forms/LoginPasswordForm.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "LoginPasswordForm",
+            "validatePassword",
+            "handleSubmit",
+            "newErrors",
+            "newPasswordError",
+            "submitPasswordChange",
+            "response",
+            "handleVerificationSubmit"
+          ]
+        },
+        {
+          "path": "src/components/forms/index.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/components/common/Banner.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "BannerItem",
+            "BannerProps",
+            "Banner",
+            "timerRef",
+            "bannersLen",
+            "handlers",
+            "handleClick",
+            "target"
+          ]
+        },
+        {
+          "path": "src/components/common/VerificationDrawer.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "VerificationData",
+            "VerificationDrawerProps",
+            "VerificationInput",
+            "getLabel",
+            "getPlaceholder",
+            "handlePaste",
+            "text",
+            "numbers"
+          ]
+        },
+        {
+          "path": "src/components/common/Drawer.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "DrawerProps",
+            "DRAWER_WIDTH",
+            "HANDLE_SIZE",
+            "SWIPE_TRIGGER_DISTANCE",
+            "SWIPE_HANDLE_EDGE",
+            "Drawer",
+            "isControlled",
+            "open"
+          ]
+        },
+        {
+          "path": "src/components/common/LogoutButtonAdvanced.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "LogoutButtonAdvancedProps",
+            "LogoutButtonAdvanced",
+            "handleLogout",
+            "handleCancel"
+          ]
+        },
+        {
+          "path": "src/components/common/PrivateRoute.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "PrivateRoute",
+            "token"
+          ]
+        },
+        {
+          "path": "src/components/common/TradingPasswordDrawer.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "TradingPasswordData",
+            "TradingPasswordDrawerProps",
+            "TradingPasswordInput",
+            "inputRef",
+            "timer",
+            "handleInputChange",
+            "inputValue",
+            "handlePaste"
+          ]
+        },
+        {
+          "path": "src/components/common/Input.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "Input",
+            "isPassword",
+            "handleTogglePassword",
+            "mergedSlotProps"
+          ]
+        },
+        {
+          "path": "src/hooks/useConfigVerification.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "VerificationConfig",
+            "useConfigVerification",
+            "securityVerification",
+            "tradingPasswordVerification",
+            "openVerification",
+            "closeAllVerifications",
+            "hasOpenVerification",
+            "createVerificationConfig"
+          ]
+        },
+        {
+          "path": "src/hooks/useHelpCenter.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "HelpCenterData",
+            "HelpCenterContent",
+            "UseHelpCenterReturn",
+            "content",
+            "tradingNotice",
+            "tradeRates",
+            "useHelpCenter",
+            "data"
+          ]
+        },
+        {
+          "path": "src/hooks/useRealtimeData.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "UseRealtimeDataOptions",
+            "useRealtimeData",
+            "wsKey",
+            "subscriptionRef",
+            "cancelTokenRef",
+            "createCancellableRequest",
+            "cancelToken",
+            "sub"
+          ]
+        },
+        {
+          "path": "src/hooks/useKyc.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "useKyc",
+            "initKyc",
+            "submitKyc",
+            "refreshToken",
+            "refreshStatus",
+            "shouldShowKyc",
+            "isKycCompleted",
+            "isKycPending"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserRefresh.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "UseUserRefreshOptions",
+            "useUserRefresh",
+            "location",
+            "token",
+            "user",
+            "isRefreshing",
+            "refreshUserInfo",
+            "getUserId"
+          ]
+        },
+        {
+          "path": "src/hooks/useNoPasswordSettings.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "NoPasswordSettingsState",
+            "NoPasswordSettingItem",
+            "NoPasswordSettingsReturn",
+            "noPasswordSettingsReducer",
+            "useNoPasswordSettings",
+            "statusMapping",
+            "fetchCurrentStatus",
+            "response"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserConfigStorage.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "useUserConfigStorage",
+            "userId",
+            "getUserStorageKey",
+            "getUserConfig",
+            "storageKey",
+            "storedValue",
+            "setUserConfig",
+            "storageKey"
+          ]
+        },
+        {
+          "path": "src/hooks/useConfigManager.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ConfigRouteRule",
+            "ConfigManagerOptions",
+            "UseConfigManagerReturn",
+            "useConfigManager",
+            "allConfigs",
+            "getConfigItem",
+            "getConfigByPath",
+            "matchedRule"
+          ]
+        },
+        {
+          "path": "src/hooks/useCameraPermission.utils.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "supportsPermissionQuery",
+            "supportsGetUserMedia",
+            "isSecureContext",
+            "getStoredPermissionStatus",
+            "stored",
+            "parsed",
+            "setStoredPermissionStatus",
+            "clearStoredPermissionStatus"
+          ]
+        },
+        {
+          "path": "src/hooks/index.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "src/hooks/useColorTheme.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "useColorTheme",
+            "userConfig",
+            "toggleThemeMode",
+            "newMode",
+            "newConfig",
+            "setThemeMode",
+            "newConfig",
+            "resetToDefault"
+          ]
+        },
+        {
+          "path": "src/hooks/useUserVerificationMethods.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "VerificationMethods",
+            "UseVerificationMethodsReturn",
+            "useUserVerificationMethods",
+            "fetchVerificationMethods",
+            "status",
+            "methods",
+            "defaultMethods",
+            "refetch"
+          ]
+        },
+        {
+          "path": "src/hooks/useTradingPasswordCheck.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "useTradingPasswordCheck",
+            "tradingPasswordVerification",
+            "executeOrderWithPasswordCheck",
+            "needPassword",
+            "checkPasswordRequired"
+          ]
+        },
+        {
+          "path": "src/hooks/useTradingPasswordVerification.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "TradingPasswordVerificationState",
+            "useTradingPasswordVerification",
+            "openTradingPasswordVerification",
+            "closeTradingPasswordVerification",
+            "clearTradingPasswordVerification",
+            "handleTradingPasswordVerificationSuccess"
+          ]
+        },
+        {
+          "path": "src/hooks/useWebAuthn.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "useWebAuthn",
+            "register",
+            "cred",
+            "login",
+            "cred"
+          ]
+        },
+        {
+          "path": "src/hooks/useSliderCaptchaSimple.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "UseSliderCaptchaSimpleOptions",
+            "UseSliderCaptchaSimpleReturn",
+            "useSliderCaptchaSimple",
+            "checkSliderSwitch",
+            "fetchCaptchaData",
+            "data",
+            "errorMessage",
+            "openCaptcha"
+          ]
+        },
+        {
+          "path": "src/examples/TypeInferenceExample.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "UserProfileProps",
+            "UserProfileState",
+            "useUserRefresh",
+            "refreshUser",
+            "response",
+            "useAuthStoreTyped",
+            "user",
+            "refreshUserInfo"
+          ]
+        },
+        {
+          "path": "src/api/ieoApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "IEOProject",
+            "IEOProjectListResponse",
+            "NewEntranceResponse",
+            "MiningActivity",
+            "CountResponse",
+            "ProjectDetails",
+            "JointTermCoinResponse",
+            "PayPasswordCheckResponse"
+          ]
+        },
+        {
+          "path": "src/api/commonApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "SliderSwitchResponse",
+            "CaptchaGetRequest",
+            "CaptchaGetResponse",
+            "CaptchaCheckRequest",
+            "CaptchaCheckResponse",
+            "UserInfo",
+            "UserRefreshResponse",
+            "UserRefreshRequest"
+          ]
+        },
+        {
+          "path": "src/api/userApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "LoginForStep2Request",
+            "LoginForStep2Response",
+            "LoginForStep1Request",
+            "EncryptedLoginForStep1Request",
+            "LoginForStep1Response",
+            "RegisterRequest",
+            "EncryptedRegisterRequest",
+            "RegisterResponse"
+          ]
+        },
+        {
+          "path": "src/api/types.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ApiMeta",
+            "ApiResponse",
+            "HomeRankingItem",
+            "FetchHomeRankingResponse",
+            "PankouBaseInfo",
+            "LatestDone",
+            "DepthList",
+            "DepthResult"
+          ]
+        },
+        {
+          "path": "src/api/contractApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ContractEntrustItem",
+            "CurrentEntrustResponse",
+            "TpslEntrustItem",
+            "CurrentTpslEntrustResponse",
+            "CancelEntrustRequest",
+            "BatchCancelEntrustRequest",
+            "CurrentEntrustCountResponse",
+            "HistoryEntrustResponse"
+          ]
+        },
+        {
+          "path": "src/api/apiClient.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "interceptorHandles",
+            "getBaseURL",
+            "configuredBaseUrl",
+            "hostname",
+            "isLocalPreview",
+            "baseURL",
+            "apiClient",
+            "registerInterceptor"
+          ]
+        },
+        {
+          "path": "src/api/personalApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ShareLinkResponse",
+            "SecurityCenterLoginLogItem",
+            "SecurityCenterIndexResponse",
+            "SetPasswordRequest",
+            "ChangePasswordRequest",
+            "EncryptedSetPasswordRequest",
+            "EncryptedChangePasswordRequest",
+            "CountryItem"
+          ]
+        },
+        {
+          "path": "src/api/assetApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "TradeAreaPriceResponse",
+            "AccountCNYResponse",
+            "WalletAsset",
+            "WalletAssetsResponse",
+            "TransferCoinResponse",
+            "WalletBillItem",
+            "WalletBillResponse",
+            "WalletTradeType"
+          ]
+        },
+        {
+          "path": "src/api/api.js",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "api"
+          ]
+        },
+        {
+          "path": "src/api/spotAssetApi.ts",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "BbLogTypeItem",
+            "BbLogTypeResponse",
+            "BbLogItem",
+            "BbLogPageInfo",
+            "BbLogResponse",
+            "BbRateResponse",
+            "BbFinanceItem",
+            "BbFinanceListResponse"
+          ]
+        },
+        {
+          "path": "src/pages/KycPageWrapper/KycPage/KycPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "KycPage",
+            "location",
+            "navigate",
+            "searchParams",
+            "routeToken",
+            "hasToken",
+            "messageHandler",
+            "errorHandler"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "MarketCenterPage",
+            "location",
+            "navigate",
+            "token",
+            "getInitialTab",
+            "searchParams",
+            "updateTabInUrl",
+            "searchParams"
+          ]
+        },
+        {
+          "path": "src/pages/MarketCenterPage/MarketInterface/MarketInterface.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailConfig.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "createSecurityConfig",
+            "settingsPage"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityDetailPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ConfigItem",
+            "CardItemProps",
+            "SelectItemProps",
+            "SelectItem",
+            "fetchOptions",
+            "res",
+            "handleChange",
+            "CardItem"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/SecurityCenterPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "SecurityItem",
+            "SecurityLevelConfig",
+            "SECURITY_LEVEL_CONFIGS",
+            "calculateSecurityLevel",
+            "enabledCount",
+            "SecurityCenterPage",
+            "navigate",
+            "fetchSecurityStatus"
+          ]
+        },
+        {
+          "path": "src/pages/HomePage/HomePage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "TABS",
+            "TAB_TYPE_MAP",
+            "RISE_COLOR",
+            "FALL_COLOR",
+            "RankingList",
+            "navigate",
+            "currentRankingKey",
+            "handleTabChange"
+          ]
+        },
+        {
+          "path": "src/pages/InvitePage/components/RewardRecords.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "PAGE_SIZE",
+            "RewardRecords",
+            "res",
+            "getRewardTypeLabel",
+            "renderTableRow",
+            "scrollContainerRef",
+            "handleScroll",
+            "isNearBottom"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/TradingPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "removeCommas",
+            "defaultTrade",
+            "getCoinDisplayName",
+            "getCoinLogo",
+            "isFavor",
+            "getInitialBottomTab",
+            "searchParams",
+            "tabFromUrl"
+          ]
+        },
+        {
+          "path": "src/pages/TradingPage/HistoryOrderPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ORDER_TYPE",
+            "getTagStyles",
+            "buyColor",
+            "sellColor",
+            "getTagText",
+            "OrderCardProps",
+            "OrderCard",
+            "orderType"
+          ]
+        },
+        {
+          "path": "src/pages/LoginPage/LoginPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "inputSx",
+            "LoginPhoneSelection",
+            "login",
+            "navigate",
+            "emailSuffixes",
+            "inputRef",
+            "response",
+            "countries"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPositionPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "TAB_CONFIG",
+            "POSITION_TYPE_CONFIG",
+            "FUND_FLOW_CONFIG",
+            "LoadingState",
+            "EmptyState",
+            "PositionTypeTag",
+            "config",
+            "isUp"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractHistoryPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "ContractHistoryPage",
+            "fundBillFilterOptions",
+            "renderCurrentEntrust",
+            "renderHistoryEntrust",
+            "renderFundFlow"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "removeCommas",
+            "positionsTypeMap",
+            "getContractDepthWSKey",
+            "getTradeNameFromWSKey",
+            "match",
+            "EntrustTabs",
+            "ContractPage",
+            "location"
+          ]
+        },
+        {
+          "path": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "OrderBook",
+            "result",
+            "sells",
+            "price",
+            "rose",
+            "buys",
+            "buys",
+            "sells"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/AssetPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "EXCHANGE_RATE_CURRENCY",
+            "DEFAULT_RATE",
+            "DEFAULT_ICON_URL",
+            "Asset",
+            "AssetListProps",
+            "AssetCard",
+            "TabConfig",
+            "cutOutPointLength"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/RecordsPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "RecordsPage",
+            "location",
+            "searchParams",
+            "coinId",
+            "coinName",
+            "tabParam",
+            "pageSize",
+            "type"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WalletBillPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "BillItemData",
+            "WALLET_TYPE_CONFIG",
+            "utils",
+            "num",
+            "year",
+            "month",
+            "day",
+            "hours"
+          ]
+        },
+        {
+          "path": "src/pages/AssetPage/WithdrawPage.tsx",
+          "hits": [
+            "sw"
+          ],
+          "decls": [
+            "WithdrawPage",
+            "location",
+            "searchParams",
+            "coin",
+            "coinId",
+            "coinName",
+            "navigate",
+            "qrScanner"
+          ]
+        }
+      ],
+      "matchCount": 90
+    }
+  },
+  "summary": {
+    "app_shell_navigation": 74,
+    "home_discovery": 36,
+    "market_quote_center": 47,
+    "spot_trading": 123,
+    "contract_trading": 18,
+    "assets_wallet": 44,
+    "mine_settings_security": 53,
+    "pwa_shell": 90
+  }
+}

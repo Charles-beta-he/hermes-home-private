@@ -1,0 +1,52 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T15:23:32.881Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "state": {
+    "href": "http://127.0.0.1:4173/contract",
+    "drawerTitle": true,
+    "slider": {
+      "tag": "input",
+      "type": "range",
+      "aria": "全仓杠杆滑杆",
+      "min": "1",
+      "max": "100",
+      "value": "10",
+      "visible": true
+    },
+    "buttons": [
+      {
+        "tag": "button",
+        "type": "button",
+        "aria": "全仓杠杆减少杠杆",
+        "visible": true
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "aria": "全仓杠杆增加杠杆",
+        "visible": true
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "aria": "确认合约杠杆调整",
+        "visible": true
+      }
+    ],
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-drawer-a11y/contract-leverage-drawer-a11y-390x844.png",
+  "negative": {
+    "noLeverageChangePerformed": true,
+    "noConfirmClicked": true,
+    "noOrderPasswordMutation": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

@@ -1,0 +1,8 @@
+usage: hermes [-h] [--version] [-z PROMPT] [-m MODEL] [--provider PROVIDER]
+              [-t TOOLSETS] [--resume SESSION] [--continue [SESSION_NAME]]
+              [--worktree] [--accept-hooks] [--skills SKILLS] [--yolo]
+              [--pass-session-id] [--proof-log] [--ignore-user-config]
+              [--ignore-rules] [--safe-mode] [--tui] [--cli] [--dev]
+              {chat,model,moa,fallback,secrets,migrate,gateway,proxy,lsp,setup,postinstall,whatsapp,whatsapp-cloud,slack,send,login,logout,auth,status,selfcheck,cron,webhook,portal,kanban,project,hooks,doctor,security,dump,debug,backup,checkpoints,import,config,pairing,skills,bundles,portfolio,agent-os,complex-task-harness,plugins,curator,mission,pets,memory,tools,computer-use,mcp,codegraph,sessions,insights,claw,version,update,uninstall,acp,profile,completion,dashboard,desktop,gui,logs,prompt-size}
+              ...
+hermes: error: unrecognized arguments: --json

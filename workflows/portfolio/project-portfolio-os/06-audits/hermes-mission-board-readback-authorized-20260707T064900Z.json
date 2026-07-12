@@ -1,0 +1,26 @@
+[
+  {
+    "cron_installed": false,
+    "direction": "ERG high-risk mission lifecycle smoke 20260630",
+    "mission_id": "msn_20260630_140834_01dd4046",
+    "needs_user": false,
+    "next_step": "hermes mission resume msn_20260630_140834_01dd4046",
+    "open_decision_id": null,
+    "stage": "intake",
+    "status": "paused",
+    "ticks_max": 1,
+    "ticks_used": 0
+  },
+  {
+    "cron_installed": true,
+    "direction": "Hermes 自身架构长期自推进：我只给高抽象方向；Hermes 负责研究、拆解、执行、验证、沉淀；遇到价值判断、权限升级、不可逆风险、外部副作用、证据不足或路线分歧时，生成 Human Intervention Packet 交给我选择后再继续。",
+    "mission_id": "msn_20260610_120149_27c88cfc",
+    "needs_user": false,
+    "next_step": "hermes mission resume msn_20260610_120149_27c88cfc",
+    "open_decision_id": null,
+    "stage": "intake",
+    "status": "paused",
+    "ticks_max": 72,
+    "ticks_used": 72
+  }
+]

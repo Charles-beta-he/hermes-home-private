@@ -1,0 +1,26 @@
+{
+  "schema": "portfolio_doctor_v1",
+  "ok": true,
+  "checked_at": "2026-07-09T12:17:45.761130+08:00",
+  "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+  "profile_dir": "/Users/charles/.hermes/project-profiles",
+  "project_count": 17,
+  "profile_count": 18,
+  "registry_only": [],
+  "profile_only": [
+    "hermes-context-engineering-os"
+  ],
+  "counts": {
+    "error": 0,
+    "warning": 1
+  },
+  "findings": [
+    {
+      "severity": "warning",
+      "project": "hermes-context-engineering-os",
+      "check": "profile_registry_set",
+      "message": "profile exists but project is absent from registry"
+    }
+  ],
+  "returncode": 0
+}

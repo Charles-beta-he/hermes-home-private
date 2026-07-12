@@ -1,0 +1,172 @@
+{
+  "axes": {
+    "certification": {
+      "boundary": "independent certification receipt required",
+      "certified_healthy": false,
+      "eligible": false
+    },
+    "engineering_coverage": {
+      "high_risk_systems": 0,
+      "missing_checks": 0,
+      "systems": 27
+    },
+    "operational_health": {
+      "findings": 3,
+      "state": "degraded"
+    },
+    "procedure_validation": {
+      "blocked_by_authority": 4,
+      "can_claim_complete_procedure_validation": false,
+      "failed": 1,
+      "fully_connected": 7,
+      "global_certification_status": "not_certified",
+      "inventory_complete": true,
+      "inventory_gap_systems": 0,
+      "pending": 1,
+      "procedures": 12,
+      "required_procedures": 12,
+      "score_semantics": "procedure E2E validation is separate from engineering coverage and current operational health",
+      "stale": 0,
+      "unattested_systems": 0,
+      "unknown_receipts": 0
+    }
+  },
+  "generated_at": "2026-07-12T04:02:15.573592Z",
+  "mode": "read_only_projection",
+  "procedures": [
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "agent_os.workflow_loop.v2",
+      "required": true,
+      "system_id": "profile:hermes-agent-os-control-plane",
+      "validation_state": "e2e_passed"
+    },
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "cron.scheduler.status_readback",
+      "required": true,
+      "system_id": "cron",
+      "validation_state": "e2e_passed"
+    },
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "delivery.local.output",
+      "required": true,
+      "system_id": "delivery:local",
+      "validation_state": "e2e_passed"
+    },
+    {
+      "delivery_state": "blocked",
+      "findings": [
+        "procedure_authority_blocked"
+      ],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": false,
+      "procedure_id": "delivery.origin.send",
+      "required": true,
+      "system_id": "delivery:origin",
+      "validation_state": "blocked_by_authority"
+    },
+    {
+      "delivery_state": "blocked",
+      "findings": [
+        "procedure_authority_blocked"
+      ],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": false,
+      "procedure_id": "delivery.telegram.send",
+      "required": true,
+      "system_id": "delivery:telegram",
+      "validation_state": "blocked_by_authority"
+    },
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "experience.ratchet.lifecycle",
+      "required": true,
+      "system_id": "experience-ratchet",
+      "validation_state": "e2e_passed"
+    },
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "hermes.core.selfcheck.readback",
+      "required": true,
+      "system_id": "hermes-core",
+      "validation_state": "e2e_passed"
+    },
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "lark.auth.health_monitor",
+      "required": true,
+      "system_id": "profile:lark",
+      "validation_state": "e2e_passed"
+    },
+    {
+      "delivery_state": "partially_landed",
+      "findings": [
+        "procedure_e2e_failed"
+      ],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "lark.oauth.recovery",
+      "required": true,
+      "system_id": "profile:lark",
+      "validation_state": "e2e_failed"
+    },
+    {
+      "delivery_state": "blocked",
+      "findings": [
+        "procedure_authority_blocked"
+      ],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": false,
+      "procedure_id": "lark.task.readonly",
+      "required": true,
+      "system_id": "profile:lark",
+      "validation_state": "blocked_by_authority"
+    },
+    {
+      "delivery_state": "blocked",
+      "findings": [
+        "procedure_authority_blocked"
+      ],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": false,
+      "procedure_id": "providers.multimodel.quorum",
+      "required": true,
+      "system_id": "model-providers",
+      "validation_state": "blocked_by_authority"
+    },
+    {
+      "delivery_state": "fully_connected",
+      "findings": [],
+      "implementation_state": "enabled",
+      "latest_receipt_fresh": true,
+      "procedure_id": "scripts.dynamic_selfcheck.run",
+      "required": true,
+      "system_id": "scripts:selfcheck",
+      "validation_state": "e2e_passed"
+    }
+  ],
+  "runtime_mutation": false,
+  "schema": "agent_os_procedure_validation_projection_v1",
+  "source_registry_path": "/Users/charles/.hermes/state/selfcheck/procedure_validation_registry.json",
+  "would_execute_anything": false
+}

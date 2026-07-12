@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-09T11:13:29.762569+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot history-order button/login-boundary slice locally certified with independent verifier APPROVE; not push/device/authenticated-history/PWA/production certified",
+  "slice": "spot-history-button-login-boundary",
+  "targetCommit": "ff41095 fix: gate spot history orders behind login",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_afbc8db5",
+    "verdict": "APPROVE",
+    "objectiveBlockers": []
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-history-button-semantics/spot-history-button-semantics-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-history-button-semantics/spot-history-button-semantics-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "history order control is button type=button with aria-label 历史订单",
+    "anonymous click routes to /login",
+    "history-order auth API not called before login",
+    "no credential/session read and no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated history-order content certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-11T02:32:35+08:00",
+  "project": "uaec-react-h5",
+  "slice": "contract-calculator-exact-formulas",
+  "result": "PASS_L3_LOCAL_CERTIFIED_PACKET",
+  "commits": [
+    "c7cc8c3 feat: add exact contract calculator formulas",
+    "6b8d4a3 feat: add exact liquidation calculator formulas",
+    "ece522a feat: add calculator tier display helpers",
+    "eeb1984 fix: enforce contract calculator input bounds"
+  ],
+  "spec": {
+    "goal": "Match Android calculate1/calculate2/calculate3 and tier display arithmetic without JavaScript floating-point money.",
+    "nonGoals": [
+      "No real order or funds action",
+      "No authenticated write, push or deploy",
+      "No Android device/WebView or production certification"
+    ],
+    "androidSources": [
+      "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/ContractCalculatorActivity.java calculate1/calculate2/calculate3/qPData",
+      "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/utils/NumUtils.java"
+    ]
+  },
+  "evidence": {
+    "red": [
+      "ERR_MODULE_NOT_FOUND before contractCalculatorMath.ts existed",
+      "calculateLiquidationPrice export absent before liquidation implementation",
+      "calculateContractCount export absent before tier helper implementation",
+      "deleg_4ff4847e AMEND reproduced: invalid side/mode silently selected alternate branches",
+      "deleg_69d7b04a AMEND reproduced: leverage below 1 or above 125 remained accepted"
+    ],
+    "green": {
+      "command": "node --experimental-strip-types --test /Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-calculator-formulas/contractCalculatorMath.test.mjs",
+      "exitCode": 0,
+      "tests": 18,
+      "passed": 18,
+      "covered": [
+        "profit long/short and tiny decimals",
+        "target close amount/return-rate modes",
+        "isolated long/short liquidation",
+        "cross long/short liquidation and unable guards",
+        "non-positive isolated clamp",
+        "maintenance tier selection, absent tier and over-limit negatives",
+        "leverage max-position tier selection",
+        "contract-count scale-5 then round-2",
+        "runtime side/mode discriminant rejection",
+        "all leverage-aware functions reject values outside 1 through 125"
+      ]
+    },
+    "typescript": {"status": "PASS", "exitCode": 0},
+    "focusedEslint": {"status": "PASS", "exitCode": 0},
+    "productionBuild": {"status": "PASS", "exitCode": 0, "modulesTransformed": 12673},
+    "gitDiffCheck": {"status": "PASS", "exitCode": 0},
+    "postCommitReadback": {
+      "status": "PASS",
+      "branch": "dev...origin/dev [ahead 33]",
+      "workingTreeCleanBeforeDocumentationUpdate": true,
+      "gitShowCheck": true
+    },
+    "projectCertification": {
+      "status": "PASS",
+      "ok": true,
+      "blockers": 0,
+      "level": "L2-local-loop-verified",
+      "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T18-06-20-969Z.json"
+    },
+    "independentReview": {
+      "status": "APPROVE",
+      "pureFormulaApproval": "APPROVE deleg_07c59424 for c7cc8c3+6b8d4a3",
+      "runtimeDiscriminantFinding": "AMEND deleg_4ff4847e; remediated by eeb1984",
+      "aggregateLeverageFinding": "AMEND deleg_69d7b04a; remediated by eeb1984",
+      "replacementReview": "APPROVE deleg_9dc361df for c7cc8c3+6b8d4a3+ece522a+6e7b04d+eeb1984+2ccad58; supplemental corroborating APPROVE deleg_c2664568; Claude Code fallback NO_VERDICT_AUTH_DISABLED_403",
+      "verifierSummary": "/Users/charles/.hermes/cache/delegation/subagent-summary-0-20260711_021253_128326.txt"
+    }
+  },
+  "precision": {
+    "inputRepresentation": "decimal strings",
+    "arithmeticRepresentation": "BigInt coefficient plus decimal scale",
+    "division": "HALF_UP at Android-matching intermediate scales",
+    "display": "HALF_UP fixed 2 decimals; fees fixed 4 decimals",
+    "scientificNotation": false
+  },
+  "boundary": "PASS_L3_LOCAL_CERTIFIED_PACKET applies only to the independently approved local anonymous H5 calculator chain. No Android device/WebView, full Android 1:1, remote CI, deployment, production, authenticated write, order or funds claim."
+}

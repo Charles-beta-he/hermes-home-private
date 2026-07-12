@@ -1,0 +1,23 @@
+{
+  "generatedAt": "2026-07-09T13:50:12.971196+00:00",
+  "type": "autonomous-continuation-root-cause-fix",
+  "rootCause": "Verifier result handling ended turns after writing receipts/verdicts instead of running next-slice selection while safe-slice autonomy was still enabled.",
+  "fixes": [
+    "Patched project-profile-certification-loop reference to require next-slice selection after verifier receipts when repo/preview are healthy.",
+    "Project profile now records an auto-continuation guard for verifier-drain turns.",
+    "Current run immediately continues into the next safe local slice instead of stopping at explanation."
+  ],
+  "currentReadback": {
+    "gitStatus": "## dev...origin/dev [ahead 32]",
+    "head": "16849b3",
+    "preview": "preview:200"
+  },
+  "hardStopGatesRemainClosed": [
+    "push",
+    "deploy",
+    "credential/session read or entry",
+    "real order/payment/funds mutation",
+    "production/test-domain mutation",
+    "device/PWA/full certification claims"
+  ]
+}

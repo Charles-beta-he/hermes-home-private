@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-07-09T14:38:03.761163+00:00",
+  "sourceDelegation": "deleg_6a4327ac",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-order-type-select-a11y",
+  "targetCommit": "47634f4",
+  "currentHead": "a3ab73d",
+  "currentGitStatus": "## dev...origin/dev [ahead 40]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract order-type selector accessibility slice is L3-local-certified-packet: scoped code, SSOT evidence, and independent clean-window verifier approval support the label and 市价委托 behavior. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-type-select-a11y/contract-order-type-select-a11y-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-order-type-select-a11y-loop-2026-07-09T14-02-06-926280+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 40]",
+      "head": "a3ab73d",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "resolvedStaleAmends": [
+    "deleg_150d248f",
+    "deleg_18c76d44"
+  ],
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

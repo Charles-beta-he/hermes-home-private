@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:33:40.995420+00:00",
+  "sourceDelegation": "deleg_c061f0b1",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-orderbook-mode-semantics",
+  "targetCommit": "f11bf45",
+  "currentHead": "a3ab73d",
+  "currentGitStatus": "## dev...origin/dev [ahead 40]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract orderbook mode toggle semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, local loop, and independent verifier approval support semantic button/aria-pressed behavior. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-mode-semantics/contract-orderbook-mode-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-orderbook-mode-semantics-loop-2026-07-09T14-17-09-109262+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 40]",
+      "head": "a3ab73d",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

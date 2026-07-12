@@ -1,0 +1,90 @@
+{
+  "slice": "contract-trade-entry-intent-consumption",
+  "date": "2026-07-10",
+  "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+  "trigger": {
+    "verifierBatch": "deleg_4c3ce519",
+    "verdict": "AMEND",
+    "finding": "a8e5d2c propagated side/buyselltype and restored the contract identity, but the trade page did not consume BUY/SELL into observable entry state."
+  },
+  "androidReference": {
+    "file": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/ContractUSDTFragment.java",
+    "facts": [
+      "onChanged reads the buyselltype intent at line 607.",
+      "getWhich distinguishes SELL from the default BUY path at lines 702-727.",
+      "The loaded contract path invokes getWhich at line 2219."
+    ]
+  },
+  "implementation": {
+    "files": [
+      "src/pages/ContractPage/ContractPage.tsx",
+      "docs/android-parity-front-end-plan.md"
+    ],
+    "behavior": [
+      "Consume Android-style buyselltype with precedence over lowercase side fallback.",
+      "Map BUY to the open-long button and SELL to the open-short button.",
+      "Expose the current entry through data-entry-intent and an accessible label.",
+      "Visually outline only the intended action without clicking or submitting it."
+    ]
+  },
+  "tdd": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-trade-entry-intent/verify_contract_trade_entry_intent.py",
+    "red": {
+      "exit": 1,
+      "buy": {"buyIntent": "", "sellIntent": ""},
+      "sell": {"buyIntent": "", "sellIntent": ""}
+    },
+    "green": {
+      "exit": 0,
+      "buy": {
+        "pairVisible": true,
+        "buyIntent": "active",
+        "sellIntent": "",
+        "buyLabel": "合约开多下单（当前入口）"
+      },
+      "sell": {
+        "pairVisible": true,
+        "buyIntent": "",
+        "sellIntent": "active",
+        "sellLabel": "合约开空下单（当前入口）"
+      }
+    }
+  },
+  "verification": {
+    "scopedEslint": "BASELINE_ONLY_FAILURE: the sole current error at line 1822 predates 405b15b (git blame 0b8d35be) and is outside changed hunks",
+    "productionBuild": "PASS exit 0; 12670 modules transformed",
+    "runtimeHarness": "PASS exit 0",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-trade-entry-intent/contract-sell-entry-intent-390x844.png",
+    "visualReadback": {
+      "viewport": "390x844",
+      "sellIntentOutlined": true,
+      "buyIntentOutlined": false,
+      "blockingOverlapOrClippingObserved": false,
+      "orderSubmitted": false,
+      "note": "The outline indicates navigation intent only; it is not an order or confirmation state."
+    }
+  },
+  "commit": "405b15b",
+  "certification": {
+    "level": "L3-local-certified-packet",
+    "projectLoop": {
+      "ok": true,
+      "blockers": 0,
+      "exit": 0,
+      "latestReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+      "timestampedReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T07-49-56-211Z.json"
+    },
+    "independentVerifier": {
+      "delegation": "deleg_e44ff921",
+      "verdict": "APPROVE",
+      "readbackAt": "2026-07-10T17:23:20+08:00",
+      "runtimeCases": ["BUY", "SELL", "side=sell fallback", "conflicting side=sell and buyselltype=BUY", "invalid values"],
+      "negativeEvidence": "Order handlers remain exclusively on button onClick; no button was clicked and no order was submitted."
+    }
+  },
+  "boundaries": [
+    "No order button was clicked.",
+    "No credential, authenticated mutation, order, funds action, push, deploy, or external publish.",
+    "No device or production claim."
+  ]
+}

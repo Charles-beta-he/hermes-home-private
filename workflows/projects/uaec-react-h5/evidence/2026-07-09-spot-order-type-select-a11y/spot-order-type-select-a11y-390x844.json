@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T11:00:04.506Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "inputTag": null,
+    "inputAria": null,
+    "comboRole": "combobox",
+    "comboAria": "委托类型",
+    "visible": true,
+    "disabled": false,
+    "text": "限价委托",
+    "hasTradeTitle": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-order-type-select-a11y/spot-order-type-select-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutation": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

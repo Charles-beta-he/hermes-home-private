@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:28:21.339Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=buy&buyselltype=BUY&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "hasTradeTitle": true,
+    "hasLoginCta": true,
+    "ctaTag": "button",
+    "ctaAriaLabel": "去登录",
+    "bodyText": "BTC/USDT\n买入\n卖出\n限价委托\n​\n价格(USDT)\n价格(USDT)\nBTC\n​\n0%\n25%\n50%\n70%\n100%\n金额\nUSDT\n金额\n可用\n0 USDT\n冻结\n0 USDT\n去登录\nPrice\n(USDT)\nAmount\n(BTC)\n62,887.99\n0.92446\n62,887.98\n0.00195\n62,887.96\n0.00008\n62,887.92\n0.00009\n62,887.51\n0.06571\n62,887.06\n≈ 62,887.06 USD\n62,887.06\n0.01275\n62,887.05\n0.00097\n62,887.04\n0.00016\n62,"
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/login",
+    "pathname": "/login"
+  },
+  "negative": {
+    "noAssetOrEntrustApiOnAnonymousLoad": true,
+    "noAssetEntrustOrderPasswordApiAfterCta": true,
+    "anonymousClickRedirectsToLogin": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenInitialRequests": [],
+  "forbiddenPostClickRequests": [],
+  "apiRequestSample": [
+    "http://127.0.0.1:4173/api/tradeType/list?partnerId=%5BREDACTED%5D&partnerNo=%5BREDACTED%5D&timestamp=%5BREDACTED%5D&version=1.0.0&clientType=H5&hisDataSign=%5BREDACTED%5D&apiRSAKey=%5BREDACTED%5D",
+    "http://127.0.0.1:4173/api/exchangeRate/tradeAreaPrice?partnerId=%5BREDACTED%5D&currency=USD&timestamp=%5BREDACTED%5D&partnerNo=%5BREDACTED%5D&version=1.0.0&clientType=H5&hisDataSign=%5BREDACTED%5D&apiRSAKey=%5BREDACTED%5D",
+    "http://127.0.0.1:4173/api/market/moveBBMarket?partnerId=%5BREDACTED%5D&partnerNo=%5BREDACTED%5D&tradeName=btcusdt&depthStep=APP&timestamp=%5BREDACTED%5D&version=1.0.0&clientType=H5&hisDataSign=%5BREDACTED%5D&apiRSAKey=%5BREDACTED%5D",
+    "http://127.0.0.1:4173/api/user/security/index?timestamp=%5BREDACTED%5D&partnerId=%5BREDACTED%5D&partnerNo=%5BREDACTED%5D&version=1.0.0&clientType=H5&hisDataSign=%5BREDACTED%5D&apiRSAKey=%5BREDACTED%5D",
+    "http://127.0.0.1:4173/api/country/selectList?timestamp=%5BREDACTED%5D&partnerId=%5BREDACTED%5D&partnerNo=%5BREDACTED%5D&version=1.0.0&clientType=H5&hisDataSign=%5BREDACTED%5D&apiRSAKey=%5BREDACTED%5D"
+  ],
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-anonymous-auth-requests/spot-anonymous-auth-requests-390x844.png"
+}

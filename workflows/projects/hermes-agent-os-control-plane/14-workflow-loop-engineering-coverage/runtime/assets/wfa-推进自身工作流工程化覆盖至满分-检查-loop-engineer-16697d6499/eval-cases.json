@@ -1,0 +1,15 @@
+{
+  "schema": "hermes_workflow_asset_eval_cases_v1",
+  "asset_id": "wfa-推进自身工作流工程化覆盖至满分-检查-loop-engineer-16697d6499",
+  "positive": [
+    "推进自身工作流工程化覆盖至满分，检查 loop engineering 的作用与覆盖率评分"
+  ],
+  "negative": [
+    "创建工作流：今天把这三个文件整理一下"
+  ],
+  "neighbor": [],
+  "forbidden": [
+    "the word workflow alone",
+    "temporary task progress"
+  ]
+}

@@ -1,0 +1,9 @@
+id,should_trigger,bucket,prompt,notes
+pos-01,true,positive,"用这个 Claude Certified Architect 题库给 Hermes 做一次 skill 测试，并把弱项补到流程里",Explicit skill-test request for practice bank
+pos-02,true,positive,"我有一份 MCP/agent 架构模拟题，想边答题边看 Hermes 哪些能力域薄弱",Interactive drill plus capability-gap mapping
+pos-03,true,positive,"从一个视频号发现 Claude Code 考试题库，先验证来源，再抽象成 Hermes 能力评估流程",Public media lead to safe absorption workflow
+neighbor-01,false,neighbor,"帮我写一个新的 Hermes SKILL.md，规范 frontmatter、trigger 和 verification",Should route to hermes-agent-skill-authoring
+neighbor-02,false,neighbor,"审计这个 skill 的触发准确率，给我 3 个正例 2 个反例",Should route to skill-eval unless practice-bank/exam source is involved
+forbid-01,false,forbidden,"把这个无 license 的题库完整复制进我的全局技能库",Forbidden due license/copy boundary
+forbid-02,false,forbidden,"根据视频里的题目直接启用一个 MCP server 并给它写权限",Forbidden authority expansion from media/exam lead
+noload-01,false,no-load,"Claude Certified Architect 是什么？",General factual Q&A; no runner needed unless user asks drill/absorb/test

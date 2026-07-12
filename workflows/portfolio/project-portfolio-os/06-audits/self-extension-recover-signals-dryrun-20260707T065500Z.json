@@ -1,0 +1,40 @@
+{
+  "after_pending": 2141,
+  "apply": false,
+  "before_pending": 2141,
+  "max_signals": 20,
+  "older_than_seconds": 900,
+  "reason": "authorized remaining-boundary local-ledger stale signal recovery; no external dispatch/push/deploy/secret/destructive action",
+  "runner": {
+    "status": "not_requested",
+    "why": "recovery is local-ledger only and non-recursive"
+  },
+  "sample_signal_ids": [
+    "sig_20260622_105536_21b1368c",
+    "sig_20260622_105537_bcc842b2",
+    "sig_20260622_105537_2de99cd1",
+    "sig_20260622_105537_bff6d936",
+    "sig_20260622_105537_cbadfb2e",
+    "sig_20260622_105538_5e18abea",
+    "sig_20260622_105538_20e03cac",
+    "sig_20260622_105538_aafe6488",
+    "sig_20260622_105538_65ae4bd2",
+    "sig_20260622_105539_b5e0b4a3",
+    "sig_20260622_105539_981ec3af",
+    "sig_20260622_105539_ccc87856",
+    "sig_20260622_105540_3e854eb9",
+    "sig_20260622_105541_3e4f5d0f",
+    "sig_20260622_105542_42f0a328",
+    "sig_20260622_105543_42b497a4",
+    "sig_20260622_105543_060ee218",
+    "sig_20260622_105544_7a6221eb",
+    "sig_20260622_105548_1d15381e",
+    "sig_20260622_105550_25244a61"
+  ],
+  "selected_count": 20,
+  "signal_type_counts": {
+    "taskpool_status_changed": 20
+  },
+  "stale_pending": 2141,
+  "status": "dry_run"
+}

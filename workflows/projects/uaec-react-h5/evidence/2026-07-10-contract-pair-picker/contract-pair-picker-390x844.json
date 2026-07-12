@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T05:54:08Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-pair-picker",
+  "result": "PASS",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "behavior": "onContainerTitleClick invokes setPoup; setCurrenciesQuery supplies the real contract list to DialogUSDTFragment"
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "file": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+    "commit": "680f821 fix: connect contract kline pair picker",
+    "postCommitReadback": {
+      "workingTreeClean": true,
+      "gitShowCheckExitCode": 0
+    }
+  },
+  "checks": {
+    "scopedEslint": {
+      "status": "PASS",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "durationSeconds": 5.26,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "runtime": {
+      "status": "PASS",
+      "initialTriggerPresent": true,
+      "initialAriaExpanded": "false",
+      "initialDialogPresent": false,
+      "openAriaExpanded": "true",
+      "pairs": [
+        "BTCUSDT 永续",
+        "SOLUSDT 永续"
+      ],
+      "placeholderVisible": false,
+      "searchKeyword": "SOL",
+      "filteredPairs": [
+        "SOLUSDT 永续"
+      ],
+      "selectionResult": "clicked",
+      "finalPath": "/contract/contract-interface",
+      "finalTradeName": "SOLUSDT 永续",
+      "finalSymbol": "sol_usdt_sustainable",
+      "finalTradeId": "1035922175497863168",
+      "finalAriaExpanded": "false",
+      "finalDialogPresent": false,
+      "bodyDrawerOpen": false,
+      "favoriteButtonPreserved": true,
+      "tradeListRequestCount": 1,
+      "collectionOrOrderRequestCount": 0
+    },
+    "visualReadback": {
+      "status": "PASS",
+      "viewport": "390x844",
+      "drawerVisible": true,
+      "titleSearchAndPairRowsLegible": true,
+      "selectedMarkerVisible": true,
+      "obviousClippingOrOverlap": false,
+      "underlayFavoriteStarVisible": true,
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-pair-picker/contract-pair-picker-open-390x844.png"
+    },
+    "negativeCases": {
+      "hardcodedPlaceholderVisible": false,
+      "closedDialogInAccessibilityTree": false,
+      "collectionMutationRequest": false,
+      "orderMutationRequest": false,
+      "credentialOrSessionRead": false,
+      "pushOrDeploy": false
+    }
+  },
+  "independentReview": {
+    "batch": "deleg_0dc580cb",
+    "verdict": "APPROVE",
+    "facts": [
+      "Android title-click, real-list, search, and selection semantics are preserved.",
+      "Runtime evidence confirms exact SOL identity and zero collection/order mutations.",
+      "No material clipping or overlap was found in the 390x844 evidence."
+    ]
+  },
+  "certificationBoundary": "L2 local runtime verified with an independent APPROVE review. Android simulator/device pixel comparison, authenticated collection mutation, order submission, push and deploy remain outside this slice."
+}

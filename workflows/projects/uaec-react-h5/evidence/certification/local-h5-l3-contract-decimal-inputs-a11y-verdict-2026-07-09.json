@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T15:21:49.727442+00:00",
+  "sourceDelegation": "deleg_7e9363bb",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-decimal-inputs-a11y",
+  "targetCommit": "b45132d",
+  "currentHead": "42a93d9",
+  "currentGitStatus": "## dev...origin/dev [ahead 47]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract decimal input accessibility slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and independent verifier approval support decimal inputMode and aria labels for price/amount fields. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-decimal-inputs-a11y/contract-decimal-inputs-a11y-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-decimal-inputs-a11y-loop-2026-07-09T15-09-24-824977+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 47]",
+      "head": "42a93d9",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

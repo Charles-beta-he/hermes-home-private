@@ -1,0 +1,266 @@
+{
+  "generatedAt": "2026-07-09T07:44:00.537Z",
+  "target": "uaec-react-h5 local H5 preview certification loop",
+  "certificationLevel": "L2-local-loop-verified",
+  "boundedClaim": "local H5 preview runtime evidence packet validated from Hermes project SSOT; not production/device/auth certified",
+  "repoRoot": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+  "ssotRoot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5",
+  "commands": [
+    {
+      "command": "git status --short --branch",
+      "exitCode": 0,
+      "stdoutTail": "## dev...origin/dev [ahead 13]",
+      "stderrTail": ""
+    },
+    {
+      "command": "npx eslint src/api/apiClient.ts vite.config.ts src/pages/HomePage/HomePage.tsx src/components/common/NotificationIconWithBadge.tsx src/components/common/TabBar.tsx",
+      "exitCode": 0,
+      "stdoutTail": "",
+      "stderrTail": ""
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "stdoutTail": "dist/assets/LinearProgress-CT1zOOhI.js                  6.41 kB │ gzip:   1.90 kB │ map:    22.83 kB\ndist/assets/index-CrqO9GEm.js                           7.30 kB │ gzip:   3.00 kB │ map:    27.29 kB\ndist/assets/index-DGGsaaXO.js                           7.35 kB │ gzip:   2.58 kB │ map:    26.21 kB\ndist/assets/ContractPositionPage-DY0xn1Sv.js            7.80 kB │ gzip:   2.25 kB │ map:    21.76 kB\ndist/assets/index-tIoOYS51.js                           7.84 kB │ gzip:   3.06 kB │ map:    30.14 kB\ndist/assets/BalanceBaoPage-DCYz5p7r.js                  8.88 kB │ gzip:   3.16 kB │ map:    32.92 kB\ndist/assets/index-b9-gb6yv.js                           9.05 kB │ gzip:   3.06 kB │ map:    25.98 kB\ndist/assets/index-CTduL1sr.js                          10.22 kB │ gzip:   3.47 kB │ map:    31.49 kB\ndist/assets/ContractHistoryPage-9cmVVht7.js            10.26 kB │ gzip:   2.41 kB │ map:    25.81 kB\ndist/assets/index-BKOEmelu.js                          19.11 kB │ gzip:   5.38 kB │ map:    63.22 kB\ndist/assets/index-CS5Vn-QX.js                          19.95 kB │ gzip:   6.80 kB │ map:    58.52 kB\ndist/assets/ContractInterface-DDUbo9YS.js              20.68 kB │ gzip:   5.88 kB │ map:    68.17 kB\ndist/assets/ContractPage-Fw7J4kRd.js                   42.30 kB │ gzip:  10.87 kB │ map:   138.57 kB\ndist/assets/SecurityDetailPage-ENqyLRPb.js             50.62 kB │ gzip:  12.63 kB │ map:   189.89 kB\ndist/assets/index-CA7okmmR.js                          57.45 kB │ gzip:  19.20 kB │ map:   131.24 kB\ndist/assets/EditFavoritesPage-DllJIT80.js              64.66 kB │ gzip:  21.30 kB │ map:   290.93 kB\ndist/assets/index-CVu7lGun.js                         247.94 kB │ gzip:  64.20 kB │ map:   820.11 kB\ndist/assets/index-DxNizBAB.js                         361.00 kB │ gzip: 107.36 kB │ map: 1,253.82 kB\ndist/assets/index-Cj04yFfy.js                       1,532.13 kB │ gzip: 464.89 kB │ map: 7,012.36 kB\n✓ built in 4.67s\n\nPWA v1.0.3\nmode      generateSW\nprecache  49 entries (3955.68 KiB)\nfiles generated\n  dist/sw.js.map\n  dist/sw.js\n  dist/workbox-22361bcd.js.map\n  dist/workbox-22361bcd.js",
+      "stderrTail": "[plugin vite:reporter] \n(!) /Users/charles/Desktop/folder/work/uaec-react-h5/src/pages/NetworkErrorPage/index.ts is dynamically imported by /Users/charles/Desktop/folder/work/uaec-react-h5/src/router/modules/networkError.route.tsx but also statically imported by /Users/charles/Desktop/folder/work/uaec-react-h5/src/components/common/NetworkErrorHandler.tsx, dynamic import will not move module into another chunk.\n\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\nBrowserslist: browsers data (caniuse-lite) is 10 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme"
+    }
+  ],
+  "checks": [
+    {
+      "name": "repo git status readback",
+      "ok": true,
+      "exitCode": 0,
+      "stdoutTail": "## dev...origin/dev [ahead 13]",
+      "stderrTail": ""
+    },
+    {
+      "name": "repo working tree clean at loop generation",
+      "ok": true,
+      "status": "## dev...origin/dev [ahead 13]",
+      "note": "Progress/evidence artifacts live in Hermes project SSOT; the application repo should have no dirty progress artifacts at loop generation."
+    },
+    {
+      "name": "SSOT evidence exists: homeRanking",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-h5-api-preview/home-ranking-api-response.json"
+    },
+    {
+      "name": "SSOT evidence exists: homeRankingScreenshot",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-h5-api-preview/home-ranking-preview-127-4173-390x844.png"
+    },
+    {
+      "name": "SSOT evidence exists: homeTopRoute",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-slice2/home-top-click-route-smoke-390x844.json"
+    },
+    {
+      "name": "SSOT evidence exists: tabbarSafeArea",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-slice3/tabbar-safe-area-smoke.json"
+    },
+    {
+      "name": "SSOT evidence exists: tabRoute",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-slice4/tab-route-smoke-390x844.json"
+    },
+    {
+      "name": "SSOT evidence exists: bannerRuntime",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-slice1/banner-runtime-smoke-390x844.json"
+    },
+    {
+      "name": "SSOT evidence exists: bannerFixture",
+      "ok": true,
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-slice1/banner-navigation-fixture-smoke.json"
+    },
+    {
+      "name": "scoped eslint",
+      "ok": true,
+      "exitCode": 0,
+      "stdoutTail": "",
+      "stderrTail": ""
+    },
+    {
+      "name": "npm run build",
+      "ok": true,
+      "exitCode": 0,
+      "stdoutTail": "dist/assets/EditFavoritesPage-DllJIT80.js              64.66 kB │ gzip:  21.30 kB │ map:   290.93 kB\ndist/assets/index-CVu7lGun.js                         247.94 kB │ gzip:  64.20 kB │ map:   820.11 kB\ndist/assets/index-DxNizBAB.js                         361.00 kB │ gzip: 107.36 kB │ map: 1,253.82 kB\ndist/assets/index-Cj04yFfy.js                       1,532.13 kB │ gzip: 464.89 kB │ map: 7,012.36 kB\n✓ built in 4.67s\n\nPWA v1.0.3\nmode      generateSW\nprecache  49 entries (3955.68 KiB)\nfiles generated\n  dist/sw.js.map\n  dist/sw.js\n  dist/workbox-22361bcd.js.map\n  dist/workbox-22361bcd.js",
+      "stderrTail": "[plugin vite:reporter] \n(!) /Users/charles/Desktop/folder/work/uaec-react-h5/src/pages/NetworkErrorPage/index.ts is dynamically imported by /Users/charles/Desktop/folder/work/uaec-react-h5/src/router/modules/networkError.route.tsx but also statically imported by /Users/charles/Desktop/folder/work/uaec-react-h5/src/components/common/NetworkErrorHandler.tsx, dynamic import will not move module into another chunk.\n\n\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\nBrowserslist: browsers data (caniuse-lite) is 10 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme"
+    },
+    {
+      "name": "home ranking API response has success meta and rows",
+      "ok": true,
+      "meta": {
+        "code": 200,
+        "i18n_code": "common_success",
+        "message": "成功!",
+        "params": null,
+        "success": true
+      },
+      "rowCount": 3,
+      "firstSymbol": "btcusdt"
+    },
+    {
+      "name": "home top anonymous click smoke cases pass",
+      "ok": true,
+      "caseCount": 4,
+      "cases": [
+        {
+          "name": "search",
+          "ok": true,
+          "url": null
+        },
+        {
+          "name": "message",
+          "ok": true,
+          "url": null
+        },
+        {
+          "name": "customer-service",
+          "ok": true,
+          "url": null
+        },
+        {
+          "name": "scan",
+          "ok": true,
+          "url": null
+        }
+      ]
+    },
+    {
+      "name": "tabbar safe-area matrix passes 375/390/414",
+      "ok": true,
+      "viewports": [
+        {
+          "size": {
+            "width": 375,
+            "height": 812
+          },
+          "ok": true,
+          "navRect": {
+            "x": 0,
+            "y": 748,
+            "width": 375,
+            "height": 64,
+            "bottom": 812
+          }
+        },
+        {
+          "size": {
+            "width": 390,
+            "height": 844
+          },
+          "ok": true,
+          "navRect": {
+            "x": 0,
+            "y": 780,
+            "width": 390,
+            "height": 64,
+            "bottom": 844
+          }
+        },
+        {
+          "size": {
+            "width": 414,
+            "height": 896
+          },
+          "ok": true,
+          "navRect": {
+            "x": 0,
+            "y": 832,
+            "width": 414,
+            "height": 64,
+            "bottom": 896
+          }
+        }
+      ]
+    },
+    {
+      "name": "bottom tab anonymous route smoke passes",
+      "ok": true,
+      "cases": [
+        {
+          "name": "首页",
+          "ok": true,
+          "expectedPath": "/",
+          "url": "http://127.0.0.1:4173/",
+          "errors": []
+        },
+        {
+          "name": "行情",
+          "ok": true,
+          "expectedPath": "/market",
+          "url": "http://127.0.0.1:4173/market",
+          "errors": []
+        },
+        {
+          "name": "交易",
+          "ok": true,
+          "expectedPath": "/trade",
+          "url": "http://127.0.0.1:4173/trade",
+          "errors": []
+        },
+        {
+          "name": "合约",
+          "ok": true,
+          "expectedPath": "/contract",
+          "url": "http://127.0.0.1:4173/contract",
+          "errors": []
+        },
+        {
+          "name": "资产",
+          "ok": true,
+          "expectedPath": "/Login",
+          "url": "http://127.0.0.1:4173/Login",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "name": "banner current-payload runtime smoke passes with no token leaks",
+      "ok": true,
+      "boundary": "Current backend banner payload has image URLs but no appRedirectUrl/redirectUrl/link, so runtime click should remain on home; navigation transform cannot be fully exercised without a banner target.",
+      "tokenLeakUrls": [],
+      "afterUrl": "http://127.0.0.1:4173/"
+    },
+    {
+      "name": "banner redirect fixture smoke passes",
+      "ok": true,
+      "cases": [
+        {
+          "name": "uaec-owned-absolute-adds-context",
+          "ok": true,
+          "tokenLeak": false
+        },
+        {
+          "name": "relative-owned-keeps-relative-return",
+          "ok": true,
+          "tokenLeak": false
+        },
+        {
+          "name": "third-party-url-unchanged-no-token-leak",
+          "ok": true,
+          "tokenLeak": false
+        },
+        {
+          "name": "priority-appRedirectUrl-over-redirectUrl-link",
+          "ok": true,
+          "tokenLeak": false
+        }
+      ]
+    }
+  ],
+  "blockers": [],
+  "boundaries": [
+    "remote push/deploy requires explicit authorization",
+    "authenticated route behavior requires valid user session/token supplied by human or pre-existing browser session",
+    "iOS Safari / Android Chrome / App WebView safe-area acceptance requires real device or explicitly accepted simulator/device readback",
+    "production/test-domain acceptance requires deployed URL and rollback/readback gate",
+    "full-repo lint remains a historical baseline issue and is not hidden by this local certification loop"
+  ],
+  "gitStatus": "## dev...origin/dev [ahead 13]",
+  "workingTreeCleanAtGeneration": true,
+  "ok": true,
+  "nextCertificationGate": "L3 requires independent verifier APPROVE or resolved AMEND readback; L4/L5 require human authority/device/session/deploy gates."
+}

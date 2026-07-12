@@ -1,0 +1,183 @@
+{
+  "schema": "openwiki_upstream_research_v1",
+  "captured_at": "2026-07-07T16:18:23+08:00",
+  "canonical_repo": "https://github.com/langchain-ai/openwiki",
+  "repo_metadata": {
+    "full_name": "langchain-ai/openwiki",
+    "description": "OpenWiki is a CLI that writes and maintains agent documentation for your codebase.",
+    "stargazers_count": 8142,
+    "forks_count": 545,
+    "open_issues_count": 104,
+    "default_branch": "main",
+    "created_at": "2026-06-22T23:48:26Z",
+    "updated_at": "2026-07-07T08:22:28Z",
+    "pushed_at": "2026-07-06T23:37:14Z",
+    "homepage": "",
+    "archived": false,
+    "disabled": false,
+    "visibility": "public"
+  },
+  "license": "MIT",
+  "languages": {
+    "TypeScript": 136561,
+    "JavaScript": 78874
+  },
+  "latest_releases": [
+    {
+      "tag_name": "0.0.1",
+      "published_at": "2026-07-05T22:30:03Z",
+      "name": "0.0.1",
+      "assets_count": 0
+    }
+  ],
+  "npm_downloads": {
+    "last_week": {
+      "downloads": 3828,
+      "start": "2026-06-29",
+      "end": "2026-07-05",
+      "package": "openwiki"
+    },
+    "last_month": {
+      "downloads": 3983,
+      "start": "2026-06-06",
+      "end": "2026-07-05",
+      "package": "openwiki"
+    }
+  },
+  "open_issues_sample": [
+    {
+      "number": 171,
+      "title": "Error 400 Unsupported chat content part type: 'file'",
+      "created_at": "2026-07-07T08:18:26Z",
+      "labels": []
+    },
+    {
+      "number": 168,
+      "title": "Text files with unrecognized extensions (terraform.tfvars, .tf, .hcl, ...) are treated as binary and unreadable",
+      "created_at": "2026-07-07T07:56:40Z",
+      "labels": []
+    },
+    {
+      "number": 166,
+      "title": "Add GitHub issue templates for bug reports and feature requests",
+      "created_at": "2026-07-07T07:50:08Z",
+      "labels": []
+    },
+    {
+      "number": 162,
+      "title": "feature: Make openwiki work with mono repos.",
+      "created_at": "2026-07-07T06:37:04Z",
+      "labels": []
+    }
+  ],
+  "open_pulls_sample": [
+    {
+      "number": 170,
+      "title": "fix: sniff text files with unmapped extensions",
+      "user": "shadril238",
+      "created_at": "2026-07-07T08:07:06Z"
+    },
+    {
+      "number": 169,
+      "title": "fix: read text files with unmapped extensions as text",
+      "user": "holdennguyen",
+      "created_at": "2026-07-07T07:59:37Z"
+    },
+    {
+      "number": 167,
+      "title": "fix: require custom model for openai-compatible provider",
+      "user": "shadril238",
+      "created_at": "2026-07-07T07:52:41Z"
+    },
+    {
+      "number": 165,
+      "title": "feat: enforce .openwikiignore rules",
+      "user": "n33levo",
+      "created_at": "2026-07-07T07:20:48Z"
+    },
+    {
+      "number": 164,
+      "title": "fix: prevent 400 on non-PDF binary tool results (anthropic)",
+      "user": "holdennguyen",
+      "created_at": "2026-07-07T07:03:38Z"
+    },
+    {
+      "number": 163,
+      "title": "Feat: Add custom model header configuration",
+      "user": "hetaoBackend",
+      "created_at": "2026-07-07T06:43:48Z"
+    },
+    {
+      "number": 161,
+      "title": "feat: add config subcommand to manage credentials",
+      "user": "HarshVz",
+      "created_at": "2026-07-07T04:51:30Z"
+    },
+    {
+      "number": 160,
+      "title": "feat: support Claude Code OAuth token auth for the anthropic provider",
+      "user": "holdennguyen",
+      "created_at": "2026-07-07T04:38:24Z"
+    }
+  ],
+  "recent_commits": [
+    {
+      "sha": "7d3553794231",
+      "date": "2026-07-06T22:26:41Z",
+      "title": "fix: html tokens have incomplete multi-character sanitization (#148)"
+    },
+    {
+      "sha": "e276b0876343",
+      "date": "2026-07-06T21:18:38Z",
+      "title": "chore: add contributing guidelines via `CONTRIBUTING.md` (#145)"
+    },
+    {
+      "sha": "12055db1b2bc",
+      "date": "2026-07-06T21:12:09Z",
+      "title": "fix(ci): set least-privilege permissions and pin pnpm/action-setup SHA (#146)"
+    },
+    {
+      "sha": "a4df0c9ecdd2",
+      "date": "2026-07-06T20:25:48Z",
+      "title": "fix: correct OpenRouter Claude Opus model ID (#133)"
+    },
+    {
+      "sha": "d06eda8165b4",
+      "date": "2026-07-06T20:14:36Z",
+      "title": "docs: add GitLab OpenWiki update workflow (#137)"
+    }
+  ],
+  "local_verification": {
+    "clone_path": "/tmp/openwiki-langchain",
+    "commands": [
+      {
+        "command": "corepack pnpm install --ignore-scripts --frozen-lockfile",
+        "result": "exit 0"
+      },
+      {
+        "command": "corepack pnpm run typecheck",
+        "result": "exit 0"
+      },
+      {
+        "command": "corepack pnpm test",
+        "result": "exit 0; 7 test files / 86 tests passed"
+      },
+      {
+        "command": "corepack pnpm audit --audit-level low",
+        "result": "exit 0; No known vulnerabilities found"
+      },
+      {
+        "command": "corepack pnpm run build",
+        "result": "exit 0"
+      },
+      {
+        "command": "node dist/cli.js --help",
+        "result": "exit 0"
+      },
+      {
+        "command": "OPENWIKI_DEV=1 node dist/cli.js --dry-run",
+        "result": "exit 0"
+      }
+    ]
+  }
+}

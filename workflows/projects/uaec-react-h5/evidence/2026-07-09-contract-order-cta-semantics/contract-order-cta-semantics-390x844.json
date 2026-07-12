@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:40:23.055Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "state": {
+    "href": "http://127.0.0.1:4173/contract",
+    "buyTag": "button",
+    "buyType": "button",
+    "buyDisabled": false,
+    "buyText": "开多",
+    "buyVisible": true,
+    "sellTag": "button",
+    "sellType": "button",
+    "sellDisabled": false,
+    "sellText": "开空",
+    "sellVisible": true,
+    "hasContractText": true,
+    "hasDialog": false
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-cta-semantics/contract-order-cta-semantics-390x844.png",
+  "negative": {
+    "noClickPerformed": true,
+    "noOrderPasswordMutationAfterInspect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

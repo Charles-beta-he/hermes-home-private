@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:38:49.837Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "tag": "button",
+    "type": "button",
+    "ariaLabel": "划转",
+    "visible": true,
+    "hasTradeTitle": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/login",
+    "pathname": "/login",
+    "bodyText": "登录\n手机号/邮箱\n记住账号\n忘记密码？\n登录\n创建UAEC账号\n谷歌验证\n谷歌验证码\n粘贴\n确认"
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.png",
+  "negative": {
+    "anonymousClickRedirectsToLogin": true,
+    "noAssetTransferDepositApiAfterClick": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

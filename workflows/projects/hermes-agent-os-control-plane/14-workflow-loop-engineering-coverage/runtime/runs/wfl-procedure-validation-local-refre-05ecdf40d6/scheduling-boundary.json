@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_scheduling_boundary_v1",
+  "status": "disabled",
+  "reason": "local run-once has no cron or worker authority",
+  "cron_enabled": false,
+  "worker_enabled": false
+}

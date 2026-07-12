@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:34:47.964265+00:00",
+  "sourceDelegation": "deleg_732c39c5",
+  "slice": "contract-pair-drawer-semantics",
+  "targetCommit": "03fb7fc",
+  "verifierVerdict": "AMEND",
+  "verifierObjectiveBlockers": [
+    "working tree dirty during verifier run because later safe-slice work was in progress in same file",
+    "verifier looked at local-h5-loop-latest.json which pointed to a later slice, while timestamped pair-drawer loop report exists"
+  ],
+  "currentReadback": {
+    "gitStatus": "## dev...origin/dev [ahead 40]",
+    "head": "a3ab73d",
+    "targetContainedInHead": true
+  },
+  "classification": "stale-environment-amend-not-product-blocker",
+  "action": "fresh verifier redispatch required; provide timestamped pair drawer loop report and flexible current HEAD conditions; do not upgrade to L3 from stale AMEND",
+  "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-pair-drawer-semantics/contract-pair-drawer-semantics-390x844.json",
+  "timestampedLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-pair-drawer-semantics-loop-2026-07-09T13-59-09-295341+00-00.json",
+  "latestLoopReportNote": "local-h5-loop-latest.json may point to a later clean slice and must not be used as target-slice identity proof for this older target commit",
+  "okToRedispatch": true,
+  "concurrencyAdjustment": "keep same-file ContractPage WIP paused until clean-window retries finish",
+  "hardStopGatesRemainClosed": [
+    "push",
+    "deploy",
+    "device",
+    "authenticated trading",
+    "PWA",
+    "production",
+    "real order/funds mutation"
+  ]
+}

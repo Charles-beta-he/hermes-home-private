@@ -1,0 +1,387 @@
+{
+  "schema": "portfolio_other_projects_fable_style_audit_v1",
+  "generated_at": "2026-07-07T03:32:47+00:00",
+  "scope": "all portfolio projects except hermes-agent-os-control-plane; read-only metadata/evidence audit; no project code changes",
+  "portfolio_registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+  "summary": {
+    "pass": 7,
+    "warn": 8,
+    "fail": 0,
+    "total": 15
+  },
+  "projects": [
+    {
+      "id": "hermes",
+      "type": "platform",
+      "status": "ledgered",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 292,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "hermes-skill-learning",
+      "type": "knowledge-system",
+      "status": "ledgered",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-skill-learning.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 307,
+      "current_components_count": 2,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    },
+    {
+      "id": "lark",
+      "type": "integration",
+      "status": "ledgered",
+      "profile": "/Users/charles/.hermes/project-profiles/lark.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/lark",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 290,
+      "current_components_count": 2,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    },
+    {
+      "id": "mobile-offline-avatar-travel",
+      "type": "mobile-platform/edge-runtime",
+      "status": "platform-framed+validated-local-slices",
+      "profile": "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel",
+      "progress_ledger": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 83086,
+      "current_components_count": 13,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    },
+    {
+      "id": "project-portfolio-os",
+      "type": "portfolio-governance",
+      "status": "ledgered",
+      "profile": "/Users/charles/.hermes/project-profiles/project-portfolio-os.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os",
+      "progress_ledger": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 9044,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 10,
+      "sample_discovered_artifacts": [
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/05-status/portfolio-doctor-latest.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-06T121736.145967_0800.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-06T181709.510648_0800.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-07T001755.424201_0800.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-07T013318.855060_0800.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-07T013519.397528_0800.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-07T013826.751421_0800.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/reports/portfolio-doctor-2026-07-07T061702.408557_0800.json"
+      ],
+      "findings": [
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "uvisa-app-2.0",
+      "type": "application",
+      "status": "work-project/excluded-unless-user-switches",
+      "profile": "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 299,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "info",
+          "check": "work_project_exclusion",
+          "message": "work project excluded from autonomous code/project advancement; metadata/read-only audit only"
+        },
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "hermes-self-extension-os",
+      "type": "agent-runtime-evolution",
+      "status": "validated-active-control-loop-slice",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-self-extension-os.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 310,
+      "current_components_count": 7,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    },
+    {
+      "id": "hermes-control-console",
+      "type": "operator-console",
+      "status": "validated-local-slice",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-control-console.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-control-console",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 308,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "career-ops",
+      "type": "personal-productivity-product",
+      "status": "ledgered",
+      "profile": "/Users/charles/.hermes/project-profiles/career-ops.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/career-ops",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 296,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "single-session-multitopic-trace",
+      "type": "hermes-self-architecture",
+      "status": "initiated",
+      "profile": "/Users/charles/.hermes/project-profiles/single-session-multitopic-trace.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 317,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "hermes-capability-model-router",
+      "type": "hermes-self-architecture",
+      "status": "validated-local-slice",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-capability-model-router.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 316,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "hermes-persona-wake-stage",
+      "type": "cross-end-ai-assistant-ux-system",
+      "status": "claim-unverified-files-missing",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 311,
+      "current_components_count": 4,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    },
+    {
+      "id": "uaec-h5",
+      "type": "work-application/mobile-trading-h5",
+      "status": "work-project/excluded-unless-user-switches",
+      "profile": "/Users/charles/.hermes/project-profiles/uaec-h5.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/uaec-h5",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 293,
+      "current_components_count": 0,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [
+        {
+          "level": "info",
+          "check": "work_project_exclusion",
+          "message": "work project excluded from autonomous code/project advancement; metadata/read-only audit only"
+        },
+        {
+          "level": "warning",
+          "check": "current_components",
+          "message": "missing current_components"
+        }
+      ],
+      "audit_status": "warn"
+    },
+    {
+      "id": "hermes-embodied-workflow-os",
+      "type": "outer-tooling/embodied-workflow-platform",
+      "status": "ordered-high-risk-drain-taskpool-written-outbox-deploy-preflight-hardware-auth-gated",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-embodied-workflow-os.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 12922,
+      "current_components_count": 29,
+      "evidence_declared_count": 2,
+      "evidence_existing_count": 2,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    },
+    {
+      "id": "hermes-fitness-posture-coach",
+      "type": "self-use/visual-conversation-domain-pack",
+      "status": "projectized_metadata_seed_built_pose_adapter_smoked_fail_closed",
+      "profile": "/Users/charles/.hermes/project-profiles/hermes-fitness-posture-coach.json",
+      "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md",
+      "profile_exists": true,
+      "ssot_exists": true,
+      "ledger_exists": true,
+      "ledger_bytes": 3579,
+      "current_components_count": 5,
+      "evidence_declared_count": 0,
+      "evidence_existing_count": 0,
+      "discovered_readback_artifacts_count": 0,
+      "sample_discovered_artifacts": [],
+      "findings": [],
+      "audit_status": "pass"
+    }
+  ],
+  "boundaries": [
+    "work projects metadata/read-only only",
+    "no project code edits",
+    "no lifecycle/status promotion",
+    "no external dispatch/push/deploy/destructive/payment/credential actions",
+    "model/Fable review advisory only until evidence-readback"
+  ],
+  "objective_model": {
+    "success_criteria": [
+      "profile/registry set reconciled by portfolio doctor",
+      "each other project has profile/ssot/ledger/readback status classified",
+      "gaps classified as pass/warn/fail with next actions",
+      "Fable 5 advisory review captured",
+      "portfolio-level manifest/readback written"
+    ],
+    "non_goals": [
+      "fix every project implementation",
+      "promote any project to production/validated beyond evidence",
+      "touch work project code or secrets"
+    ]
+  }
+}

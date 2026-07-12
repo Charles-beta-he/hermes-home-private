@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-07-09T14:36:01.176568+00:00",
+  "sourceDelegation": "deleg_db485b64",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-transfer-button-semantics",
+  "targetCommit": "01723b1",
+  "currentHead": "a3ab73d",
+  "currentGitStatus": "## dev...origin/dev [ahead 40]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract transfer entry semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, local loop, and independent verifier approval support semantic button behavior and drawer-open path. This does not certify push/deploy/device/authenticated transfer/trading/PWA/production/real transfer/order.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-transfer-button-semantics/contract-transfer-button-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-transfer-button-semantics-loop-2026-07-09T14-21-14-067912+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 40]",
+      "head": "a3ab73d",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated transfer certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real transfer/order/funds mutation"
+  ]
+}

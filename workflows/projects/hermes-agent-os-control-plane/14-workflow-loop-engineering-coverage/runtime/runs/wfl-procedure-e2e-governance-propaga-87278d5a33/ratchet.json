@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_ratchet_v1",
+  "status": "PASS",
+  "action": "no_promotion",
+  "canonical_promotion": false,
+  "external_mutation": false
+}

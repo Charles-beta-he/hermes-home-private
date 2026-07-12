@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T15:08:30.574Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "state": {
+    "href": "http://127.0.0.1:4173/contract",
+    "priceInputs": [
+      {
+        "tag": "input",
+        "inputMode": "decimal",
+        "aria": "合约价格",
+        "visible": true,
+        "disabled": false,
+        "value": "62,936.60"
+      }
+    ],
+    "amountInput": {
+      "tag": "input",
+      "inputMode": "decimal",
+      "aria": "合约数量",
+      "visible": true,
+      "disabled": false,
+      "value": ""
+    },
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-decimal-inputs-a11y/contract-decimal-inputs-a11y-390x844.png",
+  "negative": {
+    "noTypingPerformed": true,
+    "noOrderPasswordMutation": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

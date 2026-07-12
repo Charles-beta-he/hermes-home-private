@@ -1,0 +1,88 @@
+{
+  "schema": "taskpool_full_local_certification_packet_v1",
+  "generated_at": "2026-07-10T18:10:08Z",
+  "target": "Hermes local taskpool implementation and current active runtime gate",
+  "candidate_verdict": "CERTIFIED_FULL_LOCAL_TASKPOOL_SYSTEM_SCOPED",
+  "certification_status": "pending_independent_verifier",
+  "boundary": {
+    "included": [
+      "Local Brain Markdown lifecycle and canonical exact-task claim/handoff",
+      "local controllers, event hook, dynamic runner, cron adapter, guardian and reconciliation",
+      "proof, evidence, review and strict ratification gates",
+      "Native Kanban local DB/tools/dashboard/worker watcher contracts",
+      "one-way Local Brain to Native Kanban observability bridge",
+      "isolated temporary-vault and temporary-SQLite canaries"
+    ],
+    "excluded": [
+      "truth or correctness of 723 historical done task outcomes",
+      "external dispatch, Telegram/Lark writes and OAuth recovery",
+      "production worker execution, deploy, publish, push, payments, credentials and destructive cleanup",
+      "clean release/install replay from a commit"
+    ]
+  },
+  "objective_evidence": {
+    "local_taskpool_suite": "570 passed in 133.33s",
+    "native_kanban_suite": "604 passed, 1 skipped in 36.67s",
+    "isolated_lifecycle_canary": "1 passed, 117 deselected in 1.52s; temporary file-backed dashboard and ledger readbacks",
+    "bridge_fault_suite": "8 passed; combined bridge/proof boundary suite 19 passed in 0.11s",
+    "dynamic_runner_lock_suite": "12 passed in 0.13s",
+    "py_compile": "exit 0",
+    "scoped_diff_check": "exit 0",
+    "live_selfcheck": "PASS; task_count=818; invalid_count=0; dispatchable_count=0",
+    "live_proof_gate": "PASS; checked_count=723; failures=0; historical_warnings=92",
+    "live_claim_guard": "active_count=0; orphan_count=0",
+    "live_escape_guard": "human_escape_triggered=false; timeouts_now=0"
+  },
+  "negative_evidence": [
+    "bridge defaults DENIED without --execute and does not touch canonical notes by default",
+    "unparseable Kanban create ID fails closed without unknown mirror state",
+    "bridge DB event failure rolls back status mutation",
+    "dynamic runner uses held flock descriptor and separate module instances cannot share lock",
+    "parallel claim records claim ID immediately and exposes incomplete rollback outcomes",
+    "malformed proof files_changed/loc_budget/globs fail closed",
+    "drain defaults DENIED and requires explicit --execute",
+    "isolated canary uses temporary vault and no external worker or adapter"
+  ],
+  "historical_debt": {
+    "proof_format_warnings": 92,
+    "done_closeout_suspicious": 571,
+    "classification": {
+      "implementation_done_missing_real_chain_validation": 100,
+      "unchecked_acceptance_needs_review": 471
+    },
+    "disposition": "retained and explicitly not certified; no historical mutation performed"
+  },
+  "agent_os_review_state": {
+    "route_risk": "medium/S2",
+    "multimodel_provider_quorum": "blocked_by_authority",
+    "global_agent_os_certification": "not_certified due unrelated/external procedure boundaries",
+    "effect_on_packet": "does not block scoped local implementation evidence, but no multi-model certification claim is made"
+  },
+  "evidence_files": {
+    "spec": "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/02-taskpool-full-system-certification-spec.md",
+    "local_suite": "/tmp/full-cert-local-suite-final-v6.txt",
+    "native_kanban_suite": "/tmp/full-cert-native-kanban-final.txt",
+    "selfcheck": "/tmp/full-cert-selfcheck-final-v4.json",
+    "proof": "/tmp/full-cert-proof-final-v4.json",
+    "claims": "/tmp/full-cert-claims-final-v4.json",
+    "escape": "/tmp/full-cert-escape-final-v4.json",
+    "hash_manifest": "/tmp/full-cert-sha256-final-v7.txt"
+  },
+  "known_nonclaims": [
+    "No commit or push was created.",
+    "The worktree is mixed-lineage and not a clean release baseline.",
+    "No external action or live task mutation was used as certification evidence.",
+    "Passing tests and a generated packet are not independent certification."
+  ],
+  "verifier": {
+    "status": "pending",
+    "required_result": "PASS with no unresolved High/Critical findings",
+    "required_checks": [
+      "read source diffs and exact hashes",
+      "verify test output and runtime JSON artifacts",
+      "challenge scope/exclusion honesty",
+      "check fail-closed bridge, lock, rollback, proof and ratification behavior",
+      "reject certification if evidence does not support candidate verdict"
+    ]
+  }
+}

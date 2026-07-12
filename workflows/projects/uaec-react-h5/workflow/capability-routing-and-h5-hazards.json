@@ -1,0 +1,157 @@
+{
+  "project": "uaec-react-h5",
+  "updated_at": "2026-07-09T15:55:00+08:00",
+  "purpose": "Capability-tag based autonomous routing and reusable mobile H5 hazard reuse; avoids hardcoded trigger words.",
+  "capability_tags": [
+    "mobile-h5",
+    "pwa-or-webview",
+    "native-reference-parity",
+    "android-reference",
+    "api-backed-ui",
+    "same-origin-api-proxy-risk",
+    "bottom-tab-shell",
+    "fixed-header-actions",
+    "route-guard-risk",
+    "anonymous-vs-auth-boundary",
+    "keyboard-focus-risk",
+    "scroll-owner-risk",
+    "safe-area-risk",
+    "banner-redirect-risk",
+    "token-leak-risk",
+    "viewport-matrix-375-390-414",
+    "project-profile-certification-loop"
+  ],
+  "hazard_inventory": {
+    "keyboard_focus": {
+      "class": "mobile H5/PWA/WebView keyboard changes can move layout, hide CTAs, or break scroll position",
+      "applies_to": [
+        "ordinary amount/remark/address inputs",
+        "auth/login short forms",
+        "full-screen composer/chat shells",
+        "forms with fixed bottom CTA"
+      ],
+      "uaec_bias": "ordinary amount/remark/address inputs should keep bottom CTA in its original bottom area when soft keyboard opens; content/form scrolls instead of lifting CTA above keyboard",
+      "default_gate": "classify page model before editing: ordinary form vs short auth vs full-screen composer; avoid global scrollBy/keyboard reserve unless shell-owned",
+      "evidence": [
+        "focused/unfocused screenshot or geometry at 375/390/414",
+        "visualViewport or bounding-rect readback",
+        "CTA/input reachability",
+        "no tabbar/header occlusion"
+      ],
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/mobile-pwa-keyboard-focus-layout.md",
+        "mobile-frontend-delivery/references/mobile-keyboard-scroll-owner-debugging.md",
+        "mobile-frontend-delivery/references/mobile-keyboard-focus-rollback-scope.md"
+      ]
+    },
+    "scroll_owner": {
+      "class": "wrong scroll owner causes fixed header/tabbar/CTA occlusion, unreachable fields, or page jump",
+      "applies_to": [
+        "long H5 forms",
+        "nested pages under app shell",
+        "fixed bottom tab layouts",
+        "header + content + CTA pages"
+      ],
+      "default_gate": "identify document/body/root/page/content scroll owner and preserve route shell invariants before patching",
+      "evidence": [
+        "top/bottom reachability",
+        "no hidden required field",
+        "no unexpected root scroll",
+        "viewport matrix geometry"
+      ],
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/pwa-tabbar-scroll-owner-debugging.md",
+        "mobile-frontend-delivery/references/mobile-keyboard-scroll-owner-debugging.md"
+      ]
+    },
+    "safe_area_bottom_shell": {
+      "class": "bottom tab/fixed CTA can overlap home indicator or leave white strip in PWA/WebView",
+      "applies_to": [
+        "TabBar",
+        "fixed bottom CTA",
+        "bottom sheets",
+        "safe-area shell"
+      ],
+      "current_uaec_evidence": "slice3 tabbar safe-area PASS in SSOT evidence for 375/390/414",
+      "default_gate": "check env(safe-area-inset-bottom) plus fallback; verify nav/CTA rect within viewport",
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/browser-h5-tabbar-safe-area-strip.md",
+        "mobile-frontend-delivery/references/android-pwa-tabbar-safe-area.md"
+      ]
+    },
+    "api_backed_blank_section": {
+      "class": "H5 sections can render blank if baseURL/proxy/env differs between dev and preview",
+      "applies_to": [
+        "home ranking",
+        "market lists",
+        "banner/data-backed cards"
+      ],
+      "current_uaec_evidence": "same-origin /api + preview.proxy verified in SSOT certification report",
+      "default_gate": "verify exact opened URL and API route; prove loading/error/empty/data states, not just DOM mount",
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/vite-dev-preview-proxy-api-base.md",
+        "mobile-frontend-delivery/references/api-dependent-mobile-page-fallback.md"
+      ]
+    },
+    "route_guard_auth_boundary": {
+      "class": "anonymous and authenticated route behavior must not be conflated",
+      "applies_to": [
+        "message",
+        "customer service",
+        "scan",
+        "asset",
+        "trade/contract actions"
+      ],
+      "default_gate": "anonymous smoke can certify redirect boundary only; post-login behavior needs valid session evidence",
+      "evidence": [
+        "anonymous route smoke",
+        "authenticated browser/session smoke when available"
+      ]
+    },
+    "banner_redirect_token_boundary": {
+      "class": "banner/navigation links can leak token or route third-party URLs incorrectly",
+      "applies_to": [
+        "banner click",
+        "redirectUrl/appRedirectUrl/link",
+        "owned vs third-party URL decoration"
+      ],
+      "default_gate": "current payload runtime smoke + fixture branch coverage; no token-bearing third-party URLs",
+      "evidence": [
+        "network URL token-leak negative evidence",
+        "fixture cases for owned/relative/third-party"
+      ]
+    }
+  },
+  "routing_policy": {
+    "mode": "capability-graph-not-hardcoded-keywords",
+    "route_by": [
+      "project workflow_capability_tags",
+      "task intent",
+      "touched route/component/API surface",
+      "current evidence gaps",
+      "authority boundary"
+    ],
+    "load_when": [
+      "mobile-h5 surface touched",
+      "keyboard/focus/input/CTA/scroll/safe-area/tabbar/API blank/token route risk appears",
+      "certification/closeout requested for this project"
+    ],
+    "do_not_auto": [
+      "push",
+      "deploy",
+      "credential entry",
+      "payment",
+      "production mutation",
+      "external fanout",
+      "real-device claim without device evidence"
+    ],
+    "writeback": "progress/evidence/reports/scripts go to ssot_root; product code changes go to primary_repo"
+  },
+  "authority_boundaries": [
+    "remote push/CI readback",
+    "authenticated session smoke",
+    "real iOS/Android/WebView readback",
+    "test/prod domain deployment readback",
+    "no push/deploy/credential/device claim without explicit authority and readback"
+  ]
+}

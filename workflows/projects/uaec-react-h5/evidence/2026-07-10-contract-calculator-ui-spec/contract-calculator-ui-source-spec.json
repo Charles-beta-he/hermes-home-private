@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T18:34:24+08:00",
+  "project": "uaec-react-h5",
+  "topic": "contract-calculator-ui-source-spec",
+  "status": "SOURCE_SPEC_ONLY_NO_UI_CLAIM",
+  "androidEntry": {
+    "source": "ContractUSDTFragment.onContainerCalculatorClick",
+    "behavior": "Open ContractCalculatorActivity from the active contract trade toolbar and pass partnerTradeId",
+    "visibility": "Trade page only; FuturesTradeContainerFragment hides calculator action on the K-line page"
+  },
+  "tabs": [
+    {
+      "key": "profit",
+      "label": "收益计算",
+      "sides": ["做多", "做空"],
+      "inputs": ["杠杆倍数", "开仓价格", "平仓价格", "开仓数量"],
+      "outputs": ["保证金", "收益", "收益率", "Maker手续费", "Taker手续费"]
+    },
+    {
+      "key": "target-close",
+      "label": "平仓价格",
+      "sides": ["开多", "开空"],
+      "targetModes": ["收益", "收益率"],
+      "inputs": ["杠杆倍数", "开仓价格", "预期收益或收益率", "开仓数量"],
+      "outputs": ["目标平仓价格"]
+    },
+    {
+      "key": "liquidation",
+      "label": "强平价格",
+      "sides": ["做多", "做空"],
+      "positionModes": ["逐仓", "全仓"],
+      "inputs": ["杠杆倍数", "开仓价格", "开仓数量", "增加保证金或可用保证金"],
+      "outputs": ["强平价格或无法计算"]
+    }
+  ],
+  "sharedBehavior": {
+    "contractSelector": "Uses the calculator currency list and refreshes faceValue, maker/taker fees and trade id",
+    "leverageRange": "Android clamps to 1..125 and derives max position from leverage tiers",
+    "maxPosition": "Choose the eligible tier with the smallest maxLever >= requested leverage, then enableNum * faceValue rounded to 4 decimals",
+    "disclaimer": "计算结果仅供参考；强平页 additionally states calculations are not based on real market data"
+  },
+  "dataDependencies": [
+    "anonymous contract currency metadata including faceValue/openMaker/openTaker/flatMaker/flatTaker",
+    "GET /contract/leverSetting/list with exact partnerTradeId and positionType=BY or FULL",
+    "exact decimal-string formula layer"
+  ],
+  "implementationGate": "Do not expose a calculator route or toolbar entry until all three tabs, current-contract identity, live metadata, tier loading/failure states and deterministic formula tests are present. A two-tab or shell-only calculator would be a product regression against the Android reference."
+}

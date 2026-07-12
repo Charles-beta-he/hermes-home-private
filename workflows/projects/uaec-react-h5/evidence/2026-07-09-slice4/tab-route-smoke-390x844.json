@@ -1,0 +1,266 @@
+{
+  "baseUrl": "http://127.0.0.1:4173/",
+  "viewport": "390x844",
+  "results": [
+    {
+      "name": "首页",
+      "ok": true,
+      "expectedPath": "/",
+      "before": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "tabLabels": [
+          "首页",
+          "行情",
+          "交易",
+          "合约",
+          "资产"
+        ]
+      },
+      "click": {
+        "clicked": true,
+        "rect": {
+          "x": 0,
+          "y": 781,
+          "width": 78,
+          "height": 50,
+          "bottom": 831
+        }
+      },
+      "after": {
+        "url": "http://127.0.0.1:4173/",
+        "title": "UAEC",
+        "bodyHead": "搜索币种/币对/合约\nPull to refresh\nUPay\n合伙人\n理财\nC2C\n充币\n客服\n体验金\n社媒\n公告\n涨幅榜\n跌幅榜\n新币榜\n人气榜\n名称\n最新价\n今日涨幅\nBTC/USDT\n2750.91\n62,879.98\n$62,879.98\n-0.76%\nETH/USDT\n5.20万\n1,753.33\n$1,753.33\n-1.02%\nSOL/USD",
+        "buttons": [
+          {
+            "text": "首页",
+            "current": "page"
+          },
+          {
+            "text": "行情",
+            "current": null
+          },
+          {
+            "text": "交易",
+            "current": null
+          },
+          {
+            "text": "合约",
+            "current": null
+          },
+          {
+            "text": "资产",
+            "current": null
+          }
+        ],
+        "errorText": []
+      }
+    },
+    {
+      "name": "行情",
+      "ok": true,
+      "expectedPath": "/market",
+      "before": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "tabLabels": [
+          "首页",
+          "行情",
+          "交易",
+          "合约",
+          "资产"
+        ]
+      },
+      "click": {
+        "clicked": true,
+        "rect": {
+          "x": 78,
+          "y": 781,
+          "width": 78,
+          "height": 50,
+          "bottom": 831
+        }
+      },
+      "after": {
+        "url": "http://127.0.0.1:4173/market",
+        "title": "UAEC",
+        "bodyHead": "自选\n全部\n主板区\nRWA区\n编辑\n名称\n最新价\n日涨跌\n去登录\n暂无数据\n添加自选\n首页\n行情\n交易\n合约\n资产\n首页\n行情\n交易\n合约\n资产",
+        "buttons": [
+          {
+            "text": "首页",
+            "current": null
+          },
+          {
+            "text": "行情",
+            "current": "page"
+          },
+          {
+            "text": "交易",
+            "current": null
+          },
+          {
+            "text": "合约",
+            "current": null
+          },
+          {
+            "text": "资产",
+            "current": null
+          }
+        ],
+        "errorText": []
+      }
+    },
+    {
+      "name": "交易",
+      "ok": true,
+      "expectedPath": "/trade",
+      "before": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "tabLabels": [
+          "首页",
+          "行情",
+          "交易",
+          "合约",
+          "资产"
+        ]
+      },
+      "click": {
+        "clicked": true,
+        "rect": {
+          "x": 156,
+          "y": 781,
+          "width": 78,
+          "height": 50,
+          "bottom": 831
+        }
+      },
+      "after": {
+        "url": "http://127.0.0.1:4173/trade",
+        "title": "UAEC",
+        "bodyHead": "BTC/USDT\n买入\n卖出\n限价委托\n​\n价格(USDT)\n价格(USDT)\nBTC\n​\n0%\n25%\n50%\n70%\n100%\n金额\nUSDT\n金额\n可用\n0 USDT\n冻结\n0 USDT\n去登录\nPrice\n(USDT)\nAmount\n(BTC)\n62,878.51\n0.00009\n62,878.35\n0.00008\n62,878.34\n0.00008",
+        "buttons": [
+          {
+            "text": "首页",
+            "current": null
+          },
+          {
+            "text": "行情",
+            "current": null
+          },
+          {
+            "text": "交易",
+            "current": "page"
+          },
+          {
+            "text": "合约",
+            "current": null
+          },
+          {
+            "text": "资产",
+            "current": null
+          }
+        ],
+        "errorText": []
+      }
+    },
+    {
+      "name": "合约",
+      "ok": true,
+      "expectedPath": "/contract",
+      "before": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "tabLabels": [
+          "首页",
+          "行情",
+          "交易",
+          "合约",
+          "资产"
+        ]
+      },
+      "click": {
+        "clicked": true,
+        "rect": {
+          "x": 234,
+          "y": 781,
+          "width": 78,
+          "height": 50,
+          "bottom": 831
+        }
+      },
+      "after": {
+        "url": "http://127.0.0.1:4173/contract",
+        "title": "UAEC",
+        "bodyHead": "BTCUSDT 永续\n全仓\n​\n10x\n限价委托\n​\n价格(USDT)\n价格(USDT)\n对手价\nBTC\n​\n0%\n25%\n50%\n75%\n100%\n可用\n0.00 USDT\n可开多\n0.00 BTC\n成本\n0.00 USDT\n开多\n可开空\n0.00 BTC\n成本\n0.00 USDT\n开空\nPrice\n(USDT)\nAmount\n(BTC)\n62,839.5",
+        "buttons": [
+          {
+            "text": "首页",
+            "current": null
+          },
+          {
+            "text": "行情",
+            "current": null
+          },
+          {
+            "text": "交易",
+            "current": null
+          },
+          {
+            "text": "合约",
+            "current": "page"
+          },
+          {
+            "text": "资产",
+            "current": null
+          }
+        ],
+        "errorText": []
+      }
+    },
+    {
+      "name": "资产",
+      "ok": true,
+      "expectedPath": "/Login",
+      "note": "protected asset tab redirects anonymous user to Login",
+      "before": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "tabLabels": [
+          "首页",
+          "行情",
+          "交易",
+          "合约",
+          "资产"
+        ]
+      },
+      "click": {
+        "clicked": true,
+        "rect": {
+          "x": 312,
+          "y": 781,
+          "width": 78,
+          "height": 50,
+          "bottom": 831
+        }
+      },
+      "after": {
+        "url": "http://127.0.0.1:4173/Login",
+        "title": "UAEC",
+        "bodyHead": "登录\n手机号/邮箱\n记住账号\n忘记密码？\n登录\n创建UAEC账号\n谷歌验证\n谷歌验证码\n粘贴\n确认",
+        "buttons": [],
+        "errorText": []
+      }
+    }
+  ]
+}

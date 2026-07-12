@@ -1,0 +1,393 @@
+{
+  "schema": "portfolio_semantic_audit_v1",
+  "definition": "100% coverage means every declared project dimension has current local readback, verdict, known gaps, and next action. It does not mean every project is healthy or production-ready.",
+  "ok": true,
+  "checked_at": "2026-07-07T06:55:51.032320+00:00",
+  "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+  "profile_dir": "/Users/charles/.hermes/project-profiles",
+  "coverage_percent": 100.0,
+  "dimension_count": 16,
+  "covered_dimension_count": 16,
+  "counts": {
+    "error": 0,
+    "warning": 0,
+    "info": 0
+  },
+  "findings": [],
+  "dimensions": [
+    {
+      "id": "career-ops",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/career-ops.json",
+        "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach artifact/readback before any validated product claim"
+    },
+    {
+      "id": "hermes-agent-os-control-plane",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/capability_graph_projection.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/doctor_report.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/07-shadow/router-shadow-report.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/17-fable-audit-coverage-architecture-registry.json"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": "2026-07-07T03:12:16.583155+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep native agent-os status/doctor/route readback green before any broader runtime claim"
+    },
+    {
+      "id": "hermes-capability-model-router",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-capability-model-router.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/capability-router-all-model-smoke-20260707T065900Z.jsonl",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/capability-router-router-tests-20260707T065900Z.log"
+      ],
+      "evidence_freshness": {
+        "policy_days": 7,
+        "newest_declared_evidence_mtime": "2026-07-07T06:55:32.312394+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep quota freshness; certification remains local evidence not production SLA"
+    },
+    {
+      "id": "hermes-control-console",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-control-console.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/control-console-pnpm-verify-20260707T065500Z.log",
+        "/Users/charles/Desktop/folder/hermes-control-console/artifacts/ui-harness/2026-07-07_06-47-32-415/summary.json",
+        "/Users/charles/Desktop/folder/hermes-control-console/artifacts/human-inbox-harness/2026-07-07_06-48-19-715/summary.json"
+      ],
+      "evidence_freshness": {
+        "policy_days": 14,
+        "newest_declared_evidence_mtime": "2026-07-07T06:48:26.991625+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep freshness window; no production claim without deploy/readback"
+    },
+    {
+      "id": "hermes-embodied-workflow-os",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-embodied-workflow-os.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "hermes-fitness-posture-coach",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-fitness-posture-coach.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "hermes-persona-wake-stage",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/00-contract/persona-wake-stage-contract.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/01-runtime/wake-ritual-interface.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/02-surface-bindings/surface-boundaries.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": "2026-07-07T06:54:48.704404+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "select concrete surface and capture runtime/UI/negative evidence before promoted status"
+    },
+    {
+      "id": "hermes-self-extension-os",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-self-extension-os.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-budget-extension-receipt-20260707T070200Z.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-mission-doctor-after-budget-extension-20260707T070300Z.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-mission-tick-after-budget-extension-20260707T070300Z.json"
+      ],
+      "evidence_freshness": {
+        "policy_days": 7,
+        "newest_declared_evidence_mtime": "2026-07-07T06:54:05.401368+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "drain stale flow signals in bounded batches and run next scheduled mission tick"
+    },
+    {
+      "id": "hermes-skill-learning",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-skill-learning.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "hermes",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes.json",
+        "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach current Hermes selfcheck/P10 evidence before any validated runtime claim"
+    },
+    {
+      "id": "lark",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/lark.json",
+        "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "mobile-offline-avatar-travel",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+        "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/non-convergence-narrowing/freeze-ssot-framing-review-closeout-receipt-20260625T2310.json"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": "2026-07-06T02:18:29.611217+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep closure/proof packets current before promoting beyond validated local slices"
+    },
+    {
+      "id": "project-portfolio-os",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/project-portfolio-os.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_doctor.py",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_os_verify.py",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_semantic_audit.py"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": "2026-07-07T06:55:19.703645+00:00",
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep doctor and semantic audit green after registry/profile changes"
+    },
+    {
+      "id": "single-session-multitopic-trace",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/single-session-multitopic-trace.json",
+        "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": 30,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": false,
+        "review_after": null
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach local read-only trace/query readback before validated claim"
+    },
+    {
+      "id": "uaec-h5",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/uaec-h5.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": null,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": true,
+        "review_after": "2026-08-07"
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "audit metadata only unless user explicitly switches to UAEC"
+    },
+    {
+      "id": "uvisa-app-2.0",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json",
+        "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md"
+      ],
+      "evidence_freshness": {
+        "policy_days": null,
+        "newest_declared_evidence_mtime": null,
+        "note": "freshness is advisory unless a project-specific gate restores validated/promoted status"
+      },
+      "work_project_exemption": {
+        "active": true,
+        "review_after": "2026-08-07"
+      },
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "audit metadata only unless user explicitly switches to UVISA"
+    }
+  ]
+}

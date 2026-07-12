@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:34:50.867Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "titleTag": "button",
+    "titleType": "button",
+    "titleExpanded": "false",
+    "titleVisible": true,
+    "favoriteTag": "button",
+    "favoriteType": "button",
+    "hasTitle": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "titleExpanded": "true",
+    "hasDrawerTitle": true,
+    "hasSearch": true,
+    "hasBTC": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterOpen": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

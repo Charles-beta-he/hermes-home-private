@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_observation_v1",
+  "seed": "procedure-validation-local-refresh",
+  "observed_repetition": 0,
+  "task_scope": "one_off",
+  "observed_at": "2026-07-11T18:27:34Z"
+}

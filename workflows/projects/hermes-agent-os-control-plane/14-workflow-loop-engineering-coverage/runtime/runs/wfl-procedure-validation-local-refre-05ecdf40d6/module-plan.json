@@ -1,0 +1,44 @@
+{
+  "schema": "hermes_workflow_module_plan_v1",
+  "seed": "procedure-validation-local-refresh",
+  "capability_needs": [
+    "intent_seed_capture",
+    "output_contract_builder"
+  ],
+  "selected_modules": [],
+  "missing_capability_needs": [
+    "intent_seed_capture",
+    "output_contract_builder"
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "intent_seed_capture",
+        "need": "intent_seed_capture",
+        "status": "missing_candidate",
+        "depends_on": []
+      },
+      {
+        "id": "output_contract_builder",
+        "need": "output_contract_builder",
+        "status": "missing_candidate",
+        "depends_on": [
+          "intent_seed_capture"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "intent_seed_capture",
+        "to": "output_contract_builder"
+      }
+    ]
+  },
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "authority_boundary": "local_only"
+}

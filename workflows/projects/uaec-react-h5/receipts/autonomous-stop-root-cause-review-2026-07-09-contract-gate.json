@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-07-09T15:48:02.337175+00:00",
+  "type": "autonomous-stop-root-cause-review",
+  "trigger": "user asked why autonomy stopped again and why root cause was not fixed",
+  "freshRepoReadback": {
+    "status": "## dev...origin/dev [ahead 49]",
+    "head": "1a09de4"
+  },
+  "finding": "The earlier fix solved verifier-dispatch-as-stop and stale-AMEND handling, but did not define a durable continuation mode once anonymous/local safe slices are exhausted and remaining candidates cross auth/push/deploy/device/real-order gates.",
+  "specificCurrentStopBoundary": {
+    "anonymousMainContractPage": "auth-free main-page safe slices appear exhausted after L3 packets",
+    "contractHistoryAndPosition": "CDP preflight showed /contract-history and /contract-position redirect to /Login",
+    "closedGates": [
+      "authenticated route/session certification",
+      "push/deploy",
+      "device/PWA/production",
+      "leverage confirm",
+      "real order/funds mutation"
+    ]
+  },
+  "secondaryWorkflowBug": "I reported the gate as a final stop rather than persisting a clear blocked-lane decision packet and offering the next exact authority grant; this makes it look like autonomy silently stalled.",
+  "correctedRule": "When no auth-free safe slice remains, do not pretend to continue; write a stop-boundary receipt, keep repo clean, list exact gated lanes and required authority/evidence. Local CLI autonomy is not a daemon unless converted to cron/taskpool/mission.",
+  "nextAllowedWithoutExtraAuthority": [
+    "process any remaining verifier receipts",
+    "read-only audits",
+    "prepare SSOT plans/reports without product repo edits"
+  ],
+  "requiresAuthorityGrant": [
+    "authenticated route smoke with user-provided logged-in session",
+    "push/CI",
+    "device/PWA/production certification",
+    "any leverage confirm/order/funds mutation"
+  ]
+}

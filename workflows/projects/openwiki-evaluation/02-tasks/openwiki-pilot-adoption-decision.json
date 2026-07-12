@@ -1,0 +1,39 @@
+{
+  "schema": "hermes_reserved_decision_task_v1",
+  "id": "openwiki-pilot-adoption-decision",
+  "project": "openwiki-evaluation",
+  "priority": "P2",
+  "status": "reserved_not_started",
+  "created_at": "2026-07-07T16:18:23+08:00",
+  "trigger": "After user selects or authorizes one low-risk pilot repository for OpenWiki.",
+  "title": "Decide whether OpenWiki becomes an optional Hermes repo-local documentation workflow",
+  "non_goals": [
+    "no protected work repo without explicit switch",
+    "no CI auto-merge",
+    "no generated-doc-as-truth promotion"
+  ],
+  "inputs_required": [
+    "pilot_repo_path",
+    "provider/model boundary",
+    "git status before run",
+    "OpenWiki run log",
+    "post-run git diff",
+    "verifier report",
+    "manual source-claim spot checks"
+  ],
+  "acceptance_gates": [
+    "accurate quickstart",
+    "real source references",
+    "no secret exposure",
+    "AGENTS/CLAUDE diff acceptable",
+    "low thin-page noise",
+    "update mode surgical/no-op",
+    "PR-only CI if later enabled"
+  ],
+  "reserved_next_actions": [
+    "choose pilot repo",
+    "run local OpenWiki init/update",
+    "run 04-scripts/verify_openwiki_pilot.py",
+    "write 05-decisions/pilot-decision-<repo>.md"
+  ]
+}

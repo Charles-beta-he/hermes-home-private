@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-07-09T11:30:43.636888+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot depth-select accessibility locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/native-picker/PWA/production certified",
+  "slice": "spot-depth-select-a11y",
+  "targetCommit": "dfd2650 fix: label spot depth selector",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_c64e89ae",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_2348e23b"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-depth-select-a11y/spot-depth-select-a11y-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-depth-select-a11y/spot-depth-select-a11y-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "orderbook depth select has aria-label 盘口精度",
+    "depth select is visible",
+    "depth value changes from 2 to 1 in smoke",
+    "no order/password mutation, no credential/session read, no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device/native picker acceptance",
+    "no authenticated account certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

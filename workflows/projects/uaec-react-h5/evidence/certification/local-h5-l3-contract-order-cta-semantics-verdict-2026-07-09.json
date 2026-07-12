@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:43:22.975530+00:00",
+  "sourceDelegation": "deleg_f68491a2",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-order-cta-semantics",
+  "targetCommit": "dbdb0d1",
+  "currentHead": "dbdb0d1",
+  "currentGitStatus": "## dev...origin/dev [ahead 41]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract order CTA semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and independent verifier approval support explicit button type/labels without clicking or submitting orders. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-cta-semantics/contract-order-cta-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-order-cta-semantics-loop-2026-07-09T14-41-10-881868+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 41]",
+      "head": "dbdb0d1",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

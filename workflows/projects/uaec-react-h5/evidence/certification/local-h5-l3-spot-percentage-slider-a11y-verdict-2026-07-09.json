@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-09T11:23:05.565643+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot percentage slider accessibility slice locally certified with independent verifier APPROVE; not push/device/native-slider/PWA/production certified",
+  "slice": "spot-percentage-slider-a11y",
+  "targetCommit": "16849b3 fix: label spot percentage slider",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_d0633e8c",
+    "verdict": "APPROVE",
+    "objectiveBlockers": []
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "percentage Slider range input has aria-label 委托比例",
+    "range input min/max are 0/100",
+    "percentage marks are visible",
+    "no order password/mutation API, no credential/session read, no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device/native slider acceptance",
+    "no authenticated account certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-07-09T09:49:36.031085+00:00",
+  "level": "L3-local-certified-packet",
+  "scope": "spot trade -> Kline/detail roundtrip route semantics only; local Chrome mobile viewport",
+  "approvedBy": "deleg_ba50a040 APPROVE",
+  "verifiedCommit": "4122027 fix: preserve spot kline roundtrip routing",
+  "currentHeadAtWriteback": "7c9bf88",
+  "currentGitStatus": "## dev...origin/dev [ahead 20]",
+  "evidence": {
+    "spotKlineRoundtrip": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.json",
+    "localLoop": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+    "autonomousSafeSliceReceipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/autonomous-safe-slice-switch-2026-07-09T09-10Z.json"
+  },
+  "claims": [
+    "side=SELL resolves sell and buy tab writes side=buy plus buyselltype=BUY",
+    "accessible Kline button returns to market-interface preserving tradeName/symbol/tradeId/partnerTradeId",
+    "negative gates: no real order submitted, no credential/session read"
+  ],
+  "openBoundaries": [
+    "push/CI/remote readback",
+    "Android simulator/device visual diff",
+    "authenticated order/favorites/session flows",
+    "PWA install/standalone/deploy certification"
+  ],
+  "ok": true
+}

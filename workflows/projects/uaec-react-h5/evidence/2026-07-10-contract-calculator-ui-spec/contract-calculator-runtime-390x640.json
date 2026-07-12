@@ -1,0 +1,111 @@
+{
+  "initial": {
+    "url": "http://127.0.0.1:4188/contract/calculator?tradeId=1035922175497863168",
+    "title": "合约计算器",
+    "tabs": [
+      "收益计算",
+      "平仓价格",
+      "强平价格"
+    ],
+    "selectedContract": "SOLUSDT 永续",
+    "headerTop": 0,
+    "viewport": {
+      "width": 390,
+      "height": 640
+    },
+    "noHorizontalOverflow": true,
+    "error": ""
+  },
+  "headerAfterScroll": {
+    "scrollY": 113,
+    "top": 0,
+    "bottom": 44
+  },
+  "invalidInputError": "请填写有效且大于零的计算参数",
+  "target": {
+    "rows": [
+      {
+        "label": "目标平仓价格",
+        "value": "150.00 USDT"
+      }
+    ],
+    "error": ""
+  },
+  "profit": {
+    "rows": [
+      {
+        "label": "保证金",
+        "value": "20.00 USDT"
+      },
+      {
+        "label": "收益",
+        "value": "20.00 USDT"
+      },
+      {
+        "label": "收益率",
+        "value": "100.00%"
+      },
+      {
+        "label": "Maker手续费",
+        "value": "-0.0100 USDT"
+      },
+      {
+        "label": "Taker手续费",
+        "value": "-0.0100 USDT"
+      }
+    ],
+    "error": ""
+  },
+  "leverageClamp": {
+    "value": "125",
+    "rows": [
+      {
+        "label": "保证金",
+        "value": "1.60 USDT"
+      },
+      {
+        "label": "收益",
+        "value": "20.00 USDT"
+      },
+      {
+        "label": "收益率",
+        "value": "1250.00%"
+      },
+      {
+        "label": "Maker手续费",
+        "value": "-0.0008 USDT"
+      },
+      {
+        "label": "Taker手续费",
+        "value": "-0.0008 USDT"
+      }
+    ],
+    "error": ""
+  },
+  "isolatedLiquidation": {
+    "rows": [
+      {
+        "label": "强平价格",
+        "value": "88.40 USDT"
+      }
+    ],
+    "error": ""
+  },
+  "crossLiquidation": {
+    "rows": [
+      {
+        "label": "强平价格",
+        "value": "无法计算"
+      }
+    ],
+    "error": ""
+  },
+  "entry": {
+    "beforeClick": {
+      "exists": true,
+      "currentTrade": "SOLUSDT 永续"
+    },
+    "afterClickUrl": "http://127.0.0.1:4188/contract/calculator?tradeId=1035922175497863168"
+  },
+  "passed": true
+}

@@ -1,0 +1,58 @@
+{
+  "ok": false,
+  "counts": {
+    "error": 6,
+    "warning": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "required_path",
+      "message": "missing /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/00-model/portfolio-os.md"
+    },
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "required_path",
+      "message": "missing /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/02-literature/core-works-and-arguments.md"
+    },
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "required_path",
+      "message": "missing /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/03-governance/merge-and-abstraction-governance.md"
+    },
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "required_path",
+      "message": "missing /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/04-merge-candidates/initial-project-relations.md"
+    },
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "required_path",
+      "message": "missing /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/05-status/portfolio-status.md"
+    },
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "required_path",
+      "message": "missing /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/05-status/production-receipt.md"
+    }
+  ],
+  "profile_count": 16,
+  "doctor": {
+    "ok": true,
+    "home": "/Users/charles/.hermes",
+    "profile_count": 16,
+    "counts": {
+      "error": 0,
+      "warning": 0,
+      "info": 0
+    },
+    "findings": []
+  }
+}

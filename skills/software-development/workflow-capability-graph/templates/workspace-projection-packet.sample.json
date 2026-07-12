@@ -1,0 +1,80 @@
+{
+  "schema": "workspace_projection_packet_v1",
+  "id": "sample-local-projection",
+  "scope": "class-level external workspace projection template for J-space/global-workspace-inspired workflow gates",
+  "applicability": "Use for local read-only projection packets that separate goals, authority boundaries, evidence DAGs, reflection readback, and completion claims.",
+  "anti_conditions": [
+    "Do not claim hidden-state access for closed/API models.",
+    "Do not treat model judgment as objective evidence.",
+    "Do not grant taskpool lifecycle, external dispatch, publish/deploy, secret, payment, or destructive authority from this packet."
+  ],
+  "source_boundary": {
+    "source_refs": [
+      "url:https://www.anthropic.com/research/global-workspace"
+    ],
+    "hidden_state_access": false,
+    "model_judgment_is_objective_evidence": false
+  },
+  "workspace_projection": {
+    "goal": "observable desired state",
+    "non_goals": [
+      "do not claim hidden-state access for closed/API models"
+    ],
+    "constraints": [
+      "local projection only",
+      "readback before completion claim"
+    ],
+    "authority_boundary": {
+      "allowed": ["local_write", "read_only_validation"],
+      "requires_auth": ["taskpool_lifecycle_write", "external_dispatch", "publish_deploy_push"],
+      "forbidden": ["secret_entry", "payment", "destructive_operation"]
+    },
+    "workspace_state": "reflective",
+    "missing_evidence": [],
+    "next_action_contract": {
+      "action": "run workspace_projection_gate.py",
+      "expected_evidence": ["command:workspace_projection_gate PASS"]
+    }
+  },
+  "evidence_dag": {
+    "claims": [
+      {
+        "id": "C-001",
+        "text": "This packet is a local external projection, not model hidden-state access.",
+        "criticality": "completion_critical",
+        "status": "verified"
+      }
+    ],
+    "evidence": [
+      {
+        "id": "E-001",
+        "authority": "objective",
+        "ref": "skill-reference:workflow-capability-graph/references/external-jspace-workspace-projection.md",
+        "supports": ["C-001"],
+        "status": "verified"
+      }
+    ]
+  },
+  "reflection_readback": {
+    "summary": "The packet separates source claims, local projection state, evidence authority, and excluded claims.",
+    "open_questions": []
+  },
+  "completion_claim_packet": {
+    "claim": "Sample packet passes local projection gate.",
+    "scope": "local_projection_only_no_runtime_mutation",
+    "evidence_refs": ["E-001"],
+    "missing_evidence": [],
+    "negative_evidence": [
+      "no_hidden_state_access",
+      "no_external_dispatch",
+      "no_taskpool_lifecycle_write",
+      "no_skill_or_memory_auto_apply"
+    ],
+    "excluded_claims": [
+      "not_anthropic_jspace_access",
+      "not_runtime_monitoring",
+      "not_multimodel_certified"
+    ],
+    "status": "verified_local"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T06:14:15Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-change-indicator",
+  "result": "PASS",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "facts": [
+      "updateTvData prefixes positive rose values with '+' before the percentage.",
+      "setRiseKline shows a rise or fall indicator selected from the sign and the user color convention."
+    ]
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "commit": "573ecfb fix: align contract change indicator",
+    "postCommitReadback": {
+      "workingTreeClean": true,
+      "gitShowCheckExitCode": 0
+    },
+    "file": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx"
+  },
+  "tdd": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-change-indicator/verify_contract_change_indicator.py",
+    "red": {
+      "status": "PASS",
+      "expectedExitCode": 1,
+      "observed": "No semantic 24h-change element or directional indicator existed; the UI rendered an explicit grey placeholder dot."
+    },
+    "green": {
+      "status": "PASS",
+      "exitCode": 0,
+      "observedText": "+1.28%",
+      "dataChange": "1.28",
+      "direction": "up",
+      "indicatorAriaHidden": true
+    }
+  },
+  "checks": {
+    "scopedEslint": {
+      "status": "PASS",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "durationSeconds": 5.12,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "visualReadback": {
+      "status": "PASS",
+      "viewport": "390x844",
+      "positivePrefixVisible": true,
+      "directionalIndicatorVisible": true,
+      "greyPlaceholderRemoved": true,
+      "obviousOverlapClippingOrHeaderRegression": false,
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-change-indicator/contract-change-indicator-390x844.png"
+    },
+    "negativeCases": {
+      "collectionMutationRequest": false,
+      "orderMutationRequest": false,
+      "credentialOrSessionRead": false,
+      "pushOrDeploy": false
+    }
+  },
+  "certificationBoundary": "L2 local runtime verified. Android animation-frame fidelity and device pixel comparison remain device evidence gates."
+}

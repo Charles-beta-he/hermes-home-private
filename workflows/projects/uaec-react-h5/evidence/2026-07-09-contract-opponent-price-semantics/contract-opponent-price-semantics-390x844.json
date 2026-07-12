@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T15:04:36.239Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tag": "button",
+    "type": "button",
+    "ariaPressed": "false",
+    "text": "对手价",
+    "visible": true,
+    "priceDisabled": false,
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "ariaPressed": "true",
+    "priceDisabled": false,
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-opponent-price-semantics/contract-opponent-price-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterToggle": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

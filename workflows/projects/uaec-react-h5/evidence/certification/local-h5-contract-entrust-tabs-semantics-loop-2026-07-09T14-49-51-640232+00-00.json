@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:49:51.640232+00:00",
+  "target": "uaec-react-h5 contract entrust tabs semantics safe slice",
+  "certificationLevel": "L2-local-loop-verified",
+  "slice": "contract-entrust-tabs-semantics",
+  "commit": "2352658",
+  "gitStatus": "## dev...origin/dev [ahead 42]",
+  "workingTreeCleanAtGeneration": true,
+  "checks": [
+    {
+      "name": "scoped-eslint-contract-page-slice",
+      "ok": true,
+      "command": "npx eslint src/pages/ContractPage/ContractPage.tsx --rule '@typescript-eslint/no-unused-vars: off' --rule '@typescript-eslint/no-explicit-any: off'"
+    },
+    {
+      "name": "build",
+      "ok": true,
+      "command": "npm run build",
+      "acceptedWarnings": [
+        "large chunks",
+        "Browserslist old data",
+        "PWA precache output",
+        "known dynamic/static import chunk warning"
+      ]
+    },
+    {
+      "name": "mobile-cdp-smoke",
+      "ok": true,
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-entrust-tabs-semantics/contract-entrust-tabs-semantics-390x844.json",
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-entrust-tabs-semantics/contract-entrust-tabs-semantics-390x844.png"
+    },
+    {
+      "name": "clean-worktree",
+      "ok": true
+    }
+  ],
+  "blockers": [],
+  "boundedClaim": "Contract entrust filters are exposed as a tablist/tabs with aria-selected state in local anonymous H5 preview. Tab change only; no order/password/funds mutation. Not authenticated trading/device/PWA/production certification."
+}

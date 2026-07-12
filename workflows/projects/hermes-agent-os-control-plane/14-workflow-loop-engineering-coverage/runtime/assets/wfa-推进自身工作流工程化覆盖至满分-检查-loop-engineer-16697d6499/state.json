@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_asset_state_v1",
+  "asset_id": "wfa-推进自身工作流工程化覆盖至满分-检查-loop-engineer-16697d6499",
+  "maturity": "candidate",
+  "retention": "domain_reusable",
+  "status": "candidate_after_local_verification",
+  "created_at": "2026-07-10T04:11:44Z",
+  "external_side_effects_enabled": false,
+  "cron_enabled": false,
+  "taskpool_lifecycle_mutation_enabled": false,
+  "agentos_runtime_mutation_enabled": false
+}

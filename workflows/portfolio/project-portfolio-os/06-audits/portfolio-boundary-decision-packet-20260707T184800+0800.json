@@ -1,0 +1,67 @@
+{
+  "completed_evidence": {
+    "closeout_manifest": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-continued-safe-boundary-closeout-manifest-20260707T091000Z.json",
+    "control_console_verify": "pnpm verify pass; browser topology and human-inbox harness issueCount=0",
+    "fable_v3_pass": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/fable-portfolio-continued-safe-boundary-review-output-v3-20260707T092300Z.md",
+    "persona_demo": "browser screenshot/readback pass; negativeAuthority confirms no voice/external send/no side effects",
+    "portfolio_verify": "ok=true profile_count=17 errors=0 warnings=0 findings=[]",
+    "semantic_audit": "ok=true coverage_percent=100.0 dimension_count=17 findings=[]",
+    "strict_verify": "ok=true doctor_ok=true errors=0 warnings=0"
+  },
+  "continuation_packet": {
+    "next_if_user_selects_A_plus": "collect rubric/spec/screenshots, perform UI implementation slice, run pnpm verify + uIMax + browser readback + independent review.",
+    "next_if_user_selects_external_or_deploy": "require exact target/action/payload/rollback/readback before any tool side effect.",
+    "next_if_user_selects_persona_surface": "collect exact surface/voice/send policy, implement bounded target, verify receipt/readback and negative side-effect tests.",
+    "resume_from": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-continued-safe-boundary-closeout-manifest-20260707T091000Z.json"
+  },
+  "created_at": "2026-07-07T18:48:00+08:00",
+  "decision": "No further local/reversible/authority-safe slice remains after this readback. Broad authorization is acknowledged but not sufficient to cross exact high-authority boundaries without targets and rollback/readback.",
+  "not_a_boundary": [
+    {
+      "item": "repeat same green verifications",
+      "reason": "No new write changed the evidence set; repeated verify would add noise, not advance capability."
+    },
+    {
+      "item": "relabel Fable PASS as Hermes global certification",
+      "reason": "Fable PASS certifies the scoped closeout manifest only."
+    },
+    {
+      "item": "claim A+ from current evidence",
+      "reason": "Current evidence supports local safe-boundary A- operator audit / B+ polish, not A+ acceptance."
+    }
+  ],
+  "objective": "Determine what can still be finally advanced after safe-boundary closeout without confusing completed local boundaries with high-authority boundaries.",
+  "real_authority_boundaries": [
+    {
+      "boundary": "Control-console A+ / uIMax-final acceptance",
+      "needed_authority": "A concrete A+ rubric or named source-of-truth screenshots/specs; approval to modify UI beyond narrow safety fixes.",
+      "post_action_verification": "fresh screenshots, uIMax report, browser harness, pnpm verify, independent review.",
+      "rollback": "git diff/revert scoped control-console changes; keep current B+/A- manifest as fallback.",
+      "why_real": "Requires explicit acceptance standard and likely design/value judgment beyond current local audit."
+    },
+    {
+      "boundary": "Persona production surface / voice / external-send behavior",
+      "needed_authority": "Exact surface target, exact allowed action(s), payload/channel, voice policy, rollback/readback.",
+      "post_action_verification": "receipt/readback from target surface, no unintended send, logs/screenshots, explicit negative tests.",
+      "rollback": "keep current local-only demo; disable voice/send flags; remove any scheduled/external hooks.",
+      "why_real": "Would change from local no-side-effect demo to user-facing or externally sending runtime behavior."
+    },
+    {
+      "boundary": "External dispatch / scheduler-worker / lifecycle write",
+      "needed_authority": "Exact target id, action/status, idempotency key, payload, schedule/cadence if any, readback command.",
+      "post_action_verification": "receipt plus post-action readback from the same target.",
+      "rollback": "remove/pause exact job or revert exact lifecycle state using recorded receipt.",
+      "why_real": "Creates or mutates execution outside local evidence files and may trigger autonomous side effects."
+    },
+    {
+      "boundary": "push/deploy/publish",
+      "needed_authority": "Exact repo/branch/env/channel, commit scope, deploy command, rollback path, CI/readback.",
+      "post_action_verification": "remote status/CI/deployment URL/readback.",
+      "rollback": "revert commit/rollback deploy/disable published target as applicable.",
+      "why_real": "Affects remote repository/environment/audience."
+    }
+  ],
+  "safe_reversible_remaining": [],
+  "schema": "decision_continuation_packet_v1",
+  "user_authorization_text": "授权，继续推进直"
+}

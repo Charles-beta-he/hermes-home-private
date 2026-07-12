@@ -1,0 +1,41 @@
+{
+  "audit_semantics": {
+    "evidence_freshness_days": 14,
+    "maturity_verdict": "candidate_tool_contract_ready_pilot_pending",
+    "next_audit_action": "select pilot repo and run local verifier before adoption"
+  },
+  "current_components": {
+    "ci_adoption": "closed",
+    "evaluation_contract": "contract-ready",
+    "pilot_repo": "not-selected",
+    "reserved_decision_task": "present",
+    "upstream_research": "validated-local-smoke"
+  },
+  "display_name": "OpenWiki Evaluation",
+  "id": "openwiki-evaluation",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/projects/openwiki-evaluation/progress-ledger.md",
+    "/Users/charles/.hermes/workflows/projects/openwiki-evaluation/03-evidence/openwiki-upstream-research-20260707T161823+0800.json"
+  ],
+  "portfolio_profile": true,
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/openwiki-evaluation/progress-ledger.md",
+  "project": "openwiki-evaluation",
+  "project_type": "knowledge-system/reference-repo-evaluation",
+  "promotion_policy": "Evidence- and ratchet-gated only: local pilot diff + verifier + source spot checks before workflow/CI adoption; generated docs remain advisory and must not bypass portfolio evidence ratchet.",
+  "relations": [
+    {
+      "merge_policy": "pilot_only_no_default_adoption",
+      "relation": "shares_module",
+      "target": "project-portfolio-os"
+    },
+    {
+      "merge_policy": "repo_local_docs_only_no_runtime_authority_merge",
+      "relation": "managed_by_agent_workflow",
+      "target": "hermes"
+    }
+  ],
+  "role": "Evaluate langchain-ai/openwiki as optional repo-local agent documentation layer for Hermes-managed codebases.",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/openwiki-evaluation",
+  "status": "contract-ready/pilot-not-started",
+  "updated_at": "2026-07-07T17:07:00+08:00"
+}

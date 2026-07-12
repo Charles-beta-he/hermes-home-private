@@ -1,0 +1,47 @@
+{
+  "ok": false,
+  "counts": {
+    "error": 1,
+    "warning": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "doctor",
+      "message": "portfolio doctor is not ok"
+    }
+  ],
+  "profile_count": 17,
+  "doctor": {
+    "ok": false,
+    "home": "/Users/charles/.hermes",
+    "profile_count": 17,
+    "counts": {
+      "error": 2,
+      "warning": 1,
+      "info": 0
+    },
+    "findings": [
+      {
+        "severity": "error",
+        "project": "openwiki-evaluation",
+        "check": "required_field",
+        "message": "missing relations"
+      },
+      {
+        "severity": "warning",
+        "project": "openwiki-evaluation",
+        "check": "promotion_policy",
+        "message": "promotion_policy should mention evidence and ratchet"
+      },
+      {
+        "severity": "error",
+        "project": "openwiki-evaluation",
+        "check": "relations",
+        "message": "relations must be a list"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:59:58.590Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "tag": "input",
+    "role": null,
+    "ariaLabel": "委托比例",
+    "valueNow": "0",
+    "min": "0",
+    "max": "100",
+    "visible": true,
+    "hasMarks": true,
+    "hasTradeTitle": true,
+    "labeledOuter": "<input data-index=\"0\" aria-label=\"委托比例\" aria-valuenow=\"0\" aria-orientation=\"horizontal\" aria-valuemax=\"100\" aria-valuemin=\"0\" type=\"range\" min=\"0\" max=\"100\" step=\"1\" disabled=\"\" value=\"0\" style=\"borde"
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSlider": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

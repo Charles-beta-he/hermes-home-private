@@ -1,0 +1,41 @@
+{
+  "ok": false,
+  "counts": {
+    "error": 1,
+    "warning": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "doctor",
+      "message": "portfolio doctor is not ok"
+    }
+  ],
+  "profile_count": 17,
+  "doctor": {
+    "ok": false,
+    "home": "/Users/charles/.hermes",
+    "profile_count": 17,
+    "counts": {
+      "error": 0,
+      "warning": 2,
+      "info": 0
+    },
+    "findings": [
+      {
+        "severity": "warning",
+        "project": "openwiki-evaluation",
+        "check": "relation_type",
+        "message": "unknown relation type: candidate_tool_for"
+      },
+      {
+        "severity": "warning",
+        "project": "openwiki-evaluation",
+        "check": "relation_type",
+        "message": "unknown relation type: optional_reference_layer_for"
+      }
+    ]
+  }
+}

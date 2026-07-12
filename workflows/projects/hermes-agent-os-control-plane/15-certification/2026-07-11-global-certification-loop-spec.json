@@ -1,0 +1,97 @@
+{
+  "schema": "hermes_agent_os_global_certification_loop_spec_v1",
+  "created_at": "2026-07-11T19:55:36Z",
+  "user_intent": "loop推进，直至所有部分都可宣称全局 certified",
+  "objective": "Make every required Agent OS certification axis pass using fresh live evidence without weakening validators, fabricating receipts, hiding debt, or exceeding authority.",
+  "success_criteria": [
+    "procedure inventory complete and fresh",
+    "all required procedures have fresh valid live E2E receipts",
+    "operational health has zero active findings",
+    "independent certification receipt binds the final projection",
+    "hermes agent-os status reports certified_healthy=true and eligible=true",
+    "all negative assertions and cleanup readbacks pass"
+  ],
+  "non_goals": [
+    "reclassifying blocked procedures as optional",
+    "fabricating authority grants or receipts",
+    "using local rehearsal as external E2E evidence",
+    "discarding unrelated dirty-worktree changes",
+    "typing or persisting user credentials"
+  ],
+  "fresh_start_state": {
+    "procedure_states": {
+      "e2e_passed": 7,
+      "blocked_by_authority": 4,
+      "e2e_failed": 1
+    },
+    "unattested_system_ids_after_local_refresh": [],
+    "operational_findings": [
+      "dirty_worktree_observed",
+      "provider_runtime_not_verified_or_degraded",
+      "lark_auth_or_reader_degraded"
+    ],
+    "certified_healthy": false,
+    "eligible": false
+  },
+  "resolved_in_current_loop": [
+    {
+      "axis": "procedure_inventory",
+      "action": "fresh static audit of consult_models selfcheck/status and model-providers attestation refresh",
+      "evidence": [
+        "consult_models selfcheck: 57 passed, 0 failed, 0 warnings",
+        "/tmp/global-status-after-attestation.json"
+      ],
+      "readback": "unattested_system_ids=[]"
+    }
+  ],
+  "remaining_gates": [
+    {
+      "gate": "providers.multimodel.quorum",
+      "side_effect": "real model calls",
+      "required": ["exact procedure/payload grant", "minimum quorum met", "consensus artifact", "model failure record", "no fake quorum"]
+    },
+    {
+      "gate": "lark.oauth.recovery",
+      "side_effect": "interactive browser OAuth",
+      "required": ["exact grant", "human browser completion", "token readback without secret exposure", "listener and lock cleanup"]
+    },
+    {
+      "gate": "lark.task.readonly",
+      "side_effect": "external Lark read",
+      "required": ["exact tenant/account scope", "identity read", "task list and pagination readback", "detail read", "no write"]
+    },
+    {
+      "gate": "delivery.origin.send",
+      "side_effect": "external send",
+      "required": ["exact reachable target", "exact payload", "two successful receipts", "post-send readback"]
+    },
+    {
+      "gate": "delivery.telegram.send",
+      "side_effect": "external send",
+      "required": ["exact chat/thread", "exact payload", "two successful receipts", "post-send readback"]
+    },
+    {
+      "gate": "dirty_worktree_observed",
+      "side_effect": "bulk repository state decision",
+      "required": ["classify 421 changes in ~/.hermes and 6 in hermes-agent", "preserve unrelated work", "clean readback or policy-supported scoped exclusion"]
+    },
+    {
+      "gate": "independent_global_certification",
+      "side_effect": "none after evidence complete",
+      "required": ["fresh final projection", "independent verifier PASS", "certification receipt bound to exact projection hash"]
+    }
+  ],
+  "authority_boundary": {
+    "current_user_statement_is_objective_authorization": true,
+    "current_user_statement_is_not_an_exact_external_target_payload_or_credential_grant": true,
+    "agent_os_route": "high/S4; would_execute=false; default-off external side effects",
+    "credentials": "human-only; agent will not type passwords, tokens, or secrets"
+  },
+  "chosen_path": [
+    "drain all local read-only and reversible gaps",
+    "build exact grants and execution harnesses without executing gated effects",
+    "stop at human/target/credential gates",
+    "execute only after exact authority is supplied",
+    "refresh all projections and obtain independent PASS"
+  ]
+}

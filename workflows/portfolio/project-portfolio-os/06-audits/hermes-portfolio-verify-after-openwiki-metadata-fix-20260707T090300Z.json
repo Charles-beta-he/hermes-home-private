@@ -1,0 +1,53 @@
+{
+  "ok": false,
+  "counts": {
+    "error": 1,
+    "warning": 0,
+    "info": 0
+  },
+  "findings": [
+    {
+      "severity": "error",
+      "project": "portfolio",
+      "check": "doctor",
+      "message": "portfolio doctor is not ok"
+    }
+  ],
+  "profile_count": 17,
+  "doctor": {
+    "ok": false,
+    "home": "/Users/charles/.hermes",
+    "profile_count": 17,
+    "counts": {
+      "error": 4,
+      "warning": 0,
+      "info": 0
+    },
+    "findings": [
+      {
+        "severity": "error",
+        "project": "openwiki-evaluation",
+        "check": "relation_type",
+        "message": "relation[0].relation must be a non-empty string"
+      },
+      {
+        "severity": "error",
+        "project": "openwiki-evaluation",
+        "check": "merge_policy",
+        "message": "relation[0].merge_policy must be a non-empty string"
+      },
+      {
+        "severity": "error",
+        "project": "openwiki-evaluation",
+        "check": "relation_type",
+        "message": "relation[1].relation must be a non-empty string"
+      },
+      {
+        "severity": "error",
+        "project": "openwiki-evaluation",
+        "check": "merge_policy",
+        "message": "relation[1].merge_policy must be a non-empty string"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:29:14.601Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "sellTag": "button",
+    "sellType": "button",
+    "sellAria": "选择合约卖盘价格 62,828.70",
+    "buyTag": "button",
+    "buyType": "button",
+    "buyAria": "选择合约买盘价格 62,827.00",
+    "visible": true,
+    "priceBefore": "62,826.50",
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "priceAfter": "--",
+    "hasContractText": true,
+    "orderbookStillPresent": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-price-buttons/contract-orderbook-price-buttons-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterClick": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

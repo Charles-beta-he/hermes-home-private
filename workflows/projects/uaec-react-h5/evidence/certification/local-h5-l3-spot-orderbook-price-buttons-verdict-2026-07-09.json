@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-07-09T11:16:27.753184+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot orderbook price picker button semantics locally certified with independent verifier APPROVE; not push/device/authenticated-submit/PWA/production certified",
+  "slice": "spot-orderbook-price-buttons",
+  "targetCommit": "e94e720 fix: expose spot orderbook prices as buttons",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_0ec81ee2",
+    "verdict": "APPROVE",
+    "objectiveBlockers": []
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-price-buttons/spot-orderbook-price-buttons-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-price-buttons/spot-orderbook-price-buttons-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "sell orderbook price rows are button type=button",
+    "buy orderbook price rows are button type=button",
+    "latest price row is button type=button",
+    "handleOrderBookPriceClick behavior preserved by smoke",
+    "no order password/mutation API, no credential/session read, no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated price submit certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

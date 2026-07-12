@@ -1,0 +1,43 @@
+{
+  "baseUrl": "http://127.0.0.1:4173/",
+  "viewport": "390x844",
+  "ok": true,
+  "boundary": "Current backend banner payload has image URLs but no appRedirectUrl/redirectUrl/link, so runtime click should remain on home; navigation transform cannot be fully exercised without a banner target.",
+  "before": {
+    "url": "http://127.0.0.1:4173/",
+    "title": "UAEC",
+    "hasHome": true,
+    "hasRanking": true,
+    "hasBtc": true,
+    "bannerAlt": "体验金交易赛",
+    "bannerRect": {
+      "x": 19.5,
+      "y": 68,
+      "width": 351,
+      "height": 138,
+      "bottom": 206
+    },
+    "tokenKeys": [],
+    "hrefBefore": "http://127.0.0.1:4173/"
+  },
+  "click": {
+    "clicked": true,
+    "rect": {
+      "x": 19.5,
+      "y": 68,
+      "width": 351,
+      "height": 138,
+      "bottom": 206
+    },
+    "alt": "体验金交易赛"
+  },
+  "after": {
+    "url": "http://127.0.0.1:4173/",
+    "bodyHead": "搜索币种/币对/合约\nPull to refresh\nUPay\n合伙人\n理财\nC2C\n充币\n客服\n体验金\n社媒\n公告\n涨幅榜\n跌幅榜\n新币榜\n人气榜\n名称\n最新价\n今日涨幅\nBTC/USDT\n2752.67\n62,888.01\n$62,888.01\n-0.75%\nETH/USDT\n5.22万\n1,752.00\n$1,7",
+    "errorText": []
+  },
+  "networkSummary": {
+    "requestCount": 40,
+    "tokenLeakUrls": []
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_observation_v1",
+  "seed": "procedure E2E governance propagation",
+  "observed_repetition": 4,
+  "task_scope": "recurring",
+  "observed_at": "2026-07-10T05:23:16Z"
+}

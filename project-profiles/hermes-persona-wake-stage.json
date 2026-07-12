@@ -1,0 +1,56 @@
+{
+  "audit_semantics": {
+    "evidence_freshness_days": 14,
+    "known_negative_status": false,
+    "maturity_verdict": "runtime_local_demo_validated_browser_screenshot_no_external_side_effects",
+    "next_audit_action": "select concrete production surface and explicit external/voice policy before promoted runtime behavior"
+  },
+  "current_components": {
+    "cross_end_contract": "restored_local_readback",
+    "negative_authority": "no voice/no external send/no deploy/no secret/no destructive",
+    "progress_ledger": "present",
+    "project_profile": "present",
+    "runtime_demo_cli": "validated_no_external_side_effects",
+    "runtime_demo_web_static": "validated_local_browser_screenshot_readback",
+    "runtime_interface": "restored_local_readback",
+    "surface_boundaries": "restored_local_readback"
+  },
+  "display_name": "Hermes Persona Wake Stage",
+  "id": "hermes-persona-wake-stage",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/00-contract/persona-wake-stage-contract.md",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/01-runtime/wake-ritual-interface.md",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/02-surface-bindings/surface-boundaries.md",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/runtime-contract.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/persona_wake_cli.py",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/persona-wake-local.html",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-local-demo-test-20260707T080100Z.json",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-cli-readback-20260707T080100Z.json",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-browser-readback-20260707T081000Z.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/capture_persona_wake_demo.mjs",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/artifacts/browser-readback-20260707T085200Z/summary.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/artifacts/browser-readback-20260707T085200Z/initial.png",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/artifacts/browser-readback-20260707T085200Z/after-wake.png",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/persona-wake-browser-screenshot-readback-20260707T085200Z.log"
+  ],
+  "portfolio_profile": true,
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
+  "project": "hermes-persona-wake-stage",
+  "project_type": "cross-end-ai-assistant-ux-system",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "red_lines": [
+    "do not claim contract-ready until SSOT/contract/progress artifacts are restored and read back",
+    "no voice/external send/default wake behavior without explicit authority and UI/runtime proof"
+  ],
+  "relations": [
+    {
+      "merge_policy": "portfolio_metadata_only",
+      "relation": "governed_by",
+      "target": "project-portfolio-os"
+    }
+  ],
+  "role": "Cross-end AI assistant wake ritual, agent core, mode-specific stage, and ritual command binding system for Hermes-facing web/PWA/RN/desktop/Telegram surfaces.",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage",
+  "status": "runtime-local-demo-validated-browser-screenshot-readback",
+  "updated_at": "2026-07-07T16:58:00+08:00"
+}

@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:57:11.404883+00:00",
+  "sourceDelegation": "deleg_de108864",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-bottom-tabs-semantics",
+  "targetCommit": "1538fc7",
+  "currentHead": "1538fc7",
+  "currentGitStatus": "## dev...origin/dev [ahead 43]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract bottom tabs semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and independent verifier approval support role=tablist/tabs, aria-selected tab switch, and record button type. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-bottom-tabs-semantics/contract-bottom-tabs-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-bottom-tabs-semantics-loop-2026-07-09T14-54-16-701659+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 43]",
+      "head": "1538fc7",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

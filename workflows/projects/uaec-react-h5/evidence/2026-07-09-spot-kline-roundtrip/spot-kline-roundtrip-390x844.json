@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:03:21.483Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=619477309505671168&partnerTradeId=619477309505671168",
+    "side": "sell",
+    "buySellType": "SELL",
+    "tradeName": "BTC/USDT",
+    "symbol": "btcusdt",
+    "tradeIdPresent": true,
+    "hasTitle": true,
+    "hasSell": true,
+    "hasLoginBoundary": true,
+    "hasKlineButton": true
+  },
+  "afterBuy": {
+    "href": "http://127.0.0.1:4173/trade?side=buy&buyselltype=BUY&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=619477309505671168&partnerTradeId=619477309505671168",
+    "side": "buy",
+    "buySellType": "BUY"
+  },
+  "afterKline": {
+    "href": "http://127.0.0.1:4173/market/market-interface?tradeName=BTC%2FUSDT&symbol=btcusdt&tradeId=619477309505671168&partnerTradeId=619477309505671168",
+    "pathname": "/market/market-interface",
+    "tradeName": "BTC/USDT",
+    "symbol": "btcusdt",
+    "tradeId": "[REDACTED]",
+    "partnerTradeId": "[REDACTED]",
+    "hasSlashTitle": true,
+    "hasTabs": true,
+    "hasBuySell": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.png",
+  "negative": {
+    "noRealOrderSubmitted": true,
+    "noCredentialOrSessionRead": true,
+    "anonymousLoginBoundaryOnly": true
+  }
+}

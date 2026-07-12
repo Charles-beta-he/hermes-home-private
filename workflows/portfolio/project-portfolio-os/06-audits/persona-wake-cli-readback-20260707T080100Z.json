@@ -1,0 +1,38 @@
+{
+  "authority_model": {
+    "credential_entry_enabled": false,
+    "destructive_action_enabled": false,
+    "external_send_enabled": false,
+    "payment_enabled": false,
+    "production_deploy_enabled": false,
+    "voice_output_enabled": false
+  },
+  "blocked_by_design": [
+    "send",
+    "speak",
+    "deploy",
+    "push",
+    "pay",
+    "secret",
+    "delete"
+  ],
+  "command": "handoff-preview",
+  "external_side_effects": [],
+  "handoff_preview": {
+    "evidence_required": [
+      "runtime readback",
+      "negative side-effect proof",
+      "surface screenshot if UI"
+    ],
+    "next_gate": "select concrete production surface before external behavior"
+  },
+  "message": "LOCCENT 控制室C ready: local wake stage only; no voice/send/deploy/secret/destructive action.",
+  "mode": {
+    "default": true,
+    "id": "control-room-c",
+    "label": "LOCCENT 控制室C",
+    "tone": "短促专业中文"
+  },
+  "ok": true,
+  "surface": "cli"
+}

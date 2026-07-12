@@ -1,0 +1,101 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2504,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/control-console-pnpm-verify-20260707T065500Z.log",
+      "sha256": "1d50d6b3790174d2392963d2536b8c78f2f4d2e2919b6db1b0d6e84f2511682c"
+    },
+    {
+      "bytes": 2388,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/capability-router-all-model-smoke-20260707T065900Z.jsonl",
+      "sha256": "4eb3cb1b8be84e71c0d94ffe9c72d0bec89d06e4d8581b6f779792ee1a50af72"
+    },
+    {
+      "bytes": 9349,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/capability-router-router-tests-20260707T065900Z.log",
+      "sha256": "547a93ee9ceb6b07bfdbe4238396689143cc135fe0febe3734ce64cd4073ed41"
+    },
+    {
+      "bytes": 908,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-budget-extension-receipt-20260707T070200Z.json",
+      "sha256": "7e8571dad996ab3196822fdb9895653d0d611754dfdf9cc9f534d955f4b1be00"
+    },
+    {
+      "bytes": 46509,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-mission-doctor-after-budget-extension-20260707T070300Z.json",
+      "sha256": "81e73d8cbd6948f5a048142b1bed3875e868b42b95db4765e88a7fcc458407fd"
+    },
+    {
+      "bytes": 16131,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-semantic-audit-after-real-boundaries-20260707T071200Z.json",
+      "sha256": "80e107278ca1b4643cb391af7acacb032fa1aaf86148b447bd31bc0bf198b637"
+    },
+    {
+      "bytes": 319,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/hermes-portfolio-verify-after-real-boundaries-20260707T071200Z.json",
+      "sha256": "45cc13a86a4b6992a400be343d1d1b85cd21be8a7b04c1a283ef0495252d1c02"
+    },
+    {
+      "bytes": 442,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-doctor-after-real-boundaries-20260707T071200Z.json",
+      "sha256": "f82be838bb00c7e3c9cf443944a157265184d7b9e7c07ff32e084e1b1b852bd1"
+    },
+    {
+      "bytes": 674,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-strict-verify-after-real-boundaries-20260707T071200Z.json",
+      "sha256": "4e244a5567ed0915257bd97c408c2816abc2ec4df15d685abdd92e3b34374136"
+    },
+    {
+      "bytes": 2342,
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/fable-portfolio-real-boundaries-review-output-20260707T071700Z.md",
+      "sha256": "eaa79eb6163c6ce9d73d1cb7e591be4993411869a525fbfe48d504ae4a92aa81"
+    },
+    {
+      "bytes": 1086,
+      "path": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/00-contract/persona-wake-stage-contract.md",
+      "sha256": "9c2c6bfc089dcceee838b38896191508cb4cc9dfc8331cd44380ad2e32d6d603"
+    },
+    {
+      "bytes": 590,
+      "path": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/01-runtime/wake-ritual-interface.md",
+      "sha256": "16034d36e72dbe68586bbea20eea85c46ce7d768d438b12dea7c4e0e155c298e"
+    },
+    {
+      "bytes": 531,
+      "path": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/02-surface-bindings/surface-boundaries.md",
+      "sha256": "32030a9735f99d4b2185b1ea89a42fc4cc00382e69b9e26df45cb5c95c8a2efc"
+    }
+  ],
+  "authority": "user said 推进剩余真实边界",
+  "created_at": "2026-07-07T15:18:00+08:00",
+  "non_authorized": [
+    "remote_push_or_merge",
+    "production_deploy",
+    "external_dispatch",
+    "payment_or_purchase",
+    "secret_or_credential_write",
+    "destructive_delete",
+    "persona runtime default external/voice behavior"
+  ],
+  "rollback": {
+    "mission_db_backup": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/missions-db-backup-before-budget-extension-20260707T070200Z.db",
+    "profile_registry_changes": "metadata JSON only; revert via git/file diff if desired"
+  },
+  "schema": "portfolio_real_boundaries_closeout_v1",
+  "scope": "local-only remaining real boundaries: control-console runtime harness, model-router tests/smoke, self-extension mission budget/resume readback, persona local contract restore",
+  "status_changes": {
+    "hermes-capability-model-router": "validated",
+    "hermes-control-console": "validated",
+    "hermes-persona-wake-stage": "contract-restored-local-readback",
+    "hermes-self-extension-os": "active-validated-local-mission"
+  },
+  "verification_summary": {
+    "control_console": "pnpm verify pass including browser and human-inbox harness",
+    "model_router": "47+39 tests OK, 4 live models smoke pass",
+    "persona_wake": "contract/interface/boundary files restored; runtime implementation not validated",
+    "portfolio_doctor": "ok true, project_count 16, profile_count 16",
+    "portfolio_verify": "ok true, profile_count 16, warnings 0, errors 0",
+    "self_extension": "mission active, tick budget 72/96, rollback backup recorded; stale backlog remains",
+    "semantic_audit": "ok true, coverage 100, warnings 0, errors 0"
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T17:58:48+08:00",
+  "project": "uaec-react-h5",
+  "packet": "contract-kline-amend-followups",
+  "result": "PASS_L3_LOCAL_CERTIFIED_PACKET",
+  "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+  "branch": "dev",
+  "commits": {
+    "favoriteSymbolIsolation": "88b56b3 fix: isolate contract favorite state by symbol",
+    "favoriteRequestGeneration": "a236c90 fix: invalidate stale contract favorite requests",
+    "favoriteRequestGenerationDocs": "c3171bc docs: record favorite request generation guard",
+    "pairDisplayIdentity": "fcbe0c7 fix: preserve contract pair display identity",
+    "overlayLifecycle": "78a93d2 fix: harden contract chart overlay lifecycle",
+    "indicatorPaneLifecycle": "2ce7c1b fix: align contract indicator pane lifecycle",
+    "indicatorUnmountLifecycle": "d3c550b fix: dispose rebuilt contract chart on unmount",
+    "drawerCallbackLifecycle": "328ee67 fix: stabilize contract drawer lifecycle callback",
+    "parityPlanReadback": "c007a73 docs: record contract amend follow-ups"
+  },
+  "sourceReviews": {
+    "historicalBatch": "deleg_0b11637c",
+    "historicalVerdict": "2 APPROVE / 3 AMEND; concrete AMEND findings were resolved by the scoped follow-up commits in this packet",
+    "indicatorBatch": "deleg_5bc9725a",
+    "indicatorVerdict": "AMEND",
+    "indicatorFindings": [
+      "4c33332 created MA/BOLL as a separate pane instead of candle_pane",
+      "the duplicate theme rebuild path could discard VOL/main/sub indicators"
+    ],
+    "replacementReview": {
+      "batch": "deleg_fb91c07c",
+      "status": "PARTIAL_AMEND",
+      "verdicts": {
+        "88b56b3": "AMEND: logout same-symbol and A-B-A stale responses remained admissible without authentication/request generation checks",
+        "fcbe0c7": "APPROVE",
+        "78a93d2": "APPROVE",
+        "2ce7c1b": "AMEND: imperative setTheme replacement instance was not owned by effect cleanup"
+      },
+      "resolution": "d3c550b changes effect cleanup to dispose chartInstance.current and adds setTheme -> unmount runtime evidence; a236c90 adds login-aware request generations for status and mutation callbacks"
+    },
+    "finalReplacementReview": {
+      "batch": "deleg_11c38e12",
+      "status": "NO_VERDICT_CONNECTION_FAILURE",
+      "scope": ["88b56b3", "fcbe0c7", "2ce7c1b", "d3c550b"],
+      "result": "All three tasks exhausted three API retries and returned Connection error; no APPROVE/AMEND was produced.",
+      "supersedingEvidence": {
+        "88b56b3": "deleg_fb91c07c AMEND; remediated by a236c90 pending deleg_53cf5565",
+        "fcbe0c7": "deleg_fb91c07c APPROVE",
+        "2ce7c1b+d3c550b": "replacement review pending deleg_5bb396d1"
+      }
+    },
+    "aggregateClosureReview": {
+      "batch": "deleg_87162fea",
+      "status": "NO_VERDICT_TIMEOUT",
+      "result": "Timed out after 600 seconds and 25 API calls without a summary or any item-level verdict.",
+      "replacements": {
+        "favoriteRequestGeneration": "pending deleg_53cf5565",
+        "indicatorLifecycle": "pending deleg_5bb396d1",
+        "drawerCallbackLifecycle": "pending deleg_424cd289",
+        "pairDisplayIdentity": "already APPROVE via deleg_fb91c07c"
+      }
+    }
+  },
+  "checks": {
+    "favoriteSymbolRace": {
+      "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+      "independentVerifier": {
+        "delegation": "deleg_53cf5565",
+        "verdict": "APPROVE",
+        "readbackAt": "2026-07-10T17:43:26+08:00",
+        "boundary": "Source-structure and deterministic generation model; no real favorite API or logged-in browser integration."
+      },
+      "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-favorite-symbol-race/verify_contract_favorite_symbol_race.py",
+      "redExitCode": 1,
+      "greenExitCode": 0,
+      "assertions": ["active symbol tracked", "login state tracked", "request generation invalidated on symbol/auth context changes", "status and mutation callbacks require current symbol, logged-in state and current generation", "direct A-B stale response rejected", "logout same-symbol stale response rejected", "A-B-A old A response rejected"],
+      "amendCommit": "a236c90",
+      "verification": {"harnessExit": 0, "typescriptExit": 0, "buildExit": 0, "modulesTransformed": 12671, "gitShowCheck": "PASS", "localCertification": "L2-local-loop-verified"}
+    },
+    "pairDisplayIdentity": {
+      "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+      "independentVerifier": "APPROVE deleg_fb91c07c",
+      "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-pair-display-identity/verify_contract_pair_display_identity.py",
+      "redExitCode": 1,
+      "greenExitCode": 0,
+      "runtime": {"title": "BTC/USDT", "displayedPair": true, "normalizedLeak": false}
+    },
+    "fullscreenLifecycle": {
+      "status": "PASS",
+      "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-fullscreen-lifecycle/verify_contract_fullscreen_lifecycle.py",
+      "redExitCode": 1,
+      "greenExitCode": 0,
+      "runtime": {
+        "opened": {"role": "dialog", "ariaModal": "true", "depthHeightPx": 796, "active": "退出全屏K线"},
+        "escape": {"open": false, "focus": "全屏K线"},
+        "back": {"open": false, "path": "/contract/contract-interface", "pair": "sol_usdt_sustainable"}
+      }
+    },
+    "pairPickerFocus": {
+      "status": "PASS",
+      "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-pair-picker-focus/verify_contract_pair_picker_focus.py",
+      "redExitCode": 1,
+      "greenExitCode": 0,
+      "runtime": {
+        "opened": {"active": "搜索合约交易对", "activeTag": "INPUT", "rootInert": true, "searchValue": "SOL"},
+        "closed": {"dialog": false, "active": "选择合约交易对", "rootInert": false}
+      }
+    },
+    "drawerHookDependency": {
+      "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+      "independentReview": {
+        "delegation": "deleg_424cd289",
+        "verdict": "AMEND",
+        "finding": "TradeLeftPopup inline onOpenChange changed identity on search rerender and forced Drawer modal effect teardown/setup"
+      },
+      "resolution": {
+        "commit": "2e1d0bd fix: stabilize contract pair drawer callback",
+        "callback": "TradeLeftPopup handleOpenChange useCallback([onClose]); parent closePairPicker useCallback([])",
+        "red": {"opened": {"adds": 2, "removes": 1}, "afterSearch": {"adds": 3, "removes": 2}},
+        "green": {"opened": {"adds": 1, "removes": 0}, "afterSearch": {"adds": 1, "removes": 0}},
+        "replacementReview": {
+          "delegation": "deleg_63323298",
+          "verdict": "APPROVE for 328ee67+2e1d0bd; 328ee67 alone remains AMEND",
+          "readbackAt": "2026-07-10T17:58:48+08:00"
+        }
+      },
+      "red": "focused eslint: one react-hooks/exhaustive-deps warning at Drawer.tsx:103",
+      "green": "focused eslint exit 0; pair-picker focus harness exit 0",
+      "implementation": "setOpen uses useCallback and is included in the modal lifecycle effect dependencies"
+    },
+    "indicatorPaneLifecycle": {
+      "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+      "independentVerifier": {
+        "delegation": "deleg_5bb396d1",
+        "verdict": "APPROVE for 2ce7c1b+d3c550b; 2ce7c1b alone remains AMEND",
+        "readbackAt": "2026-07-10T17:44:32+08:00",
+        "currentComponentShaMatchesD3c550b": true
+      },
+      "staticHarness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-indicator-pane-lifecycle/verify_contract_indicator_pane_lifecycle.py",
+      "runtimeHarness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-indicator-selector/verify_contract_indicator_selector.py",
+      "redExitCode": 1,
+      "greenExitCode": 0,
+      "runtime": {"mainIndicator": "BOLL", "subIndicator": "KDJ", "paneCount": 3, "unexpectedExceptions": []},
+      "unmountHarness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-indicator-pane-lifecycle/verify_contract_indicator_unmount_lifecycle.py",
+      "unmountRuntime": {
+        "adapterFound": true,
+        "canvasAfterTheme": 14,
+        "chartUnmounted": true,
+        "removedListenerCount": 6,
+        "removedListenerTypes": ["keydown", "mousedown", "touchstart"],
+        "unexpectedExceptions": []
+      },
+      "lifecycleAssertions": ["MA/BOLL use candle_pane", "main indicator removed by pane and name", "imperative theme rebuild restores indicators", "chart data survives rebuild", "duplicate theme rebuild removed", "unmount disposes current rebuilt instance"]
+    },
+    "scopedEslint": {"status": "BASELINE_ONLY_FAILURE", "exitCode": 1, "finding": "line 40 no-explicit-any predates the target commits (git blame 56bea61a, 2025-07-31); no lint diagnostic is on the changed cleanup lines"},
+    "productionBuild": {"status": "PASS", "exitCode": 0, "modulesTransformed": 12670, "note": "Only existing chunk-size, Browserslist, and mixed import warnings"},
+    "postCommitReadback": {
+      "status": "PASS",
+      "workingTreeClean": true,
+      "branch": "dev...origin/dev [ahead 19]",
+      "gitShowCheckCommits": ["88b56b3", "fcbe0c7", "78a93d2", "2ce7c1b", "c007a73", "d3c550b", "328ee67"]
+    },
+    "localCertification": {
+      "status": "PASS",
+      "ok": true,
+      "blockers": 0,
+      "level": "L2-local-loop-verified",
+      "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+      "timestampedReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T09-31-57-017Z.json"
+    }
+  },
+  "negativeEvidence": {
+    "push": false,
+    "deploy": false,
+    "productionMutation": false,
+    "authenticatedFavoriteMutation": false,
+    "realOrder": false,
+    "credentialReadOrEntry": false
+  },
+  "certificationBoundary": "78a93d2, fcbe0c7, the 88b56b3+a236c90 favorite chain, the 2ce7c1b+d3c550b indicator chain and the 328ee67+2e1d0bd Drawer chain have bounded independent APPROVE. 2ce7c1b and 328ee67 alone remain AMEND. Certification is local and slice-bounded: no Android device/simulator, authenticated mutation, other Drawer call sites, real device/WebView/PWA, push, deploy, remote CI, production or full Android 1:1 claim is made."
+}

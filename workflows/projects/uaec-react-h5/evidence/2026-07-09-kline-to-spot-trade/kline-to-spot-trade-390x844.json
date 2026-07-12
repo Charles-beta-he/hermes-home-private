@@ -1,0 +1,108 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T08:59:38.390Z",
+  "before": {
+    "url": "http://127.0.0.1:4173/market/market-interface?symbol=btcusdt&tradeName=BTC%2FUSDT&partnerTradeId=619477309505671168",
+    "sell": {
+      "text": "卖出",
+      "rect": {
+        "x": 203,
+        "y": 792,
+        "width": 171,
+        "height": 40
+      }
+    },
+    "textSample": "BTC/USDT\n62906.11\n≈62906.11 USD\n-0.72%\n24h高\n63,263.06\n24h成交量\n2762.06\n24h低\n61,547.71\n24h成交额\n1.72亿\n1分\n5分\n15分\n1小时\n4小时\n日线\n深度图\n盘口\n成交\n简介\n买量(BTC)\n价格(USDT)\n卖量(BTC)\n5.32583\n62906.11\n0.00034\n62906.1\n0.00016\n62906.09\n0.00478\n62905.85\n0.18016\n62905.84\n0.16087\n62905.83\n0.00028\n62905.7\n0.00008\n62905.65\n0.09026\n62905.62\n0.0174\n62905.24\n0.00018\n62905.2\n0.004\n62904.54\n0.00008\n62904.42\n0.03018\n62904.29\n0.00009\n62904.25\n0.00813\n62904\n0.00008\n62903.99\n0.01296\n62903.98\n0.00008\n62903.92\n0.0399\n62903.64\n62906.12\n0.14881\n62906.13\n0.00115\n62906.14\n0.00016\n62906.74\n0.00008\n62906.75\n0.00009\n62906.76\n0.00009\n62907.42\n0.00032\n62907.55\n0.0003\n62907.84\n0.00009\n62907.89\n0.00586\n62907.99\n0.00018\n62908\n0.02418\n62908.01\n0.011",
+    "buttons": [
+      {
+        "text": "4小时",
+        "rect": {
+          "x": 213.359375,
+          "y": 141,
+          "width": 48.671875,
+          "height": 26
+        }
+      },
+      {
+        "text": "日线",
+        "rect": {
+          "x": 270.03125,
+          "y": 141,
+          "width": 41.984375,
+          "height": 26
+        }
+      },
+      {
+        "text": "深度图",
+        "rect": {
+          "x": 320.015625,
+          "y": 141,
+          "width": 53.984375,
+          "height": 26
+        }
+      },
+      {
+        "text": "盘口",
+        "rect": {
+          "x": 0,
+          "y": 595,
+          "width": 130,
+          "height": 42
+        }
+      },
+      {
+        "text": "成交",
+        "rect": {
+          "x": 130,
+          "y": 595,
+          "width": 130,
+          "height": 42
+        }
+      },
+      {
+        "text": "简介",
+        "rect": {
+          "x": 260,
+          "y": 595,
+          "width": 130,
+          "height": 42
+        }
+      },
+      {
+        "text": "买入",
+        "rect": {
+          "x": 16,
+          "y": 792,
+          "width": 171,
+          "height": 40
+        }
+      },
+      {
+        "text": "卖出",
+        "rect": {
+          "x": 203,
+          "y": 792,
+          "width": 171,
+          "height": 40
+        }
+      }
+    ]
+  },
+  "after": {
+    "url": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=619477309505671168",
+    "side": "sell",
+    "buySellType": "SELL",
+    "symbol": "btcusdt",
+    "tradeName": "BTC/USDT",
+    "tradeId": "619477309505671168",
+    "titleHasTradeName": true,
+    "activeSellVisible": true,
+    "hasTradeFormHints": true,
+    "textSample": "BTC/USDT\n买入\n卖出\n限价委托\n​\n价格(USDT)\n价格(USDT)\nBTC\n​\n0%\n25%\n50%\n70%\n100%\n金额\nUSDT\n金额\n可用\n0 BTC\n冻结\n0 BTC\n去登录\nPrice\n(USDT)\nAmount\n(BTC)\n62,909.90\n0.00009\n62,909.87\n0.00008\n62,909.57\n0.00023\n62,909.43\n0.10014\n62,909.42\n0.00018\n62,906.11\n≈ 62,906.11 USD\n62,906.11\n5.32583\n62,906.10\n0.00034\n62,906.09\n0.00016\n62,905.85\n0.00478\n62,905.84\n0.18016\n0.01\n1\n0.1\n0.01\n0.001\n0.0001\n0.00001\n0.000001\n0.0000001\n0.00000001\n0.000000001\n0.0000000001\n委托(0)\n最近成交\n暂无数据\n首页\n行情\n交易\n合约\n资产\n现货\n​\n自选\nUSDT\n选择充币方式\n划转\n在账户间转移资产\n充值\n从外部钱包充值到账户\n交易密码验证\n交易密码\n确认"
+  },
+  "expectations": {
+    "androidBuyselltypePreserved": "SELL",
+    "tradeIdentityPreserved": true,
+    "spotTradePageReached": true
+  }
+}

@@ -1,0 +1,828 @@
+{
+  "allowed_actions": [],
+  "blocked_actions": [
+    "external_message_send",
+    "remote_push_or_merge",
+    "production_deploy",
+    "payment_or_purchase",
+    "secret_or_credential_write",
+    "destructive_delete",
+    "memory_skill_cron_config_write_without_explicit_scope",
+    "create_or_modify_mission_budget_or_cadence"
+  ],
+  "budget": {
+    "max_ticks": 72,
+    "max_total_usd": null,
+    "max_turns_per_tick": 8
+  },
+  "cadence": "every 6h",
+  "constraints": [
+    "默认安全：不得静默执行生产部署、付费、推送远端、删除、写入密钥或扩大权限",
+    "每轮必须有真实证据：代码 diff、测试、CLI 输出、文档或明确阻塞原因",
+    "关键分岔必须使用 hermes mission handoff 落账为 open decision"
+  ],
+  "created_at": 1781064109.170323,
+  "deliver": "local",
+  "direction": "Hermes 自身架构长期自推进：我只给高抽象方向；Hermes 负责研究、拆解、执行、验证、沉淀；遇到价值判断、权限升级、不可逆风险、外部副作用、证据不足或路线分歧时，生成 Human Intervention Packet 交给我选择后再继续。",
+  "mission_id": "msn_20260610_120149_27c88cfc",
+  "non_goals": [
+    "不把一人公司固化为唯一业务场景；它只是高抽象方向粒度示例"
+  ],
+  "open_decisions": [],
+  "pending_flow_signals": [
+    {
+      "consumed_at": null,
+      "created_at": 1782096936.8524091,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpsfnd2a4d/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_added: 2026-06-22-implement-backend-api-and-browser-ui status=pending"
+      },
+      "signal_id": "sig_20260622_105536_21b1368c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105536_c65eaff9",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096937.2005079,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:claimed->running",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "running",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpsfnd2a4d/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-browser-ui status=running"
+      },
+      "signal_id": "sig_20260622_105537_bcc842b2",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105537_25521598",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096937.384331,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:running->review",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "review",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpsfnd2a4d/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-browser-ui status=review"
+      },
+      "signal_id": "sig_20260622_105537_2de99cd1",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105537_8ebd32bc",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096937.559765,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:review->done",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "done",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpsfnd2a4d/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-browser-ui status=done"
+      },
+      "signal_id": "sig_20260622_105537_bff6d936",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105537_5eb46a21",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096937.744722,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-implement-backend-api-and-tui-surface",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpwi6jiibo/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-tui-surface.md",
+          "title": "Task - Implement backend API and TUI surface"
+        },
+        "summary": "taskpool task_added: 2026-06-22-implement-backend-api-and-tui-surface status=pending"
+      },
+      "signal_id": "sig_20260622_105537_cbadfb2e",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105537_f782b981",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096938.106965,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:claimed->running",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "running",
+          "task_id": "2026-06-22-implement-backend-api-and-tui-surface",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpwi6jiibo/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-tui-surface.md",
+          "title": "Task - Implement backend API and TUI surface"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-tui-surface status=running"
+      },
+      "signal_id": "sig_20260622_105538_5e18abea",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105538_b71be502",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096938.309879,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:running->review",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "review",
+          "task_id": "2026-06-22-implement-backend-api-and-tui-surface",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpwi6jiibo/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-tui-surface.md",
+          "title": "Task - Implement backend API and TUI surface"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-tui-surface status=review"
+      },
+      "signal_id": "sig_20260622_105538_20e03cac",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105538_f88cce1b",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096938.502604,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:review->done",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "done",
+          "task_id": "2026-06-22-implement-backend-api-and-tui-surface",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpwi6jiibo/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-tui-surface.md",
+          "title": "Task - Implement backend API and TUI surface"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-tui-surface status=done"
+      },
+      "signal_id": "sig_20260622_105538_aafe6488",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105538_1b2bddc3",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096938.7001998,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp196f91d3/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_added: 2026-06-22-implement-backend-api-and-browser-ui status=pending"
+      },
+      "signal_id": "sig_20260622_105538_65ae4bd2",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105538_9da614d6",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096939.077538,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:claimed->running",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "running",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp196f91d3/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-browser-ui status=running"
+      },
+      "signal_id": "sig_20260622_105539_b5e0b4a3",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105539_06809fd3",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096939.266665,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_transition:running->review",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "review",
+          "task_id": "2026-06-22-implement-backend-api-and-browser-ui",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp196f91d3/brain/05-实践与项目/tasks/2026-06-22-implement-backend-api-and-browser-ui.md",
+          "title": "Task - Implement backend API and browser UI"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-implement-backend-api-and-browser-ui status=review"
+      },
+      "signal_id": "sig_20260622_105539_981ec3af",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105539_71c02ed2",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096939.631855,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-retry-生命周期",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp3w5n9j79/brain/05-实践与项目/tasks/2026-06-22-验证-retry-生命周期.md",
+          "title": "Task - 验证 retry 生命周期"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-retry-生命周期 status=pending"
+      },
+      "signal_id": "sig_20260622_105539_ccc87856",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105539_7dd6011e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096940.184593,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_transition:claimed->retry",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "retry",
+          "task_id": "2026-06-22-验证-retry-生命周期",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp3w5n9j79/brain/05-实践与项目/tasks/2026-06-22-验证-retry-生命周期.md",
+          "title": "Task - 验证 retry 生命周期"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-验证-retry-生命周期 status=retry"
+      },
+      "signal_id": "sig_20260622_105540_3e854eb9",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105540_adfa3f21",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096941.376904,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证生命周期失败关闭边界",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpn2w97fex/brain/05-实践与项目/tasks/2026-06-22-验证生命周期失败关闭边界.md",
+          "title": "Task - 验证生命周期失败关闭边界"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证生命周期失败关闭边界 status=pending"
+      },
+      "signal_id": "sig_20260622_105541_3e4f5d0f",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105541_23e34700",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096942.63984,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-claimed-by-缺失审计",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpn2w97fex/brain/05-实践与项目/tasks/2026-06-22-验证-claimed-by-缺失审计.md",
+          "title": "Task - 验证 claimed_by 缺失审计"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-claimed-by-缺失审计 status=pending"
+      },
+      "signal_id": "sig_20260622_105542_42f0a328",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105542_a28092e4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096943.208305,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-evidence-注入拒绝",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpn2w97fex/brain/05-实践与项目/tasks/2026-06-22-验证-evidence-注入拒绝.md",
+          "title": "Task - 验证 evidence 注入拒绝"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-evidence-注入拒绝 status=pending"
+      },
+      "signal_id": "sig_20260622_105543_42b497a4",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105543_5244b3b3",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096943.580907,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_transition:claimed->running",
+          "source": "taskpool",
+          "source_event": "task_transitioned",
+          "status": "running",
+          "task_id": "2026-06-22-验证-evidence-注入拒绝",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpn2w97fex/brain/05-实践与项目/tasks/2026-06-22-验证-evidence-注入拒绝.md",
+          "title": "Task - 验证 evidence 注入拒绝"
+        },
+        "summary": "taskpool task_transitioned: 2026-06-22-验证-evidence-注入拒绝 status=running"
+      },
+      "signal_id": "sig_20260622_105543_060ee218",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105543_93ef3803",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096944.15698,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "L3",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "hermes-evolution",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证自进化架构对齐门禁",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpk91gy88f/brain/05-实践与项目/tasks/2026-06-22-验证自进化架构对齐门禁.md",
+          "title": "Task - 验证自进化架构对齐门禁"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证自进化架构对齐门禁 status=pending"
+      },
+      "signal_id": "sig_20260622_105544_7a6221eb",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105544_a32a11aa",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096948.8378189,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pua-loop-自动触发介入与多模型任务池分解",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpq2omxkf2/brain/05-实践与项目/tasks/2026-06-22-pua-loop-自动触发介入与多模型任务池分解.md",
+          "title": "Task - pua-loop 自动触发介入与多模型任务池分解"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pua-loop-自动触发介入与多模型任务池分解 status=pending"
+      },
+      "signal_id": "sig_20260622_105548_1d15381e",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105548_253a681f",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096950.188936,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-manual-review-reopen-must-not-auto-close-from-selfcheck",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpcd12_prx/brain/05-实践与项目/tasks/2026-06-22-manual-review-reopen-must-not-auto-close-from-selfcheck.md",
+          "title": "Task - manual review reopen must not auto-close from selfcheck"
+        },
+        "summary": "taskpool task_added: 2026-06-22-manual-review-reopen-must-not-auto-close-from-selfcheck status=pending"
+      },
+      "signal_id": "sig_20260622_105550_25244a61",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105550_6a6272b9",
+      "status": "pending"
+    }
+  ],
+  "plan_ref": "",
+  "recent_events": [
+    {
+      "created_at": 1782718419.47941,
+      "event_id": "evt_20260629_153339_967d7ff8",
+      "event_type": "budget_exhausted",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "max_ticks": 72
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718419.4776902,
+      "event_id": "evt_20260629_153339_67c0178b",
+      "event_type": "mission_paused",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "paused"
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718375.858807,
+      "event_id": "evt_20260629_153255_a0b6e75d",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": false,
+        "runner": {
+          "status": "not_requested"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718375.827307,
+      "event_id": "evt_20260629_153255_40150d67",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153255_61d9ce9b",
+        "signal_type": "mission_resumed",
+        "source_event_id": "evt_20260629_153255_d48aae1f"
+      },
+      "summary": "event-driven signal enqueued for mission_resumed"
+    },
+    {
+      "created_at": 1782718375.8261151,
+      "event_id": "evt_20260629_153255_d48aae1f",
+      "event_type": "mission_resumed",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "active"
+      },
+      "summary": "manual resume"
+    },
+    {
+      "created_at": 1782718364.234976,
+      "event_id": "evt_20260629_153244_b57c12e9",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": true,
+        "runner": {
+          "executed_jobs": 1,
+          "status": "ran"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718344.167001,
+      "event_id": "evt_20260629_153224_3de3b0bd",
+      "event_type": "budget_exhausted",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "max_ticks": 72
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718344.166195,
+      "event_id": "evt_20260629_153224_0ca536b6",
+      "event_type": "mission_paused",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "paused"
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718341.75469,
+      "event_id": "evt_20260629_153221_557fa362",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": false,
+        "runner": {
+          "status": "not_requested"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718341.7188008,
+      "event_id": "evt_20260629_153221_98236d44",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153221_2f7c335e",
+        "signal_type": "decision_recorded",
+        "source_event_id": "evt_20260629_153221_7b5b3f90"
+      },
+      "summary": "event-driven signal enqueued for decision_recorded"
+    },
+    {
+      "created_at": 1782718341.717463,
+      "event_id": "evt_20260629_153221_7b5b3f90",
+      "event_type": "decision_recorded",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "decision_id": "dec_20260629_152838_87322630"
+      },
+      "summary": "A: User authorized continuing the self-advancement scenario. Renew/extend the existing mission tick budget for continued local-only self-architecture advancement under the same blocked-action boundaries. This does not authorize external message send, remote push/merge, production deploy, payment, credential/secret write, destructive delete, or broad fan-out."
+    },
+    {
+      "created_at": 1782718231.634945,
+      "event_id": "evt_20260629_153031_b17792d0",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153031_2099d011",
+        "signal_type": "taskpool_status_changed",
+        "source_event_id": "evt_20260629_153031_88603ba6"
+      },
+      "summary": "event-driven signal enqueued for taskpool_status_changed"
+    },
+    {
+      "created_at": 1782718231.633695,
+      "event_id": "evt_20260629_153031_88603ba6",
+      "event_type": "taskpool_status_changed",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "architecture_target": "taskpool",
+        "lane": "evolution",
+        "priority": "P2",
+        "project": "Hermes",
+        "reason": "command_transition:claimed->running",
+        "source": "taskpool",
+        "source_event": "task_transitioned",
+        "status": "running",
+        "task_id": "2026-06-28-为-2026-06-22-媒体源吸收loop-library-agent循环库与kodelyth-ecc能力复核入池-细化-framing-收敛前置任务",
+        "task_path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-28-为-2026-06-22-媒体源吸收loop-library-agent循环库与kodelyth-ecc能力复核入池-细化-framing-收敛前置任务.md",
+        "title": "Task - 为 2026-06-22-媒体源吸收loop-library-agent循环库与kodelyth-ecc能力复核入池 细化 framing 收敛前置任务"
+      },
+      "summary": "taskpool task_transitioned: 2026-06-28-为-2026-06-22-媒体源吸收loop-library-agent循环库与kodelyth-ecc能力复核入池-细化-framing-收敛前置任务 status=running"
+    },
+    {
+      "created_at": 1782718231.198991,
+      "event_id": "evt_20260629_153031_08d2f985",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153031_5969af54",
+        "signal_type": "taskpool_status_changed",
+        "source_event_id": "evt_20260629_153031_be86179c"
+      },
+      "summary": "event-driven signal enqueued for taskpool_status_changed"
+    },
+    {
+      "created_at": 1782718231.197509,
+      "event_id": "evt_20260629_153031_be86179c",
+      "event_type": "taskpool_status_changed",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "architecture_target": "taskpool",
+        "lane": "evolution",
+        "priority": "P2",
+        "project": "Hermes",
+        "reason": "command_transition:claimed->running",
+        "source": "taskpool",
+        "source_event": "task_transitioned",
+        "status": "running",
+        "task_id": "2026-06-28-为-2026-06-21-分析抖音程序员必备-harness-流水线对-hermes-evidence-harness-的启发-细化-framing-收敛前置任",
+        "task_path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-28-为-2026-06-21-分析抖音程序员必备-harness-流水线对-hermes-evidence-harness-的启发-细化-framing-收敛前置任.md",
+        "title": "Task - 为 2026-06-21-分析抖音程序员必备-harness-流水线对-hermes-evidence-harness-的启发 细化 framing 收敛前置任务"
+      },
+      "summary": "taskpool task_transitioned: 2026-06-28-为-2026-06-21-分析抖音程序员必备-harness-流水线对-hermes-evidence-harness-的启发-细化-framing-收敛前置任 status=running"
+    },
+    {
+      "created_at": 1782718230.756285,
+      "event_id": "evt_20260629_153030_77f3962e",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153030_7a4c9201",
+        "signal_type": "taskpool_status_changed",
+        "source_event_id": "evt_20260629_153030_af967dd6"
+      },
+      "summary": "event-driven signal enqueued for taskpool_status_changed"
+    },
+    {
+      "created_at": 1782718230.7547038,
+      "event_id": "evt_20260629_153030_af967dd6",
+      "event_type": "taskpool_status_changed",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "architecture_target": "taskpool",
+        "lane": "evolution",
+        "priority": "P1",
+        "project": "hermes-agent",
+        "reason": "command_transition:claimed->running",
+        "source": "taskpool",
+        "source_event": "task_transitioned",
+        "status": "running",
+        "task_id": "2026-06-28-为-2026-06-26-修复做梦系统重复审计无状态推进selector-cooldown-blocked-标记与智能路由-gate-细化-framing-收敛",
+        "task_path": "/Users/charles/Documents/brain/05-实践与项目/tasks/2026-06-28-为-2026-06-26-修复做梦系统重复审计无状态推进selector-cooldown-blocked-标记与智能路由-gate-细化-framing-收敛.md",
+        "title": "Task - 为 2026-06-26-修复做梦系统重复审计无状态推进selector-cooldown-blocked-标记与智能路由-gate 细化 framing 收敛前置任务"
+      },
+      "summary": "taskpool task_transitioned: 2026-06-28-为-2026-06-26-修复做梦系统重复审计无状态推进selector-cooldown-blocked-标记与智能路由-gate-细化-framing-收敛 status=running"
+    },
+    {
+      "created_at": 1782718192.3505769,
+      "event_id": "evt_20260629_152952_c2512a52",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": true,
+        "runner": {
+          "executed_jobs": 3,
+          "status": "ran"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718147.8163269,
+      "event_id": "evt_20260629_152907_10653cf3",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": true,
+        "runner": {
+          "executed_jobs": 2,
+          "status": "ran"
+        },
+        "signal_id": "sig_20260621_181047_cf40f244",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718118.7291899,
+      "event_id": "evt_20260629_152838_6d8161e5",
+      "event_type": "decision_requested",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "decision_id": "dec_20260629_152838_87322630",
+        "options": [
+          "A: Renew/extend the existing mission tick budget for continued local-only self-architecture advancement under the same blocked-action boundaries.",
+          "B: Pause the mission at the current max_ticks boundary and require manual reactivation for any future self-advancement.",
+          "C: Close this mission as complete-enough and start a new narrower mission later only when a specific control-plane gap is identified."
+        ],
+        "recommended_option": "A, if you want Hermes to keep autonomously improving the local mission/taskpool control plane; otherwise B is safest."
+      },
+      "summary": "This tick reconciled the triggered VoxCPM2 signal as already done, and mission status showed used_ticks_before=71 with max_ticks=72. How should Hermes proceed once the current tick budget is exhausted?"
+    }
+  ],
+  "stage": "intake",
+  "status": "paused",
+  "success_criteria": [
+    "形成可长期运行的 Mission 控制面闭环：objective ledger、dynamic cron tick、stage-report、human handoff、decision resume",
+    "每个阶段报告能从 mission ledger 追溯到证据与下一步"
+  ],
+  "updated_at": 1782718419.47941
+}

@@ -1,0 +1,62 @@
+{
+  "id": "uaec-h5",
+  "project": "uaec-h5",
+  "display_name": "Uaec H5",
+  "status": "work-project/legacy-task-container",
+  "project_type": "work-application/mobile-trading-h5",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/uaec-h5",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md",
+  "role": "Legacy UAEC H5 task/profile container. Distinct from actual React implementation project uaec-react-h5; do not use as the primary repo entity.",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [
+    {
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    },
+    {
+      "relation": "implementation_project",
+      "target": "uaec-react-h5",
+      "merge_policy": "reference_only_no_entity_merge"
+    }
+  ],
+  "current_components": {
+    "project_profile": "profiled",
+    "progress_ledger": "ledgered",
+    "work_project_exclusion": "active",
+    "autonomous_code_changes": "closed_until_user_switches"
+  },
+  "execution_policy": "work-project/excluded-unless-user-switches",
+  "red_lines": [
+    "do not autonomously modify work-project code unless user explicitly switches to this project"
+  ],
+  "updated_at": "2026-07-09T13:52:29+08:00",
+  "audit_semantics": {
+    "work_project_exemption": true,
+    "maturity_verdict": "excluded_work_project_metadata_only",
+    "next_audit_action": "audit metadata only unless user explicitly switches to UAEC",
+    "exemption_reason": "protected work project; portfolio may audit metadata only unless user explicitly switches context",
+    "exemption_review_after": "2026-08-07"
+  },
+  "portfolio_profile": true,
+  "primary_repo": null,
+  "reference_android_repo": "/Users/charles/Desktop/folder/work/uaec-android",
+  "current_branch": "main",
+  "reference_branch_android": "global",
+  "implementation_stack": {
+    "frontend": "React 18 + TypeScript + Vite 6 + MUI 7 + Zustand + React Router 7 + PWA",
+    "api_base": "development http://localhost:3000/api; production ${VITE_API_BASE_URL}/v1/rest/app/",
+    "android_reference_api_base": "https://{test.uaec.cc|app.uaec.net}/v1/rest/app/"
+  },
+  "code_navigation": {
+    "routes": "src/router/modules/*.route.tsx",
+    "tab_bar": "src/config/tabBar.ts + src/components/common/TabBar.tsx",
+    "api": "src/api/*Api.ts + src/api/apiClient.ts",
+    "services": "src/services/*Service.ts",
+    "auth_store": "src/store/authStore.ts",
+    "pages": "src/pages/*",
+    "android_url_constants": "app/src/main/java/com/uu/market/UrlContent.java",
+    "android_network": "app/src/main/java/com/uu/market/network/OkHttp.java"
+  },
+  "development_policy": "Legacy UAEC H5 15-task inventory may seed backlog/reference only. Actual React implementation progress belongs to uaec-react-h5 profile and SSOT."
+}

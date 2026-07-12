@@ -1,0 +1,38 @@
+{
+  "audit_semantics": {
+    "evidence_freshness_days": 7,
+    "known_negative_status": false,
+    "maturity_verdict": "validated_local_router_tests_and_multimodel_smoke",
+    "next_audit_action": "keep quota freshness; certification remains local evidence not production SLA"
+  },
+  "current_components": {
+    "deepseek_balance_probe": "ok",
+    "live_model_smoke": "4_models_pass",
+    "model_quota_tests": "pass",
+    "multi_model_smoke_tests": "pass",
+    "router_quota_tests": "pass"
+  },
+  "display_name": "Hermes Capability Model Router",
+  "id": "hermes-capability-model-router",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/capability-router-all-model-smoke-20260707T065900Z.jsonl",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/capability-router-router-tests-20260707T065900Z.log"
+  ],
+  "portfolio_profile": true,
+  "previous_status": "validated-local-slice",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md",
+  "project": "hermes-capability-model-router",
+  "project_type": "hermes-self-architecture",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [
+    {
+      "merge_policy": "portfolio_metadata_only",
+      "relation": "governed_by",
+      "target": "project-portfolio-os"
+    }
+  ],
+  "role": "capability-granular specialist model primary routing with risk-layer verification",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router",
+  "status": "validated",
+  "updated_at": "2026-07-07T15:10:00+08:00"
+}

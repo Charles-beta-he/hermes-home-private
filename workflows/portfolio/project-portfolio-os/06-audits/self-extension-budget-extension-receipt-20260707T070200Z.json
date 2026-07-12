@@ -1,0 +1,27 @@
+{
+  "after_allowed_actions": [
+    "create_or_modify_mission_budget_or_cadence: exact local mission id msn_20260610_120149_27c88cfc, max_ticks 72->96 only, rollback backup recorded, no cadence/external changes"
+  ],
+  "after_blocked_actions": [
+    "external_message_send",
+    "remote_push_or_merge",
+    "production_deploy",
+    "payment_or_purchase",
+    "secret_or_credential_write",
+    "destructive_delete",
+    "memory_skill_cron_config_write_without_explicit_scope"
+  ],
+  "after_budget": {
+    "max_ticks": 96,
+    "max_total_usd": null,
+    "max_turns_per_tick": 8
+  },
+  "after_status": "active",
+  "backup": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/missions-db-backup-before-budget-extension-20260707T070200Z.db",
+  "before_budget": {
+    "max_ticks": 72,
+    "max_total_usd": null,
+    "max_turns_per_tick": 8
+  },
+  "event_id": "evt_20260707_150200_2af7cd56"
+}

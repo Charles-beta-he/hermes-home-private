@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-07-09T11:28:09.363018+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot coin drawer trigger semantics locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/full-drawer-selection/favorite-mutation/PWA/production certified",
+  "slice": "spot-coin-drawer-trigger-semantics",
+  "targetCommit": "c543b12 fix: expose spot pair drawer trigger semantics",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_8c68ba7e",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_a41c4f0d"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "trading-pair title trigger is button type=button",
+    "aria-label/aria-haspopup/aria-expanded semantics verified by implementation and smoke",
+    "favorite button has type=button",
+    "drawer opens and exposes title/search",
+    "no order/password mutation, no credential/session read, no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no full drawer selection certification",
+    "no favorite mutation certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

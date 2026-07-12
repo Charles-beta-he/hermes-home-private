@@ -1,0 +1,41 @@
+{
+  "after_pending": 1722,
+  "apply": true,
+  "before_pending": 1922,
+  "event_id": "evt_20260707_155703_3e2eb927",
+  "max_signals": 200,
+  "older_than_seconds": 900,
+  "reason": "authorized safe self-selected bounded stale signal recovery batch 2; local-ledger only; no external dispatch/push/deploy/secret/destructive action",
+  "runner": {
+    "status": "not_requested",
+    "why": "recovery is local-ledger only and non-recursive"
+  },
+  "sample_signal_ids": [
+    "sig_20260625_192531_ae23023d",
+    "sig_20260625_192909_57bb4312",
+    "sig_20260625_192909_fb2ed09c",
+    "sig_20260625_192927_7457c200",
+    "sig_20260625_193240_ded568a1",
+    "sig_20260625_193814_865a45ef",
+    "sig_20260625_193944_3d98905e",
+    "sig_20260625_194057_8020dbc2",
+    "sig_20260625_194123_044182db",
+    "sig_20260625_194154_02091513",
+    "sig_20260625_194330_f1be540d",
+    "sig_20260625_194858_bdf10753",
+    "sig_20260625_194913_ecafb09c",
+    "sig_20260625_194936_f973e04b",
+    "sig_20260625_195047_e139ba7d",
+    "sig_20260625_195612_3055420e",
+    "sig_20260625_195857_144f7a75",
+    "sig_20260625_200831_825e5ba8",
+    "sig_20260625_201030_d5014620",
+    "sig_20260625_201528_0e2945e3"
+  ],
+  "selected_count": 200,
+  "signal_type_counts": {
+    "taskpool_status_changed": 200
+  },
+  "stale_pending": 1922,
+  "status": "recovered"
+}

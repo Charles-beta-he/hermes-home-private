@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-09T11:12:21.328850+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot bottom order tabs semantic button slice locally certified with independent verifier APPROVE; not push/device/auth/PWA/production certified",
+  "slice": "spot-bottom-tab-semantics",
+  "targetCommit": "2ec3dc8 fix: expose spot order tabs semantics",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_f5b70be2",
+    "verdict": "APPROVE",
+    "objectiveBlockers": []
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-bottom-tab-semantics/spot-bottom-tab-semantics-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-bottom-tab-semantics/spot-bottom-tab-semantics-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "委托/最近成交 tabs are button elements",
+    "aria-pressed state switches correctly",
+    "URL tab sync preserved for position and entrust",
+    "negative no credential/session read and no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated account certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

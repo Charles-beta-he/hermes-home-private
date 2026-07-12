@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-07-09T08:01:55.421150+00:00",
+  "project": "uaec-react-h5",
+  "surface": "PWA/mobile H5 app shell",
+  "matrix": [
+    {
+      "id": "manifest-icons",
+      "status": "pending",
+      "evidence_needed": [
+        "manifest readback",
+        "icon dimensions",
+        "maskable/apple-touch-icon refs"
+      ]
+    },
+    {
+      "id": "service-worker-update",
+      "status": "pending",
+      "evidence_needed": [
+        "build output",
+        "SW registration/cache behavior",
+        "stale asset rescue path"
+      ]
+    },
+    {
+      "id": "standalone-safe-area",
+      "status": "partial",
+      "evidence_needed": [
+        "iOS Safari/standalone or accepted simulator",
+        "Android Chrome/PWA",
+        "bottom/top safe-area geometry"
+      ]
+    },
+    {
+      "id": "keyboard-scroll-owner",
+      "status": "pending",
+      "evidence_needed": [
+        "representative form focus matrix",
+        "scroll owner readback",
+        "CTA/input reachability"
+      ]
+    },
+    {
+      "id": "back-resume-bfcache",
+      "status": "pending",
+      "evidence_needed": [
+        "browser back",
+        "external link return",
+        "route state preservation"
+      ]
+    },
+    {
+      "id": "api-blank-fallback",
+      "status": "partial",
+      "evidence_needed": [
+        "loading/error/empty/data states for market/trade/asset pages"
+      ]
+    }
+  ]
+}

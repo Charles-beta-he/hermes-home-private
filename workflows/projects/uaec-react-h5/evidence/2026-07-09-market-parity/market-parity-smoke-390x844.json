@@ -1,0 +1,204 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T08:31:16.928Z",
+  "url": "http://127.0.0.1:4173/market",
+  "before": {
+    "currentUrl": "http://127.0.0.1:4173/market?tab=0",
+    "title": "UAEC",
+    "textSample": "自选\n全部\n主板区\nRWA区\nUSDT\n24H量\n最新价\n日涨跌\nBTC\nUSDT\n2649.4\n63,037.57\n$63,037.57\n-0.52%\nETH\nUSDT\n5.07万\n1,758.05\n$1,758.05\n-0.75%\nTRX\nUSDT\n2.55亿\n0.33\n$0.33\n-0.09%\nSOL\nUSDT\n167.04万\n78.36\n$78.36\n-4.37%\nPENDLE\nUSDT\n1490.33万\n1.59\n$1.59\n+6.08%\nUSD1\nUSDT\n1.62亿\n1.00\n$1.00\n+0.03%\n添加自选\n首页\n行情\n交易\n合约\n资产\n首页\n行情\n交易\n合约\n资产",
+    "hasLoginPrompt": false,
+    "hasMarketHeaders": true,
+    "hasRows": true,
+    "activeTabText": "全部",
+    "volumeButton": {
+      "index": 5,
+      "text": "24H量",
+      "rect": {
+        "x": 16,
+        "y": 142.09375,
+        "width": 122.84375,
+        "height": 16.796875
+      }
+    },
+    "rects": [
+      {
+        "tag": "INPUT",
+        "text": "搜索币种/币对/合约",
+        "x": 48,
+        "y": 14,
+        "width": 318,
+        "height": 20
+      },
+      {
+        "tag": "BUTTON",
+        "text": "自选",
+        "x": 0,
+        "y": 44,
+        "width": 60,
+        "height": 36
+      },
+      {
+        "tag": "BUTTON",
+        "text": "全部",
+        "x": 60,
+        "y": 44,
+        "width": 60,
+        "height": 36
+      },
+      {
+        "tag": "BUTTON",
+        "text": "主板区",
+        "x": 120,
+        "y": 44,
+        "width": 74,
+        "height": 36
+      },
+      {
+        "tag": "BUTTON",
+        "text": "RWA区",
+        "x": 194,
+        "y": 44,
+        "width": 76.734375,
+        "height": 36
+      },
+      {
+        "tag": "BUTTON",
+        "text": "USDT",
+        "x": 16,
+        "y": 89,
+        "width": 62.125,
+        "height": 28
+      },
+      {
+        "tag": "BUTTON",
+        "text": "24H量",
+        "x": 16,
+        "y": 142.09375,
+        "width": 122.84375,
+        "height": 16.796875
+      },
+      {
+        "tag": "BUTTON",
+        "text": "最新价",
+        "x": 154.84375,
+        "y": 142,
+        "width": 123.15625,
+        "height": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "日涨跌",
+        "x": 294,
+        "y": 142,
+        "width": 80,
+        "height": 17
+      },
+      {
+        "tag": "BUTTON",
+        "text": "添加自选",
+        "x": 167,
+        "y": 816,
+        "width": 56,
+        "height": 20
+      },
+      {
+        "tag": "BUTTON",
+        "text": "首页",
+        "x": 0,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "行情",
+        "x": 78,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "交易",
+        "x": 156,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "合约",
+        "x": 234,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "资产",
+        "x": 312,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "首页",
+        "x": 0,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "行情",
+        "x": 78,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "交易",
+        "x": 156,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "合约",
+        "x": 234,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      },
+      {
+        "tag": "BUTTON",
+        "text": "资产",
+        "x": 312,
+        "y": 781,
+        "width": 78,
+        "height": 50
+      }
+    ],
+    "viewport": {
+      "width": 390,
+      "height": 844,
+      "visualHeight": 844
+    }
+  },
+  "sortCycleEvidence": {
+    "clickedVolumeSort": true,
+    "afterFirstTextSample": "自选\n全部\n主板区\nRWA区\nUSDT\n24H量\n最新价\n日涨跌\nTRX\nUSDT\n2.55亿\n0.33\n$0.33\n-0.09%\nUSD1\nUSDT\n1.62亿\n1.00\n$1.00\n+0.03%\nPENDLE\nUSDT\n1490.33万\n1.59\n$1.59\n+6.08%\nSOL\nUSDT\n167.04万\n78.36\n$78.36\n-4.37%\nETH\nUSDT\n5.07万\n1,758.05\n$1,758.05\n-0.75%\nBTC\nUSDT\n2649.4\n63,037.57\n$63,037.57\n-0.52%\n添加自选\n首页\n行情\n交易\n合约\n资产\n首页\n行情\n交易\n合约\n资产",
+    "afterThirdTextSample": "自选\n全部\n主板区\nRWA区\nUSDT\n24H量\n最新价\n日涨跌\nBTC\nUSDT\n2649.4\n63,037.57\n$63,037.57\n-0.52%\nETH\nUSDT\n5.07万\n1,758.05\n$1,758.05\n-0.75%\nTRX\nUSDT\n2.55亿\n0.33\n$0.33\n-0.09%\nSOL\nUSDT\n167.04万\n78.36\n$78.36\n-4.37%\nPENDLE\nUSDT\n1490.33万\n1.59\n$1.59\n+6.08%\nUSD1\nUSDT\n1.62亿\n1.00\n$1.00\n+0.03%\n添加自选\n首页\n行情\n交易\n合约\n资产\n首页\n行情\n交易\n合约\n资产"
+  },
+  "checks": {
+    "anonymousMarketRedirectedOffFavorites": true,
+    "noAnonymousLoginPromptOnMarketDefault": true,
+    "androidHeaderParity": true,
+    "marketRowsVisible": true,
+    "mobileViewport": true
+  },
+  "screenshotPath": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-parity/market-parity-390x844.png"
+}

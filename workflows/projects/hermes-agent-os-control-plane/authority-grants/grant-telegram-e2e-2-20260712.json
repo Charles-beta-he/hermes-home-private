@@ -1,0 +1,25 @@
+{
+  "schema": "hermes_procedure_authority_grant_v1",
+  "grant_id": "grant-telegram-e2e-2-20260712",
+  "status": "active",
+  "procedure_id": "delivery.telegram.send",
+  "system_id": "delivery:telegram",
+  "action": "execute_live_e2e_validation",
+  "scope": "delivery.telegram.send",
+  "receipt_id": "telegram-e2e-2-20260712",
+  "issued_by": "human_authority",
+  "authority_source": "direct_user_message:全部授权，lark.oauth.recovery走自动授权，整理工作区变更",
+  "target": "telegram:5524172309",
+  "payload": "[Hermes Agent OS E2E 2/2] certification delivery probe; no action required.",
+  "valid_from": "2026-07-12T04:16:49.320625Z",
+  "expires_at": "2026-07-12T06:16:49.320625Z",
+  "prohibitions": [
+    "credential_entry",
+    "secret_exposure",
+    "broad_fanout",
+    "push",
+    "deploy",
+    "delete",
+    "git_reset"
+  ]
+}

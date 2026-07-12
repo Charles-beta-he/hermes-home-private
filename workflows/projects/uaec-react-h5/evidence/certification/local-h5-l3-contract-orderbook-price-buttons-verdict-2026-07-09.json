@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:36:58.289325+00:00",
+  "sourceDelegation": "deleg_1891a1d2",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-orderbook-price-buttons",
+  "targetCommit": "a3ab73d",
+  "currentHead": "a3ab73d",
+  "currentGitStatus": "## dev...origin/dev [ahead 40]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract orderbook price button semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, local loop, and independent verifier approval support semantic sell/buy price buttons and preserved price-fill behavior. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-price-buttons/contract-orderbook-price-buttons-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-orderbook-price-buttons-loop-2026-07-09T14-30-05-507002+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 40]",
+      "head": "a3ab73d",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

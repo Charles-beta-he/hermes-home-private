@@ -1,0 +1,133 @@
+{
+  "blocked_boundaries": [
+    {
+      "category": "external dispatch",
+      "missing": [
+        "platform/channel/account exact target",
+        "exact payload",
+        "recipient/audience allowlist",
+        "send timing",
+        "receipt/readback command",
+        "rollback/retraction policy"
+      ]
+    },
+    {
+      "category": "deploy",
+      "missing": [
+        "application/service name",
+        "environment",
+        "deploy command/provider",
+        "artifact/ref",
+        "rollback command",
+        "health/readback URL or command"
+      ]
+    },
+    {
+      "category": "push",
+      "missing": [
+        "repo path/remote",
+        "branch",
+        "commit scope",
+        "whether force push is forbidden/allowed",
+        "post-push readback/CI gate"
+      ]
+    },
+    {
+      "category": "credential entry",
+      "missing": [
+        "human-provided secret entry step only; agent must not type/read/store secrets",
+        "target UI/CLI",
+        "verification after human entry"
+      ]
+    },
+    {
+      "category": "payment",
+      "missing": [
+        "amount",
+        "merchant/payee",
+        "payment method",
+        "human confirmation and human payment entry",
+        "receipt/readback"
+      ]
+    },
+    {
+      "category": "destructive action",
+      "missing": [
+        "exact resource(s)",
+        "backup/snapshot path",
+        "delete/mutate command",
+        "restore procedure",
+        "post-action readback"
+      ]
+    },
+    {
+      "category": "production runtime promotion",
+      "missing": [
+        "production target",
+        "release criteria",
+        "rollback/feature flag",
+        "observability/health check",
+        "post-promotion readback"
+      ]
+    },
+    {
+      "category": "Persona voice/default external-send",
+      "missing": [
+        "surface target",
+        "voice provider/config",
+        "external-send channel/recipient/payload",
+        "default-on policy",
+        "kill switch",
+        "negative side-effect tests",
+        "receipt/readback"
+      ]
+    },
+    {
+      "category": "A+ UI acceptance",
+      "missing": [
+        "rubric/source-of-truth spec or screenshots",
+        "acceptance threshold",
+        "target viewport/device matrix",
+        "audit method",
+        "independent review criteria"
+      ]
+    }
+  ],
+  "continuation_options": {
+    "minimal_next_exact_authority_template": {
+      "action": "exact command/payload/change",
+      "category": "one of the blocked categories above",
+      "limits": "what not to touch",
+      "readback": "exact verification command/URL/receipt",
+      "rollback": "exact rollback/escape hatch",
+      "target": "exact resource/platform/repo/env/channel"
+    },
+    "recommended_first_exact_slice": "A+ UI acceptance can be safest if user supplies rubric/spec/screenshots; next would be local UI implementation plus pnpm verify/uIMax/browser/Fable review. It still needs an A+ standard before acting."
+  },
+  "created_at": "2026-07-07T22:58:00+08:00",
+  "decision": "BROAD_AUTHORIZATION_RECORDED_BUT_NOT_EXECUTABLE",
+  "non_delegable_human_gates": [
+    "credential secrets must be entered by human, not agent",
+    "payments require human confirmation/entry",
+    "ambiguous destructive/production targets require exact target before execution"
+  ],
+  "reason": "The request names high-risk categories but does not provide exact target/resource, payload/action, rollback/escape hatch, post-action readback, or in credential/payment cases a human-entry boundary. Executing would require guessing targets and would violate exact-authority gates.",
+  "route_preflight": {
+    "policy_finding": "blocked: S7 requires AuthorityGrant before execution",
+    "risk_class": "critical",
+    "runtime_effect": "none; shadow route only",
+    "side_effect_expectation": "S7"
+  },
+  "safe_work_drained": [
+    {
+      "evidence": "hermes agent-os status ok; route classified critical S7 and blocked without AuthorityGrant",
+      "item": "preflight classification"
+    },
+    {
+      "evidence": "portfolio verify ok=true profile_count=17; semantic coverage=100%; strict verify ok; Fable v3 PASS in closeout manifest",
+      "item": "prior local safe-boundary closeout"
+    }
+  ],
+  "schema": "high_risk_authority_gate_v1",
+  "user_text": "授权推进：external dispatch, deploy, push, credential entry, payment, destructive action, production runtime promotion, Persona voice/default external-send, A+ UI acceptance; 继续"
+}

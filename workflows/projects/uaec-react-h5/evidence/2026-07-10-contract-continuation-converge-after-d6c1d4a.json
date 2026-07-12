@@ -1,0 +1,78 @@
+{
+  "date": "2026-07-10",
+  "head": "d6c1d4a",
+  "objective": "Find and drain Android-backed contract K-line parity slices that are anonymous, local, reversible, and require no credential, remote write, funds action, deployment, or product-value decision.",
+  "completedSafeSlice": {
+    "name": "contract-depth-view-persistence",
+    "commit": "d6c1d4a",
+    "level": "L2-local-loop-verified",
+    "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-depth-persistence/contract-depth-persistence.json"
+  },
+  "readOnlyCapabilityProbe": {
+    "candidate": "Android MINHOUR time-division/line mode",
+    "method": "Loaded the existing H5 contractService through a temporary local Vite source server and called the existing read-only contractMarketkline path for sol_usdt_sustainable. The temporary server was terminated and port 4184 was read back closed before implementation work.",
+    "control": {
+      "KlineType": "min",
+      "KlineStep": "step5",
+      "ok": true,
+      "rows": 300
+    },
+    "candidateValues": [
+      {"KlineType": "minhour", "ok": false, "error": "请求参数错误"},
+      {"KlineType": "minHour", "ok": false, "error": "请求参数错误"},
+      {"KlineType": "MINHOUR", "ok": false, "error": "请求参数错误"},
+      {"KlineType": "time", "ok": false, "error": "请求参数错误"}
+    ],
+    "decision": "blocked-no-implementation",
+    "reason": "Android objectively has MINHOUR and setMainDrawLine(true), but the current H5 market-data contract rejects every tested candidate while the control succeeds. Library drawing capability alone is insufficient authority to invent a fallback or reinterpret data."
+  },
+  "remainingGates": [
+    {
+      "candidate": "mark/index price K-line",
+      "gate": "The existing indexKline path returned successful responses with zero rows for tested BTC/SOL combinations; no authority to substitute ordinary K-line data or invent fallback semantics."
+    },
+    {
+      "candidate": "price warning",
+      "gate": "Android flow crosses login and warning-query/write boundaries; H5 has no complete matching route and no controlled authorized session."
+    },
+    {
+      "candidate": "favorite persistence",
+      "gate": "Requires authenticated collection status/mutation and an authorized controlled account."
+    },
+    {
+      "candidate": "real order/funds flow",
+      "gate": "Requires explicit transaction/funds authority and controlled environment."
+    },
+    {
+      "candidate": "depth-data completeness",
+      "gate": "Reload restoration is verified, but the anonymous 390x844 run showed the existing depth grid without plotted curves or rows; backend/runtime depth data evidence is missing. No product data fallback was invented."
+    },
+    {
+      "candidate": "Android visual/device certification",
+      "gate": "Requires simulator/real-device evidence and screenshot/scenario comparison."
+    },
+    {
+      "candidate": "push, CI, deploy, production",
+      "gate": "Requires exact remote target authorization and post-action readback."
+    }
+  ],
+  "converge": {
+    "safeLocalCandidateRemaining": false,
+    "fullAndroidParityClaimAllowed": false,
+    "uimaxClaimAllowed": false,
+    "currentProjectStatement": "Android 1:1 parity remains in progress; local safe contract K-line slices are drained to the current evidence and authority boundaries."
+  },
+  "runtimeCleanup": {
+    "4183": "closed",
+    "4184": "closed",
+    "9225": "closed",
+    "evidence": "Dedicated Vite preview and headless Chrome CDP processes were identified by command line, terminated after verification, and all three ports were read back closed."
+  },
+  "boundariesObserved": [
+    "No credential read or entry.",
+    "No authenticated mutation.",
+    "No order or funds action.",
+    "No push, deploy, external publish, or payment.",
+    "No fabricated market data or product fallback decision."
+  ]
+}

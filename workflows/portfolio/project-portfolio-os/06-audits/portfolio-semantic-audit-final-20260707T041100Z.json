@@ -1,0 +1,240 @@
+{
+  "schema": "portfolio_semantic_audit_v1",
+  "definition": "100% coverage means every declared project dimension has current local readback, verdict, known gaps, and next action. It does not mean every project is healthy or production-ready.",
+  "ok": true,
+  "checked_at": "2026-07-07T04:03:20.395767+00:00",
+  "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+  "profile_dir": "/Users/charles/.hermes/project-profiles",
+  "coverage_percent": 100.0,
+  "dimension_count": 16,
+  "covered_dimension_count": 16,
+  "counts": {
+    "error": 0,
+    "warning": 0,
+    "info": 0
+  },
+  "findings": [],
+  "dimensions": [
+    {
+      "id": "career-ops",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/career-ops.json",
+        "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach artifact/readback before any validated product claim"
+    },
+    {
+      "id": "hermes-agent-os-control-plane",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/capability_graph_projection.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/doctor_report.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/07-shadow/router-shadow-report.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/17-fable-audit-coverage-architecture-registry.json"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep native agent-os status/doctor/route readback green before any broader runtime claim"
+    },
+    {
+      "id": "hermes-capability-model-router",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-capability-model-router.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach router smoke/quota/readback evidence before restoring validated-local-slice"
+    },
+    {
+      "id": "hermes-control-console",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-control-console.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach control-console runtime/readback artifact before restoring validated-local-slice"
+    },
+    {
+      "id": "hermes-embodied-workflow-os",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-embodied-workflow-os.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "hermes-fitness-posture-coach",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-fitness-posture-coach.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "hermes-persona-wake-stage",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
+        "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "restore/read back cross-end contract files or keep status as claim-unverified-files-missing"
+    },
+    {
+      "id": "hermes-self-extension-os",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-self-extension-os.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach mission board/doctor/report evidence before restoring active validated status"
+    },
+    {
+      "id": "hermes-skill-learning",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes-skill-learning.json",
+        "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "hermes",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/hermes.json",
+        "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach current Hermes selfcheck/P10 evidence before any validated runtime claim"
+    },
+    {
+      "id": "lark",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/lark.json",
+        "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep evidence current"
+    },
+    {
+      "id": "mobile-offline-avatar-travel",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+        "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/non-convergence-narrowing/freeze-ssot-framing-review-closeout-receipt-20260625T2310.json"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep closure/proof packets current before promoting beyond validated local slices"
+    },
+    {
+      "id": "project-portfolio-os",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/project-portfolio-os.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_doctor.py",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_os_verify.py",
+        "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_semantic_audit.py"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "keep doctor and semantic audit green after registry/profile changes"
+    },
+    {
+      "id": "single-session-multitopic-trace",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/single-session-multitopic-trace.json",
+        "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "attach local read-only trace/query readback before validated claim"
+    },
+    {
+      "id": "uaec-h5",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/uaec-h5.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "audit metadata only unless user explicitly switches to UAEC"
+    },
+    {
+      "id": "uvisa-app-2.0",
+      "coverage_status": "covered_by_current_readback",
+      "verdict": "pass",
+      "evidence": [
+        "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json",
+        "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md"
+      ],
+      "known_gaps": [
+        "none"
+      ],
+      "next_action": "audit metadata only unless user explicitly switches to UVISA"
+    }
+  ]
+}

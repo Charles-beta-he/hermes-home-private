@@ -1,0 +1,50 @@
+{
+  "allowed_commands": [
+    "wake",
+    "mode",
+    "status",
+    "handoff-preview"
+  ],
+  "authority_model": {
+    "credential_entry_enabled": false,
+    "destructive_action_enabled": false,
+    "external_send_enabled": false,
+    "payment_enabled": false,
+    "production_deploy_enabled": false,
+    "voice_output_enabled": false
+  },
+  "blocked_commands": [
+    "send",
+    "speak",
+    "deploy",
+    "push",
+    "pay",
+    "secret",
+    "delete"
+  ],
+  "modes": [
+    {
+      "default": true,
+      "id": "control-room-c",
+      "label": "LOCCENT 控制室C",
+      "tone": "短促专业中文"
+    },
+    {
+      "id": "quiet-brief",
+      "label": "Quiet Brief",
+      "tone": "低噪摘要"
+    },
+    {
+      "id": "handoff-gate",
+      "label": "Handoff Gate",
+      "tone": "边界/证据优先"
+    }
+  ],
+  "schema": "persona_wake_runtime_demo_v1",
+  "status": "local_runtime_demo",
+  "surface": [
+    "cli",
+    "web-static"
+  ],
+  "updated_at": "2026-07-07T16:00:00+08:00"
+}

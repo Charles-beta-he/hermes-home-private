@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T06:19:21Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-period-options",
+  "result": "PASS",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "facts": [
+      "Android exposes MIN3, MIN30 and WEEK contract K-line periods.",
+      "Android persists/restores these period values in the same contract K-line flow."
+    ]
+  },
+  "apiCapabilityProbe": {
+    "method": "Read-only contractService.contractMarketkline via local Vite browser context",
+    "symbol": "sol_usdt_sustainable",
+    "klineStep": "step5",
+    "results": [
+      {"period": "min3", "ok": true, "arrayLength": 300},
+      {"period": "min30", "ok": true, "arrayLength": 300},
+      {"period": "week", "ok": true, "arrayLength": 300}
+    ],
+    "mutation": false
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "commit": "8331103 fix: expose contract kline period options",
+    "postCommitReadback": {
+      "workingTreeClean": true,
+      "gitShowCheckExitCode": 0
+    },
+    "file": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx"
+  },
+  "tdd": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-period-options/verify_contract_period_options.py",
+    "red": {
+      "status": "PASS",
+      "expectedExitCode": 1,
+      "observed": "3分, 30分 and 周线 controls were absent."
+    },
+    "green": {
+      "status": "PASS",
+      "exitCode": 0,
+      "periods": [
+        {"label": "3分", "present": true, "clicked": true, "ariaPressed": "true", "selected": true},
+        {"label": "30分", "present": true, "clicked": true, "ariaPressed": "true", "selected": true},
+        {"label": "周线", "present": true, "clicked": true, "ariaPressed": "true", "selected": true}
+      ]
+    }
+  },
+  "checks": {
+    "scopedEslint": {"status": "PASS", "exitCode": 0},
+    "productionBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "durationSeconds": 5.17,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "visualReadback": {
+      "status": "PASS",
+      "viewport": "390x844",
+      "horizontalPeriodRowReachable": true,
+      "weekVisiblySelected": true,
+      "obviousClippingOverlapOrChartHeaderRegression": false,
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-period-options/contract-week-period-390x844.png"
+    },
+    "negativeCases": {
+      "writeApiCalled": false,
+      "orderMutationRequest": false,
+      "credentialOrSessionRead": false,
+      "pushOrDeploy": false
+    }
+  },
+  "certificationBoundary": "L2 local runtime verified. Android device/simulator and long-lived WebSocket period-stream comparison remain outside this slice."
+}

@@ -1,0 +1,131 @@
+{
+  "schema": "portfolio_p0_semantic_truth_repair_manifest_v1",
+  "generated_at": "2026-07-07T04:03:03+00:00",
+  "status": "PASS_LIMITED_DECLARED_COVERAGE_AND_METADATA_TRUTHFULNESS",
+  "scope": "Portfolio P0 metadata/profile/registry/semantic-audit repair after Fable-style other-project audit",
+  "not_claiming": [
+    "production health",
+    "runtime availability of downgraded projects",
+    "freshness of every historical readback beyond declared file existence",
+    "work-project implementation validation"
+  ],
+  "changes": [
+    "filled current_components or work-project exemption for sparse profiles",
+    "downgraded unsubstantiated validated-like portfolio claims while preserving previous_status",
+    "kept persona wake known missing-file status explicit via audit_semantics",
+    "added semantic audit coverage model requiring readback/verdict/gaps/next_action per project dimension"
+  ],
+  "verification": {
+    "static": "P0_STATIC_PASS",
+    "doctor": "ok true, 0 errors, 0 warnings",
+    "strict_verify": "ok true",
+    "semantic_audit": "ok true, coverage_percent 100.0, 16/16 dimensions, 0 errors, 0 warnings, findings []",
+    "fable_final_review": "PASS limited to declared coverage + metadata truthfulness"
+  },
+  "boundaries": [
+    "no project code changes",
+    "no lifecycle execution",
+    "no external dispatch",
+    "no push/deploy",
+    "no destructive operations",
+    "no credential/payment entry",
+    "UVISA/UAEC remain excluded unless user switches"
+  ],
+  "remaining_next_gates": [
+    "project-specific runtime/readback evidence before restoring downgraded validated statuses",
+    "persona-wake-stage missing contract files require restore/readback",
+    "optional P1 freshness-window and exemption-expiry policy requires separate rule tuning"
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-semantic-audit-after-p0-20260707T040500Z.json",
+      "sha256": "a6f2fd513ab25c3b25070e9c2388607546413d55b38095a02e735fd71423c5fb",
+      "bytes": 9558
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-doctor-after-p0-20260707T040500Z.json",
+      "sha256": "abad05f5cc5d41c7046cfa9cd3ef58b6fd85cb1e4961157c2e09bfd9cbafbfd8",
+      "bytes": 442
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-strict-verify-after-p0-20260707T040500Z.json",
+      "sha256": "d1ebaf928af367ef71440c08c0adf0baa905d5ad96fe3909565de502021e2284",
+      "bytes": 674
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/fable-portfolio-p0-final-review-output-20260707T040700Z.md",
+      "sha256": "5eabee67d14ba0e0cd09536b91c291d33ead8b01eba25b2e666d2a956c041def",
+      "bytes": 2297
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/scripts/portfolio_semantic_audit.py",
+      "sha256": "fdcf306b40b4573efe7d7f16627244436dce3af6559ded6348198c326d463983",
+      "bytes": 7310
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+      "sha256": "81eeebd44bd748d81588f670fde0c5ad938ce0230680dc4a38a9e7874b547489",
+      "bytes": 36741
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/hermes.json",
+      "sha256": "5306d67f1043a2c6767c0cff79abbf5ee37ed2cc7064a84ef76205c05027705b",
+      "bytes": 6765
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/project-portfolio-os.json",
+      "sha256": "1933468c4da35b914eb6e04879a6c0671000149a5c27ff287a0544831be3f679",
+      "bytes": 1618
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json",
+      "sha256": "abb42cf5d3a7d098b319e259cf6a2da2f44ee03b17b244c6a9fc2e5087c3facc",
+      "bytes": 959370
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/uaec-h5.json",
+      "sha256": "352aa92d3941fe162f1278e4ba71735941f05a4bbfef1aa6941958d802fc287f",
+      "bytes": 1429
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/hermes-control-console.json",
+      "sha256": "0b860998a2f2914d9a884c3be668934d70c85ef45408bb986db9f49c782f3c18",
+      "bytes": 1395
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/hermes-capability-model-router.json",
+      "sha256": "cd049afac34fda33013944a5703306468fee85d8f8d3ecdf3bf5cf0c78b8341f",
+      "bytes": 1385
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/career-ops.json",
+      "sha256": "347e59e3074723e8e91279705a9c928821f577b183c58976b8095307e47f7be5",
+      "bytes": 1190
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/single-session-multitopic-trace.json",
+      "sha256": "758b8111b1a625f8c3d2a3c731e96c4073069494c646806d74bb7c93963bcb45",
+      "bytes": 3899
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/hermes-self-extension-os.json",
+      "sha256": "3a6956f2760ab592b873fe7192c80ad2be573a44e530d2da400d6d6635f6eb40",
+      "bytes": 1631
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/hermes-persona-wake-stage.json",
+      "sha256": "40e7c337f3a24a8bc4440a3b8269fe30bbd0e1b2b7a8df39d18babb33a6c173a",
+      "bytes": 1851
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/hermes-agent-os-control-plane.json",
+      "sha256": "8668ce0ff6307cc981f904fd255d22615c69dd90953e86251c66125fbdf062f1",
+      "bytes": 2827
+    },
+    {
+      "path": "/Users/charles/.hermes/project-profiles/mobile-offline-avatar-travel.json",
+      "sha256": "af9c0b8885a751b495466d40e1ab64e61c582a55e662dfa6ca54edde958b349d",
+      "bytes": 76061
+    }
+  ]
+}

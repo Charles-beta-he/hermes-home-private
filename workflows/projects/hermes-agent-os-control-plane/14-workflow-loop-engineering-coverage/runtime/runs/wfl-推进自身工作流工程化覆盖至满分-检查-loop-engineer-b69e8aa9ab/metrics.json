@@ -1,0 +1,8 @@
+{
+  "schema": "hermes_workflow_loop_metrics_v1",
+  "stage_total": 9,
+  "stage_passed_before_evaluation": 9,
+  "false_trigger": false,
+  "human_intervention": false,
+  "evidence_passed": true
+}

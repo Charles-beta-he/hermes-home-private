@@ -1,0 +1,133 @@
+{
+  "ok": true,
+  "checked_at": "2026-07-07T14:37:27.902310+08:00",
+  "home": "/Users/charles/.hermes",
+  "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+  "profile_count": 16,
+  "projects": [
+    {
+      "id": "career-ops",
+      "type": "personal-productivity-product",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes",
+      "type": "platform",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-agent-os-control-plane",
+      "type": "hermes-self-architecture",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-capability-model-router",
+      "type": "hermes-self-architecture",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-capability-model-router/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-control-console",
+      "type": "operator-console",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-control-console/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-embodied-workflow-os",
+      "type": "outer-tooling/embodied-workflow-platform",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-embodied-workflow-os/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-fitness-posture-coach",
+      "type": "self-use/visual-conversation-domain-pack",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-fitness-posture-coach/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-persona-wake-stage",
+      "type": "cross-end-ai-assistant-ux-system",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-self-extension-os",
+      "type": "agent-runtime-evolution",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "hermes-skill-learning",
+      "type": "knowledge-system",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-skill-learning/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "lark",
+      "type": "integration",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/lark/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "mobile-offline-avatar-travel",
+      "type": "mobile-platform/edge-runtime",
+      "progress_ledger": "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "project-portfolio-os",
+      "type": "portfolio-governance",
+      "progress_ledger": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "single-session-multitopic-trace",
+      "type": "hermes-self-architecture",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/single-session-multitopic-trace/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "uaec-h5",
+      "type": "work-application/mobile-trading-h5",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uaec-h5/progress-ledger.md",
+      "production_status": null
+    },
+    {
+      "id": "uvisa-app-2.0",
+      "type": "application",
+      "progress_ledger": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md",
+      "production_status": null
+    }
+  ],
+  "doctor": {
+    "ok": true,
+    "home": "/Users/charles/.hermes",
+    "profile_count": 16,
+    "counts": {
+      "error": 0,
+      "warning": 0,
+      "info": 0
+    },
+    "findings": []
+  },
+  "latest_report": {
+    "schema": "portfolio_doctor_v1",
+    "ok": true,
+    "checked_at": "2026-07-07T12:17:15.359278+08:00",
+    "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+    "profile_dir": "/Users/charles/.hermes/project-profiles",
+    "project_count": 16,
+    "profile_count": 16,
+    "registry_only": [],
+    "profile_only": [],
+    "counts": {
+      "error": 0,
+      "warning": 0
+    },
+    "findings": [],
+    "returncode": 0
+  }
+}

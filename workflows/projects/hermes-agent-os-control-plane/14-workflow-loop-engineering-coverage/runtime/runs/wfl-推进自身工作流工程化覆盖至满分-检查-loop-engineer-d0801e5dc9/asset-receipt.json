@@ -1,0 +1,16 @@
+{
+  "status": "ok",
+  "workdir": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/runtime/assets/wfa-推进自身工作流工程化覆盖至满分-检查-loop-engineer-16697d6499",
+  "files": [
+    "workflow.json",
+    "state.json",
+    "eval-cases.json",
+    "evidence.jsonl"
+  ],
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  }
+}

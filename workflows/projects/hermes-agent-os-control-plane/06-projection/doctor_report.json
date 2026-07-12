@@ -1,0 +1,28 @@
+{
+  "external_side_effects_executed": false,
+  "findings": [],
+  "generated_at": "2026-07-07T03:12:16+00:00",
+  "mode": "local_reversible_native_agent_os_projection_doctor",
+  "native_projection": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/capability_graph_projection.json",
+  "node_count": 299,
+  "ok": true,
+  "runtime_mutation": false,
+  "schema": "agent_os_projection_doctor_report_v1",
+  "source_doctor": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/09-doctor-report.json",
+  "source_doctor_summary": {
+    "backlog_count": 20,
+    "domain_entity_count": 11,
+    "external_side_effects_executed": false,
+    "generic_human_intervention_interface": false,
+    "mode": "read_only_personal_ai_os_packet_doctor",
+    "ok": true,
+    "runtime_mutation": false
+  },
+  "source_hashes": {
+    "09-doctor-report.json": "eae05f05e4ee2b40af67252d8fee1766f2d61fd6f4fe0c6067dd19420ac2cc61",
+    "10-capability-projection.json": "416dcb35d255303b9730656e1f79bf5038347929d931c1ba2a9906ae741c54b5"
+  },
+  "source_node_count": 299,
+  "source_projection": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/10-capability-projection.json",
+  "tool_invocation_from_agent_os": false
+}

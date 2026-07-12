@@ -1,0 +1,27 @@
+{
+  "ok": false,
+  "generatedAt": "2026-07-09T15:31:29.690Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/Login",
+    "tablist": false,
+    "tabs": [],
+    "hasTitle": false
+  },
+  "after": {
+    "tabs": [],
+    "hasTitle": false
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-position-tabs-semantics/contract-position-tabs-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutation": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true,
+    "noFundsMutation": true
+  },
+  "forbiddenRequests": []
+}

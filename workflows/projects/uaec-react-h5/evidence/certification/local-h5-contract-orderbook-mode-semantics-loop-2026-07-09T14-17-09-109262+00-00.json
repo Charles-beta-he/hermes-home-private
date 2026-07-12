@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:17:09.109262+00:00",
+  "target": "uaec-react-h5 contract orderbook mode semantics safe slice",
+  "certificationLevel": "L2-local-loop-verified",
+  "slice": "contract-orderbook-mode-semantics",
+  "commit": "f11bf45",
+  "gitStatus": "## dev...origin/dev [ahead 38]",
+  "workingTreeCleanAtGeneration": true,
+  "checks": [
+    {
+      "name": "scoped-eslint-contract-page-slice",
+      "ok": true,
+      "command": "npx eslint src/pages/ContractPage/ContractPage.tsx --rule '@typescript-eslint/no-unused-vars: off' --rule '@typescript-eslint/no-explicit-any: off'"
+    },
+    {
+      "name": "build",
+      "ok": true,
+      "command": "npm run build",
+      "acceptedWarnings": [
+        "large chunks",
+        "Browserslist old data",
+        "PWA precache output",
+        "known dynamic/static import chunk warning"
+      ]
+    },
+    {
+      "name": "mobile-cdp-smoke",
+      "ok": true,
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-mode-semantics/contract-orderbook-mode-semantics-390x844.json",
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-mode-semantics/contract-orderbook-mode-semantics-390x844.png"
+    },
+    {
+      "name": "clean-worktree",
+      "ok": true
+    }
+  ],
+  "blockers": [],
+  "boundedClaim": "Contract orderbook mode toggle is a semantic button with aria-label/aria-pressed and toggles from buy+sell to buy mode in local anonymous H5 preview. Not authenticated trading/device/PWA/production certification."
+}

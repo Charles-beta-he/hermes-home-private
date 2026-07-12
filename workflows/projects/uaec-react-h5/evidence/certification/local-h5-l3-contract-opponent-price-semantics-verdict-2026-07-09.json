@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T15:11:02.198317+00:00",
+  "sourceDelegation": "deleg_5a6a8dae",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-opponent-price-semantics",
+  "targetCommit": "20da6aa",
+  "currentHead": "b45132d",
+  "currentGitStatus": "## dev...origin/dev [ahead 46]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract opponent price toggle semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and independent verifier approval support button type/aria-pressed toggle behavior. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-opponent-price-semantics/contract-opponent-price-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-opponent-price-semantics-loop-2026-07-09T15-05-20-567758+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 46]",
+      "head": "b45132d",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

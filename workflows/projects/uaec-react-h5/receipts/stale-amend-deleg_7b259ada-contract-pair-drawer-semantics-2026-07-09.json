@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-07-09T14:06:13.606125+00:00",
+  "sourceDelegation": "deleg_7b259ada",
+  "slice": "contract-pair-drawer-semantics",
+  "targetCommit": "03fb7fc",
+  "verifierVerdict": "AMEND",
+  "verifierObjectiveBlocker": "working tree dirty during verifier run because later safe-slice work was in progress in same file",
+  "currentReadback": {
+    "gitStatus": "## dev...origin/dev [ahead 35]",
+    "head": "cd711f6",
+    "targetContainedInHead": true
+  },
+  "classification": "stale-environment-amend-not-product-blocker",
+  "action": "fresh verifier redispatch required; do not upgrade to L3 from stale AMEND",
+  "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-pair-drawer-semantics/contract-pair-drawer-semantics-390x844.json",
+  "latestLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+  "okToContinueLocalSlices": true,
+  "hardStopGatesRemainClosed": [
+    "push",
+    "deploy",
+    "device",
+    "authenticated trading",
+    "PWA",
+    "production",
+    "real order/funds mutation"
+  ]
+}

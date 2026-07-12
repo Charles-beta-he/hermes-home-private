@@ -1,0 +1,17 @@
+{
+  "schema": "portfolio_doctor_v1",
+  "ok": true,
+  "checked_at": "2026-07-08T00:17:51.598129+08:00",
+  "registry": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json",
+  "profile_dir": "/Users/charles/.hermes/project-profiles",
+  "project_count": 17,
+  "profile_count": 17,
+  "registry_only": [],
+  "profile_only": [],
+  "counts": {
+    "error": 0,
+    "warning": 0
+  },
+  "findings": [],
+  "returncode": 0
+}

@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-07-09T09:14:30.200559+00:00",
+  "project": "uaec-react-h5",
+  "enabled": true,
+  "scope": [
+    "local H5 code edits",
+    "Hermes SSOT evidence/profile/ledger writes",
+    "mobile viewport smoke/screenshot",
+    "scoped lint/build",
+    "local git commit",
+    "independent verifier dispatch"
+  ],
+  "hardStopGates": [
+    "push",
+    "deploy",
+    "production/test-domain mutation",
+    "credential/password/token/session extraction or entry",
+    "real order/payment/funds mutation",
+    "destructive history rewrite/delete",
+    "external fanout",
+    "device/auth/PWA certification claim without evidence"
+  ],
+  "ok": true
+}

@@ -1,0 +1,88 @@
+{
+  "selectedLabel": "↻调度 1/71调度 · 就绪",
+  "selectedDataset": {
+    "nodeId": "cron-0",
+    "nodeKind": "cron",
+    "boundAnchor": "graph-anchor"
+  },
+  "routeCount": 0,
+  "selectedRouteCount": 0,
+  "mutedRouteCount": 0,
+  "relatedLabelCount": 0,
+  "panelText": "↻调度 1/71调度 · 就绪 · 跟随节点跟随×节点 IDcron-0类型调度状态就绪流转状态调度/健康可用健康度94/100权重/热度94%图表绑定node.id → cron-0 · 同源坐标锚点映射路径事件优先 → 调度兜底 → 运行记录下一步查看调度健康，优先判断是否可事件触发替代Observe / 观察健康可观测状态正常且存在可追溯运行信号。0 条证据引用 · 无需介入继续观察；需要判",
+  "labels": [
+    {
+      "text": "↻调度 1/71调度 · 就绪",
+      "cls": "node-label node-label--cron node-label--good is-selected   is-current-flow is-focus",
+      "data": {
+        "nodeId": "cron-0",
+        "nodeKind": "cron",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "↻调度 2/71调度 · 就绪",
+      "cls": "node-label node-label--cron node-label--good     is-focus",
+      "data": {
+        "nodeId": "cron-1",
+        "nodeKind": "cron",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "↻调度 3/71调度 · 就绪",
+      "cls": "node-label node-label--cron node-label--good     is-focus",
+      "data": {
+        "nodeId": "cron-2",
+        "nodeKind": "cron",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "↻调度 4/71调度 · 就绪",
+      "cls": "node-label node-label--cron node-label--good     is-focus",
+      "data": {
+        "nodeId": "cron-3",
+        "nodeKind": "cron",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "↻调度 5/71调度 · 就绪",
+      "cls": "node-label node-label--cron node-label--good     is-focus",
+      "data": {
+        "nodeId": "cron-4",
+        "nodeKind": "cron",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "AIClaude模型 · 就绪",
+      "cls": "node-label node-label--model node-label--good     is-focus",
+      "data": {
+        "nodeId": "model-Claude",
+        "nodeKind": "model",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "AICodex模型 · 空闲",
+      "cls": "node-label node-label--model node-label--good     is-focus",
+      "data": {
+        "nodeId": "model-Codex",
+        "nodeKind": "model",
+        "boundAnchor": "graph-anchor"
+      }
+    },
+    {
+      "text": "AIDeepSeek模型 · 待命",
+      "cls": "node-label node-label--model node-label--good     is-focus",
+      "data": {
+        "nodeId": "model-DeepSeek",
+        "nodeKind": "model",
+        "boundAnchor": "graph-anchor"
+      }
+    }
+  ],
+  "routes": []
+}

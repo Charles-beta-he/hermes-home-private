@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-07-09T11:27:22.067386+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot orderbook mode semantic toggle locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/auth/PWA/production certified",
+  "slice": "spot-orderbook-mode-semantics",
+  "targetCommit": "52aa5e4 fix: use semantic orderbook mode toggle",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_30b070ac",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_79ff609c"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-mode-semantics/spot-orderbook-mode-semantics-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-mode-semantics/spot-orderbook-mode-semantics-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "orderbook mode toggle is button type=button",
+    "aria-label/title cycle default->buy->sell->default verified",
+    "toggle only changes orderBookMode in target hunk",
+    "no order/entrust/password API, no credential/session read, no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated account certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

@@ -1,0 +1,75 @@
+{
+  "slice": "contract-kline-period-persistence",
+  "date": "2026-07-10",
+  "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+  "verifier": {
+    "delegation": "deleg_b93b8986",
+    "verdict": "APPROVE",
+    "readback_at": "2026-07-10T17:12:22+08:00",
+    "evidence": [
+      "Android default MIN15 and usdttimezone restore/write paths matched",
+      "H5 restores supported non-depth values and preserves the last real period across depth view",
+      "runtime default, min3 reload, and depth reload behavior passed",
+      "production build and git show --check passed",
+      "four target-file ESLint errors were independently blamed to historical commit ea298581"
+    ],
+    "boundary": "Independent local source/runtime review only; no Android device, remote CI, production, authenticated mutation, push, or deploy certification."
+  },
+  "commit": "99e3c41",
+  "objective": "Restore the last supported contract K-line period across reloads, matching Android usdttimezone behavior without persisting depth view as a period.",
+  "android_evidence": [
+    {
+      "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+      "lines": "635-706, 970-1041",
+      "fact": "Android reads SPUtil usdttimezone and restores the matching checked K-line period."
+    },
+    {
+      "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+      "lines": "2066-2156",
+      "fact": "Android writes usdttimezone for period selections and handles USDT_Depth separately."
+    }
+  ],
+  "h5_change": {
+    "file": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+    "storage_key": "uaec.contract.kline.period",
+    "default": "min15",
+    "rules": [
+      "Restore only values present in KLINE_PERIODS and exclude depth.",
+      "Fall back to min15 when storage is missing, inaccessible, or invalid.",
+      "Persist a selected real period.",
+      "Do not overwrite the last real period when depth is selected."
+    ]
+  },
+  "red": {
+    "exit": 1,
+    "selected_before_reload": "30分",
+    "stored": null,
+    "selected_after_reload": "15分"
+  },
+  "green": {
+    "exit": 0,
+    "default_without_storage": "15分",
+    "selected_before_reload": "30分",
+    "stored": "min30",
+    "selected_after_reload": "30分",
+    "invalid_value_fallback": "15分",
+    "depth_kept_stored_period": "min30"
+  },
+  "verification": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-period-persistence/verify_contract_period_persistence.py",
+    "scoped_eslint_exit": 0,
+    "production_build_exit": 0,
+    "visual_change": false
+  },
+  "boundaries": [
+    "No backend API or WebSocket contract changed.",
+    "No credential, login, remote write, order, or funds action was used.",
+    "Local storage failures are caught and retain min15 behavior."
+  ],
+  "certification": {
+    "level": "L3-local-certified-packet",
+    "ok": true,
+    "blockers": 0,
+    "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T06-58-24-456Z.json"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:15:59.162Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "tab": "entrust",
+    "entrustTag": "button",
+    "recentTag": "button",
+    "entrustPressed": "true",
+    "recentPressed": "false",
+    "hasEntrustText": true,
+    "hasRecentText": true
+  },
+  "afterRecent": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]&tab=position",
+    "tab": "position",
+    "entrustTag": "button",
+    "recentTag": "button",
+    "entrustPressed": "false",
+    "recentPressed": "true",
+    "hasEntrustText": true,
+    "hasRecentText": true
+  },
+  "afterEntrust": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]&tab=entrust",
+    "tab": "entrust",
+    "entrustTag": "button",
+    "recentTag": "button",
+    "entrustPressed": "true",
+    "recentPressed": "false",
+    "hasEntrustText": true,
+    "hasRecentText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-bottom-tab-semantics/spot-bottom-tab-semantics-390x844.png",
+  "negative": {
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  }
+}

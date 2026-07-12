@@ -1,0 +1,57 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:53:33.470Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tablistLabel": "合约底部信息切换",
+    "tabs": [
+      {
+        "label": "合约委托列表，0条",
+        "type": "button",
+        "selected": "true",
+        "text": "委托(0)",
+        "visible": true
+      },
+      {
+        "label": "合约仓位列表，0条",
+        "type": "button",
+        "selected": "false",
+        "text": "仓位(0)",
+        "visible": true
+      }
+    ],
+    "recordType": "button",
+    "recordLabel": "查看委托记录",
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract?tab=position",
+    "tabs": [
+      {
+        "label": "合约委托列表，0条",
+        "selected": "false",
+        "text": "委托(0)"
+      },
+      {
+        "label": "合约仓位列表，0条",
+        "selected": "true",
+        "text": "仓位(0)"
+      }
+    ],
+    "recordType": "button",
+    "recordLabel": "查看仓位记录",
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-bottom-tabs-semantics/contract-bottom-tabs-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterTabChange": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

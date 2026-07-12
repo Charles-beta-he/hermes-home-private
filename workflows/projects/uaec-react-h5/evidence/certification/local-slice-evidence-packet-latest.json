@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-09T11:02:03.573005+00:00",
+  "repo": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+  "gitStatus": "## dev...origin/dev [ahead 32]",
+  "latestHead": "16849b3",
+  "pendingCommit": false,
+  "slices": [
+    {
+      "id": "spot-percentage-slider-a11y",
+      "level": "L2-local-loop-verified-pending-verifier",
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.json"
+    },
+    {
+      "id": "spot-order-type-select-a11y-regression",
+      "level": "L2-local-loop-verified-pending-verifier",
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-order-type-select-a11y/spot-order-type-select-a11y-390x844.json"
+    }
+  ],
+  "commands": [
+    "npx eslint src/pages/TradingPage/TradingPage.tsx src/api/spotApi.ts",
+    "npm run build",
+    "node /tmp/uaec-spot-percentage-slider-a11y-smoke.mjs --spot-percentage-slider-a11y-v3",
+    "node /tmp/uaec-spot-order-type-select-a11y-smoke.mjs --regression-after-slider-a11y-v3"
+  ],
+  "boundaries": [
+    "no push",
+    "no deploy",
+    "no credentials/session/token read",
+    "no real order",
+    "native slider/touch behavior not claimed",
+    "device/PWA not claimed"
+  ],
+  "ok": true,
+  "latestCommit": "16849b3 fix: label spot percentage slider"
+}

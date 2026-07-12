@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T09:58:15.741Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=buy&buyselltype=BUY&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "hasTitle": true,
+    "ctaExists": true,
+    "ctaTag": "button",
+    "ctaType": "button",
+    "ctaAriaLabel": "去登录",
+    "ctaText": "去登录",
+    "rect": {
+      "x": 16,
+      "y": 387.5,
+      "width": 182,
+      "height": 36
+    }
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/login",
+    "pathname": "/login"
+  },
+  "negative": {
+    "noOrderApiBeforeLogin": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true,
+    "anonymousClickRedirectsToLogin": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-cta-login-boundary/spot-cta-login-boundary-390x844.png"
+}

@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-07-09T11:14:13.638139+00:00",
+  "sourceDelegation": "deleg_a41c4f0d",
+  "slice": "spot-coin-drawer-trigger-semantics",
+  "verifierVerdict": "AMEND",
+  "verifierObjectiveBlocker": "working tree was dirty during stale verifier run",
+  "currentReadback": {
+    "gitStatus": "## dev...origin/dev [ahead 32]",
+    "head": "16849b3"
+  },
+  "currentHeadContainsTarget": true,
+  "classification": "stale-environment-amend-not-product-blocker",
+  "action": "fresh verifier redispatch required; do not upgrade to L3 from this AMEND",
+  "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.json",
+  "okToContinueLocalSlices": true
+}

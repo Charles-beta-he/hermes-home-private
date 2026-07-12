@@ -1,0 +1,62 @@
+{
+  "slice": "contract-kline-technical-indicator-selector",
+  "date": "2026-07-10",
+  "status": "PASS",
+  "commit": "4c33332",
+  "objective": "Align the H5 contract K-line technical-indicator choices with the Android contract K-line behavior without changing market-data APIs.",
+  "android_reference": {
+    "file": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "source_facts": [
+      "Main-chart choices are MA, BOLL, and off.",
+      "Sub-chart choices are MACD, KDJ, RSI, WR, and off."
+    ]
+  },
+  "implementation": {
+    "default_main_indicator": "MA",
+    "default_sub_indicator": "MACD",
+    "fixed_volume_pane": true,
+    "main_choices": ["MA", "BOLL", "NONE"],
+    "sub_choices": ["MACD", "KDJ", "RSI", "WR", "NONE"],
+    "market_data_contract_changed": false
+  },
+  "tdd": {
+    "red": {
+      "result": {"found": false},
+      "exit_code": 1
+    },
+    "green": {
+      "exit_code": 0,
+      "all_choices_selected": true,
+      "restored_main_indicator": "BOLL",
+      "restored_sub_indicator": "KDJ",
+      "unexpected_runtime_exceptions": []
+    },
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-indicator-selector/verify_contract_indicator_selector.py"
+  },
+  "verification": {
+    "scoped_eslint_exit_code": 0,
+    "production_build_exit_code": 0,
+    "production_build_modules_transformed": 12670,
+    "portrait_visual": {
+      "viewport": "390x844",
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-indicator-selector/contract-indicator-selector-390x844.png",
+      "result": "Selector readable; every control visible; BOLL and KDJ selected; no blocking clipping or overlap."
+    },
+    "landscape_visual": {
+      "viewport": "844x390",
+      "path": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-indicator-selector/contract-indicator-selector-844x390.png",
+      "result": "Selector readable; every control visible above the fixed trade CTA; BOLL and KDJ selected; no blocking clipping."
+    }
+  },
+  "negative_evidence": [
+    "No credentials were entered or read.",
+    "No favorite, alert, order, funds, push, deploy, or other remote-write action was performed.",
+    "The existing K-line request path and symbol/period contract were not changed."
+  ],
+  "certification": {
+    "level": "L2-local-loop-verified",
+    "ok": true,
+    "blockers": 0,
+    "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T06-44-07-169Z.json"
+  }
+}

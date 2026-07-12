@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T06:07:39Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-default-period",
+  "result": "PASS",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "fact": "The Android contract K-line timezone field initializes to MIN15."
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "commit": "e6ad658 fix: align contract kline default period",
+    "postCommitReadback": {
+      "workingTreeClean": true,
+      "gitShowCheckExitCode": 0
+    },
+    "file": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx"
+  },
+  "tdd": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-default-period/verify_contract_default_period.py",
+    "red": {
+      "status": "PASS",
+      "expectedExitCode": 1,
+      "observed": "1分 had the selected class and period controls had no aria-pressed state."
+    },
+    "green": {
+      "status": "PASS",
+      "exitCode": 0,
+      "oneMinuteAriaPressed": "false",
+      "fifteenMinuteAriaPressed": "true",
+      "oneMinuteSelectedClass": false,
+      "fifteenMinuteSelectedClass": true
+    }
+  },
+  "checks": {
+    "scopedEslint": {
+      "status": "PASS",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "durationSeconds": 5.48,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "visualReadback": {
+      "status": "PASS",
+      "viewport": "390x844",
+      "fifteenMinuteVisiblySelected": true,
+      "periodControlsHeaderAndChartLegible": true,
+      "obviousClippingOrOverlapFromChange": false,
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-default-period/contract-default-15m-390x844.png"
+    },
+    "negativeCases": {
+      "routeIdentityChanged": false,
+      "collectionMutationRequest": false,
+      "orderMutationRequest": false,
+      "credentialOrSessionRead": false,
+      "pushOrDeploy": false
+    }
+  },
+  "certificationBoundary": "L2 local runtime verified. Android device/simulator pixel comparison and remote/auth/order gates remain outside this slice."
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T05:32:30Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-to-trade-route-parity",
+  "result": "PASS",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "commit": "a50bd396",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "behavior": "navigateToTradePage syncs tradeName, tradeId, symbol and BUY/SELL intent before switching to contract trade"
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "files": [
+      "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+      "src/pages/ContractPage/ContractPage.tsx"
+    ]
+  },
+  "checks": {
+    "scopedEslint": {
+      "status": "PASS",
+      "command": "npx eslint src/pages/ContractPage/ContractInterface/ContractInterface.tsx src/pages/ContractPage/ContractPage.tsx --rule '@typescript-eslint/no-explicit-any: off' --rule 'react-hooks/set-state-in-effect: off' --rule 'react-hooks/exhaustive-deps: off'",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "status": "PASS",
+      "command": "npm run build",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "runtimeBuy": {
+      "status": "PASS",
+      "clicked": "开多",
+      "url": "/contract?side=buy&buyselltype=BUY&symbol=sol_usdt_sustainable&tradeName=SOLUSDT+%E6%B0%B8%E7%BB%AD&tradeId=1035922175497863168",
+      "selectedPair": "SOLUSDT 永续"
+    },
+    "runtimeSell": {
+      "status": "PASS",
+      "clicked": "开空",
+      "url": "/contract?side=sell&buyselltype=SELL&symbol=sol_usdt_sustainable&tradeName=SOLUSDT+%E6%B0%B8%E7%BB%AD&tradeId=1035922175497863168",
+      "selectedPair": "SOLUSDT 永续"
+    },
+    "negativeCases": {
+      "unknownSymbolFallsBackToExistingDefault": "PASS",
+      "noOrderSubmitted": true,
+      "noCredentialOrSessionRead": true,
+      "noPushOrDeploy": true
+    }
+  },
+  "independentReview": {
+    "batch": "deleg_0dc580cb",
+    "verdict": "AMEND",
+    "finding": "a8e5d2c preserved pair identity and transported BUY/SELL in the URL but did not consume the intent on the destination trade page.",
+    "remediation": {
+      "commit": "405b15b fix: consume contract trade entry intent",
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-trade-entry-intent/contract-trade-entry-intent.json",
+      "status": "L2-local-loop-verified-pending-independent-remediation-review"
+    }
+  },
+  "certificationBoundary": "The original a8e5d2c evidence is limited to route identity and intent transport and received AMEND. Commit 405b15b locally verifies destination intent consumption; its independent remediation review remains pending."
+}

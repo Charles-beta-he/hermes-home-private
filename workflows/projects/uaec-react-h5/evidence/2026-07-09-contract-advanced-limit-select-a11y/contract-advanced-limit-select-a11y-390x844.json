@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:07:56.585Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "orderTypeText": "高级限价委托",
+    "comboTag": "div",
+    "comboRole": "combobox",
+    "comboAria": "高级限价委托类型",
+    "visible": true,
+    "text": "立即成交并取消剩余",
+    "hasContractText": true
+  },
+  "listState": {
+    "options": [
+      "立即成交并取消剩余",
+      "全部成交或立即取消",
+      "只做Maker(Post only)"
+    ],
+    "expanded": "true"
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "comboAria": "高级限价委托类型",
+    "text": "全部成交或立即取消",
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-advanced-limit-select-a11y/contract-advanced-limit-select-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSelect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

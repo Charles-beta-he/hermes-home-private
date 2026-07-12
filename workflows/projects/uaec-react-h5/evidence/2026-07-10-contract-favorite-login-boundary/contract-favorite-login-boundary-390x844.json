@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T05:39:53Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-favorite-login-boundary",
+  "result": "PASS",
+  "commit": "fcfbe39",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "commit": "a50bd396",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "behavior": "onContainerCollectClick toggles collection only when authenticated; anonymous users enter LoginActivity and the checkbox remains unchecked"
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "file": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx"
+  },
+  "checks": {
+    "scopedEslint": {
+      "status": "PASS",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "anonymousRuntime": {
+      "status": "PASS",
+      "initialUrl": "/contract/contract-interface?tradeName=SOLUSDT%20%E6%B0%B8%E7%BB%AD&symbol=sol_usdt_sustainable&tradeId=1035922175497863168",
+      "buttonAriaLabel": "收藏合约",
+      "ariaPressed": "false",
+      "clickResult": "clicked",
+      "finalUrl": "/login",
+      "loginVisible": true,
+      "collectionOrStatusRequests": [],
+      "observedRequestCount": 17
+    },
+    "visualReadback": {
+      "status": "PASS",
+      "viewport": "390x844",
+      "favoriteStarVisible": true,
+      "title": "SOLUSDT 永续",
+      "titleLegibleAndNonOverlapping": true,
+      "obviousHeaderRegression": false,
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-favorite-login-boundary/contract-favorite-390x844.png"
+    },
+    "negativeCases": {
+      "anonymousCollectionMutationRequest": false,
+      "realOrderSubmitted": false,
+      "credentialOrSessionRead": false,
+      "pushOrDeploy": false
+    }
+  },
+  "independentReview": {
+    "batch": "deleg_0dc580cb",
+    "verdict": "APPROVE",
+    "facts": [
+      "Anonymous users remain unchecked and navigate to login.",
+      "No collection status or mutation request occurs on the verified anonymous path.",
+      "Authenticated mutation remains outside the verified evidence boundary."
+    ]
+  },
+  "certificationBoundary": "Anonymous path is L2 local runtime verified with an independent APPROVE review. Authenticated collection mutation remains unverified until a valid user session is explicitly available.",
+  "postCommitReadback": {
+    "workingTreeClean": true,
+    "showCheckExitCode": 0
+  },
+  "followUp": {
+    "commit": "88b56b3 fix: isolate contract favorite state by symbol",
+    "reason": "A later independent review found that request callbacks could update the favorite state after the active symbol changed.",
+    "status": "L2_LOCAL_PASS_PENDING_REPLACEMENT_VERIFIER",
+    "verification": "request-time symbol capture, symbol-change reset, guarded status and mutation callbacks all PASS",
+    "packet": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-amend-followups/contract-amend-followups.json"
+  }
+}

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hermes Persona Wake — Local Demo</title>
+  <style>
+    :root { color-scheme: dark; --bg:#071014; --panel:#101b22; --fg:#e6f7ff; --muted:#8fb1bf; --accent:#43d9ff; --ok:#7dffb2; --warn:#ffd36e; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: radial-gradient(circle at 20% 0%, #123342, var(--bg) 45%); color:var(--fg); display:grid; place-items:center; padding:24px; }
+    main { width:min(920px,100%); border:1px solid rgba(67,217,255,.26); border-radius:28px; padding:28px; background:linear-gradient(180deg, rgba(16,27,34,.94), rgba(6,15,20,.96)); box-shadow:0 24px 80px rgba(0,0,0,.45); }
+    .eyebrow { color:var(--accent); letter-spacing:.18em; font-size:12px; text-transform:uppercase; }
+    h1 { font-size:clamp(32px,7vw,72px); line-height:.95; margin:14px 0; }
+    p { color:var(--muted); font-size:18px; line-height:1.65; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:24px; }
+    .card { border:1px solid rgba(255,255,255,.1); border-radius:18px; padding:18px; background:rgba(255,255,255,.04); }
+    .card strong { display:block; margin-bottom:8px; }
+    .ok { color:var(--ok); }
+    .warn { color:var(--warn); }
+    button { border:1px solid rgba(67,217,255,.45); color:var(--fg); background:rgba(67,217,255,.10); border-radius:999px; padding:12px 16px; font-weight:700; cursor:pointer; }
+    button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+    #status { margin-top:20px; padding:14px 16px; border-radius:16px; background:rgba(125,255,178,.08); color:var(--ok); }
+  </style>
+</head>
+<body>
+  <main aria-labelledby="title">
+    <div class="eyebrow">LOCAL ONLY · NO EXTERNAL SEND · NO VOICE DEFAULT</div>
+    <h1 id="title">LOCCENT 控制室C</h1>
+    <p>Hermes Persona Wake Stage 的本地静态 runtime demo。它只展示 wake/mode/status/handoff-preview，不包含语音输出、外部发送、部署、密钥、支付或删除能力。</p>
+    <button id="wake" type="button" aria-describedby="status">Wake local stage</button>
+    <div id="status" role="status" aria-live="polite">Ready. Waiting for explicit local wake.</div>
+    <section class="grid" aria-label="Authority boundary">
+      <div class="card"><strong class="ok">Allowed</strong>Local wake, mode, status, handoff preview.</div>
+      <div class="card"><strong class="warn">Blocked</strong>send, speak, deploy, push, pay, secret, delete.</div>
+      <div class="card"><strong>Evidence</strong>Static HTML + CLI JSON readback + negative side-effect checks.</div>
+    </section>
+  </main>
+  <script>
+    const blocked = ['send','speak','deploy','push','pay','secret','delete'];
+    window.__PERSONA_WAKE_DEMO__ = { externalSend:false, voice:false, blocked };
+    document.getElementById('wake').addEventListener('click', () => {
+      document.getElementById('status').textContent = 'Local wake acknowledged. No external side effects were invoked.';
+    });
+  </script>
+</body>
+</html>

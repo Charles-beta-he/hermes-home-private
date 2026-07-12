@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-07-09T11:24:03.221134+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot favorite anonymous login-boundary locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/authenticated-favorite/PWA/production certified",
+  "slice": "spot-favorite-login-boundary",
+  "targetCommit": "5d552fc fix: gate spot favorites behind login",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_e0ce110c",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_f50623b0"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "anonymous favorite click routes to /login before collection mutation",
+    "collection/read requests are gated by isLoggedIn",
+    "no collection API before login",
+    "no credential/session read and no real order evidence retained",
+    "legacy evidence URL IDs redacted in SSOT artifact"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated favorite mutation certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

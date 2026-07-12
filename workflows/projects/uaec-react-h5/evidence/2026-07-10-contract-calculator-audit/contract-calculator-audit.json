@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T18:22:06+08:00",
+  "project": "uaec-react-h5",
+  "topic": "contract-calculator-formula-field-audit",
+  "result": "IMPLEMENTATION_BOUNDARY_IDENTIFIED_NEXT_PATH_VIABLE",
+  "androidFacts": {
+    "entry": "ContractUSDTFragment.onContainerCalculatorClick opens ContractCalculatorActivity with partnerTradeId",
+    "tabs": ["profit calculation", "target close price", "liquidation price"],
+    "dynamicInputs": ["USDT_CURRENCIES_QUERY", "LEVERSETTING", "faceValue", "openMaker", "openTaker", "flatMaker", "flatTaker", "margin tiers"],
+    "source": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/ContractCalculatorActivity.java"
+  },
+  "h5Facts": {
+    "calculatorRoutePresent": false,
+    "directDecimalDependencyPresent": false,
+    "leverSettingApiWrapperPresent": true,
+    "currencyFieldsPresent": ["faceValue", "flatMaker", "flatTaker", "fundRate"]
+  },
+  "readOnlyProbe": {
+    "request": "/api/contract/leverSetting/list?tradeId=1035922175497863168&positionType=BY",
+    "httpStatus": 200,
+    "listCount": 11,
+    "rowKeys": ["contractType", "enableNum", "initMarginRate", "maxLever", "minMarginRate", "num", "positionsType", "tradeId"]
+  },
+  "boundary": "Do not add a partial calculator shell or use JavaScript Number for money. The Android liquidation calculation depends on dynamic margin tiers, fees and face value; product UI must wait for exact decimal-string formula tests and a complete three-tab field contract.",
+  "nextSafePath": [
+    "Record Android formula vectors for long/short profit and target close price",
+    "Choose or implement an exact decimal-string arithmetic layer",
+    "Write RED tests for formulas and invalid/zero inputs before production code",
+    "Only then add the route, entry and complete calculator UI"
+  ]
+}

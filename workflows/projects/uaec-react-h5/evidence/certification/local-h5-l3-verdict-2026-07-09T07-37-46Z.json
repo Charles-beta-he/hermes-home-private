@@ -1,0 +1,111 @@
+{
+  "generatedAt": "2026-07-09T07:37:46Z",
+  "target": "uaec-react-h5 local H5 certified packet",
+  "certificationLevel": "L3-local-certified-packet",
+  "verdict": "APPROVE",
+  "boundedClaim": "Local H5 preview certification packet is approved: deterministic local loop passes and independent verifier approved the amended packet. This is not remote/shared branch, production/test-domain, authenticated-session, real-device, or WebView certification.",
+  "baseLoopReport": "evidence/certification/local-h5-loop-latest.json",
+  "baseLoopEvidence": {
+    "ok": true,
+    "blockers": 0,
+    "certificationLevel": "L2-local-loop-verified",
+    "workingTreeCleanAtGeneration": true,
+    "generationGitStatus": "## dev...origin/dev [ahead 10]"
+  },
+  "independentVerifier": {
+    "delegationId": "deleg_078eaecc",
+    "vote": "APPROVE",
+    "finding": "Prior stale gitStatus blocker is resolved. The report now distinguishes clean worktree at generation from post-commit ahead-count drift; no dirty file entries are embedded.",
+    "objectiveEvidence": [
+      "Current HEAD at verifier time: 00a02ad test: record clean h5 certification loop report; parent 98ecfa3.",
+      "Current status at verifier time: ## dev...origin/dev [ahead 11] with no modified/untracked entries.",
+      "git diff --quiet and git diff --cached --quiet exited 0.",
+      "package.json defines certify:h5:local as node scripts/certification/uaec-h5-certified-loop.mjs.",
+      "98ecfa3 added workingTreeCleanAtGeneration and the working tree clean at loop generation check.",
+      "00a02ad:evidence/certification/local-h5-loop-latest.json shows ok true, blockers 0, L2-local-loop-verified, gitStatus ## dev...origin/dev [ahead 10], workingTreeCleanAtGeneration true, and clean-worktree check ok true."
+    ]
+  },
+  "convergeMatrix": [
+    {
+      "claim": "Local H5 preview API blank-list fix is backed by same-origin /api and preview proxy evidence.",
+      "evidence": [
+        "evidence/2026-07-09-h5-api-preview/home-ranking-api-response.json",
+        "evidence/2026-07-09-h5-api-preview/home-ranking-preview-127-4173-390x844.png",
+        "evidence/certification/local-h5-loop-latest.json checks: home ranking API response has success meta and rows"
+      ],
+      "status": "pass",
+      "remainingGap": "production/test-domain deployment readback remains separate"
+    },
+    {
+      "claim": "Home top anonymous interactions route correctly and protected actions redirect to Login.",
+      "evidence": [
+        "evidence/2026-07-09-slice2/home-top-click-route-smoke-390x844.json",
+        "evidence/certification/local-h5-loop-latest.json check: home top anonymous click smoke cases pass"
+      ],
+      "status": "pass",
+      "remainingGap": "authenticated post-login behavior requires valid user session"
+    },
+    {
+      "claim": "Bottom TabBar remains visible in 375/390/414 mobile viewport local H5 matrix.",
+      "evidence": [
+        "evidence/2026-07-09-slice3/tabbar-safe-area-smoke.json",
+        "evidence/2026-07-09-slice3/tabbar-home-375x812.png",
+        "evidence/2026-07-09-slice3/tabbar-home-390x844.png",
+        "evidence/2026-07-09-slice3/tabbar-home-414x896.png",
+        "evidence/certification/local-h5-loop-latest.json check: tabbar safe-area matrix passes 375/390/414"
+      ],
+      "status": "pass",
+      "remainingGap": "true iOS Safari / Android Chrome / WebView safe-area requires real device or explicit device/simulator gate"
+    },
+    {
+      "claim": "Bottom tabs route in anonymous mode at 390x844.",
+      "evidence": [
+        "evidence/2026-07-09-slice4/tab-route-smoke-390x844.json",
+        "deleg_4c4569f6 APPROVE that prior untracked evidence blocker is resolved",
+        "evidence/certification/local-h5-loop-latest.json check: bottom tab anonymous route smoke passes"
+      ],
+      "status": "pass",
+      "remainingGap": "asset authenticated behavior requires valid user session"
+    },
+    {
+      "claim": "Banner current payload runtime behavior is safe and redirect helper respects token boundary.",
+      "evidence": [
+        "evidence/2026-07-09-slice1/banner-runtime-smoke-390x844.json",
+        "evidence/2026-07-09-slice1/banner-navigation-fixture-smoke.json",
+        "evidence/certification/local-h5-loop-latest.json checks: banner runtime no token leaks and banner redirect fixture passes"
+      ],
+      "status": "pass",
+      "remainingGap": "real redirect-banner click requires backend payload containing appRedirectUrl/redirectUrl/link"
+    },
+    {
+      "claim": "Deterministic local certification loop is runnable and evidence-backed.",
+      "evidence": [
+        "docs/certified-full-acceptance-loop-plan.md",
+        "scripts/certification/uaec-h5-certified-loop.mjs",
+        "package.json certify:h5:local",
+        "evidence/certification/local-h5-loop-latest.json",
+        "deleg_078eaecc APPROVE"
+      ],
+      "status": "pass",
+      "remainingGap": "L4/L5 require external authority and environment gates"
+    }
+  ],
+  "openGates": [
+    {
+      "gate": "L4 shared branch certified",
+      "requires": "explicit push target authorization, remote readback, and CI/status verification"
+    },
+    {
+      "gate": "Authenticated behavior certified",
+      "requires": "valid test session/account supplied by human or pre-existing browser session; no credential entry by agent"
+    },
+    {
+      "gate": "Real-device/WebView certified",
+      "requires": "iOS Safari / Android Chrome / App WebView target and screenshot/readback evidence"
+    },
+    {
+      "gate": "Production/test-domain certified",
+      "requires": "deployed URL, rollback/escape hatch, and post-deploy API/UI readback"
+    }
+  ]
+}

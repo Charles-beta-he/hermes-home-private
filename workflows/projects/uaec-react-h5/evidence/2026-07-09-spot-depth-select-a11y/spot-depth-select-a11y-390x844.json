@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:51:44.990Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "tag": "select",
+    "ariaLabel": "盘口精度",
+    "visible": true,
+    "value": "2",
+    "options": [
+      "1",
+      "0.1",
+      "0.01",
+      "0.001",
+      "0.0001"
+    ],
+    "hasTradeTitle": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "value": "1",
+    "bodyText": "BTC/USDT\n买入\n卖出\n限价委托\n​\n价格(USDT)\n价格(USDT)\nBTC\n​\n0%\n25%\n50%\n70%\n100%\n金额\nUSDT\n金额\n可用\n0 BTC\n冻结\n0 BTC\n去登录\nPrice\n(USDT)\nAmount\n(BTC)\n62,815.3\n0.00008\n62,815.0\n0.06323\n62,814.5\n0.00446\n62,814.4\n0.02167\n62,814.2\n0.01727\n62,813.7\n≈ 62,813.7 USD\n62,813.7\n0.16349\n62,813.6\n0.00009\n62,813.0\n0.00032\n62,812.6\n0.00009\n62,812.2\n0.00587\n0.1\n1\n0.1\n0.01\n0.001\n0.0001\n0.00001\n0.000001\n0.0000001\n0.00000001\n0.000000001\n0.0000000001\n委托(0)\n最近成交\n暂无数据\n首页\n行情\n交易\n合约\n资产\n现货\n​\n自选\nUSDT\n选择充币方式\n划转\n在账户间转移资产\n充值\n从外部钱包充值到账户\n交易密码验证\n交易密码\n确"
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-depth-select-a11y/spot-depth-select-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterDepthChange": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

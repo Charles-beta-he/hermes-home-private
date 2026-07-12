@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:16:16.639Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tag": "button",
+    "type": "button",
+    "ariaLabel": "切换合约盘口显示：买卖盘",
+    "ariaPressed": "false",
+    "visible": true,
+    "sellRows": 36,
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "ariaLabel": "切换合约盘口显示：买盘",
+    "ariaPressed": "true",
+    "hasContractText": true,
+    "hasPriceHeader": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-mode-semantics/contract-orderbook-mode-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterClick": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

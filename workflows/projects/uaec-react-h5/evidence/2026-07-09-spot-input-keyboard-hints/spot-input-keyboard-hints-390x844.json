@@ -1,0 +1,137 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T09:58:21.608Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "state": {
+    "href": "http://127.0.0.1:4173/trade?side=buy&buyselltype=BUY&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "hasTitle": true,
+    "hasPrice": true,
+    "hasAmount": true,
+    "inputs": [
+      {
+        "placeholder": "",
+        "ariaLabel": "",
+        "value": "limit",
+        "inputMode": "",
+        "pattern": "",
+        "autocomplete": "",
+        "disabled": true,
+        "readOnly": false,
+        "rect": {
+          "x": 17,
+          "y": 97,
+          "width": 180,
+          "height": 23
+        }
+      },
+      {
+        "placeholder": "",
+        "ariaLabel": "",
+        "value": "62,954.01",
+        "inputMode": "decimal",
+        "pattern": "[0-9]*[.]?[0-9]*",
+        "autocomplete": "off",
+        "disabled": true,
+        "readOnly": false,
+        "rect": {
+          "x": 17,
+          "y": 142,
+          "width": 180,
+          "height": 34.25
+        }
+      },
+      {
+        "placeholder": "数量",
+        "ariaLabel": "",
+        "value": "",
+        "inputMode": "decimal",
+        "pattern": "[0-9]*[.]?[0-9]*",
+        "autocomplete": "off",
+        "disabled": true,
+        "readOnly": false,
+        "rect": {
+          "x": 17,
+          "y": 186,
+          "width": 141.703125,
+          "height": 34.25
+        }
+      },
+      {
+        "placeholder": "",
+        "ariaLabel": "",
+        "value": "0",
+        "inputMode": "",
+        "pattern": "",
+        "autocomplete": "",
+        "disabled": true,
+        "readOnly": false,
+        "rect": {
+          "x": 18,
+          "y": 238.25,
+          "width": 12,
+          "height": 12
+        }
+      },
+      {
+        "placeholder": "",
+        "ariaLabel": "",
+        "value": "",
+        "inputMode": "",
+        "pattern": "",
+        "autocomplete": "",
+        "disabled": true,
+        "readOnly": false,
+        "rect": {
+          "x": 49,
+          "y": 294.25,
+          "width": 101.9375,
+          "height": 34.25
+        }
+      },
+      {
+        "placeholder": "搜索币种",
+        "ariaLabel": "",
+        "value": "",
+        "inputMode": "",
+        "pattern": "",
+        "autocomplete": "",
+        "disabled": false,
+        "readOnly": false,
+        "rect": {
+          "x": -204,
+          "y": 35.375,
+          "width": 188,
+          "height": 29.25
+        }
+      },
+      {
+        "placeholder": "请输入6位交易密码",
+        "ariaLabel": "交易密码输入",
+        "value": "",
+        "inputMode": "numeric",
+        "pattern": "[0-9]*",
+        "autocomplete": "off",
+        "disabled": false,
+        "readOnly": false,
+        "rect": {
+          "x": 24,
+          "y": 928,
+          "width": 342,
+          "height": 54
+        }
+      }
+    ],
+    "decimalInputCount": 2,
+    "viewportSafe": true,
+    "bodySnippet": "BTC/USDT\n买入\n卖出\n限价委托\n​\n价格(USDT)\n价格(USDT)\nBTC\n​\n0%\n25%\n50%\n70%\n100%\n金额\nUSDT\n金额\n可用\n0 USDT\n冻结\n0 USDT\n去登录\nPrice\n(USDT)\nAmount\n(BTC)\n62,956.01\n0.19207\n62,956.00\n0.05938\n62,955.99\n0.00018\n62,955.71\n0.00009\n62,955.10\n0.004\n62,954.01\n≈ 62,954.01 USD\n62,954.00\n0.69859\n62,953.99\n0.00124\n62,953.98\n0.00016\n62,95"
+  },
+  "negative": {
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-input-keyboard-hints/spot-input-keyboard-hints-390x844.png"
+}

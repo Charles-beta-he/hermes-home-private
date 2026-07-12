@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-07-09T15:02:36.462613+00:00",
+  "sourceDelegation": "deleg_16345568",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-leverage-button-semantics",
+  "targetCommit": "c382be4",
+  "currentHead": "c382be4",
+  "currentGitStatus": "## dev...origin/dev [ahead 44]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract leverage selector button semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and independent verifier approval support button type/aria label and drawer-open behavior without leverage confirmation. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-button-semantics/contract-leverage-button-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-button-semantics-loop-2026-07-09T14-59-57-577343+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 44]",
+      "head": "c382be4",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no leverage confirmation",
+    "no real order/funds mutation"
+  ]
+}

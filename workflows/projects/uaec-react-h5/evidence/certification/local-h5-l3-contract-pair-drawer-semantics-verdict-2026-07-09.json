@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-07-09T14:38:59.656831+00:00",
+  "sourceDelegation": "deleg_aa4e27c9",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-pair-drawer-semantics",
+  "targetCommit": "03fb7fc",
+  "currentHead": "a3ab73d",
+  "currentGitStatus": "## dev...origin/dev [ahead 40]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract pair drawer semantics slice is L3-local-certified-packet: scoped code, target SSOT evidence, timestamped loop report, and independent clean-window verifier approval support pair trigger, market shortcut, and drawer row button semantics. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-pair-drawer-semantics/contract-pair-drawer-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-pair-drawer-semantics-loop-2026-07-09T13-59-09-295341+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 40]",
+      "head": "a3ab73d",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "resolvedStaleAmends": [
+    "deleg_7b259ada",
+    "deleg_5f88443c",
+    "deleg_732c39c5"
+  ],
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

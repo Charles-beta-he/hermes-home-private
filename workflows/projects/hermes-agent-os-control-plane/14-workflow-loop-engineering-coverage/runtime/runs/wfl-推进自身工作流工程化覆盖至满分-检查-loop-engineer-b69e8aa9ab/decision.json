@@ -1,0 +1,29 @@
+{
+  "schema": "hermes_workflow_asset_decision_v1",
+  "id": "wfd-推进自身工作流工程化覆盖至满分-检查-loop-engineer-16697d6499",
+  "seed": "推进自身工作流工程化覆盖至满分，检查 loop engineering 的作用与覆盖率评分",
+  "score": 6,
+  "decision": "reusable_candidate",
+  "landing": [
+    "workflow_workspace",
+    "skill_reference_candidate"
+  ],
+  "reasons": [
+    "reuse_value",
+    "multi_step_complexity",
+    "workflow_word_signal_only"
+  ],
+  "warnings": [],
+  "side_effect_class": "local_read_write_only",
+  "stop_only_on": [
+    "missing_evidence_after_attempt",
+    "user_preference_conflict"
+  ],
+  "created_at": "2026-07-10T04:11:44Z",
+  "policy": {
+    "keyword_trigger_sufficient": false,
+    "model_consensus_is_proof": false,
+    "external_side_effects_enabled": false,
+    "memory_workflow_body_write_enabled": false
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "slice": "contract-kline-screenshot-share",
+  "date": "2026-07-10",
+  "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+  "commit": "d0ac865 + a944c45",
+  "independent_review": {
+    "delegation": "deleg_b21fb0f0",
+    "verdict": "AMEND",
+    "finding": "navigator.share was selected when navigator.canShare was absent, so text-only Web Share could omit the PNG instead of using download fallback",
+    "resolution_commit": "a944c45 fix: require file share capability for kline",
+    "rereview": {
+      "delegation": "deleg_dbe98889",
+      "verdict": "APPROVE",
+      "readbackAt": "2026-07-10T17:41:47+08:00",
+      "positiveBranch": {"canShareCalls": 1, "argument": "files only", "mime": "image/png", "shareCalls": 1, "downloadClicks": 0},
+      "fallbackBranches": "canShare absent and canShare false both call no share and trigger one download"
+    }
+  },
+  "objective": "Expose the Android-equivalent local K-line screenshot action without external publication or backend writes.",
+  "android_evidence": {
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "lines": "873-875, 947-948, 2057-2064",
+    "fact": "Android image_share/image_share1 capture the current activity with ScreenShotUtils and open the bitmap share dialog."
+  },
+  "red": {
+    "exit": 1,
+    "found": false,
+    "downloads": []
+  },
+  "green": {
+    "exit": 0,
+    "button_label": "分享K线截图",
+    "fallback_download": {
+      "name": "contract-kline-SOLUSDT-.png",
+      "minimum_bytes": 10000,
+      "observed_bytes": 38370
+    },
+    "unsupported_file_share": {
+      "share_present_canShare_absent": {"share_calls": 0, "download_clicks": 1},
+      "share_present_canShare_false": {"share_calls": 0, "download_clicks": 1}
+    },
+    "abort_path": {
+      "share_rejected_with": "AbortError",
+      "button_reenabled": true,
+      "failure_message_shown": false
+    }
+  },
+  "implementation": [
+    "The capture target is the visible contract page container.",
+    "html2canvas is loaded only after the user requests a screenshot.",
+    "foreignObjectRendering avoids html2canvas 1.4.1 failing on Tailwind oklch() colors.",
+    "Web Share receives a PNG File only when navigator.canShare positively confirms file support; otherwise an object URL triggers a local PNG download.",
+    "The object URL is revoked after the download is started.",
+    "User cancellation is handled as a non-error and the action is re-enabled."
+  ],
+  "visual_evidence": {
+    "generated_png": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-kline-share/downloads/contract-kline-SOLUSDT-.png",
+    "page_390x844": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-kline-share/contract-kline-share-390x844.png",
+    "result": "Final 390x844 generated image is nonblank and contains the contract title, live price, horizontally scrollable period controls, K-line, volume, MA/MACD panes, visible order-book rows and bottom order actions. The header keeps favorite/share/fullscreen actions visible without overlap; only expected viewport/overflow clipping is present."
+  },
+  "boundaries": [
+    "No share target was selected and no content was externally published.",
+    "No backend API, WebSocket contract, authentication flow, order, or funds action changed.",
+    "The automated path forced local download into the isolated evidence directory."
+  ],
+  "verification": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-kline-share/verify_contract_kline_share.py",
+    "scoped_eslint": {
+      "status": "BASELINE_ONLY_FAILURE",
+      "exit": 1,
+      "finding": "four no-explicit-any errors at current lines 340-343 predate both share commits; git blame ea298581 (2025-08-08)"
+    },
+    "production_build_exit": 0,
+    "post_commit_readback": {"status": "PASS", "working_tree_clean": true, "branch": "dev...origin/dev [ahead 22]", "git_show_check": true},
+    "certification": {
+      "level": "L3-local-certified-packet",
+      "ok": true,
+      "blockers": 0,
+      "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T09-18-12-502Z.json"
+    }
+  },
+  "certification_boundary": "The capability-detection AMEND has bounded independent APPROVE. Real-device Web Share, the system share sheet and transient user-activation remain device-gated; no external publication or production claim."
+}

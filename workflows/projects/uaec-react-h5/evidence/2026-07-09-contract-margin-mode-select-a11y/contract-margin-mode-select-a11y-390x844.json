@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:04:01.294Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "comboTag": "div",
+    "comboRole": "combobox",
+    "comboAria": "保证金模式",
+    "visible": true,
+    "text": "全仓",
+    "hasContractText": true
+  },
+  "listState": {
+    "options": [
+      "全仓",
+      "逐仓"
+    ],
+    "expanded": "true"
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "comboAria": "保证金模式",
+    "text": "逐仓",
+    "hasSplitLeverage": true,
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-margin-mode-select-a11y/contract-margin-mode-select-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSelect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

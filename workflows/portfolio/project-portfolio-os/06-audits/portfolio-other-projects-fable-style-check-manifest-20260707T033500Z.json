@@ -1,0 +1,43 @@
+{
+  "schema": "portfolio_other_projects_fable_style_check_manifest_v1",
+  "generated_at": "2026-07-07T03:34:53+00:00",
+  "scope": "other portfolio projects excluding hermes-agent-os-control-plane",
+  "status": "WARN",
+  "machine_summary": {
+    "pass": 7,
+    "warn": 8,
+    "fail": 0,
+    "total": 15
+  },
+  "fable_verdict": "WARN (有条件通过)",
+  "boundaries": [
+    "read-only project metadata/evidence audit",
+    "no project code changes",
+    "no lifecycle/status promotion",
+    "work projects remain excluded unless user switches",
+    "no external dispatch/push/deploy/destructive/payment/credential actions"
+  ],
+  "p0_recommendations": [
+    "resolve hermes-persona-wake-stage semantic contradiction before claiming pass",
+    "add/derive current_components for 8 warn projects or explicitly mark intentionally-minimal profiles",
+    "require declared evidence for validated-like status claims",
+    "align portfolio doctor structural layer with semantic audit layer"
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-other-projects-fable-style-audit-20260707T033200Z.json",
+      "sha256": "a9288180b2ad7cc26491ffda10f0bc37b151e34835f63c11bd2be891be98bc32",
+      "bytes": 15675
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/portfolio-other-projects-fable-style-audit-20260707T033200Z.md",
+      "sha256": "fa7a497eab50401a45fb58e5456da75b078fee62d3415ac3308888729068dc26",
+      "bytes": 1404
+    },
+    {
+      "path": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/fable-portfolio-other-projects-audit-output-20260707T033319Z.md",
+      "sha256": "f0687e8b412c0d4a18938f38867705d17af62086d130dadd7207fd4bdafc065c",
+      "bytes": 3191
+    }
+  ]
+}

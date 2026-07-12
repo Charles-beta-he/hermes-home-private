@@ -1,0 +1,78 @@
+{
+  "schema": "hermes_agent_os_exact_authority_request_v1",
+  "created_at": "2026-07-11T19:55:36Z",
+  "objective_ref": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/15-certification/2026-07-11-global-certification-loop-spec.json",
+  "discovered_targets": {
+    "telegram": {
+      "target": "telegram:5524172309",
+      "display_name": "he cheng",
+      "type": "dm"
+    },
+    "origin": {
+      "target": null,
+      "reason": "current source is local CLI; no externally readable origin delivery target exists"
+    },
+    "lark": {
+      "profile": "/Users/charles/.hermes/project-profiles/lark.json",
+      "scope": "OAuth recovery followed by read-only identity/task list/pagination/detail validation; no write"
+    },
+    "model_quorum": {
+      "tier": "T0",
+      "minimum_quorum": 1,
+      "configured_planners": ["claude-opus-4-8", "mimo-v2.5-pro"],
+      "purpose": "independent review of exact final Agent OS certification projection"
+    }
+  },
+  "proposed_exact_actions": [
+    {
+      "procedure_id": "delivery.telegram.send",
+      "target": "telegram:5524172309",
+      "payloads": [
+        "[Hermes Agent OS E2E 1/2] certification delivery probe; no action required.",
+        "[Hermes Agent OS E2E 2/2] certification delivery probe; no action required."
+      ],
+      "readback": "two platform message receipts bound to exact payload hashes",
+      "rollback": "messages cannot be unsent reliably; stop after first failure"
+    },
+    {
+      "procedure_id": "providers.multimodel.quorum",
+      "target": "T0 configured providers",
+      "payload": "Review the final Agent OS certification evidence packet; return PASS or AMEND with evidence IDs.",
+      "readback": "consensus artifact plus model failure ledger",
+      "rollback": "no external mutation; preserve model-call receipt"
+    },
+    {
+      "procedure_id": "lark.oauth.recovery",
+      "target": "profile:lark",
+      "action": "single-flight interactive OAuth recovery",
+      "human_gate": "user must complete browser authorization; agent will not type credentials",
+      "readback": "token status only, lock released, callback port released, no secret output"
+    },
+    {
+      "procedure_id": "lark.task.readonly",
+      "target": "authenticated profile:lark default task scope",
+      "action": "identity, list, pagination and one detail read",
+      "readback": "redacted receipt with no task mutation"
+    },
+    {
+      "procedure_id": "delivery.origin.send",
+      "status": "not_executable_from_current_CLI_origin",
+      "required_next_context": "a gateway-origin conversation with exact platform/chat/thread"
+    },
+    {
+      "gate": "dirty_worktree_observed",
+      "repos": {
+        "/Users/charles/.hermes": 423,
+        "/Users/charles/.hermes/hermes-agent": 6
+      },
+      "status": "requires ownership decision; bulk reset/commit is not inferred",
+      "safe_default": "preserve all changes and keep certification blocked"
+    }
+  ],
+  "not_authorized_by_current_general_objective": [
+    "external sends with exact payloads",
+    "interactive OAuth",
+    "real model calls under procedure authority policy",
+    "bulk commit/reset/stash of unrelated worktree changes"
+  ]
+}

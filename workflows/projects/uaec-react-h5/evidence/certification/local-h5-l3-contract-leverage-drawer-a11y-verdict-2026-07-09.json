@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-07-09T15:37:10.383330+00:00",
+  "sourceDelegation": "deleg_4052f3ff",
+  "priorStaleAmends": [
+    "deleg_8d32d4cd",
+    "deleg_1ea35a32"
+  ],
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-leverage-drawer-a11y",
+  "targetCommit": "b0a286f",
+  "currentHead": "1a09de4",
+  "currentGitStatus": "## dev...origin/dev [ahead 49]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract leverage drawer accessibility slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and clean-window independent verifier approval support explicit button types/labels and labelled leverage range slider. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders or leverage confirmation.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-drawer-a11y/contract-leverage-drawer-a11y-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-drawer-a11y-loop-2026-07-09T15-24-21-797713+00-00.json",
+    "staleAmendReceipts": [
+      "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_8d32d4cd-contract-leverage-drawer-a11y-2026-07-09.json",
+      "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_1ea35a32-contract-leverage-drawer-a11y-2026-07-09.json"
+    ],
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 49]",
+      "head": "1a09de4",
+      "targetScope": [
+        "src/pages/ContractPage/LeverageSelector.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no leverage confirm",
+    "no real order/funds mutation"
+  ]
+}

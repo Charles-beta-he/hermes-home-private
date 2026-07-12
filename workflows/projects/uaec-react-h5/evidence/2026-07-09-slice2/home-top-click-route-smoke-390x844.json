@@ -1,0 +1,81 @@
+{
+  "baseUrl": "http://127.0.0.1:4173/",
+  "viewport": "390x844",
+  "results": [
+    {
+      "name": "search",
+      "ok": true,
+      "expected": "/search-trading-pairs",
+      "homeReadback": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errors": []
+      },
+      "clickResult": {
+        "clicked": true,
+        "url": "http://127.0.0.1:4173/search-trading-pairs?from=%2F&to=%2Fmarket%2Fmarket-interface&mode=push",
+        "title": "UAEC",
+        "body": "搜索币对\n取消\n输入关键词搜索币对"
+      }
+    },
+    {
+      "name": "message",
+      "ok": true,
+      "expected": "/Login",
+      "note": "protected route auth-gates anonymous user",
+      "homeReadback": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errors": []
+      },
+      "clickResult": {
+        "clicked": true,
+        "url": "http://127.0.0.1:4173/Login",
+        "title": "UAEC",
+        "body": "登录\n手机号/邮箱\n记住账号\n忘记密码？\n登录\n创建UAEC账号\n谷歌验证\n谷歌验证码\n粘贴\n确认"
+      }
+    },
+    {
+      "name": "customer-service",
+      "ok": true,
+      "expected": "/Login",
+      "note": "protected route auth-gates anonymous user",
+      "homeReadback": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errors": []
+      },
+      "clickResult": {
+        "clicked": true,
+        "url": "http://127.0.0.1:4173/Login",
+        "title": "UAEC",
+        "body": "登录\n手机号/邮箱\n记住账号\n忘记密码？\n登录\n创建UAEC账号\n谷歌验证\n谷歌验证码\n粘贴\n确认"
+      }
+    },
+    {
+      "name": "scan",
+      "ok": true,
+      "expected": "/Login",
+      "note": "protected route auth-gates anonymous user",
+      "homeReadback": {
+        "url": "http://127.0.0.1:4173/",
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errors": []
+      },
+      "clickResult": {
+        "clicked": true,
+        "url": "http://127.0.0.1:4173/Login",
+        "title": "UAEC",
+        "body": "登录\n手机号/邮箱\n记住账号\n忘记密码？\n登录\n创建UAEC账号\n谷歌验证\n谷歌验证码\n粘贴\n确认"
+      }
+    }
+  ]
+}

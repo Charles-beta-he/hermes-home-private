@@ -1,0 +1,42 @@
+{
+  "audit_semantics": {
+    "evidence_freshness_days": 7,
+    "known_negative_status": false,
+    "maturity_verdict": "active_local_mission_clean_flow_signal_backlog",
+    "next_audit_action": "allow scheduled bounded mission tick; keep external gates blocked"
+  },
+  "current_components": {
+    "cron_job": "present",
+    "mission_status": "active",
+    "open_decisions": "0",
+    "pending_flow_signals": "0",
+    "stale_flow_signals": "0",
+    "stale_signal_recovery": "2122_recovered_total_this_session",
+    "tick_budget": "72/96",
+    "tick_script": "present"
+  },
+  "display_name": "Hermes Self Extension Os",
+  "id": "hermes-self-extension-os",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-stale-recovery-loop-20260707T080200Z.jsonl",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-mission-doctor-after-full-stale-recovery-20260707T080500Z.json",
+    "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-budget-extension-receipt-20260707T070200Z.json"
+  ],
+  "portfolio_profile": true,
+  "previous_status": "validated-active-control-loop-slice",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os/progress-ledger.md",
+  "project": "hermes-self-extension-os",
+  "project_type": "agent-runtime-evolution",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [
+    {
+      "merge_policy": "portfolio_metadata_only",
+      "relation": "governed_by",
+      "target": "project-portfolio-os"
+    }
+  ],
+  "role": "Hermes long-term self-extension mission/control-plane: research → plan → local proof → human handoff → review/fix/verify → skill/CLI/runtime promotion.",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-self-extension-os",
+  "status": "active-validated-local-mission-clean-flow-signals",
+  "updated_at": "2026-07-07T16:12:00+08:00"
+}

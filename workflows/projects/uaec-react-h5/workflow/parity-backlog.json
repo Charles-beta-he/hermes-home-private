@@ -1,0 +1,575 @@
+{
+  "generatedAt": "2026-07-09T08:01:55.421150+00:00",
+  "project": "uaec-react-h5",
+  "goal": "PWA same-product parity with uaec-android through capability backlog",
+  "storage": "SSOT only; not application repo",
+  "items": [
+    {
+      "id": "01-market_quote_center",
+      "priority": "P0",
+      "status": "local-slice-verified",
+      "domain": "market_quote_center",
+      "android_refs": [
+        "app/src/androidTest/java/com/uu/market/ExampleInstrumentedTest.java",
+        "app/src/test/java/com/uu/market/ExampleUnitTest.java",
+        "app/src/main/AndroidManifest.xml",
+        "app/src/main/res/values-ro/strings.xml",
+        "app/src/main/res/values-zh-rTW/strings.xml",
+        "app/src/main/res/layout-land/layout_usdt_kline_activity.xml",
+        "app/src/main/res/layout-land/layout_kline_activity.xml",
+        "app/src/main/res/values-zh-rCN/strings.xml",
+        "app/src/main/res/drawable/f1_market_list_bg.xml",
+        "app/src/main/res/drawable/home_market_bg_shape.xml",
+        "app/src/main/res/values-ja/strings.xml",
+        "app/src/main/res/layout/progress_dialog.xml"
+      ],
+      "h5_targets": [
+        "package-lock.json",
+        "package.json",
+        "vite.config.ts",
+        "src/WebSocketLayer/marketWSManager.ts",
+        "src/WebSocketLayer/tradingWSManager.ts",
+        "src/WebSocketLayer/WSInstance.ts",
+        "src/WebSocketLayer/types.ts",
+        "src/WebSocketLayer/createWSManager.ts",
+        "src/WebSocketLayer/MergeStrategies/klineMerge.ts",
+        "src/WebSocketLayer/ZustandStore/market.ts",
+        "src/config/tabBar.ts",
+        "src/config/socketConfig.ts"
+      ],
+      "hazards": [
+        "api_backed_blank_section",
+        "scroll_owner",
+        "route_guard_auth_boundary"
+      ],
+      "local_gates": [
+        "code diff scoped to slice",
+        "targeted lint/typecheck",
+        "npm run build",
+        "mobile viewport screenshot/readback",
+        "SSOT evidence/report update"
+      ],
+      "negative_gates": [
+        "no route removal",
+        "no auth state field rename",
+        "no token leak to third-party",
+        "no claim beyond verified level"
+      ],
+      "authority": "local_code_commit_allowed; push/deploy/login/device require exact readback gate",
+      "next_safe_action": "audit android refs and h5 targets, then implement the smallest missing parity behavior with local evidence",
+      "lastVerifiedAt": "2026-07-09T08:53:58.859887+00:00",
+      "implementedSlice": "market quote center + detail navigation parity: anonymous real-market default, Android sort/color, whole-row Kline navigation with tradeName/symbol separation",
+      "evidence": {
+        "smoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-parity/market-parity-smoke-390x844.json",
+        "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-parity/market-parity-390x844.png",
+        "commands": [
+          "npx eslint src/pages/MarketCenterPage/MarketCenterPage.tsx",
+          "npm run build",
+          "node /tmp/uaec-market-parity-smoke.mjs --after-color-fix",
+          "node /tmp/uaec-market-detail-navigation-smoke.mjs --slice-market-detail-nav-v2"
+        ],
+        "detailNavigationSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-detail-navigation/market-detail-navigation-390x844.json",
+        "detailNavigationScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-detail-navigation/market-detail-navigation-390x844.png"
+      },
+      "remaining": "authenticated favorites/edit behavior, market detail indicator controls/fullscreen behavior, and deeper trade/asset slices remain separate work"
+    },
+    {
+      "id": "02-spot_trading",
+      "priority": "P1",
+      "status": "local-slice-verified-partial",
+      "domain": "spot_trading",
+      "android_refs": [
+        "app/src/main/AndroidManifest.xml",
+        "app/src/main/res/values-ro/strings.xml",
+        "app/src/main/res/values-zh-rTW/strings.xml",
+        "app/src/main/res/layout-land/layout_usdt_kline_activity.xml",
+        "app/src/main/res/values-zh-rCN/strings.xml",
+        "app/src/main/res/values-ja/strings.xml",
+        "app/src/main/res/layout/position_fragment_list_item.xml",
+        "app/src/main/res/layout/fragment_against.xml",
+        "app/src/main/res/layout/home_fragment3.xml",
+        "app/src/main/res/layout/fragment_overview_account.xml",
+        "app/src/main/res/layout/home_fragment2.xml",
+        "app/src/main/res/layout/activity_atm_confirm.xml"
+      ],
+      "h5_targets": [
+        "vite.config.ts",
+        "src/main.tsx",
+        "src/index.css",
+        "src/theme.ts",
+        "src/locales/index.ts",
+        "src/WebSocketLayer/marketWSManager.ts",
+        "src/WebSocketLayer/tradingWSManager.ts",
+        "src/WebSocketLayer/WSInstance.ts",
+        "src/WebSocketLayer/types.ts",
+        "src/config/tabBar.ts",
+        "src/config/socketConfig.ts",
+        "src/utils/orderBookUtils.ts"
+      ],
+      "hazards": [
+        "keyboard_focus",
+        "scroll_owner",
+        "api_backed_blank_section",
+        "route_guard_auth_boundary"
+      ],
+      "local_gates": [
+        "code diff scoped to slice",
+        "targeted lint/typecheck",
+        "npm run build",
+        "mobile viewport screenshot/readback",
+        "SSOT evidence/report update"
+      ],
+      "negative_gates": [
+        "no route removal",
+        "no auth state field rename",
+        "no token leak to third-party",
+        "no claim beyond verified level"
+      ],
+      "authority": "local_code_commit_allowed; push/deploy/login/device require exact readback gate",
+      "next_safe_action": "audit android refs and h5 targets, then implement the smallest missing parity behavior with local evidence",
+      "lastVerifiedAt": "2026-07-09T11:31:29.444392+00:00",
+      "implementedSlice": "Kline/detail buy-sell buttons preserve Android tradeName/symbol/tradeId/buyselltype into spot trade route; TradingPage consumes buyselltype and URL fallback identity. Spot trade buy/sell tab URL sync now preserves Android buyselltype; spot trade -> Kline return route preserves tradeName/symbol/tradeId/partnerTradeId with accessible Kline action.",
+      "evidence": {
+        "smoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-kline-to-spot-trade/kline-to-spot-trade-390x844.json",
+        "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-kline-to-spot-trade/kline-to-spot-trade-390x844.png",
+        "commands": [
+          "npx eslint src/pages/MarketCenterPage/MarketInterface/MarketInterface.tsx src/pages/TradingPage/TradingPage.tsx",
+          "npm run build",
+          "node /tmp/uaec-kline-to-spot-trade-smoke.mjs --kline-to-spot-v1",
+          "npx eslint src/pages/TradingPage/TradingPage.tsx",
+          "node /tmp/uaec-spot-kline-roundtrip-smoke.mjs --spot-kline-roundtrip-v2"
+        ],
+        "spotKlineRoundtripSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.json",
+        "spotKlineRoundtripScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.png",
+        "spotAnonymousAuthRequestGuardSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-anonymous-auth-requests/spot-anonymous-auth-requests-390x844.json",
+        "spotAnonymousAuthRequestGuardScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-anonymous-auth-requests/spot-anonymous-auth-requests-390x844.png",
+        "spotTabSemanticsSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-tab-semantics/spot-tab-semantics-390x844.json",
+        "spotTabSemanticsScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-tab-semantics/spot-tab-semantics-390x844.png",
+        "spotOrderbookModeSemanticsSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-mode-semantics/spot-orderbook-mode-semantics-390x844.json",
+        "spotOrderbookModeSemanticsScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-mode-semantics/spot-orderbook-mode-semantics-390x844.png",
+        "spotBottomTabSemanticsSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-bottom-tab-semantics/spot-bottom-tab-semantics-390x844.json",
+        "spotBottomTabSemanticsScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-bottom-tab-semantics/spot-bottom-tab-semantics-390x844.png",
+        "spotHistoryButtonLoginBoundarySmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-history-button-semantics/spot-history-button-semantics-390x844.json",
+        "spotHistoryButtonLoginBoundaryScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-history-button-semantics/spot-history-button-semantics-390x844.png",
+        "spotCoinDrawerTriggerSemanticsSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.json",
+        "spotCoinDrawerTriggerSemanticsScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.png",
+        "spotTransferButtonLoginBoundarySmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.json",
+        "spotTransferButtonLoginBoundaryScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.png",
+        "spotOrderbookPriceButtonsSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-price-buttons/spot-orderbook-price-buttons-390x844.json",
+        "spotOrderbookPriceButtonsScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-price-buttons/spot-orderbook-price-buttons-390x844.png",
+        "spotCoinDrawerRowSemanticsSmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-row-semantics/spot-coin-drawer-row-semantics-390x844.json",
+        "spotCoinDrawerRowSemanticsScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-row-semantics/spot-coin-drawer-row-semantics-390x844.png",
+        "spotDepthSelectA11ySmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-depth-select-a11y/spot-depth-select-a11y-390x844.json",
+        "spotDepthSelectA11yScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-depth-select-a11y/spot-depth-select-a11y-390x844.png",
+        "spotOrderTypeSelectA11ySmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-order-type-select-a11y/spot-order-type-select-a11y-390x844.json",
+        "spotOrderTypeSelectA11yScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-order-type-select-a11y/spot-order-type-select-a11y-390x844.png",
+        "spotPercentageSliderA11ySmoke": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.json",
+        "spotPercentageSliderA11yScreenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.png",
+        "spotTabSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-tab-semantics-verdict-2026-07-09.json",
+        "spotBottomTabSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-bottom-tab-semantics-verdict-2026-07-09.json",
+        "spotHistoryButtonL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-history-button-login-boundary-verdict-2026-07-09.json",
+        "spotOrderbookPriceButtonsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-price-buttons-verdict-2026-07-09.json",
+        "spotPercentageSliderL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-percentage-slider-a11y-verdict-2026-07-09.json",
+        "spotFavoriteLoginBoundaryL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-favorite-login-boundary-verdict-2026-07-09.json",
+        "spotDecimalKeyboardHintsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-decimal-keyboard-hints-verdict-2026-07-09.json",
+        "spotOrderCtaL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-cta-login-boundary-verdict-2026-07-09.json",
+        "spotAnonymousAuthGuardL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-anonymous-auth-request-guard-verdict-2026-07-09.json",
+        "spotOrderbookModeL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-mode-semantics-verdict-2026-07-09.json",
+        "spotCoinDrawerTriggerL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-trigger-semantics-verdict-2026-07-09.json",
+        "spotTransferButtonL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-transfer-button-login-boundary-verdict-2026-07-09.json",
+        "spotCoinDrawerRowL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-row-semantics-verdict-2026-07-09.json",
+        "spotDepthSelectL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-depth-select-a11y-verdict-2026-07-09.json",
+        "spotOrderTypeSelectL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-type-select-a11y-verdict-2026-07-09.json"
+      },
+      "remaining": "authenticated order placement/password verification, spot drawer selection, order tabs, and device-auth behavior remain separate slices",
+      "latestSafeSlice": "spot-percentage-slider-a11y",
+      "l3CertifiedSlices": {
+        "spot-tab-semantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-tab-semantics-verdict-2026-07-09.json",
+        "spot-bottom-tab-semantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-bottom-tab-semantics-verdict-2026-07-09.json",
+        "spot-history-button-login-boundary": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-history-button-login-boundary-verdict-2026-07-09.json",
+        "spot-orderbook-price-buttons": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-price-buttons-verdict-2026-07-09.json",
+        "spot-percentage-slider-a11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-percentage-slider-a11y-verdict-2026-07-09.json",
+        "spot-favorite-login-boundary": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-favorite-login-boundary-verdict-2026-07-09.json",
+        "spot-decimal-keyboard-hints": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-decimal-keyboard-hints-verdict-2026-07-09.json",
+        "spot-order-cta-login-boundary": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-cta-login-boundary-verdict-2026-07-09.json",
+        "spot-anonymous-auth-request-guard": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-anonymous-auth-request-guard-verdict-2026-07-09.json",
+        "spot-orderbook-mode-semantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-mode-semantics-verdict-2026-07-09.json",
+        "spot-coin-drawer-trigger-semantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-trigger-semantics-verdict-2026-07-09.json",
+        "spot-transfer-button-login-boundary": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-transfer-button-login-boundary-verdict-2026-07-09.json",
+        "spot-coin-drawer-row-semantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-row-semantics-verdict-2026-07-09.json",
+        "spot-depth-select-a11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-depth-select-a11y-verdict-2026-07-09.json",
+        "spot-order-type-select-a11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-type-select-a11y-verdict-2026-07-09.json"
+      }
+    },
+    {
+      "id": "03-contract_trading",
+      "priority": "P1",
+      "status": "blocked-at-authority-boundary-after-local-safe-slices",
+      "domain": "contract_trading",
+      "android_refs": [
+        "app/src/main/AndroidManifest.xml",
+        "app/src/main/res/values-ro/strings.xml",
+        "app/src/main/res/values-zh-rTW/strings.xml",
+        "app/src/main/res/values-zh-rCN/strings.xml",
+        "app/src/main/res/drawable/pop_secondcontract_bg.xml",
+        "app/src/main/res/drawable/shape_btn_secondcontract_bg_canotbuy.xml",
+        "app/src/main/res/drawable/bottom_mine_selector.xml",
+        "app/src/main/res/drawable/pop_secondcontract_bg_bottom.xml",
+        "app/src/main/res/values-ja/strings.xml",
+        "app/src/main/res/layout/position_fragment_list_item.xml",
+        "app/src/main/res/layout/fragment_overview.xml",
+        "app/src/main/res/layout/fragment_overview_account.xml"
+      ],
+      "h5_targets": [
+        "package-lock.json",
+        "src/components/DepthChart/ContractDepthChart.tsx",
+        "src/api/contractApi.ts",
+        "src/api/index.ts",
+        "src/pages/ContractPage/index.tsx",
+        "src/pages/ContractPage/ContractPositionPage.tsx",
+        "src/pages/ContractPage/positionUtils.ts",
+        "src/pages/ContractPage/ContractHistoryPage.tsx",
+        "src/pages/ContractPage/PositionList.tsx",
+        "src/pages/ContractPage/ContractPageSkeleton.tsx",
+        "src/pages/ContractPage/LeverageSelector.tsx",
+        "src/pages/ContractPage/index.ts"
+      ],
+      "hazards": [
+        "keyboard_focus",
+        "scroll_owner",
+        "api_backed_blank_section",
+        "route_guard_auth_boundary"
+      ],
+      "local_gates": [
+        "code diff scoped to slice",
+        "targeted lint/typecheck",
+        "npm run build",
+        "mobile viewport screenshot/readback",
+        "SSOT evidence/report update"
+      ],
+      "negative_gates": [
+        "no route removal",
+        "no auth state field rename",
+        "no token leak to third-party",
+        "no claim beyond verified level"
+      ],
+      "authority": "local_code_commit_allowed; push/deploy/login/device require exact readback gate",
+      "next_safe_action": "choose an explicit gated lane: authenticated session smoke, device/PWA/production certification, push/CI, or real-order/funds lane; otherwise only read-only/SSOT planning remains",
+      "evidence": {
+        "contractPairDrawerSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-pair-drawer-semantics/contract-pair-drawer-semantics-390x844.json",
+        "contractPairDrawerSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-pair-drawer-semantics-loop-2026-07-09T13-59-09-295341+00-00.json",
+        "contractOrderTypeSelectA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-type-select-a11y/contract-order-type-select-a11y-390x844.json",
+        "contractOrderTypeSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-order-type-select-a11y-loop-2026-07-09T14-02-14-894506+00-00.json",
+        "contractMarginModeSelectA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-margin-mode-select-a11y/contract-margin-mode-select-a11y-390x844.json",
+        "contractMarginModeSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-margin-mode-select-a11y-loop-2026-07-09T14-04-55-023776+00-00.json",
+        "contractPairDrawerStaleAmendReceipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_7b259ada-contract-pair-drawer-semantics-2026-07-09.json",
+        "contractAdvancedLimitSelectA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-advanced-limit-select-a11y/contract-advanced-limit-select-a11y-390x844.json",
+        "contractAdvancedLimitSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-advanced-limit-select-a11y-loop-2026-07-09T14-08-49-867645+00-00.json",
+        "contractOrderTypeSelectStaleAmendReceipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_150d248f-contract-order-type-select-a11y-2026-07-09.json",
+        "contractDepthSelectA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-depth-select-a11y/contract-depth-select-a11y-390x844.json",
+        "contractDepthSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-depth-select-a11y-loop-2026-07-09T14-13-23-328115+00-00.json",
+        "contractMarginModeSelectL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-margin-mode-select-a11y-verdict-2026-07-09.json",
+        "contractOrderbookModeSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-mode-semantics/contract-orderbook-mode-semantics-390x844.json",
+        "contractOrderbookModeSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-orderbook-mode-semantics-loop-2026-07-09T14-17-09-109262+00-00.json",
+        "contractPairDrawerStaleAmendReceipt2": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_5f88443c-contract-pair-drawer-semantics-2026-07-09.json",
+        "contractTransferButtonSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-transfer-button-semantics/contract-transfer-button-semantics-390x844.json",
+        "contractTransferButtonSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-transfer-button-semantics-loop-2026-07-09T14-21-14-067912+00-00.json",
+        "contractAdvancedLimitSelectL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-advanced-limit-select-a11y-verdict-2026-07-09.json",
+        "contractOrderbookPriceButtons": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-price-buttons/contract-orderbook-price-buttons-390x844.json",
+        "contractOrderbookPriceButtonsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-orderbook-price-buttons-loop-2026-07-09T14-30-05-507002+00-00.json",
+        "contractOrderTypeStaleAmendReceipt2": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_18c76d44-contract-order-type-select-a11y-2026-07-09.json",
+        "contractDepthSelectL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-depth-select-a11y-verdict-2026-07-09.json",
+        "contractOrderbookModeSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-orderbook-mode-semantics-verdict-2026-07-09.json",
+        "contractPairDrawerStaleAmendReceipt3": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_732c39c5-contract-pair-drawer-semantics-2026-07-09.json",
+        "contractTransferButtonSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-transfer-button-semantics-verdict-2026-07-09.json",
+        "contractOrderbookPriceButtonsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-orderbook-price-buttons-verdict-2026-07-09.json",
+        "contractOrderTypeSelectL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-order-type-select-a11y-verdict-2026-07-09.json",
+        "contractPairDrawerSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-pair-drawer-semantics-verdict-2026-07-09.json",
+        "contractOrderCtaSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-cta-semantics/contract-order-cta-semantics-390x844.json",
+        "contractOrderCtaSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-order-cta-semantics-loop-2026-07-09T14-41-10-881868+00-00.json",
+        "contractOrderCtaSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-order-cta-semantics-verdict-2026-07-09.json",
+        "contractEntrustTabsSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-entrust-tabs-semantics/contract-entrust-tabs-semantics-390x844.json",
+        "contractEntrustTabsSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-entrust-tabs-semantics-loop-2026-07-09T14-49-51-640232+00-00.json",
+        "contractEntrustTabsSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-entrust-tabs-semantics-verdict-2026-07-09.json",
+        "contractBottomTabsSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-bottom-tabs-semantics/contract-bottom-tabs-semantics-390x844.json",
+        "contractBottomTabsSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-bottom-tabs-semantics-loop-2026-07-09T14-54-16-701659+00-00.json",
+        "contractBottomTabsSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-bottom-tabs-semantics-verdict-2026-07-09.json",
+        "contractLeverageButtonSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-button-semantics/contract-leverage-button-semantics-390x844.json",
+        "contractLeverageButtonSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-button-semantics-loop-2026-07-09T14-59-57-577343+00-00.json",
+        "contractLeverageButtonSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-leverage-button-semantics-verdict-2026-07-09.json",
+        "contractOpponentPriceSemantics": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-opponent-price-semantics/contract-opponent-price-semantics-390x844.json",
+        "contractOpponentPriceSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-opponent-price-semantics-loop-2026-07-09T15-05-20-567758+00-00.json",
+        "contractDecimalInputsA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-decimal-inputs-a11y/contract-decimal-inputs-a11y-390x844.json",
+        "contractDecimalInputsA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-decimal-inputs-a11y-loop-2026-07-09T15-09-24-824977+00-00.json",
+        "contractOpponentPriceSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-opponent-price-semantics-verdict-2026-07-09.json",
+        "contractPercentageSliderA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-percentage-slider-a11y/contract-percentage-slider-a11y-390x844.json",
+        "contractPercentageSliderA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-percentage-slider-a11y-loop-2026-07-09T15-16-19-007247+00-00.json",
+        "contractDecimalInputsA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-decimal-inputs-a11y-verdict-2026-07-09.json",
+        "contractLeverageDrawerA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-drawer-a11y/contract-leverage-drawer-a11y-390x844.json",
+        "contractLeverageDrawerA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-drawer-a11y-loop-2026-07-09T15-24-21-797713+00-00.json",
+        "contractPercentageSliderA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-percentage-slider-a11y-verdict-2026-07-09.json",
+        "contractLeverageIconDecorativeA11y": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-icon-decorative-a11y/contract-leverage-icon-decorative-a11y-390x844.json",
+        "contractLeverageIconDecorativeA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-icon-decorative-a11y-loop-2026-07-09T15-27-54-520558+00-00.json",
+        "contractLeverageDrawerA11yStaleAmendReceipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_8d32d4cd-contract-leverage-drawer-a11y-2026-07-09.json",
+        "contractLeverageIconDecorativeA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-leverage-icon-decorative-a11y-verdict-2026-07-09.json",
+        "contractLeverageDrawerA11yStaleAmendReceipt2": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_1ea35a32-contract-leverage-drawer-a11y-2026-07-09.json",
+        "contractLeverageDrawerA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-leverage-drawer-a11y-verdict-2026-07-09.json",
+        "autonomousStopRootCauseReview": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/autonomous-stop-root-cause-review-2026-07-09-contract-gate.json"
+      },
+      "certification": {
+        "contract-pair-drawer-semantics": "L3-local-certified-packet",
+        "contract-order-type-select-a11y": "L3-local-certified-packet",
+        "contract-margin-mode-select-a11y": "L3-local-certified-packet",
+        "contract-advanced-limit-select-a11y": "L3-local-certified-packet",
+        "contract-depth-select-a11y": "L3-local-certified-packet",
+        "contract-orderbook-mode-semantics": "L3-local-certified-packet",
+        "contract-transfer-button-semantics": "L3-local-certified-packet",
+        "contract-orderbook-price-buttons": "L3-local-certified-packet",
+        "contract-order-cta-semantics": "L3-local-certified-packet",
+        "contract-entrust-tabs-semantics": "L3-local-certified-packet",
+        "contract-bottom-tabs-semantics": "L3-local-certified-packet",
+        "contract-leverage-button-semantics": "L3-local-certified-packet",
+        "contract-opponent-price-semantics": "L3-local-certified-packet",
+        "contract-decimal-inputs-a11y": "L3-local-certified-packet",
+        "contract-percentage-slider-a11y": "L3-local-certified-packet",
+        "contract-leverage-drawer-a11y": "L3-local-certified-packet",
+        "contract-leverage-icon-decorative-a11y": "L3-local-certified-packet"
+      }
+    },
+    {
+      "id": "04-assets_wallet",
+      "priority": "P1",
+      "status": "blocked-or-needs-auth",
+      "domain": "assets_wallet",
+      "android_refs": [
+        "identify/src/main/java/com/baidu/ocr/ui/camera/CameraNativeHelper.java",
+        "app/src/ua/assets/ShareSDK.xml",
+        "app/src/main/AndroidManifest.xml",
+        "app/src/main/res/values-ro/strings.xml",
+        "app/src/main/res/values-zh-rTW/strings.xml",
+        "app/src/main/res/values-zh-rCN/strings.xml",
+        "app/src/main/res/drawable/assets_bottom_botton.xml",
+        "app/src/main/res/drawable/new_assets_bg.xml",
+        "app/src/main/res/drawable/assets_switch_bg_shape.xml",
+        "app/src/main/res/drawable/assets_right_top.xml",
+        "app/src/main/res/drawable/ae_assets_btn_bg.xml",
+        "app/src/main/res/drawable/assets_bottom_pop_bg.xml"
+      ],
+      "h5_targets": [
+        "src/components/forms/TradingPasswordForm.tsx",
+        "src/components/common/TradePairsDrawer.tsx",
+        "src/components/common/VerificationDrawer.tsx",
+        "src/components/help/CoinRateTable.tsx",
+        "src/hooks/useBalanceBao.ts",
+        "src/examples/WalletTradeTypeExample.tsx",
+        "src/api/cmsApi.ts",
+        "src/api/spotApi.ts",
+        "src/api/commonApi.ts",
+        "src/api/userApi.ts",
+        "src/api/financialApi.ts",
+        "src/api/types.ts"
+      ],
+      "hazards": [
+        "keyboard_focus",
+        "scroll_owner",
+        "route_guard_auth_boundary",
+        "safe_area_bottom_shell"
+      ],
+      "local_gates": [
+        "code diff scoped to slice",
+        "targeted lint/typecheck",
+        "npm run build",
+        "mobile viewport screenshot/readback",
+        "SSOT evidence/report update"
+      ],
+      "negative_gates": [
+        "no route removal",
+        "no auth state field rename",
+        "no token leak to third-party",
+        "no claim beyond verified level"
+      ],
+      "authority": "local_code_commit_allowed; push/deploy/login/device require exact readback gate",
+      "next_safe_action": "audit android refs and h5 targets, then implement the smallest missing parity behavior with local evidence"
+    },
+    {
+      "id": "05-mine_settings_security",
+      "priority": "P2",
+      "status": "blocked-or-needs-auth",
+      "domain": "mine_settings_security",
+      "android_refs": [
+        "app/src/main/AndroidManifest.xml",
+        "app/src/main/res/values-ro/strings.xml",
+        "app/src/main/res/values-zh-rTW/strings.xml",
+        "app/src/main/res/layout-land/layout_usdt_kline_activity.xml",
+        "app/src/main/res/layout-land/layout_kline_activity.xml",
+        "app/src/main/res/values-zh-rCN/strings.xml",
+        "app/src/main/res/drawable/mine_invite_income_shape.xml",
+        "app/src/main/res/drawable/bottom_mine_selector.xml",
+        "app/src/main/res/values-ja/strings.xml",
+        "app/src/main/res/layout/position_fragment_list_item.xml",
+        "app/src/main/res/layout/activity_certificate.xml",
+        "app/src/main/res/layout/home_fragment3.xml"
+      ],
+      "h5_targets": [
+        "src/App.tsx",
+        "src/types/security.ts",
+        "src/config/apiConfig.ts",
+        "src/utils/sumsubConfig.ts",
+        "src/utils/apiConfig.ts",
+        "src/utils/settingsConfigGenerator.ts",
+        "src/components/forms/TradingPasswordForm.tsx",
+        "src/components/common/AuthRoute.tsx",
+        "src/components/common/ColorThemeSettings.tsx",
+        "src/components/common/VerificationDrawer.tsx",
+        "src/components/common/PrivateRoute.tsx",
+        "src/hooks/useGoogleAuthConfig.ts"
+      ],
+      "hazards": [
+        "keyboard_focus",
+        "scroll_owner",
+        "route_guard_auth_boundary"
+      ],
+      "local_gates": [
+        "code diff scoped to slice",
+        "targeted lint/typecheck",
+        "npm run build",
+        "mobile viewport screenshot/readback",
+        "SSOT evidence/report update"
+      ],
+      "negative_gates": [
+        "no route removal",
+        "no auth state field rename",
+        "no token leak to third-party",
+        "no claim beyond verified level"
+      ],
+      "authority": "local_code_commit_allowed; push/deploy/login/device require exact readback gate",
+      "next_safe_action": "audit android refs and h5 targets, then implement the smallest missing parity behavior with local evidence"
+    },
+    {
+      "id": "06-pwa_shell",
+      "priority": "P0",
+      "status": "ready-local",
+      "domain": "pwa_shell",
+      "android_refs": [
+        "app/src/main/AndroidManifest.xml",
+        "app/src/main/res/drawable/progress_webview.xml",
+        "app/src/main/res/layout/activity_about_us.xml",
+        "app/src/main/res/layout/item_change_pre_introduc.xml",
+        "app/src/main/res/layout/activity_rebate_rules.xml",
+        "app/src/main/res/layout/dialog_partner.xml",
+        "app/src/main/res/layout/activity_kyc_web.xml",
+        "app/src/main/res/layout/activity_notice_details.xml",
+        "app/src/main/res/layout/activity_subscription_and_new_browser_web.xml",
+        "app/src/main/res/layout/activity_channel.xml",
+        "app/src/main/res/layout/activity_web_u_card.xml",
+        "app/src/main/res/layout/activity_ieo_purchase.xml"
+      ],
+      "h5_targets": [
+        "tsconfig.node.json",
+        "index.html",
+        "tailwind.config.js",
+        "tsconfig.app.json",
+        "package-lock.json",
+        "package.json",
+        "vite.config.ts",
+        "public/manifest.json",
+        "src/main.tsx",
+        "src/index.html",
+        "src/contexts/SliderCaptchaContextSimple.tsx",
+        "src/config/socketConfig.ts"
+      ],
+      "hazards": [
+        "safe_area_bottom_shell",
+        "scroll_owner",
+        "api_backed_blank_section"
+      ],
+      "local_gates": [
+        "code diff scoped to slice",
+        "targeted lint/typecheck",
+        "npm run build",
+        "mobile viewport screenshot/readback",
+        "SSOT evidence/report update"
+      ],
+      "negative_gates": [
+        "no route removal",
+        "no auth state field rename",
+        "no token leak to third-party",
+        "no claim beyond verified level"
+      ],
+      "authority": "local_code_commit_allowed; push/deploy/login/device require exact readback gate",
+      "next_safe_action": "audit android refs and h5 targets, then implement the smallest missing parity behavior with local evidence"
+    },
+    {
+      "id": "spot-favorite-login-boundary",
+      "surface": "spot_trading",
+      "status": "L2-local-loop-verified-pending-verifier",
+      "updatedAt": "2026-07-09T09:31:21.053639+00:00",
+      "androidReference": [
+        "bbtrade/SpotFragment.java collection/login boundary"
+      ],
+      "h5Targets": [
+        "src/pages/TradingPage/TradingPage.tsx",
+        "src/api/spotApi.ts"
+      ],
+      "evidence": [
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.json"
+      ],
+      "boundedClaim": "Anonymous favorite interaction redirects to login before collection API and preserves spot->Kline roundtrip route semantics in local Chrome mobile viewport.",
+      "negative": [
+        "no credential/session read",
+        "no real order submitted",
+        "no collection API before login in success smoke"
+      ]
+    },
+    {
+      "id": "spot-input-keyboard-hints",
+      "surface": "spot_trading",
+      "status": "L2-local-loop-verified-pending-verifier",
+      "updatedAt": "2026-07-09T09:35:59.324103+00:00",
+      "androidReference": [
+        "bbtrade SpotFragment form inputs; mobile keyboard/input semantics equivalent"
+      ],
+      "h5Targets": [
+        "src/pages/TradingPage/TradingPage.tsx"
+      ],
+      "evidence": [
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-input-keyboard-hints/spot-input-keyboard-hints-390x844.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.json"
+      ],
+      "boundedClaim": "Spot price and amount fields expose decimal mobile keyboard hints and remain visible in local Chrome mobile viewport; favorite login-boundary and spot->Kline regressions remain passing.",
+      "negative": [
+        "no credential/session read",
+        "no real order submitted",
+        "no push/deploy"
+      ]
+    },
+    {
+      "id": "spot-cta-login-boundary",
+      "surface": "spot_trading",
+      "status": "L2-local-loop-verified-pending-verifier",
+      "updatedAt": "2026-07-09T09:42:22.484383+00:00",
+      "androidReference": [
+        "bbtrade SpotFragment submit/login boundary; anonymous submit goes to LoginActivity before order mutation"
+      ],
+      "h5Targets": [
+        "src/pages/TradingPage/TradingPage.tsx"
+      ],
+      "evidence": [
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-cta-login-boundary/spot-cta-login-boundary-390x844.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-input-keyboard-hints/spot-input-keyboard-hints-390x844.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.json",
+        "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.json"
+      ],
+      "boundedClaim": "Spot anonymous order CTA is a semantic button with accessible label, redirects to login before order API, and preserves keyboard/favorite/Kline regressions in local Chrome mobile viewport.",
+      "negative": [
+        "no credential/session read",
+        "no real order submitted",
+        "no order API before login",
+        "no push/deploy"
+      ]
+    }
+  ],
+  "updatedAt": "2026-07-09T09:42:22.484383+00:00"
+}

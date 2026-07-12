@@ -1,0 +1,269 @@
+{
+  "blocked_by_policy": 3,
+  "external_side_effects_executed": false,
+  "generated_at": "2026-07-07T03:12:16+00:00",
+  "mode": "shadow_route_only_batch_report",
+  "ok": true,
+  "project": "hermes-agent-os-control-plane",
+  "record_count": 6,
+  "records": 6,
+  "records_detail": [
+    {
+      "domain": "devops",
+      "intent": "检查 Fable 5 未覆盖部分并生成 Agent OS projection health 修复方案",
+      "policy_findings": [],
+      "requested_side_effects": [
+        "S1"
+      ],
+      "risk_class": "low",
+      "suggested_capability_nodes": [
+        {
+          "id": "local_script.personal_ai_os_doctor",
+          "kind": "local_packet_script",
+          "side_effects": "S1",
+          "source_ref": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/personal_ai_os_doctor.py"
+        },
+        {
+          "id": "local_script.personal_ai_os_control",
+          "kind": "local_packet_script",
+          "side_effects": "S1",
+          "source_ref": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/personal_ai_os_control.py"
+        },
+        {
+          "id": "local_script.build_capability_projection",
+          "kind": "local_packet_script",
+          "side_effects": "S1",
+          "source_ref": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/build_capability_projection.py"
+        },
+        {
+          "id": "skill.software-development-skill-ecosystem-diagnosis-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/software-development/skill-ecosystem-diagnosis/SKILL.md"
+        },
+        {
+          "id": "skill..archive-curator-umbrella-2026-06-17-devops-hermes-tool-availability-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/curator-umbrella-2026-06-17/devops/hermes-tool-availability/SKILL.md"
+        }
+      ],
+      "suggested_count": 8,
+      "would_execute": false
+    },
+    {
+      "domain": "devops",
+      "intent": "生成本地文件 doctor report 和 capability projection",
+      "policy_findings": [],
+      "requested_side_effects": [
+        "S2"
+      ],
+      "risk_class": "medium",
+      "suggested_capability_nodes": [
+        {
+          "id": "local_script.personal_ai_os_doctor",
+          "kind": "local_packet_script",
+          "side_effects": "S1",
+          "source_ref": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/personal_ai_os_doctor.py"
+        },
+        {
+          "id": "local_script.build_capability_projection",
+          "kind": "local_packet_script",
+          "side_effects": "S1",
+          "source_ref": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/build_capability_projection.py"
+        },
+        {
+          "id": "skill..archive-devops-macos-network-admin-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/devops/macos-network-admin/SKILL.md"
+        },
+        {
+          "id": "skill..archive-curator-umbrella-2026-06-17-devops-hermes-tool-availability-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/curator-umbrella-2026-06-17/devops/hermes-tool-availability/SKILL.md"
+        },
+        {
+          "id": "skill..archive-product-prototype-code-audit-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/product-prototype-code-audit/SKILL.md"
+        }
+      ],
+      "suggested_count": 8,
+      "would_execute": false
+    },
+    {
+      "domain": "devops",
+      "intent": "把这个 PR 合并并发布到生产",
+      "policy_findings": [
+        {
+          "gate": "default_off_external_side_effects",
+          "level": "blocked",
+          "message": "S5 requires AuthorityGrant before execution"
+        }
+      ],
+      "requested_side_effects": [
+        "S5"
+      ],
+      "risk_class": "critical",
+      "suggested_capability_nodes": [
+        {
+          "id": "skill..archive-taskpool-ingest-triage-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/taskpool-ingest-triage/SKILL.md"
+        },
+        {
+          "id": "skill..archive-software-development-external-framework-evaluation-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/software-development/external-framework-evaluation/SKILL.md"
+        },
+        {
+          "id": "skill..archive-curator-umbrella-2026-06-10-github-github-pr-workflow-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/curator-umbrella-2026-06-10/github/github-pr-workflow/SKILL.md"
+        },
+        {
+          "id": "skill..archive-curator-umbrella-2026-06-10-github-github-code-review-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/curator-umbrella-2026-06-10/github/github-code-review/SKILL.md"
+        },
+        {
+          "id": "skill.software-development-hermes-s6-container-supervision-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/software-development/hermes-s6-container-supervision/SKILL.md"
+        }
+      ],
+      "suggested_count": 8,
+      "would_execute": false
+    },
+    {
+      "domain": "communication",
+      "intent": "发送 Telegram 通知给所有频道",
+      "policy_findings": [
+        {
+          "gate": "default_off_external_side_effects",
+          "level": "blocked",
+          "message": "S4 requires AuthorityGrant before execution"
+        }
+      ],
+      "requested_side_effects": [
+        "S4"
+      ],
+      "risk_class": "high",
+      "suggested_capability_nodes": [
+        {
+          "id": "skill.devops-gateway-telegram-setup-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/devops/gateway-telegram-setup/SKILL.md"
+        }
+      ],
+      "suggested_count": 1,
+      "would_execute": false
+    },
+    {
+      "domain": "hermes_self_architecture",
+      "intent": "读取 Hermes taskpool 状态并给出审计报告",
+      "policy_findings": [],
+      "requested_side_effects": [
+        "S1"
+      ],
+      "risk_class": "low",
+      "suggested_capability_nodes": [
+        {
+          "id": "skill..archive-taskpool-ingest-triage-skill",
+          "kind": "skill",
+          "side_effects": "S5",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/taskpool-ingest-triage/SKILL.md"
+        },
+        {
+          "id": "skill..archive-task-framing-governance-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/task-framing-governance/SKILL.md"
+        },
+        {
+          "id": "skill.software-development-harness-intake-contract-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/software-development/harness-intake-contract/SKILL.md"
+        },
+        {
+          "id": "skill.software-development-agent-boundary-audit-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/software-development/agent-boundary-audit/SKILL.md"
+        },
+        {
+          "id": "skill.software-development-taskpool-runtime-reconciliation-skill",
+          "kind": "skill",
+          "side_effects": "S2",
+          "source_ref": "/Users/charles/.hermes/skills/software-development/taskpool-runtime-reconciliation/SKILL.md"
+        }
+      ],
+      "suggested_count": 8,
+      "would_execute": false
+    },
+    {
+      "domain": "hermes_self_architecture",
+      "intent": "删除旧的 workflow artifacts",
+      "policy_findings": [
+        {
+          "gate": "default_off_external_side_effects",
+          "level": "blocked",
+          "message": "S6 requires AuthorityGrant before execution"
+        }
+      ],
+      "requested_side_effects": [
+        "S6"
+      ],
+      "risk_class": "critical",
+      "suggested_capability_nodes": [
+        {
+          "id": "skill..archive-curator-umbrella-2026-06-17-autonomous-ai-agents-hermes-voice-console-integration-skill",
+          "kind": "skill",
+          "side_effects": "S3",
+          "source_ref": "/Users/charles/.hermes/skills/.archive/curator-umbrella-2026-06-17/autonomous-ai-agents/hermes-voice-console-integration/SKILL.md"
+        },
+        {
+          "id": "skill.apple-skill",
+          "kind": "skill",
+          "side_effects": "S3",
+          "source_ref": "/Users/charles/.hermes/skills/apple/SKILL.md"
+        },
+        {
+          "id": "skill.research-skill",
+          "kind": "skill",
+          "side_effects": "S3",
+          "source_ref": "/Users/charles/.hermes/skills/research/SKILL.md"
+        },
+        {
+          "id": "skill.gaming-skill",
+          "kind": "skill",
+          "side_effects": "S3",
+          "source_ref": "/Users/charles/.hermes/skills/gaming/SKILL.md"
+        },
+        {
+          "id": "skill.social-media-skill",
+          "kind": "skill",
+          "side_effects": "S3",
+          "source_ref": "/Users/charles/.hermes/skills/social-media/SKILL.md"
+        }
+      ],
+      "suggested_count": 8,
+      "would_execute": false
+    }
+  ],
+  "runtime_effect": "none; route_shadow computed advisory records only and did not invoke capabilities",
+  "runtime_mutation": false,
+  "schema": "agent_os_router_shadow_report_v1",
+  "source_projection": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/capability_graph_projection.json",
+  "would_execute_anything": false
+}

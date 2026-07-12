@@ -1,0 +1,266 @@
+{
+  "baseUrl": "http://127.0.0.1:4173/",
+  "results": [
+    {
+      "size": {
+        "width": 375,
+        "height": 812
+      },
+      "ok": true,
+      "metrics": {
+        "url": "http://127.0.0.1:4173/",
+        "viewport": {
+          "width": 375,
+          "height": 812
+        },
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errorText": [],
+        "navRect": {
+          "x": 0,
+          "y": 748,
+          "width": 375,
+          "height": 64,
+          "bottom": 812
+        },
+        "buttons": [
+          {
+            "text": "首页",
+            "rect": {
+              "x": 0,
+              "y": 749,
+              "width": 75,
+              "height": 50,
+              "bottom": 799
+            },
+            "current": "page"
+          },
+          {
+            "text": "行情",
+            "rect": {
+              "x": 75,
+              "y": 749,
+              "width": 75,
+              "height": 50,
+              "bottom": 799
+            },
+            "current": null
+          },
+          {
+            "text": "交易",
+            "rect": {
+              "x": 150,
+              "y": 749,
+              "width": 75,
+              "height": 50,
+              "bottom": 799
+            },
+            "current": null
+          },
+          {
+            "text": "合约",
+            "rect": {
+              "x": 225,
+              "y": 749,
+              "width": 75,
+              "height": 50,
+              "bottom": 799
+            },
+            "current": null
+          },
+          {
+            "text": "资产",
+            "rect": {
+              "x": 300,
+              "y": 749,
+              "width": 75,
+              "height": 50,
+              "bottom": 799
+            },
+            "current": null
+          }
+        ],
+        "navWithinViewport": true,
+        "lastButtonVisible": true,
+        "safeAreaPaddingBottom": "0px",
+        "navHeight": "64px"
+      },
+      "screenshot": "evidence/2026-07-09-slice3/tabbar-home-375x812.png"
+    },
+    {
+      "size": {
+        "width": 390,
+        "height": 844
+      },
+      "ok": true,
+      "metrics": {
+        "url": "http://127.0.0.1:4173/",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errorText": [],
+        "navRect": {
+          "x": 0,
+          "y": 780,
+          "width": 390,
+          "height": 64,
+          "bottom": 844
+        },
+        "buttons": [
+          {
+            "text": "首页",
+            "rect": {
+              "x": 0,
+              "y": 781,
+              "width": 78,
+              "height": 50,
+              "bottom": 831
+            },
+            "current": "page"
+          },
+          {
+            "text": "行情",
+            "rect": {
+              "x": 78,
+              "y": 781,
+              "width": 78,
+              "height": 50,
+              "bottom": 831
+            },
+            "current": null
+          },
+          {
+            "text": "交易",
+            "rect": {
+              "x": 156,
+              "y": 781,
+              "width": 78,
+              "height": 50,
+              "bottom": 831
+            },
+            "current": null
+          },
+          {
+            "text": "合约",
+            "rect": {
+              "x": 234,
+              "y": 781,
+              "width": 78,
+              "height": 50,
+              "bottom": 831
+            },
+            "current": null
+          },
+          {
+            "text": "资产",
+            "rect": {
+              "x": 312,
+              "y": 781,
+              "width": 78,
+              "height": 50,
+              "bottom": 831
+            },
+            "current": null
+          }
+        ],
+        "navWithinViewport": true,
+        "lastButtonVisible": true,
+        "safeAreaPaddingBottom": "0px",
+        "navHeight": "64px"
+      },
+      "screenshot": "evidence/2026-07-09-slice3/tabbar-home-390x844.png"
+    },
+    {
+      "size": {
+        "width": 414,
+        "height": 896
+      },
+      "ok": true,
+      "metrics": {
+        "url": "http://127.0.0.1:4173/",
+        "viewport": {
+          "width": 414,
+          "height": 896
+        },
+        "hasHome": true,
+        "hasRanking": true,
+        "hasBtc": true,
+        "errorText": [],
+        "navRect": {
+          "x": 0,
+          "y": 832,
+          "width": 414,
+          "height": 64,
+          "bottom": 896
+        },
+        "buttons": [
+          {
+            "text": "首页",
+            "rect": {
+              "x": 0,
+              "y": 833,
+              "width": 82.796875,
+              "height": 50,
+              "bottom": 883
+            },
+            "current": "page"
+          },
+          {
+            "text": "行情",
+            "rect": {
+              "x": 82.796875,
+              "y": 833,
+              "width": 82.8125,
+              "height": 50,
+              "bottom": 883
+            },
+            "current": null
+          },
+          {
+            "text": "交易",
+            "rect": {
+              "x": 165.609375,
+              "y": 833,
+              "width": 82.796875,
+              "height": 50,
+              "bottom": 883
+            },
+            "current": null
+          },
+          {
+            "text": "合约",
+            "rect": {
+              "x": 248.40625,
+              "y": 833,
+              "width": 82.796875,
+              "height": 50,
+              "bottom": 883
+            },
+            "current": null
+          },
+          {
+            "text": "资产",
+            "rect": {
+              "x": 331.203125,
+              "y": 833,
+              "width": 82.796875,
+              "height": 50,
+              "bottom": 883
+            },
+            "current": null
+          }
+        ],
+        "navWithinViewport": true,
+        "lastButtonVisible": true,
+        "safeAreaPaddingBottom": "0px",
+        "navHeight": "64px"
+      },
+      "screenshot": "evidence/2026-07-09-slice3/tabbar-home-414x896.png"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "slice": "contract-depth-view-persistence",
+  "date": "2026-07-10",
+  "status": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+  "androidReference": {
+    "file": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "facts": [
+      "Startup checks non-empty SPUtil key USDT_Depth and restores the depth view.",
+      "Selecting a real K-line period clears USDT_Depth.",
+      "The real K-line period is persisted separately as usdttimezone."
+    ],
+    "lines": ["708-716", "2066-2072"]
+  },
+  "scope": {
+    "productFiles": [
+      "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+      "docs/android-parity-front-end-plan.md"
+    ],
+    "behavior": [
+      "Persist depth as a separate local view preference.",
+      "Restore depth after reload without overwriting the last real K-line period.",
+      "Clear the depth preference when selecting a real period.",
+      "Do not change API, WebSocket, authentication, order, or depth-data contracts."
+    ]
+  },
+  "tdd": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-depth-persistence/verify_contract_depth_persistence.py",
+    "red": {
+      "exit": 1,
+      "facts": {
+        "depthPressedImmediately": true,
+        "storedView": null,
+        "depthPressedAfterReload": false,
+        "storedPeriodPreserved": "min30"
+      }
+    },
+    "green": {
+      "exit": 0,
+      "facts": {
+        "storedDepthView": "depth",
+        "depthPressedAfterReload": true,
+        "storedPeriodPreservedDuringDepth": "min30",
+        "depthPreferenceAfterPeriodSelection": null,
+        "periodPressedAfterReload": true
+      }
+    }
+  },
+  "verification": {
+    "scopedEslint": "BASELINE_ONLY_FAILURE: four no-explicit-any errors existed identically in the parent commit; no new lint regression",
+    "productionBuild": "PASS exit 0; 12670 modules transformed",
+    "gitDiffCheck": "PASS exit 0",
+    "runtimeHarness": "PASS exit 0",
+    "currentBranchRuntimeReadback": {
+      "readbackAt": "2026-07-10T17:20:35+08:00",
+      "exit": 0,
+      "depthAfterReload": {"pressed": true, "storedPeriod": "min30", "storedView": "depth"},
+      "realPeriodAfterReload": {"pressed": true, "storedPeriod": "min30", "storedView": null}
+    },
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-depth-persistence/contract-depth-restored-390x844.png",
+    "visualReadback": {
+      "viewport": "390x844",
+      "depthButtonSelected": true,
+      "indicatorEntryVisible": false,
+      "depthContainerVisible": true,
+      "realDepthCurveVisible": false,
+      "note": "The existing depth view shows its grid/container but no plotted depth curve or rows in this anonymous test-data run. This slice certifies restoration state only and does not claim depth-data completeness.",
+      "blockingOverlapOrActionClippingObserved": false
+    }
+  },
+  "commit": "d6c1d4a",
+  "certification": {
+    "level": "L3-local-certified-packet",
+    "projectLoop": {
+      "ok": true,
+      "blockers": 0,
+      "exit": 0,
+      "latestReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+      "timestampedReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T07-40-37-119Z.json"
+    },
+    "independentVerifier": {
+      "delegation": "deleg_ca429f00",
+      "verdict": "APPROVE",
+      "readbackAt": "2026-07-10T17:20:35+08:00",
+      "scope": "source contract, existing runtime evidence, restoration-state screenshot, diff/lint regression and local side-effect boundary",
+      "boundary": "The verifier could not independently rerun runtime because its isolated check found 4183/9225 unavailable; the parent subsequently reran the harness on the current branch with exit 0. Approval still does not cover plotted depth data or Android device behavior."
+    }
+  },
+  "boundaries": [
+    "No credentials read or entered.",
+    "No remote write, order, payment, push, deploy, or external publish.",
+    "No claim of complete depth-data rendering or Android device certification."
+  ]
+}

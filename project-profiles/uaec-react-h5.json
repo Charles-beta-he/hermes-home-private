@@ -1,0 +1,704 @@
+{
+  "id": "uaec-react-h5",
+  "project": "uaec-react-h5",
+  "display_name": "UAEC React H5",
+  "status": "work-project/active-user-switched",
+  "project_type": "work-application/mobile-trading-h5-react-rewrite",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/uaec-react-h5",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/progress-ledger.md",
+  "role": "Actual React H5 frontend implementation repository for UAEC mobile web/PWA; distinct from the legacy UAEC H5 task container/profile.",
+  "promotion_policy": "evidence-gated Android parity; no 1:1/UI completion claim without code diff, build/static checks, browser/mobile screenshot or readback evidence, and documented web-specific deviations.",
+  "relations": [
+    {
+      "relation": "progress_reference",
+      "target": "uaec-h5",
+      "meaning": "legacy UAEC H5 15-task baseline may seed backlog only; it is not the uaec-react-h5 project entity"
+    },
+    {
+      "relation": "business_logic_reference",
+      "target": "uaec-android",
+      "repo": "/Users/charles/Desktop/folder/work/uaec-android",
+      "branch": "global"
+    }
+  ],
+  "current_components": {
+    "project_profile": "profiled",
+    "progress_ledger": "ledgered",
+    "primary_repo": "verified",
+    "android_parity_plan": "active",
+    "branch_management": "active-local-dev-ahead-origin",
+    "slice_1_banner_navigation": "runtime-and-fixture-verified-local",
+    "certified_full_acceptance_loop": "L3-local-certified-packet-in-ssot",
+    "slice_2_home_top_interactions": "click-smoke-verified-anonymous",
+    "slice_3_tabbar_safe_area": "runtime-verified-local-viewports",
+    "slice_4_bottom_tab_route_smoke": "runtime-verified-anonymous",
+    "market_quote_center_parity": "L3-local-approved-market-quote-detail-trade-routing",
+    "spot_trade_kline_routing": "L3-local-approved-route-semantics",
+    "spot_trade_roundtrip_routing": "L3-local-approved-roundtrip-route-semantics"
+  },
+  "execution_policy": "User switched to uaec-react-h5. Safe scoped local development is open; remote push/merge/deploy still require explicit authorization and readback.",
+  "red_lines": [
+    "do not conflate uaec-react-h5 with uaec-h5",
+    "do not use Lark task grouping as the execution plan; use Android reference surface -> React H5 parity slice -> web adjustment -> evidence gate",
+    "do not leak token to third-party links; token-bearing URL decoration only for UAEC-owned or same-origin/relative routes",
+    "do not rename or reinterpret auth state machine fields: realNameAuth, advancedAuth, paypasswordSet, googleEnable",
+    "do not claim UI/UX 1:1 completion from build success alone"
+  ],
+  "updated_at": "2026-07-11T02:35:12+08:00",
+  "primary_repo": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+  "reference_android_repo": "/Users/charles/Desktop/folder/work/uaec-android",
+  "current_branch": "dev",
+  "integration_target_branch": "dev",
+  "feature_branch": "feat/android-1to1-parity",
+  "remote_baseline": "origin/dev",
+  "implementation_stack": {
+    "frontend": "React 18 + TypeScript + Vite 6 + MUI 7 + Zustand + React Router 7 + PWA",
+    "api_base": "development http://localhost:3000/api; production ${VITE_API_BASE_URL}/v1/rest/app/",
+    "android_reference_api_base": "https://{test.uaec.cc|app.uaec.net}/v1/rest/app/"
+  },
+  "code_navigation": {
+    "routes": "src/router/modules/*.route.tsx",
+    "tab_bar": "src/config/tabBar.ts + src/components/common/TabBar.tsx",
+    "api": "src/api/*Api.ts + src/api/apiClient.ts",
+    "services": "src/services/*Service.ts",
+    "auth_store": "src/store/authStore.ts",
+    "pages": "src/pages/*",
+    "android_url_constants": "app/src/main/java/com/uu/market/UrlContent.java",
+    "android_network": "app/src/main/java/com/uu/market/network/OkHttp.java"
+  },
+  "android_parity_plan": "/Users/charles/Desktop/folder/work/uaec-react-h5/docs/android-parity-front-end-plan.md",
+  "legacy_prep_source": "/Users/charles/.hermes/workflows/projects/uaec-h5/tasks/v1.2.0-react-h5-prep.md",
+  "session_evidence": {
+    "desktop_session_id": "20260709_114052_8ffc05",
+    "latest_recovered_claims": [
+      "feature branch feat/android-1to1-parity created from origin/dev",
+      "commit 1badb03 landed feature slice",
+      "commit a3be681 merged feature into local dev",
+      "dev ahead origin/dev by 2 commits",
+      "build and targeted lint passed in desktop session; rechecked in Telegram session"
+    ]
+  },
+  "progress_storage_policy": "Progress, certification plans, loop reports, and evidence are stored under ssot_root, not in the application repository. The app repo should keep product code/docs only; Hermes workflow artifacts live in the project profile/SSOT.",
+  "certification": {
+    "level": "L3-local-certified-packet",
+    "status": "local-only Android-parity packet approved by independent verifier; not pushed/deployed/device/auth/PWA certified",
+    "plan": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/docs/certified-full-acceptance-loop-plan.md",
+    "loop_script": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/scripts/certification/uaec-h5-certified-loop.mjs",
+    "latest_report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+    "l3_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-verdict-2026-07-09T07-37-46Z.json",
+    "latest_local_commit": "2ccad58 docs: record contract calculator workflow",
+    "open_gates": [
+      "push/CI remote readback",
+      "Android simulator or real-device visual diff",
+      "authenticated/session behavior certification",
+      "PWA install/standalone acceptance",
+      "production/test-domain deploy readback"
+    ],
+    "repo_pollution_cleanup": "certification plans, evidence, verdicts, and loop scripts moved out of application repo into ssot_root; app repo evidence/ and scripts/certification removed",
+    "latest_slice_packet": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-slice-evidence-packet-latest.json",
+    "latest_l3_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-parity-verdict-2026-07-09T09-04Z.json",
+    "latest_verifier_vote": "APPROVE deleg_1566d26d",
+    "latest_local_safe_slice": "contract-calculator-three-tab-workflow-bounded-l3-approved",
+    "latest_contract_calculator_formulas_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-calculator-formulas/contract-calculator-formulas.json",
+    "latest_contract_calculator_formulas_level": "L3-local-certified-packet",
+    "latest_contract_calculator_formulas_verifier": "APPROVE deleg_9dc361df for c7cc8c3+6b8d4a3+ece522a+6e7b04d+eeb1984+2ccad58; preserves deleg_07c59424 formula APPROVE and pre-remediation AMEND history",
+    "latest_contract_calculator_workflow_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-calculator-ui-spec/contract-calculator-workflow.json",
+    "latest_contract_calculator_runtime_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-calculator-ui-spec/contract-calculator-runtime-390x640.json",
+    "latest_contract_calculator_workflow_level": "L3-local-certified-packet",
+    "latest_contract_calculator_workflow_verifier": "APPROVE deleg_9dc361df for c7cc8c3+6b8d4a3+ece522a+6e7b04d+eeb1984+2ccad58; supplemental corroborating APPROVE deleg_c2664568; Claude Code fallback NO_VERDICT_AUTH_DISABLED_403",
+    "latest_contract_calculator_remediation_commit": "eeb1984 fix: enforce contract calculator input bounds",
+    "latest_contract_calculator_docs_commit": "2ccad58 docs: record contract calculator workflow",
+    "latest_contract_intro_empty_state_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-intro-empty-state/contract-intro-empty-state.json",
+    "latest_contract_intro_empty_state_level": "L3-local-certified-packet",
+    "latest_contract_intro_empty_state_verifier": "APPROVE deleg_5086cff6 for e02e011+c5a0153",
+    "latest_contract_amend_followups_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-amend-followups/contract-amend-followups.json",
+    "latest_contract_amend_followups_level": "L3-local-certified-packet across bounded approved chains; original 2ce7c1b and 328ee67 remain AMEND alone",
+    "latest_contract_pair_display_identity_level": "L3-local-certified-packet",
+    "latest_contract_pair_display_identity_verifier": "APPROVE deleg_fb91c07c",
+    "latest_contract_favorite_request_generation_level": "L3-local-certified-packet",
+    "latest_contract_favorite_request_generation_commit": "a236c90",
+    "latest_contract_favorite_request_generation_verifier": "APPROVE deleg_53cf5565",
+    "contract_final_replacement_review": "deleg_11c38e12 no-verdict connection failure",
+    "contract_indicator_replacement_review": "APPROVE deleg_5bb396d1",
+    "contract_indicator_lifecycle_level": "L3-local-certified-packet for 2ce7c1b+d3c550b",
+    "contract_aggregate_closure_review": "deleg_87162fea no-verdict timeout",
+    "contract_drawer_callback_review": "deleg_424cd289 AMEND; 328ee67+2e1d0bd APPROVE deleg_63323298",
+    "contract_drawer_callback_level": "L3-local-certified-packet for 328ee67+2e1d0bd",
+    "latest_certification_report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T18-06-20-969Z.json",
+    "latest_contract_trade_entry_intent_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-trade-entry-intent/contract-trade-entry-intent.json",
+    "latest_contract_trade_entry_intent_level": "L3-local-certified-packet",
+    "latest_contract_trade_entry_intent_verifier": "APPROVE deleg_e44ff921",
+    "latest_contract_depth_persistence_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-depth-persistence/contract-depth-persistence.json",
+    "latest_contract_depth_persistence_level": "L3-local-certified-packet",
+    "latest_contract_depth_persistence_verifier": "APPROVE deleg_ca429f00",
+    "latest_contract_continuation_converge": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-continuation-converge-after-d6c1d4a.json",
+    "latest_contract_safe_local_status": "realtime-candle-upsert-bounded-l3-approved",
+    "latest_contract_kline_realtime_upsert_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-kline-realtime-upsert/contract-kline-realtime-upsert.json",
+    "latest_contract_kline_realtime_upsert_level": "L3-local-certified-packet",
+    "latest_contract_kline_realtime_upsert_verifier": "APPROVE deleg_24edadf5",
+    "contract_kline_period_persistence_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-period-persistence/contract-period-persistence.json",
+    "contract_kline_period_persistence_level": "L3-local-certified-packet",
+    "contract_kline_period_persistence_verifier": "APPROVE deleg_b93b8986",
+    "latest_contract_kline_share_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-kline-share/contract-kline-share.json",
+    "latest_contract_kline_share_level": "L3-local-certified-packet",
+    "latest_contract_kline_share_verifier": "APPROVE deleg_dbe98889",
+    "latest_spot_favorite_login_boundary_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-favorite-login-boundary/spot-favorite-login-boundary-390x844.json",
+    "latest_spot_roundtrip_regression_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-kline-roundtrip/spot-kline-roundtrip-390x844.json",
+    "latest_spot_favorite_login_boundary_level": "L2-local-loop-verified-pending-verifier",
+    "latest_local_loop_report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+    "latest_spot_input_keyboard_hints_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-input-keyboard-hints/spot-input-keyboard-hints-390x844.json",
+    "latest_spot_cta_login_boundary_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-cta-login-boundary/spot-cta-login-boundary-390x844.json",
+    "spot_kline_roundtrip_l3_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-kline-roundtrip-verdict-2026-07-09T09-50Z.json",
+    "spot_kline_roundtrip_latest_verifier_vote": "APPROVE deleg_ba50a040",
+    "spot_kline_roundtrip_level": "L3-local-certified-packet",
+    "latest_spot_anonymous_auth_request_guard_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-anonymous-auth-requests/spot-anonymous-auth-requests-390x844.json",
+    "latest_spot_anonymous_auth_request_guard_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_tab_semantics_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-tab-semantics/spot-tab-semantics-390x844.json",
+    "latest_spot_tab_semantics_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_orderbook_mode_semantics_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-mode-semantics/spot-orderbook-mode-semantics-390x844.json",
+    "latest_spot_orderbook_mode_semantics_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_bottom_tab_semantics_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-bottom-tab-semantics/spot-bottom-tab-semantics-390x844.json",
+    "latest_spot_bottom_tab_semantics_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_history_button_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-history-button-semantics/spot-history-button-semantics-390x844.json",
+    "latest_spot_history_button_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_coin_drawer_trigger_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-trigger-semantics/spot-coin-drawer-trigger-semantics-390x844.json",
+    "latest_spot_coin_drawer_trigger_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_transfer_button_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.json",
+    "latest_spot_transfer_button_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_orderbook_price_buttons_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-price-buttons/spot-orderbook-price-buttons-390x844.json",
+    "latest_spot_orderbook_price_buttons_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_coin_drawer_row_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-coin-drawer-row-semantics/spot-coin-drawer-row-semantics-390x844.json",
+    "latest_spot_coin_drawer_row_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_depth_select_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-depth-select-a11y/spot-depth-select-a11y-390x844.json",
+    "latest_spot_depth_select_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_order_type_select_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-order-type-select-a11y/spot-order-type-select-a11y-390x844.json",
+    "latest_spot_order_type_select_level": "L2-local-loop-verified-pending-verifier",
+    "latest_spot_percentage_slider_evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-percentage-slider-a11y/spot-percentage-slider-a11y-390x844.json",
+    "latest_spot_percentage_slider_level": "L2-local-loop-verified-pending-verifier",
+    "latest_l3_spot_tab_semantics_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-tab-semantics-verdict-2026-07-09.json",
+    "latest_l3_component": "spot-order-type-select-a11y",
+    "latest_l3_spot_bottom_tab_semantics_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-bottom-tab-semantics-verdict-2026-07-09.json",
+    "latest_l3_spot_history_button_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-history-button-login-boundary-verdict-2026-07-09.json",
+    "latest_l3_spot_orderbook_price_buttons_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-price-buttons-verdict-2026-07-09.json",
+    "latest_l3_spot_percentage_slider_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-percentage-slider-a11y-verdict-2026-07-09.json",
+    "latest_l3_spot_favorite_login_boundary_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-favorite-login-boundary-verdict-2026-07-09.json",
+    "latest_l3_spot_decimal_keyboard_hints_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-decimal-keyboard-hints-verdict-2026-07-09.json",
+    "latest_l3_spot_order_cta_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-cta-login-boundary-verdict-2026-07-09.json",
+    "latest_l3_spot_anonymous_auth_guard_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-anonymous-auth-request-guard-verdict-2026-07-09.json",
+    "latest_l3_spot_orderbook_mode_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-mode-semantics-verdict-2026-07-09.json",
+    "latest_l3_spot_coin_drawer_trigger_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-trigger-semantics-verdict-2026-07-09.json",
+    "latest_l3_spot_transfer_login_boundary_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-transfer-button-login-boundary-verdict-2026-07-09.json",
+    "latest_l3_spot_coin_drawer_row_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-row-semantics-verdict-2026-07-09.json",
+    "latest_l3_spot_depth_select_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-depth-select-a11y-verdict-2026-07-09.json",
+    "latest_l3_spot_order_type_select_verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-type-select-a11y-verdict-2026-07-09.json"
+  },
+  "workflow_capability_tags": [
+    "mobile-h5",
+    "pwa-or-webview",
+    "native-reference-parity",
+    "android-reference",
+    "api-backed-ui",
+    "same-origin-api-proxy-risk",
+    "bottom-tab-shell",
+    "fixed-header-actions",
+    "route-guard-risk",
+    "anonymous-vs-auth-boundary",
+    "keyboard-focus-risk",
+    "scroll-owner-risk",
+    "safe-area-risk",
+    "banner-redirect-risk",
+    "token-leak-risk",
+    "viewport-matrix-375-390-414",
+    "project-profile-certification-loop"
+  ],
+  "autonomous_trigger_policy": {
+    "mode": "capability-graph-not-hardcoded-keywords",
+    "route_by": [
+      "project workflow_capability_tags",
+      "task intent",
+      "touched route/component/API surface",
+      "current evidence gaps",
+      "authority boundary"
+    ],
+    "load_when": [
+      "mobile-h5 surface touched",
+      "keyboard/focus/input/CTA/scroll/safe-area/tabbar/API blank/token route risk appears",
+      "certification/closeout requested for this project"
+    ],
+    "do_not_auto": [
+      "push",
+      "deploy",
+      "credential entry",
+      "payment",
+      "production mutation",
+      "external fanout",
+      "real-device claim without device evidence"
+    ],
+    "writeback": "progress/evidence/reports/scripts go to ssot_root; product code changes go to primary_repo"
+  },
+  "hazard_inventory": {
+    "keyboard_focus": {
+      "class": "mobile H5/PWA/WebView keyboard changes can move layout, hide CTAs, or break scroll position",
+      "applies_to": [
+        "ordinary amount/remark/address inputs",
+        "auth/login short forms",
+        "full-screen composer/chat shells",
+        "forms with fixed bottom CTA"
+      ],
+      "uaec_bias": "ordinary amount/remark/address inputs should keep bottom CTA in its original bottom area when soft keyboard opens; content/form scrolls instead of lifting CTA above keyboard",
+      "default_gate": "classify page model before editing: ordinary form vs short auth vs full-screen composer; avoid global scrollBy/keyboard reserve unless shell-owned",
+      "evidence": [
+        "focused/unfocused screenshot or geometry at 375/390/414",
+        "visualViewport or bounding-rect readback",
+        "CTA/input reachability",
+        "no tabbar/header occlusion"
+      ],
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/mobile-pwa-keyboard-focus-layout.md",
+        "mobile-frontend-delivery/references/mobile-keyboard-scroll-owner-debugging.md",
+        "mobile-frontend-delivery/references/mobile-keyboard-focus-rollback-scope.md"
+      ]
+    },
+    "scroll_owner": {
+      "class": "wrong scroll owner causes fixed header/tabbar/CTA occlusion, unreachable fields, or page jump",
+      "applies_to": [
+        "long H5 forms",
+        "nested pages under app shell",
+        "fixed bottom tab layouts",
+        "header + content + CTA pages"
+      ],
+      "default_gate": "identify document/body/root/page/content scroll owner and preserve route shell invariants before patching",
+      "evidence": [
+        "top/bottom reachability",
+        "no hidden required field",
+        "no unexpected root scroll",
+        "viewport matrix geometry"
+      ],
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/pwa-tabbar-scroll-owner-debugging.md",
+        "mobile-frontend-delivery/references/mobile-keyboard-scroll-owner-debugging.md"
+      ]
+    },
+    "safe_area_bottom_shell": {
+      "class": "bottom tab/fixed CTA can overlap home indicator or leave white strip in PWA/WebView",
+      "applies_to": [
+        "TabBar",
+        "fixed bottom CTA",
+        "bottom sheets",
+        "safe-area shell"
+      ],
+      "current_uaec_evidence": "slice3 tabbar safe-area PASS in SSOT evidence for 375/390/414",
+      "default_gate": "check env(safe-area-inset-bottom) plus fallback; verify nav/CTA rect within viewport",
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/browser-h5-tabbar-safe-area-strip.md",
+        "mobile-frontend-delivery/references/android-pwa-tabbar-safe-area.md"
+      ]
+    },
+    "api_backed_blank_section": {
+      "class": "H5 sections can render blank if baseURL/proxy/env differs between dev and preview",
+      "applies_to": [
+        "home ranking",
+        "market lists",
+        "banner/data-backed cards"
+      ],
+      "current_uaec_evidence": "same-origin /api + preview.proxy verified in SSOT certification report",
+      "default_gate": "verify exact opened URL and API route; prove loading/error/empty/data states, not just DOM mount",
+      "related_skill_refs": [
+        "mobile-frontend-delivery/references/vite-dev-preview-proxy-api-base.md",
+        "mobile-frontend-delivery/references/api-dependent-mobile-page-fallback.md"
+      ]
+    },
+    "route_guard_auth_boundary": {
+      "class": "anonymous and authenticated route behavior must not be conflated",
+      "applies_to": [
+        "message",
+        "customer service",
+        "scan",
+        "asset",
+        "trade/contract actions"
+      ],
+      "default_gate": "anonymous smoke can certify redirect boundary only; post-login behavior needs valid session evidence",
+      "evidence": [
+        "anonymous route smoke",
+        "authenticated browser/session smoke when available"
+      ]
+    },
+    "banner_redirect_token_boundary": {
+      "class": "banner/navigation links can leak token or route third-party URLs incorrectly",
+      "applies_to": [
+        "banner click",
+        "redirectUrl/appRedirectUrl/link",
+        "owned vs third-party URL decoration"
+      ],
+      "default_gate": "current payload runtime smoke + fixture branch coverage; no token-bearing third-party URLs",
+      "evidence": [
+        "network URL token-leak negative evidence",
+        "fixture cases for owned/relative/third-party"
+      ]
+    }
+  },
+  "autonomous_progression": {
+    "enabled": true,
+    "mode": "local-safe-slice-autonomy",
+    "project": "uaec-react-h5",
+    "authorized_at": "2026-07-09T09:14:30.200559+00:00",
+    "authorized_scope": [
+      "local H5 code edits",
+      "Hermes SSOT evidence/profile/ledger writes",
+      "mobile viewport smoke/screenshot",
+      "scoped lint/build",
+      "local git commit",
+      "independent verifier dispatch"
+    ],
+    "hard_stop_gates": [
+      "push",
+      "deploy",
+      "production/test-domain mutation",
+      "credential/password/token/session extraction or entry",
+      "real order/payment/funds mutation",
+      "destructive history rewrite/delete",
+      "external fanout",
+      "device/auth/PWA certification claim without evidence"
+    ],
+    "queue_policy": "select next safe slice by backlog priority + evidence gap + touched surface + hazard inventory + authority boundary; continue while safe local reversible slices remain",
+    "current_queue": [
+      "02-spot_trading: spot trade <-> Kline route round-trip / form and orderbook local evidence",
+      "03-contract_trading: anonymous route/visual boundary if no auth",
+      "authenticated favorites/order read-only when session evidence is available",
+      "Android simulator visual diff when simulator readback is available"
+    ],
+    "continuation_guard": {
+      "enabled": true,
+      "after_verifier_receipt": "run next-slice selection before final-report whenever repo clean/preview healthy and no hard-stop gate is reached",
+      "root_cause_fix_receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/autonomous-continuation-root-cause-fix-2026-07-09.json",
+      "updated_at": "2026-07-09T13:50:12.971196+00:00"
+    },
+    "concurrency_guard": "clean-window retries resolved for pair drawer/order type; same-file safe slices may resume with verifier briefs using target-commit ancestry, clean worktree rows, and timestamped loop reports",
+    "latest_stop_root_cause_review": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/autonomous-stop-root-cause-review-2026-07-09-contract-gate.json",
+    "current_boundary": "anonymous local safe-slice queue exhausted; remaining contract routes/actions require explicit auth/device/push/deploy/order authority gates"
+  },
+  "receipts": {
+    "autonomous_safe_slice_switch": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/autonomous-safe-slice-switch-2026-07-09T09-10Z.json"
+  },
+  "components": {
+    "spot_trading": {
+      "favorite_login_boundary": "L3-local-certified-packet",
+      "input_keyboard_hints": "L2-local-loop-verified-pending-verifier",
+      "cta_login_boundary": "L2-local-loop-verified-pending-verifier",
+      "spot_kline_roundtrip": "L3-local-approved-roundtrip-route-semantics",
+      "anonymous_asset_entrust_request_guard": "L2-local-loop-verified-pending-verifier",
+      "buy_sell_tab_semantics": "L2-local-loop-verified-pending-verifier",
+      "orderbook_mode_semantics": "L3-local-certified-packet",
+      "bottom_tab_semantics": "L2-local-loop-verified-pending-verifier",
+      "history_button_login_boundary": "L2-local-loop-verified-pending-verifier",
+      "coin_drawer_trigger_semantics": "L3-local-certified-packet",
+      "transfer_button_login_boundary": "L2-local-loop-verified-pending-verifier",
+      "orderbook_price_buttons": "L3-local-certified-packet",
+      "coin_drawer_row_semantics": "L3-local-certified-packet",
+      "depth_select_a11y": "L3-local-certified-packet",
+      "order_type_select_a11y": "L3-local-certified-packet",
+      "percentage_slider_a11y": "L3-local-certified-packet",
+      "decimal_keyboard_hints": "L3-local-certified-packet",
+      "order_cta_semantics": "L3-local-certified-packet",
+      "anonymous_auth_request_guard": "L3-local-certified-packet",
+      "side_tab_semantics": "L3-local-certified-packet",
+      "bottom_order_tab_semantics": "L3-local-certified-packet",
+      "history_order_login_boundary": "L3-local-certified-packet",
+      "transfer_login_boundary": "L3-local-certified-packet"
+    }
+  },
+  "verifier_results": {
+    "deleg_f50623b0": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_f50623b0-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_3e6ff5ed": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_3e6ff5ed-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_e808021b": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_e808021b-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_0229bf34": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_0229bf34-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_3d34a25f": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-tab-semantics-verdict-2026-07-09.json",
+      "targetCommit": "57c4eee",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]"
+    },
+    "deleg_79ff609c": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_79ff609c-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_f5b70be2": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-bottom-tab-semantics-verdict-2026-07-09.json",
+      "targetCommit": "2ec3dc8",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]"
+    },
+    "deleg_afbc8db5": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-history-button-login-boundary-verdict-2026-07-09.json",
+      "targetCommit": "ff41095",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]"
+    },
+    "deleg_a41c4f0d": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_a41c4f0d-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_ff90a05f": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_ff90a05f-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_0ec81ee2": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-price-buttons-verdict-2026-07-09.json",
+      "targetCommit": "e94e720",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]"
+    },
+    "deleg_6254e5c1": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_6254e5c1-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_2348e23b": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_2348e23b-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_175896d9": {
+      "verdict": "AMEND",
+      "classification": "stale-environment-amend-not-product-blocker",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/verifier-amend-stale-deleg_175896d9-2026-07-09.json",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "next": "redispatched fresh verifier required"
+    },
+    "deleg_d0633e8c": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-percentage-slider-a11y-verdict-2026-07-09.json",
+      "targetCommit": "16849b3",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]"
+    },
+    "deleg_e0ce110c": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-favorite-login-boundary-verdict-2026-07-09.json",
+      "targetCommit": "5d552fc",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_f50623b0"
+    },
+    "deleg_1808d361": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-decimal-keyboard-hints-verdict-2026-07-09.json",
+      "targetCommit": "888b394",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_3e6ff5ed"
+    },
+    "deleg_e122c456": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-cta-login-boundary-verdict-2026-07-09.json",
+      "targetCommit": "7c9bf88",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_e808021b"
+    },
+    "deleg_a9f4f816": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-anonymous-auth-request-guard-verdict-2026-07-09.json",
+      "targetCommit": "645e0c7",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_0229bf34"
+    },
+    "deleg_30b070ac": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-orderbook-mode-semantics-verdict-2026-07-09.json",
+      "targetCommit": "52aa5e4",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_79ff609c"
+    },
+    "deleg_8c68ba7e": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-trigger-semantics-verdict-2026-07-09.json",
+      "targetCommit": "c543b12",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_a41c4f0d"
+    },
+    "deleg_32a2f58c": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-transfer-button-login-boundary-verdict-2026-07-09.json",
+      "targetCommit": "b0d1255",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_ff90a05f"
+    },
+    "deleg_75ab7bac": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-coin-drawer-row-semantics-verdict-2026-07-09.json",
+      "targetCommit": "a3cb019",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_6254e5c1"
+    },
+    "deleg_c64e89ae": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-depth-select-a11y-verdict-2026-07-09.json",
+      "targetCommit": "dfd2650",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_2348e23b"
+    },
+    "deleg_9a64d6e2": {
+      "verdict": "APPROVE",
+      "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-spot-order-type-select-a11y-verdict-2026-07-09.json",
+      "targetCommit": "a750585",
+      "currentHead": "16849b3",
+      "currentGitStatus": "## dev...origin/dev [ahead 32]",
+      "resolves": "deleg_175896d9"
+    }
+  },
+  "surfaces": {
+    "contract_trading": {
+      "pair_drawer_semantics": "L3-local-certified-packet",
+      "pairDrawerSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-pair-drawer-semantics/contract-pair-drawer-semantics-390x844.json",
+      "pairDrawerSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-pair-drawer-semantics-loop-2026-07-09T13-59-09-295341+00-00.json",
+      "latestCommit": "1a09de4",
+      "order_type_select_a11y": "L3-local-certified-packet",
+      "orderTypeSelectA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-type-select-a11y/contract-order-type-select-a11y-390x844.json",
+      "orderTypeSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-order-type-select-a11y-loop-2026-07-09T14-02-14-894506+00-00.json",
+      "margin_mode_select_a11y": "L3-local-certified-packet",
+      "marginModeSelectA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-margin-mode-select-a11y/contract-margin-mode-select-a11y-390x844.json",
+      "marginModeSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-margin-mode-select-a11y-loop-2026-07-09T14-04-55-023776+00-00.json",
+      "pairDrawerSemanticsStaleAmendReceipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_7b259ada-contract-pair-drawer-semantics-2026-07-09.json",
+      "advanced_limit_select_a11y": "L3-local-certified-packet",
+      "advancedLimitSelectA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-advanced-limit-select-a11y/contract-advanced-limit-select-a11y-390x844.json",
+      "advancedLimitSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-advanced-limit-select-a11y-loop-2026-07-09T14-08-49-867645+00-00.json",
+      "orderTypeSelectA11yStaleAmendReceipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_150d248f-contract-order-type-select-a11y-2026-07-09.json",
+      "depth_select_a11y": "L3-local-certified-packet",
+      "depthSelectA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-depth-select-a11y/contract-depth-select-a11y-390x844.json",
+      "depthSelectA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-depth-select-a11y-loop-2026-07-09T14-13-23-328115+00-00.json",
+      "marginModeSelectA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-margin-mode-select-a11y-verdict-2026-07-09.json",
+      "orderbook_mode_semantics": "L3-local-certified-packet",
+      "orderbookModeSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-mode-semantics/contract-orderbook-mode-semantics-390x844.json",
+      "orderbookModeSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-orderbook-mode-semantics-loop-2026-07-09T14-17-09-109262+00-00.json",
+      "pairDrawerSemanticsStaleAmendReceipt2": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_5f88443c-contract-pair-drawer-semantics-2026-07-09.json",
+      "transfer_button_semantics": "L3-local-certified-packet",
+      "transferButtonSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-transfer-button-semantics/contract-transfer-button-semantics-390x844.json",
+      "transferButtonSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-transfer-button-semantics-loop-2026-07-09T14-21-14-067912+00-00.json",
+      "advancedLimitSelectA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-advanced-limit-select-a11y-verdict-2026-07-09.json",
+      "orderbook_price_buttons": "L3-local-certified-packet",
+      "orderbookPriceButtonsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-orderbook-price-buttons/contract-orderbook-price-buttons-390x844.json",
+      "orderbookPriceButtonsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-orderbook-price-buttons-loop-2026-07-09T14-30-05-507002+00-00.json",
+      "orderTypeSelectA11yStaleAmendReceipt2": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_18c76d44-contract-order-type-select-a11y-2026-07-09.json",
+      "depthSelectA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-depth-select-a11y-verdict-2026-07-09.json",
+      "orderbookModeSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-orderbook-mode-semantics-verdict-2026-07-09.json",
+      "pairDrawerSemanticsStaleAmendReceipt3": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_732c39c5-contract-pair-drawer-semantics-2026-07-09.json",
+      "transferButtonSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-transfer-button-semantics-verdict-2026-07-09.json",
+      "orderbookPriceButtonsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-orderbook-price-buttons-verdict-2026-07-09.json",
+      "orderTypeSelectA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-order-type-select-a11y-verdict-2026-07-09.json",
+      "pairDrawerSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-pair-drawer-semantics-verdict-2026-07-09.json",
+      "order_cta_semantics": "L3-local-certified-packet",
+      "orderCtaSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-cta-semantics/contract-order-cta-semantics-390x844.json",
+      "orderCtaSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-order-cta-semantics-loop-2026-07-09T14-41-10-881868+00-00.json",
+      "orderCtaSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-order-cta-semantics-verdict-2026-07-09.json",
+      "entrust_tabs_semantics": "L3-local-certified-packet",
+      "entrustTabsSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-entrust-tabs-semantics/contract-entrust-tabs-semantics-390x844.json",
+      "entrustTabsSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-entrust-tabs-semantics-loop-2026-07-09T14-49-51-640232+00-00.json",
+      "entrustTabsSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-entrust-tabs-semantics-verdict-2026-07-09.json",
+      "bottom_tabs_semantics": "L3-local-certified-packet",
+      "bottomTabsSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-bottom-tabs-semantics/contract-bottom-tabs-semantics-390x844.json",
+      "bottomTabsSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-bottom-tabs-semantics-loop-2026-07-09T14-54-16-701659+00-00.json",
+      "bottomTabsSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-bottom-tabs-semantics-verdict-2026-07-09.json",
+      "leverage_button_semantics": "L3-local-certified-packet",
+      "leverageButtonSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-button-semantics/contract-leverage-button-semantics-390x844.json",
+      "leverageButtonSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-button-semantics-loop-2026-07-09T14-59-57-577343+00-00.json",
+      "leverageButtonSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-leverage-button-semantics-verdict-2026-07-09.json",
+      "opponent_price_semantics": "L3-local-certified-packet",
+      "opponentPriceSemanticsEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-opponent-price-semantics/contract-opponent-price-semantics-390x844.json",
+      "opponentPriceSemanticsLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-opponent-price-semantics-loop-2026-07-09T15-05-20-567758+00-00.json",
+      "decimal_inputs_a11y": "L3-local-certified-packet",
+      "decimalInputsA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-decimal-inputs-a11y/contract-decimal-inputs-a11y-390x844.json",
+      "decimalInputsA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-decimal-inputs-a11y-loop-2026-07-09T15-09-24-824977+00-00.json",
+      "opponentPriceSemanticsL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-opponent-price-semantics-verdict-2026-07-09.json",
+      "percentage_slider_a11y": "L3-local-certified-packet",
+      "percentageSliderA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-percentage-slider-a11y/contract-percentage-slider-a11y-390x844.json",
+      "percentageSliderA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-percentage-slider-a11y-loop-2026-07-09T15-16-19-007247+00-00.json",
+      "decimalInputsA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-decimal-inputs-a11y-verdict-2026-07-09.json",
+      "leverage_drawer_a11y": "L3-local-certified-packet",
+      "leverageDrawerA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-drawer-a11y/contract-leverage-drawer-a11y-390x844.json",
+      "leverageDrawerA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-drawer-a11y-loop-2026-07-09T15-24-21-797713+00-00.json",
+      "percentageSliderA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-percentage-slider-a11y-verdict-2026-07-09.json",
+      "leverage_icon_decorative_a11y": "L3-local-certified-packet",
+      "leverageIconDecorativeA11yEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-leverage-icon-decorative-a11y/contract-leverage-icon-decorative-a11y-390x844.json",
+      "leverageIconDecorativeA11yLoopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-leverage-icon-decorative-a11y-loop-2026-07-09T15-27-54-520558+00-00.json",
+      "staleVerifierAmends": [
+        {
+          "delegation": "deleg_8d32d4cd",
+          "slice": "contract-leverage-drawer-a11y",
+          "targetCommit": "b0a286f",
+          "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_8d32d4cd-contract-leverage-drawer-a11y-2026-07-09.json",
+          "classification": "stale-environment-amend-not-product-blocker",
+          "resolvedByCleanHead": "1a09de4"
+        },
+        {
+          "delegation": "deleg_1ea35a32",
+          "slice": "contract-leverage-drawer-a11y",
+          "targetCommit": "b0a286f",
+          "receipt": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/receipts/stale-amend-deleg_1ea35a32-contract-leverage-drawer-a11y-2026-07-09.json",
+          "classification": "stale-environment-amend-not-product-blocker",
+          "resolvedByCleanHead": "1a09de4"
+        }
+      ],
+      "leverageIconDecorativeA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-leverage-icon-decorative-a11y-verdict-2026-07-09.json",
+      "leverageDrawerA11yL3Verdict": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-l3-contract-leverage-drawer-a11y-verdict-2026-07-09.json",
+      "leverageDrawerA11yResolvedVerifier": "deleg_4052f3ff"
+    }
+  }
+}

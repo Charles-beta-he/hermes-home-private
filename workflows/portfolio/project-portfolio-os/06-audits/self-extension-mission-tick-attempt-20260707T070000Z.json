@@ -1,0 +1,43 @@
+{
+  "mission": {
+    "allowed_actions": [],
+    "blocked_actions": [
+      "external_message_send",
+      "remote_push_or_merge",
+      "production_deploy",
+      "payment_or_purchase",
+      "secret_or_credential_write",
+      "destructive_delete",
+      "memory_skill_cron_config_write_without_explicit_scope",
+      "create_or_modify_mission_budget_or_cadence"
+    ],
+    "budget": {
+      "max_ticks": 72,
+      "max_total_usd": null,
+      "max_turns_per_tick": 8
+    },
+    "cadence": "every 6h",
+    "constraints": [
+      "默认安全：不得静默执行生产部署、付费、推送远端、删除、写入密钥或扩大权限",
+      "每轮必须有真实证据：代码 diff、测试、CLI 输出、文档或明确阻塞原因",
+      "关键分岔必须使用 hermes mission handoff 落账为 open decision"
+    ],
+    "created_at": 1781064109.170323,
+    "deliver": "local",
+    "direction": "Hermes 自身架构长期自推进：我只给高抽象方向；Hermes 负责研究、拆解、执行、验证、沉淀；遇到价值判断、权限升级、不可逆风险、外部副作用、证据不足或路线分歧时，生成 Human Intervention Packet 交给我选择后再继续。",
+    "mission_id": "msn_20260610_120149_27c88cfc",
+    "non_goals": [
+      "不把一人公司固化为唯一业务场景；它只是高抽象方向粒度示例"
+    ],
+    "plan_ref": "",
+    "stage": "intake",
+    "status": "paused",
+    "success_criteria": [
+      "形成可长期运行的 Mission 控制面闭环：objective ledger、dynamic cron tick、stage-report、human handoff、decision resume",
+      "每个阶段报告能从 mission ledger 追溯到证据与下一步"
+    ],
+    "updated_at": 1783407188.883262
+  },
+  "prompt": "",
+  "status": "budget_exhausted"
+}

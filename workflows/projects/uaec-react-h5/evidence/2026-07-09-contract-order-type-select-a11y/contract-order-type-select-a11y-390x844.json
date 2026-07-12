@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:01:30.261Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "comboTag": "div",
+    "comboRole": "combobox",
+    "comboAria": "合约委托类型",
+    "visible": true,
+    "text": "限价委托",
+    "hasContractText": true
+  },
+  "listState": {
+    "options": [
+      "限价委托",
+      "市价委托",
+      "高级限价委托"
+    ],
+    "expanded": "true"
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "comboAria": "合约委托类型",
+    "text": "市价委托",
+    "hasMarketHint": true,
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-order-type-select-a11y/contract-order-type-select-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSelect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

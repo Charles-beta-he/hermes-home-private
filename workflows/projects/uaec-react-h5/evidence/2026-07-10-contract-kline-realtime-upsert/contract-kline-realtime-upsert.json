@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T17:40:52+08:00",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-realtime-bucket-upsert",
+  "result": "APPROVE_L3_LOCAL_CERTIFIED_PACKET",
+  "androidEvidence": {
+    "file": "/Users/charles/Desktop/folder/work/uaec-android/app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "lines": "1889-1916",
+    "contract": "same timeStr replaces the last candle; a new timeStr appends"
+  },
+  "h5Implementation": {
+    "commit": "2a95eca fix: upsert realtime contract candles",
+    "helper": "src/pages/ContractPage/ContractInterface/klineDataMerge.ts",
+    "consumer": "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+    "contract": "HTTP+WS initial merge and incremental WS merge both upsert by String(timestamp ?? time)"
+  },
+  "redGreen": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-kline-realtime-upsert/verify_contract_kline_realtime_upsert.mjs",
+    "red": "ERR_MODULE_NOT_FOUND before helper existed",
+    "green": {
+      "exitCode": 0,
+      "sameBucketLength": 2,
+      "sameBucketClose": "3",
+      "appendedLength": 3,
+      "normalizedNumericStringBucket": "3",
+      "integratedMergePaths": 2
+    }
+  },
+  "verification": {
+    "helperEslint": {"status": "PASS", "exitCode": 0},
+    "consumerEslint": {"status": "BASELINE_ONLY_FAILURE", "exitCode": 1, "finding": "four no-explicit-any errors at lines 340-343 predate this slice; git blame ea298581, 2025-08-08"},
+    "productionBuild": {"status": "PASS", "exitCode": 0, "modulesTransformed": 12671},
+    "gitDiffCheck": {"status": "PASS", "exitCode": 0},
+    "postCommitReadback": {"status": "PASS", "workingTreeClean": true, "branch": "dev...origin/dev [ahead 21]", "gitShowCheck": true},
+    "localCertification": {"status": "PASS", "ok": true, "blockers": 0, "level": "L2-local-loop-verified", "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T09-08-57-801Z.json"},
+    "independentVerifier": {
+      "delegation": "deleg_24edadf5",
+      "verdict": "APPROVE",
+      "readbackAt": "2026-07-10T17:40:52+08:00",
+      "level": "L3-local-certified-packet",
+      "additionalCases": ["batched repeated same-bucket update uses last incoming item", "numeric/string key normalization", "missing/null keys append without collision", "existing order preserved", "input arrays not mutated"]
+    }
+  },
+  "negativeEvidence": {
+    "push": false,
+    "deploy": false,
+    "authenticatedMutation": false,
+    "orderOrFundsAction": false,
+    "credentialReadOrEntry": false,
+    "androidDeviceClaim": false
+  },
+  "boundary": "Pure local merge behavior and both consumer wiring paths have bounded independent APPROVE. Live backend same-bucket traffic, online payload shape and device chart rendering remain unverified; no production or full Android 1:1 claim."
+}

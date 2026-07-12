@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:12:35.930Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tag": "select",
+    "ariaLabel": "合约盘口精度",
+    "value": "1",
+    "visible": true,
+    "optionCount": 3,
+    "displayText": "0.1\n1\n0.1\n0.01",
+    "hasContractText": true
+  },
+  "after": {
+    "href": "http://127.0.0.1:4173/contract",
+    "ariaLabel": "合约盘口精度",
+    "value": "0",
+    "displayText": "1\n1\n0.1\n0.01",
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-depth-select-a11y/contract-depth-select-a11y-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSelect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

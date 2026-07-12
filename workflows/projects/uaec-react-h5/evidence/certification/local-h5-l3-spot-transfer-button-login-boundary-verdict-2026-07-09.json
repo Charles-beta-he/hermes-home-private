@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-07-09T11:29:00.181552+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "spot transfer button login-boundary locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/authenticated-transfer-deposit/PWA/production certified",
+  "slice": "spot-transfer-button-login-boundary",
+  "targetCommit": "b0d1255 fix: gate spot transfer action behind login",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_32a2f58c",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_ff90a05f"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "transfer control is button type=button with aria-label 划转",
+    "anonymous transfer click routes to /login",
+    "no asset transfer/deposit API after anonymous click",
+    "transfer/deposit drawer options are button type=button in target slice",
+    "no credential/session read and no real order evidence retained"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated transfer/deposit certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

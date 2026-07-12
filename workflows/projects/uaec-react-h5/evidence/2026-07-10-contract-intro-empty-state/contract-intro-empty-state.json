@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T19:55:00+08:00",
+  "project": "uaec-react-h5",
+  "slice": "contract-intro-empty-state",
+  "result": "PASS_L3_LOCAL_CERTIFIED_PACKET",
+  "commit": "e02e011 fix: show contract introduction empty state",
+  "spec": {
+    "goal": "The contract introduction tab must not collapse into a blank panel when the CMS payload is absent or unavailable.",
+    "nonGoals": [
+      "Do not invent contract descriptions or market data",
+      "Do not change the CMS endpoint or non-empty HTML rendering",
+      "Do not add authenticated, trading, payment, push or deploy effects"
+    ],
+    "acceptance": [
+      "Loading state remains visible while the request is pending",
+      "Trimmed non-empty HTML continues through the existing renderer",
+      "Empty or failed information renders a visible semantic status: 暂无简介",
+      "The UI does not expose undefined"
+    ]
+  },
+  "evidence": {
+    "red": {
+      "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-intro-empty-state/verify_contract_intro_empty_state.py",
+      "exitCode": 1,
+      "failures": ["empty_intro_checked", "nonblank_fallback", "fallback_is_status", "html_render_preserved"]
+    },
+    "green": {
+      "sourceHarnessExitCode": 0,
+      "runtimeHarness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-intro-empty-state/verify_contract_intro_empty_state_runtime.py",
+      "runtimeExitCode": 0,
+      "runtime": {
+        "cmsRequestBlockedForDeterministicEmptyState": true,
+        "fallbackText": "暂无简介",
+        "fallbackVisible": true,
+        "introSelected": true,
+        "bodyContainsUndefined": false
+      }
+    },
+    "typescript": {"status": "PASS", "exitCode": 0},
+    "productionBuild": {"status": "PASS", "exitCode": 0, "modulesTransformed": 12671},
+    "gitDiffCheck": {"status": "PASS", "exitCode": 0},
+    "postCommitReadback": {
+      "status": "PASS",
+      "branch": "dev...origin/dev [ahead 27]",
+      "workingTreeClean": true,
+      "gitShowCheck": true
+    },
+    "projectCertification": {
+      "status": "PASS",
+      "ok": true,
+      "blockers": 0,
+      "level": "L2-local-loop-verified",
+      "report": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-2026-07-10T10-21-50-127Z.json"
+    }
+  },
+  "independentReview": {
+    "status": "APPROVE",
+    "delegation": "deleg_5086cff6",
+    "scope": "e02e011 implementation plus c5a0153 matching documentation; local anonymous empty/failed and preserved non-empty introduction states"
+  },
+  "boundary": "Local anonymous empty-state and preserved renderer evidence only. The blocked request proves failure fallback, not real CMS availability or the correctness/safety of remote HTML. Android device, authenticated paths, remote CI, push, deploy, production and full Android 1:1 remain unverified."
+}

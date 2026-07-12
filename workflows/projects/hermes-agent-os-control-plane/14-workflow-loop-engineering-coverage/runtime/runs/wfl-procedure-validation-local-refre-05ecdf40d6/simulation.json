@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_simulation_v1",
+  "status": "PASS",
+  "positive_decision": "session_plan",
+  "negative_keyword_only_decision": "session_plan",
+  "side_effects_disabled": true
+}

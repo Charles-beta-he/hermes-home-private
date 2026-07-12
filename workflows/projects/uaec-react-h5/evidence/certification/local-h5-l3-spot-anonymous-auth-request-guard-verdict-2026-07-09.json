@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-07-09T11:26:34.516380+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "anonymous authenticated-request guard locally certified with fresh independent verifier APPROVE after stale dirty-tree AMEND; not push/device/authenticated-account/PWA/production certified",
+  "slice": "spot-anonymous-auth-request-guard",
+  "targetCommit": "645e0c7 fix: guard spot auth requests when anonymous",
+  "currentHead": "16849b3",
+  "currentGitStatus": "## dev...origin/dev [ahead 32]",
+  "currentHeadContainsTarget": true,
+  "verifier": {
+    "delegationId": "deleg_a9f4f816",
+    "verdict": "APPROVE",
+    "objectiveBlockers": [],
+    "resolvesStaleAmend": "deleg_0229bf34"
+  },
+  "evidence": {
+    "smokeJson": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-anonymous-auth-requests/spot-anonymous-auth-requests-390x844.json",
+    "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-anonymous-auth-requests/spot-anonymous-auth-requests-390x844.png",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json"
+  },
+  "verifiedFacts": [
+    "assetService.getUserAsset gated by isLoggedIn readiness",
+    "spotService.queryMyEntrustV2 gated by isLoggedIn readiness",
+    "anonymous load avoids asset/entrust auth APIs",
+    "anonymous CTA routes to /login",
+    "no credential/session read and no real order evidence retained",
+    "legacy evidence URL IDs redacted in SSOT artifact"
+  ],
+  "openBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device",
+    "no authenticated account certification",
+    "no PWA certification",
+    "no production certification"
+  ],
+  "ok": true
+}

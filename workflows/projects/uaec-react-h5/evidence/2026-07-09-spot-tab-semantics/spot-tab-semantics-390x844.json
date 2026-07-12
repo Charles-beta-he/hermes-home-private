@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T10:11:07.312Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "before": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "side": "sell",
+    "buySellType": "SELL",
+    "buyTag": "button",
+    "sellTag": "button",
+    "buyPressed": "false",
+    "sellPressed": "true",
+    "hasTitle": true
+  },
+  "afterBuy": {
+    "href": "http://127.0.0.1:4173/trade?side=buy&buyselltype=BUY&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "side": "buy",
+    "buySellType": "BUY",
+    "buyPressed": "true",
+    "sellPressed": "false"
+  },
+  "afterSell": {
+    "href": "http://127.0.0.1:4173/trade?side=sell&buyselltype=SELL&symbol=btcusdt&tradeName=BTC%2FUSDT&tradeId=[REDACTED]&partnerTradeId=[REDACTED]",
+    "side": "sell",
+    "buySellType": "SELL",
+    "buyPressed": "false",
+    "sellPressed": "true"
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-tab-semantics/spot-tab-semantics-390x844.png",
+  "negative": {
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  }
+}

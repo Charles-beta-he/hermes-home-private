@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T13:51:56.704Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "initial": {
+    "href": "http://127.0.0.1:4173/contract",
+    "titleText": "BTCUSDT 永续",
+    "triggerTag": "button",
+    "triggerType": "button",
+    "triggerExpanded": "false",
+    "triggerHasPopup": "dialog",
+    "triggerVisible": true,
+    "marketTag": "button",
+    "marketType": "button",
+    "marketVisible": true,
+    "hasContractText": true
+  },
+  "beforeSelect": {
+    "href": "http://127.0.0.1:4173/contract",
+    "triggerExpanded": "true",
+    "rowTag": "button",
+    "rowType": "button",
+    "rowLabel": "选择合约交易对 BTCUSDT 永续",
+    "rowVisible": true,
+    "hasDrawerTitle": true,
+    "hasSearch": true
+  },
+  "afterSelect": {
+    "href": "http://127.0.0.1:4173/contract",
+    "triggerExpanded": "false",
+    "titleText": "BTCUSDT 永续",
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-pair-drawer-semantics/contract-pair-drawer-semantics-390x844.png",
+  "negative": {
+    "noOrderPasswordMutationAfterSelect": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

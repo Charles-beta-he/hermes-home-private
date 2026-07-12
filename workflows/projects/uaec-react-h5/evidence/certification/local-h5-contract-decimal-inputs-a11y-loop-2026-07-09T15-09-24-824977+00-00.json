@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T15:09:24.824977+00:00",
+  "target": "uaec-react-h5 contract decimal inputs a11y safe slice",
+  "certificationLevel": "L2-local-loop-verified",
+  "slice": "contract-decimal-inputs-a11y",
+  "commit": "b45132d",
+  "gitStatus": "## dev...origin/dev [ahead 46]",
+  "workingTreeCleanAtGeneration": true,
+  "checks": [
+    {
+      "name": "scoped-eslint-contract-page-slice",
+      "ok": true,
+      "command": "npx eslint src/pages/ContractPage/ContractPage.tsx --rule '@typescript-eslint/no-unused-vars: off' --rule '@typescript-eslint/no-explicit-any: off'"
+    },
+    {
+      "name": "build",
+      "ok": true,
+      "command": "npm run build",
+      "acceptedWarnings": [
+        "large chunks",
+        "Browserslist old data",
+        "PWA precache output",
+        "known dynamic/static import chunk warning"
+      ]
+    },
+    {
+      "name": "mobile-cdp-smoke",
+      "ok": true,
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-decimal-inputs-a11y/contract-decimal-inputs-a11y-390x844.json",
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-decimal-inputs-a11y/contract-decimal-inputs-a11y-390x844.png"
+    },
+    {
+      "name": "clean-worktree",
+      "ok": true
+    }
+  ],
+  "blockers": [],
+  "boundedClaim": "Contract price and amount inputs expose decimal inputMode and aria labels in local anonymous H5 preview. Inspection only; no typing/order/password/funds mutation. Not authenticated trading/device/PWA/production certification."
+}

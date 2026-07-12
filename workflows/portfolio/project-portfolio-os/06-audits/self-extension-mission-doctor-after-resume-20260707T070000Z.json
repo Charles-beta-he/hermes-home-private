@@ -1,0 +1,1100 @@
+{
+  "checks": [
+    {
+      "detail": "msn_20260610_120149_27c88cfc",
+      "name": "mission exists",
+      "status": "ok"
+    },
+    {
+      "detail": "active",
+      "name": "status",
+      "status": "ok"
+    },
+    {
+      "detail": "0",
+      "name": "open decisions",
+      "status": "ok"
+    },
+    {
+      "detail": "72/72",
+      "name": "tick budget",
+      "status": "warn"
+    },
+    {
+      "detail": "20",
+      "name": "pending flow signals",
+      "status": "ok"
+    },
+    {
+      "detail": "20",
+      "name": "stale flow signals",
+      "status": "warn"
+    },
+    {
+      "detail": "/Users/charles/.hermes/scripts/mission_tick_msn_20260610_120149_27c88cfc.py",
+      "name": "tick script",
+      "status": "ok"
+    },
+    {
+      "detail": "1 matching job(s)",
+      "name": "cron job",
+      "status": "ok"
+    }
+  ],
+  "cron_jobs": [
+    {
+      "enabled": true,
+      "id": "56cba2b9feff",
+      "name": "Hermes self-architecture mission",
+      "next_run_at": "2026-07-07T14:52:51.245386+08:00",
+      "script": "mission_tick_msn_20260610_120149_27c88cfc.py",
+      "state": "scheduled"
+    }
+  ],
+  "mission": {
+    "allowed_actions": [],
+    "blocked_actions": [
+      "external_message_send",
+      "remote_push_or_merge",
+      "production_deploy",
+      "payment_or_purchase",
+      "secret_or_credential_write",
+      "destructive_delete",
+      "memory_skill_cron_config_write_without_explicit_scope",
+      "create_or_modify_mission_budget_or_cadence"
+    ],
+    "budget": {
+      "max_ticks": 72,
+      "max_total_usd": null,
+      "max_turns_per_tick": 8
+    },
+    "cadence": "every 6h",
+    "constraints": [
+      "默认安全：不得静默执行生产部署、付费、推送远端、删除、写入密钥或扩大权限",
+      "每轮必须有真实证据：代码 diff、测试、CLI 输出、文档或明确阻塞原因",
+      "关键分岔必须使用 hermes mission handoff 落账为 open decision"
+    ],
+    "created_at": 1781064109.170323,
+    "deliver": "local",
+    "direction": "Hermes 自身架构长期自推进：我只给高抽象方向；Hermes 负责研究、拆解、执行、验证、沉淀；遇到价值判断、权限升级、不可逆风险、外部副作用、证据不足或路线分歧时，生成 Human Intervention Packet 交给我选择后再继续。",
+    "mission_id": "msn_20260610_120149_27c88cfc",
+    "non_goals": [
+      "不把一人公司固化为唯一业务场景；它只是高抽象方向粒度示例"
+    ],
+    "plan_ref": "",
+    "stage": "intake",
+    "status": "active",
+    "success_criteria": [
+      "形成可长期运行的 Mission 控制面闭环：objective ledger、dynamic cron tick、stage-report、human handoff、decision resume",
+      "每个阶段报告能从 mission ledger 追溯到证据与下一步"
+    ],
+    "updated_at": 1783407171.247703
+  },
+  "next_step": "hermes mission report msn_20260610_120149_27c88cfc",
+  "open_decisions": [],
+  "pending_flow_signals": [
+    {
+      "consumed_at": null,
+      "created_at": 1782096950.522948,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpctv_eq3t/brain/05-实践与项目/tasks/2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed.md",
+          "title": "Task - auto-close review must not treat weak evidence as final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105550_40691892",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105550_2b7b031d",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.013289,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-approved-close-as-partial-should-remain-closable",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpivywi266/brain/05-实践与项目/tasks/2026-06-22-approved-close-as-partial-should-remain-closable.md",
+          "title": "Task - approved close_as_partial should remain closable"
+        },
+        "summary": "taskpool task_added: 2026-06-22-approved-close-as-partial-should-remain-closable status=pending"
+      },
+      "signal_id": "sig_20260622_105551_bc8c1360",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_52581af4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.363688,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pytest-alone-is-not-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp4oe631nx/brain/05-实践与项目/tasks/2026-06-22-pytest-alone-is-not-final-landed.md",
+          "title": "Task - pytest alone is not final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pytest-alone-is-not-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105551_f0a8bbba",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_80e4171e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.651315,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-commit-alone-is-not-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmptn5yf6i6/brain/05-实践与项目/tasks/2026-06-22-commit-alone-is-not-final-landed.md",
+          "title": "Task - commit alone is not final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-commit-alone-is-not-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105551_0bca245a",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_f78329b7",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.9327319,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-real-final-landed-evidence-should-allow-done",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpj56fd0qe/brain/05-实践与项目/tasks/2026-06-22-real-final-landed-evidence-should-allow-done.md",
+          "title": "Task - real final landed evidence should allow done"
+        },
+        "summary": "taskpool task_added: 2026-06-22-real-final-landed-evidence-should-allow-done status=pending"
+      },
+      "signal_id": "sig_20260622_105551_a5d89eb5",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_bb2dc9af",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096952.591775,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pua-loop-自动触发介入与多模型任务池分解",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp3h1h3vgl/brain/05-实践与项目/tasks/2026-06-22-pua-loop-自动触发介入与多模型任务池分解.md",
+          "title": "Task - pua-loop 自动触发介入与多模型任务池分解"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pua-loop-自动触发介入与多模型任务池分解 status=pending"
+      },
+      "signal_id": "sig_20260622_105552_add3612c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105552_8f76ef1b",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096954.617599,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-autorun-默认关闭与-allowlist",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp05nd_00w/brain/05-实践与项目/tasks/2026-06-22-验证-autorun-默认关闭与-allowlist.md",
+          "title": "Task - 验证 autorun 默认关闭与 allowlist"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-autorun-默认关闭与-allowlist status=pending"
+      },
+      "signal_id": "sig_20260622_105554_d3b38947",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105554_f69c8085",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.353747,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-publish-external-writeback",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpolgb68m0/brain/05-实践与项目/tasks/2026-06-22-publish-external-writeback.md",
+          "title": "Task - Publish external writeback"
+        },
+        "summary": "taskpool task_added: 2026-06-22-publish-external-writeback status=pending"
+      },
+      "signal_id": "sig_20260622_105622_231580d3",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_50f72673",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.7331789,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "provider-quota",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "outside-project",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-aaa-unallowlisted-advisory",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbqg1s1qv/brain/05-实践与项目/tasks/2026-06-22-aaa-unallowlisted-advisory.md",
+          "title": "Task - AAA unallowlisted advisory"
+        },
+        "summary": "taskpool task_added: 2026-06-22-aaa-unallowlisted-advisory status=pending"
+      },
+      "signal_id": "sig_20260622_105622_3f98d85a",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_ed7b8c26",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.8613288,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "skill-graph",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "reading-programming-books",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-zzz-allowlisted-advisory",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbqg1s1qv/brain/05-实践与项目/tasks/2026-06-22-zzz-allowlisted-advisory.md",
+          "title": "Task - ZZZ allowlisted advisory"
+        },
+        "summary": "taskpool task_added: 2026-06-22-zzz-allowlisted-advisory status=pending"
+      },
+      "signal_id": "sig_20260622_105622_0035b521",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_04964ec4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096983.489791,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "provider-quota",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "reading-programming-books",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-constrained-advisory-wrong-architecture",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpy5l5lq_s/brain/05-实践与项目/tasks/2026-06-22-constrained-advisory-wrong-architecture.md",
+          "title": "Task - Constrained advisory wrong architecture"
+        },
+        "summary": "taskpool task_added: 2026-06-22-constrained-advisory-wrong-architecture status=pending"
+      },
+      "signal_id": "sig_20260622_105623_ee3865bf",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105623_a874b1b9",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096985.746238,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-blocked-parent-missing-historical-artifact",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpqq02ge41/brain/05-实践与项目/tasks/2026-06-22-blocked-parent-missing-historical-artifact.md",
+          "title": "Task - Blocked parent missing historical artifact"
+        },
+        "summary": "taskpool task_added: 2026-06-22-blocked-parent-missing-historical-artifact status=pending"
+      },
+      "signal_id": "sig_20260622_105625_6ca8504b",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105625_3a042ebb",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.1609752,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-parent-needs-non-convergence-narrowing",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpkghzgnwn/brain/05-实践与项目/tasks/2026-06-22-parent-needs-non-convergence-narrowing.md",
+          "title": "Task - Parent needs non-convergence narrowing"
+        },
+        "summary": "taskpool task_added: 2026-06-22-parent-needs-non-convergence-narrowing status=pending"
+      },
+      "signal_id": "sig_20260622_105626_807268bd",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_d2c89493",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.5225742,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-blocked-parent-waiting-for-child-backfill",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp1r_dpoik/brain/05-实践与项目/tasks/2026-06-22-blocked-parent-waiting-for-child-backfill.md",
+          "title": "Task - Blocked parent waiting for child backfill"
+        },
+        "summary": "taskpool task_added: 2026-06-22-blocked-parent-waiting-for-child-backfill status=pending"
+      },
+      "signal_id": "sig_20260622_105626_3ab2b972",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_3437da30",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.704541,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-finished-narrowed-brief-child",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp1r_dpoik/brain/05-实践与项目/tasks/2026-06-22-finished-narrowed-brief-child.md",
+          "title": "Task - Finished narrowed brief child"
+        },
+        "summary": "taskpool task_added: 2026-06-22-finished-narrowed-brief-child status=pending"
+      },
+      "signal_id": "sig_20260622_105626_1f2f197c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_d6afc636",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.052442,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-looping-parent-should-reratify-with-targeted-evidence",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpo0pmn003/brain/05-实践与项目/tasks/2026-06-22-looping-parent-should-reratify-with-targeted-evidence.md",
+          "title": "Task - Looping parent should reratify with targeted evidence"
+        },
+        "summary": "taskpool task_added: 2026-06-22-looping-parent-should-reratify-with-targeted-evidence status=pending"
+      },
+      "signal_id": "sig_20260622_105627_ced1ad6c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_e6abcbaa",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.2542021,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-done-child-evidence-for-targeted-reratification",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpo0pmn003/brain/05-实践与项目/tasks/2026-06-22-done-child-evidence-for-targeted-reratification.md",
+          "title": "Task - Done child evidence for targeted reratification"
+        },
+        "summary": "taskpool task_added: 2026-06-22-done-child-evidence-for-targeted-reratification status=pending"
+      },
+      "signal_id": "sig_20260622_105627_dc0546b8",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_163e113e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.8327832,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-优化本地任务池自进化",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpfzxbdgnj/brain/05-实践与项目/tasks/2026-06-22-优化本地任务池自进化.md",
+          "title": "Task - 优化本地任务池自进化"
+        },
+        "summary": "taskpool task_added: 2026-06-22-优化本地任务池自进化 status=pending"
+      },
+      "signal_id": "sig_20260622_105627_758b4bb5",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_429cd9bf",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096989.604036,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-优化本地任务池自进化",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpi2xlip83/brain/05-实践与项目/tasks/2026-06-22-优化本地任务池自进化.md",
+          "title": "Task - 优化本地任务池自进化"
+        },
+        "summary": "taskpool task_added: 2026-06-22-优化本地任务池自进化 status=pending"
+      },
+      "signal_id": "sig_20260622_105629_f0811ae1",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105629_dc29f0dc",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096991.9475079,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-autorun-done-proof-gate",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpvx6aoafv/brain/05-实践与项目/tasks/2026-06-22-验证-autorun-done-proof-gate.md",
+          "title": "Task - 验证 autorun done proof gate"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-autorun-done-proof-gate status=pending"
+      },
+      "signal_id": "sig_20260622_105631_226ec1de",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105631_13952e2c",
+      "status": "pending"
+    }
+  ],
+  "script_path": "/Users/charles/.hermes/scripts/mission_tick_msn_20260610_120149_27c88cfc.py",
+  "stale_flow_signals": [
+    {
+      "consumed_at": null,
+      "created_at": 1782096950.522948,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpctv_eq3t/brain/05-实践与项目/tasks/2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed.md",
+          "title": "Task - auto-close review must not treat weak evidence as final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105550_40691892",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105550_2b7b031d",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.013289,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-approved-close-as-partial-should-remain-closable",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpivywi266/brain/05-实践与项目/tasks/2026-06-22-approved-close-as-partial-should-remain-closable.md",
+          "title": "Task - approved close_as_partial should remain closable"
+        },
+        "summary": "taskpool task_added: 2026-06-22-approved-close-as-partial-should-remain-closable status=pending"
+      },
+      "signal_id": "sig_20260622_105551_bc8c1360",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_52581af4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.363688,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pytest-alone-is-not-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp4oe631nx/brain/05-实践与项目/tasks/2026-06-22-pytest-alone-is-not-final-landed.md",
+          "title": "Task - pytest alone is not final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pytest-alone-is-not-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105551_f0a8bbba",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_80e4171e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.651315,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-commit-alone-is-not-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmptn5yf6i6/brain/05-实践与项目/tasks/2026-06-22-commit-alone-is-not-final-landed.md",
+          "title": "Task - commit alone is not final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-commit-alone-is-not-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105551_0bca245a",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_f78329b7",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.9327319,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-real-final-landed-evidence-should-allow-done",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpj56fd0qe/brain/05-实践与项目/tasks/2026-06-22-real-final-landed-evidence-should-allow-done.md",
+          "title": "Task - real final landed evidence should allow done"
+        },
+        "summary": "taskpool task_added: 2026-06-22-real-final-landed-evidence-should-allow-done status=pending"
+      },
+      "signal_id": "sig_20260622_105551_a5d89eb5",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_bb2dc9af",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096952.591775,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pua-loop-自动触发介入与多模型任务池分解",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp3h1h3vgl/brain/05-实践与项目/tasks/2026-06-22-pua-loop-自动触发介入与多模型任务池分解.md",
+          "title": "Task - pua-loop 自动触发介入与多模型任务池分解"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pua-loop-自动触发介入与多模型任务池分解 status=pending"
+      },
+      "signal_id": "sig_20260622_105552_add3612c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105552_8f76ef1b",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096954.617599,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-autorun-默认关闭与-allowlist",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp05nd_00w/brain/05-实践与项目/tasks/2026-06-22-验证-autorun-默认关闭与-allowlist.md",
+          "title": "Task - 验证 autorun 默认关闭与 allowlist"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-autorun-默认关闭与-allowlist status=pending"
+      },
+      "signal_id": "sig_20260622_105554_d3b38947",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105554_f69c8085",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.353747,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-publish-external-writeback",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpolgb68m0/brain/05-实践与项目/tasks/2026-06-22-publish-external-writeback.md",
+          "title": "Task - Publish external writeback"
+        },
+        "summary": "taskpool task_added: 2026-06-22-publish-external-writeback status=pending"
+      },
+      "signal_id": "sig_20260622_105622_231580d3",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_50f72673",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.7331789,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "provider-quota",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "outside-project",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-aaa-unallowlisted-advisory",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbqg1s1qv/brain/05-实践与项目/tasks/2026-06-22-aaa-unallowlisted-advisory.md",
+          "title": "Task - AAA unallowlisted advisory"
+        },
+        "summary": "taskpool task_added: 2026-06-22-aaa-unallowlisted-advisory status=pending"
+      },
+      "signal_id": "sig_20260622_105622_3f98d85a",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_ed7b8c26",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.8613288,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "skill-graph",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "reading-programming-books",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-zzz-allowlisted-advisory",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbqg1s1qv/brain/05-实践与项目/tasks/2026-06-22-zzz-allowlisted-advisory.md",
+          "title": "Task - ZZZ allowlisted advisory"
+        },
+        "summary": "taskpool task_added: 2026-06-22-zzz-allowlisted-advisory status=pending"
+      },
+      "signal_id": "sig_20260622_105622_0035b521",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_04964ec4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096983.489791,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "provider-quota",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "reading-programming-books",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-constrained-advisory-wrong-architecture",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpy5l5lq_s/brain/05-实践与项目/tasks/2026-06-22-constrained-advisory-wrong-architecture.md",
+          "title": "Task - Constrained advisory wrong architecture"
+        },
+        "summary": "taskpool task_added: 2026-06-22-constrained-advisory-wrong-architecture status=pending"
+      },
+      "signal_id": "sig_20260622_105623_ee3865bf",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105623_a874b1b9",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096985.746238,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-blocked-parent-missing-historical-artifact",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpqq02ge41/brain/05-实践与项目/tasks/2026-06-22-blocked-parent-missing-historical-artifact.md",
+          "title": "Task - Blocked parent missing historical artifact"
+        },
+        "summary": "taskpool task_added: 2026-06-22-blocked-parent-missing-historical-artifact status=pending"
+      },
+      "signal_id": "sig_20260622_105625_6ca8504b",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105625_3a042ebb",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.1609752,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-parent-needs-non-convergence-narrowing",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpkghzgnwn/brain/05-实践与项目/tasks/2026-06-22-parent-needs-non-convergence-narrowing.md",
+          "title": "Task - Parent needs non-convergence narrowing"
+        },
+        "summary": "taskpool task_added: 2026-06-22-parent-needs-non-convergence-narrowing status=pending"
+      },
+      "signal_id": "sig_20260622_105626_807268bd",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_d2c89493",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.5225742,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-blocked-parent-waiting-for-child-backfill",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp1r_dpoik/brain/05-实践与项目/tasks/2026-06-22-blocked-parent-waiting-for-child-backfill.md",
+          "title": "Task - Blocked parent waiting for child backfill"
+        },
+        "summary": "taskpool task_added: 2026-06-22-blocked-parent-waiting-for-child-backfill status=pending"
+      },
+      "signal_id": "sig_20260622_105626_3ab2b972",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_3437da30",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.704541,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-finished-narrowed-brief-child",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp1r_dpoik/brain/05-实践与项目/tasks/2026-06-22-finished-narrowed-brief-child.md",
+          "title": "Task - Finished narrowed brief child"
+        },
+        "summary": "taskpool task_added: 2026-06-22-finished-narrowed-brief-child status=pending"
+      },
+      "signal_id": "sig_20260622_105626_1f2f197c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_d6afc636",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.052442,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-looping-parent-should-reratify-with-targeted-evidence",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpo0pmn003/brain/05-实践与项目/tasks/2026-06-22-looping-parent-should-reratify-with-targeted-evidence.md",
+          "title": "Task - Looping parent should reratify with targeted evidence"
+        },
+        "summary": "taskpool task_added: 2026-06-22-looping-parent-should-reratify-with-targeted-evidence status=pending"
+      },
+      "signal_id": "sig_20260622_105627_ced1ad6c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_e6abcbaa",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.2542021,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-done-child-evidence-for-targeted-reratification",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpo0pmn003/brain/05-实践与项目/tasks/2026-06-22-done-child-evidence-for-targeted-reratification.md",
+          "title": "Task - Done child evidence for targeted reratification"
+        },
+        "summary": "taskpool task_added: 2026-06-22-done-child-evidence-for-targeted-reratification status=pending"
+      },
+      "signal_id": "sig_20260622_105627_dc0546b8",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_163e113e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.8327832,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-优化本地任务池自进化",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpfzxbdgnj/brain/05-实践与项目/tasks/2026-06-22-优化本地任务池自进化.md",
+          "title": "Task - 优化本地任务池自进化"
+        },
+        "summary": "taskpool task_added: 2026-06-22-优化本地任务池自进化 status=pending"
+      },
+      "signal_id": "sig_20260622_105627_758b4bb5",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_429cd9bf",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096989.604036,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-优化本地任务池自进化",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpi2xlip83/brain/05-实践与项目/tasks/2026-06-22-优化本地任务池自进化.md",
+          "title": "Task - 优化本地任务池自进化"
+        },
+        "summary": "taskpool task_added: 2026-06-22-优化本地任务池自进化 status=pending"
+      },
+      "signal_id": "sig_20260622_105629_f0811ae1",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105629_dc29f0dc",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096991.9475079,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-autorun-done-proof-gate",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpvx6aoafv/brain/05-实践与项目/tasks/2026-06-22-验证-autorun-done-proof-gate.md",
+          "title": "Task - 验证 autorun done proof gate"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-autorun-done-proof-gate status=pending"
+      },
+      "signal_id": "sig_20260622_105631_226ec1de",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105631_13952e2c",
+      "status": "pending"
+    }
+  ]
+}

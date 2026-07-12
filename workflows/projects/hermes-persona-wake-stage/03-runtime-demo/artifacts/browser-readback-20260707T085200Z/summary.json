@@ -1,0 +1,44 @@
+{
+  "status": "PASS",
+  "url": "file:///Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/persona-wake-local.html",
+  "outDir": "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/artifacts/browser-readback-20260707T085200Z",
+  "consoleEvents": [],
+  "pageErrors": [],
+  "readback": {
+    "title": "Hermes Persona Wake — Local Demo",
+    "headline": "LOCCENT 控制室C",
+    "boundaryCopy": "LOCAL ONLY · NO EXTERNAL SEND · NO VOICE DEFAULT\nLOCCENT 控制室C\n\nHermes Persona Wake Stage 的本地静态 runtime demo。它只展示 wake/mode/status/handoff-preview，不包含语音输出、外部发送、部署、密钥、支付或删除能力。\n\nWake local stage\nLocal wake acknowledged. No external side effects were invoked.\nAllowed\nLocal wake, mode, status, handoff preview.\nBlocked\nsend, speak, deploy, push, pay, secret, delete.\nEvidence\nStatic HTML + CLI JSON readback + negative side-effect checks.",
+    "status": "Local wake acknowledged. No external side effects were invoked.",
+    "runtime": {
+      "externalSend": false,
+      "voice": false,
+      "blocked": [
+        "send",
+        "speak",
+        "deploy",
+        "push",
+        "pay",
+        "secret",
+        "delete"
+      ]
+    }
+  },
+  "screenshots": [
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/artifacts/browser-readback-20260707T085200Z/initial.png",
+    "/Users/charles/.hermes/workflows/projects/hermes-persona-wake-stage/03-runtime-demo/artifacts/browser-readback-20260707T085200Z/after-wake.png"
+  ],
+  "negativeAuthority": {
+    "externalSend": true,
+    "voice": true,
+    "blocked": [
+      "send",
+      "speak",
+      "deploy",
+      "push",
+      "pay",
+      "secret",
+      "delete"
+    ],
+    "statusNoSideEffects": true
+  }
+}

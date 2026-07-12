@@ -1,0 +1,4198 @@
+{
+  "generatedAt": "2026-07-09T08:01:55.421150+00:00",
+  "repo": "/Users/charles/Desktop/folder/work/uaec-android",
+  "domains": {
+    "app_shell_navigation": {
+      "terms": [
+        "HomeFragment",
+        "activity_main",
+        "FrontPageFragment",
+        "NewMarketFragment",
+        "TradingFragment",
+        "ContractFragment",
+        "AssetsFragment",
+        "MainActivity"
+      ],
+      "matches": [
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_main_hkfi.xml",
+          "hits": [
+            "activity_main"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_hkfi_assets.xml",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_new_market.xml",
+          "hits": [
+            "NewMarketFragment"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_trading.xml",
+          "hits": [
+            "TradingFragment"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_main.xml",
+          "hits": [
+            "activity_main"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/MainHkfiActivity.java",
+          "hits": [
+            "HomeFragment",
+            "activity_main"
+          ],
+          "decls": [
+            "MainHkfiActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/SplashActivity.java",
+          "hits": [
+            "HomeFragment",
+            "MainActivity"
+          ],
+          "decls": [
+            "SplashActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/RankListFragment1.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "RankListFragment1",
+            "MyRecycleAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/FrontPageFragment.java",
+          "hits": [
+            "FrontPageFragment"
+          ],
+          "decls": [
+            "FrontPageFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeFragment.java",
+          "hits": [
+            "HomeFragment",
+            "activity_main",
+            "FrontPageFragment",
+            "NewMarketFragment",
+            "TradingFragment",
+            "ContractFragment",
+            "AssetsFragment",
+            "MainActivity"
+          ],
+          "decls": [
+            "HomeFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeMarketNewFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "HomeMarketNewFragment",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeMarketFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "HomeMarketFragment",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/legalTender/FiatOneKeyBuyCoinActivity.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "FiatOneKeyBuyCoinActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/FuturesAssetsFragment.java",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": [
+            "FuturesAssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/ContractUSDTFragment.java",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": [
+            "ContractUSDTFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/ContractFragment.java",
+          "hits": [
+            "ContractFragment"
+          ],
+          "decls": [
+            "ContractFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/redEnvelope/OpenRedEnvelopeRecordActivity.java",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": [
+            "OpenRedEnvelopeRecordActivity",
+            "MyRecycleAdapter",
+            "HeadHolder",
+            "ContentHolder",
+            "FootHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/partner/PartnerPromoteActivity.java",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": [
+            "PartnerPromoteActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/partner/PartnerMainActivity.java",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": [
+            "PartnerMainActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/newAsset/NewAssetBillActivity.java",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": [
+            "NewAssetBillActivity",
+            "BillRecycleAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/utils/function/FunctionUtil.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "FunctionUtil"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/bbtrade/TradingFragment.java",
+          "hits": [
+            "TradingFragment"
+          ],
+          "decls": [
+            "TradingFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/market/RecommendFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "RecommendFragment",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/market/MarketListFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "MarketListFragment",
+            "MyRecycleAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/market/SelectFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "SelectFragment",
+            "MyRecyclerAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/market/NewMarketFragment.java",
+          "hits": [
+            "HomeFragment",
+            "NewMarketFragment"
+          ],
+          "decls": [
+            "NewMarketFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/market/SearchActivity.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "SearchActivity",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/WalletFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "WalletFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/FastContractFragment.java",
+          "hits": [
+            "ContractFragment"
+          ],
+          "decls": [
+            "FastContractFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/C2CCurrencyAssetsFragment.java",
+          "hits": [
+            "AssetsFragment",
+            "MainActivity"
+          ],
+          "decls": [
+            "C2CCurrencyAssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/OverviewFragment.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "OverviewFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/AssetsFragment.java",
+          "hits": [
+            "ContractFragment",
+            "AssetsFragment"
+          ],
+          "decls": [
+            "AssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/OptionsAssetsFragment.java",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": [
+            "OptionsAssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/AwardAssetsFragment.java",
+          "hits": [
+            "AssetsFragment"
+          ],
+          "decls": [
+            "AwardAssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/base/BroadcastReceiverBase.java",
+          "hits": [
+            "HomeFragment"
+          ],
+          "decls": [
+            "BroadcastReceiverBase",
+            "OnChangeListener"
+          ]
+        }
+      ],
+      "matchCount": 36
+    },
+    "home_discovery": {
+      "terms": [
+        "FrontPageFragment",
+        "HomeMarketFragment",
+        "Banner",
+        "BuiltinBrowserWeb",
+        "appRedirectUrl",
+        "appUrl"
+      ],
+      "matches": [
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/shape_home_banner_select.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/shape_home_banner_normal.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment3.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment2.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_layout_discount_purchase.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment4.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment_video.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_change_pre.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_skeleton_banner.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/banner_item.xml",
+          "hits": [
+            "Banner"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/UrlContent.java",
+          "hits": [
+            "Banner",
+            "appUrl"
+          ],
+          "decls": [
+            "UrlContent"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/BuiltinBrowserWeb.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "BuiltinBrowserWeb",
+            "webViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/PersonCenterFragment.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "PersonCenterFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/FrontPageFragment.java",
+          "hits": [
+            "FrontPageFragment",
+            "HomeMarketFragment",
+            "Banner",
+            "BuiltinBrowserWeb",
+            "appRedirectUrl"
+          ],
+          "decls": [
+            "FrontPageFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeFragment.java",
+          "hits": [
+            "FrontPageFragment",
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "HomeFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/ActionCenterActivity.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "ActionCenterActivity",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeMarketFragment.java",
+          "hits": [
+            "HomeMarketFragment"
+          ],
+          "decls": [
+            "HomeMarketFragment",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/bean/PageData.java",
+          "hits": [
+            "Banner",
+            "appRedirectUrl",
+            "appUrl"
+          ],
+          "decls": [
+            "PageData",
+            "DataBean",
+            "BannerBean"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/discountPurchase/DiscountPurchaseActivity.java",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "DiscountPurchaseActivity",
+            "MyRecycleAdapter",
+            "HeadHolder",
+            "ContentHolder",
+            "FootHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/utils/InitConfigUtil.java",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "InitConfigUtil"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/adapters/HomeVideoBannerAdapter.java",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "HomeVideoBannerAdapter",
+            "ItemViewHolder",
+            "ShopListClickListener"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/pre/activity/ChangePreActivity.java",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "ChangePreActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/dig/bean/ContactBean.java",
+          "hits": [
+            "appRedirectUrl",
+            "appUrl"
+          ],
+          "decls": [
+            "ContactBean",
+            "Data",
+            "BlogrllList",
+            "Logo",
+            "Meta"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/MineActivity.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "MineActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/HelpCenterActivity.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "HelpCenterActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/view/BannerViewHolder.java",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "BannerViewHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/view/BannerViewHolder1.java",
+          "hits": [
+            "Banner"
+          ],
+          "decls": [
+            "BannerViewHolder1"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/base/LazyFragment.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "LazyFragment"
+          ]
+        }
+      ],
+      "matchCount": 29
+    },
+    "market_quote_center": {
+      "terms": [
+        "NewMarketFragment",
+        "MarketListFragment",
+        "HomeMarketFragment",
+        "KlineActivity",
+        "Market"
+      ],
+      "matches": [
+        {
+          "path": "app/src/androidTest/java/com/uu/market/ExampleInstrumentedTest.java",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "ExampleInstrumentedTest"
+          ]
+        },
+        {
+          "path": "app/src/test/java/com/uu/market/ExampleUnitTest.java",
+          "hits": [
+            "Market"
+          ],
+          "decls": [
+            "ExampleUnitTest"
+          ]
+        },
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "KlineActivity",
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ro/strings.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rTW/strings.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout-land/layout_usdt_kline_activity.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout-land/layout_kline_activity.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rCN/strings.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/f1_market_list_bg.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/home_market_bg_shape.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ja/strings.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/progress_dialog.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_certificate.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_overview.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_main_hkfi.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_charge_mention_details.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment3.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_toolbar.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_skeleton_top_market.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_block_puzzle.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/mine_head_layout_item.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment2.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_exchange_history_history.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_partner_main.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/itme_index.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_depth.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_bb_warn_dialog.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/mass_operation.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_order.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_pre.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/itme_mydelivery.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/pop_share_profit.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_forget_password2.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_small_exchange_history.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_word_captcha.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contract_bill.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/coogame_country.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/itme_pop1.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/contract_usdt_fragment.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/right_hodler_layout.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_futures_trade_container.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/view_guide_market_top.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment4.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_spot.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_change_pre.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_hkfi_assets.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_login.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_market.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_home_market_list.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_announcement_center.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_position.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_fundingrate.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_change_pre_time.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_usdt_kline_activity.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_service.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment_video.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_sustainablemarket.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/simple_player_view_player.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_usdt_lever.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_home_market_list2.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_c2c_assets.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/pop_secondcontract_buy.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_number_tablayout.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_usdt_horizontal_layout.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_profitandloss.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_registernew.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_video_authentication.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_parity.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/filtrate_dialog_item.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_discount_purchase.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_spot_position_content.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_close_pattern_psw.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_layout_type.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_setuppswd.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_market_list.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_open_red_envelope_record.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_one_key_buy_coin.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_voucher_open_position.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_otcreport.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_order_detail.xml",
+          "hits": [
+            "Market"
+          ],
+          "decls": []
+        }
+      ],
+      "matchCount": 1095
+    },
+    "spot_trading": {
+      "terms": [
+        "TradingFragment",
+        "SpotFragment",
+        "SpotTradeContainerFragment",
+        "bbtrade",
+        "Trading"
+      ],
+      "matches": [
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "bbtrade",
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ro/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rTW/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout-land/layout_usdt_kline_activity.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rCN/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ja/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/position_fragment_list_item.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_against.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment3.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_overview_account.xml",
+          "hits": [
+            "SpotFragment",
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment2.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_atm_confirm.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_trial_bonus_card.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_spot.xml",
+          "hits": [
+            "SpotFragment",
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/frame_dialog.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_verification_mentionmoney.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_usdt_horizontal_layout.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_trade_order_item.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_mine_warn.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_popup_trading.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_voucher_open_position.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_otcreport.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_order_detail.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_new_market.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/bbtrade_fragment.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_bb_horizontal_layout.xml",
+          "hits": [
+            "bbtrade",
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_trading.xml",
+          "hits": [
+            "TradingFragment",
+            "bbtrade",
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_help_center.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_partner_share.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_history_order.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_coupon_funding.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_history_order.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_partner_promote.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_item.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_trade_ratefragment.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_futures_voucher.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/tablayout_trading_coustomview.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_bb_vertical_layout.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_bb.xml",
+          "hits": [
+            "SpotFragment"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/plate_fragment.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_authentication.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_bbwarn_setting.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/content_item_trade_order.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/popup_trading.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-pt-rBR/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-night/colors.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values/colors.xml",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ar-rAE/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-vi/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-en/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-fr/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-es/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ko/strings.xml",
+          "hits": [
+            "Trading"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/SubscriptionAndNewBrowserWeb.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "SubscriptionAndNewBrowserWeb",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/TradingDigBrowserWeb.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "TradingDigBrowserWeb",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/IeoPurchaseActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "IeoPurchaseActivity",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/LockedMiningBrowserWeb.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "LockedMiningBrowserWeb",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeFunctionActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "HomeFunctionActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeFragment.java",
+          "hits": [
+            "TradingFragment",
+            "bbtrade",
+            "Trading"
+          ],
+          "decls": [
+            "HomeFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/legalTender/OrderActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "OrderActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/legalTender/OrderDetailsActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "OrderDetailsActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/legalTender/OrderFragment.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "OrderFragment",
+            "MyRecycleAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/TradingPopup.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "TradingPopup"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/StringListPopup.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "StringListPopup"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/adapter/TradingPopupAdapter.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "TradingPopupAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/adapter/StringListAdapter.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "StringListAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/UsdtKlineActivity.java",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": [
+            "UsdtKlineActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/VoucherOpenPositionDialog.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "VoucherOpenPositionDialog",
+            "OnPlaceOrderListener"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/ContractFragment.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "ContractFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+          "hits": [
+            "bbtrade"
+          ],
+          "decls": [
+            "KlineFuturesFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/income/EventConstants.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "EventConstants"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/push/PushPropertyActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "PushPropertyActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/utils/TabViewUtils.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "TabViewUtils"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/adapters/FuturesVoucherAdapter.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "FuturesVoucherAdapter",
+            "ItemViewHolder",
+            "VoucherListClickListener"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/dig/adapter/DigAdapter.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "DigAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/WebShowActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "WebShowActivity",
+            "webViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/ChannelActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "ChannelActivity",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/HelpCenterActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "HelpCenterActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/trialbonus/TrialBonusActivity.java",
+          "hits": [
+            "Trading"
+          ],
+          "decls": [
+            "TrialBonusActivity",
+            "CouponAdapter",
+            "ViewHolder"
+          ]
+        }
+      ],
+      "matchCount": 120
+    },
+    "contract_trading": {
+      "terms": [
+        "ContractFragment",
+        "ContractUSDTFragment",
+        "ContractCalculatorActivity",
+        "FundingRateActivity",
+        "SustainableMarketActivity",
+        "Contract"
+      ],
+      "matches": [
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "ContractCalculatorActivity",
+            "FundingRateActivity",
+            "SustainableMarketActivity",
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ro/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rTW/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rCN/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/pop_secondcontract_bg.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/shape_btn_secondcontract_bg_canotbuy.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/bottom_mine_selector.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/pop_secondcontract_bg_bottom.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ja/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/position_fragment_list_item.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_overview.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_overview_account.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/itme_fast_contract_popup.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/pop_share_profit.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contract_bill.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_ffbuy.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/contract_usdt_fragment.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment4.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/foot_partner_for_recycler_nologin.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_fundingrate.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contract_account_detail.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_sustainable_list.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment_video.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_secondcontract_toolbar.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/pop_secondcontract_buy.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_usdt_horizontal_layout.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_funds_cost.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_fr_tab.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_order_detail.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_bb_horizontal_layout.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_fast_contract_assets.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_fast_contract_assets.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/popup_buy_dig.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_order_details.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contractcalculator.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_gathering_style.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_delivery_two.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/frame_usdt_dialog.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_fast_futures_buy.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_contract_quantity_ime_toolbar.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_delivery_details.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_main.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contract_tranfer.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_usdt_contract_introduction.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_fr_compared.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/contract_fragment.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-pt-rBR/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-night/colors.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values/colors.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values/styles.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ar-rAE/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-vi/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-en/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-fr/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-es/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ko/strings.xml",
+          "hits": [
+            "Contract"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/UrlContent.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "UrlContent"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/PersonCenterFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "PersonCenterFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeFragment.java",
+          "hits": [
+            "ContractFragment",
+            "Contract"
+          ],
+          "decls": [
+            "HomeFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/legalTender/DialogFunctionFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "DialogFunctionFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/legalTender/LegalTenderFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "LegalTenderFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/ShareProfitPopup.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "ShareProfitPopup"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/SecondContractBuyedPopup.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "SecondContractBuyedPopup"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/popup/BuyDigPopup.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "BuyDigPopup"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/FRRateFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "FRRateFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/DeliveryRecordFragmentTwo.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "DeliveryRecordFragmentTwo"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/HistoryEntrustFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "HistoryEntrustFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/CurrentFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "CurrentFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/MyDeliveryFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "MyDeliveryFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/MyDeliveryDetailsActivity.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "MyDeliveryDetailsActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/UsdtKlineActivity.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "UsdtKlineActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/EntrustCapitalFlowFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "EntrustCapitalFlowFragment",
+            "MyRecycleAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/CurrentEntrustActivity.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "CurrentEntrustActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/FuturesTradeContainerFragment.java",
+          "hits": [
+            "ContractUSDTFragment",
+            "Contract"
+          ],
+          "decls": [
+            "FuturesTradeContainerFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/FuturesAssetsFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "FuturesAssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/OneTime15MFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "OneTime15MFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/FundingRateActivity.java",
+          "hits": [
+            "FundingRateActivity",
+            "Contract"
+          ],
+          "decls": [
+            "FundingRateActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/DeliveryDetailsActivity.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "DeliveryDetailsActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/BuyFuturesFragment.java",
+          "hits": [
+            "Contract"
+          ],
+          "decls": [
+            "BuyFuturesFragment"
+          ]
+        }
+      ],
+      "matchCount": 217
+    },
+    "assets_wallet": {
+      "terms": [
+        "AssetsFragment",
+        "property",
+        "assets",
+        "withdraw",
+        "deposit",
+        "transfer",
+        "Wallet"
+      ],
+      "matches": [
+        {
+          "path": "identify/src/main/java/com/baidu/ocr/ui/camera/CameraNativeHelper.java",
+          "hits": [
+            "assets"
+          ],
+          "decls": [
+            "CameraNativeHelper",
+            "CameraNativeInitCallback"
+          ]
+        },
+        {
+          "path": "app/src/ua/assets/ShareSDK.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "property",
+            "assets",
+            "withdraw",
+            "deposit",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ro/strings.xml",
+          "hits": [
+            "property",
+            "assets",
+            "withdraw",
+            "deposit",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rTW/strings.xml",
+          "hits": [
+            "property",
+            "assets",
+            "withdraw",
+            "deposit",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rCN/strings.xml",
+          "hits": [
+            "property",
+            "assets",
+            "withdraw",
+            "deposit",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_bottom_botton.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/new_assets_bg.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_switch_bg_shape.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_right_top.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/ae_assets_btn_bg.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_bottom_pop_bg.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/ae_dialog_dismiss.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/wallet_transfer_shape.xml",
+          "hits": [
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/wallet_btn_bg.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_bb_bg_shape.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_transfer_layout_shape.xml",
+          "hits": [
+            "assets",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/bottom_property_selector.xml",
+          "hits": [
+            "property"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_recharge_or_withdraw_shape.xml",
+          "hits": [
+            "assets",
+            "withdraw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/shape_home_assets_corners2.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/wallet_eyes_selector.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/wallet_btn_item_bg.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_bb_bg_top.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_shape.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_wallet_transfer_shape.xml",
+          "hits": [
+            "assets",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/ae_bg_delete_account_assets.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/ae_bg_function_skeleton.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_shape_bg.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/assets_switch_selector.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ja/strings.xml",
+          "hits": [
+            "property",
+            "assets",
+            "withdraw",
+            "deposit",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/position_fragment_list_item.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_overview.xml",
+          "hits": [
+            "assets",
+            "withdraw",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_against.xml",
+          "hits": [
+            "assets",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_charge_mention_details.xml",
+          "hits": [
+            "property"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_deposit_coin_detail.xml",
+          "hits": [
+            "property",
+            "assets",
+            "deposit"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_index.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_toolbar.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_overview_account.xml",
+          "hits": [
+            "assets",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_assets_coin_pnl.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_pldetails.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_currency_fragment.xml",
+          "hits": [
+            "withdraw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_setting_pix.xml",
+          "hits": [
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_atm_confirm.xml",
+          "hits": [
+            "withdraw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_spot_transfer_layout.xml",
+          "hits": [
+            "assets",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_atm_select_currency.xml",
+          "hits": [
+            "assets",
+            "withdraw",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_pre.xml",
+          "hits": [
+            "property",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_otc_report_layout.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_open_red_envelope_layout.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_small_exchange_history.xml",
+          "hits": [
+            "property",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_optionlist.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_ffbuy_toolbar.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contract_bill.xml",
+          "hits": [
+            "property",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_ffbuy.xml",
+          "hits": [
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_open_red_envelope.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_income.xml",
+          "hits": [
+            "property",
+            "deposit"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment4.xml",
+          "hits": [
+            "property",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_assets_toolbar_two.xml",
+          "hits": [
+            "assets",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_assets_transfer.xml",
+          "hits": [
+            "assets",
+            "transfer",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_historypositiondetails.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_dialog_custom.xml",
+          "hits": [
+            "property"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_atm_qrcode.xml",
+          "hits": [
+            "withdraw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_hkfi_assets.xml",
+          "hits": [
+            "AssetsFragment",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_mention_money.xml",
+          "hits": [
+            "withdraw"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_deposit_coin_recode.xml",
+          "hits": [
+            "property",
+            "assets",
+            "deposit"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/assets_bottom_pop.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_customs_toolbar.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_google_authentication.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_my_vote.xml",
+          "hits": [
+            "property",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_mydeliverydetails.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_contract_account_detail.xml",
+          "hits": [
+            "property",
+            "assets",
+            "withdraw",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/frame_dialog.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_sustainable_list.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment_video.xml",
+          "hits": [
+            "property",
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_secondcontract_toolbar.xml",
+          "hits": [
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_change_pre.xml",
+          "hits": [
+            "assets"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_recharge_choice.xml",
+          "hits": [
+            "assets",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_usdt_deposit.xml",
+          "hits": [
+            "deposit",
+            "Wallet"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_c2c_assets.xml",
+          "hits": [
+            "property",
+            "assets",
+            "transfer"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_deposit_lock_next.xml",
+          "hits": [
+            "property",
+            "deposit"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_assets_toolbar.xml",
+          "hits": [
+            "assets",
+            "Wallet"
+          ],
+          "decls": []
+        }
+      ],
+      "matchCount": 416
+    },
+    "mine_settings_security": {
+      "terms": [
+        "PersonCenterFragment",
+        "SettingActivity",
+        "IdentityActivity",
+        "mine",
+        "security",
+        "google",
+        "realName",
+        "advancedAuth"
+      ],
+      "matches": [
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "SettingActivity",
+            "IdentityActivity",
+            "mine",
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ro/strings.xml",
+          "hits": [
+            "mine",
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rTW/strings.xml",
+          "hits": [
+            "mine",
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout-land/layout_usdt_kline_activity.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout-land/layout_kline_activity.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-zh-rCN/strings.xml",
+          "hits": [
+            "mine",
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/mine_invite_income_shape.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/bottom_mine_selector.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/values-ja/strings.xml",
+          "hits": [
+            "mine",
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/position_fragment_list_item.xml",
+          "hits": [
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_certificate.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment3.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_password_deal.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_block_puzzle.xml",
+          "hits": [
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/mine_head_layout_item.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment2.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_spot_transfer_layout.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_pre.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/contract_usdt_fragment.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/home_fragment4.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_spot.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_login.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_user_data_retention.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_announcement_center.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_position.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_google_authentication.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_fundingrate.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/frame_dialog.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_usdt_kline_activity.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_verification_login_dialog.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_service.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_verification_mentionmoney.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_recharge_choice.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_rate.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_forget_password.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_registernew.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_video_authentication.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_mine_warn.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_business_info.xml",
+          "hits": [
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_setting_message.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_close_pattern_psw.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_setuppswd.xml",
+          "hits": [
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_kline_activity.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_about_us.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_deposit_income.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/express_area_fragment.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/bbtrade_fragment.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_upload_passport.xml",
+          "hits": [
+            "IdentityActivity",
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_trading.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_one_key_buy_coin.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_rebate_rules.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_change_phone.xml",
+          "hits": [
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_currententrust.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_bind_google.xml",
+          "hits": [
+            "mine",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_deposit_coin.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_phone.xml",
+          "hits": [
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_billing_details.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_input_email.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_winning_record.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_delete_reason.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_rebate_record.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_verification.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_mine1.xml",
+          "hits": [
+            "mine",
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_order_details.xml",
+          "hits": [
+            "realName"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_atm_trade.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_language.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_change_login_password.xml",
+          "hits": [
+            "security"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_bb_mine_warn_setting.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/layout_kline_spot_fragment.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_upload_identity.xml",
+          "hits": [
+            "IdentityActivity",
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_assets_record.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_new_billing_details.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_reset_deal_password.xml",
+          "hits": [
+            "security",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_setting_pattern_psw.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_web_u_card.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_lock_record.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/fragment_otc_buy_release_order.xml",
+          "hits": [
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_bing_email.xml",
+          "hits": [
+            "mine",
+            "google"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_main.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/head_layout_partner.xml",
+          "hits": [
+            "mine"
+          ],
+          "decls": []
+        }
+      ],
+      "matchCount": 375
+    },
+    "pwa_shell": {
+      "terms": [
+        "WebView",
+        "BuiltinBrowserWeb",
+        "MainActivity"
+      ],
+      "matches": [
+        {
+          "path": "app/src/main/AndroidManifest.xml",
+          "hits": [
+            "WebView",
+            "BuiltinBrowserWeb",
+            "MainActivity"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/drawable/progress_webview.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_about_us.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/item_change_pre_introduc.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_rebate_rules.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/dialog_partner.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_kyc_web.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_notice_details.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_subscription_and_new_browser_web.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_channel.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_web_u_card.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_ieo_purchase.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_browser_web.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/res/layout/activity_h5livebroadcast.xml",
+          "hits": [
+            "WebView"
+          ],
+          "decls": []
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/SubscriptionAndNewBrowserWeb.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "SubscriptionAndNewBrowserWeb",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/UrlContent.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "UrlContent"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/TradingDigBrowserWeb.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "TradingDigBrowserWeb",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/BuiltinBrowserWeb.java",
+          "hits": [
+            "WebView",
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "BuiltinBrowserWeb",
+            "webViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/SplashActivity.java",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": [
+            "SplashActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/IeoPurchaseActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "IeoPurchaseActivity",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/LockedMiningBrowserWeb.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "LockedMiningBrowserWeb",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/PersonCenterFragment.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "PersonCenterFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/H5LiveBroadcastActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "H5LiveBroadcastActivity",
+            "AndroidJavaScript",
+            "MyWebViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/FrontPageFragment.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "FrontPageFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/HomeFragment.java",
+          "hits": [
+            "BuiltinBrowserWeb",
+            "MainActivity"
+          ],
+          "decls": [
+            "HomeFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/home/ActionCenterActivity.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "ActionCenterActivity",
+            "MyRecycleAdapter",
+            "MyHolder"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/ContentActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "ContentActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/contract/CommonWebViewActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "CommonWebViewActivity",
+            "MyWebViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/partner/RebateRulesActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "RebateRulesActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/partner/DialogPartner.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "DialogPartner"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/partner/PartnerPromoteActivity.java",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": [
+            "PartnerPromoteActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/property/partner/PartnerMainActivity.java",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": [
+            "PartnerMainActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/pay/FatPayActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "FatPayActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/utils/function/FunctionUtil.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "FunctionUtil"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/kycmanage/KycWebView.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "KycWebView",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/pre/activity/ChangePreDetialsActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "ChangePreDetialsActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/pre/adapter/ChangePreIntroducAdapter.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "ChangePreIntroducAdapter"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/MineActivity.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "MineActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/WebShowActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "WebShowActivity",
+            "webViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/WebUCardActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "WebUCardActivity",
+            "webViewClient",
+            "NativeBridge"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/ContactActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "ContactActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/IdentityActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "IdentityActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/NoticeDetailsActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "NoticeDetailsActivity",
+            "webViewClient"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/ChannelActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "ChannelActivity",
+            "webViewClient",
+            "AndroidJavaScriptEnd"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/FeedbackActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "FeedbackActivity",
+            "webViewClient",
+            "MyDownloadListener",
+            "MyChromeViewClient",
+            "MyWebViewClinet",
+            "UploadHandler"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/HelpCenterActivity.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "HelpCenterActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/mine/AboutUsActivity.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "AboutUsActivity"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/assets/C2CCurrencyAssetsFragment.java",
+          "hits": [
+            "MainActivity"
+          ],
+          "decls": [
+            "C2CCurrencyAssetsFragment"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/base/LoggerInterceptor.java",
+          "hits": [
+            "WebView"
+          ],
+          "decls": [
+            "LoggerInterceptor"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/uu/market/base/LazyFragment.java",
+          "hits": [
+            "BuiltinBrowserWeb"
+          ],
+          "decls": [
+            "LazyFragment"
+          ]
+        }
+      ],
+      "matchCount": 50
+    }
+  },
+  "summary": {
+    "app_shell_navigation": 36,
+    "home_discovery": 29,
+    "market_quote_center": 1095,
+    "spot_trading": 120,
+    "contract_trading": 217,
+    "assets_wallet": 416,
+    "mine_settings_security": 375,
+    "pwa_shell": 50
+  }
+}

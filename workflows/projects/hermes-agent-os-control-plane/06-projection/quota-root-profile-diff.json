@@ -1,0 +1,96 @@
+{
+  "boundary": "Profile-local brain-mirror quota state remains authoritative for t_169767cb; this report is read-only and does not sync root state.",
+  "external_side_effects_executed": false,
+  "focused_diffs": [
+    {
+      "key": "claude-code::claude-fable-5",
+      "profile": {
+        "confidence": 0.3,
+        "evidence_note": "external CLI/OAuth route succeeded but exposes no response headers to Hermes",
+        "header_names": [],
+        "last_updated": "2026-07-07T02:17:15.898740Z",
+        "model": "claude-fable-5",
+        "observability": "unobservable",
+        "policy_scope": "low_risk_routing_only; not_budget_handoff_certification",
+        "provider": "claude-code",
+        "quota_type": "external_cli_no_quota_headers",
+        "remaining_requests": null,
+        "remaining_tokens": null,
+        "remaining_usd": null,
+        "reset_at": null,
+        "source": "subprocess_success_no_quota_headers",
+        "stale_after_seconds": 300,
+        "status": "unobservable",
+        "usage": {}
+      },
+      "root": {
+        "confidence": 0.3,
+        "evidence_note": "external CLI/OAuth route succeeded but exposes no response headers to Hermes",
+        "header_names": [],
+        "last_updated": "2026-07-07T02:16:30.232032Z",
+        "model": "claude-fable-5",
+        "observability": "unobservable",
+        "policy_scope": "low_risk_routing_only; not_budget_handoff_certification",
+        "provider": "claude-code",
+        "quota_type": "external_cli_no_quota_headers",
+        "remaining_requests": null,
+        "remaining_tokens": null,
+        "remaining_usd": null,
+        "reset_at": null,
+        "source": "subprocess_success_no_quota_headers",
+        "stale_after_seconds": 300,
+        "status": "unobservable",
+        "usage": {}
+      },
+      "same": false
+    },
+    {
+      "key": "deepseek::deepseek-v4-pro",
+      "profile": {
+        "confidence": 0.85,
+        "last_updated": "2026-07-07T02:17:53.721323Z",
+        "model": "deepseek-v4-pro",
+        "observability": "exact",
+        "provider": "deepseek",
+        "quota_type": "billing_balance",
+        "raw_balance_available": true,
+        "remaining_requests": null,
+        "remaining_tokens": null,
+        "remaining_usd": 32.53,
+        "reset_at": null,
+        "source": "balance_endpoint",
+        "stale_after_seconds": 300,
+        "status": "ok"
+      },
+      "root": {
+        "confidence": 0.1,
+        "last_updated": "2026-07-07T03:09:54.804532Z",
+        "model": "deepseek-v4-pro",
+        "observability": "unknown",
+        "provider": "deepseek",
+        "quota_type": "unknown",
+        "remaining_requests": null,
+        "remaining_tokens": null,
+        "remaining_usd": null,
+        "reset_at": null,
+        "source": "response_headers",
+        "stale_after_seconds": 300,
+        "status": "unknown",
+        "usage": {}
+      },
+      "same": false
+    }
+  ],
+  "generated_at": "2026-07-07T03:12:16+00:00",
+  "model_key_count": {
+    "profile": 8,
+    "root": 10,
+    "union": 11
+  },
+  "profile_exists": true,
+  "profile_path": "/Users/charles/.hermes/profiles/brain-mirror/state/model_quota_state.json",
+  "root_exists": true,
+  "root_path": "/Users/charles/.hermes/state/model_quota_state.json",
+  "runtime_mutation": false,
+  "schema": "root_profile_quota_diff_v1"
+}

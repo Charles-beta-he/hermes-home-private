@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T09:03:47.681883+00:00",
+  "level": "L3-local-certified-packet",
+  "boundedClaim": "UAEC React H5 local web-H5 market/spot parity packet approved by independent verifier; covers market quote center, market row to detail, and Kline/detail buy-sell to spot-trade route semantics only. Not push/deploy/device/auth/PWA certified.",
+  "repoRoot": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+  "gitStatus": "## dev...origin/dev [ahead 16]",
+  "commits": [
+    "3b214d6 fix: align market quote center parity",
+    "ef93815 fix: align market detail navigation",
+    "91710b7 fix: preserve kline spot trade routing"
+  ],
+  "evidence": {
+    "slicePacket": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-slice-evidence-packet-latest.json",
+    "localLoop": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-loop-latest.json",
+    "marketParity": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-parity/market-parity-smoke-390x844.json",
+    "marketDetailNavigation": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-market-detail-navigation/market-detail-navigation-390x844.json",
+    "klineToSpotTrade": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-kline-to-spot-trade/kline-to-spot-trade-390x844.json"
+  },
+  "verifier": {
+    "delegationId": "deleg_1566d26d",
+    "vote": "APPROVE",
+    "summary": "Bounded local slice evidence is sufficient; no objective blockers. Git clean except ahead, scoped files, all evidence JSON ok true, L2 local loop ok true. Open boundaries: push/deploy, real device/WebView, auth/session, PWA/production domain."
+  },
+  "openGates": [
+    "push/CI remote readback",
+    "Android simulator or real-device visual diff",
+    "authenticated/session behavior certification",
+    "PWA install/standalone acceptance",
+    "production/test-domain deploy readback"
+  ],
+  "ok": true
+}

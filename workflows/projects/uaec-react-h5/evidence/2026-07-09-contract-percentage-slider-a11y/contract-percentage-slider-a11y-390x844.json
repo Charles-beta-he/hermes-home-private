@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T15:15:28.960Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "mobile": true
+  },
+  "state": {
+    "href": "http://127.0.0.1:4173/contract",
+    "tag": "input",
+    "type": "range",
+    "aria": "合约下单比例",
+    "min": "0",
+    "max": "100",
+    "now": "0",
+    "text": true,
+    "visible": true,
+    "hasContractText": true
+  },
+  "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-percentage-slider-a11y/contract-percentage-slider-a11y-390x844.png",
+  "negative": {
+    "noSliderDragPerformed": true,
+    "noOrderPasswordMutation": true,
+    "noCredentialOrSessionRead": true,
+    "noRealOrderSubmitted": true
+  },
+  "forbiddenRequests": []
+}

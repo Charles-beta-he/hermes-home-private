@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-07-09T11:15:11.674851+00:00",
+  "sourceDelegation": "deleg_ff90a05f",
+  "slice": "spot-transfer-button-login-boundary",
+  "verifierVerdict": "AMEND",
+  "verifierObjectiveBlocker": "working tree was dirty during stale verifier run",
+  "currentReadback": {
+    "gitStatus": "## dev...origin/dev [ahead 32]",
+    "head": "16849b3"
+  },
+  "currentHeadContainsTarget": true,
+  "classification": "stale-environment-amend-not-product-blocker",
+  "action": "fresh verifier redispatch required; do not upgrade to L3 from this AMEND",
+  "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-transfer-button-login-boundary/spot-transfer-button-login-boundary-390x844.json",
+  "okToContinueLocalSlices": true
+}

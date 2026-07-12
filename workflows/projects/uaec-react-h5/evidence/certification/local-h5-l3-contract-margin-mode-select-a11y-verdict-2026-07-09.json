@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:14:34.986457+00:00",
+  "sourceDelegation": "deleg_da07e934",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-margin-mode-select-a11y",
+  "targetCommit": "cd711f6",
+  "currentHead": "9eade94",
+  "currentGitStatus": "## dev...origin/dev [ahead 37]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract margin-mode selector accessibility slice is L3-local-certified-packet: scoped code, SSOT evidence, local loop, and independent verifier approval support the label. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-margin-mode-select-a11y/contract-margin-mode-select-a11y-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-margin-mode-select-a11y-loop-2026-07-09T14-04-55-023776+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 37]",
+      "head": "9eade94",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

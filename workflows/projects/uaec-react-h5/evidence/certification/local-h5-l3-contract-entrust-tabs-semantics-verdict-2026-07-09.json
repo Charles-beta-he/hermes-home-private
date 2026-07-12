@@ -1,0 +1,32 @@
+{
+  "generatedAt": "2026-07-09T14:52:09.290891+00:00",
+  "sourceDelegation": "deleg_08ed8869",
+  "verdict": "APPROVE",
+  "certificationLevel": "L3-local-certified-packet",
+  "slice": "contract-entrust-tabs-semantics",
+  "targetCommit": "2352658",
+  "currentHead": "2352658",
+  "currentGitStatus": "## dev...origin/dev [ahead 42]",
+  "targetContainedInHead": true,
+  "boundedClaim": "Contract entrust tabs semantics slice is L3-local-certified-packet: scoped code, SSOT evidence, timestamped local loop, and independent verifier approval support role=tablist/tabs with aria-selected and tab-change behavior. This does not certify push/deploy/device/authenticated trading/PWA/production/real orders.",
+  "evidence": {
+    "sliceEvidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-entrust-tabs-semantics/contract-entrust-tabs-semantics-390x844.json",
+    "loopReport": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/certification/local-h5-contract-entrust-tabs-semantics-loop-2026-07-09T14-49-51-640232+00-00.json",
+    "freshReadback": {
+      "gitStatus": "## dev...origin/dev [ahead 42]",
+      "head": "2352658",
+      "targetScope": [
+        "src/pages/ContractPage/ContractPage.tsx"
+      ]
+    }
+  },
+  "negativeBoundaries": [
+    "no push",
+    "no deploy",
+    "no real device certification",
+    "no authenticated trading certification",
+    "no PWA certification",
+    "no production certification",
+    "no real order/funds mutation"
+  ]
+}

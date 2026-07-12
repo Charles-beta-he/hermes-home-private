@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-09T14:21:14.067912+00:00",
+  "target": "uaec-react-h5 contract transfer button semantics safe slice",
+  "certificationLevel": "L2-local-loop-verified",
+  "slice": "contract-transfer-button-semantics",
+  "commit": "01723b1",
+  "gitStatus": "## dev...origin/dev [ahead 39]",
+  "workingTreeCleanAtGeneration": true,
+  "checks": [
+    {
+      "name": "scoped-eslint-contract-page-slice",
+      "ok": true,
+      "command": "npx eslint src/pages/ContractPage/ContractPage.tsx --rule '@typescript-eslint/no-unused-vars: off' --rule '@typescript-eslint/no-explicit-any: off'"
+    },
+    {
+      "name": "build",
+      "ok": true,
+      "command": "npm run build",
+      "acceptedWarnings": [
+        "large chunks",
+        "Browserslist old data",
+        "PWA precache output",
+        "known dynamic/static import chunk warning"
+      ]
+    },
+    {
+      "name": "mobile-cdp-smoke",
+      "ok": true,
+      "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-transfer-button-semantics/contract-transfer-button-semantics-390x844.json",
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-contract-transfer-button-semantics/contract-transfer-button-semantics-390x844.png"
+    },
+    {
+      "name": "clean-worktree",
+      "ok": true
+    }
+  ],
+  "blockers": [],
+  "boundedClaim": "Contract transfer entry is a semantic button and opens the transfer drawer without submitting transfer or order mutation in local anonymous H5 preview. Not authenticated transfer/device/PWA/production certification."
+}

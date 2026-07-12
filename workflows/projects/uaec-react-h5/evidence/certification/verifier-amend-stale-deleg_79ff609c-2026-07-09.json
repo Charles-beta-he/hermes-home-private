@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-07-09T11:10:56.423365+00:00",
+  "sourceDelegation": "deleg_79ff609c",
+  "slice": "spot-orderbook-mode-semantics",
+  "verifierVerdict": "AMEND",
+  "verifierObjectiveBlocker": "working tree was dirty during stale verifier run",
+  "currentReadback": {
+    "gitStatus": "## dev...origin/dev [ahead 32]",
+    "head": "16849b3"
+  },
+  "currentHeadContainsTarget": true,
+  "classification": "stale-environment-amend-not-product-blocker",
+  "action": "fresh verifier redispatch required; do not upgrade to L3 from this AMEND",
+  "evidence": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-09-spot-orderbook-mode-semantics/spot-orderbook-mode-semantics-390x844.json",
+  "okToContinueLocalSlices": true
+}

@@ -1,0 +1,1743 @@
+{
+  "schema": "hermes_dirty_worktree_inventory_v1",
+  "generated_at": "2026-07-11T19:55:36Z",
+  "repos": {
+    "/Users/charles/.hermes": {
+      "count": 423,
+      "categories": {
+        "core-config-or-lock": 1,
+        "generated-runtime": 35,
+        "other": 84,
+        "source-or-ssot": 303
+      },
+      "rows": [
+        {
+          "status": " M",
+          "path": "SOUL.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/0ca2cfd4068b/2026-04-27_05-05-19.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/1910cb31eabe/2026-04-26_23-00-35.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/1d5c2ca35c01/2026-04-27_02-15-30.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/2653ea4906ca/2026-04-26_18-00-42.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/2653ea4906ca/2026-04-27_00-00-52.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/2653ea4906ca/2026-04-27_06-01-05.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/600370f80d83/2026-04-27_02-02-06.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/6510a716937c/2026-04-27_03-02-11.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/6987cc40f289/2026-04-27_00-11-28.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/733798561af7/2026-04-27_00-06-48.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/789ca7d5e718/2026-04-26_18-01-06.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/789ca7d5e718/2026-04-26_18-05-49.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/789ca7d5e718/2026-04-27_00-06-17.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/789ca7d5e718/2026-04-27_06-05-17.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/ab3509a0e4e1/2026-04-27_04-31-01.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/c5cf6a078a72/2026-04-27_04-02-41.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-26_18-00-33.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-26_18-31-05.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-26_19-30-34.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-26_22-00-29.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-26_22-35-57.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-26_23-30-47.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_00-30-37.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_01-30-52.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_02-30-43.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_03-30-25.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_04-30-59.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_05-30-45.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_06-30-34.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_07-31-00.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_08-30-24.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_09-31-02.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_10-30-26.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/e9e8af6edb0e/2026-04-27_11-30-45.md"
+        },
+        {
+          "status": " D",
+          "path": "cron/output/fbba30dd4a8b/2026-04-27_05-07-28.md"
+        },
+        {
+          "status": " M",
+          "path": "hermes-agent"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/autonomous-evolution-log.jsonl"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/evolution-dashboard.md"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/health-history.jsonl"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/pa-health-history.jsonl"
+        },
+        {
+          "status": " M",
+          "path": "notes/engineering-cybernetics/self-scan-log.jsonl"
+        },
+        {
+          "status": " M",
+          "path": "project-profiles/hermes-agent-os-control-plane.json"
+        },
+        {
+          "status": " M",
+          "path": "project-profiles/hermes-fitness-posture-coach.json"
+        },
+        {
+          "status": " M",
+          "path": "project-profiles/hermes.json"
+        },
+        {
+          "status": " M",
+          "path": "project-profiles/mobile-offline-avatar-travel.json"
+        },
+        {
+          "status": " M",
+          "path": "project-profiles/single-session-multitopic-trace.json"
+        },
+        {
+          "status": " M",
+          "path": "project-profiles/uvisa-app-2.0.json"
+        },
+        {
+          "status": " M",
+          "path": "scripts/agent_team_controller.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/brain_task_dispatch_tick.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/brain_task_orchestrator.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/brainctl.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/consult_models.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/kanban_bridge_silent.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/proof-debt-migration-dry-run.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/taskpool_dynamic_runner.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_agent_team_controller_safety.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_brain_task_dispatch_tick.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_brain_task_idle_runner.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_brain_task_orchestrator.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_brainctl.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_consult_models_integration.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_hermes_jspace.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_proof_debt_migration_dry_run.py"
+        },
+        {
+          "status": " M",
+          "path": "scripts/test_taskpool_dynamic_runner.py"
+        },
+        {
+          "status": " M",
+          "path": "skills/.bundled_manifest"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-agent/references/rokid-lingzhu-sse-bridge.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-experience-ratchet/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/hermes-personal-assistant-flow/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/references/packages/claude-code/README.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/references/packages/claude-code/references/fable-5-migration.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/autonomous-ai-agents/references/packages/codex/README.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/codebase-intelligence/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/codebase-intelligence/references/uvisa-ios-keyboard-flow-viewport.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/context-engineering-os/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/creative/baoyu-article-illustrator/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/creative/baoyu-article-illustrator/references/prompt-construction.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/devops/local-devops-tooling/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/email/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/github/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/github/git-repo-operations/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/github/git-repo-operations/references/clean-pr-worktree-auto-merge.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/github/git-repo-operations/references/control-plane-local-existing-cleanup.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/incremental-implementation/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/media/references/douyin-short-video-analysis.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/note-taking/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/personal-productivity/career-ops/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/personal-productivity/travel-planning/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/research/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/social-media/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/social-media/references/douyin-social-intake-evidence-workflow.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/abstraction-governance/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/agent-boundary-audit/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/development-closure-consensus/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/event-governed-side-effect-executors/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/experience-ratchet/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/frontend-state-domain-correctness/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/hermes-overlay-ratchet-upgrades/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/lark-task-reading/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/lark-task-reading/references/lark-oauth-single-flight-guard.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/mobile-frontend-delivery/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/multi-agent-code-review/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/multi-model-certification-round/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/objective-model-path-verification/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/objective-model-path-verification/references/high-risk-boundary-projection-and-exact-execution.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/path-error-root-cause-governance/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/path-error-root-cause-governance/templates/rpepr-debugging-note.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/process-lifecycle-control-plane/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/project-evidence-grounding/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/project-portfolio-operating-system/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/project-portfolio-operating-system/references/self-extension-control-console-operationalization.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/spec-stateful-sdd-workflow/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/closeout-surface-obligation-classifier.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/continuation-compaction-recurrent-state-implementation.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/event-driven-auto-execution.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/multimodel-t3-provider-gate-debugging.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/operational-watchdog-cron-scripts.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/proof-check-autorun-debt-classification.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/public-media-link-taskpool-intake.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-control-plane/references/task-creation-cli-guardrails.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/taskpool-lifecycle-drainage/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/test-driven-development/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/uimax-audit/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/workflow-capability-graph/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/workflow-creation-governance/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/software-development/workflow-ecosystem-audit/SKILL.md"
+        },
+        {
+          "status": " M",
+          "path": "skills/steward/skill-graph-report.json"
+        },
+        {
+          "status": " M",
+          "path": "workflows/portfolio/project-portfolio-os/01-registry/portfolio-registry.json"
+        },
+        {
+          "status": " M",
+          "path": "workflows/portfolio/project-portfolio-os/progress-ledger.md"
+        },
+        {
+          "status": " M",
+          "path": "workflows/product/mobile-offline-avatar-travel/progress-ledger.md"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/08-progress-ledger.md"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/09-doctor-report.json"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/10-capability-projection.json"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/17-fable-audit-coverage-architecture-registry.json"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/13-external-jspace-layer/00-index.md"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/13-external-jspace-layer/specs/external-jspace-layer-v0.1.md"
+        },
+        {
+          "status": " M",
+          "path": "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/procedure-definitions.json"
+        },
+        {
+          "status": "??",
+          "path": ".codex_gpt55_autoraise_notice"
+        },
+        {
+          "status": "??",
+          "path": ".install_method"
+        },
+        {
+          "status": "??",
+          "path": "backups/mcp-memory/"
+        },
+        {
+          "status": "??",
+          "path": "backups/task-file-bloat/"
+        },
+        {
+          "status": "??",
+          "path": "brains/semantic-capabilities.json"
+        },
+        {
+          "status": "??",
+          "path": "cron/pending_deliveries.json"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/anthropic-global-workspace-analysis-and-hermes-landing-2026-07-08.md"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/compound-agent-system-research-and-landing-2026-07-08.md"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/douyin-minicpm-vision-7643773572335458405/"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/douyin-skill-style-7659784992076538210/"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/intelligent-agent-layer-event-route-2026-07-09.md"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/production-agent-failure-taxonomy-hermes-runtime-overlay-2026-07-08.md"
+        },
+        {
+          "status": "??",
+          "path": "docs/private/workflow-kernel-loop-engineering-stable-plan-20260709.md"
+        },
+        {
+          "status": "??",
+          "path": "evidence/auto-evidence/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/autoclose/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/experience-ratchet-skill-proposals/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/local-brain-mcp/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/mobile-offline-avatar-travel/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033319Z-Agent-optimization-absorption-protocol-staging-46cff89b2ac8.json"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033319Z-Agent-optimization-absorption-protocol-staging-46cff89b2ac8.md"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033319Z-Codex-maxxing-long-running-work-loop-staging-f864709080fa.json"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033319Z-Codex-maxxing-long-running-work-loop-staging-f864709080fa.md"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033319Z-MemoryOwnershipGate-staging-c20c9774ea33.json"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033319Z-MemoryOwnershipGate-staging-c20c9774ea33.md"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033320Z-ReferenceRepoAbsorptionLoop-staging-b77e0c85defa.json"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033320Z-ReferenceRepoAbsorptionLoop-staging-b77e0c85defa.md"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033320Z-SentinelNudgeGovernance-staging-6022c91002d7.json"
+        },
+        {
+          "status": "??",
+          "path": "evidence/skill-evolution-candidates/20260709T033320Z-SentinelNudgeGovernance-staging-6022c91002d7.md"
+        },
+        {
+          "status": "??",
+          "path": "evidence/social-intake/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-21-build-shared-typescript-offline-evidence-core/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-21-分析抖音notebooklm-抓用户痛点-爆品挖掘方法是否可吸收/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-23-分析-omnigent评估统一-ai-agent-元调度能力是否可吸收到-hermes-taskpool/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-26-分析-product-hunt-browseract-heron-对-hermes-浏览器自动化与-agent-运行时观测的任务化吸收机会/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-26-评估-aws-agent-toolkit-for-aws-对-hermes-mcp-servers-skills-plugins-官方工具包化的可吸收模式/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-27-修复日报-ph-外链未自动分层分析与入池判定/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-28-为-2026-06-23-分析-omnigent评估统一-ai-agent-元调度能力是否可吸收到-hermes-taskpool-细化-quota-obser/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-28-为-2026-06-24-补证闭环task---分析抖音程序员必备-harness-流水线对-hermes-evidence-harness-的启发missin/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-29-为-2026-06-24-ph补链吸收hive-细化-quota-observability-收敛前置任务/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-29-为-2026-06-28-为-2026-06-21-分析抖音程序员必备-harness-流水线对-hermes-evidence-harness-的启发-细化-/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-29-为-2026-06-28-为-2026-06-23-分析-omnigent评估统一-ai-agent-元调度能力是否可吸收到-hermes-taskpool-细/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-29-为-2026-06-28-为-2026-06-26-修复做梦系统重复审计无状态推进selector-cooldown-blocked-标记与智能路由-gate-/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-29-为-2026-06-29-补证闭环task---为-2026-06-23-分析-omnigent评估统一-ai-agent-元调度能力是否可吸收到-hermes/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-06-29-补证闭环task---为-2026-06-23-分析-omnigent评估统一-ai-agent-元调度能力是否可吸收到-hermes-taskpool-细化--2/"
+        },
+        {
+          "status": "??",
+          "path": "evidence/taskpool-targeted-evidence/2026-07-01-hermes-runtime-spec-gate-prompt-guidance-with-config-gated-converge-behavior/"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260706_142336_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260706_142357_2.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260706_223324_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_173028_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_174846_2.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_174907_3.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_174958_4.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_175136_5.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_175145_6.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260707_232252_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260708_121420_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260708_122816_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260708_171556_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260708_182217_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260708_222708_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260708_230726_2.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260709_143058_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260709_162643_2.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260709_224650_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260710_152638_1.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260710_153847_2.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260710_155057_3.png"
+        },
+        {
+          "status": "??",
+          "path": "images/clip_20260711_160209_1.png"
+        },
+        {
+          "status": "??",
+          "path": "install-receipts/"
+        },
+        {
+          "status": "??",
+          "path": "install.json"
+        },
+        {
+          "status": "??",
+          "path": "mcp-memory.json"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-07-07.md"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-07-08.md"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-07-09.md"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-07-10.md"
+        },
+        {
+          "status": "??",
+          "path": "notes/engineering-cybernetics/daily-health-reports/2026-07-12.md"
+        },
+        {
+          "status": "??",
+          "path": "plans/2026-07-07_1618-openwiki-evaluation-landing.md"
+        },
+        {
+          "status": "??",
+          "path": "plugins/hermes-achievements/"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/.codex_gpt55_autoraise_notice"
+        },
+        {
+          "status": "??",
+          "path": "profiles/brain-mirror/project-profiles/"
+        },
+        {
+          "status": "??",
+          "path": "profiles/hermes-agent/.codex_gpt55_autoraise_notice"
+        },
+        {
+          "status": "??",
+          "path": "profiles/localvision/"
+        },
+        {
+          "status": "??",
+          "path": "profiles/mlops/.codex_gpt55_autoraise_notice"
+        },
+        {
+          "status": "??",
+          "path": "profiles/mlops/bin/"
+        },
+        {
+          "status": "??",
+          "path": "profiles/workflow/.codex_gpt55_autoraise_notice"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/career-ops.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/hermes-capability-model-router.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/hermes-control-console.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/hermes-persona-wake-stage.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/hermes-self-extension-os.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/openwiki-evaluation.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/project-portfolio-os.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/uaec-h5.json"
+        },
+        {
+          "status": "??",
+          "path": "project-profiles/uaec-react-h5.json"
+        },
+        {
+          "status": "??",
+          "path": "scripts/compound_loop_preflight.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/experience_ratchet_watchdog.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/experience_ratchet_watchdog_cron.sh"
+        },
+        {
+          "status": "??",
+          "path": "scripts/external_brain_semantic_contract.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/local_brain_mcp_projection.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_compound_loop_preflight.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_external_brain_semantic_contract.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_external_brain_task_integration.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_kanban_bridge.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_local_brain_mcp_projection.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_taskpool_done_closeout_audit.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_taskpool_drain_until_empty.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_taskpool_proof_gate.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/test_workspace_projection_gate.py"
+        },
+        {
+          "status": "??",
+          "path": "scripts/workspace_projection_gate.py"
+        },
+        {
+          "status": "??",
+          "path": "skills/apple/macos-computer-use/"
+        },
+        {
+          "status": "??",
+          "path": "skills/autonomous-ai-agents/hermes-experience-ratchet/references/automation-trigger-audit.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/autonomous-ai-agents/references/compound-agent-system-fable-article.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/autonomous-ai-agents/references/fable-a-plus-certification-closure.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/autonomous-ai-agents/references/packages/claude-code/references/fable-system-selfcheck.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/autonomous-ai-agents/scripts/"
+        },
+        {
+          "status": "??",
+          "path": "skills/autonomous-ai-agents/templates/"
+        },
+        {
+          "status": "??",
+          "path": "skills/codebase-intelligence/references/cross-client-realtime-chart-parity.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/codebase-intelligence/references/operator-local-hardcoding-audit.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/codebase-intelligence/references/pwa-web-push-subscription-lifecycle.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/codebase-intelligence/references/uvisa-web-push-settings-failure.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/codebase-intelligence/references/uvisa-withdrawal-gate-analysis.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/context-engineering-os/references/certification-readiness-packet.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/context-engineering-os/references/dashboard-readonly-projection-pattern.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/creative/baoyu-article-illustrator/references/ip-character-style-layer.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/creative/reference-style-diagramming/"
+        },
+        {
+          "status": "??",
+          "path": "skills/creative/reference-style-technical-diagrams/"
+        },
+        {
+          "status": "??",
+          "path": "skills/devops/local-devops-tooling/references/shadowrocket-subscription-selected-node-mismatch.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/git-repo-operations/references/branch-specific-contract-drift-pitfall.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/git-repo-operations/references/hermes-control-plane-system-audit-repair.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/git-repo-operations/references/private-home-update-issue-release-loop.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/git-repo-operations/references/private-home-version-and-installed-issue-loop.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/git-repo-operations/references/private-home-version-pack-from-dirty-worktree.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/git-repo-operations/references/stale-branch-stash-archive-ratchet.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/references/open-source-tool-evaluation-landing.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/github/references/private-repo-issue-closeout.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/incremental-implementation/references/async-verifier-amend-closeout.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/incremental-implementation/references/browser-file-share-capability.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/incremental-implementation/references/cross-client-realtime-series-parity.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/incremental-implementation/references/frontend-image-upload-compression.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/mlops/inference/obliteratus/"
+        },
+        {
+          "status": "??",
+          "path": "skills/personal-productivity/career-ops/references/"
+        },
+        {
+          "status": "??",
+          "path": "skills/personal-productivity/travel-planning/references/china-drone-airspace-precheck-uom-dji.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/personal-productivity/travel-planning/references/china-road-trip-route-food-ticket-evidence-card.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/red-teaming/godmode/"
+        },
+        {
+          "status": "??",
+          "path": "skills/research/references/china-local-platform-api-legitimacy.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/research/references/official-travel-api-access-verification.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/research/references/research-paper-to-product-contract-landing.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/research/references/web4-agentic-web.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/social-media/references/x-public-article-intake.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/abstraction-governance/references/read-only-projection-surface-boundary.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/agent-architecture-exam-runner/"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/agent-boundary-audit/references/audit-coverage-registry.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/agent-boundary-audit/references/fail-closed-projection-and-lifecycle-counterexamples.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/development-closure-consensus/references/canonical-content-hash-freshness.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/development-closure-consensus/references/cross-implementation-behavioral-contract-parity.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/development-closure-consensus/references/cross-slice-commit-evidence-and-trust-boundary-counterexamples.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/development-closure-consensus/references/historical-commit-review-under-concurrent-worktree.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/development-closure-consensus/references/independent-verifier-verdict-ledger.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/event-governed-side-effect-executors/references/external-jspace-real-open-boundary-drain.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/event-governed-side-effect-executors/references/governed-local-knowledge-graph-projection.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/event-governed-side-effect-executors/references/structured-semantic-authority-gates.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/frontend-state-domain-correctness/references/identity-auth-generation-async-guards.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/frontend-state-domain-correctness/references/imperative-resource-replacement-lifecycle.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/frontend-state-domain-correctness/references/incremental-list-sync-ordering.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/frontend-state-domain-correctness/references/react-controlled-overlay-callback-stability.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/frontend-state-domain-correctness/references/realtime-bucket-upsert-semantics.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/lark-task-reading/references/lark-flow-coverage-and-health-separation.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/lark-task-reading/references/lark-task-video-ui-triage.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/lark-task-reading/references/uvisa-notification-incremental-ordering.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/agent-os-readonly-control-room-dashboard.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/chrome-cdp-mobile-smoke-target-selection.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/h5-certification-loop-engineering.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/h5-header-right-edge-viewport-proof.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/h5-native-parity-route-and-cdp-smoke.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/h5-preview-parity-smoke-evidence.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/h5-trading-control-semantics-safe-slices.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/ios-camera-heic-upload.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/ios-camera-image-upload-chat.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/mobile-keyboard-focus-rollback-scope.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/native-app-parity-h5-development.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-background-push-feasibility.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-web-push-backend-field-authoritative-switch.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-web-push-branch-aligned-backend-verification.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-web-push-finance-formal-architecture.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-web-push-preference-device-ready-switch.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-web-push-preference-vs-subscription-debugging.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/pwa-web-push-unsupported-channel-visibility.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/mobile-frontend-delivery/references/vite-dev-preview-proxy-api-base.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/multi-agent-code-review/references/github-reviewed-sha-auto-merge.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/multi-model-certification-round/references/evidence-relation-normalization-and-certification-status.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/multi-model-certification-round/references/exact-hash-fail-closed-projection-review.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/agent-os-native-readback-artifact-drift.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/authorized-local-projection-state-gallery.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/bounded-readonly-health-probes.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/downstream-release-vs-upstream-sync-boundary.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/exact-staged-artifact-concurrent-review.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/personal-ai-os-projection-to-native-surface.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/objective-model-path-verification/references/personal-ai-os-readonly-control-room-progression.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/path-error-root-cause-governance/references/eval-mobile-input-layout-frame-error.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/path-error-root-cause-governance/references/evidence-modality-contract.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/path-error-root-cause-governance/references/mobile-keyboard-layout-control-ownership.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/path-error-root-cause-governance/references/root-cause-ownership-engineer-role.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/path-error-root-cause-governance/references/single-model-frame-error-prevention.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/project-evidence-grounding/references/cross-platform-contract-parity-commit-review.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/project-evidence-grounding/references/target-reference-progress-prep.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/project-portfolio-operating-system/references/portfolio-doctor-registry-profile-reconciliation.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/project-portfolio-operating-system/references/portfolio-semantic-truth-repair.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/project-portfolio-operating-system/references/safe-boundary-automation-closeout.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/project-profile-certification-loop/"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/read-only-control-plane-probes/"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/root-cause-ownership-council/"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/spec-stateful-sdd-workflow/references/imperative-resource-rebuild-unmount.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/spec-stateful-sdd-workflow/references/semantic-authority-propagation-verification.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/spec-stateful-sdd-workflow/references/stateful-frontend-restoration-evidence.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/spec-stateful-sdd-workflow/references/structured-semantic-authority-continuation-certification.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/architecture-and-test-matrix-inventory.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/automated-claim-bypass-and-handoff-invariant-audit.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/automatic-semantic-knowledge-recall-integrity.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/batch-public-media-and-screenshot-intake.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/bounded-loop-and-multicontroller-convergence.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/compound-agent-loop-taskpool-mapping.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/concept-bound-recall-preflight-mcp-projection.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/continuation-closure-after-interruption.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/dispatch-tick-baseline-independence-and-test-seam-drift.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/intelligent-agent-layer-event-route.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/procedure-validation-local-rehearsal-projection.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/quota-observability-profile-local-continuation.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/read-only-scoped-certification-amendment.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/reversible-handoff-snapshot-gc.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/social-signal-advisory-drain-runbook.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/structured-semantic-intent-and-idle-readiness.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/targeted-evidence-packet-after-t3-pause.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/validator-false-green-hash-drift-authorized-continuation.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/taskpool-control-plane/references/workspace-projection-taskpool-bridge-boundary.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/uimax-audit/references/runtime-projection-ui.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/references/agent-cli-startup-handshake.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/references/anthropic-global-workspace-external-projection.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/references/evidence-bound-open-source-absorption.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/references/external-jspace-workspace-projection.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/references/workflow-asset-lifecycle-and-creation-gate.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/references/workflow-asset-loop-engineering.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-capability-graph/templates/workspace-projection-packet.sample.json"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-ecosystem-audit/references/engineering-coverage-truth-audit.md"
+        },
+        {
+          "status": "??",
+          "path": "skills/software-development/workflow-ecosystem-audit/references/layered-local-knowledge-coverage-audit-loop.md"
+        },
+        {
+          "status": "??",
+          "path": "templates/private-experience/"
+        },
+        {
+          "status": "??",
+          "path": "travel-projects/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/evidence/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/intake/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/jspace/anthropic-global-workspace-analysis-20260708/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/jspace/cron-heartbeat-receipts/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/jspace/external-jspace-real-taskpool-write-20260707062915/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/00-model/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/02-literature/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/03-governance/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/04-merge-candidates/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/05-status/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/06-audits/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/reports/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/portfolio/project-portfolio-os/scripts/portfolio_semantic_audit.py"
+        },
+        {
+          "status": "??",
+          "path": "workflows/product/mobile-offline-avatar-travel/04-prd/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/career-ops/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/06-projection/capability_graph_projection.json"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/06-projection/doctor_report.json"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/06-projection/procedure_validation_projection.json"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/06-projection/quota-root-profile-diff.json"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/07-shadow/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/09-scheduler/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/01-p0-controller-convergence-spec.md"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/02-taskpool-full-system-certification-spec.md"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/03-taskpool-full-system-verifier-packet.json"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/14-workflow-loop-engineering-coverage/runtime/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/15-certification/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-agent-os-control-plane/15-external-brain-semantic-loop/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-capability-model-router/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-control-console/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-persona-wake-stage/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-self-extension-os/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes-skill-learning/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/hermes/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/openwiki-evaluation/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/single-session-multitopic-trace/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/uaec-h5/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/uaec-react-h5/"
+        },
+        {
+          "status": "??",
+          "path": "workflows/projects/uvisa-app-2.0/"
+        }
+      ]
+    },
+    "/Users/charles/.hermes/hermes-agent": {
+      "count": 6,
+      "categories": {
+        "source-or-ssot": 5,
+        "core-config-or-lock": 1
+      },
+      "rows": [
+        {
+          "status": " M",
+          "path": "docs/private/workflow-kernel-open-gate/workflow_kernel_limited_unattended_receipts.jsonl"
+        },
+        {
+          "status": " M",
+          "path": "docs/private/workflow-kernel-unattended-dry-run-scheduler/unattended_dispatch_dry_run_receipts.jsonl"
+        },
+        {
+          "status": " M",
+          "path": "docs/private/workflow-kernel-unattended-dry-run-scheduler/workflow_kernel_unattended_dry_run_scheduler_20260613_phase55.json"
+        },
+        {
+          "status": " M",
+          "path": "docs/private/workflow-kernel-unattended-dry-run-scheduler/workflow_kernel_unattended_dry_run_scheduler_20260613_phase55.md"
+        },
+        {
+          "status": " M",
+          "path": "package-lock.json"
+        },
+        {
+          "status": " M",
+          "path": "tests/tools/test_kanban_tools.py"
+        }
+      ]
+    }
+  },
+  "decision": "not_safe_to_bulk_clean_or_commit_without scope ownership; inventory only"
+}

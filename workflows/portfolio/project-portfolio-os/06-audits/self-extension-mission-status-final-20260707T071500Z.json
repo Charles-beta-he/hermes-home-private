@@ -1,0 +1,869 @@
+{
+  "allowed_actions": [
+    "create_or_modify_mission_budget_or_cadence: exact local mission id msn_20260610_120149_27c88cfc, max_ticks 72->96 only, rollback backup recorded, no cadence/external changes"
+  ],
+  "blocked_actions": [
+    "external_message_send",
+    "remote_push_or_merge",
+    "production_deploy",
+    "payment_or_purchase",
+    "secret_or_credential_write",
+    "destructive_delete",
+    "memory_skill_cron_config_write_without_explicit_scope"
+  ],
+  "budget": {
+    "max_ticks": 96,
+    "max_total_usd": null,
+    "max_turns_per_tick": 8
+  },
+  "cadence": "every 6h",
+  "constraints": [
+    "默认安全：不得静默执行生产部署、付费、推送远端、删除、写入密钥或扩大权限",
+    "每轮必须有真实证据：代码 diff、测试、CLI 输出、文档或明确阻塞原因",
+    "关键分岔必须使用 hermes mission handoff 落账为 open decision"
+  ],
+  "created_at": 1781064109.170323,
+  "deliver": "local",
+  "direction": "Hermes 自身架构长期自推进：我只给高抽象方向；Hermes 负责研究、拆解、执行、验证、沉淀；遇到价值判断、权限升级、不可逆风险、外部副作用、证据不足或路线分歧时，生成 Human Intervention Packet 交给我选择后再继续。",
+  "mission_id": "msn_20260610_120149_27c88cfc",
+  "non_goals": [
+    "不把一人公司固化为唯一业务场景；它只是高抽象方向粒度示例"
+  ],
+  "open_decisions": [],
+  "pending_flow_signals": [
+    {
+      "consumed_at": null,
+      "created_at": 1782096950.522948,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpctv_eq3t/brain/05-实践与项目/tasks/2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed.md",
+          "title": "Task - auto-close review must not treat weak evidence as final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105550_40691892",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105550_2b7b031d",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.013289,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-approved-close-as-partial-should-remain-closable",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpivywi266/brain/05-实践与项目/tasks/2026-06-22-approved-close-as-partial-should-remain-closable.md",
+          "title": "Task - approved close_as_partial should remain closable"
+        },
+        "summary": "taskpool task_added: 2026-06-22-approved-close-as-partial-should-remain-closable status=pending"
+      },
+      "signal_id": "sig_20260622_105551_bc8c1360",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_52581af4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.363688,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pytest-alone-is-not-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp4oe631nx/brain/05-实践与项目/tasks/2026-06-22-pytest-alone-is-not-final-landed.md",
+          "title": "Task - pytest alone is not final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pytest-alone-is-not-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105551_f0a8bbba",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_80e4171e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.651315,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-commit-alone-is-not-final-landed",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmptn5yf6i6/brain/05-实践与项目/tasks/2026-06-22-commit-alone-is-not-final-landed.md",
+          "title": "Task - commit alone is not final landed"
+        },
+        "summary": "taskpool task_added: 2026-06-22-commit-alone-is-not-final-landed status=pending"
+      },
+      "signal_id": "sig_20260622_105551_0bca245a",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_f78329b7",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096951.9327319,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-real-final-landed-evidence-should-allow-done",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpj56fd0qe/brain/05-实践与项目/tasks/2026-06-22-real-final-landed-evidence-should-allow-done.md",
+          "title": "Task - real final landed evidence should allow done"
+        },
+        "summary": "taskpool task_added: 2026-06-22-real-final-landed-evidence-should-allow-done status=pending"
+      },
+      "signal_id": "sig_20260622_105551_a5d89eb5",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105551_bb2dc9af",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096952.591775,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-pua-loop-自动触发介入与多模型任务池分解",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp3h1h3vgl/brain/05-实践与项目/tasks/2026-06-22-pua-loop-自动触发介入与多模型任务池分解.md",
+          "title": "Task - pua-loop 自动触发介入与多模型任务池分解"
+        },
+        "summary": "taskpool task_added: 2026-06-22-pua-loop-自动触发介入与多模型任务池分解 status=pending"
+      },
+      "signal_id": "sig_20260622_105552_add3612c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105552_8f76ef1b",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096954.617599,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-autorun-默认关闭与-allowlist",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp05nd_00w/brain/05-实践与项目/tasks/2026-06-22-验证-autorun-默认关闭与-allowlist.md",
+          "title": "Task - 验证 autorun 默认关闭与 allowlist"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-autorun-默认关闭与-allowlist status=pending"
+      },
+      "signal_id": "sig_20260622_105554_d3b38947",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105554_f69c8085",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.353747,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "hermes",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-publish-external-writeback",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpolgb68m0/brain/05-实践与项目/tasks/2026-06-22-publish-external-writeback.md",
+          "title": "Task - Publish external writeback"
+        },
+        "summary": "taskpool task_added: 2026-06-22-publish-external-writeback status=pending"
+      },
+      "signal_id": "sig_20260622_105622_231580d3",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_50f72673",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.7331789,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "provider-quota",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "outside-project",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-aaa-unallowlisted-advisory",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbqg1s1qv/brain/05-实践与项目/tasks/2026-06-22-aaa-unallowlisted-advisory.md",
+          "title": "Task - AAA unallowlisted advisory"
+        },
+        "summary": "taskpool task_added: 2026-06-22-aaa-unallowlisted-advisory status=pending"
+      },
+      "signal_id": "sig_20260622_105622_3f98d85a",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_ed7b8c26",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096982.8613288,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "skill-graph",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "reading-programming-books",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-zzz-allowlisted-advisory",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpbqg1s1qv/brain/05-实践与项目/tasks/2026-06-22-zzz-allowlisted-advisory.md",
+          "title": "Task - ZZZ allowlisted advisory"
+        },
+        "summary": "taskpool task_added: 2026-06-22-zzz-allowlisted-advisory status=pending"
+      },
+      "signal_id": "sig_20260622_105622_0035b521",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105622_04964ec4",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096983.489791,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "provider-quota",
+          "lane": "advisory",
+          "priority": "P1",
+          "project": "reading-programming-books",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-constrained-advisory-wrong-architecture",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpy5l5lq_s/brain/05-实践与项目/tasks/2026-06-22-constrained-advisory-wrong-architecture.md",
+          "title": "Task - Constrained advisory wrong architecture"
+        },
+        "summary": "taskpool task_added: 2026-06-22-constrained-advisory-wrong-architecture status=pending"
+      },
+      "signal_id": "sig_20260622_105623_ee3865bf",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105623_a874b1b9",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096985.746238,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-blocked-parent-missing-historical-artifact",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpqq02ge41/brain/05-实践与项目/tasks/2026-06-22-blocked-parent-missing-historical-artifact.md",
+          "title": "Task - Blocked parent missing historical artifact"
+        },
+        "summary": "taskpool task_added: 2026-06-22-blocked-parent-missing-historical-artifact status=pending"
+      },
+      "signal_id": "sig_20260622_105625_6ca8504b",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105625_3a042ebb",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.1609752,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-parent-needs-non-convergence-narrowing",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpkghzgnwn/brain/05-实践与项目/tasks/2026-06-22-parent-needs-non-convergence-narrowing.md",
+          "title": "Task - Parent needs non-convergence narrowing"
+        },
+        "summary": "taskpool task_added: 2026-06-22-parent-needs-non-convergence-narrowing status=pending"
+      },
+      "signal_id": "sig_20260622_105626_807268bd",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_d2c89493",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.5225742,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-blocked-parent-waiting-for-child-backfill",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp1r_dpoik/brain/05-实践与项目/tasks/2026-06-22-blocked-parent-waiting-for-child-backfill.md",
+          "title": "Task - Blocked parent waiting for child backfill"
+        },
+        "summary": "taskpool task_added: 2026-06-22-blocked-parent-waiting-for-child-backfill status=pending"
+      },
+      "signal_id": "sig_20260622_105626_3ab2b972",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_3437da30",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096986.704541,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-finished-narrowed-brief-child",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmp1r_dpoik/brain/05-实践与项目/tasks/2026-06-22-finished-narrowed-brief-child.md",
+          "title": "Task - Finished narrowed brief child"
+        },
+        "summary": "taskpool task_added: 2026-06-22-finished-narrowed-brief-child status=pending"
+      },
+      "signal_id": "sig_20260622_105626_1f2f197c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105626_d6afc636",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.052442,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-looping-parent-should-reratify-with-targeted-evidence",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpo0pmn003/brain/05-实践与项目/tasks/2026-06-22-looping-parent-should-reratify-with-targeted-evidence.md",
+          "title": "Task - Looping parent should reratify with targeted evidence"
+        },
+        "summary": "taskpool task_added: 2026-06-22-looping-parent-should-reratify-with-targeted-evidence status=pending"
+      },
+      "signal_id": "sig_20260622_105627_ced1ad6c",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_e6abcbaa",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.2542021,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P1",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-done-child-evidence-for-targeted-reratification",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpo0pmn003/brain/05-实践与项目/tasks/2026-06-22-done-child-evidence-for-targeted-reratification.md",
+          "title": "Task - Done child evidence for targeted reratification"
+        },
+        "summary": "taskpool task_added: 2026-06-22-done-child-evidence-for-targeted-reratification status=pending"
+      },
+      "signal_id": "sig_20260622_105627_dc0546b8",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_163e113e",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096987.8327832,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-优化本地任务池自进化",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpfzxbdgnj/brain/05-实践与项目/tasks/2026-06-22-优化本地任务池自进化.md",
+          "title": "Task - 优化本地任务池自进化"
+        },
+        "summary": "taskpool task_added: 2026-06-22-优化本地任务池自进化 status=pending"
+      },
+      "signal_id": "sig_20260622_105627_758b4bb5",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105627_429cd9bf",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096989.604036,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "taskpool",
+          "lane": "evolution",
+          "priority": "P0",
+          "project": "self-improvement",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-优化本地任务池自进化",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpi2xlip83/brain/05-实践与项目/tasks/2026-06-22-优化本地任务池自进化.md",
+          "title": "Task - 优化本地任务池自进化"
+        },
+        "summary": "taskpool task_added: 2026-06-22-优化本地任务池自进化 status=pending"
+      },
+      "signal_id": "sig_20260622_105629_f0811ae1",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105629_dc29f0dc",
+      "status": "pending"
+    },
+    {
+      "consumed_at": null,
+      "created_at": 1782096991.9475079,
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "event_payload": {
+          "architecture_target": "",
+          "lane": "work",
+          "priority": "P1",
+          "project": "local-brain",
+          "reason": "command_add",
+          "source": "taskpool",
+          "source_event": "task_added",
+          "status": "pending",
+          "task_id": "2026-06-22-验证-autorun-done-proof-gate",
+          "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpvx6aoafv/brain/05-实践与项目/tasks/2026-06-22-验证-autorun-done-proof-gate.md",
+          "title": "Task - 验证 autorun done proof gate"
+        },
+        "summary": "taskpool task_added: 2026-06-22-验证-autorun-done-proof-gate status=pending"
+      },
+      "signal_id": "sig_20260622_105631_226ec1de",
+      "signal_type": "taskpool_status_changed",
+      "source_event_id": "evt_20260622_105631_13952e2c",
+      "status": "pending"
+    }
+  ],
+  "plan_ref": "",
+  "recent_events": [
+    {
+      "created_at": 1783407371.815125,
+      "event_id": "evt_20260707_145611_4feeb29a",
+      "event_type": "stage_report",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "evidence": [
+          "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-budget-extension-receipt-20260707T070200Z.json; /Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/self-extension-mission-doctor-after-budget-extension-20260707T070300Z.json; doctor tick budget 72/96 ok"
+        ],
+        "needs_user": false,
+        "next_step": "Continue bounded stale-signal recovery/tick execution from scheduled cron; do not external dispatch without separate exact authority.",
+        "risks": [
+          "Stale flow signal backlog remains large; budget extension was local DB contract mutation with backup; cadence unchanged and external gates remain blocked."
+        ]
+      },
+      "summary": "Remaining-boundary local readback advanced: mission budget 72->96 with rollback receipt, 20 stale flow signals recovered, active status restored; no external/push/deploy/secret/destructive action."
+    },
+    {
+      "created_at": 1783407245.400717,
+      "event_id": "evt_20260707_145405_a1b1fedd",
+      "event_type": "tick_dry_run",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "dry_run": true,
+        "mode": "event",
+        "signal": {
+          "consumed_at": null,
+          "created_at": 1782096950.522948,
+          "mission_id": "msn_20260610_120149_27c88cfc",
+          "payload": {
+            "event_payload": {
+              "architecture_target": "taskpool",
+              "lane": "evolution",
+              "priority": "P1",
+              "project": "self-improvement",
+              "reason": "command_add",
+              "source": "taskpool",
+              "source_event": "task_added",
+              "status": "pending",
+              "task_id": "2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed",
+              "task_path": "/var/folders/1h/g3g460m9029dd5_71xl27nz00000gn/T/tmpctv_eq3t/brain/05-实践与项目/tasks/2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed.md",
+              "title": "Task - auto-close review must not treat weak evidence as final landed"
+            },
+            "summary": "taskpool task_added: 2026-06-22-auto-close-review-must-not-treat-weak-evidence-as-final-landed status=pending"
+          },
+          "signal_id": "sig_20260622_105550_40691892",
+          "signal_type": "taskpool_status_changed",
+          "source_event_id": "evt_20260622_105550_2b7b031d",
+          "status": "pending"
+        },
+        "used_ticks_before": 72
+      },
+      "summary": "mission tick prompt generated"
+    },
+    {
+      "created_at": 1783407234.6555789,
+      "event_id": "evt_20260707_150200_2af7cd56",
+      "event_type": "maintenance_tick",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "authority": "user said 推进剩余真实边界",
+        "blocked_actions_preserved": [
+          "external_message_send",
+          "remote_push_or_merge",
+          "production_deploy",
+          "payment_or_purchase",
+          "secret_or_credential_write",
+          "destructive_delete",
+          "memory_skill_cron_config_write_without_explicit_scope"
+        ],
+        "change": {
+          "cadence_unchanged": "every 6h",
+          "max_ticks_after": 96,
+          "max_ticks_before": 72,
+          "status_after": "active"
+        },
+        "no_external_dispatch": true,
+        "no_push_deploy_secret_destructive": true,
+        "rollback_backup": "/Users/charles/.hermes/workflows/portfolio/project-portfolio-os/06-audits/missions-db-backup-before-budget-extension-20260707T070200Z.db",
+        "target_mission_id": "msn_20260610_120149_27c88cfc"
+      },
+      "summary": "authorized exact local mission budget extension 72->96 for remaining-boundary advancement"
+    },
+    {
+      "created_at": 1783407188.883262,
+      "event_id": "evt_20260707_145308_f5e9fbee",
+      "event_type": "budget_exhausted",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "max_ticks": 72
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1783407188.882603,
+      "event_id": "evt_20260707_145308_d2840a20",
+      "event_type": "mission_paused",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "paused"
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1783407171.247703,
+      "event_id": "evt_20260707_145251_5dd569a3",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": false,
+        "runner": {
+          "status": "not_requested"
+        },
+        "signal_id": "sig_20260622_105550_40691892",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1783407171.210942,
+      "event_id": "evt_20260707_145251_5b5ec9ea",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260707_145251_17dec517",
+        "signal_type": "mission_resumed",
+        "source_event_id": "evt_20260707_145251_916ff81e"
+      },
+      "summary": "event-driven signal enqueued for mission_resumed"
+    },
+    {
+      "created_at": 1783407171.209899,
+      "event_id": "evt_20260707_145251_916ff81e",
+      "event_type": "mission_resumed",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "active"
+      },
+      "summary": "authorized remaining-boundary exact mission resume attempt after local readback; no budget/cadence change requested by command"
+    },
+    {
+      "created_at": 1783407169.835496,
+      "event_id": "evt_20260707_145249_53ad68dd",
+      "event_type": "flow_signal_recovered",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "after_pending": 2121,
+        "apply": true,
+        "before_pending": 2141,
+        "max_signals": 20,
+        "older_than_seconds": 900,
+        "reason": "authorized remaining-boundary local-ledger stale signal recovery batch 1; no external dispatch/push/deploy/secret/destructive action",
+        "runner": {
+          "status": "not_requested",
+          "why": "recovery is local-ledger only and non-recursive"
+        },
+        "sample_signal_ids": [
+          "sig_20260622_105536_21b1368c",
+          "sig_20260622_105537_bcc842b2",
+          "sig_20260622_105537_2de99cd1",
+          "sig_20260622_105537_bff6d936",
+          "sig_20260622_105537_cbadfb2e",
+          "sig_20260622_105538_5e18abea",
+          "sig_20260622_105538_20e03cac",
+          "sig_20260622_105538_aafe6488",
+          "sig_20260622_105538_65ae4bd2",
+          "sig_20260622_105539_b5e0b4a3",
+          "sig_20260622_105539_981ec3af",
+          "sig_20260622_105539_ccc87856",
+          "sig_20260622_105540_3e854eb9",
+          "sig_20260622_105541_3e4f5d0f",
+          "sig_20260622_105542_42f0a328",
+          "sig_20260622_105543_42b497a4",
+          "sig_20260622_105543_060ee218",
+          "sig_20260622_105544_7a6221eb",
+          "sig_20260622_105548_1d15381e",
+          "sig_20260622_105550_25244a61"
+        ],
+        "selected_count": 20,
+        "signal_type_counts": {
+          "taskpool_status_changed": 20
+        },
+        "stale_pending": 2141
+      },
+      "summary": "governed recovery marked 20 stale flow signal(s) recovered"
+    },
+    {
+      "created_at": 1782718419.47941,
+      "event_id": "evt_20260629_153339_967d7ff8",
+      "event_type": "budget_exhausted",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "max_ticks": 72
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718419.4776902,
+      "event_id": "evt_20260629_153339_67c0178b",
+      "event_type": "mission_paused",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "paused"
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718375.858807,
+      "event_id": "evt_20260629_153255_a0b6e75d",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": false,
+        "runner": {
+          "status": "not_requested"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718375.827307,
+      "event_id": "evt_20260629_153255_40150d67",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153255_61d9ce9b",
+        "signal_type": "mission_resumed",
+        "source_event_id": "evt_20260629_153255_d48aae1f"
+      },
+      "summary": "event-driven signal enqueued for mission_resumed"
+    },
+    {
+      "created_at": 1782718375.8261151,
+      "event_id": "evt_20260629_153255_d48aae1f",
+      "event_type": "mission_resumed",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "active"
+      },
+      "summary": "manual resume"
+    },
+    {
+      "created_at": 1782718364.234976,
+      "event_id": "evt_20260629_153244_b57c12e9",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": true,
+        "runner": {
+          "executed_jobs": 1,
+          "status": "ran"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718344.167001,
+      "event_id": "evt_20260629_153224_3de3b0bd",
+      "event_type": "budget_exhausted",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "max_ticks": 72
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718344.166195,
+      "event_id": "evt_20260629_153224_0ca536b6",
+      "event_type": "mission_paused",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "status": "paused"
+      },
+      "summary": "max tick budget exhausted"
+    },
+    {
+      "created_at": 1782718341.75469,
+      "event_id": "evt_20260629_153221_557fa362",
+      "event_type": "flow_signal_dispatched",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "run_due": false,
+        "runner": {
+          "status": "not_requested"
+        },
+        "signal_id": "sig_20260622_105536_21b1368c",
+        "triggered_jobs": [
+          "56cba2b9feff"
+        ]
+      },
+      "summary": "event-driven signal scheduled 1 cron job(s)"
+    },
+    {
+      "created_at": 1782718341.7188008,
+      "event_id": "evt_20260629_153221_98236d44",
+      "event_type": "flow_signal_enqueued",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "signal_id": "sig_20260629_153221_2f7c335e",
+        "signal_type": "decision_recorded",
+        "source_event_id": "evt_20260629_153221_7b5b3f90"
+      },
+      "summary": "event-driven signal enqueued for decision_recorded"
+    },
+    {
+      "created_at": 1782718341.717463,
+      "event_id": "evt_20260629_153221_7b5b3f90",
+      "event_type": "decision_recorded",
+      "mission_id": "msn_20260610_120149_27c88cfc",
+      "payload": {
+        "decision_id": "dec_20260629_152838_87322630"
+      },
+      "summary": "A: User authorized continuing the self-advancement scenario. Renew/extend the existing mission tick budget for continued local-only self-architecture advancement under the same blocked-action boundaries. This does not authorize external message send, remote push/merge, production deploy, payment, credential/secret write, destructive delete, or broad fan-out."
+    }
+  ],
+  "stage": "intake",
+  "status": "active",
+  "success_criteria": [
+    "形成可长期运行的 Mission 控制面闭环：objective ledger、dynamic cron tick、stage-report、human handoff、decision resume",
+    "每个阶段报告能从 mission ledger 追溯到证据与下一步"
+  ],
+  "updated_at": 1783407371.815125
+}

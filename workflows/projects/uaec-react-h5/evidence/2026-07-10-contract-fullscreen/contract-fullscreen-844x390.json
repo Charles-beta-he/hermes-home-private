@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10T06:03:18Z",
+  "project": "uaec-react-h5",
+  "slice": "contract-kline-fullscreen",
+  "result": "PASS",
+  "objective": "Match the Android contract K-line right action with a local fullscreen chart mode while preserving contract identity, period controls and read-only behavior.",
+  "reference": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-android",
+    "file": "app/src/main/java/com/uu/market/contract/KlineFuturesFragment.java",
+    "facts": [
+      "onContainerRightActionClick calls openFullscreenKlineActivity",
+      "openFullscreenKlineActivity preserves tradeName, partnerTradeId and symbol",
+      "UsdtKlineActivity starts the futures fullscreen path in landscape orientation"
+    ]
+  },
+  "target": {
+    "repository": "/Users/charles/Desktop/folder/work/uaec-react-h5",
+    "commit": "f554914 fix: add contract kline fullscreen mode",
+    "postCommitReadback": {
+      "workingTreeClean": true,
+      "gitShowCheckExitCode": 0
+    },
+    "files": [
+      "src/pages/ContractPage/ContractInterface/ContractInterface.tsx",
+      "src/components/ChartAdapter/index.tsx",
+      "src/components/ChartAdapter/KLineChartsImpl.tsx"
+    ]
+  },
+  "tdd": {
+    "harness": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-fullscreen/verify_contract_fullscreen.py",
+    "red": {
+      "status": "PASS",
+      "expectedExitCode": 1,
+      "observedReason": "fullscreen trigger missing"
+    },
+    "green": {
+      "status": "PASS",
+      "exitCode": 0
+    }
+  },
+  "checks": {
+    "scopedEslint": {
+      "status": "PASS",
+      "exitCode": 0
+    },
+    "productionBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "modulesTransformed": 12670,
+      "durationSeconds": 5.51,
+      "note": "Existing chunk-size, Browserslist and mixed dynamic/static import warnings only"
+    },
+    "runtime": {
+      "status": "PASS",
+      "viewport": "844x390",
+      "initialTriggerPresent": true,
+      "initialFullscreenRegionPresent": false,
+      "contractBeforeOpen": "SOLUSDT 永续",
+      "fullscreenRegionPresentAfterOpen": true,
+      "exitControlPresent": true,
+      "contractPreserved": true,
+      "periods": ["1分", "5分", "15分", "1小时", "4小时", "日线", "深度图"],
+      "bodyOverflowWhileOpen": "hidden",
+      "fullscreenRegionPresentAfterClose": false,
+      "triggerPresentAfterClose": true,
+      "contractAfterClose": "SOLUSDT 永续",
+      "collectionOrOrderRequestCount": 0
+    },
+    "visualReadback": {
+      "status": "PASS",
+      "viewport": "844x390",
+      "overlayFillsViewport": true,
+      "contractAndPeriodControlsLegible": true,
+      "exitControlVisible": true,
+      "chartUsesRemainingViewport": true,
+      "obviousOverlapOrBlankArea": false,
+      "screenshot": "/Users/charles/.hermes/workflows/projects/uaec-react-h5/evidence/2026-07-10-contract-fullscreen/contract-fullscreen-open-844x390.png"
+    },
+    "negativeCases": {
+      "collectionMutationRequest": false,
+      "orderMutationRequest": false,
+      "credentialOrSessionRead": false,
+      "pushOrDeploy": false
+    }
+  },
+  "certificationBoundary": "L2 local runtime verified. This CSS viewport fullscreen is the H5 equivalent; forced device orientation, Android simulator/device pixel comparison, authenticated collection mutation, order submission, push and deploy remain outside this slice."
+}
