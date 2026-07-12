@@ -28,12 +28,29 @@ TripState fields should distinguish:
 - User style/workflow corrections that affect the class of travel copilot behavior belong in this skill.
 - Real-time location, actual departure time, fatigue, and day-of weather are transient; do not save them durably.
 
+## Canonical-plan read gate
+
+Apply this before saying a live answer is “aligned with the travel project/plan,” mapping `D1/D2/...` to dates, or optimizing a route while claiming to preserve the original attractions.
+
+1. Identify the canonical source: scoped TripState, itinerary/day card, booking artifact, or explicitly user-confirmed plan. Session summaries, ContextCards, verifier/evaluation prompts, model-review packets, derived experience notes, and remembered fragments are discovery leads only.
+2. Read the source itself. If history names a path, verify that it exists and read the relevant bytes. A quoted path, search snippet, “file written” claim, or missing-path result is not readback.
+3. Extract the minimum alignment tuple: explicit `date ↔ Dn` mapping, current phase/location, tonight’s confirmed anchor, today’s original route and must-preserve attractions, and the next hard booking/return/entry constraint.
+4. Mark every field `confirmed / inferred / unknown` with source class. Never derive a trip date from a folder name, project creation timestamp, file mtime, or ordinal arithmetic.
+5. Live location may invalidate stale plan inference, but does not reveal tonight’s hotel or the full attraction list.
+6. Say “已对齐计划” only when the tuple is sufficient. Otherwise state that the canonical plan was not recovered and request exactly one artifact that closes the material gap.
+
+Derived-summary quarantine: use a summary to locate the source, not to execute the route; keep sequences provisional and dateless; never upgrade hotel candidates to bookings; never claim all sights are preserved without an enumerated canonical day card or user confirmation. If a claimed source path is absent, broaden recovery and then fail closed rather than improvising a project-aligned itinerary.
+
+Anti-condition: a fresh, unscoped recommendation that does not depend on an existing plan needs only current location/time/destination and ordinary safety gates.
+
+Falsifier: this gate may be narrowed when a runtime-enforced TripState resolver supplies a fresh canonical artifact ID, exact day mapping, provenance, and readback receipt automatically.
+
 ## Gate-first live decisions
 
 When the user asks a live question such as “还能去吗 / 今天怎么走 / 能不能加一个点”, default to this sequence:
 
 1. Read the current conversation time.
-2. Read the scoped TripState: current day, current/tonight hotel, next hard constraints, flight/car return, planned route, prior confirmations.
+2. Pass the canonical-plan read gate when the answer depends on an existing project/plan; then read the scoped TripState: current day, current/tonight hotel, next hard constraints, flight/car return, planned route, prior confirmations.
 3. Use explicit user-provided live facts (current location, actual departure time, body state) to override plan inference.
 4. If plan inference and likely reality conflict in a way that affects safety, lodging, car return, flight, or entry gates, ask only the smallest necessary question.
 5. Run gates in order: safety → hard time → road/weather → ticket/booking → body state → experience value → optional add-on.

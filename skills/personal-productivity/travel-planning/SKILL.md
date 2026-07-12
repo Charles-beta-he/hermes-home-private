@@ -127,6 +127,22 @@ Key pitfall: if the user corrects a live-travel workflow rule, first ask whether
 
 Use this when the user is already moving, shares live location pins, or asks for the next place/route during a trip.
 
+### Project-progress alignment before same-day routing
+
+When the traveler says “对齐项目/原计划/进度” after sharing a live pin, recover the scoped trip plan and reconcile it with live state **before** asking them to repeat the destination or generating a route.
+
+1. Search the original trip session/TripState/project artifacts broadly enough to recover the dated day sequence, tonight’s lodging city, booked anchors, and must-keep sights. A planned itinerary found only in session history is a lead, not proof of current execution state. Quarantine derived summaries, ContextCards, verifier/evaluation prompts, model-review packets, and “file written” claims as discovery evidence until the canonical artifact itself is read back.
+2. If history names a canonical path, verify it exists and read its relevant bytes. A missing path, quoted path, search snippet, directory date, project creation timestamp, or file mtime must never be used to infer the travel start date or `date ↔ Dn` mapping.
+3. Build a compact reconciliation tuple: `explicit date↔Dn source + current time + live pin + nominal day/route + must-preserve attraction list + user-confirmed completed items + tonight’s confirmed hard anchor`; mark each field `confirmed / inferred / unknown` with its source class.
+4. Treat the live pin as proof of current location, but not by itself as proof that the traveler is still executing the nominal day. If calendar day and location disagree, label it as **schedule drift requiring reconciliation**; do not silently reassign D2/D3 or assert a hotel city.
+5. If one hard anchor remains genuinely unrecoverable, request exactly one minimal artifact (hotel name/order screenshot/destination pin). Do not restart the full intake.
+6. Only then optimize the route under the user’s stated policy, such as “preserve all sights, compress dwell time, allow drive-by.” Distinguish:
+   - `stop`: named duration and parking/entry gate;
+   - `drive-by`: no parking dependency and no claim that the attraction was visited;
+   - `conditional stop`: keep only if ticket, parking, and latest-departure gates pass.
+7. Do not invent a one-way scenic-area traversal, entrance/exit pairing, or route duration from general geography. Verify the actual native-map route and current scenic-area traffic rules. If unavailable, provide the next verified navigation point and explicitly hold the internal route/exit choice for gate-staff or native-app confirmation.
+8. Before sending a “leave now” card, expose the highest-risk blocker first (ticket/vehicle reservation/last entry), then give the immediate navigation action. Search snippets and third-party guides are weak evidence; never present them as current official inventory or access confirmation.
+
 ### Recalling an original plan / booked hotels mid-trip
 
 When the user asks to "回顾原有计划", "我订的酒店", or similar during an active trip:
