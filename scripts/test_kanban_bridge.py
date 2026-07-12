@@ -165,3 +165,36 @@ def test_execute_honors_kill_switch_before_reading_brain(monkeypatch, tmp_path):
     result = mod.run_bridge(execute=True)
 
     assert result['status'] == 'disabled'
+
+
+def test_sync_selection_prioritizes_existing_terminal_mirrors_over_new_tasks(monkeypatch, tmp_path):
+    mod = load_module()
+    monkeypatch.setattr(mod, 'KANBAN_DB', tmp_path / 'missing.db')
+    tasks = [
+        {'id': f'new-{index:03d}', 'title': 'new', 'status': 'pending'}
+        for index in range(120)
+    ]
+    tasks.append({'id': 'existing-done', 'title': 'old', 'status': 'done'})
+    state = {'mirrored': {'existing-done': {'kanban_id': 't_old'}}, 'errors': []}
+
+    selected = mod._select_tasks_for_sync(tasks, state, limit=100)
+
+    assert selected[0]['id'] == 'existing-done'
+    assert len(selected) == 100
+
+
+def test_sync_duplicate_legacy_mirrors_by_title(monkeypatch, tmp_path):
+    mod = load_module()
+    db = tmp_path / 'kanban.db'
+    _create_mirror_db(db)
+    with sqlite3.connect(db) as conn:
+        conn.execute("INSERT INTO tasks VALUES('t_dup','brain-mirror','Task','blocked','legacy',2,NULL)")
+        conn.commit()
+    monkeypatch.setattr(mod, 'KANBAN_DB', db)
+    task = {'id': 'brain-1', 'title': 'Task', 'status': 'done'}
+
+    updated = mod._sync_duplicate_mirrors(task, 't_abc')
+
+    assert updated == 1
+    with sqlite3.connect(db) as conn:
+        assert conn.execute("SELECT status FROM tasks WHERE id='t_dup'").fetchone()[0] == 'done'
