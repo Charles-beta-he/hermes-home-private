@@ -243,6 +243,20 @@ def _scalar_string(value: Any) -> str:
     return str(value)
 
 
+def _scope_list(value: Any) -> list[str]:
+    """Normalize lark-mcp OAuth scopes to the string-array contract.
+
+    Recent lark-mcp releases call ``options.scope.join(' ')``.  Passing the
+    historical space-delimited scalar raises ``TypeError: _a.join is not a
+    function`` before an authorization URL can be created.
+    """
+    values = value if isinstance(value, (list, tuple)) else [value]
+    scopes: list[str] = []
+    for item in values:
+        scopes.extend(part for part in _scalar_string(item).split() if part)
+    return scopes
+
+
 def credentials_from_snapshot(snapshot: dict[str, Any], app_id: str = DEFAULT_APP_ID) -> tuple[str, str]:
     # Prefer explicit env, then token.extra from a previous successful login, then client store.
     # Support both Lark and Feishu aliases because Hermes profiles/docs use both names.
@@ -518,7 +532,7 @@ def run_login(snapshot: dict[str, Any], app_id: str, domain: str, port: int, sco
             "domain": _scalar_string(domain),
             "host": "localhost",
             "port": str(port),
-            "scope": _scalar_string(scopes),
+            "scope": _scope_list(scopes),
             "timeout": effective_timeout * 1000,
         }))
         proc.stdin.close()

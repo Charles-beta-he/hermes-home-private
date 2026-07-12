@@ -210,7 +210,7 @@ http://localhost:3010/authorize?client_id=client_id_for_local_auth&code_challeng
         self.assertNotIn("UNRELATED_PRIVATE_SENTINEL", launched_env)
         payload = json.loads(FakeProc.stdin.payload)
         self.assertEqual(payload["domain"], "https://open.larksuite.com")
-        self.assertEqual(payload["scope"], "auth:user.id:read")
+        self.assertEqual(payload["scope"], ["auth:user.id:read"])
         self.assertEqual(payload["appSecret"], "secret_test")
 
     def test_run_login_reaps_child_when_stdin_delivery_breaks(self):

@@ -4,6 +4,10 @@
   "status": "active",
   "granted_at": "2026-07-10T15:07:53+08:00",
   "granted_by": "user_direct_selection",
+  "subject": {
+    "profile_id": "lark",
+    "profile_ref": "/Users/charles/.hermes/project-profiles/lark.json"
+  },
   "action": "auto_singleflight_oauth_recovery",
   "scope": "oauth_recovery_only",
   "trigger": "token_missing_invalid_or_expired_during_non_health_lark_flow",
