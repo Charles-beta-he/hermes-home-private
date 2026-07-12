@@ -18,6 +18,8 @@ Use this skill when a result should be learned by Hermes itself without overstep
 
 Default stance: land what is safe, propose what needs governance, queue what needs execution, and explicitly refuse what would be authority expansion or false completion. A boundary is not a stop-work signal and should not be turned into a generic “human intervention interface.” After naming the blocked action, realign to the initial objective, choose the safest available gate (for example multi-model advisory review plus deterministic local tests for a local-only slice), continue safe read-only/reversible preparation, and emit the smallest required confirmation packet for the next gated step.
 
+When the user explicitly says “全盘推进 / 不以人工介入为接口 / 不以人工介入为借口”, consume that as pressure to replace vague human handoff with structured boundary artifacts, not as permission to bypass authority. Use this ladder: (1) execute all local read-only/reversible schema/projection/SSOT/backlog/doctor slices; (2) turn missing authority into an `AuthorityBoundary` with exact target, missing grant, rollback, and receipt requirements; (3) turn ecosystem gaps such as DID/VC/wallet/payment/legal/hardware support into `ExternalDependency`; (4) turn secrets/passwords/API keys/cards/OTP/seed phrases into `SealedSecretHandoff` where the agent prepares context but does not type/store the secret; (5) turn unsafe destructive/physical/payment actions into `LocalSimulation` or disposable canary smoke; (6) continue adjacent safe workstreams rather than stopping the whole mission.
+
 ## When to Use
 
 - The user says: 自我优化, 多模型思考, 自身可学习, 经验沉淀, 全盘落地, 落地至边界.
@@ -65,6 +67,8 @@ Don't use for:
    - Run available validation commands for experience-ratchet artifacts.
    - For changes under `~/.hermes`, make a scoped git commit with only the files changed for this landing.
 8. If a local governance/pre-commit hook blocks because evidence labels are mapped to the wrong surface, use `references/local-precommit-evidence-mapping-repair.md`: repair the reusable classifier/predicate with tests, rerun deterministic gates, and retry the normal commit without bypassing hooks.
+9. When the user asks to push self-audit / model-audit coverage to “100%”, use `references/audit-coverage-registry.md`: define coverage as declared-dimension completeness, require current readback + verdict + known gaps + next action for every dimension, and explicitly state that 100% coverage is not 100% health or no-risk.
+10. For fail-closed registries, receipt evaluators, lifecycle demotion, or read-only API/UI projections, use `references/fail-closed-projection-and-lifecycle-counterexamples.md`: RED-test future timestamps, envelope drift, nested-state incoherence, and malformed nested JSON before accepting code-review closure.
 
 ## Output Template
 
@@ -78,6 +82,10 @@ Don't use for:
 - verification: <commands/files read back>
 - commit: <sha or why not committed>
 ```
+
+## J-space-inspired material-boundary audit
+
+When absorbing interpretability research such as Anthropic's J-space / global-workspace work into agent governance, convert it into a behavioral boundary audit unless real hidden-state/J-lens access exists. For high-side-effect actions, require a compact pre-action packet that surfaces the intended control concepts: intent, exact target, authority/grant, evidence used, scope/negative cases, rollback or escape hatch, and readback/receipt. After tool observations, require a post-observation packet that surfaces discrepancy concepts: mismatch, contradiction, stale evidence, failure, uncertainty, and untrusted source. Treat missing or incoherent packets as a proxy warning, not proof of internal state. Do not use this as consciousness evidence, a replacement for tests/receipts/readback, or a reason to expose hidden chain-of-thought. Detailed research translation lives in `research/references/j-space-agent-audit-translation.md`.
 
 ## MemoryOwnershipGate for external reference absorption
 

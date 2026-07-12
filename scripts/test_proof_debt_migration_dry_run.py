@@ -42,6 +42,16 @@ class ProofDebtMigrationDryRunTest(unittest.TestCase):
         self.assertEqual(parsed["task"], "task-two")
         self.assertEqual(parsed["proof_sha"], "abc123")
 
+    def test_parse_compound_invalid_hash_warning(self) -> None:
+        parsed = self.plan.parse_warning(
+            "terminal invalid autorun proof hash debt in task-two: "
+            "proof:sha256:spec=abc123,fixture=def456"
+        )
+
+        self.assertEqual(parsed["category"], "terminal_invalid_autorun_proof_hash_debt")
+        self.assertEqual(parsed["task"], "task-two")
+        self.assertEqual(parsed["proof_sha"], "spec=abc123,fixture=def456")
+
     def test_build_plan_classifies_existing_evidence_candidate(self) -> None:
         (self.tasks / "task-one.md").write_text("## Proof Log\ncommand:pytest", encoding="utf-8")
         warnings = ["terminal mission envelope debt: mission envelope missing ['evidence_refs:structured_ref']: task-one"]
@@ -52,13 +62,42 @@ class ProofDebtMigrationDryRunTest(unittest.TestCase):
         self.assertIn("read-only", report["safety"])
         self.assertEqual(report["items"][0]["recommended_action"], "candidate_migratable_existing_evidence")
 
-    def test_build_plan_classifies_invalid_hash_as_source_needed(self) -> None:
+    def test_build_plan_classifies_invalid_hash_for_truthful_reclassification(self) -> None:
         (self.tasks / "task-two.md").write_text("proof:sha256:abc123", encoding="utf-8")
         warnings = ["terminal invalid autorun proof hash debt in task-two: proof:sha256:abc123"]
 
         report = self.plan.build_plan(warnings, tasks_dir=self.tasks)
 
-        self.assertEqual(report["items"][0]["recommended_action"], "needs_source_artifact")
+        self.assertEqual(report["items"][0]["recommended_action"], "candidate_reclassify_invalid_autorun_proof")
+
+    def test_apply_plan_reclassifies_only_frontmatter_invalid_hash(self) -> None:
+        task = self.tasks / "task-two.md"
+        task.write_text(
+            "---\n"
+            "evidence:\n"
+            "  - proof:sha256:abc123\n"
+            "---\n"
+            "body retains proof:sha256:abc123 verbatim\n",
+            encoding="utf-8",
+        )
+        plan = {
+            "items": [{
+                "task": "task-two",
+                "task_file": str(task),
+                "proof_sha": "abc123",
+                "recommended_action": "candidate_reclassify_invalid_autorun_proof",
+            }]
+        }
+
+        dry = self.plan.apply_plan(plan, dry_run=True)
+        self.assertEqual(dry["result_counts"], {"changed": 1})
+        self.assertIn("  - proof:sha256:abc123", task.read_text(encoding="utf-8"))
+
+        applied = self.plan.apply_plan(plan, dry_run=False)
+        body = task.read_text(encoding="utf-8")
+        self.assertEqual(applied["result_counts"], {"changed": 1})
+        self.assertIn("  - classification:legacy_invalid_autorun_proof_hash=abc123", body)
+        self.assertIn("body retains proof:sha256:abc123 verbatim", body)
 
     def test_apply_plan_normalizes_existing_refs_without_fabricating(self) -> None:
         task = self.tasks / "task-three.md"

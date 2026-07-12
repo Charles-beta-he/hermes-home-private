@@ -106,6 +106,17 @@ python3 ~/.hermes/scripts/experience-ratchet-maze.py relate <atom_a> contradicts
 
 When the user asks to inspect existing evolution direction/progress (进化方向进度、自进化进度、经验棘轮进度), do not stop at atom/proposal counts. Use `references/evolution-progress-inspection.md` to produce a cross-plane status: ExperienceAtom validation/query, proposal backlog, PA/autonomous evolution outputs, self-improvement queue, cron/runtime health, behavioral benchmarks, and taskpool dispatchability/safety pauses. Separate “system healthy”, “experience captured”, “proposal landed”, and “taskpool actively executing”; green health checks do not by themselves prove delivered evolution.
 
+When the user asks whether project lessons are automatically captured, checked, or promoted into skills, use `references/automation-trigger-audit.md`. Audit the validator, session/project summary source, explicit atom capture path, backlog watcher, broader selfcheck coverage registration, and skill-candidate staging gate. Report missing links as proposal-only local-read automation; do not infer that summaries or skill graph audits equal ExperienceAtom capture.
+
+When turning the ratchet into a durable automated loop, prefer a no-agent local watchdog pattern: validator + atom/proposal backlog readback + dynamic selfcheck registration + success-silent cron. The watchdog may emit local JSON receipts and coverage proposals, but must not directly edit formal skills, memory, profiles, taskpool, project docs, external channels, Git remotes, deployments, credentials, or destructive resources. Require fresh readback of validator status, watchdog cron presence, selfcheck registry presence, and remaining actionable backlog before saying the loop is installed.
+
+Current local automation entrypoints:
+
+- `~/.hermes/scripts/experience_ratchet_watchdog.py` — local read-only validator/backlog/staging watchdog. Use `--json --require-cron` for explicit readback and `--quiet-success --require-cron` for cron mode.
+- `~/.hermes/scripts/experience_ratchet_watchdog_cron.sh` — success-silent wrapper for no-agent local cron.
+- `dynamic_selfcheck_coverage.py` registers `experience-ratchet` and expects `experience_ratchet_cli_present`, `experience_ratchet_watchdog_script_present`, and `experience_ratchet_watchdog_cron` to be present. Actionable skill candidates are considered cleared when staged under `~/.hermes/evidence/skill-evolution-candidates/` or promoted into an actual skill/reference with atom evidence.
+- Skill candidate staging remains proposal-only via `~/.hermes/scripts/skill_candidate_staging.py`; proof-check staged JSON before any formal skill mutation.
+
 ## Workflow
 
 1. Capture as `captured`; do not generalize immediately.

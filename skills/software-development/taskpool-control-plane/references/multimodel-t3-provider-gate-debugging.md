@@ -17,11 +17,18 @@ Use when a taskpool parent closeout is ready for T3 certification but the parent
    - `python3 ~/.hermes/scripts/brain_task_orchestrator.py multimodel-intervention-dry-run --task <task_id> --json`
    - Run the selected `build_state_command` first.
    - Run the selected `run_discussion_command` with an explicit larger per-planner timeout if needed, e.g. add `--timeout 300 --keep` to `consult_models.py run`.
-5. If `consult_models.py` exits 143 / -15 but left `tick-*/discussion/round_001/round_summary.json`, treat the checkpoint as evidence for the blocker even when `discussion_result.json` is missing.
-6. Read the round summary:
+5. If `consult_models.py` exits 143 / -15, do not infer success or failure from stdout. Inspect the retained `tick-*` directory:
+   - If `discussion_result.json` exists, run the task-scoped `ratification-gate` and bind the conclusion to that output.
+   - If only `discussion/round_001/round_summary.json` exists, treat it as checkpoint evidence for the blocker, not certification.
+   - If only model checkpoints exist (`discussion/state.json`, `heartbeat.json`, `parse_status_*.json`, `model_response_*.json`), identify the next incomplete model and provider-health state before rerunning.
+6. When a provider/account recovery reopens one bounded parent refresh, run a small smoke first, then the exact parent dry-run. If the dry-run opens `recovery_rerun`, prefer a retained target-bound discussion (`--keep`) so missing/partial artifacts survive interruptions.
+7. If the official step is SIGTERM/interrupted but the state is built, a manual retained `consult_models.py run <state> --tier T3 --discussion --max-rounds 1 --keep` can be used as a readback-only diagnostic to force a `discussion_result.json`; then run `ratification-gate`. This is not lifecycle authority and must not lower quorum or mark done.
+8. Read the round summary or discussion result:
    - `status_detail.reasons`
    - each vote's `vote` and `best_within_constraints`
    - provider/runtime errors embedded in failed votes.
+   - unresolved severity issues and whether the remaining blocker is provider/runtime or content-level disagreement.
+9. If a failed ratification attempt leaves the task `running` but no live worker/multimodel job remains, fail-closed back to `blocked` with exact evidence (`discussion_result`, gate FAIL/continue_loop, no-live-owner readback). Do not leave parent tasks running after a failed gate just because a background step was interrupted.
 7. If a required participant is missing, inspect the pre-discussion selection pipeline before assuming the model was never configured:
    - compare configured `ratification.required_models` / tier planners with `models_used`, `prompt_chars_by_model`, and `ratification_votes` in the retained tick artifact;
    - inspect model-health/circuit-breaker state and quota-gate snapshots separately;

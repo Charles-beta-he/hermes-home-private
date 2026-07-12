@@ -31,6 +31,18 @@ Use this when Claude Code changes its default/high-end model and Hermes-local sc
 
 An interactive Claude Code banner that says `Fable 5 · API Usage Billing`, or `claude auth status --text` showing a Max account, is not sufficient proof that Fable inference is usable. Treat the path as available only after a real prompt returns `is_error=false` and `modelUsage` contains `claude-fable-5` (or equivalent). If print mode returns `Not logged in`/401 and interactive mode renders `Not logged in · Run /login`, report the run as blocked/degraded instead of treating the banner as a successful model call.
 
+## System-audit packet pattern
+
+When Fable 5 is used as a system/architecture auditor rather than a simple coding worker, give it a bounded evidence packet and make it lead only the analysis/certification layer:
+
+1. Probe the exact CLI path first and record the receipt: `is_error=false`, concrete `modelUsage` such as `claude-fable-5`, and the command used.
+2. Build a read-only evidence packet from local commands (version, branch/status, post-update guards, cron summaries, taskpool/brain/provider/port readbacks). Do not ask Fable to discover facts from the machine.
+3. Ask for P0/P1/P2 system + architecture + multi-angle findings with root-cause hypotheses, fixes, verification, and do-not-do boundaries.
+4. Execute only the local, reversible, authorized subset yourself with normal tests/readbacks. Treat Fable output as advisory, not as proof.
+5. Send a compact post-repair evidence packet back to Fable for independent audit, then reconcile any Fable misreadings against local git/status evidence before final reporting.
+
+Anti-condition: do not let Fable's agreement authorize push/deploy/credential entry/destructive cleanup, fail-policy semantic changes, provider quorum lowering, or bulk dirty-worktree staging.
+
 ## Commit-guard pitfall
 
 Local commit guards may flag redaction-test fixtures that intentionally contain secret-shaped strings. Split those fixture strings across concatenated literals so the scanner does not block the commit while the test still reconstructs the same runtime payload.

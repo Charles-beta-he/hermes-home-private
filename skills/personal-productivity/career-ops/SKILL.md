@@ -32,6 +32,8 @@ This skill ports source-verified patterns from `santifer/career-ops` into a Herm
 - Don't use for: tasks outside this skill's trigger class, requests with a more specific neighboring skill, or situations where required evidence/tooling is unavailable.
 ## Source-grounded patterns
 
+For turning open-source job-agent / Claude Code job-search repositories into a local Hermes Career Ops product, see `references/open-source-job-agent-to-local-product.md`.
+
 Use these patterns from the Career-Ops reference review:
 
 - Candidate data has a local source of truth: CV/resume, profile/targets, proof points, writing samples, tracker, reports, output artifacts.
@@ -56,6 +58,37 @@ Allowed user-data locations under that contract:
 Never write private CV/proof-point/JD content into this reusable skill, global memories, or generic Hermes docs. If a report needs evidence, reference local artifact paths and summarize at a non-sensitive level.
 
 ## Workflow
+
+### Scoped local product CLI for this user's Career Ops workspace
+
+Scope: this section applies only to the local Career Ops workspace governed by `/Users/charles/.hermes/career-ops/CAREER_WORKSPACE_CONTRACT.md`; it is not a global job-search rule and must not be copied to other users without replacing the workspace path and privacy contract.
+
+Applicability: use when the user asks to evaluate/rank/import JDs or operate the local Career Ops product. Anti-conditions: do not use this section for external job applications, recruiter contact, credentialed scraping, or storing private CV/JD content in reusable skills/memory.
+
+A certified local MVP exists at:
+
+`/Users/charles/.hermes/career-ops/product/career_ops_cli.py`
+
+Use it for deterministic, privacy-bounded job/JD handling before drafting any application material:
+
+```bash
+cd /Users/charles/.hermes/career-ops/product
+python3 career_ops_cli.py init
+python3 career_ops_cli.py import-jd /path/to/job-description.md --name <company-role>
+python3 career_ops_cli.py evaluate --jd /Users/charles/.hermes/career-ops/jds/<jd>.md --cv /path/to/user-approved-cv.md --profile /Users/charles/.hermes/career-ops/profiles/profile.template.json --update-tracker
+python3 career_ops_cli.py rank --jds /Users/charles/.hermes/career-ops/jds --cv /path/to/user-approved-cv.md --profile /Users/charles/.hermes/career-ops/profiles/profile.template.json
+```
+
+CLI boundaries:
+
+- URL reads are disabled by default; require explicit `--allow-url-read`.
+- No auto-apply, no recruiter/employer contact, no credentialed scraping.
+- Reports go to `reports/`; optional tracker appends go to `tracker/applications.csv`.
+- Candidate fit claims require a supplied local CV/proof source; no-CV mode is opportunity pre-screen only.
+
+Certification evidence: `/Users/charles/.hermes/workflows/projects/career-ops/progress-ledger.md` records the 2026-07-08 local MVP landing.
+
+### General workflow procedure
 
 1. **Preflight privacy gate**
    - Confirm the request is career/JD/resume/interview/tracker related.

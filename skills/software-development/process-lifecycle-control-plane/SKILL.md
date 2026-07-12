@@ -136,6 +136,19 @@ For ordered Agent OS / agent-control-plane boundary breakthroughs after broad pr
 5. Letting cleanup operate on shared temp/cache directories instead of an instance-specific path.
 6. Copying Overmind's tmux dependency or test-coverage gap instead of the process-control semantics.
 7. Mutating process-global env in parallel jobs without snapshot/restore and serialization.
+8. Placing post-action lock/port/process readbacks outside the command's error-sanitization boundary. A cleanup probe can fail after the primary operation was safely caught, causing raw traceback output or invalid JSON. Inject failures independently into every secondary readback and require a generic structured failure.
+9. Checking only the direct child after timeout. Exercise a real nested descendant, verify TERM -> bounded wait -> KILL, reap the leader, and perform a fresh process-group/residual-process readback; mocked `killpg` call order alone is not cleanup proof.
+10. Calling a path status-only without proving it. Snapshot relevant lock/artifact existence, bytes, size, and mtime; assert no browser/authorization/task read/write flags; then check for residual processes after the probe itself exits.
+
+## Exact-hash lifecycle review packet
+
+When reviewing a staged lifecycle/process slice against a caller-supplied digest:
+
+1. Run all index-sensitive Git commands with `env -u GIT_INDEX_FILE` and hash the agreed representation, normally `git diff --cached --binary`.
+2. Fail closed before substantive review if the digest or cached file set differs. Also verify target files have no unstaged overlay, because tests execute worktree content rather than the index.
+3. Keep review-only verification non-mutating: disable bytecode writes, compile source in memory, and use temporary process fixtures.
+4. Combine deterministic tests with real adversarial probes: nested timeout descendants, residual-process readback, status-only byte/mtime preservation, malformed authority payloads, secret-bearing child output, and failures in secondary cleanup/readback paths.
+5. Recompute the digest and scope after probes. A green test suite does not override a demonstrated counterexample in cleanup, authority, or structured public output.
 
 ## macOS LaunchAgent local-console pattern
 

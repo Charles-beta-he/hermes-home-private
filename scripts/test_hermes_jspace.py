@@ -103,8 +103,21 @@ class HermesJSpaceTestCase(unittest.TestCase):
         self.assertFalse(data["runtime_mutation"])
         self.assertFalse(data["external_side_effects_executed"])
         self.assertFalse(data["taskpool_lifecycle_write_executed"])
+        self.assertEqual(data["aggregate_effects"]["runtime_mutation"], False)
+        self.assertIsNone(data["current_workspace_effects"])
         self.assertEqual(len(data["active_jspaces"]), 1)
         self.assertEqual(len(data["learning_candidates"]), 1)
+
+    def test_dashboard_data_can_filter_current_workspace_effects(self):
+        hermes_jspace.init_workspace(self.root, "historical", "old write", workspace_id="old")
+        old_dir = self.root / "old"
+        hermes_jspace.append_event(old_dir, {"source": "taskpool_write_through", "returncode": 0, "taskpool_lifecycle_write_executed": True})
+        hermes_jspace.init_workspace(self.root, "current", "current read only", workspace_id="current")
+        data = hermes_jspace.dashboard_data(self.root, workspace_id="current")
+        self.assertTrue(data["aggregate_effects"]["taskpool_lifecycle_write_executed"])
+        self.assertFalse(data["current_workspace_effects"]["taskpool_lifecycle_write_executed"])
+        self.assertFalse(data["current_workspace_effects"]["external_side_effects_executed"])
+        self.assertEqual(len(data["active_jspaces"]), 1)
 
 
 

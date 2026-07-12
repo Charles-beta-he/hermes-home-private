@@ -54,7 +54,13 @@ def make_env_and_vault():
     scripts_dir = hermes_home / "scripts"
     scripts_dir.mkdir(parents=True)
     real_scripts = SCRIPT_DIR
-    for name in ("brain_task_orchestrator.py", "autonomy-write-guard.py", "autonomy-precondition.py", "permission_taxonomy.py"):
+    for name in (
+        "brain_task_orchestrator.py",
+        "autonomy-write-guard.py",
+        "autonomy-precondition.py",
+        "permission_taxonomy.py",
+        "external_brain_semantic_contract.py",
+    ):
         shutil.copy2(real_scripts / name, scripts_dir / name)
     fake_p10 = scripts_dir / "p10-health.sh"
     fake_p10.write_text(
@@ -319,29 +325,34 @@ def test_tick_autorun_step_keeps_review_task_when_certification_mismatch():
         assert task_row(env, task_id)["status"] == "review"
 
 
-def test_tick_summary_claim_state_surfaces_execution_starvation_gate():
-    td, _vault, env = make_env_and_vault()
-    with td:
-        fixture = add_claim_state_fixture(env)
-        payload = json.loads(run([sys.executable, str(TICK), "--summary", "--no-state"], env).stdout)
-        claim_state = payload["claim_state"]
-        assert payload["status"] == "OK", payload
-        assert claim_state["claimed_total"] == 2, payload
-        assert claim_state["running_total"] == 1, payload
-        assert claim_state["review_total"] == 0, payload
-        assert claim_state["pending_total"] == 1, payload
-        assert claim_state["stale_claim_count"] == 0, payload
-        assert claim_state["unsafe_unknown_claim_count"] == 0, payload
-        assert claim_state["claimed_running_ratio"] == 2.0, payload
-        assert claim_state["parallel_selected_count"] == 0, payload
-        assert claim_state["proof_gate_status"] == "PASS", payload
-        assert claim_state["execution_starvation"] is True, payload
-        assert claim_state["concurrency_raise_gate"]["status"] == "DENY", payload
-        assert claim_state["concurrency_raise_gate"]["raise_allowed"] is False, payload
-        assert "execution_starvation" in claim_state["concurrency_raise_gate"]["reasons"], payload
-        assert task_row(env, fixture["running"])["status"] == "running"
-        assert all(task_row(env, task_id)["status"] == "claimed" for task_id in fixture["claimed"])
-        assert task_row(env, fixture["pending"])["status"] == "pending"
+def test_claim_state_telemetry_surfaces_execution_starvation_gate():
+    module = load_tick_module()
+    rows = [
+        {"id": "running-1", "status": "running", "claimed_by": "tester", "run_id": "run-1", "claim_expires_at": "2099-01-01T00:00:00+08:00"},
+        {"id": "claimed-1", "status": "claimed", "claimed_by": "tester", "run_id": "run-2", "claim_expires_at": "2099-01-01T00:00:00+08:00"},
+        {"id": "claimed-2", "status": "claimed", "claimed_by": "tester", "run_id": "run-3", "claim_expires_at": "2099-01-01T00:00:00+08:00"},
+        {"id": "pending-1", "status": "pending"},
+    ]
+    claim_state = module.build_claim_state_telemetry({
+        "task_list": {"status": "OK", "rows": rows},
+        "parallel_dispatch": {"status": "OK", "selected_count": 0, "selected": []},
+        "evidence_spine": {"status": "OK", "gate_status": "PASS"},
+        "handoff_backlog": {"status": "OK", "schema": "taskpool_handoff_backlog_v1", "dirs": {}},
+    })
+
+    assert claim_state["claimed_total"] == 2, claim_state
+    assert claim_state["running_total"] == 1, claim_state
+    assert claim_state["review_total"] == 0, claim_state
+    assert claim_state["pending_total"] == 1, claim_state
+    assert claim_state["stale_claim_count"] == 0, claim_state
+    assert claim_state["unsafe_unknown_claim_count"] == 0, claim_state
+    assert claim_state["claimed_running_ratio"] == 2.0, claim_state
+    assert claim_state["parallel_selected_count"] == 0, claim_state
+    assert claim_state["proof_gate_status"] == "PASS", claim_state
+    assert claim_state["execution_starvation"] is True, claim_state
+    assert claim_state["concurrency_raise_gate"]["status"] == "DENY", claim_state
+    assert claim_state["concurrency_raise_gate"]["raise_allowed"] is False, claim_state
+    assert "execution_starvation" in claim_state["concurrency_raise_gate"]["reasons"], claim_state
 
 
 def test_tick_summary_surfaces_multimodel_intervention_hint():
@@ -1023,7 +1034,7 @@ def test_tick_evidence_spine_warn_is_visible_but_not_fatal():
 
     def fake_run_json(args):
         step = args[0]
-        if step == "evidence-spine":
+        if step in {"evidence-spine", "evidence_spine"}:
             return {
                 "status": "FAIL",
                 "gate_status": "WARN",
@@ -1037,11 +1048,13 @@ def test_tick_evidence_spine_warn_is_visible_but_not_fatal():
 
     old_argv = sys.argv[:]
     old_run_json = module.run_json
+    old_run_orchestrator_json = module.run_orchestrator_json
     old_append_log = module.append_log
     old_save_state = module.save_state
     old_load_state = module.load_state
     try:
         module.run_json = fake_run_json
+        module.run_orchestrator_json = lambda args, timeout=None: fake_run_json(args)
         module.append_log = lambda event: None
         module.save_state = lambda state: None
         module.load_state = lambda: {}
@@ -1056,6 +1069,7 @@ def test_tick_evidence_spine_warn_is_visible_but_not_fatal():
     finally:
         sys.argv = old_argv
         module.run_json = old_run_json
+        module.run_orchestrator_json = old_run_orchestrator_json
         module.append_log = old_append_log
         module.save_state = old_save_state
         module.load_state = old_load_state
@@ -1458,8 +1472,9 @@ def test_batch_executor_worker_skip_after_claim_triggers_cleanup():
         def fake_run_json(args):
             if args == ["list", "--json"]:
                 return {"status": "OK", "rows": [{"id": "t1", "status": "pending", "dispatchable": True}]}
-            if args and args[0] == "claim":
-                return {"status": "OK", "ok": True}
+            if args and args[0] == "auto-claim-and-handoff":
+                task_id = args[args.index("--task") + 1]
+                return {"status": "OK", "claimed": True, "task": task_id, "handoff": f"/tmp/{task_id}.md", "run_id": f"autorun-{task_id}"}
             raise AssertionError(f"unexpected run_json call: {args}")
         module.run_json = fake_run_json
         module.run_cmd_json = lambda cmd, timeout=None: {"status": "SKIP", "reason": "no worker started"}
@@ -1508,10 +1523,11 @@ def test_batch_executor_apply_claims_existing_single_task_worker_path_only():
                     {"id": "t1", "status": "pending", "dispatchable": True, "conflict_group": "g"},
                     {"id": "t2", "status": "pending", "dispatchable": True, "conflict_group": "g"},
                 ]}
-            if args and args[0] == "claim":
+            if args and args[0] == "auto-claim-and-handoff":
                 assert "--actor" in args and args[args.index("--actor") + 1] == "hermes-batch-coordinator", args
-                assert "--run-id" in args and str(args[args.index("--run-id") + 1]).startswith("batch-executor-"), args
-                return {"status": "OK", "ok": True}
+                assert "--task" in args, args
+                task_id = args[args.index("--task") + 1]
+                return {"status": "OK", "claimed": True, "task": task_id, "handoff": f"/tmp/{task_id}.md", "run_id": f"autorun-{task_id}"}
             raise AssertionError(f"unexpected run_json call: {args}")
         def fake_run_cmd_json(cmd, timeout=None):
             cmd_calls.append(list(map(str, cmd)))
@@ -1539,9 +1555,59 @@ def test_batch_executor_apply_claims_existing_single_task_worker_path_only():
     assert result["status"] == "OK" and result["mode"] == "apply", result
     assert result["claimed_count"] == 2, result
     assert result["claimed_task_ids"] == ["t1", "t2"], result
-    assert len([c for c in run_calls if c and c[0] == "claim"]) == 2, run_calls
+    assert len([c for c in run_calls if c and c[0] == "auto-claim-and-handoff"]) == 2, run_calls
+    claimed_json = json.loads(cmd_calls[0][cmd_calls[0].index("--claimed-json") + 1])
+    assert all(item.get("handoff") for item in claimed_json), claimed_json
     assert len(cmd_calls) == 1, cmd_calls
     assert lease_files, "lease should be durable"
+
+
+def test_batch_executor_canonical_denial_does_not_trigger_worker():
+    module = load_tick_module()
+    td = tempfile.TemporaryDirectory()
+    old_run_json = module.run_json
+    old_run_cmd_json = module.run_cmd_json
+    old_state_dir = module.BATCH_EXECUTOR_STATE_DIR
+    try:
+        root = Path(td.name)
+        module.BATCH_EXECUTOR_STATE_DIR = root / "leases"
+        path = root / "manifest.json"
+        path.write_text(json.dumps({
+            "schema": "taskpool_batch_merge_plan_v1",
+            "manifest_id": "m-denied",
+            "execution_approved": True,
+            "candidates": [{"sample_task_ids": ["t1"]}],
+        }), encoding="utf-8")
+        worker_calls = []
+
+        def fake_run_json(args):
+            if args == ["list", "--json"]:
+                return {"status": "OK", "rows": [{"id": "t1", "status": "pending", "dispatchable": True}]}
+            if args and args[0] == "auto-claim-and-handoff":
+                return {"status": "PASS", "claimed": False, "eligible": False, "reasons": ["allowlist_miss"]}
+            raise AssertionError(f"unexpected run_json call: {args}")
+
+        module.run_json = fake_run_json
+        module.run_cmd_json = lambda cmd, timeout=None: worker_calls.append(cmd) or {"status": "OK"}
+        result = module.execute_batch_merge_manifest(
+            manifest_path=path,
+            enabled=True,
+            dry_run=False,
+            require_approval=True,
+            max_tasks=1,
+            per_batch_parallelism=1,
+        )
+    finally:
+        module.run_json = old_run_json
+        module.run_cmd_json = old_run_cmd_json
+        module.BATCH_EXECUTOR_STATE_DIR = old_state_dir
+        td.cleanup()
+
+    assert result["status"] == "WARN", result
+    assert result["reason"] == "no_tasks_claimed", result
+    assert result["claimed_count"] == 0, result
+    assert result["claim_errors"][0]["reasons"] == ["allowlist_miss"], result
+    assert worker_calls == [], worker_calls
 
 
 def test_batch_executor_requires_headroom_and_caps_claims():
@@ -1580,9 +1646,10 @@ def test_batch_executor_requires_headroom_and_caps_claims():
                     {"id": "t2", "status": "pending", "dispatchable": True},
                     {"id": "t3", "status": "pending", "dispatchable": True},
                 ]}
-            if args and args[0] == "claim":
-                claim_calls.append(args[1])
-                return {"status": "OK", "ok": True}
+            if args and args[0] == "auto-claim-and-handoff":
+                task_id = args[args.index("--task") + 1]
+                claim_calls.append(task_id)
+                return {"status": "OK", "claimed": True, "task": task_id, "handoff": f"/tmp/{task_id}.md", "run_id": f"autorun-{task_id}"}
             raise AssertionError(f"unexpected run_json call: {args}")
         module.run_json = fake_run_json
         module.run_cmd_json = lambda cmd, timeout=None: {"status": "OK", "background": True}

@@ -41,13 +41,16 @@ metadata:
 ## Audit Steps
 
 Reference: `references/external-workflow-marketplace-decomposition.md` documents the source-grounded pattern for analyzing external workflow/plugin marketplaces: verify the artifact directly, distinguish skills from commands/workflows, map a lifecycle, then identify evidence/state/SSOT/integration gaps before adapting it.
-Reference: `references/external-workflow-marketplace-decomposition.md` documents the source-grounded pattern for analyzing external workflow/plugin marketplaces: verify the artifact directly, distinguish skills from commands/workflows, map a lifecycle, then identify evidence/state/SSOT/integration gaps before adapting it.
+
+Reference: `references/layered-local-knowledge-coverage-audit-loop.md` documents the reusable audit-and-repair loop for Markdown-first local brains and knowledge vaults: separate structural, schema, link, index, runtime-read, test, dashboard, governance, and certification coverage; refresh derived projections in dependency order; add a bounded hash-bound live adapter selfcheck under TDD; classify remaining debt rather than bulk-filling metadata; and close with claim-level positive and negative evidence.
 
 Reference: `references/open-source-absorption-module-registry.md` documents the pattern for turning scattered open-source/repo learning tasks into a machine-readable module registry, local-brain compiled knowledge entry, and formal minimum-slice-to-durable-delivery governance flow.
 
 Reference: `references/composable-capability-graph-workflow-coverage.md` documents the composable module/workflow/agent ontology and cross-workflow abstraction coverage audit pattern: treat modules, workflows, and agents as views over capability nodes; require stable I/O, subnodes, AgentWrapper policy, gates, closure states, and coverage scoring across neighboring workflow families before promoting a demo-derived abstraction.
 
 Reference: `references/goal-control-plane-production-audit.md` documents the production-grade audit pattern for agent/workflow systems that have `/goal`, hooks, taskpool/mission/cron, dynamic workflow, observer, or proof surfaces: separate control-plane contracts from executors, classify diagnostic/test-covered layers honestly, and land dry-run primitives before side effects.
+
+Reference: `references/engineering-coverage-truth-audit.md` documents the evidence-calibrated engineering coverage audit: separate architecture, runtime integration, live health, and closure; route the exact user intent; require every registered system to be covered/missing/N/A; compare static readiness with real runtime smoke; reconcile current projections with event history; and bound failed multi-model review as not certified.
 
 Reference: `references/smart-routing-coverage-audit.md` documents the audit pattern for intelligent routing coverage questions: separate conversation main model, pre-turn intent/workflow routing, task tier routing, multi-model execution/verification, taskpool event-hook routing, and existing-project profile/SSOT routing before claiming a workflow is covered.
 

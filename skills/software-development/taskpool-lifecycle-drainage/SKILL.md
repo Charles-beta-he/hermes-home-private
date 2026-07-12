@@ -30,9 +30,14 @@ Run the reversible loop, verifying after each cycle:
 1. `brain_task_orchestrator.py auto-close-review --max-tasks <N> --authority autonomous-execution --json`
 2. `brain_task_orchestrator.py auto-subtask-sync --write --actor <actor> --json`
 3. `brain_task_orchestrator.py blocked-resolve-step --max-tasks <N> --authority autonomous-execution --actor <actor> --json`
-4. `taskpool_dynamic_runner.py` or dispatch tick.
-5. `agent_team_controller.py worker-jobs --json` and wait/read logs for live workers.
-6. Re-read `list --json` counts and blocked classification.
+4. If `next --json` says reconcile is required, do not stop at the advisory message. Run `brain_task_orchestrator.py reconcile --write --promote-due-retry --actor <actor> --json`, then re-run `next --json`.
+5. `taskpool_dynamic_runner.py` or dispatch tick.
+6. `agent_team_controller.py worker-jobs --json` and wait/read logs for live workers.
+7. Re-read `list --json` counts and blocked classification.
+
+## Active follow-through rule
+
+When the user asks to “协助推进”, “继续推进”, “不要踢皮球”, or equivalent, do not merely report gates or recommend a next task. After safe resolver/reconcile steps, take the next dispatchable advisory/evolution card and advance one bounded evidence slice yourself: read its existing evidence, verify authoritative sources when needed, write a scoped evidence note, transition through normal lifecycle gates, and re-run `selfcheck/list/next`. Stop only at a real authority/proof boundary such as missing API/UI/readback evidence, explicit human approval, credentials/secrets, destructive changes, or external dispatch.
 
 ## Blocked classification
 

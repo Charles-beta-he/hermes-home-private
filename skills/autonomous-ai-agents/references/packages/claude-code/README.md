@@ -27,6 +27,8 @@ Delegate coding tasks to [Claude Code](https://code.claude.com/docs/en/cli-refer
 
 For Hermes-local Claude Code model migrations and multi-model certification cleanup, see `references/fable-5-migration.md`. It captures the class pattern: verify the real `claude -p` modelUsage first, update active multi-model/quorum/router/quota paths, use `--model fable` for direct CLI probes when Fable is the Claude Code default, and run both static scans and real `multi-model-smoke.py --model claude-fable-5` before claiming completion.
 
+For system-level Hermes self-checks using Fable 5, see `references/fable-system-selfcheck.md`: first prove `claude-fable-5` with a real prompt, then feed Fable a compact read-only Hermes evidence packet (version, git/branch, post-update guards, cron, taskpool/brain, providers, gateway/disk) and require P0/P1/P2 recommendations with landing-boundary classification. Do not substitute a conversation-performance review for a system-level self-check.
+
 ## When to Use
 
 - You need to delegate coding tasks to Claude Code (Anthropic's CLI agent)

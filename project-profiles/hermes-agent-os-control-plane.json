@@ -14,5 +14,97 @@
     "payment_or_legal_signature_without_external_support": false,
     "unbounded_external_fanout": false
   },
-  "updated": "2026-07-06T13:57:39+08:00"
+  "updated": "2026-07-06T13:57:39+08:00",
+  "project": "hermes-agent-os-control-plane",
+  "display_name": "Hermes Agent Os Control Plane",
+  "project_type": "hermes-self-architecture",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane",
+  "role": "YodaOS-inspired Hermes Agent OS control-plane project: Context Graph, CapabilityGraph, Evidence DAG, AuthorityGate, Control Surface, Edge Event pipeline, and worker lease governance.",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [
+    {
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    }
+  ],
+  "current_components": {
+    "agent_os_ssot": "contract_ready",
+    "capability_graph_projection": "validated_current_readback",
+    "doctor_report": "validated_current_readback",
+    "shadow_router_report": "validated_current_readback",
+    "fable_audit_coverage_registry": "ledgered"
+  },
+  "updated_at": "2026-07-07T14:39:00+08:00",
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/capability_graph_projection.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/06-projection/doctor_report.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/07-shadow/router-shadow-report.json",
+    "/Users/charles/.hermes/workflows/projects/hermes-agent-os-control-plane/12-personal-ai-os/17-fable-audit-coverage-architecture-registry.json"
+  ],
+  "audit_semantics": {
+    "maturity_verdict": "validated_current_readback_for_projection_doctor_shadow_only",
+    "next_audit_action": "keep native agent-os status/doctor/route readback green before any broader runtime claim",
+    "evidence_freshness_days": 30
+  },
+  "backend_contract_policy": {
+    "contract_scope": "Agent OS local SSOT, route/review probes, taskpool projection, local harness receipts, and exact authority/readback boundaries.",
+    "schema_rule": "Preserve sparse historical profile/receipt compatibility and fail closed on malformed authority or evidence tuples.",
+    "compatibility_rule": "Keep projections additive and read-only unless an exact enabled adapter boundary, target, receipt, rollback path, and readback are present.",
+    "side_effect_boundary": "No external dispatch, scheduler or worker lifecycle write, publish, deploy, push, credential entry, payment, or destructive action by default."
+  },
+  "regression_coverage_policy": {
+    "required_checks": [
+      "python3 ~/.hermes/scripts/test_external_brain_semantic_contract.py",
+      "python3 ~/.hermes/scripts/test_external_brain_task_integration.py",
+      "python3 ~/.hermes/scripts/brain_task_orchestrator.py selfcheck --json",
+      "hermes agent-os status --json and exact-intent route readback"
+    ],
+    "negative_checks": [
+      "surface text cannot grant authority",
+      "missing or malformed semantic envelopes fail closed",
+      "external side effects remain blocked without exact authority",
+      "local knowledge recall remains hash-bound and authority-neutral"
+    ],
+    "rollback_rule": "Revert only the scoped profile or control-plane delta when a focused check regresses; preserve the failing receipt as evidence."
+  },
+  "lark_task_execution_policy": {
+    "primary_goal": "Advance Agent OS through evidence-backed local SSOT and control-plane slices while preserving exact authority and readback gates.",
+    "default_classification": "agent-os-control-plane",
+    "classification_required": [
+      "agent-os-control-plane",
+      "workflow-governance",
+      "taskpool-governance",
+      "local-harness",
+      "read-only-probe"
+    ],
+    "execution_order": [
+      "read project profile and SSOT",
+      "run Agent OS route preflight and baseline selfcheck",
+      "land the smallest local reversible delta",
+      "run focused positive and negative checks",
+      "attach exact file, command, and readback evidence"
+    ],
+    "closeout_rule": "Closeout requires baseline, implementation delta, focused verification, negative boundary evidence, and fresh readback; advisory or model agreement alone is not completion authority."
+  },
+  "lark_evidence_policy": {
+    "closeout_required_labels": [
+      "baseline",
+      "implementation_delta",
+      "verification",
+      "rollback_or_boundary_guard"
+    ],
+    "accepted_evidence_prefixes": [
+      "artifact:",
+      "file:",
+      "proof:",
+      "command:"
+    ],
+    "minimum_closeout_evidence": [
+      "baseline",
+      "implementation_delta",
+      "verification"
+    ]
+  },
+  "portfolio_profile": true
 }

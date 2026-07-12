@@ -24,6 +24,8 @@ metadata:
 
 One slice at a time. Each slice: build → test → ship (or stash as done). Never build the whole thing before testing anything.
 
+For source-driven parity between two realtime-series clients, use `references/cross-client-realtime-series-parity.md`: prove update-vs-append behavior from the reference, share one tested upsert rule across initial and incremental merge paths, classify baseline lint with blame evidence, and bind late verifier verdicts to their immutable scope.
+
 ## When to Use
 
 - Implementing a task in small verifiable slices instead of a single large change
@@ -34,6 +36,8 @@ One slice at a time. Each slice: build → test → ship (or stash as done). Nev
 2. Each slice is < 50 LOC changed (if bigger, split)
 3. Each slice touches only one concern (one function, one component)
 4. Don't start slice N+1 until slice N passes all tests
+
+Applicability: asynchronous independent-review closeout for incremental software slices. Anti-condition: do not use a reviewer receipt as authority for device, production, or other unreviewed side effects. For out-of-order receipts, immutable revision binding, AMEND follow-up chains, baseline-aware lint classification, and exact owned-process cleanup, read `references/async-verifier-amend-closeout.md`.
 
 ## Process
 
@@ -112,6 +116,14 @@ Use a fresh worktree from the remote base, add focused JS/static contract tests 
 Applicability: browser or mobile-web clients with a central HTTP interceptor and top-level network/server-error toast. Anti-conditions: do not use for page-local validation/business errors, cancellations, aborts, or any flow where the backend message is not already intended for end users.
 
 When a global network/server-error toast currently uses fixed generic copy, preserve backend-provided error text for server responses while keeping the generic network copy as fallback for true no-response failures. Extend the error event detail with optional message, extract only non-blank response-body message fields, keep cancellation/abort excluded, and render backend-message-or-generic-fallback in the top-level listener. Verify with focused interceptor tests for server error with message, server error without message, pure network failure, and cancellation/abort, plus frontend typecheck/build. See `references/frontend-global-error-toast-backend-message.md`.
+
+## Frontend oversized image upload compression slice pattern
+
+Applicability: browser/PWA/mobile-web upload flows where camera or album images can exceed a backend/proxy request-size cap and surface as generic upload/network errors. Add preprocessing at the service-call boundary: preserve small valid images as-is, canvas-compress oversized drawable images to bounded JPEG, re-check MIME/size before upload, and keep existing UI error handling stable. Verify with focused upload-flow tests that stub `Image`, `URL.createObjectURL`, canvas `getContext`, and `toBlob`, plus touched-file lint/typecheck/build. See `references/frontend-image-upload-compression.md`.
+
+## Browser generated-file share capability slice pattern
+
+When a generated PNG/PDF/export prefers Web Share, require positive file support from `navigator.canShare({files:[file]})`; `navigator.share` alone may be text-only. Truth-table missing/false/true capability paths, instrument anchor clicks instead of relying on download-directory counts, preserve AbortError semantics, and keep real native share/transient activation device-gated. See `references/browser-file-share-capability.md`.
 
 ## Template-variable hydration bugfix slice pattern
 

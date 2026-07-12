@@ -51,3 +51,18 @@ This umbrella skill is the routing surface for email. Use it to choose the most 
 - [ ] The selected child skill descriptions, references, and prerequisites were checked before substantive execution.
 - [ ] Any claimed handoff, output, or route decision was read back against the specific child workflow before completion.
 
+
+
+## 输入
+
+- 用户请求的具体参数
+
+## 约束
+
+- 遵循项目规范
+- 在 context budget 内完成
+
+## 检查点
+
+- [ ] 输入参数完整
+- [ ] 输出符合预期格式

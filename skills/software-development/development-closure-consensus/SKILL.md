@@ -125,7 +125,7 @@ Derive an execution consensus for the current task:
 - delivery gates: commit scope, PR base/head, cross-repo dependency comments, merge order
 - learning gates: what to write back to public consensus vs project profile vs skill/script
 
-Use `references/abc-schema.md` as the canonical structure. Use `references/resolver-protocol.md` for the full runtime resolver sequence and terminal report format. For projection-only approval/closeout systems, use `references/evidence-bound-authorization-closeout.md` to keep evidence-bound authorization non-executing and stale-aware.
+Use `references/abc-schema.md` as the canonical structure. Use `references/resolver-protocol.md` for the full runtime resolver sequence and terminal report format. For closure claims backed by derived indexes, retrieval packets, evidence manifests, caches, or projections, use `references/canonical-content-hash-freshness.md`: recompute the producer identity from canonical source bytes, fail closed on stale/forged/out-of-root inputs, distinguish fixture/live/source/downstream proof levels, and keep verification authority-neutral. For projection-only approval/closeout systems, use `references/evidence-bound-authorization-closeout.md` to keep evidence-bound authorization non-executing and stale-aware. For Android/iOS/web/legacy replacement parity reviews, use `references/cross-implementation-behavioral-contract-parity.md`: trace trigger → carrier → downstream consumer → observable effect, treat a forwarded-but-unconsumed field as a contract failure, and executable-probe every advertised range/tier/eligibility rule rather than trusting labels or happy-path fixtures. Applicability: behavioral parity and declared business constraints across implementations. Anti-condition: skip for purely visual inspiration with no authoritative behavioral contract. When closure depends on asynchronous independent reviewers, use `references/independent-verifier-verdict-ledger.md`: certify immutable slices rather than batches, preserve AMEND history across remediation chains, and treat timeout/connection/no-summary runs as `NO_VERDICT_*` rather than approval or rejection. For exact historical-commit reviews in a concurrently changing worktree or with mutable external fixtures, use `references/historical-commit-review-under-concurrent-worktree.md`: freeze target blobs, re-read fixtures, run the original requested subset without rewriting shared files, and separate repository-baseline failures from target failures.
 
 ### Phase 3 — Execute with stage gates
 
@@ -140,6 +140,7 @@ Do not skip stages just because the final delivery step seems obvious:
    - Keep UI/prototype shape, backend contract, persistence, security/audit semantics, and permissions in one traceable chain.
    - When manual validation is non-trivial, add a deterministic static/browser/smoke script so the evidence can be rerun after rebase or review fixes.
 4. Project-appropriate validation evidence
+   - Applicability: dirty multi-slice or nested-repository closure reviews with staged-snapshot, projection, authority, read-only/status, secret-channel, browser-consent, lock/path, or subprocess-lifecycle risk. Prove the cached artifact stayed immutable, tests consumed the exact staged snapshot, dependency behavior matches wrapper flags, authority-shaping environment is pinned/scrubbed, incidental mutation is absent, and one monotonic deadline owns cleanup/readback; see `references/cross-slice-commit-evidence-and-trust-boundary-counterexamples.md`. Anti-condition: skip the extended counterexample matrix for a clean, single-slice, non-authority, non-process documentation-only change.
 5. Delivery closeout when requested/appropriate
 6. Learning writeback and assetization
 
@@ -185,6 +186,8 @@ PR work is the delivery tail of closure, not the start. For the PR-specific port
 - [ ] Query answers treated the named object as an entry point and either covered associated producers/consumers/routes/permissions/KPIs/tests or explicitly listed unverified associated surfaces.
 - [ ] Main chain, best fix point, red lines, and evidence gates were named before claiming closure.
 - [ ] Validation evidence was rerun after any baseline change.
+- [ ] If closure depends on a derived hash/index/manifest, the digest was recomputed from fresh canonical source using the producer identity contract; fixture, live-adapter, canonical-source, and downstream-E2E proof levels were not conflated.
+- [ ] Applicability: when multiple dirty slices, nested repositories, authority/evidence projections, or timeout-managed processes were involved, staged-snapshot isolation and relational counterexamples were verified using `references/cross-slice-commit-evidence-and-trust-boundary-counterexamples.md`. Anti-condition: not required for a clean documentation-only slice with none of those risks.
 - [ ] Delivery metadata, PR/base/head/dependencies/merge order were handled when delivery closeout was in scope.
 - [ ] Stable learnings were classified into public consensus, project profile, skill/script/pipeline, or non-persistent session state.
 

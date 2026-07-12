@@ -71,6 +71,12 @@ These former narrow child skills are now treated as subsections/reference packag
 5. Treating local canonical fact mutation as permission to write external systems. A local `done` fact is necessary but insufficient; external adapters still need intent projection, elevated write-through authorization, exact adapter/target binding, readback verification, and rollback/escape design. Notifications also need their own outbox and delivery gates; do not collapse adapter write success into Lark/Telegram send authority.
 6. Putting evidence or message payloads into the hot ledger path. For outbox/sender boundaries, store only hashes, summaries, IDs, and artifact pointers; reject secret-like keys and keep raw platform payloads out of canonical records.
 
+## Compound Agent System Reference
+
+Applicability: for class-level absorption of “self-improving/compounding agent system” articles, including Fable/Mythos-style social posts. Use `references/compound-agent-system-fable-article.md`: separate provider-specific claims from verified docs, map the durable pattern as primitives → orchestration loop → scoped memory → independent verification → writeback/ratchet → next run, and preserve budget/authority/retention gates before any runtime scheduling or external write. For executable intake, instantiate `templates/compound-agent-loop-contract.yaml.md` and run `scripts/compound_loop_preflight.py` as a read-only advisory preflight before dispatch.
+
+Anti-conditions: do not store unverified model-release/pricing/benchmark claims as facts; do not treat self-improving systems as model weight self-learning; do not claim a runtime loop exists without evidence/readback.
+
 ## Claude Code Goal + Ultracode Control Loop Reference
 
 Applicability: for class-level analysis of autonomous coding-agent control loops, especially Claude Code `/goal`, Ultracode/dynamic workflows, and similar “continue until verifiable condition holds” workflows.
@@ -91,6 +97,12 @@ Applicability: for class-level analysis of post-tool evidence hooks, especially 
 - When implementing the pattern in a real runtime, use `references/posttooluse-runtime-landing.md`: preserve internal-vs-wire event names, keep non-post payload extras backward-compatible, prevent failure hooks from masking error results, cover agent-owned tool paths, and verify with temporary-home CLI smoke plus focused tests/re-review.
 
 Anti-conditions: do not treat output replacement/redaction as a privacy boundary for already-recorded telemetry, do not store raw tool payloads in hot ledgers, and do not claim a runtime hook exists without implementation/readback/tests.
+
+## Fable 5 A+ Certification Closure Reference
+
+Applicability: when the user asks Claude Code Fable 5 to certify a Hermes/system repair, push an audit to A+, or run a final multi-dimensional self-check after remediation. Use `references/fable-a-plus-certification-closure.md`: prepare a compact evidence packet, run Fable in print mode with `--model fable`, retry `error_max_turns` with a higher turn cap and `--tools ""` for read-only verdicts, require structured P0/P1/P2 output, land any scoped commit Fable marks as the final durability gate, then re-run local checks before claiming A+.
+
+Anti-conditions: do not equate A+ with “no system risk,” do not treat safe non-actions like no-push/no-deploy as defects, and do not store session-specific scores or commit IDs in durable memory.
 
 ## Verification Checklist
 

@@ -76,6 +76,19 @@ blocked_policy_violation
 - P1: projection-only task/event bridge, event ledger, before_review/before_done gate checks (implemented locally); learning candidates remain future work.
 - P2: read-only control room, CapabilityGraph projection, surface model router, advisory multi-model review, dry-run learning promotion.
 
+## Exact boundary contract
+
+Every boundary-opening slice must name all four fields before execution:
+
+```yaml
+exact_target: one file/workspace/task/channel/repo/resource id only
+payload: minimal JSON/event/message/ref that will be sent or written
+rollback: exact undo/restore/disable command or human escape hatch
+readback: command/file/API receipt that proves target, effect, and negative side effects
+```
+
+If any field is missing, the slice may still project a blocker into the workspace/taskpool, but it must not execute the side effect.
+
 ## P1 event bridge slice
 
 P1 adds a local projection-only task/event bridge to the P0 helper:
@@ -107,3 +120,74 @@ Boundary: this is not real taskpool lifecycle write-through. It records task ref
 ## Real-open boundary matrix
 
 `real-open-matrix` reports governance/readback coverage across high-risk side-effect classes. It may execute only scoped safe smokes: exact local taskpool lifecycle write-through, local no-agent cron heartbeat readback, and disposable destructive canary delete/restore. External dispatch, publish/deploy/push, credential/payment entry, broad fan-out, and worker spawn remain blocked until exact target/payload/rollback/readback packets exist.
+
+## Boundary packet examples
+
+### Exact taskpool lifecycle write-through packet
+
+```yaml
+exact_target:
+  task_id: 2026-07-08-将global-workspace外部投影门禁接入taskpool事件桥与只读仪表盘
+  workspace_id: anthropic-global-workspace-analysis-20260708
+payload:
+  transitions: [pending->claimed, claimed->running, running->review, review->done]
+  evidence: command:brain_task_orchestrator-selfcheck-PASS-and-workspace_projection-hermes_jspace-tests-PASS
+rollback:
+  command: brain_task_orchestrator.py transition <same-task> --to reopened --reason <reason>
+  scope: same task only; no broad task scan/update
+readback:
+  - task file frontmatter status
+  - event_ledger.jsonl receipt ids
+  - hermes_jspace.py closure-packet <workspace_id>
+  - brain_task_orchestrator.py selfcheck --json
+```
+
+### Disposable destructive canary packet
+
+```yaml
+exact_target:
+  path: <workspace>/artifacts/destructive-canary/canary.txt
+payload:
+  generated canary text plus .bak backup
+rollback:
+  restore canary.restored.txt from .bak
+readback:
+  before_sha256 == restored_sha256
+  hash_match: true
+  production_resource_touched: false
+```
+
+### Closed high-risk packet skeleton
+
+```yaml
+external_dispatch:
+  exact_target: missing platform + channel/user id
+  payload: missing message body + idempotency key
+  rollback: missing recall/correction path
+  readback: missing send receipt + post-send fetch
+  status: blocked_missing_platform_target_payload
+publish_deploy_push:
+  exact_target: missing repo/remote/env/branch or deploy target
+  payload: missing ref/artifact/version
+  rollback: missing revert/rollback command
+  readback: missing remote/deploy status command
+  status: blocked_missing_exact_target_rollback
+credential_payment:
+  exact_target: human UI or provider flow only
+  payload: redacted receipt schema; no secret/card/OTP/API key may be typed by agent
+  rollback: human cancel/stop path
+  readback: redacted human-side receipt
+  status: human_secret_gate_only
+broad_fanout:
+  exact_target: missing finite channel set
+  payload: missing message + idempotency key
+  rollback: missing per-channel recall/correction plan
+  readback: missing receipt per channel
+  status: blocked_missing_exact_channel_set_payload
+worker_spawn_runtime_router:
+  exact_target: missing worker id/command/workspace
+  payload: missing worker packet with budget/timeout/authority
+  rollback: missing kill/disable route command
+  readback: missing process/log/route/task readback
+  status: blocked_missing_worker_packet
+```

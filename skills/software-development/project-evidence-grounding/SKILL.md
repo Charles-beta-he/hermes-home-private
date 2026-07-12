@@ -60,6 +60,10 @@ Use audit mode when the output is a gap report or closure plan.
 5. Report gaps with severity, exact evidence, operational impact, and recommended landing point.
 6. If moving to implementation, write a deterministic regression/static closure harness before patching and verify RED/GREEN/build/browser proof before claiming closure.
 
+### Cross-platform contract-parity commit reviews
+
+When auditing a sequence of target-client commits against a reference client, review each commit against the full behavioral chain: reference producer → payload → reference consumer/effect, then target producer → target consumer/effect. Forwarding a field into a route, intent, event, or store proves transport only; parity requires evidence that the destination consumes it or an explicit accepted-equivalence rule for a different target interaction model. Inspect immutable commit objects rather than only final `HEAD`, classify unexercised authenticated/device paths as evidence gaps rather than automatic defects, and re-read repository status before closure so concurrent worktree edits do not contaminate the verdict. For persisted preferences, probe default → non-default → reload → adjacent transient mode → reload; separate durable preference axes from transient/current-mode axes. Do not copy an observable reference-client defect unless bug-for-bug compatibility is explicitly required—prove and disclose the divergence, then classify a safer target behavior as an accepted improvement only when migration/external compatibility is unaffected. See `references/cross-platform-contract-parity-commit-review.md` for the matrix, moving-worktree guard, preference-persistence probes, reference-defect rule, parity traps, and concise verdict format.
+
 ## General Query Full-Coverage Mode
 
 Use this mode for project/code/product/document queries in general, not only status/source checks. Treat the named object as an entry point, not the boundary.
@@ -154,6 +158,7 @@ Scope/applicability note: support references in this skill are class-level patte
 - `references/multi-repo-health-check.md` — operational workflow for scanning all project repos (frontend/backend/admin) for uncommitted changes, unpushed commits, open PRs, and validating found changes against PRD.
 - `references/project-profile-from-target-and-reference-repo.md` — class-level workflow for adding a new Hermes-managed work project when the user names a primary target repo plus a sibling/reference implementation repo; covers static scan metrics, target/reference boundary, cross-repo endpoint/domain mapping, profile+ledger+portfolio registry writeback, and portfolio doctor verification.
 - `references/project-profile-graph-and-task-inventory.md` — class-level workflow for adding durable project support artifacts after profiling: Mermaid+JSON code relationship graphs and scoped Markdown+JSON task inventories, linked from the project profile with explicit “not runtime proof / not task completion” boundaries.
+- `references/target-reference-progress-prep.md` — class-level workflow for preparing a target implementation against a sibling/reference implementation plus an active task ledger: establish target/reference/progress truth sources, map routes/API/services/state/reference anchors, land scoped SSOT prep artifacts, and update only durable project-profile navigation facts.
 - `references/design-source-browser-evidence-fallback.md` — scope: class-level design/prototype evidence work only; applicability: authenticated browser design evidence exists but design-tool API/node extraction is blocked by credential/export boundaries; anti-condition: do not use for secrets, permission dialogs, or claims of node-level parity.
 
 ## Common Pitfalls

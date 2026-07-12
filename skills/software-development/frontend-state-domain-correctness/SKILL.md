@@ -21,8 +21,11 @@ This umbrella covers frontend stores and UI data models where correctness depend
 - Duplicate, missing, or wrong transaction records after optimistic updates
 - Double-entry debit/credit ledger records must be displayed as one logical operation or the correct wallet leg
 - Zustand/Redux/Vue stores drop rapid SSE/polling/visibility refreshes due to an in-flight guard
+- Async query or mutation results can arrive after entity switches, logout/login transitions, or A→B→A navigation
 - Category-filtered lists or pickers show items from the wrong business universe
 - Backend endpoints serve the same entity with mismatched field sets
+- A UI resource instance can be rebuilt through both declarative lifecycle and an imperative API, so ownership and terminal cleanup may diverge. Scope: applies to owner-managed charts, editors, maps, sockets, workers, observers, media streams, and third-party UI SDKs. Anti-condition: skip immutable values and resources whose ownership is explicitly transferred.
+- A controlled dialog/drawer/popover repeatedly tears down listeners, focus isolation, scroll locks, or inert state when search/loading/content state rerenders while it remains open.
 
 Don't use for:
 - Pure CSS/display-only bugs with no state/domain semantics
@@ -66,6 +69,38 @@ if (pending) void get().syncNotifications('sync-pending');
 
 Use the updater form for atomic capture-and-clear. Do not read `get().syncPending` and then clear it in a separate write.
 
+## Identity/Auth/Generation Guard Pattern
+
+When async results are scoped to a selected entity and an authenticated context, identity equality alone is not a complete stale-response guard. It blocks direct A→B responses but still accepts logout/same-identity callbacks and A→B→A old-A callbacks.
+
+Default rule: a callback may update state or emit secondary effects only if the captured entity, active authority context, and monotonically increasing request generation all still match. Invalidate the generation on entity/auth transitions and before newer mutations. Apply the guard to status queries, mutations, success toasts, cache writes, and navigation effects.
+
+Verification must include direct A→B, logout with the same identity, ABA, overlapping mutations, current-generation acceptance, and anonymous zero-request behavior. Pair static wiring checks with a deterministic deferred-callback model or runtime test; a string-presence harness alone is insufficient.
+
+Detailed implementation and test matrix: `references/identity-auth-generation-async-guards.md`.
+
+## Realtime Bucket Upsert Pattern
+
+For candles, telemetry windows, and other keyed realtime buckets, do not treat an existing timestamp as a duplicate to discard. Normalize the canonical key (for example `String(timestamp ?? time)`), replace an existing bucket at its current index, and append a genuinely new bucket in incoming order. Missing/null keys should append rather than collide through a shared fallback key.
+
+Apply one helper to every ingress path—snapshot plus buffered stream, incremental stream, reconnect/backfill, and cache hydration where relevant. Verify batched repeated updates (last incoming wins), numeric/string key equivalence, malformed-key behavior, order preservation, input immutability, and consumer wiring. Pure-function evidence does not certify live backend payloads or device chart rendering.
+
+Detailed contract and verification matrix: `references/realtime-bucket-upsert-semantics.md`.
+
+## Incremental List Sync Ordering Pattern
+
+When a visible list is repaired by SSE/polling/push invalidation and an incremental cursor endpoint, separate cursor order from display order. Backend event/outbox endpoints often return `event_seq ASC` so clients can advance cursors safely, while the product list expects `createdAt DESC`, priority rank, or another display invariant. A frontend merge such as `merged = [...incoming, ...existingWithoutDuplicates]` can make the newest item in a multi-item incremental batch appear below older incoming rows.
+
+Default approach:
+
+1. Identify the product display invariant before changing code (for notifications, whether `createdAt` delivery time or `occurredAt` business time is authoritative).
+2. Trace all mutation paths: full fetch, incremental sync, single-item fetch, optimistic append/replace, persisted cache hydration.
+3. Preserve the timestamp/rank fields needed for the invariant in service normalization and types.
+4. Dedupe by id, then apply one shared store-level ordering helper after every list mutation path.
+5. Add a store-boundary regression with at least three incoming items in cursor ASC order and assert the latest displays first.
+
+Detailed checklist and UVISA-derived example: `references/incremental-list-sync-ordering.md`.
+
 ## Auth / Credential Gate Flag Defaults
 
 Scope: frontend auth stores or route guards that decide whether to send users into first-time setup, step-up verification, trusted-device checks, KYC completion, or other credential gates based on backend booleans.
@@ -107,8 +142,10 @@ Load it when this subproblem is directly active. Minimum in-root rule: preserve 
 2. **Showing both ledger legs in global filters without product confirmation.** Dedup by root/operation when the UI intends one logical operation.
 3. **Assuming fee fields mean the same thing everywhere.** Confirm current product definition and endpoint parity.
 4. **Dropping concurrent SSE events.** A bare `syncInFlight` guard without a dirty bit loses data until the next poll.
-5. **Persisting transient guard flags.** `syncPending` and `syncInFlight` are runtime state, not persisted store state.
-6. **Changing backend field names without frontend fallback audit.** Optimistic objects, DTOs, and detail screens often read different fields.
+5. **Treating entity equality as a complete stale-response guard.** `requestedId === activeId` handles A→B but not logout/same-id, A→B→A, or older mutation callbacks. Add authority-context and generation checks, including before success toasts and cache writes.
+5. **Conflating cursor order with display order.** Incremental sync/outbox endpoints may return `event_seq ASC`; prepending a multi-item `incoming` batch without sorting can put the newest row in the middle even when full fetch is correctly `createdAt DESC`.
+6. **Persisting transient guard flags.** `syncPending` and `syncInFlight` are runtime state, not persisted store state.
+7. **Changing backend field names without frontend fallback audit.** Optimistic objects, DTOs, and detail screens often read different fields.
 7. **Collapsing business-error envelopes to `null`.** When an API client adapts backend envelopes such as HTTP 200 `{ code != 0, message, data: null }` into `{ success:false, code, message }`, do not let a store/action convert that result to plain `null` before the page-level toast/error handler. `null` should mean transport/unknown/no-entity fallback; business failures must carry `message` and `code` through store return types so the UI shows backend copy instead of generic `common.networkError`. Add regression tests at the store boundary for `success:false` message preservation, plus page-level checks that real exceptions still use the generic network fallback.
 8. **Conflating broad backend stage with the concrete required action.** Auth/onboarding/payment flows may return both a coarse state (for example `authStage=PENDING_PIN`) and a specific next step (for example `requiredStep=SET_PAYMENT_PIN` vs `VERIFY_PAYMENT_PIN`). Route by the specific discriminator first; only use the broad stage as a fallback after checking setup/absence flags such as `hasPaymentPin=false`, `paymentPinSet=false`, or aliases. Add regression tests for both setup and verify variants so a new user is not sent to an existing-PIN verification screen.
 8. **Reducing raw shared collections directly in page components.** A shared collection must pass through page eligibility, feature gates, and semantic conversion before display.
@@ -186,10 +223,19 @@ Anti-conditions:
 - [ ] All relevant list/detail endpoints expose needed fields.
 - [ ] Store merge/dedup handles optimistic replacement, not duplicate append.
 - [ ] Async guard success and error paths both resync pending triggers.
+- [ ] Entity-scoped authenticated callbacks require current identity, authority context, and request generation; tests cover logout/same-id and ABA, not only direct A→B.
+- [ ] Realtime bucket merges normalize key types, replace same buckets, append new/missing-key records, preserve order and input immutability, and share one helper across every ingress path.
 - [ ] Regression tests cover rapid events and representative domain edge cases.
 - [ ] Cross-surface transaction title tests prove backend `description` priority matches the canonical list row unless a product exception is documented.
+- [ ] For replaceable UI resources, tests prove `create → replace → unmount` releases the latest owned instance; static API-shape checks are not treated as lifecycle proof.
+- [ ] For controlled overlays, callback identity is stable across the full component chain; an unrelated open-state rerender produces no listener/effect teardown delta while focus, inertness, Escape, and restoration still pass.
 - [ ] Wrapper safety: any side effect is followed by target-state read-back before reporting completion.
 ## Support Files
 
+- `references/realtime-bucket-upsert-semantics.md` — reusable normalized-key replace/append rules and verification boundaries. Scope: keyed realtime series. Anti-condition: multiple valid records per key or retained revision history.
+
+- `references/imperative-resource-replacement-lifecycle.md` — ownership invariant, stale effect-cleanup trap, transition-table review, and executable disposal evidence for imperatively rebuilt UI resources.
+- `references/react-controlled-overlay-callback-stability.md` — end-to-end callback identity, listener-churn RED/GREEN instrumentation, fresh-artifact checks, and bounded overlay lifecycle evidence.
 - `references/financial-ledger-frontend-patterns.md` — FX/debit/credit IDs, fee semantics, transaction sign/description, DTO parity.
 - `references/concurrent-async-guard.md` — dirty-bit guard implementation and Zustand examples.
+- `references/identity-auth-generation-async-guards.md` — complete stale-response isolation across entity switches, logout, ABA navigation, and overlapping mutations, with a deterministic verification matrix.

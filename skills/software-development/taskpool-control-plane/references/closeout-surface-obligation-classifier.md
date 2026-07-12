@@ -24,7 +24,9 @@ Prefer a deterministic classifier with reasons over a single hard exemption:
 3. **Work lane fail-closed**: `lane=work` still requires structured evidence and UI/API proof when UI/API terms are present.
 4. **No-execution source intake**: non-work tasks with no-execution/no-install/no-scanning plus source-intake signals (`workflow_stage=evidence`, `completion_boundary=taskpool_candidate`, `harness_surfaces=public-preview|external-search|source-identification`) should not require implementation UI/API proof.
 5. **Non-work output obligation**: if non-work task still has explicit output/implementation surfaces or verbs, require implementation proof.
-6. **Fallback**: non-implementation tasks without output obligation do not need execution-flow proof.
+6. **Explicit harness surfaces override incidental prose**: when `harness_surfaces` is a non-empty governed list, derive UI/API requirements from that list (`browser|ui`, `api|backend`) rather than scanning historical body prose. A task with `harness_surfaces: [local-cli]` must not require screenshots merely because its research/non-goals mention “browser” or “UI”. If harness surfaces are absent, conservative text inference remains appropriate.
+7. **Semantic intent is a separate gate**: a legacy active task may also fail with `semantic_intent_missing_needs_review`. Add a valid versioned envelope only when its requested outcome, capability, lane, task class, side-effect class, sources, and evidence gates are true. Validate the envelope through the canonical evaluator before writing it. Do not mark `semantic_contract_status: validated` unless the associated hash-bound knowledge-recall receipt is actually present and source-verifiable.
+8. **Fallback**: non-implementation tasks without output obligation do not need execution-flow proof.
 
 Always return a reason list (for audit) such as `lane_work_fail_closed`, `source_intake_surface`, `no_execution_boundary`, or `non_work_but_output_obligation`.
 
@@ -33,9 +35,14 @@ Always return a reason list (for audit) such as `lane_work_fail_closed`, `source
 Regression set should include:
 
 - Source-intake/no-execution task mentioning browser/public-preview -> classifier says no execution-flow proof required and transition can close with evidence/ratification proof.
-- Work-lane UI/API implementation -> still blocks without browser/API/readback proof.
+- Explicit `harness_surfaces: [local-cli]` plus historical body/non-goal mentions of browser/UI -> implementation proof remains required, but UI proof is false and API proof is false.
+- Explicit `harness_surfaces: [backend]` -> API/readback proof is required but UI proof is false.
+- Work-lane UI/API implementation without explicit bounded surfaces -> still blocks without browser/API/readback proof.
+- A legacy review task missing semantic intent -> RED closeout first; add and evaluate a truthful envelope, then rerun the normal gate instead of forcing the status.
+- Invalidly setting `semantic_contract_status: validated` without a canonical knowledge-recall receipt -> fail closed; remove the unsupported certification marker or generate/verify the real receipt.
 - Manual partial closeout -> remains closable with selfcheck/proof evidence.
-- Full taskpool selfcheck/proof-check after live closeout.
+- Run focused classifier/transition tests first, then the full orchestrator suite, validator/reindex/exhaustive audit, task list, selfcheck, and proof-check after live closeout.
+- Require the normal lifecycle transition to mint/read back its proof hash; a verifier PASS alone is not a status mutation receipt.
 
 ## Multi-model review lesson
 

@@ -607,6 +607,12 @@ def parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
     return meta, text[end + len("\n---"):].lstrip("\n")
 
 
+def has_malformed_frontmatter_prefix(text: str) -> bool:
+    """Detect a YAML key accidentally written before the opening delimiter."""
+    lines = text.splitlines()
+    return len(lines) >= 2 and lines[1] == "---" and re.match(r"^[A-Za-z_][A-Za-z0-9_-]*\s*:", lines[0]) is not None
+
+
 def iter_notes_with_meta(paths: Paths | None = None) -> Iterator[dict]:
     paths = paths or resolve_paths()
     patterns = read_ignore_patterns(paths.vault)
@@ -633,11 +639,23 @@ def is_terminal_status(status_value: str | None) -> bool:
     return (status_value or "").strip().lower() in {"completed", "done", "cancelled", "canceled", "archived", "expired", "closed"}
 
 
+def is_fixture_artifact(note: dict) -> bool:
+    """Return whether a note is an imported fixture whose bytes are evidence."""
+    parts = Path(note["rel_path"]).parts
+    return any(part == "fixtures" or part.startswith("fixture-") for part in parts)
+
+
 def is_l3(note: dict) -> bool:
     meta = note["meta"]
     rel = note["rel_path"]
+    parts = Path(rel).parts
+    if "99-archive" in parts or "tasks-archived" in parts or "_temporarily_removed_lark_tasks" in parts:
+        return False
     name = Path(rel).name
     note_type = str(meta.get("type", "")).lower()
+    declared_layer = str(meta.get("layer", "")).upper()
+    if declared_layer:
+        return declared_layer == "L3"
     derived_flag = str(meta.get("derived", "")).lower() in {"true", "yes", "1"}
     non_task_views = {
         "task_inbox",
@@ -652,7 +670,7 @@ def is_l3(note: dict) -> bool:
         return meta.get("layer", "").upper() == "L3"
     if name.startswith("00-") or name.endswith(".json.md"):
         return meta.get("layer", "").upper() == "L3"
-    return meta.get("layer", "").upper() == "L3" or "/tasks/" in f"/{rel}"
+    return "/tasks/" in f"/{rel}" and note_type in {"task", "task-log", "mission"}
 
 
 def has_evidence_boundary(text: str) -> bool:
@@ -689,7 +707,9 @@ def governance_violations(paths: Paths | None = None) -> tuple[list[dict], dict]
     for note in notes:
         meta = note["meta"]
         rel = note["rel_path"]
-        if note["text"].startswith("---\n"):
+        if has_malformed_frontmatter_prefix(note["text"]):
+            violations.append({"type": "malformed_frontmatter_prefix", "path": rel})
+        if note["text"].startswith("---\n") and not is_fixture_artifact(note):
             for key in ("type", "status"):
                 if key not in meta:
                     violations.append({"type": "frontmatter_missing_key", "path": rel, "key": key})
@@ -697,6 +717,10 @@ def governance_violations(paths: Paths | None = None) -> tuple[list[dict], dict]
             expiry = meta.get("expires_at") or meta.get("expiry") or meta.get("valid_to")
             if not expiry:
                 violations.append({"type": "missing_l3_expiry", "path": rel})
+            else:
+                expiry_epoch = parse_iso_epoch(expiry)
+                if expiry_epoch is not None and expiry_epoch < time.time():
+                    violations.append({"type": "expired_l3", "path": rel, "expires_at": expiry})
         is_review = meta.get("type", "").lower() == "review" or meta.get("layer", "").upper() == "L6" or "/reviews/" in f"/{rel}"
         if is_review and not has_evidence_boundary(note["text"]):
             violations.append({"type": "review_missing_evidence_boundary", "path": rel})
@@ -1110,6 +1134,7 @@ def render_html_jump_test(graph_path: Path, paths: Paths, model: dict) -> str:
     lines = [
         "---",
         "type: generated-test",
+        "status: current",
         "layer: L7",
         "generated: true",
         "source: brainctl html graph",
@@ -1160,6 +1185,7 @@ def render_html_launcher(graph_path: Path, paths: Paths, model: dict) -> str:
     return "\n".join([
         "---",
         "type: generated-index",
+        "status: current",
         "layer: L7",
         "generated: true",
         "source: brainctl html graph",

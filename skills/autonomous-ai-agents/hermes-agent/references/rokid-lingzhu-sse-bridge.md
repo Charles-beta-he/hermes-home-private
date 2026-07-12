@@ -266,6 +266,21 @@ Recovery flow:
 4. Call `agentStore/developer/cozePublish` to re-submit for review.
 5. Verify `displayStatus` changes to `checking` (review in progress).
 
+## Rokid Glasses native/APK entry lanes
+
+Rokid's newer developer docs expose additional glasses-side entry points beyond the Lingzhu custom-agent SSE path. Treat them as distinct lanes, not replacements for the SSE assistant bridge:
+
+- `CXR-L SDK (Android/iOS)` runs in a mobile app and works with Rokid AI App / Hi Rokid to reach the glasses. Docs observed at `https://developerdoc.rokid.com/sdk?lang=zh` (v1.0.4, 2026-06-29). It supports `CUSTOMVIEW` and `CUSTOMAPP` sessions, audio, camera, custom commands, brightness, and volume.
+- `CUSTOMVIEW` is a mobile-mediated lightweight UI lane: send layout JSON/icons via `customViewSetIcons`, `customViewOpen`, `customViewUpdate`, `customViewClose`. It does not install an APK and cannot use custom-command traffic.
+- `CUSTOMAPP` is the mobile-mediated APK lane: configure `configCXRSession(CUSTOMAPP, packageName)`, then use `appIsInstalled`, `appUploadAndInstall(apkAbsolutePath)`, `appStart(entryUriOrComponent)`, `appStop`, and `appUninstall`. Custom commands require the CustomApp session and a launched glasses app.
+- CXR-L quickstart requires Rokid AI App >= 1.9.0 in mainland China or Hi Rokid overseas, a token/auth flow, both `onCXRLConnected(true)` and `onGlassBtConnected(true)`, then session construction (`onCustomViewOpened` or `onOpenAppResult(true)`) before audio/photo/custom-command calls.
+- Glasses-side APKs use `CXR-S` (`com.rokid.cxr:cxr-service-bridge` in observed docs) to subscribe/send messages such as `subscribe("rk_custom_client", ...)` and `sendMessage(...)`. Keep mobile `client-l` and glasses `cxr-service-bridge` versions aligned with the sample release.
+- `CXR-M SDK` is not public on the developer site; docs say to contact `Glasses.BD@rokid.com`. It is a mobile SDK for stable connection, data communication, realtime A/V, scene customization, and cooperation with glasses-side CXR-S.
+- `眼镜端裸机开发` docs observed at `https://custom.rokid.com/prod/rokid_web/57e35cd3ae294d16b1b8fc8dcbb1b7c7/pc/cn/13083daf77dd40bf84cf5c59711e987a.html`. Rokid Glasses bare-metal development is basically Android app development on YodaOS-Sprite, based on Android Go. Design size is 480x640. It requires Android Studio, Rokid Glasses, a special developer data cable (retail box may only include charging cable), enabling ADB through Rokid AI App, and can use scrcpy for mirroring.
+- Bare-metal docs list fixed system interactions that cannot be changed: long-press right temple touchpad enters Rokid AI module, double-click right-temple button returns, top button click takes photo, top button long-press records video, and some wake words invoke fixed functions.
+
+Hermes product interpretation: for a glasses assistant, keep Lingzhu SSE as the lowest-friction conversational entry; use CXR-L CustomView for simple on-glass cards/status; use CXR-L CustomApp/APK or bare-metal development when Hermes needs an actual resident glasses app, local CXR-S bridge, key events, richer UI, or custom bidirectional command protocol. Do not claim general consumer sideloading until real device/ADB or CXR-L install evidence is verified.
+
 ## OpenClaw official plugin lessons for Hermes bridge design
 
 Rokid's official `rokid-openclaw-gateway-compatible` plugin is useful as a design reference even when not installing it. Its architecture is:

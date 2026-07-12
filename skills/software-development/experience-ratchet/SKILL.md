@@ -81,6 +81,10 @@ Valid transitions: draft->validated, validated->promoted, promoted->demoted, dem
 2 independent validations required (different source_task_id).
 Each validation increments ratchet.promote_count.
 
+Independence is semantic, not merely a distinct receipt or task ID. Reject records that reuse the same execution, authority grant, evidence snapshot, or producer identity when policy requires independent validations. Exact-authority validations must bind the grant to the execution/receipt identity or carry an explicit bounded multi-use policy; changing only an ID must never advance promotion.
+
+All lifecycle and ratchet counters are strict nonnegative integers: reject booleans, strings, floats, and negative values before comparison or increment. Do not coerce with `int(value)` or rely on Python's `bool`-is-`int` behavior. Invalid counters must produce a fail-closed finding without mutating lifecycle or promotion state.
+
 ## Components
 
 - Skill: this file (canonical schema + protocol)

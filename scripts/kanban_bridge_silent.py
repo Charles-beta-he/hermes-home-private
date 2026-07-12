@@ -27,7 +27,7 @@ def emit_failure(label, rc, out):
     return 1
 
 def main():
-    rc, out = run([SCRIPTS / 'kanban_bridge.py'])
+    rc, out = run([SCRIPTS / 'kanban_bridge.py', '--execute'])
     obj = extract_json(out)
     if rc != 0 or not isinstance(obj, dict):
         return emit_failure('kanban_bridge', rc, out)

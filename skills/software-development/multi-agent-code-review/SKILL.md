@@ -253,6 +253,8 @@ When review is part of a merge gate, treat multi-model output as an evidence wor
 5. **Merge by reviewed SHA.** If auto-merge is authorized, merge with an explicit expected source SHA (`--sha` for GitLab/glab or equivalent) to prevent drift between review and merge.
 6. **Read back final state.** After merge, query the MR/PR state and target branch head; verify the target contains the reviewed commit. Do not delete the source branch unless explicitly authorized or project policy requires it.
 
+For GitHub-specific `--match-head-commit`, immediate `--auto` merges with no required checks, and squash-tree verification (where the reviewed SHA is not an ancestor), load `references/github-reviewed-sha-auto-merge.md`.
+
 ### Step 6: Post to GitHub/GitLab (Optional)
 
 If reviewing a PR, post the filtered results:

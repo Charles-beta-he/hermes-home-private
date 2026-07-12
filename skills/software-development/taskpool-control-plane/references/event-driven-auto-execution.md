@@ -145,8 +145,20 @@ python3 task_pool_event_integration.py --api --port 9008 &
 
 4. **API-first design**: HTTP API for event ingestion allows integration with external systems
 
+## Governance boundary
+
+An event is a wake signal, not lifecycle authority. Before auto-claim or auto-execute, every event handler must call the same exact-task eligibility/policy SSOT used by cron, retry, reconcile, agent-team, and manual-dispatch paths.
+
+Fail closed before `running` unless the task has a complete handoff/envelope, acceptance and evaluator contract, authority/write-surface projection, dependency/concurrency boundary, evidence requirements, budgets, stop conditions, and rollback/escape path.
+
+When verifying automation, reconstruct the task's lifecycle timeline across all controllers and read the spawned worker job. A creation hook that deferred a task does not prove that a periodic controller also deferred it. If one path denies/defer while another claims, classify this as cross-controller policy divergence rather than healthy automation. See `bounded-loop-and-multicontroller-convergence.md`.
+
 ## Pitfalls
 
+- **Treating event delivery as authority**: Wake the control plane, then run exact eligibility; never map receipt directly to claim/run.
+- **Cross-controller policy drift**: Event, cron, retry, and manual paths must not carry separate allowlist or lane semantics.
+- **Incomplete handoff enters running**: Validate handoff/envelope before claim; do not start a worker merely to discover an empty execution contract.
+- **Verifying only the creation hook**: Read lifecycle history, controller decision, exact post-state eligibility, and worker job/result.
 - **Orchestrator not initialized**: Event handlers need orchestrator reference for actual operations
 - **Task not found**: Events may reference tasks that don't exist yet (race condition)
 - **Duplicate events**: Event bus should deduplicate or handlers should be idempotent

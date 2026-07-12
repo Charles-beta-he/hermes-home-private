@@ -324,6 +324,11 @@ terminal("pytest tests/test_feature.py::test_name -v")
 terminal("pytest tests/ -q")
 ```
 
+For CLI/API/dashboard read-only surfaces, make the missing interface itself the RED signal before wiring UI:
+- CLI: parse the desired subcommand/flag and verify it fails as an invalid choice before adding the parser branch.
+- API: call the desired route through the same authenticated/session path used by the dashboard and verify it returns 404 before adding the endpoint.
+- UI: after GREEN, run the frontend typecheck/build and a browser readback for at least one interaction; assert no side-effect flags flip and browser console has zero JS errors.
+
 ### With delegate_task
 
 When dispatching subagents for implementation, enforce TDD in the goal:
@@ -399,6 +404,17 @@ Common failures when testing Python code:
 - Missing attributes: check for actual exports
 
 See `references/python-test-debugging.md` for debugging patterns.
+
+## Control-plane readback surfaces
+
+For local control-plane or dashboard projection work, add RED tests for every new readback surface before implementation:
+
+- CLI parser/command test for new subcommands or output schemas.
+- API endpoint test that first fails with 404/invalid choice, then passes after implementation.
+- Boundary assertions that side-effect flags remain false for capability execution, lifecycle writes, external dispatch, payment/credential actions, and physical-device effects.
+- UI build/typecheck and browser readback for any dashboard control-room change.
+
+This keeps read-only operator improvements from accidentally becoming execution authority.
 
 ## Common Pitfalls
 

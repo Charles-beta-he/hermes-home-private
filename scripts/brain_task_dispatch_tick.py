@@ -1458,19 +1458,40 @@ def execute_batch_merge_manifest(
     for row in eligible[: effective_max_tasks]:
         task_id = str(row.get("id") or row.get("task_id") or "")
         claim = run_json([
-            "claim", task_id,
+            "auto-claim-and-handoff",
+            "--task", task_id,
             "--actor", actor,
             "--ttl-minutes", "60",
-            "--run-id", batch_id,
-            "--reason", "batch coordinator claim; execution remains per-task proof-gated",
+            "--no-reconcile",
             "--json",
         ])
-        if claim.get("status") in {"OK", "PASS"} or claim.get("ok"):
+        handoff = str(claim.get("handoff") or "").strip()
+        if claim.get("status") in {"OK", "PASS"} and claim.get("claimed") is True and handoff:
             claimed_row = dict(row)
-            claimed_row.update({"id": task_id, "task_id": task_id, "claimed_by": actor, "run_id": batch_id, "claim_source": "batch-coordinator", "batch_manifest_id": payload["manifest_id"]})
+            claimed_row.update({
+                "id": task_id,
+                "task_id": task_id,
+                "claimed_by": str(claim.get("claimed_by") or actor),
+                "run_id": str(claim.get("run_id") or batch_id),
+                "handoff": handoff,
+                "proof_hash": str(claim.get("proof_hash") or ""),
+                "claim_source": "batch-coordinator-canonical",
+                "batch_manifest_id": payload["manifest_id"],
+            })
             claimed.append(claimed_row)
         else:
-            claim_errors.append({"task_id": task_id, "status": claim.get("status"), "reason": claim.get("reason")})
+            reasons = list(claim.get("reasons") or [])
+            if claim.get("claimed") is True and not handoff:
+                reasons.append("missing_handoff_contract")
+                cleanup_event_worker_timeout_claims([
+                    {"id": task_id, "task_id": task_id, "claimed_by": actor, "run_id": str(claim.get("run_id") or "")}
+                ], actor=actor)
+            claim_errors.append({
+                "task_id": task_id,
+                "status": claim.get("status"),
+                "reason": claim.get("reason") or (reasons[0] if reasons else "canonical_claim_denied"),
+                "reasons": reasons,
+            })
     payload["claimed_count"] = len(claimed)
     payload["claim_errors"] = claim_errors
     if not claimed:

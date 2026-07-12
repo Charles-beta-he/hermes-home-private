@@ -212,7 +212,24 @@ Never treat these as sufficient alone:
 
 Evidence must say which claim it supports and what it does not prove.
 
+## Stateful Frontend Restoration Gate
+
+When a UI preference must survive reloads, specify and test it as a state machine rather than as a storage setter:
+
+1. Keep orthogonal meanings in separate preferences. A transient view mode must not overwrite the last meaningful domain selection.
+2. RED must demonstrate the missing immediate state and the missing reload restoration.
+3. GREEN must verify both directions: enter transient mode, reload into it, leave it, clear its preference, and reload into the preserved durable selection.
+4. Browser evidence should assert semantic selection and storage independently, clear service-worker/cache state, set an explicit viewport, and scroll a selected control into view before screenshot capture when it lives in a horizontal scroller.
+5. Split restoration evidence from data-completeness evidence. A restored selected control and empty chart grid do not prove curves/rows/data rendered.
+6. If the reference client has a mode but the target API rejects all candidate values while a control request succeeds, stop before implementation. Rendering-library capability is not authority to invent a business enum, substitute data, or choose a fallback.
+
+Detailed transition matrix and harness safeguards: `references/stateful-frontend-restoration-evidence.md`.
+
+When a third-party chart/editor/map instance can be recreated through an imperative ref, effect cleanup must dispose the current owned instance rather than the setup-time closure value. Verify the exact rebuild → unmount transition with executable runtime evidence; a source-string harness alone is insufficient. See `references/imperative-resource-rebuild-unmount.md`.
+
 ## Stage 6 — Closure State
+
+For structured semantic/policy control planes, verify authority propagation through every downstream consumer—not only evaluator correctness. A `decision=route` result must not open dispatch, claim, executable lifecycle states, side effects, or writeback when the corresponding policy bit (for example `may_execute` or `may_write_learning`) is false. Run malformed, strict-root, force, retry/stale, forbidden-multimodel, registry-corruption, surface-invariance, and legacy-compatibility negative probes using `references/semantic-authority-propagation-verification.md`.
 
 Before choosing closure state, run a Converge Matrix that binds every acceptance criterion to evidence:
 
@@ -372,3 +389,7 @@ Before closure:
 - `templates/spec-gate-converge.md` — reusable Spec Brief, plan, tasks, and Converge Matrix template; includes a config-driven CTA/UI negative-case pattern.
 - `references/reference-media-to-durable-workflow-landing.md` — ladder for external media/repo/article absorption: evidence -> SSOT -> skill/template -> task tracking -> local reversible implementation -> runtime prompt -> scheduler, with explicit stop gates.
 - `references/hermes-self-governance-scoped-commit.md` — session-derived pattern for scoped commits after Hermes self-governance runs: commit SSOT/skill/memory artifacts, leave logs/backups/runtime state uncommitted unless explicitly requested.
+- `references/stateful-frontend-restoration-evidence.md` — transition matrix, browser-harness safeguards, evidence-boundary rules, and capability-probe stop condition for reload-persisted UI modes.
+- `references/imperative-resource-rebuild-unmount.md` — ownership invariant and executable browser/CDP verification for imperative third-party resource rebuild followed by React unmount.
+- `references/semantic-authority-propagation-verification.md` — end-to-end negative matrix for semantic evaluators whose policy bits must survive dispatch, force, lifecycle, multimodel, side-effect, and learning sinks.
+- `references/structured-semantic-authority-continuation-certification.md` — read-only continuation audit for inbox/wrapper/repair-child producers: AST-enumerate every canonical add sink, prove explicit-envelope-only propagation, revalidation, forbidden-multimodel precedence, tempfile-only negative probes, and byte-hash-bound verdicts.

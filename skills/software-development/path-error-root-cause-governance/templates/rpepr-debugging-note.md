@@ -14,16 +14,37 @@ State/path/mechanism sentence:
 
 ## 2. Proof Matrix
 
-| Layer | Broken path evidence | Contrast path evidence | Interpretation |
+Disputed variable / ownership decision:
+
+Correct owner/writer candidate:
+
+Current competing producers/controllers/writers:
+
+Transformers/adapters/fallbacks:
+
+Consumers/displays/action users:
+
+Direct readback that observes the disputed variable:
+
+Consumer-boundary readback:
+
+Contrast / negative path:
+
+Falsifier for current favorite hypothesis:
+
+Claim strength: PROPOSED | LOCALLY_VERIFIED | PATH_VERIFIED | CERTIFIED
+
+| Layer / boundary | Broken path evidence | Contrast / negative evidence | Interpretation |
 |---|---|---|---|
-| DOM/render | | | |
-| CSS/computed | | | |
-| Geometry/rect | | | |
-| Root/shell ownership | | | |
-| State markers/storage | | | |
-| Lifecycle/timers/effects | | | |
-| Cache/deploy/version | | | |
-| Auth/route/API | | | |
+| User/system entry | | | |
+| Producer/controller/writer | | | |
+| Transformer/adapter/fallback | | | |
+| Consumer/display/action surface | | | |
+| Persistence/cache/runtime state | | | |
+| Verification path/test/harness | | | |
+| Agent/process framing | | | |
+
+Evidence modality chosen and why it observes the variable:
 
 ## 3. Competing Hypotheses
 

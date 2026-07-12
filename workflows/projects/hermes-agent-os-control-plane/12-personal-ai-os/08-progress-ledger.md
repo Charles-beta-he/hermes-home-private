@@ -272,3 +272,18 @@ Write domain model schema, roadmap, backlog, then validate JSON and update root 
   - Browser console after interaction: 0 messages / 0 JS errors.
 - Boundary preserved: verification is browser-local only; no clipboard write, file export, external dispatch, lifecycle write, capability execution, secret/payment/legal action, or physical-device effect.
 - Backlog update: P18 completed.
+
+
+## 2026-07-07T11:18:00+08:00 — Fable 5-led Agent OS system/architecture/multi-angle P0 repair audited
+
+- Scope: local reversible native Agent OS readback artifacts only; no external dispatch, publish/deploy/push, destructive action, payment/credential entry, unbounded fan-out, or real capability execution.
+- Fable 5 lead analysis: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable-system-arch-multi-audit-output-tiny-20260707T030926Z.md`.
+- Native projection repaired: `06-projection/capability_graph_projection.json` with `node_count=299`, `runtime_mutation=false`, `external_side_effects_executed=false`.
+- Native doctor repaired: `06-projection/doctor_report.json`, `ok=true`, `findings=[]`.
+- Native shadow report repaired: `07-shadow/router-shadow-report.json`, `records=6`, `blocked_by_policy=3`, `would_execute_anything=false`.
+- Quota divergence readback: `06-projection/quota-root-profile-diff.json`; Fable remains unobservable/no-header and not budget-handoff-certified; DeepSeek root/profile divergence is reported but not synced by this P0 repair.
+- Coverage registry updated with `agent-os-projection-health` dimension.
+- Verification: `hermes agent-os status --json` -> ok true, missing []; `hermes agent-os doctor --json` -> ok true, findings []; `hermes agent-os route --json ...` -> suggested nodes present and `would_execute=false`; JSON validation pass; focused pytest `tests/hermes_cli/test_agent_os_control_plane.py` -> 27 passed.
+- Fable final audit: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable-final-audit-output-20260707T031307Z.md` -> PASS (有条件通过).
+- Extra assertions: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable5-p0-extra-assertions-v2-20260707T031800Z.json` -> ok true.
+- Manifest: `/Users/charles/.hermes/kanban/workspaces/t_169767cb/fable5-agent-os-system-arch-repair-audit-manifest-20260707T031800Z.json`.

@@ -24,7 +24,9 @@ metadata:
 
 # Lark Task Reading
 
-Reference addendum: `references/uvisa-lark-taskflow-single-source-of-truth.md` is the current canonical UVISA Lark/work flow. For `uvisa-app-2.0`, because the project has an online address and a complete publishing flow, implementation merge/current-code proof plus deterministic verification is only an implementation-sendback gate; Lark final completion must wait for online-address UI 回收/验收 evidence. `references/uvisa-admin-lark-fasttrack-closeout.md` remains background guidance for admin-tier tiering, atom mapping, and upgrade triggers via regex matrix, but does not override the SSOT. `references/uvisa-c端-iceberg-classifier.md` is the C端 task scope classifier: semantic signal extraction with weight-based decision tree, no regex matching. Use for C端 task intake tier assignment. Script: `~/.hermes/scripts/uvisa_c端_lark_classifier.py`. **Superseded for new work** by `references/uvisa-unified-iceberg-multimodel-consensus.md` which covers the unified classifier + multimodel consensus + control plane integration.
+Reference addendum: `references/uvisa-lark-taskflow-single-source-of-truth.md` is the current canonical UVISA Lark/work flow. For `uvisa-app-2.0`, because the project has an online address and a complete publishing flow, implementation merge/current-code proof plus deterministic verification is only an implementation-sendback gate; Lark final completion must wait for online-address UI 回收/验收 evidence.
+
+Notification-center ordering addendum: `references/uvisa-notification-incremental-ordering.md` covers UVISA C-end notification tasks where newest messages appear in the middle after multiple pushes/SSE events: trace the shared `/notifications` route, backend `event_seq ASC` incremental sync, frontend store merge order, TDD regression, and clean-worktree PR/merge hygiene. `references/uvisa-admin-lark-fasttrack-closeout.md` remains background guidance for admin-tier tiering, atom mapping, and upgrade triggers via regex matrix, but does not override the SSOT. `references/uvisa-c端-iceberg-classifier.md` is the C端 task scope classifier: semantic signal extraction with weight-based decision tree, no regex matching. Use for C端 task intake tier assignment. Script: `~/.hermes/scripts/uvisa_c端_lark_classifier.py`. **Superseded for new work** by `references/uvisa-unified-iceberg-multimodel-consensus.md` which covers the unified classifier + multimodel consensus + control plane integration.
 
 ## Taskpool quarantine behavior
 
@@ -90,7 +92,7 @@ The detailed Lark task reading implementation pattern was moved to `references/i
 
 Load it when editing/operating the Lark reader, OAuth/token handling, task projection, or auto-authorize behavior.
 
-Minimum in-root rule: preserve token-mode and reader auto-auth boundaries; do not conflate skill notes with project runtime code.
+Minimum in-root rule: preserve token-mode and reader auto-auth boundaries; do not conflate skill notes with project runtime code. For status/repair routing, authority lifetime, the persistent-grant consumer contract, and the critical `--status-only` versus `--no-open` distinction, load `references/lark-oauth-single-flight-guard.md`: health never performs repair—including implicit stale-lock deletion inside a lock-state helper; durable grants must be path/schema/scope validated fail-closed; and an applicable durable-scoped recovery grant should route `auth_required` to the separate guarded repair lane rather than prompting repeatedly.
 
 ## Lark API shape notes
 
@@ -217,8 +219,10 @@ LARK_TASK_SCOPE_MODE=off ./run.sh --mode collect-only --dry-run
 
 - Detailed larksuite/cli auth + dry-run oracle notes: `references/larksuite-cli-auth-and-dryrun.md`.
 - Task detail lookup patterns (matrix snapshot fallback, prototype comparison): `references/lark-task-detail-lookup-patterns.md`.
+- Lark task video UI triage: `references/lark-task-video-ui-triage.md` covers direct GUID fetch, native video attachment download, ffprobe/ffmpeg frame extraction/contact sheets, branch-drift reporting, and mobile keyboard/layout acceptance checklists.
 - Lark MCP user-auth recovery notes: `references/lark-mcp-user-auth-recovery.md`.
 - Lark OAuth duplicate-login / fixed-port single-flight guard notes: `references/lark-oauth-single-flight-guard.md`.
+- Lark self-check coverage, in-progress OAuth process observation, and strict separation of status/repair/reader-smoke lanes: `references/lark-flow-coverage-and-health-separation.md`.
 - UVISA live auth + stale snapshot triage notes: `references/uvisa-live-auth-and-stale-snapshot-triage.md`.
 - Taskpool Lark cleanup + flow-tolerance notes: `references/taskpool-lark-removal-and-flow-tolerance.md`.
 
@@ -310,7 +314,9 @@ When absorbing a draft Lark closeout workflow, do not create a narrow one-sessio
 - [ ] For assigned-only requests, current user `open_id` is proven from `/authen/v1/user_info`, and ownership is `members[].role == "assignee"` with matching `id` (not follower-only membership).
 - [ ] Taskpool insertion dedups by GUID/URL and normalized title; existing title matches are enriched rather than duplicated.
 - [ ] After taskpool insertion/enrichment, selfcheck/evidence-spine pass, dashboards are refreshed, and every accepted live GUID appears in a task note.
-- [ ] OAuth recovery uses a single-flight guard before raw login when duplicate auth URLs, stale background output, or port 3010 conflicts are present.
+- [ ] OAuth recovery uses a single-flight guard before raw login when duplicate auth URLs, stale background output, or callback-port conflicts are present.
+- [ ] Health/status uses explicit `--status-only` rather than treating `--no-open` as read-only; invalid tokens report `auth_required` with no login/listener/browser/task/token-mutation side effect, and a real stale-lock fixture proves the status path does not delete or rewrite local lock state.
+- [ ] Recovery authority lifetime is explicit (`one_shot` or `durable_scoped`); an applicable durable grant routes to the separate repair lane without weakening health semantics, while Task reading and Lark writes remain separately scoped.
 - [ ] Scoped tasks are preferred by default and fallback remains intact.
 - [ ] `only` and `off` modes work.
 - [ ] Payload includes scope metadata.

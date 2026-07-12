@@ -12,6 +12,33 @@ Before writing durable artifacts, split the source into:
 - **Session progress / one-off narrative** → no durable write.
 - **Stable user preference** → memory/user profile plus the governing skill if it changes how that class of task should run.
 
+## Taste Index promotion gate
+
+Use this gate before promoting any social-intake evidence into Hermes memory, skills, or project profiles. Intake may collect evidence and recommend landing zones, but durable promotion needs an explicit judgment record; the default is advisory-only / no write-through.
+
+Minimum capture fields:
+
+- **source/artifact**: canonical URL plus local evidence path, screenshot/OCR/transcript path, repo/doc verification path, or other receipt.
+- **what I liked**: the concrete judgment, pattern, taste, or quality bar worth preserving.
+- **why useful**: how this should help a future agent make a better choice, reduce repeated steering, or improve a reusable workflow.
+- **what not to copy**: source-specific assumptions, marketing claims, unsafe side effects, stale metrics, platform constraints, or cargo-cult risks.
+- **promotion target**: one of `memory/user`, `skill/reference`, `project profile`, `taskpool follow-up`, `evidence note only`, or `reject`.
+- **rejection cases**: why this should not become durable context, such as “useful once”, missing source proof, duplicated existing guidance, task progress/status, unverified private claims, secrets/PII, or no clear future decision impact.
+
+Narrow seam by target:
+
+- **Memory / user profile**: only compact stable facts or preferences that should always be in-context; never save raw social-post content, task status, or temporary evidence paths.
+- **Skill / reference**: reusable procedures, checklists, pitfalls, or verification patterns; prefer patching the existing class-level skill/reference over creating a one-source skill.
+- **Project profile**: project-specific stable anchors, red lines, routes, repos, verification rules, or source-of-truth maps; keep session examples and long excerpts in scoped references/evidence.
+- **Taskpool follow-up**: concrete engineering or research work with acceptance criteria, anti-drift checks, evidence refs, and non-goals.
+- **Evidence note only / reject**: the source is interesting but lacks a durable judgment, repeats existing guidance, or has no verified future-use value.
+
+Red lines:
+
+- No automatic memory writes, skill writes, project-profile writes, config changes, gateway changes, MCP registration, installs, or runtime ingestion from social intake.
+- No “interesting link” → permanent memory path. Apply “no signal, no storage”: without `what I liked` and `why useful`, promotion is not ready.
+- A curator/checker may audit existing captures for missing fields, duplication, or rot, but must not create a new ingestion path around this gate.
+
 ## Evidence-first extraction pattern
 
 1. Resolve the short link to a canonical URL and record both.

@@ -23,7 +23,9 @@ Classify before staging:
 6. Run targeted tests for any scripts/tools included in the commit.
 7. If a commit hook flags a secret-like false positive, reset the flagged paths and commit the safe slice. Do not use `--no-verify` unless the user explicitly authorizes that exact risk.
 8. For submodule/source repo work, commit inside the child first, then stage only the parent gitlink pointer plus intended parent files.
-9. Final readback: parent/child `status --short --branch`, ahead/behind counts, latest logs, untracked list, and health/test outputs.
+9. Before deleting untracked files in a live control-plane home, snapshot them to an out-of-repo tarball and then verify operational references that may point to untracked files (especially cron job `script` paths). If an enabled cron references an untracked script, restore that script from the backup and hide it with local `.git/info/exclude` rather than leaving the job broken.
+10. Treat live runtime-persona files separately from source cleanliness. If a tracked file is continuously rewritten by the running agent process (for example `SOUL.md` in Hermes home), either stop the writer and restore it or mark it local-only with `git update-index --skip-worktree <file>` and report the exact unhide command.
+11. Final readback: parent/child `status --short --branch`, `status --porcelain=v1` count, untracked count, diff/cached-diff quiet exits, ahead/behind counts, submodule/gitlink status, enabled cron script existence, and backup readability.
 
 ## Reporting format
 
@@ -41,3 +43,5 @@ Report:
 - A clean untracked list after `.git/info/exclude` does not mean data was deleted; disclose that ignored local artifacts remain on disk.
 - Secret scanners can flag variable names or domain terms in legitimate docs/scripts. Treat this as a redaction/landing-zone problem, not as permission to bypass hooks.
 - Do not mix child repo commits, parent gitlink updates, runtime notes, and raw captures into one unreviewable commit.
+- `git clean -fd` can make the Git status clean while breaking local automation when enabled jobs reference untracked scripts. After any clean sweep in Hermes/control-plane homes, read the scheduler job registry and prove every enabled script path exists; restore operational scripts from the backup and local-exclude them if they are intentionally machine-local.
+- A tracked file that is immediately rewritten by a running daemon/agent can make `git restore` appear ineffective. Do not loop on restore; identify the writer or mark the file as local-only with `skip-worktree`, then report that this is cleanliness hiding, not a committed source change.

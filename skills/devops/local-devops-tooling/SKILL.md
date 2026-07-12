@@ -43,8 +43,9 @@ Don't use for:
 
 1. Compare domestic/international reachability to distinguish physical network vs proxy/GFW class.
 2. **Multi-site isolation test**: If VPN is connected but a specific service fails, test 4+ sites (google, github, target service, cloudflare) to distinguish "VPN broken" from "service-specific IP blocking". See `references/shadowrocket-service-specific-blocking.md`.
-3. **Private Git SSH split test**: For private GitLab/Gitea/Bitbucket fetch failures, separate DNS/proxy/TUN, raw TCP reachability, SSH banner exchange, and Git authentication. See `references/private-git-ssh-network-triage.md`.
-4. Inspect macOS system proxy settings with `networksetup` for the active service.
+3. **Selected-node / subscription mismatch test**: If direct network works and other users report the node/provider works, but enabling Shadowrocket breaks broad network access, read the active preferences (`CurrentRuleFileName`, `GlobalRoutingMethod`, selected server name/UUID), compare the selected node against local `section='proxy'` DB rows and live subscription contents, and look for expired-subscription residue or active configs with groups/rules but no nodes. See `references/shadowrocket-subscription-selected-node-mismatch.md`.
+4. **Private Git SSH split test**: For private GitLab/Gitea/Bitbucket fetch failures, separate DNS/proxy/TUN, raw TCP reachability, SSH banner exchange, and Git authentication. See `references/private-git-ssh-network-triage.md`.
+5. Inspect macOS system proxy settings with `networksetup` for the active service.
 4. Check proxy process and listening ports (`lsof`, `ps`).
 5. Locate proxy app config and subscription sources.
 6. Test subscription/upstream reachability and handle proxy chicken-and-egg explicitly.
@@ -97,7 +98,7 @@ See `references/oauth-cli-provider-runtime-diagnostics.md`.
 - `references/private-git-ssh-network-triage.md` — split private Git fetch failures into branch-state boundary, DNS/fake-IP, TCP reachability, SSH banner/auth, and proxy/TUN routing before changing Git config or claiming remote freshness.
 - `references/macos-ios-app-network-triage.md` — Apple Silicon iPhone/iPad app network triage: installed app variant checks, packet-tunnel/Fake-IP detection, CFNetwork 403 vs connectivity failures, and safe proxy/DIRECT testing boundaries.
 - `references/shadowrocket-node-validation.md` — extract individual Shadowrocket nodes from local SQLite config and verify TCP, HTTP/CONNECT, real egress IP/geo, and active system exit without leaking credentials.
-- `references/shadowrocket-node-validation.md` — extract individual Shadowrocket nodes from local SQLite config and verify TCP, HTTP/CONNECT, real egress IP/geo, and active system exit without leaking credentials.
+- `references/shadowrocket-subscription-selected-node-mismatch.md` — diagnose macOS Shadowrocket "turn on and no network" cases caused by stale selected-server preferences, active config DBs with groups/rules but missing node rows, expired subscription residue, or local subscription/import mismatch; includes read-only checks and safe remediation sequence.
 - `references/shadowrocket-webshare-qr-import.md` — generate Shadowrocket-importable QR codes from current Webshare dashboard/export rows; prefer plain proxy URL QR when `shadowrocket://add` scans do nothing; verify import success with real phone egress.
 - `references/shadowrocket-service-specific-blocking.md` — diagnose service-specific IP blocking (e.g., OpenAI blocks VPN/proxy exit IPs): TUN mode fake DNS detection, multi-site isolation testing, Webshare "Working" status unreliability, HTTP proxy vs TUN incompatibility, missing proxy group, and Webshare static proxy screening with `--interface en0`, API pool username, and replacement API pitfalls.
 - `references/shadowrocket-config-vs-proxy-mimo.md` — diagnose Shadowrocket macOS `GlobalRoutingMethod=Proxy` vs `Config`, TUN/fake-ip routing, and Xiaomi MiMo/token-plan-cn endpoint reachability; includes safe read-only checks, permissioned Config switch, and MiMo-specific endpoint pitfalls.

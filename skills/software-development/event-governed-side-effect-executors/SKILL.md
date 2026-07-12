@@ -127,8 +127,10 @@ Minimum tests per boundary:
 - Do not commit with stale SSOT lines like `Commit: this scoped commit` unless the current commit is about to be made; replace previous slices with real commit hashes.
 - Keep channel-specific contracts separate: Telegram payloads use chat_id/text and the bot token is embedded in the Telegram Bot API URL; Lark text messages use receive_id/msg_type/content.text and the tenant token is sent as an `Authorization: Bearer <token>` header to `/open-apis/im/v1/messages?receive_id_type=...`.
 - Do not treat Lark/Feishu app credentials, tenant token exchange success, or historical open_id/chat_id evidence as authorization to send to a recipient. Live Lark sends require an explicit receive target for the current run; without it, stop at credential validation and report the governance stop.
+- Proactive nudges, sentinels, and scheduled agents default to local receipt-only operation. External delivery requires exact platform, target, payload hash, authorization TTL, rollback/stop path, and post-send readback; otherwise keep `deliver=local`, `no_agent=true`, success-silent behavior and record only local receipts.
 - Preflight idempotency keys must include the drift-sensitive fields being protected (channel, authorization, dry-run digest, outbox, target, payload hash, platform payload hash, token source, capability flag). Do not key only on platform_payload_hash, or later drift/unsafe capability requests can be mistaken for replay.
 - Execution authorization idempotency should digest the semantic authorization request, not volatile evidence_refs. Include preflight/channel/target/payload/platform hash/token_source/capability/TTL/actor/decision, but allow evidence_refs to differ on safe replay.
+- For SSOT-to-derived-graph writers, a leaf-only symlink check, schema-string-only validation, or one-sided relation cleanup is insufficient. Bind one exact target, validate the complete owned graph, clean relations touching either owned endpoint, prove the server's real storage format, and require a current-byte independent APPROVE before calling the boundary certified. See `references/governed-local-knowledge-graph-projection.md`.
 
 ## Session-derived pitfall: broad internal authorization still needs staged local boundaries
 
@@ -147,6 +149,7 @@ When a user grants broad authority, do **not** collapse the ladder into arbitrar
 
 ## References
 
+- `references/structured-semantic-authority-gates.md` — class-level pattern for structured semantic envelopes: separate route from execute/learning/side-effect authority, validate registry and nested field types, wire the same fail-closed gate through dispatch/lifecycle/force, and certify with non-empty negative fixtures plus latest-slice adversarial review.
 - `references/read-only-control-console-projections.md` — pattern for projecting Mission/taskpool/control-plane ledgers into localhost dashboards safely: read-only DB access, public snapshot redaction, shell-quoted command drafts, Human Inbox mapping, and browser harness checks without hiding core UI.
 - `references/local-control-console-capability-sessions.md` — pattern for moving localhost dashboards from read-only projection to short-lived, registered, audited capability sessions without exposing arbitrary execution or tokens in public snapshots.
 - `references/hermes-agent-architecture-coverage-20260608.md` — session-specific sequence for the Hermes agent architecture coverage plan: rollback, outbox, delivery authorization, Telegram/Lark dry-runs, tests, and commits.
@@ -158,6 +161,8 @@ When a user grants broad authority, do **not** collapse the ladder into arbitrar
 - `references/high-risk-sequential-execution-drain.md` — procedure for ordered real-execution drain after a user asks to execute every high-risk class: execute exact/reversible smokes, record receipts, classify attempted-but-unverified sends correctly, and stop payment/credential/fan-out at hard gates when exact targets are missing.
 - `references/high-risk-boundary-coverage-with-canary.md` — pattern for "100% coverage" requests over high-risk side-effect classes: implement a governance/readback coverage matrix, keep class-only real side effects closed, and use only a disposable local canary for destructive coverage when no exact production target exists.
 - `references/high-risk-gate-control-plane.md` — pattern for requests to enable many high-risk classes at once: open local/fail-closed gates with receipts/readback, heartbeat and canary proof, while live sends/deploys/deletes/credential-payment stay exact-target gated.
+- `references/external-jspace-real-open-boundary-drain.md` — **Scope:** scoped reference for agent/workspace projection layers being promoted toward real side-effect boundaries. **Applicability:** consume broad authority into exact local lifecycle write-through, local no-agent heartbeat, disposable canary, and a boundary matrix. **Anti-condition:** do not infer external/deploy/payment/fanout/worker targets from class-level authorization.
+- `references/governed-local-knowledge-graph-projection.md` — Pattern for promoting a canonical file-backed knowledge corpus into a rebuildable local MCP graph: verify the real storage format, preserve foreign records, reconcile an owned namespace atomically, bind backup/rollback/readback receipts, and keep graph matches authority-neutral.
 ## Common Pitfalls
 
 1. Applying this skill mechanically after the user's goal has shifted. Re-check the current request before acting.

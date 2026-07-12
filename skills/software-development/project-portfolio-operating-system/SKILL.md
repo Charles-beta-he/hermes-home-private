@@ -100,6 +100,8 @@ When a narrow vertical project has accumulated shared platform capabilities, pre
 
 When promoting Portfolio OS beyond metadata/scripts into Hermes runtime surfaces, use `references/hermes-cli-integration-pattern.md`. Key requirements: keep commands read-only by default, use `get_hermes_home()` for profile-aware paths, add temp-home tests including a protected-project guard, verify with focused pytest and live CLI readback, and stop on tool safety-gate blocks instead of retrying or routing around them.
 
+When auditing project vision/progress or a portfolio-wide model review, use `references/portfolio-doctor-registry-profile-reconciliation.md`: a doctor report with `returncode != 0` is a failure artifact, status strings are untrusted until the doctor path passes, registry/profile/SSOT must be reconciled as sets, and hardcoded root mismatches (for example product vs projects roots) must not be mistaken for project absence.
+
 ## Projectizing extension directions from prototypes/console surfaces
 
 When a user references earlier expansion directions, long-term self-extension content, dashboard capability panels, or a local console/prototype folder, use `references/projectizing-extension-directions.md`. Classify each direction before writing: durable project vs shared module/capability family vs relation-only vs proposal. Create metadata/profile/ledger/registry entries only by default; do not edit the source prototype or product code. Preserve maturity truth: source-observed or dashboard-listed capabilities are not validated runtime capabilities until current tests/readback prove them.
@@ -118,6 +120,8 @@ Production pitfalls from the CLI integration session:
 ## Additional reference patterns
 
 - `references/agent-os-projectization-and-readonly-projection.md` — use when an AI OS / agent-control-plane architecture signal is approved as a durable Hermes project; land profile/SSOT/ledger/portfolio metadata plus read-only CapabilityGraph/Evidence/Context/Authority projection artifacts, then stop before runtime routing or side-effect authority without a separate gate.
+- `references/portfolio-semantic-truth-repair.md` — use when portfolio doctor/strict verify is structurally green but Fable/manual audit finds semantic drift: empty `current_components`, validated-like statuses without declared evidence, known-missing projects being treated as pass, or work-project exclusion noise. Repair metadata truthfulness, add semantic audit coverage, downgrade unsupported maturity claims while preserving `previous_status`, and report only limited PASS for declared coverage + metadata truthfulness.
+- `references/safe-boundary-automation-closeout.md` — use when the user broadly authorizes continued portfolio progress but the remaining work mixes local reversible automation with production/external/destructive/A+ authority boundaries. Partition safe local slices from exact-authority gates, verify each with readback, and write a boundary-preserving closeout manifest.
 
 ## Verification checklist
 

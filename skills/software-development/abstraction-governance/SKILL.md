@@ -330,6 +330,10 @@ Move/rename operations into governed surfaces are blocked when content is opaque
 
 The runtime gate is intentionally deterministic and conservative. It is not a substitute for full abstraction review; it catches obvious boundary violations before they enter persistent prompt context. Ordinary project file writes are not classified by this gate; they continue through normal file/write guards.
 
+### Documentation-path side-effect false positives
+
+When implementing or debugging deterministic governance classifiers, do not treat domain nouns in documentation paths as live side-effect intent. A path such as `skills/.../lark-task-reading/...` or a docs-only reference about gateway/deploy/delete policy names the subject being documented; it does not prove the change will send messages, deploy, delete, or mutate lifecycle state. For docs-only changes, classify as local documentation write unless the human summary explicitly describes a live action such as send/dispatch/deploy/delete/credential entry. Preserve fail-closed behavior for real code/config surfaces such as `gateway/`, `platforms/`, outbox/sender adapters, lifecycle runners, deploy scripts, and credential handlers. Add paired regression tests: one docs-only domain-reference case that must stay low risk, and one real adapter/code-path case that must remain high risk.
+
 ## Canonical overlay takeover
 
 When a new memory/architecture structure must take over an older local brain or scattered evidence corpus, prefer an overlay/canonical-index/strangler strategy rather than physical overwrite: establish one canonical entrypoint, map old sources to canonical landings, add disposition banners to old Markdown sources, govern JSON/profile/receipt sources through a manifest, run a read-only doctor, update scoped project profile/ledger pointers, and state that runtime/schema migration remains a separate authority gate. See `references/canonical-overlay-takeover.md`.
@@ -337,6 +341,10 @@ When a new memory/architecture structure must take over an older local brain or 
 ## External observability reference absorption
 
 When an external observability/control-plane project is analyzed and the user asks to absorb it into Hermes or another project, extract class-level affordances rather than importing product code: pin source evidence, land a reference-review SSOT, add only a local-only schema/projection/doctor slice first, encode no-network/no-credential/no-mutation/no-telemetry boundaries, and keep runtime instrumentation/automation as a later authority gate. See `references/external-observability-reference-absorption.md`.
+
+## Read-only projection surfaces
+
+When the safe next slice is a dashboard/control-room/product UI for a governed automation projection, keep it read-only, authenticated by default, and explicit about execution/dispatch/credential/payment/device boundaries; continue safe local readback work instead of stopping at external dependency labels. See `references/read-only-projection-surface-boundary.md`.
 
 ## Skill Size Remediation
 

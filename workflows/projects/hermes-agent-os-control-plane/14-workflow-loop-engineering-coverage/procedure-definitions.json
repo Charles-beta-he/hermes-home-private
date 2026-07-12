@@ -525,9 +525,9 @@
       "scope_complete": true
     },
     "model-providers": {
-      "basis": "consult_models planner/quorum/runtime-evidence audit",
+      "basis": "consult_models planner/quorum/runtime-evidence audit; static selfcheck 57/57 PASS and active route status read back on 2026-07-11",
       "freshness_seconds": 86400,
-      "reviewed_at": "2026-07-10T10:00:00Z",
+      "reviewed_at": "2026-07-11T19:55:36Z",
       "scope_complete": true
     },
     "profile:hermes-agent-os-control-plane": {

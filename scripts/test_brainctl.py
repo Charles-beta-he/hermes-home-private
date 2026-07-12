@@ -192,6 +192,12 @@ class BrainctlTestCase(unittest.TestCase):
             "deterministic_gate:test fixture",
             "--evidence",
             "route_review_record:test fixture",
+            "--evidence",
+            "exact_target:scripts/local_brain_change_preflight.py",
+            "--evidence",
+            "rollback:restore test fixture",
+            "--evidence",
+            "post_action_readback:test fixture",
         ])
         self.assertEqual(code, 0)
 
@@ -252,6 +258,65 @@ class BrainctlTestCase(unittest.TestCase):
         dashboard_text = dashboard.read_text(encoding="utf-8")
         self.assertIn("current snapshot", dashboard_text)
         self.assertIn("missing_l3_expiry", dashboard_text)
+
+    def test_governance_validate_does_not_infer_l3_from_legacy_task_path_or_fixture_artifact(self):
+        self.write_note(
+            "05-实践与项目/tasks/Legacy Note.md",
+            "# Historical imported note\n\nNo lifecycle frontmatter.\n",
+        )
+        self.write_note(
+            "05-实践与项目/tasks/Ratification.md",
+            "---\ntype: ratification\nstatus: accepted\n---\n\n# Ratification\n",
+        )
+        self.write_note(
+            "02-证据与原文/evidence/source/fixture-project/DESIGN.md",
+            "---\nfixture: true\n---\n\n# External fixture\n",
+        )
+        result = brainctl.validate(dry_run=True, write_dashboard=False, json_mode=True)
+        paths = {v["path"] for v in result["violations"]}
+        self.assertNotIn("05-实践与项目/tasks/Legacy Note.md", paths)
+        self.assertNotIn("05-实践与项目/tasks/Ratification.md", paths)
+        self.assertNotIn("02-证据与原文/evidence/source/fixture-project/DESIGN.md", paths)
+
+    def test_governance_validate_reports_frontmatter_key_before_opening_delimiter(self):
+        self.write_note(
+            "05-实践与项目/tasks/Malformed Task.md",
+            "conflict_group: conflict:test\n---\ntype: task\nlayer: L3\nstatus: pending\nexpires_at: 2099-01-01T00:00:00Z\n---\n\n# Task\n",
+        )
+        result = brainctl.validate(dry_run=True, write_dashboard=False, json_mode=True)
+        malformed = [v for v in result["violations"] if v["type"] == "malformed_frontmatter_prefix"]
+        self.assertEqual(malformed, [{"type": "malformed_frontmatter_prefix", "path": "05-实践与项目/tasks/Malformed Task.md"}])
+
+    def test_governance_validate_reports_expired_nonterminal_l3(self):
+        self.write_note(
+            "05-实践与项目/tasks/Expired Active.md",
+            "---\ntype: task\nlayer: L3\nstatus: active\nexpires_at: 2000-01-01T00:00:00Z\n---\n\n# Expired Active\n",
+        )
+        result = brainctl.validate(dry_run=True, write_dashboard=False, json_mode=True)
+        expired = [v for v in result["violations"] if v["type"] == "expired_l3"]
+        self.assertEqual(expired, [{"type": "expired_l3", "path": "05-实践与项目/tasks/Expired Active.md", "expires_at": "2000-01-01T00:00:00Z"}])
+
+    def test_governance_validate_excludes_inactive_storage_from_l3_lifecycle(self):
+        body = "---\ntype: task\nlayer: L3\nstatus: ready\nexpires_at: 2000-01-01T00:00:00Z\n---\n\n# Retired copy\n"
+        paths = [
+            "05-实践与项目/tasks-archived/Archived.md",
+            "05-实践与项目/tasks/_temporarily_removed_lark_tasks/snapshot/Removed.md",
+            "99-archive/deleted-taskpool-reading-tasks/snapshot/Deleted.md",
+        ]
+        for path in paths:
+            self.write_note(path, body)
+        result = brainctl.validate(dry_run=True, write_dashboard=False, json_mode=True)
+        violation_paths = {v["path"] for v in result["violations"]}
+        self.assertFalse(set(paths) & violation_paths)
+
+    def test_governance_validate_respects_explicit_non_l3_layer_in_task_path(self):
+        self.write_note(
+            "05-实践与项目/tasks/L2 Task.md",
+            "---\ntype: task\nlayer: L2\nstatus: ready\n---\n\n# L2 task\n",
+        )
+        result = brainctl.validate(dry_run=True, write_dashboard=False, json_mode=True)
+        paths = {v["path"] for v in result["violations"]}
+        self.assertNotIn("05-实践与项目/tasks/L2 Task.md", paths)
 
     def test_expire_dry_run_reports_missing_and_expired_l3_without_mutation(self):
         self.write_note(

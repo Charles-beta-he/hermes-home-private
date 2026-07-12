@@ -20,7 +20,7 @@ TASKS_DIR = Path.home() / "Documents" / "brain" / "05-实践与项目" / "tasks"
 ORCHESTRATOR = Path.home() / ".hermes" / "scripts" / "brain_task_orchestrator.py"
 
 MISSION_RE = re.compile(r"terminal mission envelope debt: mission envelope missing (?P<fields>\[[^\]]*\]): (?P<task>.+)$")
-INVALID_HASH_RE = re.compile(r"terminal invalid autorun proof hash debt in (?P<task>.+?): proof:sha256:(?P<sha>[A-Za-z0-9_.-]+)$")
+INVALID_HASH_RE = re.compile(r"terminal invalid autorun proof hash debt in (?P<task>.+?): proof:sha256:(?P<sha>.+)$")
 
 EVIDENCE_MARKERS = (
     "## Proof Log",
@@ -97,7 +97,7 @@ def classify_plan_item(parsed: dict[str, Any], inspection: dict[str, Any]) -> st
     if not inspection.get("task_file_exists"):
         return "task_file_missing"
     if parsed.get("category") == "terminal_invalid_autorun_proof_hash_debt":
-        return "needs_source_artifact" if inspection.get("proof_hash_present") else "reviewed_legacy_hash_debt"
+        return "candidate_reclassify_invalid_autorun_proof" if inspection.get("proof_hash_present") else "reviewed_legacy_hash_debt"
     if inspection.get("evidence_markers"):
         return "candidate_migratable_existing_evidence"
     return "reviewed_legacy_missing_structured_evidence"
@@ -125,7 +125,7 @@ def normalize_ref(value: Any) -> Any:
     return f"proof:{text}"
 
 
-FRONTMATTER_REF_FIELDS = ("evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact")
+FRONTMATTER_REF_FIELDS = ("evidence", "evidence_refs", "handoff_artifacts", "proof_artifacts", "ratification_artifact")
 QUOTED_REF_RE = re.compile(r"(?P<quote>[\"'])(?P<ref>(?:~|/|https?://)[^\"']+)(?P=quote)")
 SCALAR_REF_RE = re.compile(r"^(?P<prefix>\s*(?:ratification_artifact):\s*)(?P<ref>(?!artifact:|proof:|url:|command:|file:|search:|brainctl:)[^\n#][^\n]*?)\s*$")
 DASH_REF_RE = re.compile(r"^(?P<prefix>\s*-\s*)(?P<ref>(?:~|/|https?://)[^\n#]*?)\s*$")
@@ -204,16 +204,52 @@ def normalize_task_frontmatter(path: Path, *, dry_run: bool = True) -> dict[str,
     return {"changed": True, "changed_fields": sorted(changed_fields)}
 
 
+def reclassify_invalid_autorun_proof(path: Path, proof_sha: str, *, dry_run: bool = True) -> dict[str, Any]:
+    original = path.read_text(encoding="utf-8")
+    bounds = frontmatter_bounds(original)
+    if bounds is None:
+        return {"changed": False, "reason": "missing_or_invalid_frontmatter"}
+    start, end = bounds
+    frontmatter = original[start:end]
+    old = f"proof:sha256:{proof_sha}"
+    new = f"classification:legacy_invalid_autorun_proof_hash={proof_sha}"
+    lines = frontmatter.splitlines()
+    replaced = 0
+    rewritten_lines = []
+    for line in lines:
+        if line.strip() == f"- {old}":
+            indent = line[: len(line) - len(line.lstrip())]
+            rewritten_lines.append(f"{indent}- {new}")
+            replaced += 1
+        else:
+            rewritten_lines.append(line)
+    if replaced < 1:
+        return {"changed": False, "reason": "exact_frontmatter_ref_not_found"}
+    rewritten = original[:start] + "\n".join(rewritten_lines) + original[end:]
+    if not dry_run:
+        path.write_text(rewritten, encoding="utf-8")
+    return {"changed": True, "changed_fields": ["evidence"], "reclassified_count": replaced}
+
+
 def apply_plan(plan: dict[str, Any], *, dry_run: bool = True) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
+    seen_reclassifications: set[tuple[str, str]] = set()
     for item in plan.get("items", []):
-        if item.get("recommended_action") != "candidate_migratable_existing_evidence":
+        action = item.get("recommended_action")
+        if action not in {"candidate_migratable_existing_evidence", "candidate_reclassify_invalid_autorun_proof"}:
             continue
         task_file = item.get("task_file")
         if not task_file:
             continue
         path = Path(str(task_file))
-        result = normalize_task_frontmatter(path, dry_run=dry_run)
+        if action == "candidate_reclassify_invalid_autorun_proof":
+            key = (str(path), str(item.get("proof_sha") or ""))
+            if key in seen_reclassifications:
+                continue
+            seen_reclassifications.add(key)
+            result = reclassify_invalid_autorun_proof(path, key[1], dry_run=dry_run)
+        else:
+            result = normalize_task_frontmatter(path, dry_run=dry_run)
         results.append({
             "task": item.get("task"),
             "task_file": str(path),

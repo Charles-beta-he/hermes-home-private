@@ -239,6 +239,32 @@ def add_task(env, title="完成本地大脑任务控制台", priority="P1", proj
     return created["id"], created_path
 
 
+def mark_task_as_compound_contract(task_path: Path, *, acceptance: str = "verify acceptance evidence") -> None:
+    text = task_path.read_text(encoding="utf-8")
+    if "harness_surfaces:" in text and "compound_loop_preflight" not in text:
+        text = text.replace('harness_surfaces: []', 'harness_surfaces: ["compound_loop_preflight"]', 1)
+    if "concepts:" in text and "compound-agent-loop" not in text:
+        text = text.replace('concepts: ["task"]', 'concepts: ["compound-agent-loop", "task"]', 1)
+    if "acceptance_criteria:" in text:
+        replacement = 'acceptance_criteria: []' if not acceptance else f'acceptance_criteria: ["{acceptance}"]'
+        text = re.sub(r'acceptance_criteria:\s*\[.*?\]', replacement, text, count=1, flags=re.S)
+    if "## Compound Agent Loop" not in text:
+        text += (
+            "\n## Compound Agent Loop\n\n"
+            "### Maker contract\n"
+            "- Role: bounded local executor\n\n"
+            "### Verifier contract\n"
+            "- Verifier: deterministic readback\n\n"
+            "### Evidence requirements\n"
+            "- [ ] command: focused tests\n\n"
+            "### Writeback / state_write router\n"
+            "- task progress -> proof log only\n\n"
+            "### Authority boundaries\n"
+            "- [ ] No external dispatch/send/publish/deploy\n"
+        )
+    task_path.write_text(text, encoding="utf-8")
+
+
 def _autorun_proof_record(mod, *, prev_hash="", **event):
     record = {
         "schema": "local_brain_autorun_proof_v1",
@@ -326,6 +352,51 @@ def test_dispatch_dry_run_consumes_execution_flow_without_stopping_safe_executio
         assert "browser_or_ui_surface_proof" in dry["execution_flow"]["evaluations"][0]["missing_evidence"]
         assert "execution_flow" in dry["execution_prompt"]
         assert task_path.read_text(encoding="utf-8") == before
+
+
+def test_dispatch_dry_run_blocks_when_enabled_compound_preflight_fails_closed():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_TASKPOOL_COMPOUND_PREFLIGHT_ENABLED"] = "1"
+        task_id, task_path = add_task(env, title="Compound contract dispatch gate", priority="P1", project="hermes")
+        mark_task_as_compound_contract(task_path)
+        before = task_path.read_text(encoding="utf-8")
+
+        dry = json.loads(run(env, "dispatch-dry-run", "--json").stdout)
+
+        assert dry["status"] == "OK"
+        assert dry["dry_run"] is True
+        assert dry["dispatchable"] is False
+        assert dry["blocked_by_compound_loop_preflight"] is True
+        assert dry["next"]["id"] == task_id
+        assert dry["compound_loop_preflight"]["status"] == "FAIL"
+        assert "budget_or_stop" in dry["compound_loop_preflight"]["missing"]
+        assert "claim_command" not in dry
+        assert "execution_prompt" not in dry
+        assert task_path.read_text(encoding="utf-8") == before
+
+
+def test_eligibility_check_surfaces_compound_preflight_failure_without_claiming():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_TASKPOOL_COMPOUND_PREFLIGHT_ENABLED"] = "1"
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        task_id, task_path = add_task(env, title="Compound autorun preflight gate", priority="P1", project="hermes")
+        mark_task_as_compound_contract(task_path)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+
+        payload = json.loads(run(env, "eligibility-check", "--json").stdout)
+
+        assert payload["status"] == "PASS"
+        assert payload["eligible"] is False
+        assert payload["task_id"] == task_id
+        assert "compound_loop_preflight_failed" in payload["reasons"]
+        assert payload["compound_loop_preflight"]["status"] == "FAIL"
+        assert "budget_or_stop" in payload["compound_loop_preflight"]["missing"]
+        row = next(r for r in json.loads(run(env, "list", "--json").stdout)["rows"] if r["id"] == task_id)
+        assert row["status"] == "pending"
 
 
 def test_reconcile_requeues_false_running_multimodel_claim_without_retry_penalty():
@@ -1576,6 +1647,23 @@ def test_closeout_surface_obligation_classifies_source_vs_implementation():
     assert work_obligation["requires_execution_flow_proof"] is True
     assert work_obligation["requires_ui_proof"] is True
     assert work_obligation["requires_api_proof"] is True
+
+    backend_profile_task = FakeTask(
+        lane="evolution",
+        title="Implement model capability profiles and planner prompt injection",
+        body="This is a local CLI/control-plane change; no browser or UI implementation is in scope.",
+        fm={
+            "completion_gate": "ratification-or-selfcheck-review-done",
+            "architecture_target": "taskpool",
+            "capability_delta": "Add bounded model-specific profiles to the conductor layer",
+            "harness_surfaces": ["backend"],
+        },
+    )
+    backend_obligation = mod.closeout_surface_obligation(backend_profile_task)
+    assert backend_obligation["class"] == "implementation"
+    assert backend_obligation["requires_execution_flow_proof"] is True
+    assert backend_obligation["requires_ui_proof"] is False
+    assert backend_obligation["requires_api_proof"] is True
 
 
 def test_done_closeout_allows_no_execution_evidence_intake_that_mentions_browser_source():
@@ -3099,6 +3187,74 @@ def test_autorun_eligibility_and_handoff_are_fail_closed():
         assert row["claimed_by"] == "hermes-autorun"
 
 
+def test_isolated_full_lifecycle_canary_claim_handoff_ratification_done():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        task_id, task_path = add_task(env, title="Isolated full lifecycle certification canary", priority="P1", project="hermes-agent")
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id]), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"]), encoding="utf-8")
+
+        eligible = json.loads(run(env, "eligibility-check", "--task", task_id, "--json").stdout)
+        assert eligible["eligible"] is True, eligible
+        claimed = json.loads(run(env, "auto-claim-and-handoff", "--task", task_id, "--actor", "hermes-canary", "--ttl-minutes", "15", "--json").stdout)
+        assert claimed["status"] == "OK" and claimed["claimed"] is True, claimed
+        assert Path(claimed["handoff"]).exists()
+        assert claimed["proof_hash"].startswith("sha256:")
+
+        running = json.loads(run(env, "transition", task_id, "--to", "running", "--actor", "hermes-canary", "--json").stdout)
+        assert running["to_status"] == "running", running
+        review = json.loads(run(env, "transition", task_id, "--to", "review", "--actor", "hermes-canary", "--evidence", "command:isolated canary verifier PASS", "--json").stdout)
+        assert review["to_status"] == "review", review
+
+        discussion = task_path.parent / "isolated-canary-ratification.json"
+        discussion.write_text(json.dumps({
+            "status": "certified",
+            "task_id": task_id,
+            "context": {"task_id": task_id, "task_path": str(task_path)},
+            "issue_ledger": [],
+            "ratification_votes": [
+                {"model": model, "vote": "approve", "best_within_constraints": True}
+                for model in ("claude-fable-5", "gpt-5.5", "deepseek-v4-pro", "mimo-v2.5-pro")
+            ],
+            "agreement_matrix": {"framing": 0.9, "approach": 0.9, "implementation_order": 0.9},
+            "truth_status": "grounded",
+            "criteria_satisfied": {"accuracy": True, "long_term_goal": True, "one_shot_landing": True},
+            "final_design": {
+                "next_slice": "close isolated canary",
+                "acceptance_evidence": ["command:isolated canary verifier PASS"],
+                "rollback_boundary": "delete temporary canary vault",
+            },
+        }, ensure_ascii=False), encoding="utf-8")
+        gate = json.loads(run(env, "ratification-gate", "--task", task_id, "--discussion-result", str(discussion), "--json").stdout)
+        assert gate["status"] == "PASS" and gate["decision"] == "LOOP_DONE", gate
+
+        note = task_path.read_text(encoding="utf-8")
+        note = note.replace("certification_status: advisory", "certification_status: certified", 1)
+        marker = "\nevidence:"
+        note = note.replace(marker, f"\nmultimodel_status: certified\nmultimodel_ratification_artifact: {discussion}{marker}", 1)
+        task_path.write_text(note, encoding="utf-8")
+        dashboard_readback = task_path.parent / "isolated-dashboard-readback.html"
+        ledger_readback = task_path.parent / "isolated-ledger-readback.json"
+        dashboard_readback.write_text(f"<output data-task='{task_id}' data-status='review'>PASS</output>", encoding="utf-8")
+        ledger_readback.write_text(json.dumps({"task_id": task_id, "status": "review", "proof_hash": claimed["proof_hash"]}), encoding="utf-8")
+        assert task_id in dashboard_readback.read_text(encoding="utf-8")
+        assert json.loads(ledger_readback.read_text(encoding="utf-8"))["proof_hash"] == claimed["proof_hash"]
+        done_evidence = (
+            f"command:isolated canary verifier PASS; proof:{claimed['proof_hash']}; "
+            f"proof:browser file:{dashboard_readback}; proof:api file:{ledger_readback}; "
+            f"artifact:{discussion}"
+        )
+        done = json.loads(run(env, "done", task_id, "--actor", "hermes-canary", "--evidence", done_evidence, "--json").stdout)
+        assert done["status"] == "OK", done
+        row = next(row for row in json.loads(run(env, "list", "--include-done", "--json").stdout)["rows"] if row["id"] == task_id)
+        assert row["status"] == "done" and row["multimodel_passed"] is True, row
+        assert json.loads(run(env, "selfcheck", "--json").stdout)["status"] == "PASS"
+        assert json.loads(run(env, "proof-check", "--include-active", "--json").stdout)["status"] == "PASS"
+
+
 def test_auto_claim_and_handoff_blocks_hard_execution_flow_boundary_before_claim():
     td, _vault, env = make_env_and_vault()
     with td:
@@ -3159,6 +3315,165 @@ def test_autorun_eligibility_skips_unallowlisted_raw_next_for_allowlisted_fallba
         assert eligible["raw_allowlist_hit"] is False, eligible
         assert eligible["allowlist_hit"] is True, eligible
         assert any("raw_next_allowlist_miss" in w for w in eligible["warnings"]), eligible
+
+
+def test_parallel_claim_handoff_write_failure_releases_current_claim(monkeypatch, tmp_path):
+    mod = load_orchestrator_module()
+    selected = SimpleNamespace(
+        id="task-partial-claim",
+        lane="P1",
+        path=tmp_path / "task.md",
+        fm={"workspace": str(tmp_path)},
+        row=lambda: {"id": "task-partial-claim", "workspace": str(tmp_path)},
+    )
+    claimed = SimpleNamespace(
+        id=selected.id,
+        status="claimed",
+        fm={"claimed_by": "hermes-parallel", "run_id": "ignored", "claim_expires_at": "2099-01-01T00:00:00Z"},
+    )
+    released = []
+    monkeypatch.setattr(mod, "PARALLEL_HANDOFF_DIR", tmp_path / "handoffs")
+    monkeypatch.setattr(mod, "command_boundary_check", lambda _args: {"status": "PASS"})
+    monkeypatch.setattr(mod, "select_parallel_dispatch", lambda *_args, **_kwargs: ([selected], []))
+    monkeypatch.setattr(mod, "command_eligibility_check", lambda _args: {"eligible": True})
+    monkeypatch.setattr(mod, "command_execution_flow_dry_run", lambda _args: {})
+    monkeypatch.setattr(mod, "execution_flow_dispatch_decision", lambda _payload: {"allowed_to_dispatch": True})
+    monkeypatch.setattr(mod, "task_parallel_boundary_key", lambda _task: "workspace:test")
+    monkeypatch.setattr(mod, "parallel_group_key", lambda _task: "group:test")
+    monkeypatch.setattr(mod, "dispatch_prompt_for_row", lambda _row: "test prompt")
+    monkeypatch.setattr(mod, "guard_autorun_claim_and_handoff", lambda *_args: {"ok": True})
+
+    def claim(_args):
+        claimed.fm["run_id"] = _args.run_id
+        return {"status": "OK", "claim_expires_at": claimed.fm["claim_expires_at"]}
+
+    monkeypatch.setattr(mod, "command_claim", claim)
+    monkeypatch.setattr(mod, "find_task", lambda _task_id: claimed)
+    monkeypatch.setattr(mod, "append_autorun_proof_event", lambda _event: "proof-hash")
+    monkeypatch.setattr(mod, "render_parallel_handoff", lambda *_args: "handoff")
+    monkeypatch.setattr(mod, "atomic_write", lambda *_args: (_ for _ in ()).throw(OSError("injected handoff write failure")))
+    monkeypatch.setattr(mod, "command_release", lambda args: released.append(args.task) or {"status": "OK"})
+
+    result = mod.command_parallel_claim_and_handoff(SimpleNamespace(
+        max_agents=1, lane="all", actor="hermes-parallel", ttl_minutes=60,
+        prepare_worktrees=False, write=True,
+    ))
+
+    assert result["status"] == "ERROR"
+    assert released == [selected.id]
+    assert result["rollback_ok"] is True
+    assert result["rollback"][0]["task_id"] == selected.id
+
+
+def test_parallel_claim_reports_rollback_failure_instead_of_claiming_all_rolled_back(monkeypatch, tmp_path):
+    mod = load_orchestrator_module()
+    selected = SimpleNamespace(
+        id="task-release-fails", lane="P1", path=tmp_path / "task.md",
+        fm={"workspace": str(tmp_path)}, row=lambda: {"id": "task-release-fails"},
+    )
+    claimed = SimpleNamespace(
+        id=selected.id, status="claimed",
+        fm={"claimed_by": "hermes-parallel", "run_id": "", "claim_expires_at": "2099-01-01T00:00:00Z"},
+    )
+    monkeypatch.setattr(mod, "PARALLEL_HANDOFF_DIR", tmp_path / "handoffs")
+    monkeypatch.setattr(mod, "command_boundary_check", lambda _args: {"status": "PASS"})
+    monkeypatch.setattr(mod, "select_parallel_dispatch", lambda *_args, **_kwargs: ([selected], []))
+    monkeypatch.setattr(mod, "command_eligibility_check", lambda _args: {"eligible": True})
+    monkeypatch.setattr(mod, "command_execution_flow_dry_run", lambda _args: {})
+    monkeypatch.setattr(mod, "execution_flow_dispatch_decision", lambda _payload: {"allowed_to_dispatch": True})
+    monkeypatch.setattr(mod, "task_parallel_boundary_key", lambda _task: "workspace:test")
+    monkeypatch.setattr(mod, "parallel_group_key", lambda _task: "group:test")
+    monkeypatch.setattr(mod, "dispatch_prompt_for_row", lambda _row: "test prompt")
+    monkeypatch.setattr(mod, "guard_autorun_claim_and_handoff", lambda *_args: {"ok": True})
+
+    def claim(args):
+        claimed.fm["run_id"] = args.run_id
+        return {"status": "OK", "claim_expires_at": claimed.fm["claim_expires_at"]}
+
+    monkeypatch.setattr(mod, "command_claim", claim)
+    monkeypatch.setattr(mod, "find_task", lambda _task_id: claimed)
+    monkeypatch.setattr(mod, "append_autorun_proof_event", lambda _event: "proof-hash")
+    monkeypatch.setattr(mod, "render_parallel_handoff", lambda *_args: "handoff")
+    monkeypatch.setattr(mod, "atomic_write", lambda *_args: (_ for _ in ()).throw(OSError("write failed")))
+    monkeypatch.setattr(mod, "command_release", lambda _args: (_ for _ in ()).throw(RuntimeError("release failed")))
+
+    result = mod.command_parallel_claim_and_handoff(SimpleNamespace(
+        max_agents=1, lane="all", actor="hermes-parallel", ttl_minutes=60,
+        prepare_worktrees=False, write=True,
+    ))
+
+    assert result["rollback_ok"] is False
+    assert result["rollback"][0]["status"] == "ERROR"
+    assert "rollback incomplete" in result["safety"]
+
+
+def test_parallel_claim_and_handoff_filters_each_task_through_canonical_eligibility():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        env["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
+        denied_id, denied_path = add_task(env, title="Parallel denied by allowlist", priority="P1", project="outside-project")
+        allowed_id, allowed_path = add_task(env, title="Parallel allowed by allowlist", priority="P1", project="allowed-project")
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([allowed_id], ensure_ascii=False), encoding="utf-8")
+        run(env, "dashboard", "--write", "--json")
+
+        result = json.loads(run(
+            env,
+            "parallel-claim-and-handoff",
+            "--max-agents",
+            "2",
+            "--write",
+            "--actor",
+            "hermes-parallel",
+            "--json",
+        ).stdout)
+
+        assert result["status"] == "OK", result
+        assert result["claimed"] is True, result
+        assert [item["task_id"] for item in result["claimed_tasks"]] == [allowed_id], result
+        assert any(item.get("id") == denied_id and item.get("reason") == "autorun_eligibility_denied" and "allowlist_miss" in item.get("reasons", []) for item in result["skipped"]), result
+        assert "status: pending" in denied_path.read_text(encoding="utf-8")
+        assert "status: claimed" in allowed_path.read_text(encoding="utf-8")
+
+
+def test_parallel_claim_and_handoff_honors_execution_flow_gate_before_claim():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        env["HERMES_LOCAL_BRAIN_AUTORUN"] = "1"
+        env["HERMES_TASKPOOL_EVENT_HOOK_DISABLED"] = "1"
+        state_dir = Path(env["HERMES_BRAIN_AUTORUN_STATE_DIR"])
+        state_dir.mkdir(parents=True, exist_ok=True)
+        task_id, task_path = add_task(env, title="Publish external writeback in parallel", priority="P1", project="hermes")
+        note = task_path.read_text(encoding="utf-8")
+        task_path.write_text(note.replace("status: pending", "status: pending\nworkflow_stage: human_gate", 1), encoding="utf-8")
+        (state_dir / "auto_run_allowlist.json").write_text(json.dumps([task_id], ensure_ascii=False), encoding="utf-8")
+        Path(env["HERMES_AUTONOMY_WRITE_ALLOWLIST"]).write_text(json.dumps(["taskpool"], ensure_ascii=False), encoding="utf-8")
+
+        result = run(
+            env,
+            "parallel-claim-and-handoff",
+            "--max-agents", "1",
+            "--write",
+            "--actor", "hermes-parallel",
+            "--json",
+            check=False,
+        )
+        payload = json.loads(result.stdout)
+        row = next(item for item in json.loads(run(env, "list", "--json").stdout)["rows"] if item["id"] == task_id)
+
+        assert payload["claimed"] is False, payload
+        assert payload["selected_count"] == 0, payload
+        assert row["id"] == task_id and row["status"] == "pending", row
+        assert any(
+            item.get("id") == task_id and item.get("reason") == "execution_flow_dispatch_blocked"
+            for item in payload["skipped"]
+        ), payload
+        decision = payload["eligibility_decisions"][0]
+        assert decision["eligible"] is True, decision
+        assert decision["execution_flow_dispatch_decision"]["allowed_to_dispatch"] is False, decision
 
 
 def test_autorun_allowlist_dict_constraints_are_conjunctive_for_advisory_scope():
@@ -3767,8 +4082,17 @@ def test_autorun_done_requires_valid_proof_hash():
 
         done = json.loads(run(env, "done", task_id, "--actor", "hermes-autorun", "--evidence", f"proof:{proof_hash}", "--evidence", "command: final PASS test build browser curl commit verification", "--json").stdout)
         assert done["status"] == "OK", done
+        done_path = _task_path
+        done_text = done_path.read_text(encoding="utf-8")
+        done_text = done_text.replace(
+            f"  - proof:{proof_hash}",
+            f"  - proof:{proof_hash}\n  - proof:sha256:artifact_bundle={'a' * 64}",
+            1,
+        )
+        done_path.write_text(done_text, encoding="utf-8")
         proof_check = json.loads(run(env, "proof-check", "--json").stdout)
         assert proof_check["status"] == "PASS", proof_check
+        assert not any("artifact_bundle" in warning for warning in proof_check["warnings"]), proof_check
 
 
 def test_proof_check_flags_persisted_autorun_done_without_proof_hash():
@@ -3796,6 +4120,20 @@ def test_proof_check_include_active_does_not_fail_historical_autorun_hashes():
         task_path.write_text(text, encoding="utf-8")
         proof = json.loads(run(env, "proof-check", "--include-active", "--json").stdout)
         assert proof["status"] == "PASS", proof
+
+
+def test_proof_check_include_active_excludes_archived_historical_debt():
+    td, _vault, env = make_env_and_vault()
+    with td:
+        _task_id, task_path = add_task(env, title="验证 archived proof debt 不污染 active gate")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("status: pending", "status: archived", 1)
+        text = text.replace("evidence: []", "evidence:\n  - /legacy/unstructured/evidence.json", 1)
+        task_path.write_text(text, encoding="utf-8")
+
+        proof = json.loads(run(env, "proof-check", "--include-active", "--json").stdout)
+        assert proof["status"] == "PASS", proof
+        assert proof["checked_count"] == 0, proof
 
 
 def test_proof_check_does_not_warn_for_non_autorun_done_hash_artifact_labels():
@@ -4185,6 +4523,37 @@ def test_review_gap_scan_classifies_done_gate_failures_without_mutating_review_t
         td.cleanup()
 
 
+def test_auto_close_review_closes_review_gap_repair_child_with_deposited_proof_refs():
+    td, vault, env = make_env_and_vault()
+    try:
+        task_id, task_path = add_review_evolution_task(env, title="补证闭环 should close from proof refs")
+        text = task_path.read_text(encoding="utf-8")
+        text = text.replace("evidence:\n  - command:selfcheck PASS", "evidence:\n  - command:multimodel_gate PASS_ADVISORY_ONLY", 1)
+        text = text.replace(
+            "claimed_by: ",
+            "review_gap_parent: parent-task\n"
+            "review_gap_type: [\"missing_ratification_or_selfcheck\"]\n"
+            "multimodel_last_gate_status: PASS_ADVISORY_ONLY\n"
+            "multimodel_advisory_only: true\n"
+            "evidence_refs: [\"proof:parent-selfcheck PASS\"]\n"
+            "proof_artifacts: [\"proof:repair-readback\"]\n"
+            "claimed_by: ",
+            1,
+        )
+        text += "\n## Repair body\nCollect and attach browser/api proof wording here is source context, not implementation output.\n"
+        task_path.write_text(text, encoding="utf-8")
+
+        result = json.loads(run(env, "auto-close-review", "--task", task_id, "--json").stdout)
+        assert result["status"] == "OK", result
+        assert result["closed_count"] == 1, result
+        assert result["closed"][0]["task_id"] == task_id, result
+        assert any(e == "proof:repair-readback" for e in result["closed"][0]["evidence"]), result
+        assert find_task_status(task_path) == "done"
+    finally:
+        td.cleanup()
+
+
+
 def test_auto_close_review_fails_closed_on_negative_closeout_proof_marker():
     td, vault, env = make_env_and_vault()
     try:
@@ -4242,6 +4611,82 @@ def find_task_status(task_path: Path) -> str:
         if line.startswith("status:"):
             return line.split(":", 1)[1].strip()
     raise AssertionError(f"missing status in {task_path}")
+
+
+def test_event_hook_agent_layer_route_enables_authorized_dispatch_and_parallel_autorun(tmp_path):
+    old_env = os.environ.copy()
+    try:
+        os.environ["HERMES_BRAIN_AUTORUN_STATE_DIR"] = str(tmp_path / "state")
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_AGENT_LAYER"] = "auto"
+        os.environ["HERMES_TASKPOOL_MISSION_BRIDGE_DISABLED"] = "1"
+        mod = load_orchestrator_module()
+
+        original_find_task = mod.find_task
+        original_subprocess_run = mod.subprocess.run
+        original_multimodel_route = mod.event_hook_multimodel_route
+        try:
+            setattr(mod, "find_task", lambda task_id: SimpleNamespace(
+                id=task_id,
+                status="pending",
+                priority="P3",
+                lane="advisory",
+                project="hermes-agent",
+                fm={},
+            ))
+            route = mod.event_hook_agent_layer_route("task_dispatch_authorized", "authorized-task")
+            assert route["enabled"] is True, route
+            assert route["reason"] == "smart_agent_layer_route_matched", route
+
+            seen = {}
+
+            def fake_run(cmd, text=True, capture_output=True, timeout=None, env=None):
+                seen["cmd"] = list(cmd)
+                seen["env"] = dict(env or {})
+                seen["timeout"] = timeout
+                return SimpleNamespace(
+                    returncode=0,
+                    stdout=json.dumps({"status": "OK", "dispatchable": False, "autorun": {"status": "OK"}}),
+                    stderr="",
+                )
+
+            setattr(mod, "event_hook_multimodel_route", lambda event, task_id="": {
+                "enabled": False,
+                "mode": "auto",
+                "reason": "fixture_disabled",
+                "event": event,
+                "task_id": task_id,
+            })
+            mod.subprocess.run = fake_run
+            result = mod.maybe_fire_taskpool_event_hook("task_dispatch_authorized", task_id="authorized-task", reason="unit-test")
+        finally:
+            setattr(mod, "find_task", original_find_task)
+            setattr(mod, "event_hook_multimodel_route", original_multimodel_route)
+            mod.subprocess.run = original_subprocess_run
+
+        assert result["status"] == "OK", result
+        assert result["agent_layer_route"]["enabled"] is True, result
+        assert "--parallel-autorun" in seen["cmd"], seen
+        assert "--autorun-step" not in seen["cmd"], seen
+        assert seen["env"]["HERMES_LOCAL_BRAIN_AUTORUN"] == "1", seen
+        assert seen["timeout"] >= 420, seen
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
+
+
+def test_event_hook_agent_layer_no_spawn_env_gate_overrides_force_and_auto_routes():
+    old_env = os.environ.copy()
+    try:
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_NO_AGENT_LAYER_SPAWN"] = "1"
+        os.environ["HERMES_TASKPOOL_EVENT_HOOK_AGENT_LAYER"] = "force"
+        mod = load_orchestrator_module()
+        forced = mod.event_hook_agent_layer_route("task_added", "forced-task")
+        assert forced["enabled"] is False, forced
+        assert forced["reason"] == "agent_layer_spawn_disabled_by_env", forced
+        assert forced["env_flag"] == "HERMES_TASKPOOL_EVENT_HOOK_NO_AGENT_LAYER_SPAWN", forced
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
 
 
 def test_event_hook_no_multimodel_spawn_env_gate_overrides_force_and_auto_routes():

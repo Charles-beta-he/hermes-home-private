@@ -66,6 +66,26 @@
     "updated_at": "2026-06-12",
     "frontend_acceptance_url": "https://uvisa-app-trnn-production.up.railway.app/",
     "frontend_acceptance_url_note": "This is the user-facing online acceptance address; do not assume app.uvisa.cc for current acceptance unless live evidence says so.",
+    "deployment_monitoring": {
+      "scope": "project_profile_only; do not duplicate environment-specific Railway identifiers in portable repo bootstrap/workflow docs",
+      "railway_project": "uvisa-test",
+      "frontend_service": "uvisa-app-tRnN",
+      "backend_service": "uvisa-backend",
+      "dashboard_access_rule": "Dashboard status may be read from an already-open/logged-in local browser session; never record cookies, tokens, or private session data."
+    },
+    "operator_local_context": {
+      "scope": "project_profile_only; private to this operator machine and not required for collaborators/CI/remote agents",
+      "frontend_repo": "/Users/charles/Desktop/folder/work/uvisa-app-2.0",
+      "backend_repo": "/Users/charles/Desktop/folder/work/uvisa-backend",
+      "profile_path": "/Users/charles/.hermes/project-profiles/uvisa-app-2.0.json",
+      "workpad": "/Users/charles/Documents/brain/05-实践与项目/projects/uvisa-app-2.0/Workpad - uvisa-app-2.0.md",
+      "repo_projection_rule": "Portable repo docs should refer to project profile / active checkout resolution instead of hardcoding these private absolute paths."
+    },
+    "backend_write_authority": {
+      "scope": "project_profile_only",
+      "status": "granted_for_local_backend_repo",
+      "landing_rule": "If evidence-first analysis concludes the backend is the correct fix point, edit the backend with TDD, verify locally, and commit backend changes separately; if this profile is not loaded or authority is absent, record a backend follow-up instead."
+    },
     "target_release_branch": "main",
     "notification_mapping": "Notification category is DB -> appCategory -> tab; backend mapping must be checked for deposit/withdrawal flows.",
     "pwa_safe_area_baseline": "PWA chrome/safe-area baseline uses white (#FFF) and brand blue (#1326FD) unless the scoped design task overrides it.",
@@ -15989,5 +16009,39 @@
       "个人中心",
       "设置"
     ]
-  }
+  },
+  "id": "uvisa-app-2.0",
+  "status": "work-project/excluded-unless-user-switches",
+  "project_type": "application",
+  "ssot_root": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0",
+  "progress_ledger": "/Users/charles/.hermes/workflows/projects/uvisa-app-2.0/progress-ledger.md",
+  "role": "UVISA work application; excluded from autonomous non-work full-advance unless user switches to UVISA.",
+  "promotion_policy": "evidence-gated ratchet; no validated/promoted status without current proof/readback; no cross-project secret/auth/session-state merge",
+  "relations": [
+    {
+      "relation": "governed_by",
+      "target": "project-portfolio-os",
+      "merge_policy": "portfolio_metadata_only"
+    }
+  ],
+  "current_components": {
+    "project_profile": "profiled",
+    "progress_ledger": "ledgered",
+    "work_project_exclusion": "active",
+    "autonomous_code_changes": "closed_until_user_switches"
+  },
+  "execution_policy": "work-project/excluded-unless-user-switches",
+  "red_lines": [
+    "do not autonomously modify work-project code unless user explicitly switches to this project"
+  ],
+  "updated_at": "2026-07-07T14:39:00+08:00",
+  "audit_semantics": {
+    "work_project_exemption": true,
+    "maturity_verdict": "excluded_work_project_metadata_only",
+    "next_audit_action": "audit metadata only unless user explicitly switches to UVISA",
+    "exemption_reason": "protected work project; portfolio may audit metadata only unless user explicitly switches context",
+    "exemption_review_after": "2026-08-07"
+  },
+  "portfolio_profile": true,
+  "portfolio_code_guard": "Do not modify UVISA project code from portfolio governance work; portfolio edits are metadata/read-only unless user explicitly switches to UVISA and grants exact code scope."
 }

@@ -20,6 +20,24 @@ Use the root workflow for default decisions. Load support references only when t
 
 When a mobile route depends on API/session/native data, blank-page prevention is part of delivery: verify that the initial state matches a visible template branch, that loading/error/empty fallback states render, and that slow or unavailable APIs cannot leave the screen permanently blank. See `references/api-dependent-mobile-page-fallback.md`.
 
+When a Vite mobile web/PWA page is visible but API-backed sections are blank in local dev or `vite preview`, inspect the frontend API base URL against the exact opened host/port, then verify both `server.proxy` and `preview.proxy`. Prefer same-origin `/api` for dev/local-preview and prove the exact reported URL renders real API rows. See `references/vite-dev-preview-proxy-api-base.md`.
+
+When local H5 parity needs to be advanced beyond a visual fix, package the verification as a mobile smoke evidence slice: exact preview URL, `/api` readback, 375/390/414 viewport screenshots or geometry checks, bottom TabBar route clicks, anonymous-vs-auth boundaries, banner redirect fixture coverage, and bounded wording such as `local H5 preview runtime-verified` rather than `certified`. See `references/h5-preview-parity-smoke-evidence.md`.
+
+When Chrome/CDP mobile smoke scripts evaluate an empty DOM or strange syntax/runtime errors despite the app being visible, verify the selected DevTools target before debugging product code. Chrome can expose extension/background targets; select the page by expected app URL/origin, then assert `location.href` before DOM checks. See `references/chrome-cdp-mobile-smoke-target-selection.md`.
+
+When the user asks for `certified` / `全量验收完成` on an H5 parity effort, promote scattered smoke evidence into a deterministic loop-engineering packet: explicit certification levels, a project-local command such as `npm run certify:h5:local`, tracked-evidence checks via `git ls-files`, scoped lint/build, JSON evidence parsing, latest+timestamped reports, and independent verifier amend resolution before L3 wording. See `references/h5-certification-loop-engineering.md`.
+
+When the user asks for a web/H5 product to be 1:1 with an existing native app, do not use an issue tracker as the execution plan. Build a native-reference parity plan first: reference hierarchy, route/screen map, web-specific adjustments, red-line state/API fields, branch strategy, and evidence gates. Then ship small slices with code diff + targeted lint + build + browser screenshot/readback before merging to the develop-equivalent branch. See `references/native-app-parity-h5-development.md`. For native route-contract preservation and raw Chrome/CDP mobile smoke target-selection pitfalls, also see `references/h5-native-parity-route-and-cdp-smoke.md`; keep that pattern generic and put project-specific paths/IDs/evidence in the project profile or SSOT.
+
+When advancing transaction-like H5 screens such as spot trading/orderbook/balance surfaces under a local-only safe-slice mandate, use `references/h5-trading-control-semantics-safe-slices.md`: convert narrow non-semantic controls to buttons/labels without changing business behavior, verify mobile CDP DOM+behavior+negative side-effect evidence, store project-specific evidence in SSOT/profile, and stop at a DecisionPacket when the next useful slice requires auth, fixtures, real mutations, push/deploy, device, or PWA-install authority.
+
+When a mobile H5 header combines menu/search with right-edge actions and screenshots show message/customer/scan or similar controls missing, do not rely on DOM presence or `--window-size` alone. Use `references/h5-header-right-edge-viewport-proof.md`: inspect DOM plus actual viewport metrics, pixel-probe the right header band, prefer page-scoped layout fixes over shared Header rewrites, and verify 375/390/414px screenshots before calling the visual slice closed.
+
+When a mobile image upload flow fails specifically for iOS camera images, check HEIC/HEIF end-to-end rather than treating it as a generic network issue: frontend `accept`, client MIME allowlist, multipart field name, backend MIME/magic-byte/extension gates, and object-storage 5xx behavior. Use `references/ios-camera-heic-upload.md`.
+
+When an iOS Camera/Photo Library upload from a chat/composer/support surface reports generic “send image failed” or “network error”, trace the full file path rather than assuming FormData is broken: check multipart headers, iOS HEIC/HEIF frontend + backend allowlists, backend magic-byte validation, OSS/S3 availability, safe same-origin fallback URLs, and rendering sanitizer rules. See `references/ios-camera-image-upload-chat.md`.
+
 When a login/auth or short mobile form reports page-upward movement on input focus, classify the interaction model before applying a requested tweak. Prefer the class-level pattern in `references/mobile-pwa-keyboard-focus-layout.md`: no global keyboard reserve/scrollBy; ordinary flows keep safe-area bounds; short auth screens can keep default full-height + bottom CTA and reveal an inline CTA with CSS `group-focus-within`; full-screen composer shells shrink internal content with `visualViewport`.
 
 ## When to Use
@@ -82,6 +100,8 @@ Load it when UI acceptance, H5 regressions, auth/state-machine risk, screenshot 
 
 Keyboard-focus pitfall: if a user proposes a specific layout tweak for PWA keyboard movement, do not blindly apply it. First classify the page model and choose the best class-level interaction. For short auth/login screens, prefer `group-focus-within` dual-CTA swaps and no React focus state, blur timers, global keyboard reserve, or JS scrollBy; see `references/mobile-pwa-keyboard-focus-layout.md` and `references/pwa-login-keyboard-cta.md`.
 
+Keyboard-focus history/rollback pitfall: when a mobile money/transfer/remit page reports focus-induced page push or displaced icons/cards, inspect page history and scroll-owner/keyboard-shell changes before editing. If the user says “先别改/先整理”, produce the scoped history first; rollback in an isolated worktree/branch and restore only affected screen, keyboard/focus shell, and test files. See `references/mobile-keyboard-focus-rollback-scope.md`.
+
 Minimum in-root rule: do not delete features/fields/routes and do not claim UI completion without real visual/runtime evidence.
 
 ## Stitch SDK / design-tool → mobile 1:1 screens
@@ -96,6 +116,8 @@ Keep test fixtures isolated. It is acceptable for Playwright to mock camera, Con
 
 When a PWA/mobile product has a vision node, distinguish adapter architecture from real model availability. Add or run a read-only inventory/readiness path that reports implemented adapters, available non-stub adapters, and unavailable dependencies/model weights. Surface Controller `/health/ready` or equivalent in diagnostics. Do not claim real recognition until a non-stub adapter is available and verified by runtime readback plus an analysis smoke; otherwise keep the fail-visible operator label.
 
+When promoting an agent/control-plane packet or CLI projection into a dashboard, advance safe local UI/API slices instead of stopping at phase labels: expose an authenticated read-only status endpoint, add a route/nav page with cards plus evidence/authority/proposal/device detail panels, and keep all execution/lifecycle/external/secret/payment/device actions visibly false or proposal-only. Use `references/agent-os-readonly-control-room-dashboard.md` for the full pattern and verification checklist.
+
 For bottom navigation generated by a design tool, avoid leaving `href="#"` placeholders. If full multi-page routing is out of scope, the minimum safe slice depends on the user’s delivery bar:
 
 - If the task is only to remove dead links, map the nav to real in-page operator anchors and document the boundary.
@@ -107,6 +129,20 @@ For bottom navigation generated by a design tool, avoid leaving `href="#"` place
 When syncing Stitch SDK artifacts into RN/mobile surfaces, do not treat the first screen returned by `list_screens` as the canonical latest screen unless the API response exposes and you verify a reliable chronological field. Lock explicit screen IDs for each accepted surface, store the artifact/manifest, map each screen to a distinct runtime surface, and verify with route tests plus a simulator/device screenshot. If the app technically has multiple pages but the home screen shows only unlabeled abstract icons, treat that as a UX discoverability bug: add visible labels for primary destinations and rerun the simulator install/screenshot check.
 
 - Notification centers with incremental sync, read-state mutations, card-footer time semantics, or foreground/background polling/SSE coordination should use `references/notification-sync-time-and-lifecycle.md`: update existing items in place, use raw `createdAt`/delivery time for card display and ordering, keep `occurredAt` for business event detail, pause realtime/polling in background, and guard heartbeat/activity timers.
+
+- PWA/background push feasibility audits should use `references/pwa-background-push-feasibility.md`: separate in-app notification truth source, foreground SSE/polling invalidation, and OS-level background push; verify permission/token/subscription/SW/provider evidence before claiming push support; report Android/Desktop PWA, iOS Home Screen PWA, and native-shell feasibility separately.
+
+- If a notification settings page shows an App/PWA push switch in a browser that cannot enable Web Push, use `references/pwa-web-push-unsupported-channel-visibility.md`: hide the App Push channel control when `getWebPushSupport()` or equivalent says unsupported, keep Email/category preferences visible, and do not mutate the server push preference merely because this browser is unsupported.
+
+- Applicability: when designing production Web Push for security-sensitive or finance-like PWAs with an authenticated in-app notification center, use `references/pwa-web-push-finance-formal-architecture.md`; anti-condition: do not apply it to native-only push tasks or to apps where push itself is the authoritative message store.
+
+- When the user names a shared backend branch as the source of truth for PWA/Web Push (for example “pull latest test”) or the local checkout is dirty/stale, use `references/pwa-web-push-branch-aligned-backend-verification.md`: verify the exact remote branch in a clean worktree, keep every command's execution directory pinned to that worktree, separate long-lived foreground streams from the push-toggle await chain, explicitly start idempotent SW registration before readiness, bound never-settling browser promises, and prove unrelated full-suite failures on a second clean baseline before classifying them as pre-existing.
+
+- When a PWA notification settings surface shows "push service unavailable", flips an App/PWA push switch off unexpectedly, or conflicts with a product rule such as "new users default app notifications on", use `references/pwa-web-push-preference-vs-subscription-debugging.md`: keep user notification preference separate from physical browser/provider subscription state, show transient failures via toast, explicitly capture status-returning failures, and run a frontend/backend/provider iceberg scan before claiming system push availability.
+
+- Applicability: when a PWA notification switch is intended to represent current-device OS notification readiness, not only account-level preference, and existing users may already have server preference defaulted on. Use `references/pwa-web-push-preference-device-ready-switch.md`: derive checked state from server preference plus current-device permission/subscription/register evidence. Anti-condition: if the switch is explicitly account-level preference, keep it server-state driven and add a separate device-status row.
+
+- Applicability: when backend/product owners say an existing backend field such as `pushEnabled` is the authoritative App Push subscribed/enabled state, use `references/pwa-web-push-backend-field-authoritative-switch.md`: first verify the field is exposed by the existing API, render the switch from server state, and on enable subscribe first then write the backend field true. Anti-condition: if the field is merely preference intent, use the current-device-ready switch pattern instead.
 
 - [ ] Target platform and installed/browser mode are named explicitly.
 - [ ] Cache/version/service-worker state was verified, not assumed.

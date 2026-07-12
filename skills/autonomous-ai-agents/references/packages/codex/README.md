@@ -126,8 +126,10 @@ terminal(command="gh pr comment 86 --body '<review>'", workdir="~/project")
 5. **Background for long tasks** — use `background=true` and monitor with `process` tool
 6. **Don't interfere** — monitor with `poll`/`log`, be patient with long-running tasks
 7. **Parallel is fine** — run multiple Codex processes at once for batch work
-8. **For plugin questions, verify the local plugin surface first** — run `codex plugin --help` and `codex plugin list`, then read plugin metadata/README before recommending install or use.
-9. **Apply least authority to plugins** — prefer local in-app Browser/APIs/CLIs before real Chrome state, desktop Computer Use, or account/action plugins; require explicit authorization for high-permission surfaces.
+8. **ChatGPT / agent context hygiene in `AGENTS.md` matters** — this is not Codex-only. For GPT-family coding-agent sessions that ramble, self-pollute, or mix tool calls with prose, add a low-cost project/global rule such as `DO NOT send optional commentary`. Treat this as noise reduction, not a correctness guarantee: still require read-code-first, scoped tasks, tests, and evidence.
+9. **Reopen polluted sessions** — if the agent repeatedly repairs the same bug, explanations lengthen while code quality regresses, output/tool-call format breaks, or it ignores freshly supplied constraints, stop extending the same transcript. Reopen with a compact clean packet: goal, exact error, key files, verified facts, and required commands.
+10. **For plugin questions, verify the local plugin surface first** — run `codex plugin --help` and `codex plugin list`, then read plugin metadata/README before recommending install or use.
+11. **Apply least authority to plugins** — prefer local in-app Browser/APIs/CLIs before real Chrome state, desktop Computer Use, or account/action plugins; require explicit authorization for high-permission surfaces.
 
 ## Common Pitfalls
 

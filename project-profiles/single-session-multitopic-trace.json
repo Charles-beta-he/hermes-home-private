@@ -15,8 +15,13 @@
       "merge_policy": "portfolio_metadata_only"
     }
   ],
-  "current_components": {},
-  "updated_at": "2026-07-06T17:53:29Z",
+  "current_components": {
+    "project_profile": "profiled",
+    "progress_ledger": "ledgered",
+    "governance_policies": "profile_scoped",
+    "trace_projection_capability": "initiated_needs_readback"
+  },
+  "updated_at": "2026-07-07T14:39:00+08:00",
   "backend_contract_policy": {
     "contract_scope": "Single-session multi-topic trace/query/current-state projection capability and local read-only indexing surfaces.",
     "schema_rule": "Changes must preserve existing evidence/projection records; migrations must tolerate historical sparse profiles and malformed task evidence without global failure.",
@@ -76,5 +81,11 @@
   },
   "governance_readbacks": {
     "a_plus_semantic_policy_refresh_20260707": "Added scoped semantic control-plane policies after selfcheck WARN readback; WARN-only policy preserved, no fail-closed downgrade."
-  }
+  },
+  "audit_semantics": {
+    "maturity_verdict": "initiated_needs_evidence",
+    "next_audit_action": "attach local read-only trace/query readback before validated claim",
+    "evidence_freshness_days": 30
+  },
+  "portfolio_profile": true
 }

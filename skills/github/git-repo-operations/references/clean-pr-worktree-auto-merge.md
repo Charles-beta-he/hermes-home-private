@@ -31,13 +31,16 @@ Before creating the PR, treat the user-named base as the SSOT: fetch remote refs
    git -C /tmp/repo-pr add -u
    ```
    Do not force an old patch over the target branch. Inspect the base files and reapply the semantic changes manually where needed. When the target branch has evolved component/test contracts, rewrite the added regression test to the target branch's current imports, i18n keys, service mocks, and state model instead of copying the dirty source test verbatim. The acceptance unit is the behavior, not identical source text.
-4. Verify scope before committing. In conflict cases, inspect the staged diff because `git apply --index`/`--3way` can leave a partially staged index:
+4. Verify scope before committing. In conflict cases, inspect the staged diff because `git apply --index`/`--3way` can leave a partially staged index; after resolving by keeping target-base behavior plus the scoped addition, stage the conflicted paths explicitly (`git add <paths>`) so they leave `UU` state. Prefer conflict-marker searches that only match line-start markers and exclude `.git`, because large UI repos often contain decorative `====` comments:
    ```bash
+   git -C /tmp/repo-pr diff --name-only --diff-filter=U
+   grep -R -n -E '^(<<<<<<<|=======|>>>>>>>)' /tmp/repo-pr --exclude-dir=.git
+   git -C /tmp/repo-pr add <resolved-paths>
    git -C /tmp/repo-pr diff --cached --check
    git -C /tmp/repo-pr diff --cached --stat
    git -C /tmp/repo-pr diff --cached --name-only
    ```
-5. Run the relevant targeted tests and production build from the clean PR worktree. For Node/pnpm monorepos, a clean Git worktree does not automatically have dependencies; if the source workspace already has a verified `node_modules` and both worktrees are on the same machine, symlink it into the temp worktree as a local acceleration step, then run the tests/build from the temp path. Treat the symlink only as dependency setup, not as CI proof:
+5. Run the relevant targeted tests and production build from the clean PR worktree. For Node/pnpm monorepos, a clean Git worktree does not automatically have dependencies; if the source workspace already has a verified `node_modules` and both worktrees are on the same machine, symlink it into the temp worktree as a local acceleration step, then run the tests/build from the temp path. If there is no reliable local dependency tree to link, run `pnpm install --frozen-lockfile` in the temp worktree and treat that as setup, not as product verification. Then run tests/build from the temp path:
    ```bash
    ln -s /path/to/source/node_modules /tmp/repo-pr/node_modules
    pnpm exec vitest run <focused-tests> --reporter=verbose
@@ -51,7 +54,7 @@ Before creating the PR, treat the user-named base as the SSOT: fetch remote refs
    mvn -pl <module> -am -Dtest=<TestClass> -Dsurefire.failIfNoSpecifiedTests=false test
    ```
    If `mvn -pl <module> -Dtest=... test` fails with missing dependent classes, that usually means the reactor dependencies were not included; add `-am` before diagnosing the product code. If upstream modules fail only because they do not contain the named test, add `-Dsurefire.failIfNoSpecifiedTests=false`.
-6. Commit exact files only, push, create PR.
+6. Commit exact files only, push, create PR. Some installed `gh` versions do not support `gh pr create --json`; in that case create the PR normally, capture the URL/number from stdout, then immediately read it back with `gh pr view <number> --json number,url,state,baseRefName,headRefName,mergeStateStatus,isDraft,statusCheckRollup,commits` before any merge action.
 
 ## Auto-merge collision
 

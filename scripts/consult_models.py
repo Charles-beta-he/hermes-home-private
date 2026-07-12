@@ -296,6 +296,56 @@ def load_quorum() -> dict:
         return {}
 
 
+def load_model_profiles(path: Optional[str] = None) -> dict:
+    """Load and validate conductor model profiles; malformed data fails soft."""
+    if yaml is None:
+        return {}
+    profile_path = os.path.expanduser(path or os.path.join(CONFIG_DIR, "model_profiles.yaml"))
+    try:
+        with open(profile_path, encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+    except (yaml.YAMLError, FileNotFoundError, OSError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    models = data.get("profiles", data.get("models"))
+    if not isinstance(models, dict):
+        return {}
+    for model_id, profile in models.items():
+        if not isinstance(model_id, str) or not isinstance(profile, dict):
+            return {}
+        for key in ("roles", "preferred_roles", "strengths", "weaknesses"):
+            if key in profile and not isinstance(profile[key], list):
+                return {}
+    normalized = dict(data)
+    normalized["profiles"] = models
+    return normalized
+
+
+def model_profile_for(model: str, profiles: Optional[dict] = None) -> dict:
+    data = profiles if profiles is not None else load_model_profiles()
+    models = data.get("profiles", {}) if isinstance(data, dict) else {}
+    profile = models.get(model, {}) if isinstance(models, dict) else {}
+    return profile if isinstance(profile, dict) else {}
+
+
+def render_model_specific_instruction(model: str, role: str, task_class: str, profiles: Optional[dict] = None) -> str:
+    profile = model_profile_for(model, profiles)
+    if not profile:
+        return ""
+    strengths = profile.get("strengths") or profile.get("roles") or []
+    weaknesses = profile.get("weaknesses") or []
+    preferred = profile.get("preferred_roles") or profile.get("roles") or []
+    lines = ["MODEL_SPECIFIC_INSTRUCTION:"]
+    lines.append(f"- Role bias: {role}; preferred={','.join(map(str, preferred[:3])) or 'unspecified'}; task={task_class}.")
+    if strengths:
+        lines.append(f"- Prioritize: {', '.join(map(str, strengths[:3]))}.")
+    if weaknesses:
+        lines.append(f"- Guard against: {', '.join(map(str, weaknesses[:2]))}.")
+    lines.append("- Truth/evidence gates remain authoritative; this profile is advisory only.")
+    return "\n".join(lines[:6])
+
+
 def load_config() -> dict:
     """读取 config.yaml"""
     path = os.path.join(HERMES_HOME, "config.yaml")
@@ -819,8 +869,17 @@ def build_planner_prompt(state: dict, state_hash: str, model: str, tier: str) ->
             "claims/evidence/evidence_bundle/truth_gate were preserved. Request evidence "
             "instead of certifying any omitted fact.\n"
         )
+    conductor_instruction = ""
+    quorum_cfg = load_quorum()
+    conductor_cfg = quorum_cfg.get("conductor", {}) if isinstance(quorum_cfg, dict) else {}
+    if isinstance(conductor_cfg, dict) and conductor_cfg.get("enabled") is True:
+        profile_file = conductor_cfg.get("profile_file")
+        profiles = load_model_profiles(str(profile_file)) if profile_file else load_model_profiles()
+        conductor_instruction = render_model_specific_instruction(model, "planner", tier, profiles)
+        if conductor_instruction:
+            conductor_instruction = f"\n{conductor_instruction}\n"
     return f"""You are a Hermes Agent architecture planner.
-
+{conductor_instruction}
 Read the state below and produce a structured improvement plan.
 
 STATE (sha256: {state_hash}):{truncation_notice}

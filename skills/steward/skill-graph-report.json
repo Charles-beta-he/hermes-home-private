@@ -1,18 +1,44 @@
 {
   "metric": "Skill Graphs 2.0 \u62d3\u6251\u5ba1\u8ba1",
-  "value": "edges=105, depth_max=5, cycles=0, tiers={'atom': 236, 'compound': 7, 'molecule': 22}",
+  "value": "edges=123, depth_max=5, cycles=0, tiers={'atom': 267, 'compound': 11, 'molecule': 24}",
   "status": "GRAPH_VIOLATIONS",
   "max_depth_allowed": 4,
-  "edge_count": 105,
+  "edge_count": 123,
   "tier_counts": {
-    "atom": 236,
-    "compound": 7,
-    "molecule": 22
+    "atom": 267,
+    "compound": 11,
+    "molecule": 24
   },
   "explicit_tier_count": 1,
   "cycle_count": 0,
   "cycles": [],
   "excessive_depth": [
+    {
+      "skill": "software-development/agent-architecture-exam-runner",
+      "depth": 5,
+      "chain": [
+        "software-development/agent-architecture-exam-runner",
+        "software-development/agent-skill-design-patterns",
+        "software-development/spec-stateful-sdd-workflow",
+        "software-development/abstraction-governance",
+        "software-development/agent-boundary-audit",
+        "autonomous-ai-agents/hermes-agent"
+      ],
+      "action": "Split at a molecule boundary; keep graph depth <= 4."
+    },
+    {
+      "skill": "software-development/root-cause-ownership-council",
+      "depth": 5,
+      "chain": [
+        "software-development/root-cause-ownership-council",
+        "software-development/agent-skill-design-patterns",
+        "software-development/spec-stateful-sdd-workflow",
+        "software-development/abstraction-governance",
+        "software-development/agent-boundary-audit",
+        "autonomous-ai-agents/hermes-agent"
+      ],
+      "action": "Split at a molecule boundary; keep graph depth <= 4."
+    },
     {
       "skill": "software-development/workflow-capability-graph",
       "depth": 5,
@@ -30,18 +56,84 @@
   "typed_violations": [],
   "missing_dependencies": [
     {
+      "skill": "apple/macos-computer-use",
+      "dependency": "browser"
+    },
+    {
       "skill": "software-development/hermes-s6-container-supervision",
       "dependency": "hermes-agent-dev"
+    },
+    {
+      "skill": "mlops/inference/obliteratus",
+      "dependency": "vllm"
+    },
+    {
+      "skill": "mlops/inference/obliteratus",
+      "dependency": "huggingface-tokenizers"
     },
     {
       "skill": "computer-use",
       "dependency": "browser"
     }
   ],
-  "ambiguous_dependencies": [],
+  "ambiguous_dependencies": [
+    {
+      "skill": "github/git-repo-operations",
+      "dependency": "github-pr-workflow",
+      "candidates": [
+        ".archive/curator-umbrella-2026-06-10/github/github-pr-workflow",
+        "github/references/absorbed/github-pr-workflow"
+      ]
+    },
+    {
+      "skill": "github/git-repo-operations",
+      "dependency": "github-code-review",
+      "candidates": [
+        ".archive/curator-umbrella-2026-06-10/github/github-code-review",
+        "github/references/absorbed/github-code-review"
+      ]
+    },
+    {
+      "skill": "creative/reference-style-diagramming",
+      "dependency": "architecture-diagram",
+      "candidates": [
+        ".archive/curator-umbrella-2026-06-24/creative/architecture-diagram",
+        "creative/architecture-diagram"
+      ]
+    },
+    {
+      "skill": "creative/reference-style-diagramming",
+      "dependency": "excalidraw",
+      "candidates": [
+        ".archive/curator-umbrella-2026-06-24/creative/excalidraw",
+        "creative/excalidraw"
+      ]
+    },
+    {
+      "skill": "autonomous-ai-agents/kanban-codex-lane",
+      "dependency": "codex",
+      "candidates": [
+        ".archive/curator-umbrella-2026-06-10/autonomous-ai-agents/codex",
+        "autonomous-ai-agents/references/absorbed/codex"
+      ]
+    },
+    {
+      "skill": "media/long-video-course-essence",
+      "dependency": "youtube-content",
+      "candidates": [
+        ".archive/curator-umbrella-2026-06-10/media/youtube-content",
+        "media/references/absorbed/youtube-content"
+      ]
+    }
+  ],
   "migration_suggestions": [
     {
       "skill": "apple",
+      "suggested_tier": "atom",
+      "reason": "deps=0, depth=0"
+    },
+    {
+      "skill": "apple/macos-computer-use",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
     },
@@ -284,15 +376,10 @@
       "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/arxiv",
       "suggested_tier": "atom",
       "reason": "deps=0, depth=0"
-    },
-    {
-      "skill": ".archive/curator-umbrella-2026-06-17/research/references/absorbed/research-paper-writing",
-      "suggested_tier": "atom",
-      "reason": "deps=0, depth=0"
     }
   ],
   "details": [
-    "\u663e\u5f0f tier: 1/265\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
-    "fail-closed gate: cycles=0, excessive_depth=1, typed_violations=0"
+    "\u663e\u5f0f tier: 1/302\uff1b\u672a\u58f0\u660e\u6309 deps/depth \u63a8\u65ad\u5e76\u7ed9\u51fa\u8fc1\u79fb\u5efa\u8bae",
+    "fail-closed gate: cycles=0, excessive_depth=3, typed_violations=0"
   ]
 }

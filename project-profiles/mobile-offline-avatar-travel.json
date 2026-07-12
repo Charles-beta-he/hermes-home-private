@@ -1008,7 +1008,7 @@
     ],
     "enforcement": "warn_only_profile_contract; lifecycle proof gates remain authoritative"
   },
-  "updated_at": "2026-07-06T17:47:14.203107+00:00",
+  "updated_at": "2026-07-07T14:39:00+08:00",
   "platform_expansion": {
     "status": "approved_direction/ssot_metadata_landed",
     "approved_at": "2026-06-29T16:55:00+08:00",
@@ -1048,5 +1048,14 @@
   "role": "Hermes Pocket Mobile Platform: mobile edge runtime/companion platform; travel is first vertical module.",
   "governance_readbacks": {
     "a_plus_repair_20260707": "dev_closure_loop stale blocker reclassified from historical pre-closeout failure; current taskpool_closeout is done/certified per same profile lines 189-196."
+  },
+  "portfolio_evidence": [
+    "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/progress-ledger.md",
+    "/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/evidence/non-convergence-narrowing/freeze-ssot-framing-review-closeout-receipt-20260625T2310.json"
+  ],
+  "audit_semantics": {
+    "maturity_verdict": "validated local slices have declared portfolio evidence; runtime/product claims remain scoped to listed evidence",
+    "next_audit_action": "keep closure/proof packets current before promoting beyond validated local slices",
+    "evidence_freshness_days": 30
   }
 }

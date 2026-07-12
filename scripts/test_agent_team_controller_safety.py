@@ -199,6 +199,82 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
         self.assertTrue(Path(artifact["uvisa_lark_contract"]["contract_path"]).exists())
         self.assertEqual(artifact["safety"]["uvisa_closeout_contract_required"], True)
 
+    def test_claim_task_uses_canonical_auto_claim_and_handoff_gate(self):
+        payload = {
+            "status": "OK",
+            "claimed": True,
+            "task": "t-gated",
+            "handoff": "/tmp/t-gated.md",
+        }
+        with patch("subprocess.run", return_value=FakeCompleted(json.dumps(payload))) as run:
+            result = self.ctrl.claim_task("t-gated", actor="agent-team-controller", ttl=15)
+
+        self.assertTrue(result["ok"], result)
+        command = run.call_args.args[0]
+        self.assertIn("auto-claim-and-handoff", command)
+        self.assertNotIn("claim", command)
+        self.assertEqual(command[command.index("--task") + 1], "t-gated")
+        self.assertEqual(result["data"]["handoff"], "/tmp/t-gated.md")
+
+    def test_claim_task_preserves_structured_denial_on_nonzero_exit(self):
+        payload = {
+            "status": "FAIL_CLOSED",
+            "claimed": False,
+            "task_id": "t-denied",
+            "reasons": ["allowlist_miss"],
+        }
+        with patch("subprocess.run", return_value=FakeCompleted(json.dumps(payload), returncode=2)):
+            result = self.ctrl.claim_task("t-denied", actor="agent-team-controller", ttl=15)
+
+        self.assertFalse(result["ok"], result)
+        self.assertEqual(result["error"], ["allowlist_miss"])
+        self.assertEqual(result["data"]["status"], "FAIL_CLOSED")
+
+    def test_consume_claimed_batch_missing_handoff_fails_closed_before_running(self):
+        row = {"id": "t-no-handoff", "status": "claimed", "title": "no handoff", "project": "proj", "parallel_boundary": "b", "claimed_by": "agent-team-controller"}
+        with patch.object(self.ctrl, "is_disabled", return_value=False), \
+             patch.object(self.ctrl, "human_escape_check", return_value=(False, {})), \
+             patch.object(self.ctrl, "rows_by_id", return_value={"t-no-handoff": row}), \
+             patch.object(self.ctrl, "create") as create, \
+             patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "delegate_to_worker") as delegate:
+            result = self.ctrl.consume_claimed_batch([{"task_id": "t-no-handoff", "handoff": ""}], max_agents=1)
+
+        self.assertEqual(result["launched_count"], 0, result)
+        self.assertEqual(result["skipped"][0]["reason"], "missing_handoff_contract")
+        self.assertTrue(any(call.args[:2] == ("t-no-handoff", "retry") for call in transition.call_args_list))
+        self.assertFalse(any(call.args[:2] == ("t-no-handoff", "running") for call in transition.call_args_list))
+        create.assert_not_called()
+        delegate.assert_not_called()
+
+    def test_claim_cycle_releases_claim_if_canonical_bridge_returns_no_handoff(self):
+        task = {"id": "t-claimed-no-handoff", "title": "claimed no handoff", "priority": "P1", "_conflict_group": "g"}
+        prepared = {
+            "status": "ok",
+            "all_tasks": [task],
+            "schedule": {"schedule": [{"conflict_group": "g"}], "deferred_groups": []},
+            "selected_n": 1,
+            "n_info": {"applied_n": 1},
+            "conflict_group_count": 1,
+        }
+        bridge_result = {
+            "ok": False,
+            "error": "missing_handoff_contract",
+            "data": {"status": "OK", "claimed": True, "task": task["id"], "handoff": ""},
+        }
+        with patch.object(self.ctrl, "prepare_claim_batch", return_value=prepared), \
+             patch.object(self.ctrl, "claim_task", return_value=bridge_result), \
+             patch.object(self.ctrl, "transition_task", return_value={"ok": True}) as transition, \
+             patch.object(self.ctrl, "create_claim_envelope") as create_envelope:
+            result = self.ctrl.claim_cycle(max_claims=1)
+
+        self.assertEqual(result["tasks_claimed"], 0, result)
+        self.assertEqual(result["claim_errors"][0]["error"], "missing_handoff_contract")
+        self.assertTrue(result["claim_errors"][0]["release"]["ok"])
+        self.assertEqual(transition.call_args.args[:2], (task["id"], "retry"))
+        self.assertTrue(transition.call_args.kwargs.get("force"))
+        create_envelope.assert_not_called()
+
     def test_consume_claimed_batch_treats_max_agents_as_concurrency_not_claim_limit(self):
         rows = {
             "t1": {"id": "t1", "status": "claimed", "title": "one", "project": "proj", "parallel_boundary": "b1", "claimed_by": "hermes-parallel"},
@@ -240,7 +316,7 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
              patch.object(self.ctrl, "delegate_to_worker", return_value={"status": "blocked", "blockers": ["synthetic"]}), \
              patch.object(self.ctrl, "update_status"), \
              patch.object(self.ctrl, "append_trace"):
-            result = self.ctrl.consume_claimed_batch([{"task_id": "t-strip\n"}], max_agents=1)
+            result = self.ctrl.consume_claimed_batch([{"task_id": "t-strip\n", "handoff": "/tmp/t-strip.md"}], max_agents=1)
 
         rows_by_id.assert_called_with(["t-strip"])
         self.assertEqual(result["launched_count"], 1)
@@ -323,7 +399,7 @@ class AgentTeamControllerSafetyTest(unittest.TestCase):
              patch.object(self.ctrl, "delegate_to_worker") as delegate, \
              patch.object(self.ctrl, "update_status") as update_status, \
              patch.object(self.ctrl, "append_trace"):
-            result = self.ctrl.consume_claimed_batch([{"task_id": "t-stale"}], max_agents=1)
+            result = self.ctrl.consume_claimed_batch([{"task_id": "t-stale", "handoff": "/tmp/t-stale.md"}], max_agents=1)
 
         self.assertEqual(result["launched_count"], 0)
         self.assertEqual(result["skipped"][0]["reason"], "stale_claim_running_transition_released")

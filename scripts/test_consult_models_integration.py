@@ -33,6 +33,41 @@ class TestConsultModelsIntegration(unittest.TestCase):
         finally:
             os.environ.pop("__HERMES_TEST_BAD_INT__", None)
 
+    def test_conductor_profiles_are_fail_soft_and_default_off(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            profiles = root / "profiles.yaml"
+            quorum = root / "quorum.yaml"
+            profiles.write_text(
+                "version: v1\nmodels:\n  deepseek-v4-pro:\n    strengths: [contradiction_detection]\n"
+                "    weaknesses: [needs_schema]\n    preferred_roles: [critic]\n"
+                "    prompt_style: strict_evidence\n    cost_tier: medium\n",
+                encoding="utf-8",
+            )
+            quorum.write_text(
+                f"conductor:\n  enabled: false\n  profile_file: {profiles}\n",
+                encoding="utf-8",
+            )
+            with mock.patch.dict(os.environ, {"HERMES_QUORUM_CONFIG": str(quorum)}, clear=False):
+                prompt = consult.build_planner_prompt({}, "abc", "deepseek-v4-pro", "T1")
+            self.assertNotIn("MODEL_SPECIFIC_INSTRUCTION", prompt)
+
+            quorum.write_text(
+                f"conductor:\n  enabled: true\n  profile_file: {profiles}\n",
+                encoding="utf-8",
+            )
+            with mock.patch.dict(os.environ, {"HERMES_QUORUM_CONFIG": str(quorum)}, clear=False):
+                prompt = consult.build_planner_prompt({}, "abc", "deepseek-v4-pro", "T1")
+            self.assertIn("MODEL_SPECIFIC_INSTRUCTION", prompt)
+            self.assertIn("contradiction_detection", prompt)
+            self.assertIn("Truth/evidence gates remain authoritative", prompt)
+
+    def test_load_model_profiles_rejects_malformed_schema(self):
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / "profiles.yaml"
+            path.write_text("version: v1\nmodels:\n  bad-model:\n    strengths: not-a-list\n", encoding="utf-8")
+            self.assertEqual(consult.load_model_profiles(str(path)), {})
+
     def test_truth_gate_summary_handles_non_dict_inputs(self):
         """Communication packet truth gate summaries should defensively handle malformed values."""
         self.assertEqual(consult._summarize_truth_gate("bad"), {})

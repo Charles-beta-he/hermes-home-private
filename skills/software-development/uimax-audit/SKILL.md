@@ -40,6 +40,7 @@ metadata:
 - React Native bottom-tab shells where the user reports tabs only appear on Home, excessive blank space, tab/content overlap, or unstable screenshot evidence; use `references/react-native-global-bottom-tab-closeout.md`.
 - React Native mobile shells that are functionally reachable but rejected as ugly, debug-like, or not run through UI workflow; run the extreme closeout loop in `references/react-native-extreme-ui-closeout.md`. If the user asks for `A+` / `全推A+`, close the full simulator evidence matrix in `references/react-native-aplus-simulator-matrix.md` before claiming final grade.
 - PWA/mobile tab surfaces where the user reports missing bottom tabs, excessive blank space, inconsistent tab coverage, stale mobile shell, or demands uIMax A/A+; use the checklist in `references/pwa-mobile-tab-uimax.md`.
+- Operator/control-plane/runtime projection UIs that expose agent receipts, loop/world-model state, risk, evidence, gate ladders, or ActionIntent status; use `references/runtime-projection-ui.md` before claiming UI closeout.
 - Don't use for: requests that do not need you need guidance on uIMax — Systematic UI quality audit with A-F grading; choose a more specific child skill or a broader routing skill that actually matches the task.
 ## Scoring Dimensions
 
@@ -248,6 +249,8 @@ search_files(r'aria-pressed', target='content', path='src/', file_glob='*.jsx')
 ### Practical Tips
 
 - **CSR snapshot issue**: browser_snapshot returns "Empty page" for React CSR — always use browser_vision for visual assessment
+- **Operator-console portability check**: For internal dashboards/control-room panels, include a portability pass in the UI audit: user-specific absolute paths, local usernames, debug IDs, and raw machine paths should not ship as default input values. Prefer empty defaults, server-provided examples, `$HOME`/`$HERMES_HOME` placeholders, or scoped operator documentation. If a path must be displayed, classify it as operator-only information architecture rather than A+ product polish.
+- **Runtime projection UI check**: For operator surfaces that display internal receipts, loop state, confidence, risk, evidence, or gate state, use `references/runtime-projection-ui.md`. Applicability: read-only projection surfaces. Anti-condition: this does not authorize real-world side effects or replace full A/A+ visual, keyboard, responsive, and contrast evidence.
 - **Buttons missing ref IDs in snapshot**: Some dynamically rendered buttons (e.g., inside conditional `{!selectedMode && ...}` blocks) appear in the accessibility tree but don't get assigned clickable ref IDs. Workaround: `browser_console(expression="document.querySelector('button[aria-label*=\"keyword\"]').click()")`
 - **browser_click 30s timeout**: Can time out on slow pages. Fallback to browser_console JS click.
 - **Inline styles with CSS vars**: Not all inline styles need migration — those using `var(--accent-primary)` are theme-aware and acceptable
@@ -395,6 +398,7 @@ This skill pairs with `p10` for optimization and `loop` for iterative improvemen
 1. Loading this skill outside its trigger class and skipping a simpler, more direct path.
 2. Ignoring prerequisites such as platform, credentials, installed commands, or linked reference files.
 3. Treating the skill as a static memo instead of verifying the exact commands, artifacts, or outputs in the current environment.
+4. Treating an operator-console harness PASS as A+ UI acceptance. For dense engineering/operator dashboards, a local report may honestly land at `B+ / local-operator-ready`; keep raw paths, IDs, and debug labels as IA issues unless they are intentionally scoped to an operator surface. Do not claim A+ without keyboard-flow evidence, contrast-token audit, screenshot matrix, and taste/acceptance evidence.
 
 ## Verification Checklist
 

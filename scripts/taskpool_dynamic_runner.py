@@ -7,6 +7,7 @@ not by the wall clock. It emits no stdout when nothing changed.
 from __future__ import annotations
 
 import hashlib
+import fcntl
 import json
 import os
 import signal
@@ -26,6 +27,7 @@ TICK = HERMES_HOME / "scripts" / "brain_task_dispatch_tick.py"
 MM_DYNAMIC = HERMES_HOME / "scripts" / "multimodel_intervention_dynamic_step.py"
 NO_MULTIMODEL_SPAWN_ENV_FLAG = "HERMES_TASKPOOL_EVENT_HOOK_NO_MULTIMODEL_SPAWN"
 ENV_TRUE_VALUES = {"1", "true", "yes", "on", "enabled", "force"}
+_LOCK_FD: int | None = None
 
 
 def env_flag_enabled(env: dict[str, str], name: str) -> bool:
@@ -97,24 +99,40 @@ def alive(pid: int) -> bool:
 
 
 def acquire_lock() -> bool:
+    global _LOCK_FD
+    if _LOCK_FD is not None:
+        return False
     LOCK.parent.mkdir(parents=True, exist_ok=True)
-    if LOCK.exists():
-        try:
-            pid = int(LOCK.read_text().strip() or "0")
-            if pid and alive(pid):
-                return False
-        except Exception:
-            pass
-    LOCK.write_text(str(os.getpid()), encoding="utf-8")
+    fd = os.open(LOCK, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        os.fchmod(fd, 0o600)
+        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        os.ftruncate(fd, 0)
+        os.write(fd, str(os.getpid()).encode("ascii"))
+        os.fsync(fd)
+    except BlockingIOError:
+        os.close(fd)
+        return False
+    except Exception:
+        os.close(fd)
+        raise
+    # Keep the descriptor open for the whole runner cycle. The stable lock file
+    # is intentionally not unlinked: unlink-on-unlock can split contenders
+    # across old and newly-created inodes and allow two owners.
+    _LOCK_FD = fd
     return True
 
 
 def release_lock() -> None:
+    global _LOCK_FD
+    fd = _LOCK_FD
+    if fd is None:
+        return
+    _LOCK_FD = None
     try:
-        if LOCK.read_text().strip() == str(os.getpid()):
-            LOCK.unlink()
-    except Exception:
-        pass
+        fcntl.flock(fd, fcntl.LOCK_UN)
+    finally:
+        os.close(fd)
 
 
 

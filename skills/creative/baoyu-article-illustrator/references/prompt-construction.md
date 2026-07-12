@@ -80,17 +80,21 @@ Colors in prompts use hex codes for **rendering guidance only** — they tell th
 
 ## Character Rendering
 
-When depicting people:
+When depicting people or recurring IP characters:
 
 | Guideline | Description |
 |-----------|-------------|
-| **Style** | Simplified cartoon silhouettes or symbolic expressions |
-| **Avoid** | Realistic human portrayals, detailed faces |
+| **Style** | Simplified cartoon silhouettes, symbolic expressions, or the user's provided IP-character style contract |
+| **Avoid** | Realistic human portrayals, detailed faces, copied third-party mascots, or celebrity likenesses |
 | **Diversity** | Varied body types when showing multiple people |
 | **Emotion** | Express through posture and simple gestures |
+| **Consistency** | In IP-character mode, preserve silhouette, proportions, palette, personality, and recurring props across all images |
 
 **Add to ALL prompts with human figures**:
 > Human figures: simplified stylized silhouettes or symbolic representations, not photorealistic.
+
+**Add to ALL prompts in IP-character mode**:
+> CHARACTER CONSISTENCY: Use the recurring character/style contract from `character-bible.md`; keep the same identity, silhouette, palette, personality, and role across the full article set. The character should act as a content-specific guide/operator/user, not as decoration. Do not imitate or copy third-party mascots.
 
 ---
 

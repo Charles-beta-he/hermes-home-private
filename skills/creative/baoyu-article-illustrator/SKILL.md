@@ -82,6 +82,7 @@ If the user asks for a different layout (e.g., images alongside the article, or 
 - **Visualize concepts, not metaphors** — if the article uses a metaphor (e.g., "电锯切西瓜"), illustrate the underlying concept, not the literal image.
 - **Labels use article data** — actual numbers, terms, and quotes from the article, not generic placeholders.
 - **Prompt files are reproducibility records** — every illustration must have a saved prompt file under `prompts/` before any image is generated.
+- **IP/personal-style mode is a first-class layer** — when the user asks for “自己的风格”, “IP 角色”, “品牌角色”, or a recurring mascot, create a `character-bible.md` and apply the procedure in [references/ip-character-style-layer.md](references/ip-character-style-layer.md). Use the user's own style contract; do not copy third-party mascots from social examples.
 - **Strip secrets** — scan source content for API keys, tokens, or credentials before writing anything to disk.
 
 ## Workflow

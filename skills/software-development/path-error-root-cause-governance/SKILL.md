@@ -65,8 +65,9 @@ For visual/product bugs, do not collapse this into a single component diagnosis.
 - User intent: what stage/effect is being judged?
 - Time slice: first paint, loading, transition, hydrated state, steady state, resume, deploy update, etc.
 - Surface owner: OS shell, browser/WebView, app shell, route, component, animation layer, backend data, cache, deployment.
-- Boundary of control: what can the suspected layer actually control, and what is upstream/downstream of it?
-- Candidate mechanisms: at least two plausible layers that can produce the same visible symptom.
+- Boundary of control: what the suspected layer can actually control, and what is upstream/downstream of it?
+- Candidate mechanisms: at least two plausible layers that can produce the same visible symptom, including the agent/process layer when there have been repeated fixes or user frame corrections.
+- Self/process suspect: ask whether the current investigation is anchored on project-level root cause while missing a class-level method failure, ownership-contract failure, or verification-gate failure.
 - Falsifier: one observation that would make the current path wrong.
 
 Recent commits, obvious components, and model guesses are only leads. They must not replace this chain.
@@ -101,22 +102,23 @@ Minimum fields:
 If the user supplied a video/screenshot/log, extract the observed facts by time slice before reading code. Do not let recent commits or the most visible component choose the time slice for you.
 ### 2. Proof Matrix — measure before changing
 
+Scope: class-level debugging proof selection across software projects. Applicability: use when the issue is repeated, core-path, or framing-sensitive. Anti-condition: skip the expanded matrix for a deterministic one-line defect with direct proof.
+
 Build evidence that distinguishes causes. Include both the broken path and a working contrast path.
 
-For UI problems, collect:
+Use the evidence-modality contract: first name the disputed variable and owner boundary, then choose the proof type that can directly observe that variable. Different domains require different readbacks; do not promote one domain's proof shape into a universal rule.
 
-- DOM existence for the target.
-- Computed display/visibility/opacity/pointer-events/position/z-index.
-- Bounding boxes for target and owner containers.
-- Root/app/shell/loading scroll and height ownership.
-- Viewport metrics and relevant state markers/storage/route/auth/cache freshness.
+Minimum proof matrix fields:
 
-For backend/system problems, collect:
+- Disputed variable or ownership decision.
+- Current producers/controllers/writers.
+- Transformers/adapters/fallbacks.
+- Consumers/displays/action users.
+- Direct readback at the variable's real boundary.
+- Broken path evidence and contrast/negative path evidence.
+- Falsifier that would demote the current explanation.
 
-- Exact input, normalized internal state, persistence readback, outbound response.
-- Config/env/deployment identity at each boundary.
-- Recent commits and current deployed artifact identity.
-
+Load `references/evidence-modality-contract.md` when the evidence type is unclear or the issue is repeated/core.
 ### 3. Entry Gate — judge candidate paths
 
 Before editing, score each candidate fix:
@@ -202,6 +204,11 @@ Use theory as a reasoning check, not as evidence.
 
 - `references/problem-finding-chain.md` — reusable method for converting user wording/artifacts into an evidence-led causal path: intent → time slice → surface owner → control boundary → hypotheses → discriminating evidence → root-cause path.
 - `references/pwa-kill-reopen-bottom-chrome-case.md` — scoped mobile/PWA example for kill/reopen bottom-chrome disappearance, including the classification gate for DOM/CSS/geometry/state/lifecycle/cache and splash-marker teardown failure.
+- `references/mobile-keyboard-layout-control-ownership.md` — class-level pattern for mobile Web/PWA/WebView soft-keyboard regressions where global body locks, app route shells, component shells, visualViewport listeners, and page-specific pointer/focus handlers compete for the same scroll/viewport ownership.
+- `references/single-model-frame-error-prevention.md` — single-agent R-B-H-F-E-O-S gate for avoiding early convergence on the wrong problem frame: Representation → Boundary → Hypotheses → Falsifier → Evidence → Ownership → Solution.
+- `references/eval-mobile-input-layout-frame-error.md` — class-level eval fixture: repeated mobile input-layout fixes with multiple viewport/scroll/action controllers must block implementation and force an ownership-contract pass.
+- `references/evidence-modality-contract.md` — class-level proof-selection rule for repeated/core issues: completion evidence must observe the disputed variable at its correct boundary; screenshots/coordinates are UI-specific examples, while backend/API/data/workflow/release issues require their own direct readbacks, contrast paths, and falsifiers.
+- `references/root-cause-ownership-engineer-role.md` — reusable development role template for high-risk/repeated problems: problem representation auditor + ownership-convergence architect + regression evidence gatekeeper.
 - `templates/rpepr-debugging-note.md` — fill-in working note for the RPEPR procedure before applying a third patch or when the user challenges the frame.
 
 ## Common Pitfalls

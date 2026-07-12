@@ -15,6 +15,22 @@ Minimum in-root rule: treat safe preclaim no-op as OK, verify escape guard state
 
 ## New / important references
 
+- `references/proof-check-autorun-debt-classification.md` — use when `proof-check` mixes autorun event hashes with artifact/compound SHA-256 evidence: require an exact event-reference predicate, preserve the done-task candidate gate, reclassify only byte-matched artifacts through an ordered reversible hash manifest, and leave source-unmatched hashes visibly OPEN.
+- `references/procedure-validation-local-rehearsal-projection.md` — use when local Agent OS procedures are stale: write rehearsal receipts under the selfcheck root (not a doubly nested rehearsal directory), rebuild projection, and prove authority-blocked/external procedures did not change.
+- `references/continuation-compaction-recurrent-state-implementation.md` — use for read-only continuation manifests and explicitly approved archive-only compaction: preserve blocked/human-review packets, verify zero residual archive candidates, and distinguish newly created live packets from compaction regressions.
+
+- `references/continuation-closure-after-interruption.md` — use when a continuous closeout loop is interrupted by tool-budget/context limits or async verification: resume from fresh canonical readback, keep advancing independent safe slices, classify every residual gap, preserve missing-input truth boundaries, and require a latest-byte verifier vote before closure.
+- `references/validator-false-green-hash-drift-authorized-continuation.md` — use when Local Brain validation suddenly goes green after scope/parser changes, when taskpool hash verification mirrors canonical indexing, or when user authorization releases blocked historical tasks: detect malformed-frontmatter invisibility before L3 scope, reuse canonical block/secret-filter logic, refresh verifier snapshots, read lifecycle state after concurrent resolver actions, and keep missing-source acceptance OPEN.
+- `references/concept-bound-recall-preflight-mcp-projection.md` — use when local-brain `concepts`/tags should drive deterministic recall or an existing verifier, or when evaluating a generic Memory MCP bridge: normalize into authority-neutral `concept_refs` before envelope hashing, persist hash-bound excerpt-free receipts, make verifier triggers PASS/FAIL/SKIP and policy-invariant, and validate metadata-only MCP projections in a disposable store before opening any persistent dual-store write path.
+- `references/automatic-semantic-knowledge-recall-integrity.md` — use when validated task intake automatically retrieves local knowledge: derive bounded queries only from the structured semantic envelope, bridge explicit local-brain `concepts` tags into validated authority-neutral `concept_refs` before hashing/recall, persist excerpt-free hash-bound receipts, reject internally consistent forgeries through current-source verification, account for top-k instability with a wider bounded verification window, and certify via isolated real-backend lifecycle probes plus exact-byte independent review.
+- `references/structured-semantic-intent-and-idle-readiness.md` — use when knowledge/solution/workflow processing must be driven by a versioned semantic intent envelope and declarative capability graph rather than keywords; includes authority/writeback separation, complete producer call-site inventory, validated-parent child inheritance, reversible frontmatter persistence, save/reload decision tests, metamorphic negative tests, safe fail-closed behavior, idle-neutral readiness, and qualification-claim boundaries.
+- `references/read-only-scoped-certification-amendment.md` — use for narrow independent final verification of a hash-bound local taskpool certification packet: enforce an exact-version byte freeze, run cwd-sensitive manifests from the declared root, verify parser totality (malformed serialization plus wrong container/entry types) without permissive fallback, execute stable-inode `flock` crash-release coverage with zero-residual-child readback, bind saved suite summaries by hash, and land the final verdict as a separate receipt without inflating scoped local claims into historical, external, clean-release, global, or real multi-model certification.
+- `references/architecture-and-test-matrix-inventory.md` — use for read-only full-system taskpool audits: separate each durable state model/SSOT, inventory lifecycle ownership and controller loops, trace adapters/mirrors for direct-write bypasses, map tests from assertions rather than filenames, run under the project-declared runtime, and classify concrete failures separately from untested high-risk gaps.
+- `references/bounded-loop-and-multicontroller-convergence.md` — use when deciding whether taskpool automation is genuinely closed-loop, when event hooks/cron/controllers disagree, or when adding bounded Agent/compound loops; includes cross-controller eligibility SSOT, pre-run contract completeness, stop/evaluator gates, failure modes, and core literature.
+- `references/automated-claim-bypass-and-handoff-invariant-audit.md` — use for independent P0/controller-convergence reviews: enumerate every automated low-level claim caller, compare the complete mutation-time gate (including execution-flow/selfcheck/write guard), trace required handoff fields through legacy batch producers, preserve structured denial JSON even on non-zero subprocess exits, and detect partial-claim release failures, claim/retry churn, or false background-spawn success after a new consumer invariant.
+- `references/social-signal-advisory-drain-runbook.md` — use when continuing/progressing a backlog of public social/media advisory taskpool cards: preserve source boundaries, write decision-matrix artifacts, attach sha256 proof to lifecycle transitions, and keep runtime/certification gates closed.
+- `references/compound-agent-loop-taskpool-mapping.md` — scoped reference for mapping compound/self-improving agent loop contracts into taskpool cards; applicability: governed intake/recertification only; anti-condition: does not authorize runtime/worker/scheduler/external writes.
+- `references/workspace-projection-taskpool-bridge-boundary.md` — use when connecting WorkspaceProjection/EvidenceDAG/ReflectionReadback/CompletionClaimPacket outputs to taskpool review/done gates, event projection, or read-only dashboards; includes exact-source/write-surface preflight, dashboard-history pitfall, no-hidden-state/no-model-only-proof boundaries, and the four-field exact target/payload/rollback/readback gate for any write-through.
 - `references/batch-intake-and-recertification-repair.md` — batch intake + degraded recertification repair.
 - `references/multimodel-routing-vs-thinking-drain.md` — split taskpool multi-model routing-plan intervention from task-content thinking/ratification; includes stage-to-tier guidance and drain-loop checks.
 - `references/advisory-only-pass-review-gate.md` — avoid evidence-only advisory tasks ping-ponging back to pending after `PASS_ADVISORY_ONLY`; keep review/done authority separated.
@@ -26,6 +42,9 @@ Minimum in-root rule: treat safe preclaim no-op as OK, verify escape guard state
 - `references/false-selected-parent-and-live-certification-drain.md` — when broad dispatch selects a parent but exact eligibility/certification gates deny execution, avoid parent-worker churn: respect live certification ownership, split new taxonomy axes into children, then verify no live jobs/allowlist residue.
 - `references/browser-readback-precommit-evidence.md` — when a scoped taskpool/project closeout commit is blocked because local-brain pre-commit does not recognize real browser screenshot/console readback, preserve the gate and repair the evidence-shape classifier under TDD instead of bypassing the hook.
 - `references/normal-automation-advance-chain.md` — class-level chain for continuing blocked/retry taskpool work without punting: snapshot, deterministic maintenance, human-escape recovery, live-owner reconciliation, child-parent sync, exact eligibility, multimodel routing/thinking, certification loop breakers, scoped tests/commits, and final readback.
+- `references/targeted-evidence-packet-after-t3-pause.md` — Applicability: blocked parent tasks whose child convergence is clean but the configured certification/economy gate is paused after repeated ratification failure. Anti-condition: do not use as completion authority, do not fabricate missing artifacts, and do not rerun a paused multimodel loop without a fresh exact authorization/readback path.
+- `references/quota-observability-profile-local-continuation.md` — Profile-local quota-observability continuation: when historical quota artifacts are stale/missing or no-header model routes appear non-certifying, recreate fresh continuation packets, use `confidence-gate --gate`, run profile-local smokes/probes, and preserve the boundary between route availability and exact quota.
+- `references/intelligent-agent-layer-event-route.md` — use when taskpool events must route into the intelligent agents layer: keep taskpool as SSOT/proof gate, put expansion decisions in smart routing, wake agents only through a governed worker bridge, and verify route availability separately from actual spawned work.
 
 ## Review/done lifecycle proof pitfall
 
@@ -94,9 +113,14 @@ Minimum in-root rule: classify current cron errors read-only first; do not batch
 
 When implementing task pool auto-execution, use **event-driven architecture** over polling/timed triggers. User preference (2026-05-31): "为什么是定时？而不是自动化根据待执行直接触发？" - Why is it timed instead of automatic trigger based on pending tasks?
 
-See `references/event-driven-auto-execution.md` for the full architecture: event types (task.created, task.status_changed, task.dependency_met, task.priority_changed, task.assigned), auto-claim logic, auto-execute logic, API integration, and deployment patterns.
+See `references/event-driven-auto-execution.md` for the event architecture patterns, and `references/bounded-loop-and-multicontroller-convergence.md` when event hooks coexist with cron, retry, reconcile, agent-team, or manual dispatch controllers.
 
-Key principle: Events should trigger immediate action when task state changes, not wait for the next polling cycle.
+Key principles:
+- Events should trigger immediate eligibility evaluation when task state changes, not wait for the next polling cycle.
+- An event is a wake signal, not claim/execute authority.
+- Every controller must use the same exact-task eligibility/policy SSOT before claim.
+- Handoff/envelope/authority/acceptance/evidence/stop contracts must be complete before entering `running`.
+- To verify automation, reconstruct the lifecycle timeline and read worker jobs; do not infer the result from the creation hook alone.
 
 ## Core principle
 
@@ -203,7 +227,9 @@ Detailed dispatch tick fix guidance moved to `references/dispatch-tick-fix-guida
 
 Load it when patching `max_agents`, dynamic-N, parallel boundaries, iceberg dispatch integration, brain overlay contracts, or tick logging behavior.
 
-Minimum in-root rule: separate warnings from errors and preserve fail-closed behavior only for true safety blockers.
+For independently failing baseline tests during a scoped controller/certification slice, load `references/dispatch-tick-baseline-independence-and-test-seam-drift.md`: trace before/reconcile/projection/after state, audit the exact monkeypatch wrapper seam, prove causal separation from the current diff, and distinguish scoped certification from a full dispatch-tick/full-suite claim.
+
+Minimum in-root rule: separate warnings from errors and preserve fail-closed behavior only for true safety blockers; never weaken reconciliation or liveness gates to satisfy a stale synthetic fixture.
 
 ## False-positive `done` tasks
 
@@ -247,7 +273,8 @@ Minimum in-root rule: prefer the narrowest named reference for the active sympto
 2. Retrying add/transition commands after a timeout without first checking whether the previous command partially succeeded.
 3. Upgrading advisory-only multimodel outputs or local py_compile/proof-check health into certified done authority.
 4. Sending advisory-only `PASS_ADVISORY_ONLY` evidence tasks back to `pending` after deterministic worker proof exists; this re-dispatches the same task and creates blocked/retry ping-pong. Keep them in `review` without granting done authority; see `references/advisory-only-pass-review-gate.md`.
-5. Cleaning dashboards by force-closing or archiving instead of fixing evidence shape, lifecycle ownership, or stale-claim state.
+5. Review-gap repair children and bounded CLI/control-plane implementations are not automatically UI closeouts. If `PASS_ADVISORY_ONLY` or historical body/non-goal words like “修复/验证/browser/api/UI” force screenshot/API proof, inspect the closeout surface classifier before changing evidence. Explicit non-empty `harness_surfaces` should bound the required output proof (`local-cli` ≠ UI; `backend` requires API/readback but not UI). Repair the classifier under RED→GREEN tests; never add fake screenshot/API markers. Legacy active tasks may separately need a truthful validated semantic-intent envelope. See `references/closeout-surface-obligation-classifier.md`.
+6. Cleaning dashboards by force-closing or archiving instead of fixing evidence shape, lifecycle ownership, or stale-claim state.
 6. Re-dispatching the same blocked parent worker after children are done and certification still fails. First inspect `parent_aggregation`, missing taxonomy axes, stale child-status proofs, and the ratification surface; see `references/parent-certification-churn-and-missing-axis-drain.md`.
 7. Treating broad scheduler selection as execution authority for a parent. Always run exact task eligibility and live worker/certification readback before adding allowlist or claiming; see `references/false-selected-parent-and-live-certification-drain.md`.
 
@@ -257,4 +284,8 @@ Minimum in-root rule: prefer the narrowest named reference for the active sympto
 - [ ] Lifecycle transitions used structured evidence prefixes and the allowed status chain.
 - [ ] Any stale-claim, blocked, review, retry, or done claim was backed by a fresh command/artifact/proof readback.
 - [ ] External dispatch, destructive cleanup, credential entry, publish/deploy/push, broad fan-out, and real adapter writes remained closed unless exact authority existed.
+- [ ] Historical proof warning reductions were justified by namespace false-positive removal or exact source-byte matches; unmatched hashes stayed visibly OPEN.
+- [ ] Multi-record task mutation manifests were verified as ordered hash chains, with current bytes matching the final record only.
+- [ ] Continuation closure compared buckets/packet IDs rather than raw active count, because the current session can create new live packets.
+- [ ] Local procedure rehearsal receipts landed under the registry-scanned root; external/authority-blocked procedure states were proved unchanged.
 - [ ] The relevant narrow reference under `references/` was loaded when the root pointer indicated it was needed.

@@ -6,6 +6,62 @@ Status model: idea → SSOT → contract → implementation-slice → verified-s
 ## Current truth
 This project is no longer a one-off chat. Canonical state lives here and must be updated after each material step.
 
+## Open-source travel workflow absorption — 2026-07-11 12:17 CST
+
+### Provider-adapter loop slice — 2026-07-11 13:37 CST
+
+Implemented:
+- `packages/offline-core/src/travelAmapAdapter.ts`: read-only Amap v5 driving-route adapter, GCJ-02-labelled output, credential-redacted evidence URL, provider/HTTP/schema fail-closed behavior.
+- `packages/offline-core/src/travelQWeatherAdapter.ts`: read-only QWeather hourly adapter using `X-QW-Api-Key`, account API host, provider update time, TTL, metric normalization and fail-closed provider/schema handling.
+- focused RED→GREEN tests: `travel-amap-adapter.test.ts` 3/3 and `travel-qweather-adapter.test.ts` 3/3.
+- public exports and RN source-mode Jest mappings for both adapters.
+
+Fresh verification:
+- offline-core `npm test && npm run build` => PASS 15 files / 70 tests and tsc PASS.
+- RN native Jest => PASS 3 suites / 46 tests.
+- workspace `npm test && npm run build` => PASS: gateway 34/34, PWA 22/22, RN shell 12/12, entry-core 7/7, offline-core 70/70; all builds pass.
+- production gate => PASS 17/17 at `2026-07-11T05:37:36.346Z`.
+- local credential presence readback (values never read or printed): Amap and all QWeather variables currently missing.
+
+Current gate:
+- adapters are code/test ready but no real provider smoke can run until the user locally configures Amap and QWeather credentials.
+- no secret was persisted, printed, committed, or included in evidence URLs.
+- no booking/payment/permit/external write authority was opened.
+
+Objective/spec:
+- `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/04-prd/open-source-workflow-absorption.md`
+- `/Users/charles/.hermes/workflows/product/mobile-offline-avatar-travel/04-prd/personal-api-integration-dossier.md`
+
+Implemented slice:
+- `/Users/charles/hermes-pocket/packages/offline-core/src/travelEvidenceWorkflow.ts`
+- `/Users/charles/hermes-pocket/packages/offline-core/tests/travel-evidence-workflow.test.ts`
+- public exports in `/Users/charles/hermes-pocket/packages/offline-core/src/index.ts`
+- RN source-mode Jest mapping in `/Users/charles/hermes-pocket/apps/rn-shell/native/jest.config.js`
+
+Covered workflow:
+- immutable source artifact identity/hash/time/source reference;
+- extractor run identity and status;
+- located evidence spans with confidence, authority and derivation;
+- TripState candidate promotion as advisory/needs-confirmation/blocked;
+- fail-closed handling for login, CAPTCHA, paywall and private interfaces;
+- low-confidence OCR rejection;
+- inventory, transaction, permit and safety claims require official/human readback;
+- inferred/open-reference claims cannot become authoritative facts.
+
+Fresh evidence:
+- `cd /Users/charles/hermes-pocket/packages/offline-core && npm test -- --run tests/travel-evidence-workflow.test.ts` => PASS 6/6.
+- `cd /Users/charles/hermes-pocket/packages/offline-core && npm test` => PASS 13 files / 64 tests.
+- `cd /Users/charles/hermes-pocket/packages/offline-core && npm run build` => PASS.
+- `cd /Users/charles/hermes-pocket && npm test && npm run build` => PASS: gateway 34/34, PWA 22/22, RN shell 12/12, entry-core 7/7, offline-core 64/64; all workspace builds pass.
+- `cd /Users/charles/hermes-pocket/apps/rn-shell/native && npm test -- --runInBand` => PASS 3 suites / 46 tests after adding the new source-mode mapper.
+- `cd /Users/charles/hermes-pocket && npm run production:gate` => PASS 17/17 at `2026-07-11T04:17:03.319Z`.
+
+Boundary / next gate:
+- This absorbs transferable workflows and contracts, not upstream code/data rights or live provider authority.
+- No crawler bypass, external write, booking, payment, cancellation, permit submission, deploy or push was performed.
+- Real P0 integrations still require locally entered Amap and QWeather credentials plus redacted provider smokes; Amadeus remains experimental.
+- Runtime PaddleOCR/KItinerary/Trafilatura/Crawlee installation is intentionally deferred to isolated adapter slices with real user-authorized artifacts or allowlisted public pages.
+
 ## Components
 | Component | Status | Evidence | Next gate |
 |---|---|---|---|

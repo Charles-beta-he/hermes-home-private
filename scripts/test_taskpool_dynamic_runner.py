@@ -21,6 +21,45 @@ def load_module():
     return module
 
 
+def test_lock_creation_is_atomic_and_owner_only(tmp_path):
+    m = load_module()
+    m.LOCK = tmp_path / "runner.lock"
+
+    assert m.acquire_lock() is True
+    assert m.LOCK.read_text(encoding="utf-8") == str(os.getpid())
+    assert (m.LOCK.stat().st_mode & 0o777) == 0o600
+    assert m.acquire_lock() is False
+    m.release_lock()
+    assert m.LOCK.exists()
+    assert m.acquire_lock() is True
+    m.release_lock()
+
+
+def test_separate_runner_instances_cannot_share_lock(tmp_path):
+    first = load_module()
+    second = load_module()
+    lock = tmp_path / "runner.lock"
+    first.LOCK = lock
+    second.LOCK = lock
+
+    assert first.acquire_lock() is True
+    assert second.acquire_lock() is False
+    first.release_lock()
+    assert second.acquire_lock() is True
+    second.release_lock()
+
+
+def test_stale_lock_is_replaced_atomically(tmp_path, monkeypatch):
+    m = load_module()
+    m.LOCK = tmp_path / "runner.lock"
+    m.LOCK.write_text("99999999", encoding="utf-8")
+    monkeypatch.setattr(m, "alive", lambda pid: pid == os.getpid())
+
+    assert m.acquire_lock() is True
+    assert m.LOCK.read_text(encoding="utf-8") == str(os.getpid())
+    m.release_lock()
+
+
 def test_signature_changes_on_next_task():
     m = load_module()
     a = {"status": "OK", "next_task_id": "a", "dispatchable": True, "multimodel_intervention": {"task_id": "m", "queued_count": 1}, "auto_close_review": {"closed_count": 0, "error_count": 0}}

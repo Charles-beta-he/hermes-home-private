@@ -337,19 +337,28 @@ def get_all_dispatchable():
     return [t for t in data.get('rows', []) if t.get('dispatchable', False)]
 
 def claim_task(task_id, actor='agent-team-controller', ttl=60):
-    """Claim a task via orchestrator."""
+    """Claim through the orchestrator's canonical eligibility + handoff gate."""
     r = subprocess.run(
-        ['python3', str(ORCHESTRATOR), 'claim', task_id,
+        ['python3', str(ORCHESTRATOR), 'auto-claim-and-handoff', '--task', task_id,
          '--actor', actor, '--ttl-minutes', str(ttl),
-         '--reason', 'Phase 4 dynamic parallel dispatch', '--json'],
+         '--no-reconcile', '--json'],
         capture_output=True, text=True, timeout=90
     )
-    if r.returncode != 0:
-        return {'ok': False, 'error': r.stderr[:200]}
-    data = json.loads(r.stdout)
-    if data.get('status') == 'OK':
+    data = {}
+    if str(r.stdout or '').strip():
+        try:
+            data = json.loads(r.stdout)
+        except json.JSONDecodeError:
+            data = {}
+    if r.returncode != 0 and not data:
+        return {'ok': False, 'error': (r.stderr or r.stdout or 'claim_bridge_failed')[:200]}
+    if data.get('status') == 'OK' and data.get('claimed') and str(data.get('handoff') or '').strip():
         return {'ok': True, 'data': data}
-    return {'ok': False, 'error': data.get('reasons', str(data.get('status', 'unknown')))}
+    return {
+        'ok': False,
+        'error': data.get('reasons') or data.get('reason') or ('missing_handoff_contract' if data.get('claimed') else str(data.get('status', 'unknown'))),
+        'data': data,
+    }
 
 
 def transition_task(task_id, to_status, actor, reason, evidence=None, ttl=60, force=False):
@@ -2246,11 +2255,39 @@ def claim_cycle(max_claims=3, wall_budget_seconds=20):
             continue
         task = group_tasks[0]
         task_id = task.get('id', '')
-        result = claim_task(task_id)
+        result = claim_task(task_id, actor='agent-team-controller', ttl=60)
         if not result.get('ok'):
-            claim_errors.append({'task_id': task_id, 'group': group, 'error': result.get('error', 'claim_failed')})
+            claim_data = result.get('data') or {}
+            release = None
+            if claim_data.get('claimed') and not str(claim_data.get('handoff') or '').strip():
+                release = transition_task(
+                    task_id,
+                    'retry',
+                    'agent-team-controller',
+                    'claim succeeded without required handoff; fail-closed before enqueue',
+                    evidence=['command:agent_team_controller claim-cycle missing_handoff_contract'],
+                    force=True,
+                )
+            claim_errors.append({
+                'task_id': task_id,
+                'group': group,
+                'error': result.get('error', 'claim_failed'),
+                **({'release': release} if release is not None else {}),
+            })
             continue
-        eid = create_claim_envelope(task, group, actor='agent-team-controller', source='claim-cycle')
+        handoff = str((result.get('data') or {}).get('handoff') or '').strip()
+        if not handoff:
+            release = transition_task(
+                task_id,
+                'retry',
+                'agent-team-controller',
+                'claim succeeded without required handoff; fail-closed before enqueue',
+                evidence=['command:agent_team_controller claim-cycle missing_handoff_contract'],
+                force=True,
+            )
+            claim_errors.append({'task_id': task_id, 'group': group, 'error': 'missing_handoff_contract', 'release': release})
+            continue
+        eid = create_claim_envelope(task, group, actor='agent-team-controller', source='claim-cycle', handoff=handoff)
         claimed.append({
             'task_id': task_id,
             'title': task.get('title', '')[:50],
@@ -2418,6 +2455,19 @@ def execute_cycle(max_workers=3, wall_budget_seconds=600):
             skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'claimed_by_mismatch', 'payload_actor': payload_actor, 'row_actor': row_actor})
             continue
         actor = row_actor or payload_actor or 'agent-team-controller'
+        handoff = str(payload.get('handoff') or '').strip()
+        if not handoff:
+            release = transition_task(
+                task_id,
+                'retry',
+                actor,
+                'queued claim missing required handoff; fail-closed before running',
+                evidence=['command:agent_team_controller execute-cycle missing_handoff_contract'],
+                force=True,
+            )
+            update_status(eid, 'SKIPPED' if release.get('ok') else 'FAILED', error='missing_handoff_contract')
+            skipped.append({'envelope_id': eid, 'task_id': task_id, 'reason': 'missing_handoff_contract', 'release': release})
+            continue
         if str(os.environ.get('HERMES_AGENT_TEAM_EXECUTE_ASYNC') or '').strip().lower() in {'1', 'true', 'yes', 'on'}:
             async_result = start_consume_claimed_background(
                 [{'task_id': task_id, 'handoff': payload.get('handoff', '')}],
@@ -2571,6 +2621,18 @@ def consume_claimed_batch(claimed_items, max_agents=3):
             skipped.append({'task_id': task_id, 'reason': f"not_claimed:{row.get('status')}"})
             continue
         actor = str(row.get('claimed_by') or 'hermes-parallel')
+        handoff = str(item.get('handoff') or '').strip() if isinstance(item, dict) else ''
+        if not handoff:
+            release = transition_task(
+                task_id,
+                'retry',
+                actor,
+                'claimed task missing required handoff; fail-closed before running',
+                evidence=['command:agent_team_controller consume-claimed missing_handoff_contract'],
+                force=True,
+            )
+            skipped.append({'task_id': task_id, 'reason': 'missing_handoff_contract', 'release': release})
+            continue
         group = row.get('parallel_group') or row.get('conflict_group') or row.get('parallel_boundary') or row.get('project') or 'default'
         eid = create(
             type='TASK',
@@ -2582,7 +2644,7 @@ def consume_claimed_batch(claimed_items, max_agents=3):
                 'boundary': row.get('parallel_boundary', ''),
                 'conflict_group': group,
                 'event_driven_claim': True,
-                'handoff': item.get('handoff', '') if isinstance(item, dict) else '',
+                'handoff': handoff,
             },
             appetite_seconds=1800,
         )

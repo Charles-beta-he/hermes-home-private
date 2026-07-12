@@ -76,14 +76,25 @@ A candidate asset must include:
 - lifecycle policy: promote/demote/cleanup/protect/superseded_by;
 - loop policy: self-advance rules and exact stop boundaries.
 
-Use the local helper when available:
+Use the local helpers when available:
 
 ```bash
+# End-to-end safe local loop: decide -> module plan -> optional asset scaffold -> usage ledger.
+python3 ~/.hermes/scripts/workflow_kernel_loop.py run-once --seed '<seed>' --observed-repetition 2
+python3 ~/.hermes/scripts/workflow_kernel_loop.py synthesize
+
+# Lower-level asset helper.
 python3 ~/.hermes/scripts/workflow_asset_decision.py decide --seed '<seed>' --observed-repetition 2
 python3 ~/.hermes/scripts/workflow_asset_decision.py compile --seed '<seed>' --observed-repetition 2
 python3 ~/.hermes/scripts/workflow_asset_decision.py scaffold --seed '<seed>' --observed-repetition 2
 python3 ~/.hermes/scripts/workflow_asset_decision.py validate --asset ~/.hermes/workflows/assets/<id>/workflow.json
+
+# Module-pool helper.
+python3 ~/.hermes/scripts/workflow_module_pool.py plan --seed '<seed>'
+python3 ~/.hermes/scripts/workflow_module_pool.py synthesize
 ```
+
+These helpers are local-only and must keep external/cron/taskpool/AgentOS side-effect flags false unless a separate exact-authority gate is opened.
 
 ## Lifecycle
 
@@ -113,16 +124,22 @@ Promotion requires evidence. Canonical promotion requires route regression, nega
 - Automation → cron/taskpool/AgentOS only with exact target, rollback/readback, and side-effect evidence gates.
 - Mixed conclusion → split landing zones.
 
+## Module Pool and Synthesis Ratchet
+
+Workflow assets should be assembled from a capability module pool rather than hand-written as monolithic procedures. Treat conversation text as a `WorkflowSeed`; if it passes the assetization gate, compile it into capability needs, retrieve matching modules, detect gaps, create candidate modules only for real gaps, and assemble a workflow graph.
+
+Frequency is a candidate signal, not proof. A high-frequency module combination may become a new composite module only when it also shows stable output contracts, reduced human intervention, passing evidence gates, low false-trigger/neighbor-collision rates, cleanup policy, and rollback/supersession path. See `references/module-pool-and-synthesis-ratchet.md` for the module contract, graph compiler shape, synthesis thresholds, and engineering anchors.
+
 ## Loop Engineering Procedure
 
 1. Observe — capture seed, corrections, repeated patterns, failures, usage signals.
 2. Orient — retrieve similar skills/workflows/project profiles/history/taskpool before creating new assets.
-3. Compile — generate or patch a WorkflowAsset draft.
+3. Compile — generate or patch a WorkflowAsset draft; for reusable candidates, compile seed -> capability needs -> module retrieval -> gap detection -> workflow graph.
 4. Simulate — run positive, negative, neighbor, and forbidden route evals.
 5. Execute — advance only safe local/reversible/verifiable steps by default.
 6. Verify — read back files, schemas, tests, dry-runs, logs, screenshots, API outputs, or other objective evidence.
-7. Ratchet — promote, demote, quarantine, or emit an experience-ratchet proposal.
-8. Monitor — track reuse, false triggers, evidence gaps, authority blocks, cleanup candidates.
+7. Ratchet — promote, demote, quarantine, or emit an experience-ratchet proposal; synthesize new composite modules only from frequency plus quality/evidence signals.
+8. Monitor — track reuse, false triggers, evidence gaps, authority blocks, cleanup candidates, human-intervention rate, and module-combo frequency.
 9. Cleanup — deprecate/archive/revoke with redirects and evidence, not silent deletion.
 
 ## Common Pitfalls
