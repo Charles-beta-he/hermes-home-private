@@ -166,6 +166,19 @@ class LocalBrainPrecommitHookTestCase(unittest.TestCase):
         self.assertIn("gate_readback:", joined)
         self.assertIn("source_packet:", joined)
         self.assertIn("timestamped_source:", joined)
+
+    def test_generic_source_packet_files_collect_domain_evidence(self):
+        files = [
+            "workflows/product/awesome-llm-apps-absorption/evidence/source-packet.json",
+            "workflows/product/awesome-llm-apps-absorption/evidence/timestamped-source.json",
+        ]
+        evidence, errors = hook.hook_evidence(self.repo, files)
+
+        self.assertEqual(errors, [])
+        joined = "\n".join(evidence)
+        self.assertIn("source_packet:", joined)
+        self.assertIn("timestamped_source:", joined)
+
     def test_hewos_implementation_files_collect_project_test_evidence(self):
         files = [
             "workflows/projects/hermes-embodied-workflow-os/implementation/hewos_core/workbench_runtime.py",

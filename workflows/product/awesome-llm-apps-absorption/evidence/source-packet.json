@@ -1,0 +1,15 @@
+{
+  "schema": "source_packet_v1",
+  "repository": "https://github.com/Shubhamsaboo/awesome-llm-apps",
+  "local_path": "/Users/charles/.hermes/runs/awesome-llm-apps-reference-review-20260713/repo",
+  "commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c",
+  "commit_time": "2026-07-10T19:14:36-05:00",
+  "observed_at": "2026-07-12T19:19:50Z",
+  "license_file": "LICENSE",
+  "license": "Apache-2.0",
+  "evidence_files": [
+    "README.md",
+    "LICENSE"
+  ],
+  "runtime_execution": false
+}

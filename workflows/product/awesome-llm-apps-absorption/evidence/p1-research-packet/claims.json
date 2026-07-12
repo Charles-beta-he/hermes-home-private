@@ -1,0 +1,39 @@
+[
+  {
+    "id": "rag-pdf-chain",
+    "text": "The PDF example couples upload, ingestion and chat through Embedchain with OpenAI embedding/generation configuration.",
+    "evidence_refs": [
+      "advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf/chat_pdf.py"
+    ],
+    "status": "verified_static",
+    "cannot_prove": [
+      "local upstream runtime health",
+      "answer citation correctness"
+    ]
+  },
+  {
+    "id": "mcp-bridge-chain",
+    "text": "The MCP tutorial describes connection, discovery, adaptation, invocation and cleanup as distinct integration stages.",
+    "evidence_refs": [
+      "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_4_mcp_tools/README.md"
+    ],
+    "status": "verified_static",
+    "cannot_prove": [
+      "MCP server compatibility",
+      "external tool authorization"
+    ]
+  },
+  {
+    "id": "memory-owner-chain",
+    "text": "The local memory example scopes reads and writes by a user_id and feeds retrieved memory into model context.",
+    "evidence_refs": [
+      "advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory/local_chatgpt_memory.py"
+    ],
+    "status": "verified_static",
+    "cannot_prove": [
+      "user authentication strength",
+      "TTL/dedupe policy",
+      "production isolation"
+    ]
+  }
+]

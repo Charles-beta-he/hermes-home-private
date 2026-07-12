@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "tests": {
+    "capability_primitives": 11,
+    "research_pipeline": 5,
+    "voice_monitoring": 5,
+    "absorption_router": 4,
+    "total": 25
+  },
+  "valid_modules": 18,
+  "local_contract_verified_modules": [
+    "awesome_mcp_tools",
+    "awesome_memory",
+    "awesome_monitoring",
+    "awesome_rag",
+    "awesome_research",
+    "awesome_voice"
+  ],
+  "citation_claims": 3,
+  "external_write_denied": true,
+  "all_side_effects_false": true,
+  "global_certification": false,
+  "canonical_promotion": false,
+  "independent_source_reviews": 3,
+  "ratchet_additions": [
+    "retrieval minimum-score abstention",
+    "memory scoped metadata",
+    "memory explicit idempotency key",
+    "memory delete and scoped clear"
+  ]
+}

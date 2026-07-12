@@ -1,0 +1,134 @@
+{
+  "schema": "awesome_llm_apps_absorption_run_v1",
+  "intent": "优先吸收 RAG、memory、MCP tools",
+  "source": {
+    "repo": "https://github.com/Shubhamsaboo/awesome-llm-apps",
+    "commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c"
+  },
+  "selected_families": [
+    "rag",
+    "memory",
+    "mcp_tools"
+  ],
+  "source_cards": [
+    {
+      "family": "rag",
+      "module_id": "awesome_rag",
+      "module_available": true,
+      "source_examples": [
+        {
+          "path": "advanced_llm_apps/chat-with-tarots",
+          "readme": "advanced_llm_apps/chat-with-tarots/README.md",
+          "verification_status": "source_present_unexecuted"
+        },
+        {
+          "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+          "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github/README.md",
+          "verification_status": "source_present_unexecuted"
+        },
+        {
+          "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail",
+          "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail/README.md",
+          "verification_status": "source_present_unexecuted"
+        }
+      ],
+      "owned_prototype_refs": [
+        "prototypes/capability_primitives/primitives.py#LocalEvidenceRetriever",
+        "prototypes/capability_primitives/test_primitives.py#RetrieverTests",
+        "evidence/p0-primitives-smoke.json"
+      ],
+      "runtime_state": "local_contract_verified"
+    },
+    {
+      "family": "memory",
+      "module_id": "awesome_memory",
+      "module_available": true,
+      "source_examples": [
+        {
+          "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory",
+          "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory/README.md",
+          "verification_status": "source_present_unexecuted"
+        },
+        {
+          "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+          "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory/README.md",
+          "verification_status": "source_present_unexecuted"
+        },
+        {
+          "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory",
+          "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory/README.md",
+          "verification_status": "source_present_unexecuted"
+        }
+      ],
+      "owned_prototype_refs": [
+        "prototypes/capability_primitives/primitives.py#JsonMemoryStore",
+        "prototypes/capability_primitives/test_primitives.py#MemoryTests",
+        "evidence/p0-primitives-smoke.json"
+      ],
+      "runtime_state": "local_contract_verified"
+    },
+    {
+      "family": "mcp_tools",
+      "module_id": "awesome_mcp_tools",
+      "module_available": true,
+      "source_examples": [
+        {
+          "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+          "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github/README.md",
+          "verification_status": "source_present_unexecuted"
+        },
+        {
+          "path": "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization",
+          "readme": "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization/README.md",
+          "verification_status": "source_present_unexecuted"
+        },
+        {
+          "path": "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization",
+          "readme": "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization/README.md",
+          "verification_status": "source_present_unexecuted"
+        }
+      ],
+      "owned_prototype_refs": [
+        "prototypes/capability_primitives/primitives.py#GovernedToolRegistry",
+        "prototypes/capability_primitives/test_primitives.py#ToolRegistryTests",
+        "evidence/p0-primitives-smoke.json"
+      ],
+      "runtime_state": "local_contract_verified"
+    }
+  ],
+  "gates": {
+    "source_identity": "PASS",
+    "module_coverage": "PASS",
+    "runtime_evidence": "WARN",
+    "authority": "PASS"
+  },
+  "missing": [],
+  "next_actions": [
+    {
+      "family": "rag",
+      "action": "extend_owned_runtime_verification"
+    },
+    {
+      "family": "memory",
+      "action": "extend_owned_runtime_verification"
+    },
+    {
+      "family": "mcp_tools",
+      "action": "extend_owned_runtime_verification"
+    }
+  ],
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false,
+    "publish": false,
+    "destructive": false
+  },
+  "closure_state": "static_evidence_only",
+  "cannot_prove": [
+    "upstream runtime health",
+    "provider availability",
+    "production readiness"
+  ]
+}

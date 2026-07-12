@@ -111,6 +111,8 @@ def is_source_evidence_change(files: Sequence[str]) -> bool:
         "competitor-and-best-practice-evaluation",
         "research/",
         "02-research/",
+        "source-packet",
+        "timestamped-source",
     )
     return any(any(name in f.lower() for name in source_names) for f in files)
 

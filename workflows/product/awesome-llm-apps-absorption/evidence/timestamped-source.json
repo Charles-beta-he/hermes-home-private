@@ -1,0 +1,8 @@
+{
+  "schema": "timestamped_source_v1",
+  "observed_at": "2026-07-12T19:19:50Z",
+  "source_commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c",
+  "source_commit_time": "2026-07-10T19:14:36-05:00",
+  "source_readback": "git rev-parse HEAD + git show -s --format=%cI",
+  "status": "PASS"
+}

@@ -99,6 +99,31 @@ P2 — domain compositions:
 4. content workflows
 5. generative UI
 
+## Owned implementation progression
+
+The continued loop landed three executable local prototype slices:
+
+1. `prototypes/capability_primitives/`
+   - deterministic source-bound retrieval;
+   - owner-scoped TTL/deduplicated JSON memory;
+   - governed tool discovery/invocation with fail-closed effect authorization.
+2. `prototypes/research_pipeline/`
+   - claim schema, source-root confinement, citation gate and bounded Markdown report packet.
+3. `prototypes/voice_monitoring/`
+   - empty transcript fails closed;
+   - partial transcript remains uncommitted;
+   - monitoring events deduplicate and never dispatch.
+
+Fresh verification:
+
+- capability primitives: 8 tests PASS;
+- research/citation pipeline: 5 tests PASS and 3 static source claims pass the citation gate;
+- voice/monitoring contracts: 5 tests PASS;
+- executable absorption router: 4 tests PASS and selects RAG/Memory/MCP with source/module gates PASS;
+- local smoke denied unauthorized `external_write` and left external/cron/taskpool/AgentOS false.
+
+All five planned P0/P1 candidate cards are now `local_contract_verified`. This does not promote them to canonical or prove real provider/device/server operation.
+
 ## Not proven
 
 - No upstream application dependencies were installed.

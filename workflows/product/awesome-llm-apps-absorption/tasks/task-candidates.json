@@ -1,0 +1,73 @@
+{
+  "schema": "awesome_llm_apps_absorption_candidates_v1",
+  "source_commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c",
+  "write_to_taskpool": false,
+  "candidates": [
+    {
+      "id": "p0-rag-primitives",
+      "priority": "P0",
+      "objective": "Extract provider-neutral ingestion, retrieval, reranking and citation contracts from representative RAG examples.",
+      "acceptance_evidence": [
+        "representative source files reviewed",
+        "owned local contract tests",
+        "one real local-file RAG smoke"
+      ],
+      "anti_drift_check": "Do not treat README or mock output as runtime proof.",
+      "local_status": "local_contract_verified",
+      "runtime_status": "blocked_by_exact_runtime_target_or_credentials"
+    },
+    {
+      "id": "p0-mcp-tool-adapters",
+      "priority": "P0",
+      "objective": "Map MCP/tool examples into replaceable adapters with stable IO and authority metadata.",
+      "acceptance_evidence": [
+        "adapter contract",
+        "negative authority test",
+        "local read-only tool smoke"
+      ],
+      "anti_drift_check": "No external write or credential entry without exact authority.",
+      "local_status": "local_contract_verified",
+      "runtime_status": "blocked_by_exact_runtime_target_or_credentials"
+    },
+    {
+      "id": "p0-memory-lifecycle",
+      "priority": "P0",
+      "objective": "Compare memory examples and absorb ownership, recall, TTL, dedupe and evidence-bound writeback patterns.",
+      "acceptance_evidence": [
+        "memory ownership matrix",
+        "reload/TTL/dedupe tests",
+        "no task-progress-to-memory negative test"
+      ],
+      "anti_drift_check": "Do not import project/session facts into global memory.",
+      "local_status": "local_contract_verified",
+      "runtime_status": "blocked_by_exact_runtime_target_or_credentials"
+    },
+    {
+      "id": "p1-research-workflow",
+      "priority": "P1",
+      "objective": "Build a citation-gated research workflow from representative research and multi-agent examples.",
+      "acceptance_evidence": [
+        "source claim map",
+        "contradiction review",
+        "citation gate tests",
+        "real-source readback"
+      ],
+      "anti_drift_check": "Model consensus remains advisory.",
+      "local_status": "local_contract_verified",
+      "runtime_status": "local_static_claim_pipeline_verified"
+    },
+    {
+      "id": "p1-voice-monitoring",
+      "priority": "P1",
+      "objective": "Extract voice intake and always-on monitoring contracts while keeping microphone, scheduler and dispatch gates closed by default.",
+      "acceptance_evidence": [
+        "transcript contract",
+        "empty-transcript negative test",
+        "scheduler/dispatch flags false"
+      ],
+      "anti_drift_check": "No default-on microphone or outbound notification.",
+      "local_status": "local_contract_verified",
+      "runtime_status": "blocked_by_exact_runtime_target_or_credentials"
+    }
+  ]
+}

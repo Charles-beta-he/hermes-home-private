@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "evidence": [
+    {
+      "source_id": "source-rag",
+      "chunk_id": "source-rag:0",
+      "text": "RAG pipelines ingest sources, retrieve chunks, and preserve citations.",
+      "score": 1.386294
+    }
+  ],
+  "memory": {
+    "stored_id": "89bb78c4b69dad9e4957",
+    "recalled_count": 1,
+    "owner": "demo-user"
+  },
+  "tool": {
+    "evidence_count": 1,
+    "external_write_denied": true
+  },
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "claim_boundary": "local deterministic primitives only; no LLM, embedding service, MCP server, or external API was invoked"
+}

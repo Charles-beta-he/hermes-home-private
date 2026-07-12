@@ -1221,7 +1221,17 @@
         "upstream app runtime works",
         "provider/API availability",
         "production readiness"
-      ]
+      ],
+      "owned_prototype_refs": [
+        "prototypes/capability_primitives/primitives.py#GovernedToolRegistry",
+        "prototypes/capability_primitives/test_primitives.py#ToolRegistryTests",
+        "evidence/p0-primitives-smoke.json"
+      ],
+      "verification": {
+        "state": "local_contract_verified",
+        "evidence": "8 deterministic tests + local smoke",
+        "runtime_boundary": "no external provider/MCP transport/LLM invoked"
+      }
     },
     {
       "schema": "hermes_capability_module_v1",
@@ -1331,7 +1341,17 @@
         "upstream app runtime works",
         "provider/API availability",
         "production readiness"
-      ]
+      ],
+      "owned_prototype_refs": [
+        "prototypes/capability_primitives/primitives.py#JsonMemoryStore",
+        "prototypes/capability_primitives/test_primitives.py#MemoryTests",
+        "evidence/p0-primitives-smoke.json"
+      ],
+      "verification": {
+        "state": "local_contract_verified",
+        "evidence": "8 deterministic tests + local smoke",
+        "runtime_boundary": "no external provider/MCP transport/LLM invoked"
+      }
     },
     {
       "schema": "hermes_capability_module_v1",
@@ -1433,7 +1453,15 @@
         "upstream app runtime works",
         "provider/API availability",
         "production readiness"
-      ]
+      ],
+      "owned_prototype_refs": [
+        "prototypes/voice_monitoring/contracts.py",
+        "prototypes/voice_monitoring/test_contracts.py"
+      ],
+      "verification": {
+        "state": "local_contract_verified",
+        "runtime_boundary": "no external provider/device/scheduler/dispatch invoked"
+      }
     },
     {
       "schema": "hermes_capability_module_v1",
@@ -1655,7 +1683,17 @@
         "upstream app runtime works",
         "provider/API availability",
         "production readiness"
-      ]
+      ],
+      "owned_prototype_refs": [
+        "prototypes/capability_primitives/primitives.py#LocalEvidenceRetriever",
+        "prototypes/capability_primitives/test_primitives.py#RetrieverTests",
+        "evidence/p0-primitives-smoke.json"
+      ],
+      "verification": {
+        "state": "local_contract_verified",
+        "evidence": "8 deterministic tests + local smoke",
+        "runtime_boundary": "no external provider/MCP transport/LLM invoked"
+      }
     },
     {
       "schema": "hermes_capability_module_v1",
@@ -1766,7 +1804,15 @@
         "upstream app runtime works",
         "provider/API availability",
         "production readiness"
-      ]
+      ],
+      "owned_prototype_refs": [
+        "prototypes/research_pipeline/research_pipeline.py",
+        "evidence/p1-research-packet/verdict.json"
+      ],
+      "verification": {
+        "state": "local_contract_verified",
+        "runtime_boundary": "no external provider/device/scheduler/dispatch invoked"
+      }
     },
     {
       "schema": "hermes_capability_module_v1",
@@ -1877,7 +1923,15 @@
         "upstream app runtime works",
         "provider/API availability",
         "production readiness"
-      ]
+      ],
+      "owned_prototype_refs": [
+        "prototypes/voice_monitoring/contracts.py",
+        "prototypes/voice_monitoring/test_contracts.py"
+      ],
+      "verification": {
+        "state": "local_contract_verified",
+        "runtime_boundary": "no external provider/device/scheduler/dispatch invoked"
+      }
     }
   ]
 }
