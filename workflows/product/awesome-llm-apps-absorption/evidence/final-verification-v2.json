@@ -1,11 +1,12 @@
 {
   "status": "PASS",
   "tests": {
-    "capability_primitives": 11,
+    "capability_primitives": 15,
     "research_pipeline": 5,
     "voice_monitoring": 5,
     "absorption_router": 4,
-    "total": 25
+    "total": 34,
+    "owned_mcp": 5
   },
   "valid_modules": 18,
   "local_contract_verified_modules": [
@@ -27,5 +28,9 @@
     "memory scoped metadata",
     "memory explicit idempotency key",
     "memory delete and scoped clear"
+  ],
+  "owned_runtime_slice_verified_modules": [
+    "awesome_rag",
+    "awesome_mcp_tools"
   ]
 }

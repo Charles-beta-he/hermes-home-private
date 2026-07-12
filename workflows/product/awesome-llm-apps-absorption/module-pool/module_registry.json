@@ -1225,12 +1225,15 @@
       "owned_prototype_refs": [
         "prototypes/capability_primitives/primitives.py#GovernedToolRegistry",
         "prototypes/capability_primitives/test_primitives.py#ToolRegistryTests",
-        "evidence/p0-primitives-smoke.json"
+        "evidence/p0-primitives-smoke.json",
+        "prototypes/owned_mcp/server.py",
+        "prototypes/owned_mcp/adapter.py",
+        "prototypes/owned_mcp/test_owned_mcp.py"
       ],
       "verification": {
-        "state": "local_contract_verified",
+        "state": "owned_runtime_slice_verified",
         "evidence": "8 deterministic tests + local smoke",
-        "runtime_boundary": "no external provider/MCP transport/LLM invoked"
+        "runtime_boundary": "owned read-only stdio fixture server only; no third-party MCP/network/credentials"
       }
     },
     {
@@ -1687,12 +1690,14 @@
       "owned_prototype_refs": [
         "prototypes/capability_primitives/primitives.py#LocalEvidenceRetriever",
         "prototypes/capability_primitives/test_primitives.py#RetrieverTests",
-        "evidence/p0-primitives-smoke.json"
+        "evidence/p0-primitives-smoke.json",
+        "prototypes/capability_primitives/evidence_packet.py",
+        "prototypes/capability_primitives/test_evidence_packet.py"
       ],
       "verification": {
-        "state": "local_contract_verified",
+        "state": "owned_runtime_slice_verified",
         "evidence": "8 deterministic tests + local smoke",
-        "runtime_boundary": "no external provider/MCP transport/LLM invoked"
+        "runtime_boundary": "local deterministic retrieval/evidence packet only; no generator/provider"
       }
     },
     {

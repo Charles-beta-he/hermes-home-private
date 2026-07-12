@@ -124,6 +124,17 @@ Fresh verification:
 
 All five planned P0/P1 candidate cards are now `local_contract_verified`. This does not promote them to canonical or prove real provider/device/server operation.
 
+## Continued owned runtime slices
+
+The next Loop added two executable local runtime slices:
+
+- `awesome_rag`: immutable `EvidencePacket` with deterministic digest; generation context and citations are derived from the same packet; empty/weak retrieval returns `insufficient_evidence` without a second retrieval or model fallback.
+- `awesome_mcp_tools`: an owned JSON-RPC stdio fixture server plus adapter implementing initialize, tools/list, resources/list, exact capability allowlisting, namespaced tool IDs, schema digests, normalized receipts, timeout and fail-closed errors.
+
+The MCP slice runs only an owned Python fixture process. It does not use network, `npx`, shell tools, credentials, third-party MCP servers, or filesystem mutation. These two modules are now `owned_runtime_slice_verified` within that explicit boundary.
+
+Fresh aggregate verification: 34 tests PASS. Global certification and canonical promotion remain false.
+
 ## Not proven
 
 - No upstream application dependencies were installed.

@@ -4,7 +4,7 @@
 schema: product_workflow_state_v1
 workflow: awesome-llm-apps-absorption
 state: ready_for_review
-current_stage: p0_p1_local_contracts_verified
+current_stage: rag_and_owned_mcp_runtime_slices_verified
 source_commit: 426cfa66b5fd832090038c36e50a6aa1dab3119c
 artifacts:
   spec: spec-packet.md
