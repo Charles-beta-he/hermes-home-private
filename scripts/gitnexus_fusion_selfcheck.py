@@ -42,7 +42,7 @@ PATTERNS = {
 BRAIN_SEARCH_TERMS = [
     "GitNexus-inspired 多模型 代码证据门",
     "impact-before-edit detect_changes stale-index",
-    "Contract Bridge contract_id shape_check",
+    '"Contract Bridge" OR contract_id OR shape_check',
 ]
 
 
