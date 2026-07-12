@@ -1,0 +1,12 @@
+{
+  "schema": "hermes_workflow_loop_execution_v1",
+  "status": "PASS",
+  "action": "no_durable_write",
+  "asset_workdir": null,
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  }
+}

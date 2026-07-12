@@ -1,0 +1,7 @@
+{
+  "schema": "hermes_workflow_loop_cleanup_v1",
+  "status": "PASS",
+  "mode": "advisory_only",
+  "candidates": [],
+  "deleted": []
+}

@@ -1,0 +1,72 @@
+{
+  "schema": "hermes_workflow_module_plan_v1",
+  "seed": "吸收开源功能库：固定来源证据，分析许可证与运行风险，推荐 RAG、研究、记忆、MCP、语音和监控能力，输出临时组合工作流与验证报告",
+  "capability_needs": [
+    "source_evidence_collector",
+    "risk_modeler",
+    "presentation_builder",
+    "evidence_gate"
+  ],
+  "selected_modules": [
+    "source_evidence_collector",
+    "risk_modeler",
+    "awesome_rag",
+    "evidence_gate"
+  ],
+  "missing_capability_needs": [],
+  "graph": {
+    "nodes": [
+      {
+        "id": "source_evidence_collector",
+        "need": "source_evidence_collector",
+        "status": "matched",
+        "depends_on": []
+      },
+      {
+        "id": "risk_modeler",
+        "need": "risk_modeler",
+        "status": "matched",
+        "depends_on": [
+          "source_evidence_collector"
+        ]
+      },
+      {
+        "id": "awesome_rag",
+        "need": "presentation_builder",
+        "status": "matched",
+        "depends_on": [
+          "risk_modeler"
+        ]
+      },
+      {
+        "id": "evidence_gate",
+        "need": "evidence_gate",
+        "status": "matched",
+        "depends_on": [
+          "awesome_rag"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": "source_evidence_collector",
+        "to": "risk_modeler"
+      },
+      {
+        "from": "risk_modeler",
+        "to": "awesome_rag"
+      },
+      {
+        "from": "awesome_rag",
+        "to": "evidence_gate"
+      }
+    ]
+  },
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "authority_boundary": "local_only"
+}

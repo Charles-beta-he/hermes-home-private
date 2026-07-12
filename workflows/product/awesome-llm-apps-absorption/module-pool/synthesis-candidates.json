@@ -1,0 +1,13 @@
+{
+  "schema": "hermes_workflow_kernel_synthesis_result_v1",
+  "status": "ok",
+  "candidate_count": 0,
+  "candidates": [],
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false
+  },
+  "ledger": "/Users/charles/.hermes/workflows/product/awesome-llm-apps-absorption/module-pool/usage_ledger.jsonl"
+}

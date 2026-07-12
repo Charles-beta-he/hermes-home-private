@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "source_refs_checked": 162,
+  "unique_apps": 162,
+  "valid_modules": 18,
+  "workflow_nodes": 18,
+  "gates": 3,
+  "task_candidates": 5,
+  "taskpool_write": false,
+  "side_effects_all_false": true
+}

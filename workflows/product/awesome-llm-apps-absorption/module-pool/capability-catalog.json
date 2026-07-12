@@ -1,0 +1,3323 @@
+{
+  "schema": "awesome_llm_apps_capability_catalog_v1",
+  "generated_at": "2026-07-12T19:03:54Z",
+  "source": {
+    "repo": "https://github.com/Shubhamsaboo/awesome-llm-apps",
+    "commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c"
+  },
+  "app_count": 162,
+  "apps": [
+    {
+      "id": "advanced_ai_agents_autonomous_game_playing_agent_apps_ai_3dpygame_r1",
+      "title": "ai 3dpygame r1",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1/README.md",
+        "files": [
+          "README.md",
+          "ai_3dpygame_r1.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_autonomous_game_playing_agent_apps_ai_chess_agent",
+      "title": "ai chess agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_chess_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_autonomous_game_playing_agent_apps_ai_tic_tac_toe_agent",
+      "title": "ai tic tac toe agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent/README.md",
+        "files": [
+          "README.md",
+          "agents.py",
+          "app.py",
+          "requirements.txt",
+          "utils.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ag2_adaptive_research_team",
+      "title": "ag2 adaptive research team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+      "capabilities": [
+        "research",
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team/README.md",
+        "files": [
+          "README.md",
+          "agents.py",
+          "app.py",
+          "requirements.txt",
+          "router.py",
+          "tools.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_competitor_intelligence_agent_team",
+      "title": "ai competitor intelligence agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team/README.md",
+        "files": [
+          "README.md",
+          "competitor_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_finance_agent_team",
+      "title": "ai finance agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+      "capabilities": [
+        "multi_agent",
+        "finance"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team/README.md",
+        "files": [
+          "README.md",
+          "finance_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_game_design_agent_team",
+      "title": "ai game design agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team/README.md",
+        "files": [
+          "README.md",
+          "game_design_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_legal_agent_team",
+      "title": "ai legal agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/README.md",
+        "files": [
+          "README.md",
+          "legal_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_legal_agent_team_local_ai_legal_agent_team",
+      "title": "local ai legal agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/local_ai_legal_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/local_ai_legal_agent_team/README.md",
+        "files": [
+          "README.md",
+          "local_legal_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_real_estate_agent_team",
+      "title": "ai real estate agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_real_estate_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_real_estate_agent_team/README.md",
+        "files": [
+          "README.md",
+          "ai_real_estate_agent_team.py",
+          "local_ai_real_estate_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_recruitment_agent_team",
+      "title": "ai recruitment agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team",
+      "capabilities": [
+        "multi_agent",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team/README.md",
+        "files": [
+          "README.md",
+          "ai_recruitment_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_sales_intelligence_agent_team",
+      "title": "ai sales intelligence agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_sales_intelligence_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_sales_intelligence_agent_team/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "requirements.txt",
+          "tools.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_seo_audit_team",
+      "title": "ai seo audit team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_seo_audit_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_seo_audit_team/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_services_agency",
+      "title": "ai services agency",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_services_agency",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_services_agency/README.md",
+        "files": [
+          "README.md",
+          "agency.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_teaching_agent_team",
+      "title": "ai teaching agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_teaching_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_teaching_agent_team/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "teaching_agent_team.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_travel_planner_agent_team_client",
+      "title": "client",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_travel_planner_agent_team/client",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_travel_planner_agent_team/client/README.md",
+        "files": [
+          ".env.example",
+          ".gitignore",
+          "README.md",
+          "components.json",
+          "eslint.config.mjs",
+          "middleware.ts",
+          "next.config.ts",
+          "package.json",
+          "pnpm-lock.yaml",
+          "postcss.config.mjs",
+          "schema.sql",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_ai_vc_due_diligence_agent_team",
+      "title": "ai vc due diligence agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_vc_due_diligence_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/ai_vc_due_diligence_agent_team/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "requirements.txt",
+          "tools.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_multimodal_coding_agent_team",
+      "title": "multimodal coding agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team",
+      "capabilities": [
+        "multi_agent",
+        "coding"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team/README.md",
+        "files": [
+          "README.md",
+          "ai_coding_agent_o3.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_multimodal_design_agent_team",
+      "title": "multimodal design agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_design_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_design_agent_team/README.md",
+        "files": [
+          "README.md",
+          "design_agent_team.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_agent_teams_multimodal_uiux_feedback_agent_team",
+      "title": "multimodal uiux feedback agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team",
+      "capabilities": [
+        "multi_agent",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "requirements.txt",
+          "tools.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_aqi_analysis_agent",
+      "title": "ai aqi analysis agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_aqi_analysis_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_aqi_analysis_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_aqi_analysis_agent_gradio.py",
+          "ai_aqi_analysis_agent_streamlit.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_domain_deep_research_agent",
+      "title": "ai domain deep research agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent",
+      "capabilities": [
+        "research",
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_domain_deep_research_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_email_gtm_outreach_agent",
+      "title": "ai email gtm outreach agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_email_gtm_outreach_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_email_gtm_outreach_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_email_gtm_outreach_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_financial_coach_agent",
+      "title": "ai financial coach agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent",
+      "capabilities": [
+        "multi_agent",
+        "finance"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_financial_coach_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_home_renovation_agent",
+      "title": "ai home renovation agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_home_renovation_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_home_renovation_agent/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "requirements.txt",
+          "tools.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_mental_wellbeing_agent",
+      "title": "ai mental wellbeing agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_mental_wellbeing_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_mental_wellbeing_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_mental_wellbeing_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_news_and_podcast_agents_web",
+      "title": "web",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web",
+      "capabilities": [
+        "multi_agent",
+        "content"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web/README.md",
+        "files": [
+          ".prettierrc.json",
+          "package.json",
+          "readme.md"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_self_evolving_agent",
+      "title": "ai self evolving agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_self_evolving_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_self_evolving_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_Self-Evolving_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_ai_speech_trainer_agent",
+      "title": "ai speech trainer agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent",
+      "capabilities": [
+        "multi_agent",
+        "voice"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_devpulse_ai",
+      "title": "devpulse ai",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/devpulse_ai",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/devpulse_ai/README.md",
+        "files": [
+          ".gitignore",
+          "README.md",
+          "main.py",
+          "requirements.txt",
+          "streamlit_app.py",
+          "verify.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_multi_agent_researcher",
+      "title": "multi agent researcher",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/multi_agent_researcher",
+      "capabilities": [
+        "research",
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/multi_agent_researcher/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "research_agent.py",
+          "research_agent_llama3.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_multi_agent_trust_layer",
+      "title": "multi agent trust layer",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/multi_agent_trust_layer",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/multi_agent_trust_layer/README.md",
+        "files": [
+          "README.md",
+          "multi_agent_trust_layer.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_product_launch_intelligence_agent",
+      "title": "product launch intelligence agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/product_launch_intelligence_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/product_launch_intelligence_agent/README.md",
+        "files": [
+          "README.md",
+          "product_launch_intelligence_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_multi_agent_apps_trust_gated_agent_team",
+      "title": "trust gated agent team",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/multi_agent_apps/trust_gated_agent_team",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/multi_agent_apps/trust_gated_agent_team/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "trust_gated_agents.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_agent_governance",
+      "title": "ai agent governance",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_agent_governance",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_agent_governance/README.md",
+        "files": [
+          "README.md",
+          "ai_agent_governance.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_consultant_agent",
+      "title": "ai consultant agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_consultant_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_consultant_agent/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "ai_consultant_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_customer_support_agent",
+      "title": "ai customer support agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_customer_support_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_customer_support_agent/README.md",
+        "files": [
+          "README.md",
+          "customer_support_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_deep_research_agent",
+      "title": "ai deep research agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_deep_research_agent",
+      "capabilities": [
+        "research"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_deep_research_agent/README.md",
+        "files": [
+          "README.md",
+          "deep_research_openai.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_email_gtm_reachout_agent",
+      "title": "ai email gtm reachout agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_email_gtm_reachout_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_email_gtm_reachout_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_email_gtm_reachout.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_fraud_investigation_agent",
+      "title": "ai fraud investigation agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_fraud_investigation_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_fraud_investigation_agent/README.md",
+        "files": [
+          "README.md",
+          "fraud_investigation_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_health_fitness_agent",
+      "title": "ai health fitness agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_health_fitness_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_health_fitness_agent/README.md",
+        "files": [
+          "README.md",
+          "health_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_investment_agent",
+      "title": "ai investment agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_investment_agent",
+      "capabilities": [
+        "finance"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_investment_agent/README.md",
+        "files": [
+          "README.md",
+          "investment_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_journalist_agent",
+      "title": "ai journalist agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_journalist_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_journalist_agent/README.md",
+        "files": [
+          "README.md",
+          "journalist_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_meeting_agent",
+      "title": "ai meeting agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_meeting_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_meeting_agent/README.md",
+        "files": [
+          "README.md",
+          "meeting_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_movie_production_agent",
+      "title": "ai movie production agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_movie_production_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_movie_production_agent/README.md",
+        "files": [
+          "README.md",
+          "movie_production_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_personal_finance_agent",
+      "title": "ai personal finance agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_personal_finance_agent",
+      "capabilities": [
+        "finance"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_personal_finance_agent/README.md",
+        "files": [
+          "README.md",
+          "finance_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_recipe_meal_planning_agent",
+      "title": "ai recipe meal planning agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_recipe_meal_planning_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_recipe_meal_planning_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_recipe_meal_planning_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_startup_insight_fire1_agent",
+      "title": "ai startup insight fire1 agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_startup_insight_fire1_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_startup_insight_fire1_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_startup_insight_fire1_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_ai_system_architect_r1",
+      "title": "ai system architect r1",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/ai_system_architect_r1",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/ai_system_architect_r1/README.md",
+        "files": [
+          "README.md",
+          "ai_system_architect_r1.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_earnings_call_analyst_agent",
+      "title": "earnings call analyst agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "__init__.py",
+          "adk_runtime.py",
+          "agent.py",
+          "pyproject.toml",
+          "requirements.txt",
+          "research.py",
+          "schemas.py",
+          "youtube_ingest.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_research_agent_gemini_interaction_api",
+      "title": "research agent gemini interaction api",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api",
+      "capabilities": [
+        "research"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "research_planner_executor_agent.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_ai_agents_single_agent_apps_windows_use_autonomous_agent",
+      "title": "windows use autonomous agent",
+      "family": "advanced_agent",
+      "path": "advanced_ai_agents/single_agent_apps/windows_use_autonomous_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_ai_agents/single_agent_apps/windows_use_autonomous_agent/README.md",
+        "files": [
+          ".env-example",
+          "MANIFEST.in",
+          "README.md",
+          "main.py",
+          "pyproject.toml",
+          "uv.lock"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_tarots",
+      "title": "chat-with-tarots",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat-with-tarots",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat-with-tarots/README.md",
+        "files": [
+          ".gitattributes",
+          "README.md",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_chat_with_github",
+      "title": "chat with github",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+      "capabilities": [
+        "rag",
+        "mcp_tools",
+        "coding"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_github/README.md",
+        "files": [
+          "README.md",
+          "chat_github.py",
+          "chat_github_llama3.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_chat_with_gmail",
+      "title": "chat with gmail",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail/README.md",
+        "files": [
+          "README.md",
+          "chat_gmail.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_chat_with_pdf",
+      "title": "chat with pdf",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf/README.md",
+        "files": [
+          "README.md",
+          "chat_pdf.py",
+          "chat_pdf_llama3.2.py",
+          "chat_pdf_llama3.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_chat_with_research_papers",
+      "title": "chat with research papers",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers",
+      "capabilities": [
+        "rag",
+        "research"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers/README.md",
+        "files": [
+          "README.md",
+          "chat_arxiv.py",
+          "chat_arxiv_llama3.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_chat_with_substack",
+      "title": "chat with substack",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_substack",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_substack/README.md",
+        "files": [
+          "README.md",
+          "chat_substack.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_chat_with_youtube_videos",
+      "title": "chat with youtube videos",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+      "capabilities": [
+        "rag",
+        "content"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos/README.md",
+        "files": [
+          "FIX_SUMMARY.md",
+          "README.md",
+          "chat_youtube.py",
+          "requirements.txt",
+          "test_session_state.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_chat_with_x_tutorials_streaming_ai_chatbot",
+      "title": "streaming ai chatbot",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/chat_with_X_tutorials/streaming_ai_chatbot",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/chat_with_X_tutorials/streaming_ai_chatbot/README.md",
+        "files": [
+          ".env.example",
+          ".gitignore",
+          "README.md",
+          "motia-workbench.json",
+          "package.json",
+          "tsconfig.json",
+          "types.d.ts"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_cursor_ai_experiments_llm_router_app",
+      "title": "llm router app",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/cursor_ai_experiments/llm_router_app",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/cursor_ai_experiments/llm_router_app/README.md",
+        "files": [
+          "README.md",
+          "llm_router.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_cursor_ai_experiments_local_chatgpt_clone",
+      "title": "local chatgpt clone",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/cursor_ai_experiments/local_chatgpt_clone",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/cursor_ai_experiments/local_chatgpt_clone/README.md",
+        "files": [
+          "README.md",
+          "chatgpt_clone_llama3.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_gpt_oss_critique_improvement_loop",
+      "title": "gpt oss critique improvement loop",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/gpt_oss_critique_improvement_loop",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/gpt_oss_critique_improvement_loop/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "streamlit_app.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_apps_with_memory_tutorials_ai_arxiv_agent_memory",
+      "title": "ai arxiv agent memory",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory/README.md",
+        "files": [
+          "README.md",
+          "ai_arxiv_agent_memory.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_apps_with_memory_tutorials_ai_travel_agent_memory",
+      "title": "ai travel agent memory",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "travel_agent_memory.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_apps_with_memory_tutorials_llm_app_personalized_memory",
+      "title": "llm app personalized memory",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory/README.md",
+        "files": [
+          "README.md",
+          "llm_app_memory.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_apps_with_memory_tutorials_local_chatgpt_with_memory",
+      "title": "local chatgpt with memory",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory/README.md",
+        "files": [
+          "README.md",
+          "local_chatgpt_memory.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_apps_with_memory_tutorials_multi_llm_memory",
+      "title": "multi llm memory",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_apps_with_memory_tutorials/multi_llm_memory",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_apps_with_memory_tutorials/multi_llm_memory/README.md",
+        "files": [
+          "README.md",
+          "multi_llm_memory.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_finetuning_tutorials_gemma3_finetuning",
+      "title": "gemma3 finetuning",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_finetuning_tutorials/gemma3_finetuning",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_finetuning_tutorials/gemma3_finetuning/README.md",
+        "files": [
+          "README.md",
+          "finetune_gemma3.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_finetuning_tutorials_llama3_2_finetuning",
+      "title": "llama3.2 finetuning",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_finetuning_tutorials/llama3.2_finetuning",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_finetuning_tutorials/llama3.2_finetuning/README.md",
+        "files": [
+          "README.md",
+          "finetune_llama3.2.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_optimization_tools_headroom_context_optimization",
+      "title": "headroom context optimization",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization/README.md",
+        "files": [
+          "README.md",
+          "headroom_demo.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_llm_optimization_tools_toonify_token_optimization",
+      "title": "toonify token optimization",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization/README.md",
+        "files": [
+          "README.md",
+          "quick_test.py",
+          "requirements.txt",
+          "toonify_app.py",
+          "toonify_demo.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_multimodal_video_moment_finder_frontend",
+      "title": "frontend",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/multimodal_video_moment_finder/frontend",
+      "capabilities": [
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/multimodal_video_moment_finder/frontend/README.md",
+        "files": [
+          ".gitignore",
+          "README.md",
+          "eslint.config.mjs",
+          "next.config.ts",
+          "package-lock.json",
+          "package.json",
+          "postcss.config.mjs",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_resume_job_matcher",
+      "title": "resume job matcher",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/resume_job_matcher",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/resume_job_matcher/README.md",
+        "files": [
+          "README.md",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "advanced_llm_apps_thinkpath_chatbot_app",
+      "title": "thinkpath chatbot app",
+      "family": "advanced_llm_app",
+      "path": "advanced_llm_apps/thinkpath_chatbot_app",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "advanced_llm_apps/thinkpath_chatbot_app/README.md",
+        "files": [
+          "README.md",
+          "github thinkpath video.mp4",
+          "index.html",
+          "main.js",
+          "package-lock.json",
+          "package.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_1_starter_agent",
+      "title": "1 starter agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/1_starter_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/1_starter_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_2_model_agnostic_agent",
+      "title": "2 model agnostic agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/2_model_agnostic_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/2_model_agnostic_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_3_structured_output_agent_3_1_customer_support_ticket_agent",
+      "title": "3 1 customer support ticket agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/3_structured_output_agent/3_1_customer_support_ticket_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/3_structured_output_agent/3_1_customer_support_ticket_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_3_structured_output_agent_3_2_email_agent",
+      "title": "3 2 email agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/3_structured_output_agent/3_2_email_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/3_structured_output_agent/3_2_email_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_4_tool_using_agent_4_1_builtin_tools",
+      "title": "4 1 builtin tools",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_1_builtin_tools",
+      "capabilities": [
+        "mcp_tools",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_1_builtin_tools/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_4_tool_using_agent_4_2_function_tools",
+      "title": "4 2 function tools",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_2_function_tools",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_2_function_tools/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_4_tool_using_agent_4_3_thirdparty_tools",
+      "title": "4 3 thirdparty tools",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_3_thirdparty_tools",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_3_thirdparty_tools/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_4_tool_using_agent_4_4_mcp_tools",
+      "title": "4 4 mcp tools",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_4_mcp_tools",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_4_mcp_tools/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_5_memory_agent_5_1_in_memory_conversation_agent",
+      "title": "5 1 in memory conversation agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/5_memory_agent/5_1_in_memory_conversation_agent",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/5_memory_agent/5_1_in_memory_conversation_agent/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_5_memory_agent_5_2_persistent_conversation_agent",
+      "title": "5 2 persistent conversation agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/5_memory_agent/5_2_persistent_conversation_agent",
+      "capabilities": [
+        "memory"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/5_memory_agent/5_2_persistent_conversation_agent/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_6_callbacks_6_1_agent_lifecycle_callbacks",
+      "title": "6 1 agent lifecycle callbacks",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_1_agent_lifecycle_callbacks",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_1_agent_lifecycle_callbacks/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_6_callbacks_6_2_llm_interaction_callbacks",
+      "title": "6 2 llm interaction callbacks",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_2_llm_interaction_callbacks",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_2_llm_interaction_callbacks/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_6_callbacks_6_3_tool_execution_callbacks",
+      "title": "6 3 tool execution callbacks",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_3_tool_execution_callbacks",
+      "capabilities": [
+        "mcp_tools",
+        "voice"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_3_tool_execution_callbacks/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_7_plugins",
+      "title": "7 plugins",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/7_plugins",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/7_plugins/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_8_simple_multi_agent",
+      "title": "8 simple multi agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/8_simple_multi_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/8_simple_multi_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_9_multi_agent_patterns_9_1_sequential_agent",
+      "title": "9 1 sequential agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/9_multi_agent_patterns/9_1_sequential_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/9_multi_agent_patterns/9_1_sequential_agent/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_9_multi_agent_patterns_9_2_loop_agent",
+      "title": "9 2 loop agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/9_multi_agent_patterns/9_2_loop_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/9_multi_agent_patterns/9_2_loop_agent/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_9_multi_agent_patterns_9_3_parallel_agent",
+      "title": "9 3 parallel agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/9_multi_agent_patterns/9_3_parallel_agent",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/9_multi_agent_patterns/9_3_parallel_agent/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "agent.py",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_google_adk_crash_course_adk_yaml_examples_multi_agent_web_research_team",
+      "title": "multi agent web research team",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/google_adk_crash_course/adk_yaml_examples/multi_agent_web_research_team",
+      "capabilities": [
+        "research",
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/google_adk_crash_course/adk_yaml_examples/multi_agent_web_research_team/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_10_tracing_observability",
+      "title": "10 tracing observability",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/10_tracing_observability",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/10_tracing_observability/README.md",
+        "files": [
+          "README.md",
+          "custom_tracing.py",
+          "default_tracing.py",
+          "env.example",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_11_voice_realtime",
+      "title": "realtime",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/realtime",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/realtime/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "env.example",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_11_voice_static",
+      "title": "static",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/static",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/static/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "env.example",
+          "requirements.txt",
+          "util.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_11_voice_streamed",
+      "title": "streamed",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/streamed",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/streamed/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "env.example",
+          "requirements.txt",
+          "util.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_1_starter_agent",
+      "title": "1 starter agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/1_starter_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/1_starter_agent/README.md",
+        "files": [
+          "README.md",
+          "app.py",
+          "env.example",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_2_structured_output_agent",
+      "title": "2 structured output agent",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/2_structured_output_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/2_structured_output_agent/README.md",
+        "files": [
+          "README.md",
+          "env.example",
+          "product_review_agent.py",
+          "requirements.txt",
+          "support_ticket_agent.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_4_running_agents",
+      "title": "4 running agents",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/4_running_agents",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/4_running_agents/README.md",
+        "files": [
+          "README.md",
+          "agent_runner.py",
+          "env.example",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_7_sessions",
+      "title": "7 sessions",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/7_sessions",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/7_sessions/README.md",
+        "files": [
+          "README.md",
+          "env.example",
+          "requirements.txt",
+          "streamlit_sessions_app.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_8_handoffs_delegation",
+      "title": "8 handoffs delegation",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/8_handoffs_delegation",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/8_handoffs_delegation/README.md",
+        "files": [
+          "README.md",
+          "advanced_handoffs.py",
+          "basic_handoffs.py",
+          "env.example",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "ai_agent_framework_crash_course_openai_sdk_crash_course_9_multi_agent_orchestration",
+      "title": "9 multi agent orchestration",
+      "family": "framework_example",
+      "path": "ai_agent_framework_crash_course/openai_sdk_crash_course/9_multi_agent_orchestration",
+      "capabilities": [
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "ai_agent_framework_crash_course/openai_sdk_crash_course/9_multi_agent_orchestration/README.md",
+        "files": [
+          "README.md",
+          "agents_as_tools.py",
+          "env.example",
+          "parallel_execution.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "always_on_agents_always_on_hn_briefing_agent",
+      "title": "always on hn briefing agent",
+      "family": "always_on_agent",
+      "path": "always_on_agents/always_on_hn_briefing_agent",
+      "capabilities": [
+        "monitoring"
+      ],
+      "evidence": {
+        "readme": "always_on_agents/always_on_hn_briefing_agent/README.md",
+        "files": [
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "delivery.py",
+          "requirements.txt",
+          "scheduler_api.py",
+          "scout.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_dashboard_canvas_agent",
+      "title": "ai-dashboard-canvas-agent",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-dashboard-canvas-agent",
+      "capabilities": [
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-dashboard-canvas-agent/README.md",
+        "files": [
+          ".env.example",
+          ".gitignore",
+          "AGENTS.md",
+          "LICENSE",
+          "README.md",
+          "components.json",
+          "next.config.ts",
+          "package.json",
+          "pnpm-lock.yaml",
+          "postcss.config.mjs",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_deep_research_agent",
+      "title": "ai-deep-research-agent",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-deep-research-agent",
+      "capabilities": [
+        "research",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-deep-research-agent/README.md",
+        "files": [
+          ".dockerignore",
+          ".env.example",
+          ".gitignore",
+          "Dockerfile",
+          "README.md",
+          "next.config.ts",
+          "package-lock.json",
+          "package.json",
+          "postcss.config.mjs",
+          "railway.json",
+          "railway.toml",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_financial_coach_agent",
+      "title": "ai-financial-coach-agent",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-financial-coach-agent",
+      "capabilities": [
+        "finance",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-financial-coach-agent/README.md",
+        "files": [
+          ".dockerignore",
+          ".gitignore",
+          "Dockerfile",
+          "LICENSE",
+          "README.md",
+          "docker-compose.test.yml",
+          "entrypoint.sh",
+          "next.config.ts",
+          "package-lock.json",
+          "package.json",
+          "postcss.config.mjs",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_mcp_app_builder",
+      "title": "ai-mcp-app-builder",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-mcp-app-builder",
+      "capabilities": [
+        "mcp_tools",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-mcp-app-builder/README.md",
+        "files": [
+          ".dockerignore",
+          ".env.example",
+          ".gitignore",
+          "Dockerfile",
+          "LICENSE",
+          "README.md",
+          "package.json",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "render.yaml",
+          "turbo.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_mcp_app_builder_apps_mcp_use_server",
+      "title": "mcp-use-server",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-mcp-app-builder/apps/mcp-use-server",
+      "capabilities": [
+        "mcp_tools",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-mcp-app-builder/apps/mcp-use-server/README.md",
+        "files": [
+          ".gitignore",
+          ".pnpmfile-approve.json",
+          "README.md",
+          "build.dev.ts",
+          "build.prod.ts",
+          "index.ts",
+          "package.json",
+          "template.ts",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_mcp_app_builder_apps_threejs_server",
+      "title": "threejs-server",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-mcp-app-builder/apps/threejs-server",
+      "capabilities": [
+        "mcp_tools",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-mcp-app-builder/apps/threejs-server/README.md",
+        "files": [
+          ".gitignore",
+          "README.md",
+          "grid-cell.png",
+          "mcp-app.html",
+          "package.json",
+          "screenshot.png",
+          "server-utils.ts",
+          "server.ts",
+          "test-input.json",
+          "tsconfig.json",
+          "vite.config.ts"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_mcp_app_builder_apps_web",
+      "title": "web",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-mcp-app-builder/apps/web",
+      "capabilities": [
+        "mcp_tools",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-mcp-app-builder/apps/web/README.md",
+        "files": [
+          "README.md",
+          "eslint.config.mjs",
+          "next.config.ts",
+          "package.json",
+          "postcss.config.mjs",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_ai_shadcn_component_generator",
+      "title": "ai-shadcn-component-generator",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/ai-shadcn-component-generator",
+      "capabilities": [
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/ai-shadcn-component-generator/README.md",
+        "files": [
+          ".gitignore",
+          ".mcp.json",
+          "LICENSE",
+          "README.md",
+          "package.json",
+          "pnpm-workspace.yaml",
+          "render.yaml",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_generative_ui_starter_project",
+      "title": "generative-ui-starter-project",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/generative-ui-starter-project",
+      "capabilities": [
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/generative-ui-starter-project/README.md",
+        "files": [
+          ".dockerignore",
+          ".env.example",
+          ".gitignore",
+          "CLAUDE.md",
+          "Dockerfile",
+          "LICENSE",
+          "README.md",
+          "docker-compose.test.yml",
+          "docker-route-override.ts",
+          "entrypoint.sh",
+          "next.config.ts",
+          "package-lock.json",
+          "package.json",
+          "postcss.config.mjs",
+          "serve.py",
+          "showcase.json",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "generative_ui_agents_mcp_apps_generative_ui_showcase",
+      "title": "mcp-apps-generative-ui-showcase",
+      "family": "generative_ui",
+      "path": "generative_ui_agents/mcp-apps-generative-ui-showcase",
+      "capabilities": [
+        "mcp_tools",
+        "generative_ui"
+      ],
+      "evidence": {
+        "readme": "generative_ui_agents/mcp-apps-generative-ui-showcase/README.md",
+        "files": [
+          ".gitignore",
+          "Dockerfile",
+          "README.md",
+          "next.config.ts",
+          "package.json",
+          "pnpm-lock.yaml",
+          "postcss.config.mjs",
+          "railway.toml",
+          "tsconfig.json"
+        ]
+      },
+      "runtime_hint": "node",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "mcp_ai_agents_ai_travel_planner_mcp_agent_team",
+      "title": "ai travel planner mcp agent team",
+      "family": "mcp_agent",
+      "path": "mcp_ai_agents/ai_travel_planner_mcp_agent_team",
+      "capabilities": [
+        "mcp_tools",
+        "multi_agent"
+      ],
+      "evidence": {
+        "readme": "mcp_ai_agents/ai_travel_planner_mcp_agent_team/README.md",
+        "files": [
+          "README.md",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "mcp_ai_agents_browser_mcp_agent",
+      "title": "browser mcp agent",
+      "family": "mcp_agent",
+      "path": "mcp_ai_agents/browser_mcp_agent",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "mcp_ai_agents/browser_mcp_agent/README.md",
+        "files": [
+          "README.md",
+          "main.py",
+          "mcp_agent.config.yaml",
+          "mcp_agent.secrets.yaml.example",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "mcp_ai_agents_github_mcp_agent",
+      "title": "github mcp agent",
+      "family": "mcp_agent",
+      "path": "mcp_ai_agents/github_mcp_agent",
+      "capabilities": [
+        "mcp_tools",
+        "coding"
+      ],
+      "evidence": {
+        "readme": "mcp_ai_agents/github_mcp_agent/README.md",
+        "files": [
+          "README.md",
+          "github_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "mcp_ai_agents_multi_mcp_agent",
+      "title": "multi mcp agent",
+      "family": "mcp_agent",
+      "path": "mcp_ai_agents/multi_mcp_agent",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "mcp_ai_agents/multi_mcp_agent/README.md",
+        "files": [
+          "README.md",
+          "multi_mcp_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "mcp_ai_agents_multi_mcp_agent_router",
+      "title": "multi mcp agent router",
+      "family": "mcp_agent",
+      "path": "mcp_ai_agents/multi_mcp_agent_router",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "mcp_ai_agents/multi_mcp_agent_router/README.md",
+        "files": [
+          "README.md",
+          "agent_forge.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "mcp_ai_agents_notion_mcp_agent",
+      "title": "notion mcp agent",
+      "family": "mcp_agent",
+      "path": "mcp_ai_agents/notion_mcp_agent",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "mcp_ai_agents/notion_mcp_agent/README.md",
+        "files": [
+          "README.md",
+          "notion_mcp_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_agentic_rag_embedding_gemma",
+      "title": "agentic rag embedding gemma",
+      "family": "rag",
+      "path": "rag_tutorials/agentic_rag_embedding_gemma",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/agentic_rag_embedding_gemma/README.md",
+        "files": [
+          "README.md",
+          "agentic_rag_embeddinggemma.py",
+          "agno.png",
+          "google.png",
+          "ollama.png",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_agentic_rag_gpt5",
+      "title": "agentic rag gpt5",
+      "family": "rag",
+      "path": "rag_tutorials/agentic_rag_gpt5",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/agentic_rag_gpt5/README.md",
+        "files": [
+          "README.md",
+          "agentic_rag_gpt5.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_agentic_rag_math_agent",
+      "title": "agentic rag math agent",
+      "family": "rag",
+      "path": "rag_tutorials/agentic_rag_math_agent",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/agentic_rag_math_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "unknown",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_agentic_rag_with_reasoning",
+      "title": "agentic rag with reasoning",
+      "family": "rag",
+      "path": "rag_tutorials/agentic_rag_with_reasoning",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/agentic_rag_with_reasoning/README.md",
+        "files": [
+          "README.md",
+          "rag_reasoning_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_ai_blog_search",
+      "title": "ai blog search",
+      "family": "rag",
+      "path": "rag_tutorials/ai_blog_search",
+      "capabilities": [
+        "rag",
+        "content"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/ai_blog_search/README.md",
+        "files": [
+          "README.md",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_autonomous_rag",
+      "title": "autonomous rag",
+      "family": "rag",
+      "path": "rag_tutorials/autonomous_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/autonomous_rag/README.md",
+        "files": [
+          "README.md",
+          "autorag.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_contextualai_rag_agent",
+      "title": "contextualai rag agent",
+      "family": "rag",
+      "path": "rag_tutorials/contextualai_rag_agent",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/contextualai_rag_agent/README.md",
+        "files": [
+          "README.md",
+          "contextualai_rag_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_corrective_rag",
+      "title": "corrective rag",
+      "family": "rag",
+      "path": "rag_tutorials/corrective_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/corrective_rag/README.md",
+        "files": [
+          "README.md",
+          "corrective_rag.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_deepseek_local_rag_agent",
+      "title": "deepseek local rag agent",
+      "family": "rag",
+      "path": "rag_tutorials/deepseek_local_rag_agent",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/deepseek_local_rag_agent/README.md",
+        "files": [
+          "README.md",
+          "deepseek_rag_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_gemini_agentic_rag",
+      "title": "gemini agentic rag",
+      "family": "rag",
+      "path": "rag_tutorials/gemini_agentic_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/gemini_agentic_rag/README.md",
+        "files": [
+          "README.md",
+          "agentic_rag_gemini.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_hybrid_search_rag",
+      "title": "hybrid search rag",
+      "family": "rag",
+      "path": "rag_tutorials/hybrid_search_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/hybrid_search_rag/README.md",
+        "files": [
+          "README.md",
+          "main.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_knowledge_graph_rag_citations",
+      "title": "knowledge graph rag citations",
+      "family": "rag",
+      "path": "rag_tutorials/knowledge_graph_rag_citations",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/knowledge_graph_rag_citations/README.md",
+        "files": [
+          "Dockerfile",
+          "README.md",
+          "docker-compose.yml",
+          "knowledge_graph_rag.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_llama3_1_local_rag",
+      "title": "llama3.1 local rag",
+      "family": "rag",
+      "path": "rag_tutorials/llama3.1_local_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/llama3.1_local_rag/README.md",
+        "files": [
+          "README.md",
+          "llama3.1_local_rag.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_local_hybrid_search_rag",
+      "title": "local hybrid search rag",
+      "family": "rag",
+      "path": "rag_tutorials/local_hybrid_search_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/local_hybrid_search_rag/README.md",
+        "files": [
+          "README.md",
+          "local_main.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_local_rag_agent",
+      "title": "local rag agent",
+      "family": "rag",
+      "path": "rag_tutorials/local_rag_agent",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/local_rag_agent/README.md",
+        "files": [
+          "README.md",
+          "local_rag_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_qwen_local_rag",
+      "title": "qwen local rag",
+      "family": "rag",
+      "path": "rag_tutorials/qwen_local_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/qwen_local_rag/README.md",
+        "files": [
+          "README.md",
+          "qwen_local_rag_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_rag_as_a_service",
+      "title": "rag-as-a-service",
+      "family": "rag",
+      "path": "rag_tutorials/rag-as-a-service",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/rag-as-a-service/README.md",
+        "files": [
+          "README.md",
+          "rag_app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_rag_agent_cohere",
+      "title": "rag agent cohere",
+      "family": "rag",
+      "path": "rag_tutorials/rag_agent_cohere",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/rag_agent_cohere/README.md",
+        "files": [
+          "README.md",
+          "rag_agent_cohere.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_rag_chain",
+      "title": "rag chain",
+      "family": "rag",
+      "path": "rag_tutorials/rag_chain",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/rag_chain/README.md",
+        "files": [
+          "README.md",
+          "app.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_rag_database_routing",
+      "title": "rag database routing",
+      "family": "rag",
+      "path": "rag_tutorials/rag_database_routing",
+      "capabilities": [
+        "rag",
+        "data_analysis"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/rag_database_routing/README.md",
+        "files": [
+          "README.md",
+          "rag_database_routing.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_rag_failure_diagnostics_clinic",
+      "title": "rag failure diagnostics clinic",
+      "family": "rag",
+      "path": "rag_tutorials/rag_failure_diagnostics_clinic",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/rag_failure_diagnostics_clinic/README.md",
+        "files": [
+          ".gitignore",
+          "README.md",
+          "rag_failure_diagnostics_clinic.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "rag_tutorials_vision_rag",
+      "title": "vision rag",
+      "family": "rag",
+      "path": "rag_tutorials/vision_rag",
+      "capabilities": [
+        "rag"
+      ],
+      "evidence": {
+        "readme": "rag_tutorials/vision_rag/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "vision_rag.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_blog_to_podcast_agent",
+      "title": "ai blog to podcast agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_blog_to_podcast_agent",
+      "capabilities": [
+        "content"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_blog_to_podcast_agent/README.md",
+        "files": [
+          "README.md",
+          "blog_to_podcast_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_breakup_recovery_agent",
+      "title": "ai breakup recovery agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_breakup_recovery_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_breakup_recovery_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_breakup_recovery_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_data_analysis_agent",
+      "title": "ai data analysis agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_data_analysis_agent",
+      "capabilities": [
+        "data_analysis"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_data_analysis_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_data_analyst.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_data_visualisation_agent",
+      "title": "ai data visualisation agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_data_visualisation_agent",
+      "capabilities": [
+        "data_analysis"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_data_visualisation_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_data_visualisation_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_life_insurance_advisor_agent",
+      "title": "ai life insurance advisor agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_life_insurance_advisor_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_life_insurance_advisor_agent/README.md",
+        "files": [
+          "README.md",
+          "life_insurance_advisor_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_medical_imaging_agent",
+      "title": "ai medical imaging agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_medical_imaging_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_medical_imaging_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_medical_imaging.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_meme_generator_agent_browseruse",
+      "title": "ai meme generator agent browseruse",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_meme_generator_agent_browseruse",
+      "capabilities": [
+        "mcp_tools"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_meme_generator_agent_browseruse/README.md",
+        "files": [
+          "README.md",
+          "ai_meme_generator_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_music_generator_agent",
+      "title": "ai music generator agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_music_generator_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_music_generator_agent/README.md",
+        "files": [
+          "README.md",
+          "music_generator_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_reasoning_agent",
+      "title": "ai reasoning agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_reasoning_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_reasoning_agent/README.md",
+        "files": [
+          "README.md",
+          "local_ai_reasoning_agent.py",
+          "reasoning_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_startup_trend_analysis_agent",
+      "title": "ai startup trend analysis agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_startup_trend_analysis_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_startup_trend_analysis_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "startup_trends_agent.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_ai_travel_agent",
+      "title": "ai travel agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/ai_travel_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/ai_travel_agent/README.md",
+        "files": [
+          "README.MD",
+          "local_travel_agent.py",
+          "requirements.txt",
+          "travel_agent.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_multimodal_ai_agent",
+      "title": "multimodal ai agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/multimodal_ai_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/multimodal_ai_agent/README.md",
+        "files": [
+          "README.md",
+          "multimodal_reasoning_agent.py",
+          "mutimodal_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_openai_research_agent",
+      "title": "openai research agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/openai_research_agent",
+      "capabilities": [
+        "research"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/openai_research_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "research_agent.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_web_scraping_ai_agent",
+      "title": "web scraping ai agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/web_scraping_ai_agent",
+      "capabilities": [
+        "general_agent"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/web_scraping_ai_agent/README.md",
+        "files": [
+          "README.md",
+          "ai_scrapper.py",
+          "local_ai_scrapper.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "starter_ai_agents_xai_finance_agent",
+      "title": "xai finance agent",
+      "family": "starter_agent",
+      "path": "starter_ai_agents/xai_finance_agent",
+      "capabilities": [
+        "finance"
+      ],
+      "evidence": {
+        "readme": "starter_ai_agents/xai_finance_agent/README.md",
+        "files": [
+          "README.md",
+          "requirements.txt",
+          "xai_finance_agent.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "voice_ai_agents_ai_audio_tour_agent",
+      "title": "ai audio tour agent",
+      "family": "voice_agent",
+      "path": "voice_ai_agents/ai_audio_tour_agent",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "voice_ai_agents/ai_audio_tour_agent/README.md",
+        "files": [
+          "README.md",
+          "agent.py",
+          "ai_audio_tour_agent.py",
+          "manager.py",
+          "printer.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "voice_ai_agents_customer_support_voice_agent",
+      "title": "customer support voice agent",
+      "family": "voice_agent",
+      "path": "voice_ai_agents/customer_support_voice_agent",
+      "capabilities": [
+        "voice"
+      ],
+      "evidence": {
+        "readme": "voice_ai_agents/customer_support_voice_agent/README.md",
+        "files": [
+          "README.md",
+          "customer_support_voice_agent.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "voice_ai_agents_insurance_claim_live_agent_team",
+      "title": "insurance claim live agent team",
+      "family": "voice_agent",
+      "path": "voice_ai_agents/insurance_claim_live_agent_team",
+      "capabilities": [
+        "multi_agent",
+        "voice"
+      ],
+      "evidence": {
+        "readme": "voice_ai_agents/insurance_claim_live_agent_team/README.md",
+        "files": [
+          ".env.example",
+          "README.md",
+          "__init__.py",
+          "agent.py",
+          "examples.py",
+          "policies.py",
+          "requirements.txt",
+          "schemas.py"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    },
+    {
+      "id": "voice_ai_agents_voice_rag_openaisdk",
+      "title": "voice rag openaisdk",
+      "family": "voice_agent",
+      "path": "voice_ai_agents/voice_rag_openaisdk",
+      "capabilities": [
+        "rag",
+        "voice"
+      ],
+      "evidence": {
+        "readme": "voice_ai_agents/voice_rag_openaisdk/README.md",
+        "files": [
+          "README.md",
+          "rag_voice.py",
+          "requirements.txt"
+        ]
+      },
+      "runtime_hint": "python",
+      "verification_status": "source_present_unexecuted"
+    }
+  ],
+  "capability_counts": {
+    "coding": 3,
+    "content": 4,
+    "data_analysis": 3,
+    "finance": 6,
+    "general_agent": 43,
+    "generative_ui": 14,
+    "mcp_tools": 20,
+    "memory": 7,
+    "monitoring": 1,
+    "multi_agent": 39,
+    "rag": 31,
+    "research": 9,
+    "voice": 12
+  }
+}

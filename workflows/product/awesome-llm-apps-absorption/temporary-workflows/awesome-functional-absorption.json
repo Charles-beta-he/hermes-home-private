@@ -1,0 +1,585 @@
+{
+  "schema": "hermes_temporary_capability_workflow_v1",
+  "id": "tmp-awesome-llm-apps-functional-absorption",
+  "maturity": "temporary_candidate",
+  "query": "RAG research memory MCP voice monitoring finance data analysis generative UI coding content multi agent",
+  "created_at": "2026-07-12T19:04:27Z",
+  "source": {
+    "repo": "https://github.com/Shubhamsaboo/awesome-llm-apps",
+    "commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c"
+  },
+  "objective": "Recommend source-backed capability families and compose a local-only absorption workflow.",
+  "inputs": [
+    "requested_function",
+    "target_environment",
+    "acceptance_boundary"
+  ],
+  "outputs": [
+    "recommended_capabilities",
+    "source_evidence",
+    "risk_report",
+    "replication_plan",
+    "evidence_verdict"
+  ],
+  "nodes": [
+    {
+      "id": "intent_seed_capture",
+      "kind": "atomic_module",
+      "responsibility": "Normalize requested functions and target ownership boundary.",
+      "depends_on": [],
+      "consumes": [
+        "seed"
+      ],
+      "produces": [
+        "intent"
+      ],
+      "source_refs": [
+        "local absorption workflow contract"
+      ]
+    },
+    {
+      "id": "source_evidence_collector",
+      "kind": "atomic_module",
+      "responsibility": "Collect pinned source identity and file/path evidence.",
+      "depends_on": [
+        "intent_seed_capture"
+      ],
+      "consumes": [
+        "source_ref"
+      ],
+      "produces": [
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "local absorption workflow contract"
+      ]
+    },
+    {
+      "id": "risk_modeler",
+      "kind": "atomic_module",
+      "responsibility": "Classify license, credential, provider, side-effect, and runtime risks.",
+      "depends_on": [
+        "source_evidence_collector"
+      ],
+      "consumes": [
+        "evidence_refs"
+      ],
+      "produces": [
+        "risk_report"
+      ],
+      "source_refs": [
+        "local absorption workflow contract"
+      ]
+    },
+    {
+      "id": "output_contract_builder",
+      "kind": "atomic_module",
+      "responsibility": "Build stable workflow outputs, closure states, and not-proven boundaries.",
+      "depends_on": [
+        "risk_modeler"
+      ],
+      "consumes": [
+        "intent"
+      ],
+      "produces": [
+        "output_contract"
+      ],
+      "source_refs": [
+        "local absorption workflow contract"
+      ]
+    },
+    {
+      "id": "evidence_gate",
+      "kind": "gate",
+      "responsibility": "Separate source claims, static implementation evidence, and runtime proof.",
+      "depends_on": [
+        "output_contract_builder"
+      ],
+      "consumes": [
+        "evidence_refs"
+      ],
+      "produces": [
+        "evidence_verdict"
+      ],
+      "source_refs": [
+        "local absorption workflow contract"
+      ]
+    },
+    {
+      "id": "awesome_data_analysis",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable data_analysis capability distilled from reference applications.",
+      "depends_on": [
+        "evidence_gate"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "data_analysis_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "rag_tutorials/rag_database_routing",
+        "starter_ai_agents/ai_data_analysis_agent",
+        "starter_ai_agents/ai_data_visualisation_agent"
+      ]
+    },
+    {
+      "id": "awesome_multi_agent",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable multi_agent capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_data_analysis"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "multi_agent_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team"
+      ]
+    },
+    {
+      "id": "awesome_generative_ui",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable generative_ui capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_multi_agent"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "generative_ui_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team",
+        "advanced_llm_apps/multimodal_video_moment_finder/frontend",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_1_builtin_tools",
+        "generative_ui_agents/ai-dashboard-canvas-agent"
+      ]
+    },
+    {
+      "id": "awesome_coding",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable coding capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_generative_ui"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "coding_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+        "mcp_ai_agents/github_mcp_agent"
+      ]
+    },
+    {
+      "id": "awesome_content",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable content capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_coding"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "content_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+        "rag_tutorials/ai_blog_search",
+        "starter_ai_agents/ai_blog_to_podcast_agent"
+      ]
+    },
+    {
+      "id": "awesome_finance",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable finance capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_content"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "finance_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+        "advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent",
+        "advanced_ai_agents/single_agent_apps/ai_investment_agent",
+        "advanced_ai_agents/single_agent_apps/ai_personal_finance_agent",
+        "generative_ui_agents/ai-financial-coach-agent"
+      ]
+    },
+    {
+      "id": "awesome_general_agent",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable general_agent capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_finance"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "general_agent_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1",
+        "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent",
+        "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent",
+        "advanced_ai_agents/single_agent_apps/ai_agent_governance",
+        "advanced_ai_agents/single_agent_apps/ai_consultant_agent"
+      ]
+    },
+    {
+      "id": "awesome_mcp_tools",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable mcp_tools capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_general_agent"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "mcp_tools_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+        "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization",
+        "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_1_builtin_tools",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_2_function_tools"
+      ]
+    },
+    {
+      "id": "awesome_memory",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable memory capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_mcp_tools"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "memory_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/multi_llm_memory"
+      ]
+    },
+    {
+      "id": "awesome_monitoring",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable monitoring capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_memory"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "monitoring_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "always_on_agents/always_on_hn_briefing_agent"
+      ]
+    },
+    {
+      "id": "awesome_rag",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable rag capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_monitoring"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "rag_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_llm_apps/chat-with-tarots",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers"
+      ]
+    },
+    {
+      "id": "awesome_research",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable research capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_rag"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "research_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+        "advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent",
+        "advanced_ai_agents/multi_agent_apps/multi_agent_researcher",
+        "advanced_ai_agents/single_agent_apps/ai_deep_research_agent",
+        "advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api"
+      ]
+    },
+    {
+      "id": "awesome_voice",
+      "kind": "composite_module",
+      "responsibility": "Provide reusable voice capability distilled from reference applications.",
+      "depends_on": [
+        "awesome_research"
+      ],
+      "consumes": [
+        "intent",
+        "source_inputs",
+        "runtime_config"
+      ],
+      "produces": [
+        "voice_result",
+        "evidence_refs"
+      ],
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent",
+        "advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_1_agent_lifecycle_callbacks",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_2_llm_interaction_callbacks",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_3_tool_execution_callbacks"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "intent_seed_capture",
+      "to": "source_evidence_collector"
+    },
+    {
+      "from": "source_evidence_collector",
+      "to": "risk_modeler"
+    },
+    {
+      "from": "risk_modeler",
+      "to": "output_contract_builder"
+    },
+    {
+      "from": "output_contract_builder",
+      "to": "evidence_gate"
+    },
+    {
+      "from": "evidence_gate",
+      "to": "awesome_data_analysis"
+    },
+    {
+      "from": "awesome_data_analysis",
+      "to": "awesome_multi_agent"
+    },
+    {
+      "from": "awesome_multi_agent",
+      "to": "awesome_generative_ui"
+    },
+    {
+      "from": "awesome_generative_ui",
+      "to": "awesome_coding"
+    },
+    {
+      "from": "awesome_coding",
+      "to": "awesome_content"
+    },
+    {
+      "from": "awesome_content",
+      "to": "awesome_finance"
+    },
+    {
+      "from": "awesome_finance",
+      "to": "awesome_general_agent"
+    },
+    {
+      "from": "awesome_general_agent",
+      "to": "awesome_mcp_tools"
+    },
+    {
+      "from": "awesome_mcp_tools",
+      "to": "awesome_memory"
+    },
+    {
+      "from": "awesome_memory",
+      "to": "awesome_monitoring"
+    },
+    {
+      "from": "awesome_monitoring",
+      "to": "awesome_rag"
+    },
+    {
+      "from": "awesome_rag",
+      "to": "awesome_research"
+    },
+    {
+      "from": "awesome_research",
+      "to": "awesome_voice"
+    }
+  ],
+  "gates": [
+    {
+      "id": "source_identity_gate",
+      "outcomes": {
+        "pass": "continue",
+        "warn": "continue_with_warning",
+        "fail": "stop",
+        "blocked": "human_gate"
+      }
+    },
+    {
+      "id": "license_dependency_gate",
+      "outcomes": {
+        "pass": "continue",
+        "warn": "isolate_or_rewrite",
+        "fail": "reject_import",
+        "blocked": "human_gate"
+      }
+    },
+    {
+      "id": "runtime_evidence_gate",
+      "outcomes": {
+        "pass": "candidate_for_replication",
+        "warn": "static_evidence_only",
+        "fail": "demote",
+        "blocked": "credential_or_provider_gate"
+      }
+    }
+  ],
+  "closure_states": [
+    "recommended",
+    "static_evidence_only",
+    "runtime_verified",
+    "blocked",
+    "rejected"
+  ],
+  "side_effects": {
+    "external": false,
+    "cron": false,
+    "taskpool": false,
+    "agentos": false,
+    "publish": false,
+    "destructive": false
+  },
+  "cannot_prove": [
+    "selected upstream examples run locally",
+    "external provider availability",
+    "production readiness"
+  ],
+  "recommendation_scores": [
+    {
+      "module": "awesome_data_analysis",
+      "score": 8
+    },
+    {
+      "module": "awesome_multi_agent",
+      "score": 8
+    },
+    {
+      "module": "awesome_generative_ui",
+      "score": 7
+    },
+    {
+      "module": "awesome_coding",
+      "score": 4
+    },
+    {
+      "module": "awesome_content",
+      "score": 4
+    },
+    {
+      "module": "awesome_finance",
+      "score": 4
+    },
+    {
+      "module": "awesome_general_agent",
+      "score": 4
+    },
+    {
+      "module": "awesome_mcp_tools",
+      "score": 4
+    },
+    {
+      "module": "awesome_memory",
+      "score": 4
+    },
+    {
+      "module": "awesome_monitoring",
+      "score": 4
+    },
+    {
+      "module": "awesome_rag",
+      "score": 4
+    },
+    {
+      "module": "awesome_research",
+      "score": 4
+    },
+    {
+      "module": "awesome_voice",
+      "score": 4
+    }
+  ]
+}

@@ -1,0 +1,1883 @@
+{
+  "schema": "hermes_capability_module_registry_v1",
+  "source_commit": "426cfa66b5fd832090038c36e50a6aa1dab3119c",
+  "modules": [
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "source_evidence_collector",
+      "title": "Source Evidence Collector",
+      "version": 1,
+      "kind": "atomic_module",
+      "responsibility": "Collect pinned source identity and file/path evidence.",
+      "contracts": {
+        "consumes": [
+          "source_ref"
+        ],
+        "produces": [
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "source_ref"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "source_evidence_collector",
+          "Collect pinned source identity and file/path evidence."
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "local absorption workflow contract"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "evidence_gate",
+      "title": "Evidence Gate",
+      "version": 1,
+      "kind": "gate",
+      "responsibility": "Separate source claims, static implementation evidence, and runtime proof.",
+      "contracts": {
+        "consumes": [
+          "evidence_refs"
+        ],
+        "produces": [
+          "evidence_verdict"
+        ],
+        "input_contract": {
+          "required": [
+            "evidence_refs"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "evidence_verdict"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "evidence_gate",
+          "Separate source claims, static implementation evidence, and runtime proof."
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "local absorption workflow contract"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "risk_modeler",
+      "title": "Risk Modeler",
+      "version": 1,
+      "kind": "atomic_module",
+      "responsibility": "Classify license, credential, provider, side-effect, and runtime risks.",
+      "contracts": {
+        "consumes": [
+          "evidence_refs"
+        ],
+        "produces": [
+          "risk_report"
+        ],
+        "input_contract": {
+          "required": [
+            "evidence_refs"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "risk_report"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "risk_modeler",
+          "Classify license, credential, provider, side-effect, and runtime risks."
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "local absorption workflow contract"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "intent_seed_capture",
+      "title": "Intent Seed Capture",
+      "version": 1,
+      "kind": "atomic_module",
+      "responsibility": "Normalize requested functions and target ownership boundary.",
+      "contracts": {
+        "consumes": [
+          "seed"
+        ],
+        "produces": [
+          "intent"
+        ],
+        "input_contract": {
+          "required": [
+            "seed"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "intent"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "intent_seed_capture",
+          "Normalize requested functions and target ownership boundary."
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "local absorption workflow contract"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "output_contract_builder",
+      "title": "Output Contract Builder",
+      "version": 1,
+      "kind": "atomic_module",
+      "responsibility": "Build stable workflow outputs, closure states, and not-proven boundaries.",
+      "contracts": {
+        "consumes": [
+          "intent"
+        ],
+        "produces": [
+          "output_contract"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": []
+        },
+        "output_contract": {
+          "produces": [
+            "output_contract"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "output_contract_builder",
+          "Build stable workflow outputs, closure states, and not-proven boundaries."
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "local absorption workflow contract"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_coding",
+      "title": "Coding",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable coding capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "coding_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "coding_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "coding",
+          "coding",
+          "user requests coding capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team",
+          "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+          "mcp_ai_agents/github_mcp_agent"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_coding_agent_team",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+        "mcp_ai_agents/github_mcp_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_content",
+      "title": "Content",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable content capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "content_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "content_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "content",
+          "content",
+          "user requests content capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web",
+          "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+          "rag_tutorials/ai_blog_search"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/ai_news_and_podcast_agents/web",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+        "rag_tutorials/ai_blog_search",
+        "starter_ai_agents/ai_blog_to_podcast_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_data_analysis",
+      "title": "Data Analysis",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable data_analysis capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "data_analysis_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "data_analysis_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "data_analysis",
+          "data analysis",
+          "user requests data_analysis capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "rag_tutorials/rag_database_routing",
+          "starter_ai_agents/ai_data_analysis_agent",
+          "starter_ai_agents/ai_data_visualisation_agent"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "rag_tutorials/rag_database_routing",
+        "starter_ai_agents/ai_data_analysis_agent",
+        "starter_ai_agents/ai_data_visualisation_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_finance",
+      "title": "Finance",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable finance capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "finance_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "finance_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "finance",
+          "finance",
+          "user requests finance capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+          "advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent",
+          "advanced_ai_agents/single_agent_apps/ai_investment_agent"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+        "advanced_ai_agents/multi_agent_apps/ai_financial_coach_agent",
+        "advanced_ai_agents/single_agent_apps/ai_investment_agent",
+        "advanced_ai_agents/single_agent_apps/ai_personal_finance_agent",
+        "generative_ui_agents/ai-financial-coach-agent",
+        "starter_ai_agents/xai_finance_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_general_agent",
+      "title": "General Agent",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable general_agent capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "general_agent_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "general_agent_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "general_agent",
+          "general agent",
+          "user requests general_agent capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1",
+          "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent",
+          "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_3dpygame_r1",
+        "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_chess_agent",
+        "advanced_ai_agents/autonomous_game_playing_agent_apps/ai_tic_tac_toe_agent",
+        "advanced_ai_agents/single_agent_apps/ai_agent_governance",
+        "advanced_ai_agents/single_agent_apps/ai_consultant_agent",
+        "advanced_ai_agents/single_agent_apps/ai_customer_support_agent",
+        "advanced_ai_agents/single_agent_apps/ai_email_gtm_reachout_agent",
+        "advanced_ai_agents/single_agent_apps/ai_fraud_investigation_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_generative_ui",
+      "title": "Generative Ui",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable generative_ui capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "generative_ui_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "generative_ui_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "generative_ui",
+          "generative ui",
+          "user requests generative_ui capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team",
+          "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team",
+          "advanced_llm_apps/multimodal_video_moment_finder/frontend"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/multimodal_uiux_feedback_agent_team",
+        "advanced_llm_apps/multimodal_video_moment_finder/frontend",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_1_builtin_tools",
+        "generative_ui_agents/ai-dashboard-canvas-agent",
+        "generative_ui_agents/ai-deep-research-agent",
+        "generative_ui_agents/ai-financial-coach-agent",
+        "generative_ui_agents/ai-mcp-app-builder"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_mcp_tools",
+      "title": "Mcp Tools",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable mcp_tools capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "mcp_tools_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "mcp_tools_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "mcp_tools",
+          "mcp tools",
+          "user requests mcp_tools capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+          "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization",
+          "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+        "advanced_llm_apps/llm_optimization_tools/headroom_context_optimization",
+        "advanced_llm_apps/llm_optimization_tools/toonify_token_optimization",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_1_builtin_tools",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_2_function_tools",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_3_thirdparty_tools",
+        "ai_agent_framework_crash_course/google_adk_crash_course/4_tool_using_agent/4_4_mcp_tools",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_3_tool_execution_callbacks"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_memory",
+      "title": "Memory",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable memory capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "memory_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "memory_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "memory",
+          "memory",
+          "user requests memory capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory",
+          "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+          "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_arxiv_agent_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/ai_travel_agent_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/llm_app_personalized_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/local_chatgpt_with_memory",
+        "advanced_llm_apps/llm_apps_with_memory_tutorials/multi_llm_memory",
+        "ai_agent_framework_crash_course/google_adk_crash_course/5_memory_agent/5_1_in_memory_conversation_agent",
+        "ai_agent_framework_crash_course/google_adk_crash_course/5_memory_agent/5_2_persistent_conversation_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_monitoring",
+      "title": "Monitoring",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable monitoring capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "monitoring_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "monitoring_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "monitoring",
+          "monitoring",
+          "user requests monitoring capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "always_on_agents/always_on_hn_briefing_agent"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "always_on_agents/always_on_hn_briefing_agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_multi_agent",
+      "title": "Multi Agent",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable multi_agent capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "multi_agent_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "multi_agent_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "multi_agent",
+          "multi agent",
+          "user requests multi_agent capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+          "advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team",
+          "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_competitor_intelligence_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_finance_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_game_design_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_legal_agent_team/local_ai_legal_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_real_estate_agent_team",
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ai_recruitment_agent_team"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_rag",
+      "title": "Rag",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable rag capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "rag_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "rag_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "rag",
+          "rag",
+          "user requests rag capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_llm_apps/chat-with-tarots",
+          "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+          "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_llm_apps/chat-with-tarots",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_github",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_gmail",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_pdf",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_substack",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_youtube_videos",
+        "advanced_llm_apps/chat_with_X_tutorials/streaming_ai_chatbot"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_research",
+      "title": "Research",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable research capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "research_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "research_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "research",
+          "research",
+          "user requests research capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+          "advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent",
+          "advanced_ai_agents/multi_agent_apps/multi_agent_researcher"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/agent_teams/ag2_adaptive_research_team",
+        "advanced_ai_agents/multi_agent_apps/ai_domain_deep_research_agent",
+        "advanced_ai_agents/multi_agent_apps/multi_agent_researcher",
+        "advanced_ai_agents/single_agent_apps/ai_deep_research_agent",
+        "advanced_ai_agents/single_agent_apps/research_agent_gemini_interaction_api",
+        "advanced_llm_apps/chat_with_X_tutorials/chat_with_research_papers",
+        "ai_agent_framework_crash_course/google_adk_crash_course/adk_yaml_examples/multi_agent_web_research_team",
+        "generative_ui_agents/ai-deep-research-agent"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    },
+    {
+      "schema": "hermes_capability_module_v1",
+      "id": "awesome_voice",
+      "title": "Voice",
+      "version": 1,
+      "kind": "composite_module",
+      "responsibility": "Provide reusable voice capability distilled from reference applications.",
+      "contracts": {
+        "consumes": [
+          "intent",
+          "source_inputs",
+          "runtime_config"
+        ],
+        "produces": [
+          "voice_result",
+          "evidence_refs"
+        ],
+        "input_contract": {
+          "required": [
+            "intent"
+          ],
+          "optional": [
+            "source_inputs",
+            "runtime_config"
+          ]
+        },
+        "output_contract": {
+          "produces": [
+            "voice_result",
+            "evidence_refs"
+          ],
+          "evidence_required": true,
+          "confidence_required": true
+        },
+        "presentation_contract": {
+          "surfaces": [
+            "cli",
+            "markdown"
+          ],
+          "style": "concise_evidence_first"
+        }
+      },
+      "routing": {
+        "applies_when": [
+          "voice",
+          "voice",
+          "user requests voice capability"
+        ],
+        "does_not_apply_when": [
+          "simple answer needs no workflow",
+          "required source or runtime is unavailable and no degraded mode exists"
+        ],
+        "positive_examples": [
+          "advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent",
+          "advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent",
+          "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_1_agent_lifecycle_callbacks"
+        ],
+        "negative_examples": [
+          "word-only request without matching capability intent"
+        ],
+        "neighbor_modules": [],
+        "forbidden_triggers": [
+          "the word agent alone"
+        ]
+      },
+      "authority": {
+        "side_effects": "none",
+        "required_authority": [],
+        "can_run_autonomously": true
+      },
+      "lifecycle": {
+        "maturity": "candidate",
+        "retention": "project_scoped"
+      },
+      "metrics": {
+        "usage_count": 0,
+        "success_count": 0,
+        "evidence_pass_rate": 0.0,
+        "false_trigger_count": 0,
+        "human_intervention_rate": 0.0
+      },
+      "promotion_policy": {
+        "promote_when": [
+          "two independent verified runs",
+          "negative cases pass"
+        ],
+        "demote_when": [
+          "source drift",
+          "runtime contradiction"
+        ],
+        "cleanup_when": [
+          "superseded",
+          "no usage before TTL"
+        ]
+      },
+      "source_refs": [
+        "advanced_ai_agents/multi_agent_apps/ai_speech_trainer_agent",
+        "advanced_ai_agents/single_agent_apps/earnings_call_analyst_agent",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_1_agent_lifecycle_callbacks",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_2_llm_interaction_callbacks",
+        "ai_agent_framework_crash_course/google_adk_crash_course/6_callbacks/6_3_tool_execution_callbacks",
+        "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/realtime",
+        "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/static",
+        "ai_agent_framework_crash_course/openai_sdk_crash_course/11_voice/streamed"
+      ],
+      "cannot_prove": [
+        "upstream app runtime works",
+        "provider/API availability",
+        "production readiness"
+      ]
+    }
+  ]
+}
