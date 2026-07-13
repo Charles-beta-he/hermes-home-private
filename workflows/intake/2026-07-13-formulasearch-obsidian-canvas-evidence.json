@@ -41,13 +41,25 @@
       "limits": "The format encodes structure and layout but does not itself define project-state authority, permissions, provenance or conflict resolution."
     },
     {
-      "claim": "Canvas LLM provides branching/nonlinear LLM interaction in Obsidian, while Cannoli can run no-code LLM scripts over Canvas, read/write a vault and perform HTTP requests.",
-      "status": "supported_by_project_readmes",
+      "claim": "Canvas LLM provides a Canvas-like branching LLM workspace inside Obsidian, but registers the custom .canvas-llm extension rather than using native .canvas as its own workspace format.",
+      "status": "supported_with_implementation_correction",
       "sources": [
         "https://github.com/farlenkov/obsidian-canvas-llm",
-        "https://github.com/DeabLabs/cannoli"
+        "https://github.com/farlenkov/obsidian-canvas-llm/releases/tag/1.1.7"
       ],
-      "limits": "Community plugins expand the side-effect surface and require separate code, credential, data-rights and permission review before installation or use."
+      "limits": "Native .canvas appears in the README as a supported file input; release 1.1.7 registers FILE_EXT=canvas-llm and view type canvas-llm-view. The plugin still exposes provider, Vault and web-input surfaces requiring separate review."
+    },
+    {
+      "claim": "Cannoli can use native Obsidian Canvas as a visual workflow DSL, call models, read/write a vault and perform predefined HTTP requests.",
+      "status": "supported_by_project_readme",
+      "source": "https://github.com/DeabLabs/cannoli",
+      "limits": "This demonstrates execution capability, not production-grade permission isolation, rollback or audit governance."
+    },
+    {
+      "claim": "Obsidian cannot reliably restrict community plugins to narrow permission levels, so plugins inherit Obsidian's access and sensitive-data use warrants independent security review.",
+      "status": "supported",
+      "source": "https://help.obsidian.md/Extending+Obsidian/Plugin+security",
+      "limits": "This is a host-level risk boundary; it does not establish that either named plugin is malicious or exploitable."
     }
   ],
   "corrections_and_boundaries": [

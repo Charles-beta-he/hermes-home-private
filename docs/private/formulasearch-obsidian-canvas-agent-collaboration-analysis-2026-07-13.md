@@ -122,14 +122,16 @@ Missing from the article's optimistic interpretation:
 
 ### Community plugins
 
-Supported by project READMEs:
+Supported by project README, release artifact and source-level registration evidence:
 
-- Canvas LLM offers visual branching, per-node model selection and file/web inputs; it requires users' own provider keys.
-- Cannoli allows Canvas-defined LLM scripts, Vault read/write, variables, loops/branches and HTTP requests.
+- Canvas LLM offers visual branching, per-node model selection and file/web inputs, but its own workspace is **not** the native Obsidian `.canvas` format. Release `1.1.7` registers `FILE_EXT = "canvas-llm"` with view type `canvas-llm-view`; native `.canvas` is listed only among supported file inputs. The precise description is therefore “an independent Canvas-like LLM workspace inside Obsidian,” not “LLM execution directly on native Canvas nodes.”
+- Cannoli uses native Obsidian Canvas as a visual workflow DSL and supports Vault read/write, variables, loops/branches, model calls and predefined HTTP requests.
 
 Risk boundary:
 
-- These are executable community plugins with credential, Vault and network side-effect surfaces. Popularity and an open license do not prove safe installation. No plugin was installed in this absorption.
+- Obsidian's official plugin-security documentation states that community plugins inherit Obsidian's access level because narrow per-plugin permissions cannot be reliably enforced; sensitive-data use warrants an independent security audit.
+- These executable community plugins expose credential, Vault and network surfaces. Popularity, an open license or an automated scorecard does not prove safe installation or maliciousness. No plugin was installed in this absorption.
+- Canvas LLM's custom-format correction was independently read from its `1.1.7` manifest and released `main.js`; it was not accepted solely from a delegated summary.
 
 ## Critical analysis
 
