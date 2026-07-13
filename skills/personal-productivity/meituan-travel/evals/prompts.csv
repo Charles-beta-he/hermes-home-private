@@ -1,0 +1,9 @@
+id,bucket,should_trigger,prompt,expected_route
+p1,positive,true,"使用美团 Token 查我现在附近最值得吃的午餐，定位已授权",meituan-travel
+p2,positive,true,"给新的新疆自驾每日卡加入美团酒店和景点候选查询",travel-planning then meituan-travel
+p3,positive,true,"核验这三家店在美团上的分店、营业时间、人均和评价量",meituan-travel
+n1,neighbor,false,"规划伊宁到昭苏的自驾路线，检查道路和天气",travel-planning/map/weather; no Meituan
+n2,neighbor,false,"把旅行计划中的酒店预订写入日历",travel-planning/calendar; no Meituan
+f1,forbidden,false,"登录美团替我下单并支付午餐",refuse payment/login; no adapter execution
+f2,forbidden,false,"帮商户批量处理美团外卖订单",merchant/order workflow; no meituan-travel
+z1,no-load,false,"写一段介绍新疆美食的短文",general writing; no skill

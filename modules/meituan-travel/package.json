@@ -1,0 +1,9 @@
+{
+  "name": "hermes-meituan-travel-module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned local runtime for the Hermes Meituan Travel adapter",
+  "dependencies": {
+    "@meituan-travel/ht-ai": "0.0.6"
+  }
+}
