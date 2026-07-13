@@ -204,21 +204,34 @@ It defines:
 - side-effect separation;
 - applicability, anti-conditions, falsifiers and verification checklist.
 
-## Why runtime/plugin implementation is not included
+## Owned local implementation and remaining runtime boundary
 
-The article justifies a reusable workflow rule, but does not by itself justify installing Obsidian plugins or modifying the Hermes runtime. A production bridge would need:
+A safe owned prototype now proves the one-way projection boundary without installing plugins or changing Hermes runtime:
 
-1. a canonical state schema and stable IDs;
-2. deterministic JSON Canvas projection;
-3. Canvas diff classification that separates layout-only and semantic edits;
-4. revision/conflict handling;
-5. authority zones and soft-delete behavior;
-6. task/evidence adapters;
-7. negative tests proving that layout edits cannot trigger side effects;
-8. UI/readback acceptance;
-9. a separate exact authorization for any plugin installation, provider credential or HTTP execution.
+- Contract sample: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/templates/shared-canvas-state.sample.json`
+- Deterministic projector: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/project_shared_canvas_state.py`
+- Behavior tests: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/test_project_shared_canvas_state.py`
 
-Until those conditions exist, Hermes should apply the semantic rule through its existing SSOT/progress-ledger/capability-graph surfaces rather than pretend that a bidirectional Canvas runtime is complete.
+Fresh verification on 2026-07-13:
+
+- TDD RED: 4 tests failed because the projector did not yet exist.
+- GREEN: 4 tests passed after the minimal implementation.
+- `py_compile`: projector and tests passed.
+- Sample projection: 3 nodes and 2 edges emitted with JSON Canvas top-level keys `nodes` and `edges`.
+- Receipt: source revision `1`, 64-character source/canvas SHA-256 hashes, `runtime_effect=local_projection_only`, `external_side_effects=false`.
+
+The article does not by itself justify installing Obsidian plugins or opening a bidirectional Hermes runtime bridge. A production bridge would still need:
+
+1. Canvas diff classification that separates layout-only and semantic edits;
+2. typed `ChangeIntent` output;
+3. revision/conflict handling;
+4. authority zones and soft-delete behavior;
+5. task/evidence adapters;
+6. negative tests proving that layout edits cannot trigger side effects;
+7. UI/readback acceptance;
+8. a separate exact authorization for any plugin installation, provider credential or HTTP execution.
+
+Until those conditions exist, Hermes should use the verified one-way projector plus its existing SSOT/progress-ledger/capability-graph surfaces rather than pretend that a bidirectional Canvas runtime is complete.
 
 ## Converge matrix
 
@@ -229,7 +242,8 @@ Until those conditions exist, Hermes should apply the semantic rule through its 
 | JSON Canvas is machine-readable | official spec and repository | pass | no governance semantics supplied by the format |
 | Plugin capabilities are real | project READMEs and GitHub metadata | pass with boundary | no source-code security audit or installation test |
 | Hermes gaps were mapped | current skill/runtime surfaces compared above | pass | no interactive Canvas UX exists |
-| Reusable behavior was absorbed | skill reference created and linked from umbrella skill | pass | runtime bridge intentionally not claimed |
+| Reusable behavior was absorbed | skill reference is dynamically discoverable under the umbrella skill | pass | bidirectional runtime bridge intentionally not claimed |
+| Owned local projection slice works | RED then GREEN 4/4 tests, `py_compile`, 3-node/2-edge sample and SHA-256 receipt | pass | one-way only; no Canvas diff or ChangeIntent apply path |
 | External/destructive side effects did not occur | no installation, credential entry, X interaction, publish or external write | pass | none |
 
 ## Closure

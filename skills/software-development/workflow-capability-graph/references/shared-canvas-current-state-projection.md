@@ -139,6 +139,28 @@ Narrow or reject this pattern if:
 - the projection loses source/evidence provenance;
 - a simpler ledger or task board supplies the same current-state clarity with lower cost.
 
+## Owned local projector slice
+
+A deterministic, side-effect-free one-way projector is included with this skill:
+
+- Input template: `templates/shared-canvas-state.sample.json`
+- Projector: `scripts/project_shared_canvas_state.py`
+- Tests: `scripts/test_project_shared_canvas_state.py`
+
+Run:
+
+```bash
+python3 scripts/project_shared_canvas_state.py \
+  templates/shared-canvas-state.sample.json \
+  /tmp/project.canvas \
+  --receipt /tmp/project.canvas.receipt.json
+python3 scripts/test_project_shared_canvas_state.py
+```
+
+The input contract is `shared_canvas_state.v1`. The projector validates stable node/edge IDs, supported node/edge kinds, lifecycle status, authority, revisions and edge endpoints. It emits JSON Canvas-compatible `nodes` and `edges` plus an optional SHA-256 receipt.
+
+Boundary: this is deliberately one-way and local. It does not parse Canvas edits, emit `ChangeIntent`, mutate canonical state, invoke tools, call networks or execute nodes. A bidirectional bridge requires a separate diff classifier, revision/conflict protocol, authority gate, negative side-effect tests and readback acceptance.
+
 ## Verification checklist
 
 - [ ] Event history and current state are stored separately.

@@ -1,0 +1,61 @@
+{
+  "schema_version": "shared_canvas_state.v1",
+  "revision": 1,
+  "nodes": [
+    {
+      "id": "goal-governed-canvas",
+      "kind": "goal",
+      "status": "confirmed",
+      "owner": "shared",
+      "revision": 1,
+      "summary": "Maintain a governed current-state Canvas projection",
+      "source_refs": [
+        "references/shared-canvas-current-state-projection.md"
+      ],
+      "evidence_refs": [],
+      "authority": "joint_review"
+    },
+    {
+      "id": "task-project-state",
+      "kind": "task",
+      "status": "in_progress",
+      "owner": "agent:hermes",
+      "revision": 1,
+      "summary": "Project canonical state into JSON Canvas",
+      "source_refs": [],
+      "evidence_refs": [
+        "scripts/test_project_shared_canvas_state.py"
+      ],
+      "authority": "agent_writable"
+    },
+    {
+      "id": "risk-canvas-authority",
+      "kind": "risk",
+      "status": "confirmed",
+      "owner": "shared",
+      "revision": 1,
+      "summary": "Canvas edits could be mistaken for canonical authority",
+      "source_refs": [
+        "references/shared-canvas-current-state-projection.md"
+      ],
+      "evidence_refs": [],
+      "authority": "human_owned"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-task-produces-goal",
+      "kind": "produces",
+      "from": "task-project-state",
+      "to": "goal-governed-canvas",
+      "label": "creates projection"
+    },
+    {
+      "id": "edge-risk-blocks-goal",
+      "kind": "blocks",
+      "from": "risk-canvas-authority",
+      "to": "goal-governed-canvas",
+      "label": "requires ChangeIntent gate"
+    }
+  ]
+}
