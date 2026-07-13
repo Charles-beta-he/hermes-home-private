@@ -1,0 +1,59 @@
+{
+  "schema": "hermes_module_governance_v1",
+  "module": {
+    "id": "meituan-travel",
+    "kind": "runtime_skill_module",
+    "scope": "user_local",
+    "maturity": "validated",
+    "version": "1.0.0"
+  },
+  "artifacts": {
+    "skill": "skills/personal-productivity/meituan-travel/SKILL.md",
+    "adapter": "scripts/meituan_travel_keychain_query.py",
+    "runtime_manifest": "modules/meituan-travel/package.json",
+    "tests": [
+      "scripts/tests/test_meituan_travel_keychain_query.py"
+    ],
+    "route_evals": "skills/personal-productivity/meituan-travel/evals/prompts.csv"
+  },
+  "credentials": {
+    "mode": "macos_keychain",
+    "plaintext_forbidden": true
+  },
+  "runtime": {
+    "daemon": false,
+    "pinned_dependencies": {
+      "@meituan-travel/ht-ai": "0.0.6"
+    },
+    "side_effects": [
+      "local_read",
+      "external_read"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "python3 -m unittest scripts.tests.test_meituan_travel_keychain_query -v",
+      "python3 scripts/meituan_travel_keychain_query.py --check",
+      "python3 scripts/meituan_travel_keychain_query.py --query '<non-mutating travel query>' --city '<city>'"
+    ],
+    "fresh_smoke_required": true,
+    "secret_scan_required": true
+  },
+  "lifecycle": {
+    "owner": "user-local",
+    "rollback": "git revert the scoped meituan-travel module commit and preserve Keychain entry unless separately revoked",
+    "upgrade": "inspect upstream, pin exact version, update lockfile, run tests/readiness/fresh smoke/static gate, then scoped commit",
+    "deprecate": "remove workflow bindings, declare superseded_by, prove no active consumers, archive module, and revoke credentials separately if authorized"
+  },
+  "git": {
+    "scoped_commit_required": true,
+    "push_requires_separate_authority": true,
+    "exclude": [
+      "node_modules/",
+      "Keychain values",
+      "provider responses",
+      "runtime output",
+      "unrelated workflow and cron state"
+    ]
+  }
+}

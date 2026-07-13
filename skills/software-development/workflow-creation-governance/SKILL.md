@@ -124,6 +124,29 @@ Promotion requires evidence. Canonical promotion requires route regression, nega
 - Automation → cron/taskpool/AgentOS only with exact target, rollback/readback, and side-effect evidence gates.
 - Mixed conclusion → split landing zones.
 
+## Reusable Runtime Module Lifecycle
+
+When a capability combines a Skill with executable code, a managed provider/runtime, credentials, or workflow routing, it must follow `references/reusable-module-governance.md`; a prose-only Skill lifecycle is insufficient.
+
+Required production artifacts:
+- `modules/<id>/module-governance.json`, copied from `templates/module-governance.template.json`;
+- implementation adapter/runtime manifest and exact dependency lock;
+- behavior tests written RED-first;
+- Skill plus positive/neighbor/forbidden/no-load route evals;
+- static governance-gate PASS, dynamic readiness/fresh-smoke evidence, and secret scan;
+- an exact scoped Git commit whose readback excludes unrelated staged/worktree state;
+- rollback, upgrade, deprecation, owner, and workflow-binding policy.
+
+Run the deterministic static gate before commit:
+
+```bash
+python3 ~/.hermes/skills/software-development/workflow-creation-governance/scripts/module_governance_gate.py \
+  --root ~/.hermes \
+  --manifest ~/.hermes/modules/<id>/module-governance.json
+```
+
+A successful provider call, a discoverable Skill, or a Git commit alone must not be described as the complete lifecycle. Push/publish/deploy, global routing, external writes, payments, destructive actions, and credential entry remain separate exact-authority gates.
+
 ## Module Pool and Synthesis Ratchet
 
 Workflow assets should be assembled from a capability module pool rather than hand-written as monolithic procedures. Treat conversation text as a `WorkflowSeed`; if it passes the assetization gate, compile it into capability needs, retrieve matching modules, detect gaps, create candidate modules only for real gaps, and assemble a workflow graph.

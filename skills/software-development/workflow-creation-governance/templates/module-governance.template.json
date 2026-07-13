@@ -1,0 +1,56 @@
+{
+  "schema": "hermes_module_governance_v1",
+  "module": {
+    "id": "replace-me",
+    "kind": "runtime_skill_module",
+    "scope": "user_local",
+    "maturity": "draft",
+    "version": "0.1.0"
+  },
+  "artifacts": {
+    "skill": "skills/<category>/<id>/SKILL.md",
+    "adapter": "scripts/<id>_adapter.py",
+    "runtime_manifest": "modules/<id>/package.json",
+    "tests": [
+      "scripts/tests/test_<id>_adapter.py"
+    ],
+    "route_evals": "skills/<category>/<id>/evals/prompts.csv"
+  },
+  "credentials": {
+    "mode": "none-or-approved-secret-store",
+    "plaintext_forbidden": true
+  },
+  "runtime": {
+    "daemon": false,
+    "pinned_dependencies": {
+      "replace-package": "0.0.0"
+    },
+    "side_effects": [
+      "local_read"
+    ]
+  },
+  "verification": {
+    "commands": [
+      "replace-with-targeted-test-command",
+      "replace-with-readiness-check",
+      "replace-with-fresh-non-mutating-smoke"
+    ],
+    "fresh_smoke_required": true,
+    "secret_scan_required": true
+  },
+  "lifecycle": {
+    "owner": "replace-owner",
+    "rollback": "git revert the scoped module commit",
+    "upgrade": "pin exact version, test, smoke, gate, scoped commit",
+    "deprecate": "disable routes, declare superseded_by, prove no consumers, archive"
+  },
+  "git": {
+    "scoped_commit_required": true,
+    "push_requires_separate_authority": true,
+    "exclude": [
+      "node_modules/",
+      "credentials",
+      "runtime-output"
+    ]
+  }
+}
