@@ -139,13 +139,15 @@ Narrow or reject this pattern if:
 - the projection loses source/evidence provenance;
 - a simpler ledger or task board supplies the same current-state clarity with lower cost.
 
-## Owned local projector slice
+## Owned local projector and change-classifier slice
 
-A deterministic, side-effect-free one-way projector is included with this skill:
+A deterministic, side-effect-free projection and proposal-only classification slice is included with this skill:
 
 - Input template: `templates/shared-canvas-state.sample.json`
 - Projector: `scripts/project_shared_canvas_state.py`
-- Tests: `scripts/test_project_shared_canvas_state.py`
+- Projector tests: `scripts/test_project_shared_canvas_state.py`
+- Canvas change classifier: `scripts/classify_shared_canvas_changes.py`
+- Classifier tests: `scripts/test_classify_shared_canvas_changes.py`
 
 Run:
 
@@ -154,12 +156,22 @@ python3 scripts/project_shared_canvas_state.py \
   templates/shared-canvas-state.sample.json \
   /tmp/project.canvas \
   --receipt /tmp/project.canvas.receipt.json
-python3 scripts/test_project_shared_canvas_state.py
+
+# After editing a copy of /tmp/project.canvas:
+python3 scripts/classify_shared_canvas_changes.py \
+  /tmp/project.canvas \
+  /tmp/project.edited.canvas \
+  /tmp/project.change-intents.json \
+  --source-revision 1
+
+python3 -m unittest discover -s scripts -p 'test_*.py' -v
 ```
 
 The input contract is `shared_canvas_state.v1`. The projector validates stable node/edge IDs, supported node/edge kinds, lifecycle status, authority, revisions and edge endpoints. It emits JSON Canvas-compatible `nodes` and `edges` plus an optional SHA-256 receipt.
 
-Boundary: this is deliberately one-way and local. It does not parse Canvas edits, emit `ChangeIntent`, mutate canonical state, invoke tools, call networks or execute nodes. A bidirectional bridge requires a separate diff classifier, revision/conflict protocol, authority gate, negative side-effect tests and readback acceptance.
+The classifier validates baseline and edited Canvas structure, then emits `shared_canvas_change_intents.v1`. Layout/color changes remain advisory; text/content changes become `semantic_edit_request`; additions/removals become reviewable node or relationship requests; node removal is explicitly a non-applied `node_delete_request`. Every packet records `apply_performed=false`, `external_side_effects=false` and `runtime_effect=proposal_only`.
+
+Boundary: this slice is local and cannot apply any change. It does not mutate canonical state, invoke tools, call networks or execute nodes. A bidirectional bridge still requires revision comparison against live canonical state, authority and evidence gates, an idempotent apply adapter, negative side-effect tests, regeneration and readback acceptance.
 
 ## Verification checklist
 

@@ -206,32 +206,36 @@ It defines:
 
 ## Owned local implementation and remaining runtime boundary
 
-A safe owned prototype now proves the one-way projection boundary without installing plugins or changing Hermes runtime:
+A safe owned prototype now proves one-way projection and proposal-only Canvas change classification without installing plugins or changing Hermes runtime:
 
 - Contract sample: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/templates/shared-canvas-state.sample.json`
 - Deterministic projector: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/project_shared_canvas_state.py`
-- Behavior tests: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/test_project_shared_canvas_state.py`
+- Projector tests: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/test_project_shared_canvas_state.py`
+- Change classifier: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/classify_shared_canvas_changes.py`
+- Classifier tests: `/Users/charles/.hermes/skills/software-development/workflow-capability-graph/scripts/test_classify_shared_canvas_changes.py`
 
 Fresh verification on 2026-07-13:
 
-- TDD RED: 4 tests failed because the projector did not yet exist.
-- GREEN: 4 tests passed after the minimal implementation.
-- `py_compile`: projector and tests passed.
+- Projector TDD RED: 4 tests failed because the projector did not yet exist; GREEN: 4/4 passed.
+- Classifier TDD RED: 6 tests failed because the classifier did not yet exist; GREEN: 6/6 passed.
+- Combined suite: 10/10 tests passed; `py_compile` passed for all skill scripts.
 - Sample projection: 3 nodes and 2 edges emitted with JSON Canvas top-level keys `nodes` and `edges`.
-- Receipt: source revision `1`, 64-character source/canvas SHA-256 hashes, `runtime_effect=local_projection_only`, `external_side_effects=false`.
+- Projection receipt: source revision `1`, 64-character source/canvas SHA-256 hashes, `runtime_effect=local_projection_only`, `external_side_effects=false`.
+- Round-trip classification smoke test: one layout edit plus one text edit emitted exactly `layout_change` and `semantic_edit_request`; packet recorded `runtime_effect=proposal_only`, `apply_performed=false`, `external_side_effects=false`.
 
-The article does not by itself justify installing Obsidian plugins or opening a bidirectional Hermes runtime bridge. A production bridge would still need:
+The article does not by itself justify installing Obsidian plugins or opening a state-mutating Hermes runtime bridge. A production apply path would still need:
 
-1. Canvas diff classification that separates layout-only and semantic edits;
-2. typed `ChangeIntent` output;
-3. revision/conflict handling;
-4. authority zones and soft-delete behavior;
-5. task/evidence adapters;
+1. comparison of `source_revision` with live canonical state;
+2. schema, evidence, conflict and authority gates;
+3. ownership-aware semantic validation and soft-delete policy;
+4. task/evidence adapters;
+5. an idempotent, separately authorized apply operation;
 6. negative tests proving that layout edits cannot trigger side effects;
-7. UI/readback acceptance;
-8. a separate exact authorization for any plugin installation, provider credential or HTTP execution.
+7. canonical-state regeneration and readback acceptance;
+8. UI/uIMax acceptance;
+9. separate exact authorization for any plugin installation, provider credential or HTTP execution.
 
-Until those conditions exist, Hermes should use the verified one-way projector plus its existing SSOT/progress-ledger/capability-graph surfaces rather than pretend that a bidirectional Canvas runtime is complete.
+Until those conditions exist, Hermes should use the verified projector and proposal-only classifier plus its existing SSOT/progress-ledger/capability-graph surfaces rather than pretend that a state-mutating Canvas runtime is complete.
 
 ## Converge matrix
 
@@ -243,7 +247,7 @@ Until those conditions exist, Hermes should use the verified one-way projector p
 | Plugin capabilities are real | project READMEs and GitHub metadata | pass with boundary | no source-code security audit or installation test |
 | Hermes gaps were mapped | current skill/runtime surfaces compared above | pass | no interactive Canvas UX exists |
 | Reusable behavior was absorbed | skill reference is dynamically discoverable under the umbrella skill | pass | bidirectional runtime bridge intentionally not claimed |
-| Owned local projection slice works | RED then GREEN 4/4 tests, `py_compile`, 3-node/2-edge sample and SHA-256 receipt | pass | one-way only; no Canvas diff or ChangeIntent apply path |
+| Owned local projection and classification slice works | RED→GREEN 4 projector + 6 classifier tests; combined 10/10, `py_compile`, sample receipt and two-intent smoke test | pass | proposal-only; no canonical apply adapter |
 | External/destructive side effects did not occur | no installation, credential entry, X interaction, publish or external write | pass | none |
 
 ## Closure
