@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "captured_at": "2026-07-13T07:52:47Z",
+  "source": {
+    "status_url": "https://x.com/formulasearch/status/2076288803786887245?s=46",
+    "status_id": "2076288803786887245",
+    "article_url": "https://x.com/i/article/2076285136212013056",
+    "article_id": "2076285136212013056",
+    "author": "阿哲Phil (@Formulasearch)",
+    "title": "还在用原始对话框？教你用 Obsidian Canvas 与 Agent 协作",
+    "published_at": "2026-07-12T12:53:21Z",
+    "extraction_method": "public X SSR metadata plus anonymous TweetResultByRestId GraphQL with withArticlePlainText",
+    "article_plain_text_sha256": "7102cf590e9590d33d38663dac5b59b02624384d8799e9bb727b42e1afdf2b0a",
+    "article_plain_text_chars": 8107,
+    "article_plain_text_lines": 266
+  },
+  "primary_thesis": "Linear chat records what was said but does not reliably encode current project state; for complex work, Chat, Canvas, Markdown/files, tasks and agents should form a shared, persistent workspace.",
+  "verified_claims": [
+    {
+      "claim": "Sensecape supports nonlinear exploration through canvas and hierarchy views and found that users explored more topics and organized knowledge hierarchically.",
+      "status": "supported_with_study_limits",
+      "source": "https://arxiv.org/abs/2305.11483",
+      "limits": "UIST 2023 within-subject user study; novelty, learning-curve, clutter and limited exposure are acknowledged by the paper."
+    },
+    {
+      "claim": "CanvasConvo evaluated a branching canvas/chat interface with 24 participants in a five-day field study; canvas sessions averaged 34.1 minutes and chat sessions 13.0 minutes.",
+      "status": "supported",
+      "source": "https://arxiv.org/abs/2605.15848",
+      "limits": "The fetched PDF labels itself an unpublished working draft; duration differences are observational telemetry, not proof that canvas causes better outcomes."
+    },
+    {
+      "claim": "Cursor canvases are durable artifacts alongside terminal, browser and source control, and are used for data-heavy nonlinear visualizations such as incident response, PR review, eval analysis and autoresearch.",
+      "status": "supported_as_vendor_product_claim",
+      "source": "https://cursor.com/blog/canvas",
+      "limits": "Vendor-authored product description, not an independent effectiveness study."
+    },
+    {
+      "claim": "JSON Canvas is an open file format whose top level contains nodes and edges; nodes can be text, file, link or group and include explicit position and dimensions.",
+      "status": "supported",
+      "source": "https://jsoncanvas.org/spec/1.0/",
+      "limits": "The format encodes structure and layout but does not itself define project-state authority, permissions, provenance or conflict resolution."
+    },
+    {
+      "claim": "Canvas LLM provides branching/nonlinear LLM interaction in Obsidian, while Cannoli can run no-code LLM scripts over Canvas, read/write a vault and perform HTTP requests.",
+      "status": "supported_by_project_readmes",
+      "sources": [
+        "https://github.com/farlenkov/obsidian-canvas-llm",
+        "https://github.com/DeabLabs/cannoli"
+      ],
+      "limits": "Community plugins expand the side-effect surface and require separate code, credential, data-rights and permission review before installation or use."
+    }
+  ],
+  "corrections_and_boundaries": [
+    "A canvas is not automatically the project's source of truth; without a schema and reconciliation protocol it is only a mutable view file.",
+    "Moving or deleting a node does not safely update an agent's understanding unless the edit is converted into a typed change intent, validated, applied to canonical state and read back.",
+    "Spatial proximity and color are presentation hints, not sufficient machine semantics; important relations and statuses need typed fields or labeled edges.",
+    "The article's Chat + Canvas + Markdown + Agent loop is directionally strong, but Tasks, evidence, authority, revision and conflict handling are also required for governed execution.",
+    "No Obsidian plugin was installed and no external account, X interaction or runtime side effect was performed."
+  ],
+  "local_landing_targets": [
+    "/Users/charles/.hermes/docs/private/formulasearch-obsidian-canvas-agent-collaboration-analysis-2026-07-13.md",
+    "/Users/charles/.hermes/skills/software-development/workflow-capability-graph/references/shared-canvas-current-state-projection.md"
+  ]
+}
