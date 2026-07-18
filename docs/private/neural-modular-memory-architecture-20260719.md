@@ -180,7 +180,7 @@ score = lexical_relevance
       + bounded_relation_bonus
 ```
 
-硬门禁先于排序：scope 不匹配、expired、archived、无 provenance、非 reference-only 注入契约均拒绝。字符预算和条目上限最终截断。
+硬门禁先于排序：scope 不匹配、expired、archived、无 provenance、`source_hash` 非 64 位小写十六进制 SHA-256、非 reference-only 注入契约均拒绝。primary 与 sibling completion 使用同一组门禁；字符预算和条目上限最终截断。
 
 ### 3.5 与 Hermes 的集成边界
 
@@ -235,8 +235,8 @@ correction: old --superseded_by--> new
 
 ### 运行证据（2026-07-19）
 
-- 实际运行解释器：`/Users/charles/.hermes/hermes-agent/venv/bin/python`。
-- focused + full tests：26 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 2600 tests，0 failure/0 error，runner exit 0；`py_compile` exit 0。
+- 实际 Hermes 解释器：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`。
+- focused + full tests：27 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 2700 tests，0 failure/0 error，runner exit 0；`py_compile` exit 0。
 - provider discovery：同时发现 `localbrain` 与 `neural_modular_memory`；后者成功实例化且 `is_available=True`。
 - 配置读回：`memory.provider=neural_modular_memory`；`hermes config check` exit 0。
 - live local smoke：`has_modular=True`、`has_provenance=True`、authority boundary=True、`get_tool_schemas=[]`、召回包 598 chars（统一预算内）。

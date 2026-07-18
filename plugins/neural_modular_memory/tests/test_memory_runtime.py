@@ -296,6 +296,35 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertGreaterEqual(second["consolidated"], 1)
         self.assertTrue(all(p["status"] == "consolidated" for p in verified))
 
+    def test_high_risk_consolidation_requires_evidence_in_every_supporting_session(self) -> None:
+        for session in ("s1", "s2", "s3"):
+            self.store.ingest_turn(
+                session,
+                "请选择存储方案。",
+                "决定采用事件存储。测试通过。",
+                scope="project:x",
+                turn_key="per-session-evidence",
+            )
+        third_decision = next(
+            p
+            for p in self.store.list_projections()
+            if p["module"] == "decision" and p["session_id"] == "s3"
+        )
+        self.store.conn.execute(
+            "UPDATE projections SET module='episodic' WHERE source_event_id=? AND module='evidence'",
+            (third_decision["source_event_id"],),
+        )
+        self.store.conn.commit()
+
+        result = self.store.consolidate(min_sessions=2)
+        decisions = [
+            p
+            for p in self.store.list_projections()
+            if p["module"] == "decision" and p["semantic_key"] == third_decision["semantic_key"]
+        ]
+        self.assertEqual(0, result["consolidated"])
+        self.assertTrue(all(p["status"] != "consolidated" for p in decisions))
+
     def test_decay_archives_weak_projection_without_deleting_l0_events(self) -> None:
         old = datetime(2025, 1, 1, tzinfo=UTC)
         self.store.ingest_turn(
@@ -369,13 +398,13 @@ class MemoryStoreTests(unittest.TestCase):
         )
         user_event = next(e for e in self.store.list_events() if e["role"] == "user")
         self.store.conn.execute(
-            "UPDATE projections SET source_hash='' WHERE source_event_id=? AND module='episodic'",
-            (user_event["id"],),
+            "UPDATE projections SET source_hash=? WHERE source_event_id=? AND module IN ('constraint','episodic')",
+            ("z" * 64, user_event["id"]),
         )
         self.store.conn.commit()
         packet = self.store.recall("本地运行", current_scope="project:x", limit=10)
         modules = {entry["module"] for entry in packet}
-        self.assertIn("constraint", modules)
+        self.assertNotIn("constraint", modules)
         self.assertNotIn("episodic", modules)
 
     def test_fts_failure_returns_empty_instead_of_scanning_the_scope(self) -> None:
