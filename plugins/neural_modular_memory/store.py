@@ -93,6 +93,22 @@ def _contains_any(text: str, markers: Sequence[str]) -> bool:
     return any(marker.lower() in low for marker in markers)
 
 
+def correction_target_tokens(text: str) -> set[str]:
+    """Extract only the explicitly replaced subject of a correction."""
+    value = normalize(text)
+    patterns = (
+        r"(?:不要|不是|不喜欢)\s*([^，,；;。.!！？?]+)",
+        r"(?:纠正|更正)\s*[:：]\s*(.+?)\s*(?:改用|换成|而是)",
+        r"(?:instead of|not)\s+([^,;.!?]+)",
+    )
+    generic = {"必须", "不要", "需要", "偏好", "纠正", "更正", "改用", "must", "not", "prefer"}
+    for pattern in patterns:
+        match = re.search(pattern, value, flags=re.IGNORECASE)
+        if match:
+            return set(search_tokens(match.group(1))) - generic
+    return set()
+
+
 class MemoryStore:
     def __init__(self, path: Path, now_fn: Callable[[], datetime] = utc_now):
         self.path = Path(path).expanduser()
@@ -231,7 +247,12 @@ class MemoryStore:
         )
         return event_id
 
-    def _projection_specs(self, role: str, text: str) -> List[Dict[str, Any]]:
+    def _projection_specs(
+        self,
+        role: str,
+        text: str,
+        durable_scope: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         cleaned = redact(text)
         specs = [{
             "module": "episodic",
@@ -247,13 +268,19 @@ class MemoryStore:
                 if module in ("decision", "evidence", "procedure") and role != "assistant":
                     continue
                 if _contains_any(clause, markers):
-                    specs.append({
+                    spec = {
                         "module": module,
                         "level": "L2" if module not in ("causal", "procedure") else "L3",
                         "claim": clause[:1000],
                         "confidence": 0.86 if role == "user" else 0.72,
                         "strength": 0.52 if role == "user" else 0.45,
-                    })
+                    }
+                    if durable_scope and role == "user" and (
+                        module == "preference"
+                        or (module == "constraint" and correction_target_tokens(clause))
+                    ):
+                        spec["scope"] = durable_scope
+                    specs.append(spec)
         return specs
 
     def _insert_projection(
@@ -263,6 +290,7 @@ class MemoryStore:
     ) -> str:
         module = str(spec["module"])
         claim = str(spec["claim"])
+        projection_scope = str(spec.get("scope") or event["scope"])
         semantic_key = digest(module, normalize(claim))[:32]
         projection_id = digest("projection", str(event["id"]), module, semantic_key, claim)
         timestamp = str(event["observed_at"])
@@ -279,7 +307,7 @@ class MemoryStore:
                 event["session_id"],
                 module,
                 spec["level"],
-                event["scope"],
+                projection_scope,
                 claim,
                 semantic_key,
                 float(spec["confidence"]),
@@ -299,7 +327,7 @@ class MemoryStore:
             "SELECT 1 FROM projections_fts WHERE projection_id=? LIMIT 1", (actual_id,)
         ).fetchone()
         if existing_fts is None:
-            tokens = " ".join(search_tokens("%s %s %s" % (module, event["scope"], claim)))
+            tokens = " ".join(search_tokens("%s %s %s" % (module, projection_scope, claim)))
             self.conn.execute(
                 "INSERT INTO projections_fts(projection_id, search_text) VALUES (?, ?)",
                 (actual_id, tokens),
@@ -315,27 +343,36 @@ class MemoryStore:
                         (left, right, created_at),
                     )
 
-    def _apply_correction(self, event_id: str, scope: str, user_text: str, created_at: str) -> None:
+    def _apply_correction(self, event_id: str, user_text: str, created_at: str) -> None:
         if not _contains_any(user_text, ("纠正", "改用", "不是", "更正", "correction", "instead")):
             return
+        target_tokens = correction_target_tokens(user_text)
+        if not target_tokens:
+            return
         new_rows = self.conn.execute(
-            "SELECT id,module,claim FROM projections WHERE source_event_id=? AND module IN ('constraint','preference','intent')",
+            "SELECT id,module,scope,claim FROM projections WHERE source_event_id=? AND module IN ('constraint','preference','intent')",
             (event_id,),
         ).fetchall()
-        generic_tokens = {"必须", "不要", "需要", "偏好", "纠正", "改用", "must", "not", "prefer"}
+        replaceable = {
+            "constraint": ("constraint", "preference", "intent"),
+            "preference": ("preference",),
+            "intent": ("intent",),
+        }
         for new_row in new_rows:
+            modules = replaceable[str(new_row["module"])]
+            placeholders = ",".join("?" for _ in modules)
             old_rows = self.conn.execute(
                 """SELECT id,claim FROM projections
-                   WHERE scope=? AND module IN ('constraint','preference','intent')
+                   WHERE scope=? AND module IN (%s)
                      AND source_event_id<>?
                      AND status IN ('candidate','supported','consolidated')
-                   ORDER BY created_at DESC LIMIT 24""",
-                (scope, event_id),
+                   ORDER BY created_at DESC LIMIT 24""" % placeholders,
+                (new_row["scope"], *modules, event_id),
             ).fetchall()
-            new_tokens = set(search_tokens(new_row["claim"])) - generic_tokens
             for old_row in old_rows:
-                old_tokens = set(search_tokens(old_row["claim"])) - generic_tokens
-                if not (new_tokens & old_tokens):
+                old_tokens = set(search_tokens(old_row["claim"]))
+                coverage = len(target_tokens & old_tokens) / float(max(1, len(target_tokens)))
+                if coverage < 0.6:
                     continue
                 self.conn.execute(
                     "UPDATE projections SET status='contradicted', strength=MIN(strength,0.2) WHERE id=?",
@@ -352,6 +389,7 @@ class MemoryStore:
         user_text: str,
         assistant_text: str,
         scope: Optional[str] = None,
+        durable_scope: Optional[str] = None,
         turn_key: Optional[str] = None,
         observed_at: Optional[datetime] = None,
     ) -> Dict[str, Any]:
@@ -364,20 +402,27 @@ class MemoryStore:
             projection_ids: List[str] = []
             for event_id in (user_event_id, assistant_event_id):
                 event = self.conn.execute("SELECT * FROM events WHERE id=?", (event_id,)).fetchone()
-                source_ids = [self._insert_projection(event, spec) for spec in self._projection_specs(event["role"], event["text_redacted"])]
+                source_ids = [
+                    self._insert_projection(event, spec)
+                    for spec in self._projection_specs(
+                        event["role"],
+                        event["text_redacted"],
+                        durable_scope=durable_scope,
+                    )
+                ]
                 self._link_siblings(source_ids, str(event["observed_at"]))
                 projection_ids.extend(source_ids)
-            self._apply_correction(user_event_id, actual_scope, redact(user_text), iso(timestamp))
+            self._apply_correction(user_event_id, redact(user_text), iso(timestamp))
         return {
             "user_event_id": user_event_id,
             "assistant_event_id": assistant_event_id,
             "projection_ids": projection_ids,
         }
 
-    def _candidate_ids(self, query: str) -> Optional[set]:
+    def _candidate_ids(self, query: str) -> set[str]:
         tokens = search_tokens(query)
         if not tokens:
-            return None
+            return set()
         expression = " OR ".join('"%s"' % token.replace('"', '') for token in tokens[:24])
         try:
             rows = self.conn.execute(
@@ -386,7 +431,7 @@ class MemoryStore:
             ).fetchall()
             return {str(row["projection_id"]) for row in rows}
         except sqlite3.Error:
-            return None
+            return set()
 
     def recall(
         self,
@@ -396,22 +441,26 @@ class MemoryStore:
         max_chars: int = 4000,
         complete_siblings: bool = True,
         now: Optional[datetime] = None,
+        additional_scopes: Optional[Sequence[str]] = None,
     ) -> List[Dict[str, Any]]:
         del max_chars  # rendering owns the byte/character envelope
         limit = max(1, min(int(limit), 20))
         ids = self._candidate_ids(query)
-        params: List[Any] = [current_scope]
+        if not ids:
+            return []
+        allowed_scopes = sorted({current_scope, "global", *(additional_scopes or ())})
+        scope_placeholders = ",".join("?" for _ in allowed_scopes)
+        params: List[Any] = list(allowed_scopes)
         sql = """SELECT * FROM projections
                  WHERE status IN ('candidate','supported','consolidated')
                    AND reference_only=1
                    AND source_event_id<>'' AND length(source_hash)=64
-                   AND scope IN (?, 'global')
-                   AND (expires_at IS NULL OR expires_at >= ?)"""
+                   AND scope IN (%s)
+                   AND (expires_at IS NULL OR expires_at >= ?)""" % scope_placeholders
         params.append(iso(now or self._now_fn()))
-        if ids:
-            placeholders = ",".join("?" for _ in ids)
-            sql += " AND id IN (%s)" % placeholders
-            params.extend(sorted(ids))
+        placeholders = ",".join("?" for _ in ids)
+        sql += " AND id IN (%s)" % placeholders
+        params.extend(sorted(ids))
         rows = self.conn.execute(sql, params).fetchall()
         qtokens = set(search_tokens(query))
         ranked = []
@@ -434,13 +483,13 @@ class MemoryStore:
             placeholders = ",".join("?" for _ in source_ids)
             sibling_rows = self.conn.execute(
                 """SELECT * FROM projections WHERE source_event_id IN (%s)
-                   AND scope IN (?, 'global')
+                   AND scope IN (%s)
                    AND status IN ('candidate','supported','consolidated')
                    AND reference_only=1
                    AND source_event_id<>'' AND length(source_hash)=64
                    AND (expires_at IS NULL OR expires_at >= ?)
-                   ORDER BY confidence DESC, created_at DESC""" % placeholders,
-                list(sorted(source_ids)) + [current_scope, iso(current)],
+                   ORDER BY confidence DESC, created_at DESC""" % (placeholders, scope_placeholders),
+                list(sorted(source_ids)) + allowed_scopes + [iso(current)],
             ).fetchall()
             base_score = selected[-1][0]
             for sibling in sibling_rows:

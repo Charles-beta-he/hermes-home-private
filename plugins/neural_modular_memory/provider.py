@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import subprocess
@@ -19,6 +20,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
         self._store: Optional[MemoryStore] = None
         self._session_id = ""
         self._hermes_home: Optional[Path] = None
+        self._durable_scope = ""
 
     @property
     def name(self) -> str:
@@ -54,6 +56,19 @@ class NeuralModularMemoryProvider(MemoryProvider):
         self._hermes_home = Path(
             str(kwargs.get("hermes_home") or os.environ.get("HERMES_HOME") or "~/.hermes")
         ).expanduser().resolve()
+        configured_scope = str(self._config.get("durable_scope", "")).strip()
+        if configured_scope:
+            self._durable_scope = configured_scope
+        else:
+            identity = str(
+                kwargs.get("user_id")
+                or kwargs.get("gateway_session_key")
+                or kwargs.get("agent_identity")
+                or "default"
+            )
+            platform = str(kwargs.get("platform") or "local")
+            scope_key = hashlib.sha256((platform + "\x1f" + identity).encode("utf-8")).hexdigest()[:20]
+            self._durable_scope = "user:" + scope_key
         try:
             self._store = MemoryStore(self._store_path())
         except Exception:
@@ -164,6 +179,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
                     limit=limit,
                     max_chars=max(0, remaining),
                     complete_siblings=True,
+                    additional_scopes=[self._durable_scope] if self._durable_scope else None,
                 )
                 rendered = self._store.render_packet(packet, max_chars=max(0, remaining))
                 if rendered:
@@ -190,6 +206,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
                 str(user_content or ""),
                 str(assistant_content or ""),
                 scope="session:%s" % actual_session,
+                durable_scope=self._durable_scope or None,
             )
         except Exception:
             return None

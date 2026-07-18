@@ -54,7 +54,9 @@ MemoryProjection = Project(
 - 下一轮召回受 query、scope、status、budget、expiry 共同约束。
 - 能从同源兄弟投影执行受限模式补全，但不会越作用域。
 - 明确纠正可产生冲突/替代关系；旧投影保留但被抑制。
+- 纠正只压制与“被替换主题”充分匹配的旧投影；共享一个技术词不能触发跨主题压制。
 - 至少两个独立 session 的一致证据才能巩固；单轮推断保持 candidate/reference-only。
+- Provider 的显式稳定用户偏好使用不可逆身份摘要形成的 `user:*` scope，跨 session 可巩固；episodic/普通轮次仍保持 `session:*`。
 - 时间衰减可归档低强度投影，但事件计数不减少。
 - Local Brain 原有 `brainctl search` 召回仍保留，并与新运行时统一注入。
 - 自动测试覆盖正向、幂等、溯源、作用域、脱敏、冲突、巩固、遗忘、预算、错误关闭。
@@ -163,7 +165,7 @@ uncertainty:什么仍未知、失效或未验证？
 2. Project：按模块契约生成 L1/L2 候选；不递归读取旧摘要作为事实源。
 3. Separate：按来源、模块、semantic key 去重，创建同源 sibling 边。
 4. Compete：同主题冲突不覆盖，创建 contradicts/supersedes 并抑制旧节点。
-5. Assemble：下一轮按 query、scope、时效、权限、预算选择种子。
+5. Assemble：下一轮按 query、显式允许的 scope 集、时效、权限、预算选择种子；FTS 缺失/异常或无候选时直接返回空，不退化为 scope 全表扫描。
 6. Complete：仅扩展同源 sibling 和一跳显式关系，形成最小充分工作包。
 7. Consolidate/Forget：跨 session 一致证据提升强度；冲突、过期、低使用候选降权或归档；L0 不删。
 
@@ -185,6 +187,7 @@ score = lexical_relevance
 - 使用官方 `MemoryProvider` ABI：`prefetch/sync_turn/on_pre_compress/on_session_end`。
 - 用户级 provider 包装当前 `brainctl search`，保留 Local Brain 的 canonical path/line/hash 召回。
 - 新库位于 `$HERMES_HOME/memory/neural_modular.sqlite3`，profile 自动隔离。
+- Provider 默认允许精确当前 `session:*`、由 gateway user/profile identity 单向摘要得到的精确 `user:*`、以及 `global`；原始 identity 不进入 scope。仅显式稳定 preference 和显式 correction 投影进入 durable user scope，普通 episodic/turn 投影不提升。
 - `sync_turn` 只做本地、确定性、快速写入；不调用 LLM、网络或工具。
 - `prefetch` 输出 authority-neutral/reference-only 记忆包；不会增加工具 schema，不改变 prompt cache 静态前缀。
 - built-in memory、USER、skills、project profiles 仍按现有治理工具显式写入；插件只提供候选证据，不自动提升。
@@ -211,7 +214,8 @@ correction: old --superseded_by--> new
 - 任何 projection 都不能授权发送、删除、部署、支付、输入凭据或改写生产状态。
 - `assistant` 自述的“已完成”只进入 decision/uncertainty 候选，除非有工具/API/测试证据锚点。
 - 用户的“这次这样做”默认 session/task scope；不能自动升为 user/global。
-- 显式用户纠正优先于旧推断，但旧记录不删除。
+- 显式稳定偏好可进入该用户的 hashed `user:*` scope；这不授权把 episodic、普通 intent 或临时 constraint 自动升为 user/global。
+- 显式用户纠正优先于旧推断，但旧记录不删除；必须命中明确被替换主题，不以任意共享 token 判冲突。
 - 多次重复的错误不能因频次变成事实；独立来源、无冲突与验证门禁缺一不可。
 
 ## 6. Converge Matrix
@@ -221,9 +225,9 @@ correction: old --superseded_by--> new
 | 多模块同源投影 | `store.py:111-169,229-304,331-367` | `test_memory_runtime.py:33`；实库 2 events→5 projections/8 edges | pass |
 | 幂等与溯源 | `MemoryStore._insert_event`、`_project_event` | `test_ingest_is_idempotent_for_same_session_and_turn`、`test_same_turn_key_rejects_changed_content`；召回读回含 `source_event`+`sha256` | pass |
 | 脱敏与本地隔离 | `store.py:_SECRET_PATTERNS`、`redact_text` | 私钥、token、Authorization、AWS key、cookie、card number 负测 | pass |
-| scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、sibling expiry/reference-only、统一字符预算负测 | pass |
-| 冲突/替代 | `MemoryStore._apply_correction`、`consolidate` | 无关记忆不误伤、活跃 contradiction 禁止巩固 | pass |
-| 双速巩固 | `MemoryStore.consolidate` | 单源召回不升 supported；双 source/single session 仅 supported；双 session + 高风险模块 evidence 门禁 | pass |
+| scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、provider 精确 session+hashed-user scope、sibling expiry/reference-only、FTS 异常返回空、统一字符预算负测 | pass |
+| 冲突/替代 | `MemoryStore._apply_correction`、`consolidate` | 同技术词的不同主题不误伤；明确替换主题被压制；活跃 contradiction 禁止巩固 | pass |
+| 双速巩固 | `MemoryStore.consolidate`、Provider durable-scope 投影 | 单源召回不升 supported；双 source/single session 仅 supported；Provider 双 session 显式稳定偏好巩固并可在第三 session 召回；高风险模块 evidence 门禁 | pass |
 | 遗忘不删 L0 | `store.py:501-526` | `test_memory_runtime.py:123` | pass |
 | brainctl 兼容召回 | `NeuralModularMemoryProvider._brain_recall` | 合法 provenance；timeout/non-zero/invalid JSON/hash/line 全部 fail-closed | pass |
 | fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；`get_tool_schemas=[]`；authority-neutral 提示 | pass |
@@ -232,7 +236,7 @@ correction: old --superseded_by--> new
 ### 运行证据（2026-07-19）
 
 - 实际运行解释器：`/Users/charles/.hermes/hermes-agent/venv/bin/python`。
-- focused + full tests：23 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 2300 tests，0 failure/0 error；`py_compile` exit 0。
+- focused + full tests：26 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 2600 tests，0 failure/0 error，runner exit 0；`py_compile` exit 0。
 - provider discovery：同时发现 `localbrain` 与 `neural_modular_memory`；后者成功实例化且 `is_available=True`。
 - 配置读回：`memory.provider=neural_modular_memory`；`hermes config check` exit 0。
 - live local smoke：`has_modular=True`、`has_provenance=True`、authority boundary=True、`get_tool_schemas=[]`、召回包 598 chars（统一预算内）。
