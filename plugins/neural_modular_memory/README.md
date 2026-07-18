@@ -20,6 +20,7 @@ Properties:
 - wraps the existing canonical `brainctl search` path and fails closed on timeout, non-zero exit, malformed JSON or invalid provenance;
 - keeps a single active provider control plane: Local Brain remains a read-only canonical-document lane, while M³G owns fast turn events/projections under the same total recall budget; exact normalized cross-lane duplicates prefer the canonical Local Brain citation, without fuzzy semantic collapsing;
 - mirrors successful built-in `MEMORY.md`/`USER.md` mutations only as redacted, append-only `memory_write_receipts`; receipts are not projected or recalled, so explicit canonical memory is not duplicated in the prompt;
+- recursively redacts receipt metadata dictionary keys and nested values before persistence;
 - writes turn events and explicit-memory receipts only for `agent_context=primary`, and follows Hermes session switches before subsequent writes;
 - leaves `state.db`/`session_search`, skills, project profiles and SSOT files with their existing canonical owners instead of copying them into the graph;
 - declares the external Local Brain canonical vault through `backup_paths()` so Hermes backup/import can include it alongside profile-local memory state;

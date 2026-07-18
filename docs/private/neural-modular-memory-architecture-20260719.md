@@ -250,7 +250,7 @@ correction: old --superseded_by--> new
 |---|---|---|---|
 | 多模块同源投影 | `MemoryStore._insert_event/_projection_specs/_insert_projection` | `test_one_source_creates_multiple_contract_driven_projections`；实库 4 events→10 projections/16 edges | pass |
 | 幂等、不可变与溯源 | `MemoryStore._insert_event`、L0 triggers、recall provenance SQL | turn replay、changed-content、update/delete、伪 hash 与 L0 mismatch 负测 | pass |
-| 写前脱敏 | `redact`、`redact_structure` | 私钥、token、Authorization、AWS key、cookie、Luhn-valid PAN、nested metadata 负测 | pass |
+| 写前脱敏 | `redact`、`redact_structure` | 私钥、token、Authorization、AWS key、cookie、Luhn-valid PAN、secret-bearing metadata key 与 nested value 负测 | pass |
 | scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、精确 session+hashed-user scope、sibling 门禁、FTS fail-closed、统一字符预算 | pass |
 | 冲突/替代 | `MemoryStore._apply_correction/consolidate` | 同技术词不同主题不误伤；明确替换主题被压制；活跃 contradiction 禁止巩固 | pass |
 | 双速巩固 | `MemoryStore.consolidate`、durable-scope 投影 | 单源不升 supported；双 source/single session 仅 supported；双 session 稳定偏好巩固；高风险 evidence 门禁 | pass |
@@ -262,14 +262,14 @@ correction: old --superseded_by--> new
 | Local Brain 联邦召回 | `_brain_recall`、`prefetch` | 合法 path/line/hash；timeout/non-zero/invalid JSON/hash/path/line fail-closed | pass |
 | 跨来源去重 | `_suppress_modular_duplicates` | 已注入 canonical excerpt 精确去重；被预算截断而未注入的 Brain hit 不抑制 M³G | pass |
 | 全记忆备份边界 | `backup_paths()`、Hermes backup collector | live collector 读回 `/Users/charles/Documents/brain` 且路径存在 | pass |
-| schema v1/v2→v3 迁移 | `_init_schema`、`last_decayed_at`、`memory_write_receipts` triggers | fixture 原地升级保留 event/strength；旧 projection 首次迁移不重复衰减；未知/未来 schema 拒绝打开且不重写 marker；实库 integrity/count/trigger 读回 | pass |
+| schema v1/v2→v3 迁移 | `_init_schema`、`last_decayed_at`、`memory_write_receipts` triggers | fixture 原地升级保留 event/projection/edge/activation/FTS/strength，并读回 integrity/trigger；旧 projection 首次迁移不重复衰减；未知/未来 schema 拒绝打开且不重写 marker；实库 integrity/count/trigger 读回 | pass |
 | fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；authority-neutral 提示；生产代码静态安全扫描 0 findings | pass |
 
 ### 运行证据（2026-07-19）
 
-- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；41/41，0 failure、0 error、0 skip。
-- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；41/41，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
-- 重复门禁：100 次完整 suite × 41 = 4100 tests；0 failure、0 error、0 skip；exit 0。
+- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；42/42，0 failure、0 error、0 skip。
+- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；42/42，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
+- 重复门禁：100 次完整 suite × 42 = 4200 tests；0 failure、0 error、0 skip；exit 0。
 - 静态门禁：`py_compile`、scoped `git diff --check` exit 0；production added-lines secret/shell/eval/pickle/SQL-fstring scan 均为 0。
 - 配置：`hermes config check` exit 0；活跃 provider 为 `neural_modular_memory`。
 - live backup collector：`BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`，`ALL_EXIST=True`。

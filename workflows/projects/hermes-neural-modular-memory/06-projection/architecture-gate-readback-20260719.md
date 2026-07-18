@@ -9,9 +9,9 @@
 
 ## Deterministic verification
 
-- Hermes venv: 41 tests, 0 failures, 0 errors, 0 skipped.
-- Homebrew Python 3.14.3: 41 tests, 0 failures, 0 errors, 0 skipped.
-- Repeat gate: 100 complete iterations × 41 tests = 4100 tests; 0 failures, 0 errors, 0 skipped; exit 0.
+- Hermes venv: 42 tests, 0 failures, 0 errors, 0 skipped.
+- Homebrew Python 3.14.3: 42 tests, 0 failures, 0 errors, 0 skipped.
+- Repeat gate: 100 complete iterations × 42 tests = 4200 tests; 0 failures, 0 errors, 0 skipped; exit 0.
 - `py_compile`: exit 0 for `store.py`, `provider.py`, and `test_memory_runtime.py`.
 - scoped `git diff --check`: exit 0.
 - production added-lines scan: hardcoded secret, `shell=True`, `eval/exec`, pickle and SQL-fstring findings all 0.
@@ -47,12 +47,12 @@ Runtime closure evidence:
 
 - schema: `hermes.neural_modular_memory.v3`.
 - `memory_write_receipts` supports `add`, `replace`, `remove` for `memory` and `user` targets.
-- receipt content and nested metadata are redacted before persistence.
+- receipt content, metadata dictionary keys, and nested metadata values are redacted before persistence.
 - Luhn-valid 13–19 digit PANs are redacted in compact, space-separated, and hyphen-separated forms; compact/separated 12- and 20-digit runs remain intact rather than being partially redacted.
 - receipt update/delete are rejected by SQLite triggers.
 - receipts never enter events, projections, FTS or normal recall.
 - v1/v2 projections migrate in place with nullable `last_decayed_at`; their existing strength is preserved on the first post-migration decay instead of applying historical age again.
-- fixture v1→v3 migration retains existing L0 events and projection strength.
+- fixture v1→v3 migration retains events, projections, edges, activations, FTS rows and projection strength, and reads back integrity plus immutable trigger inventory.
 - unknown or future schema markers fail closed before migration DDL and remain unchanged on disk.
 
 Live SQLite readback:
@@ -85,10 +85,10 @@ This adds the external canonical Local Brain vault to the normal profile-local b
 
 ## Current implementation hashes before scoped commit
 
-- `store.py`: `296ccde3bdbac611f9dae9d845775f2ddb9f1265af27972906bffec55009a9bb`
+- `store.py`: `bb4ab759a0f77e6f90864cc1587cd97742f73071a8d706f3168888c699c8afc6`
 - `provider.py`: `c5bd40c1992789674cc7a0f24edf0fe51f3529aa4179618d52c4f0d894303d8a`
-- `test_memory_runtime.py`: `558f6cba361f135b2f3c6e5c645d456cd2501282981e38f0c89865ddf3a27364`
-- `README.md`: `a33216897852abf1a7669218d52e872db88ff3cca6a038d4ed5a555519e52f5e`
+- `test_memory_runtime.py`: `9aef6cbfc0e88df11044ff3f6b9469c8a673fc6ba7840de013ebefd7f889c1ff`
+- `README.md`: `baf69aadd7dec1a0529ab0faeb6cf0134a7aec412061112696d2d747d1e15acf`
 
 ## Exact target and rollback
 
