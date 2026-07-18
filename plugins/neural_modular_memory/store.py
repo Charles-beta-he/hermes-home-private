@@ -23,6 +23,7 @@ _SECRET_PATTERNS = (
     re.compile(r"\bAKIA[A-Z0-9]{16}\b"),
     re.compile(r"\b(?:sk|rk|pk)-[A-Za-z0-9_-]{16,}\b"),
 )
+_PAN_CANDIDATE = re.compile(r"(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)")
 _SENTENCE_SPLIT = re.compile(r"(?<=[。！？!?；;\n])\s*")
 _CJK = re.compile(r"[\u3400-\u9fff]+")
 _WORD = re.compile(r"[A-Za-z0-9_./:-]{2,}")
@@ -62,7 +63,26 @@ def redact(text: str) -> str:
             value = pattern.sub(lambda m: (m.group(1) or "") + "[REDACTED]", value)
         else:
             value = pattern.sub("[REDACTED]", value)
+    value = _PAN_CANDIDATE.sub(
+        lambda match: "[REDACTED]" if _is_valid_pan(match.group(0)) else match.group(0),
+        value,
+    )
     return value
+
+
+def _is_valid_pan(value: str) -> bool:
+    digits = [int(char) for char in value if char.isdigit()]
+    if not 13 <= len(digits) <= 19:
+        return False
+    total = 0
+    parity = len(digits) % 2
+    for index, digit in enumerate(digits):
+        if index % 2 == parity:
+            digit *= 2
+            if digit > 9:
+                digit -= 9
+        total += digit
+    return total % 10 == 0
 
 
 def normalize(text: str) -> str:
@@ -520,7 +540,7 @@ class MemoryStore:
                 item["score"] = round(float(score), 6)
                 packet.append(item)
                 self.conn.execute(
-                    "UPDATE projections SET access_count=access_count+1,last_accessed_at=?,strength=MIN(1.0,strength+0.01) WHERE id=?",
+                    "UPDATE projections SET access_count=access_count+1,last_accessed_at=? WHERE id=?",
                     (activated_at, row["id"]),
                 )
                 self.conn.execute(

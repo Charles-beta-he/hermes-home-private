@@ -6,7 +6,7 @@ A local-only Hermes `MemoryProvider` implementing the M³G architecture defined 
 
 Properties:
 
-- append-only, redacted L0 turn events;
+- append-only, write-before-persist redacted L0 turn events, including labeled credentials and Luhn-valid bare compact or separated PAN values;
 - contract-driven multi-module projections from each event;
 - source hash, scope, validity, confidence, applicability and anti-condition metadata; recall admits only an exact 64-character lowercase hexadecimal SHA-256 that equals the referenced immutable L0 event hash;
 - bounded, fail-closed FTS5 retrieval plus same-source sibling completion, with one combined Brain + modular character budget;

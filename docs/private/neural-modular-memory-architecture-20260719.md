@@ -50,7 +50,7 @@ MemoryProjection = Project(
 
 - 一个轮次写出两条不可变事件，并从同一来源形成至少两种模块/抽象投影。
 - 重放同一轮次幂等，不重复事件或投影。
-- 每个投影可追溯至事件 SHA-256；秘密样式文本在落盘前脱敏。
+- 每个投影可追溯至事件 SHA-256；秘密样式文本及通过 Luhn 校验的裸露/分隔式 PAN 在落盘前脱敏。
 - 下一轮召回受 query、scope、status、budget、expiry 共同约束。
 - 能从同源兄弟投影执行受限模式补全，但不会越作用域。
 - 明确纠正可产生冲突/替代关系；旧投影保留但被抑制。
@@ -236,7 +236,7 @@ correction: old --superseded_by--> new
 ### 运行证据（2026-07-19）
 
 - 实际 Hermes 解释器：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`。
-- focused + full tests：28 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 2800 tests，0 failure/0 error，runner exit 0；`py_compile` exit 0。
+- focused + full tests：30 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 3000 tests，0 failure/0 error，runner exit 0；`py_compile` exit 0。
 - provider discovery：同时发现 `localbrain` 与 `neural_modular_memory`；后者成功实例化且 `is_available=True`。
 - 配置读回：`memory.provider=neural_modular_memory`；`hermes config check` exit 0。
 - live local smoke：`has_modular=True`、`has_provenance=True`、authority boundary=True、`get_tool_schemas=[]`、召回包 598 chars（统一预算内）。
