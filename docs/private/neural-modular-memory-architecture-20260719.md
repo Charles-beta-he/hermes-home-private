@@ -50,7 +50,7 @@ MemoryProjection = Project(
 
 - 一个轮次写出两条不可变事件，并从同一来源形成至少两种模块/抽象投影。
 - 重放同一轮次幂等，不重复事件或投影。
-- 每个投影可追溯至事件 SHA-256；秘密样式文本及通过 Luhn 校验的裸露/分隔式 PAN 在落盘前脱敏。
+- 每个投影可追溯至事件 SHA-256；秘密样式文本及通过 Luhn 校验的 13–19 位裸露/空格/连字符 PAN 在落盘前脱敏；12/20 位分隔数字串不会被部分匹配为 PAN 前缀。
 - 下一轮召回受 query、scope、status、budget、expiry 共同约束。
 - 能从同源兄弟投影执行受限模式补全，但不会越作用域。
 - 明确纠正可产生冲突/替代关系；旧投影保留但被抑制。
@@ -267,9 +267,9 @@ correction: old --superseded_by--> new
 
 ### 运行证据（2026-07-19）
 
-- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；40/40，0 failure、0 error、0 skip。
-- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；40/40，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
-- 重复门禁：100 次完整 suite × 40 = 4000 tests；0 failure、0 error、0 skip；exit 0。
+- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；41/41，0 failure、0 error、0 skip。
+- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；41/41，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
+- 重复门禁：100 次完整 suite × 41 = 4100 tests；0 failure、0 error、0 skip；exit 0。
 - 静态门禁：`py_compile`、scoped `git diff --check` exit 0；production added-lines secret/shell/eval/pickle/SQL-fstring scan 均为 0。
 - 配置：`hermes config check` exit 0；活跃 provider 为 `neural_modular_memory`。
 - live backup collector：`BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`，`ALL_EXIST=True`。
