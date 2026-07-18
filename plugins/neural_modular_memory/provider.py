@@ -21,6 +21,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
         self._session_id = ""
         self._hermes_home: Optional[Path] = None
         self._durable_scope = ""
+        self._agent_context = "primary"
 
     @property
     def name(self) -> str:
@@ -41,6 +42,15 @@ class NeuralModularMemoryProvider(MemoryProvider):
         home = self._hermes_home or Path(os.path.expanduser(os.environ.get("HERMES_HOME", "~/.hermes")))
         return (home / "scripts" / "brainctl.py").resolve()
 
+    def _brain_vault_path(self) -> Path:
+        configured = str(self._config.get("brain_vault_path", "")).strip()
+        if configured:
+            return Path(os.path.expanduser(configured)).resolve()
+        env_path = str(os.environ.get("HERMES_BRAIN_VAULT", "")).strip()
+        if env_path:
+            return Path(os.path.expanduser(env_path)).resolve()
+        return (Path.home() / "Documents" / "brain").resolve()
+
     def _store_path(self) -> Path:
         configured = str(self._config.get("store_path", "")).strip()
         if configured:
@@ -53,6 +63,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
 
     def initialize(self, session_id: str, **kwargs: Any) -> None:
         self._session_id = str(session_id or "")
+        self._agent_context = str(kwargs.get("agent_context") or "primary")
         self._hermes_home = Path(
             str(kwargs.get("hermes_home") or os.environ.get("HERMES_HOME") or "~/.hermes")
         ).expanduser().resolve()
@@ -156,6 +167,36 @@ class NeuralModularMemoryProvider(MemoryProvider):
             return "…"
         return block[: budget - 1].rstrip() + "…"
 
+    @staticmethod
+    def _recall_payload_key(line: str) -> str:
+        if "|" not in line:
+            return ""
+        payload = line.split("|", 1)[1].strip().lower()
+        if payload.startswith("[user]"):
+            payload = payload[6:].strip()
+        elif payload.startswith("[assistant]"):
+            payload = payload[11:].strip()
+        return " ".join(payload.split()).strip(" 。.!！?？;；,，")
+
+    @classmethod
+    def _suppress_modular_duplicates(cls, brain: str, modular: str) -> str:
+        """Prefer an exact canonical Brain excerpt over an equal M³G claim."""
+        if not brain or not modular:
+            return modular
+        canonical_keys = {
+            key for key in (cls._recall_payload_key(line) for line in brain.splitlines()) if key
+        }
+        lines = modular.splitlines()
+        if not lines:
+            return ""
+        kept = [lines[0]]
+        for line in lines[1:]:
+            key = cls._recall_payload_key(line)
+            if key and key in canonical_keys:
+                continue
+            kept.append(line)
+        return "\n".join(kept) if len(kept) > 1 else ""
+
     def prefetch(self, query: str, *, session_id: str = "") -> str:
         clean = " ".join(str(query or "").split()).strip()
         if not clean:
@@ -182,6 +223,8 @@ class NeuralModularMemoryProvider(MemoryProvider):
                     additional_scopes=[self._durable_scope] if self._durable_scope else None,
                 )
                 rendered = self._store.render_packet(packet, max_chars=max(0, remaining))
+                injected_brain = parts[0] if parts else ""
+                rendered = self._suppress_modular_duplicates(injected_brain, rendered)
                 if rendered:
                     parts.append(rendered)
             except Exception:
@@ -197,7 +240,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
         messages: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         del messages
-        if self._store is None:
+        if self._store is None or self._agent_context != "primary":
             return None
         actual_session = str(session_id or self._session_id or "unknown")
         try:
@@ -212,13 +255,46 @@ class NeuralModularMemoryProvider(MemoryProvider):
             return None
         return None
 
+    def on_session_switch(
+        self,
+        new_session_id: str,
+        *,
+        parent_session_id: str = "",
+        reset: bool = False,
+        rewound: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        del parent_session_id, reset, rewound, kwargs
+        self._session_id = str(new_session_id or "")
+
+    def on_memory_write(
+        self,
+        action: str,
+        target: str,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        if self._store is None or self._agent_context != "primary":
+            return
+        receipt_metadata = dict(metadata or {})
+        receipt_metadata.setdefault("session_id", self._session_id)
+        try:
+            self._store.record_memory_write(
+                action=action,
+                target=target,
+                content=content,
+                metadata=receipt_metadata,
+            )
+        except Exception:
+            return
+
     def on_pre_compress(self, messages: List[Dict[str, Any]]) -> str:
         del messages
         return ""
 
     def on_session_end(self, messages: List[Dict[str, Any]]) -> None:
         del messages
-        if self._store is None:
+        if self._store is None or self._agent_context != "primary":
             return
         try:
             self._store.consolidate(min_sessions=int(self._config.get("min_sessions", 2)))
@@ -231,6 +307,9 @@ class NeuralModularMemoryProvider(MemoryProvider):
 
     def get_tool_schemas(self) -> List[Dict[str, Any]]:
         return []
+
+    def backup_paths(self) -> List[str]:
+        return [str(self._brain_vault_path())]
 
     def shutdown(self) -> None:
         if self._store is not None:

@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 UTC = timezone.utc
-SCHEMA_VERSION = "hermes.neural_modular_memory.v1"
+SCHEMA_VERSION = "hermes.neural_modular_memory.v2"
 ACTIVE_STATUSES = ("candidate", "supported", "consolidated")
 CONSOLIDATABLE_MODULES = ("constraint", "preference", "procedure", "causal", "decision")
 
@@ -68,6 +68,19 @@ def redact(text: str) -> str:
         value,
     )
     return value
+
+
+def redact_structure(value: Any) -> Any:
+    """Recursively redact string leaves before structured metadata persists."""
+    if isinstance(value, dict):
+        return {str(key): redact_structure(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [redact_structure(item) for item in value]
+    if isinstance(value, str):
+        return redact(value)
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    return redact(str(value))
 
 
 def _is_valid_pan(value: str) -> bool:
@@ -216,6 +229,21 @@ class MemoryStore:
               support_sessions TEXT NOT NULL,
               created_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS memory_write_receipts (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              action TEXT NOT NULL CHECK(action IN ('add','replace','remove')),
+              target TEXT NOT NULL CHECK(target IN ('memory','user')),
+              content_redacted TEXT NOT NULL,
+              metadata_redacted TEXT NOT NULL,
+              source_session_id TEXT NOT NULL,
+              created_at TEXT NOT NULL
+            );
+            CREATE TRIGGER IF NOT EXISTS memory_write_receipts_no_update
+              BEFORE UPDATE ON memory_write_receipts
+              BEGIN SELECT RAISE(ABORT, 'memory write receipts are immutable'); END;
+            CREATE TRIGGER IF NOT EXISTS memory_write_receipts_no_delete
+              BEFORE DELETE ON memory_write_receipts
+              BEGIN SELECT RAISE(ABORT, 'memory write receipts are immutable'); END;
             CREATE VIRTUAL TABLE IF NOT EXISTS projections_fts USING fts5(
               projection_id UNINDEXED,
               search_text,
@@ -266,6 +294,42 @@ class MemoryStore:
             (event_id, session_id, turn_key, role, scope, timestamp, cleaned, content_hash, timestamp),
         )
         return event_id
+
+    def record_memory_write(
+        self,
+        action: str,
+        target: str,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> int:
+        """Append a non-recalled audit receipt for a committed built-in memory write."""
+        normalized_action = str(action or "").strip().lower()
+        normalized_target = str(target or "").strip().lower()
+        if normalized_action not in {"add", "replace", "remove"}:
+            raise ValueError("unsupported memory write action")
+        if normalized_target not in {"memory", "user"}:
+            raise ValueError("unsupported memory write target")
+        clean_content = redact(str(content or ""))
+        clean_metadata = redact_structure(dict(metadata or {}))
+        source_session_id = redact(str(clean_metadata.get("session_id") or ""))
+        timestamp = iso(self._now_fn())
+        with self.conn:
+            cursor = self.conn.execute(
+                """INSERT INTO memory_write_receipts
+                   (action,target,content_redacted,metadata_redacted,source_session_id,created_at)
+                   VALUES(?,?,?,?,?,?)""",
+                (
+                    normalized_action,
+                    normalized_target,
+                    clean_content,
+                    json.dumps(clean_metadata, ensure_ascii=False, sort_keys=True),
+                    source_session_id,
+                    timestamp,
+                ),
+            )
+        if cursor.lastrowid is None:
+            raise RuntimeError("memory write receipt did not return an id")
+        return int(cursor.lastrowid)
 
     def _projection_specs(
         self,
@@ -675,10 +739,19 @@ class MemoryStore:
             "projections": int(self.conn.execute("SELECT COUNT(*) FROM projections").fetchone()[0]),
             "edges": int(self.conn.execute("SELECT COUNT(*) FROM edges").fetchone()[0]),
             "activations": int(self.conn.execute("SELECT COUNT(*) FROM activations").fetchone()[0]),
+            "memory_write_receipts": int(
+                self.conn.execute("SELECT COUNT(*) FROM memory_write_receipts").fetchone()[0]
+            ),
         }
 
     def _list(self, table: str, where: str = "", params: Sequence[Any] = ()) -> List[Dict[str, Any]]:
-        if table not in {"events", "projections", "edges", "consolidation_receipts"}:
+        if table not in {
+            "events",
+            "projections",
+            "edges",
+            "consolidation_receipts",
+            "memory_write_receipts",
+        }:
             raise ValueError("unsupported table")
         sql = "SELECT * FROM %s" % table
         if where:
@@ -696,3 +769,6 @@ class MemoryStore:
 
     def list_edges(self) -> List[Dict[str, Any]]:
         return self._list("edges")
+
+    def list_memory_write_receipts(self) -> List[Dict[str, Any]]:
+        return self._list("memory_write_receipts")
