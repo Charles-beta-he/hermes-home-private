@@ -101,7 +101,7 @@ MemoryProjection = Project(
 - Anderson, Bjork & Bjork（1994），DOI `10.1037/0278-7393.20.5.1063`：retrieval-induced forgetting 表明检索竞争会抑制相关表征。
 - Ebbinghaus（1885），*Über das Gedächtnis*：遗忘随时间变化，但工程实现不直接照搬单一指数曲线。
 
-工程结论：召回提高使用强度；冲突节点竞争并抑制旧节点；未使用、低置信、短期候选逐步归档。删除的是检索资格，不是证据。
+工程结论：召回只更新激活遥测，不增强知识强度；冲突节点竞争并抑制旧节点；未使用、低置信、短期候选逐步归档。删除的是检索资格，不是证据。
 
 ### 2.5 数据库、知识表示与信息检索
 
@@ -192,6 +192,32 @@ score = lexical_relevance
 - `prefetch` 输出 authority-neutral/reference-only 记忆包；不会增加工具 schema，不改变 prompt cache 静态前缀。
 - built-in memory、USER、skills、project profiles 仍按现有治理工具显式写入；插件只提供候选证据，不自动提升。
 
+### 3.6 全记忆拓扑与唯一控制面
+
+现有 Local Brain 不删除，也不把所有存储物理合并到 SQLite。最终形态是“一个活跃 MemoryProvider 控制面 + 多个职责单一的事实面”。`memory.provider=neural_modular_memory` 由 Hermes 的 memory-provider loader 直接加载；`plugins.enabled` 是普通插件启用列表，两者不是第二个 provider 开关。Hermes `MemoryManager` 仍只挂载一个外部 provider，因此不存在两个 provider 同时争用生命周期或工具 schema 的控制面双轨。
+
+| 记忆面 | Canonical owner | 写路径 | 读路径 | 与 M³G 的关系 |
+|---|---|---|---|---|
+| `MEMORY.md` / `USER.md` | built-in memory tool | 人工/agent 显式 `add/replace/remove` | 静态系统上下文 | 保持 canonical；成功写入只追加脱敏 `memory_write_receipts` 审计收据，不生成 event/projection/FTS，避免重复召回 |
+| Local Brain vault/index | canonical Markdown + `brainctl` 索引 | 现有 brain sync/Obsidian 治理 | `brainctl search`，path/line/hash 引用 | 只读联邦召回；不把 17k+ blocks 复制进 M³G，不从对话自动反写 vault |
+| M³G event graph | `neural_modular.sqlite3` | primary agent `sync_turn` | scope/provenance/status/expiry 门禁后的动态召回 | 保存快速事件与派生候选；与 Local Brain 共享单一 provider 字符预算 |
+| session transcript | `state.db` | Hermes session runtime | `session_search` 显式查询 | 历史事实源，不自动复制到 graph；需要时作为二级回溯证据，不证明外部当前状态 |
+| skills | skill directories | `skill_manage` 显式治理 | 按任务加载 | 稳定可复用程序的 canonical owner；M³G procedure 只能作为候选，不能自动发布为 skill |
+| project profile / SSOT / evidence DAG | project files | 受治理文件写入 | 原始路径/readback | 项目事实与验收 canonical owner；Local Brain 可索引其引用，M³G 不覆盖 |
+| compaction summary / working context | 当前 session | runtime | 当前上下文 | 临时工作记忆，不作为跨会话 canonical store |
+
+闭环规则：
+
+1. 普通对话只进入 M³G L0/projection；仅 primary context 可写 turn、memory receipt 及 consolidation/decay maintenance，subagent/cron/flush 不落入或重排用户表征。
+2. 显式 memory tool 写入先由 built-in canonical store 成功提交，随后通过 `on_memory_write` 追加脱敏、不可更新/删除的审计收据；收据不参与召回，因此不形成双份 prompt。
+3. `/new`、`/reset`、`/resume`、`/branch` 或压缩导致 session 切换时，provider 同步更新 session id，防止后续事件写入旧 session。
+4. Local Brain 与 M³G 只在 read path 联邦：前者提供 canonical path/line/hash 线索，后者提供 L0-bound projection；共同受一个总字符预算约束。若 canonical excerpt 与 M³G claim 规范化后完全相同，保留 Local Brain 引用并抑制重复 projection 行；不做模糊语义合并，避免误删不同限定条件。
+5. M³G 候选需要升级为 `MEMORY/USER`、skill 或 project SSOT 时，必须经过相应显式治理工具和原始来源验证；模型频次、召回次数或多模型共识不能自动晋升。
+6. 冲突优先级不是“新库覆盖旧库”：当前原始外部证据/用户明确纠正 > 显式 canonical memory/SSOT > 经原路径核验的 Local Brain 引用 > consolidated M³G > supported > candidate。任何层级都不授予外部副作用权限。
+7. Hermes profile backup 覆盖 `$HERMES_HOME` 内 built-in memory、M³G DB、session DB、skills/profile；provider 的 `backup_paths()` 额外声明 Local Brain canonical vault（默认 `~/Documents/brain` 或 `HERMES_BRAIN_VAULT`/`brain_vault_path`），使 `hermes backup/import` 能纳入外部 vault，同时仍保持独立路径和恢复边界。
+
+刻意保留的人类门禁不属于“未闭环”：M³G 到 canonical memory/skill/project SSOT 的 promotion 必须显式批准和读回；自动双向同步反而会造成摘要漂移、重复召回和错误事实扩散。
+
 ## 4. 状态机
 
 ```text
@@ -222,28 +248,36 @@ correction: old --superseded_by--> new
 
 | 验收项 | 代码证据 | 测试/运行证据 | 状态 |
 |---|---|---|---|
-| 多模块同源投影 | `store.py:111-169,229-304,331-367` | `test_memory_runtime.py:33`；实库 2 events→5 projections/8 edges | pass |
-| 幂等与溯源 | `MemoryStore._insert_event`、`_project_event` | `test_ingest_is_idempotent_for_same_session_and_turn`、`test_same_turn_key_rejects_changed_content`；召回读回含 `source_event`+`sha256` | pass |
-| 脱敏与本地隔离 | `store.py:_SECRET_PATTERNS`、`redact_text` | 私钥、token、Authorization、AWS key、cookie、card number 负测 | pass |
-| scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、provider 精确 session+hashed-user scope、sibling expiry/reference-only、FTS 异常返回空、统一字符预算负测 | pass |
-| 冲突/替代 | `MemoryStore._apply_correction`、`consolidate` | 同技术词的不同主题不误伤；明确替换主题被压制；活跃 contradiction 禁止巩固 | pass |
-| 双速巩固 | `MemoryStore.consolidate`、Provider durable-scope 投影 | 单源召回不升 supported；双 source/single session 仅 supported；Provider 双 session 显式稳定偏好巩固并可在第三 session 召回；高风险模块 evidence 门禁 | pass |
-| 遗忘不删 L0 | `store.py:501-526` | `test_memory_runtime.py:123` | pass |
-| brainctl 兼容召回 | `NeuralModularMemoryProvider._brain_recall` | 合法 provenance；timeout/non-zero/invalid JSON/hash/line 全部 fail-closed | pass |
-| fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；`get_tool_schemas=[]`；authority-neutral 提示 | pass |
-| 活跃配置与数据库 | `config.yaml:406-412` | `hermes config check` exit 0；SQLite `integrity_check=ok` | pass |
+| 多模块同源投影 | `MemoryStore._insert_event/_projection_specs/_insert_projection` | `test_one_source_creates_multiple_contract_driven_projections`；实库 4 events→10 projections/16 edges | pass |
+| 幂等、不可变与溯源 | `MemoryStore._insert_event`、L0 triggers、recall provenance SQL | turn replay、changed-content、update/delete、伪 hash 与 L0 mismatch 负测 | pass |
+| 写前脱敏 | `redact`、`redact_structure` | 私钥、token、Authorization、AWS key、cookie、Luhn-valid PAN、nested metadata 负测 | pass |
+| scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、精确 session+hashed-user scope、sibling 门禁、FTS fail-closed、统一字符预算 | pass |
+| 冲突/替代 | `MemoryStore._apply_correction/consolidate` | 同技术词不同主题不误伤；明确替换主题被压制；活跃 contradiction 禁止巩固 | pass |
+| 双速巩固 | `MemoryStore.consolidate`、durable-scope 投影 | 单源不升 supported；双 source/single session 仅 supported；双 session 稳定偏好巩固；高风险 evidence 门禁 | pass |
+| 召回不自强化 | `MemoryStore.recall` activation telemetry | strength 召回前后不变；只增加 access/activation | pass |
+| 遗忘不删 L0 | `MemoryStore.decay`、L0 triggers | 弱 projection 归档且 event 仍在；数据库拒绝 event update/delete | pass |
+| 唯一 provider 控制面 | Hermes loader/`MemoryManager` + `NeuralModularMemoryProvider` | 活跃配置 `memory.provider=neural_modular_memory`；`get_tool_schemas=[]` | pass |
+| built-in 显式记忆闭环 | `record_memory_write`、`on_memory_write`、MemoryManager bridge | committed/non-staged 才追加；receipt 脱敏、不可变、不进入 event/projection/FTS/recall | pass |
+| session/context 生命周期 | `sync_turn` primary gate、`on_session_switch` | child/subagent 不摄取；session switch 后只写新 session | pass |
+| Local Brain 联邦召回 | `_brain_recall`、`prefetch` | 合法 path/line/hash；timeout/non-zero/invalid JSON/hash/path/line fail-closed | pass |
+| 跨来源去重 | `_suppress_modular_duplicates` | 已注入 canonical excerpt 精确去重；被预算截断而未注入的 Brain hit 不抑制 M³G | pass |
+| 全记忆备份边界 | `backup_paths()`、Hermes backup collector | live collector 读回 `/Users/charles/Documents/brain` 且路径存在 | pass |
+| schema v1→v2 迁移 | `_init_schema`、`memory_write_receipts` triggers | fixture 原地升级保留 event；实库 integrity=ok、原计数保留、四个不可变 trigger 存在 | pass |
+| fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；authority-neutral 提示；生产代码静态安全扫描 0 findings | pass |
 
 ### 运行证据（2026-07-19）
 
-- 实际 Hermes 解释器：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`。
-- focused + full tests：30 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 3000 tests，0 failure/0 error，runner exit 0；`py_compile` exit 0。
-- provider discovery：同时发现 `localbrain` 与 `neural_modular_memory`；后者成功实例化且 `is_available=True`。
-- 配置读回：`memory.provider=neural_modular_memory`；`hermes config check` exit 0。
-- live local smoke：`has_modular=True`、`has_provenance=True`、authority boundary=True、`get_tool_schemas=[]`、召回包 598 chars（统一预算内）。
-- 活跃 SQLite：4 events、10 projections、16 edges、12 activations；`PRAGMA integrity_check=ok`；L0 update/delete triggers 存在。
-- 回滚：`hermes config set memory.provider localbrain`；数据库与插件留存供审计。
+- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；38/38，0 failure、0 error、0 skip。
+- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；38/38，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
+- 重复门禁：100 次完整 suite × 38 = 3800 tests；0 failure、0 error、0 skip；exit 0。
+- 静态门禁：`py_compile`、scoped `git diff --check` exit 0；production added-lines secret/shell/eval/pickle/SQL-fstring scan 均为 0。
+- 配置：`hermes config check` exit 0；活跃 provider 为 `neural_modular_memory`。
+- live backup collector：`BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`，`ALL_EXIST=True`。
+- 活跃 SQLite：schema `hermes.neural_modular_memory.v2`；4 events、10 projections、16 edges、15 activations、0 memory receipts；`PRAGMA integrity_check=ok`；event/receipt update/delete triggers 均存在。
+- 迁移逃生备份：`/tmp/neural_modular.pre-v2.20260719-023956.sqlite3`，SHA-256 `022e8876434631e784657466e8d906e6ff69683bb05c3bca3451d4972a176b10`，integrity `ok`，迁移前核心计数 4/10/16/15。
+- 回滚：运行时切回 `hermes config set memory.provider localbrain`；代码只 revert 精确 scoped commit；数据库/迁移前备份保留审计，禁止对混合工作区全局 reset/clean。
 - Gate readback：`workflows/projects/hermes-neural-modular-memory/06-projection/architecture-gate-readback-20260719.md`。
-- 认证边界：上述只证明 default profile 本地实现与当前验收面；不证明生物等价、跨设备稳定性、长期质量或全局认证。
+- 认证边界：上述只证明 default profile 的本地实现、迁移与当前验收面；不证明跨设备、长期召回质量、生产恢复演练或全局认证。
 
 ## 7. 核心书目
 

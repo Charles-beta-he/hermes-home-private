@@ -1,59 +1,107 @@
-# M³G Architecture Gate Readback — 2026-07-19
+# M³G 全记忆整合 Gate Readback — 2026-07-19
 
 - canonical_design_doc: `/Users/charles/.hermes/docs/private/neural-modular-memory-architecture-20260719.md`
 - implementation: `/Users/charles/.hermes/plugins/neural_modular_memory/`
 - active_profile: `default`
 - active_config_readback: `memory.provider=neural_modular_memory`
+- architecture: one active MemoryProvider control plane + multiple canonical memory planes
 - authority_boundary: local-only, authority-neutral, reference-only; no tool schemas; no external dispatch
 
-## Deterministic gate readback
+## Deterministic verification
 
-- Hermes venv full suite: `Ran 30 tests ... OK`
-- System Python full suite: `Ran 30 tests ... OK`
-- Repeat gate: 100 complete iterations × 30 tests = 3000 tests; 0 failures, 0 errors; process exit 0
-- `py_compile`: exit 0 for `store.py`, `provider.py`, `__init__.py`, and the test module
-- `hermes config check`: configuration valid; active readback is `memory.provider=neural_modular_memory`
-- provider discovery: discovered `True`, available `True`, loaded `True`
-- live prefetch after same-session sync: 598 chars; authority boundary `True`; provenance `True`; within budget `True`; `get_tool_schemas=[]`
-- SQLite: `PRAGMA integrity_check=ok`; 4 events, 10 projections, 16 edges, 12 activations
-- immutable-event triggers: `events_no_delete`, `events_no_update`
-- implementation hashes before scoped commit:
-  - `store.py`: `66614b00868839ad07104886a0f22146d1c4c1b757091eb2c0146c416fd100a8`
-  - `provider.py`: `f4d30c73c193769963f5ea626d0be81b3096fbba32c7d03e46579b2868c431f3`
-  - `test_memory_runtime.py`: `38bbce6a91cef074a07689ee4a7d9423cb3a930b14f3e669566b5d43792c4ac0`
+- Hermes venv: 38 tests, 0 failures, 0 errors, 0 skipped.
+- Homebrew Python 3.14.3: 38 tests, 0 failures, 0 errors, 0 skipped.
+- Repeat gate: 100 complete iterations × 38 tests = 3800 tests; 0 failures, 0 errors, 0 skipped; exit 0.
+- `py_compile`: exit 0 for `store.py`, `provider.py`, and `test_memory_runtime.py`.
+- scoped `git diff --check`: exit 0.
+- production added-lines scan: hardcoded secret, `shell=True`, `eval/exec`, pickle and SQL-fstring findings all 0.
+- `hermes config check`: exit 0.
 
-## Independent verifier remediation map
+macOS `/usr/bin/python3` is Python 3.9.6 and cannot import current Hermes code using `X | Y` type syntax. It is therefore not a supported second-interpreter gate; the second valid gate uses `/opt/homebrew/bin/python3` 3.14.3.
 
-The first independent verifier returned `FAIL` against an earlier drifting hash. Every concrete blocker and requested negative-test class was handled in the current slice:
+## Full-memory ownership and runtime closure
 
-- consolidation now rejects active `contradicts` edges;
-- recall activation no longer promotes a single source to `supported`; two source events are required;
-- `procedure`/`causal`/`decision` require direct same-event evidence in every supporting session before consolidation;
-- same-scope unrelated correction regression remains covered;
-- recall telemetry exception is explicit in the SSOT;
-- primary and sibling recall share reference-only, expiry, scope, status, and provenance gates; provenance requires a non-empty event id plus an exact 64-character lowercase hexadecimal SHA-256 that equals the referenced immutable L0 event hash;
-- high-risk consolidation now compares evidence-bearing session count with the complete supporting-session count, so two evidenced sessions cannot promote an unevidenced third session;
-- Brain + modular recall share one total character budget;
-- repeated `turn_key` with changed content raises `ValueError` instead of silently reusing an event;
-- scope isolation covers session/task/project/user/domain plus global;
-- brainctl timeout, non-zero exit, malformed JSON/hash/path/line fail closed;
-- AWS key, cookie/session, card identifier, token, Authorization, and private-key patterns are redacted;
-- automated test asserts `get_tool_schemas()==[]` and the authority-neutral prompt boundary.
-- Luhn-valid bare compact or space/hyphen-separated 13–19 digit payment-card/PAN text is redacted before L0 and projection persistence;
-- recall updates only activation telemetry and never strengthens a projection merely because it was retrieved;
-- provider-ingested explicit durable preferences derive a non-PII `user:*` scope, consolidate across two real provider sessions, and remain recallable from a third session while episodic projections remain session-scoped;
-- correction suppression requires sufficient overlap with the explicitly replaced subject, preventing shared-token cross-topic suppression;
-- FTS lookup errors and empty candidate sets return no modular recall instead of falling back to a scope-wide scan.
+| Surface | Canonical owner | Integration result |
+|---|---|---|
+| `MEMORY.md` / `USER.md` | built-in memory tool | successful committed/non-staged writes append redacted immutable receipts only; no duplicate semantic projection or recall |
+| Local Brain | canonical Markdown vault + `brainctl` derived index | retained as read-only canonical-document lane inside the single M³G provider; no second active provider |
+| M³G | `neural_modular.sqlite3` | owns primary-turn L0 events, projections, scope, provenance, correction, consolidation, decay and activation telemetry |
+| session history | `state.db` / `session_search` | remains historical source; no automatic full-history duplication into M³G |
+| skills | skill directories / `skill_manage` | remains procedure owner; M³G procedure candidates cannot auto-promote |
+| project profiles / SSOT / evidence DAG | governed project files | remains project-fact and acceptance owner; no automatic overwrite from M³G |
+| compaction/current context | active runtime session | remains temporary working memory, not a canonical cross-session store |
 
-A fresh independent verifier vote against the next exact committed hash remains required before any wording stronger than `locally_implemented_and_verified`. Earlier votes against prior hashes remain historical evidence only.
+Runtime closure evidence:
+
+- `MemoryManager` still admits one external provider.
+- primary-only turn, explicit-memory receipt and consolidation/decay maintenance writes are enforced.
+- session switch updates the provider session before subsequent writes.
+- Local Brain and M³G share one total recall budget.
+- exact normalized duplicates prefer the Local Brain canonical citation only when that citation is actually injected; a Brain hit truncated out by budget cannot suppress the M³G claim.
+- all recalled projections remain scope-, expiry-, status-, reference-only- and L0-provenance-gated.
+- recall updates activation telemetry only and does not strengthen knowledge.
+- `get_tool_schemas()==[]`.
+
+## Built-in memory receipts and schema migration
+
+- schema: `hermes.neural_modular_memory.v2`.
+- `memory_write_receipts` supports `add`, `replace`, `remove` for `memory` and `user` targets.
+- receipt content and nested metadata are redacted before persistence.
+- receipt update/delete are rejected by SQLite triggers.
+- receipts do not enter `events`, `projections`, FTS or ordinary recall.
+- fixture v1→v2 migration retains existing L0 events.
+
+Live SQLite readback:
+
+- `PRAGMA integrity_check=ok`.
+- events: 4.
+- projections: 10.
+- edges: 16.
+- activations: 15.
+- memory_write_receipts: 0.
+- immutable triggers: `events_no_delete`, `events_no_update`, `memory_write_receipts_no_delete`, `memory_write_receipts_no_update`.
+
+Migration escape hatch:
+
+- backup: `/tmp/neural_modular.pre-v2.20260719-023956.sqlite3`.
+- SHA-256: `022e8876434631e784657466e8d906e6ff69683bb05c3bca3451d4972a176b10`.
+- backup integrity: `ok`.
+- pre-migration counts: 4 events, 10 projections, 16 edges, 15 activations.
+
+## Backup integration
+
+The live Hermes backup collector loaded the active provider and returned:
+
+- `BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`
+- `ALL_EXIST=True`
+
+This adds the external canonical Local Brain vault to the normal profile-local backup surface without physically merging it into M³G.
+
+## Current implementation hashes before scoped commit
+
+- `store.py`: `30615a42ebaf421280fc850ba494a3f87198812a8ef18b6422b4a0fb3f8536be`
+- `provider.py`: `c5bd40c1992789674cc7a0f24edf0fe51f3529aa4179618d52c4f0d894303d8a`
+- `test_memory_runtime.py`: `479fcc7fde5b0be26bc2f26d2c763f32328b4b1516be5bc7e08b5786818ef85d`
+- `README.md`: `5c05ff65e5838a26569de6f99f6fb5c391f14cac66b32d6dba7045c7a20fdc68`
 
 ## Exact target and rollback
 
-- Exact commit scope: canonical design document, this gate readback, and `plugins/neural_modular_memory/` source/tests/docs only.
-- Runtime rollback: `hermes config set memory.provider localbrain`.
-- Code rollback: revert the exact scoped local commit; do not reset the mixed Hermes-home worktree.
-- Database remains local at `/Users/charles/.hermes/memory/neural_modular.sqlite3` for audit.
+Exact commit allowlist:
+
+1. `docs/private/neural-modular-memory-architecture-20260719.md`
+2. `plugins/neural_modular_memory/README.md`
+3. `plugins/neural_modular_memory/provider.py`
+4. `plugins/neural_modular_memory/store.py`
+5. `plugins/neural_modular_memory/tests/test_memory_runtime.py`
+6. `workflows/projects/hermes-neural-modular-memory/06-projection/architecture-gate-readback-20260719.md`
+
+The eight unrelated pre-existing stage-0 blobs must remain byte-identical before and after the scoped commit.
+
+- runtime rollback: `hermes config set memory.provider localbrain`.
+- code rollback: revert the exact scoped commit; never use global reset/clean in the mixed worktree.
+- database rollback: preserve the active database for audit and restore only from the verified pre-v2 backup under a separate explicit recovery decision.
+- `/tmp/hermes-memory-commit-repair.6B32FC` remains untouched.
 
 ## Certification boundary
 
-This readback supports `locally_implemented_and_verified` only. It does not establish biological equivalence, production-grade certification, cross-device durability, long-horizon retrieval quality, external publication, or global certification.
+This packet supports local implementation and deterministic verification only until a new immutable commit is created and an independent verifier returns a hash-bound verdict. Earlier verifier votes are historical and cannot certify this integration slice. Even a new PASS will not establish global certification, production recovery readiness, cross-device durability or long-horizon retrieval quality.
