@@ -194,6 +194,8 @@ class MemoryStoreTests(unittest.TestCase):
             {
                 "events_no_update",
                 "events_no_delete",
+                "consolidation_receipts_no_update",
+                "consolidation_receipts_no_delete",
                 "memory_write_receipts_no_update",
                 "memory_write_receipts_no_delete",
             }.issubset(triggers)
@@ -522,6 +524,65 @@ class MemoryStoreTests(unittest.TestCase):
         ]
         self.assertEqual(0, result["consolidated"])
         self.assertTrue(all(p["status"] != "consolidated" for p in decisions))
+
+    def test_high_risk_consolidation_rejects_corrupt_evidence_provenance(self) -> None:
+        for session in ("s1", "s2"):
+            self.store.ingest_turn(
+                session,
+                "请选择存储方案。",
+                "决定采用事件存储。测试通过。",
+                scope="project:x",
+                turn_key="corrupt-evidence",
+            )
+        self.store.conn.execute(
+            "UPDATE projections SET source_hash=? WHERE module='evidence'",
+            ("z" * 64,),
+        )
+        self.store.conn.commit()
+
+        result = self.store.consolidate(min_sessions=2)
+        decisions = [p for p in self.store.list_projections() if p["module"] == "decision"]
+        self.assertEqual(0, result["consolidated"])
+        self.assertTrue(all(p["status"] != "consolidated" for p in decisions))
+
+    def test_high_risk_consolidation_rejects_corrupt_claim_provenance(self) -> None:
+        for session in ("s1", "s2"):
+            self.store.ingest_turn(
+                session,
+                "请选择存储方案。",
+                "决定采用事件存储。测试通过。",
+                scope="project:x",
+                turn_key="corrupt-claim",
+            )
+        self.store.conn.execute(
+            "UPDATE projections SET source_hash=? WHERE module='decision'",
+            ("z" * 64,),
+        )
+        self.store.conn.commit()
+
+        result = self.store.consolidate(min_sessions=2)
+        decisions = [p for p in self.store.list_projections() if p["module"] == "decision"]
+        self.assertEqual(0, result["consolidated"])
+        self.assertTrue(all(p["status"] != "consolidated" for p in decisions))
+
+    def test_consolidation_receipts_are_append_only(self) -> None:
+        self.store.conn.execute(
+            """INSERT INTO consolidation_receipts
+               (semantic_key,module,scope,action,support_sessions,created_at)
+               VALUES('k','preference','user:u','consolidated','s1,s2',?)""",
+            (datetime.now(UTC).isoformat(),),
+        )
+        self.store.conn.commit()
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.store.conn.execute(
+                "UPDATE consolidation_receipts SET action='tampered' WHERE semantic_key='k'"
+            )
+        self.store.conn.rollback()
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.store.conn.execute(
+                "DELETE FROM consolidation_receipts WHERE semantic_key='k'"
+            )
+        self.store.conn.rollback()
 
     def test_decay_archives_weak_projection_without_deleting_l0_events(self) -> None:
         old = datetime(2025, 1, 1, tzinfo=UTC)

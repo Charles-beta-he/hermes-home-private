@@ -253,7 +253,7 @@ correction: old --superseded_by--> new
 | 写前脱敏 | `redact`、`redact_structure` | 私钥、token、Authorization、AWS key、cookie、Luhn-valid PAN、secret-bearing metadata key 与 nested value 负测 | pass |
 | scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、精确 session+hashed-user scope、sibling 门禁、FTS fail-closed、统一字符预算 | pass |
 | 冲突/替代 | `MemoryStore._apply_correction/consolidate` | 同技术词不同主题不误伤；明确替换主题被压制；活跃 contradiction 禁止巩固 | pass |
-| 双速巩固 | `MemoryStore.consolidate`、durable-scope 投影 | 单源不升 supported；双 source/single session 仅 supported；双 session 稳定偏好巩固；高风险 evidence 门禁 | pass |
+| 双速巩固 | `MemoryStore.consolidate`、durable-scope 投影 | 单源不升 supported；双 source/single session 仅 supported；双 session 稳定偏好巩固；高风险 claim/evidence 均绑定 immutable L0 hash；consolidation receipt update/delete 被 trigger 拒绝 | pass |
 | 召回不自强化 | `MemoryStore.recall` activation telemetry | strength 召回前后不变；只增加 access/activation | pass |
 | 遗忘不删 L0 | `MemoryStore.decay`、`last_decayed_at`、L0 triggers | 同一时刻重复衰减幂等，后续仅计算新增时间区间；弱 projection 归档且 event 仍在；数据库拒绝 event update/delete | pass |
 | 唯一 provider 控制面 | Hermes loader/`MemoryManager` + `NeuralModularMemoryProvider` | 活跃配置 `memory.provider=neural_modular_memory`；`get_tool_schemas=[]` | pass |
@@ -267,9 +267,9 @@ correction: old --superseded_by--> new
 
 ### 运行证据（2026-07-19）
 
-- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；42/42，0 failure、0 error、0 skip。
-- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；42/42，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
-- 重复门禁：100 次完整 suite × 42 = 4200 tests；0 failure、0 error、0 skip；exit 0。
+- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；45/45，0 failure、0 error、0 skip。
+- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；45/45，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
+- 重复门禁：100 次完整 suite × 45 = 4500 tests；0 failure、0 error、0 skip；exit 0。
 - 静态门禁：`py_compile`、scoped `git diff --check` exit 0；production added-lines secret/shell/eval/pickle/SQL-fstring scan 均为 0。
 - 配置：`hermes config check` exit 0；活跃 provider 为 `neural_modular_memory`。
 - live backup collector：`BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`，`ALL_EXIST=True`。

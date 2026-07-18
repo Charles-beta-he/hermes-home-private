@@ -250,6 +250,12 @@ class MemoryStore:
               support_sessions TEXT NOT NULL,
               created_at TEXT NOT NULL
             );
+            CREATE TRIGGER IF NOT EXISTS consolidation_receipts_no_update
+              BEFORE UPDATE ON consolidation_receipts
+              BEGIN SELECT RAISE(ABORT, 'consolidation receipts are immutable'); END;
+            CREATE TRIGGER IF NOT EXISTS consolidation_receipts_no_delete
+              BEFORE DELETE ON consolidation_receipts
+              BEGIN SELECT RAISE(ABORT, 'consolidation receipts are immutable'); END;
             CREATE TABLE IF NOT EXISTS memory_write_receipts (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               action TEXT NOT NULL CHECK(action IN ('add','replace','remove')),
@@ -658,14 +664,18 @@ class MemoryStore:
 
     def consolidate(self, min_sessions: int = 2) -> Dict[str, int]:
         groups = self.conn.execute(
-            """SELECT module,scope,semantic_key,
-                      COUNT(DISTINCT session_id) AS sessions,
-                      COUNT(DISTINCT source_event_id) AS sources,
-                      GROUP_CONCAT(DISTINCT session_id) AS session_ids
-               FROM projections
-               WHERE module IN ('constraint','preference','procedure','causal','decision')
-                 AND status IN ('candidate','supported','consolidated')
-               GROUP BY module,scope,semantic_key"""
+            """SELECT claim.module,claim.scope,claim.semantic_key,
+                      COUNT(DISTINCT claim.session_id) AS sessions,
+                      COUNT(DISTINCT claim.source_event_id) AS sources,
+                      GROUP_CONCAT(DISTINCT claim.session_id) AS session_ids
+               FROM projections claim
+               JOIN events claim_event ON claim_event.id=claim.source_event_id
+               WHERE claim.module IN ('constraint','preference','procedure','causal','decision')
+                 AND claim.status IN ('candidate','supported','consolidated')
+                 AND claim.source_event_id<>'' AND length(claim.source_hash)=64
+                 AND claim.source_hash NOT GLOB '*[^0-9a-f]*'
+                 AND claim.source_hash=claim_event.content_hash
+               GROUP BY claim.module,claim.scope,claim.semantic_key"""
         ).fetchall()
         consolidated = 0
         supported = 0
@@ -700,14 +710,23 @@ class MemoryStore:
                     evidence_sessions = int(self.conn.execute(
                         """SELECT COUNT(DISTINCT claim.session_id)
                            FROM projections claim
+                           JOIN events claim_event ON claim_event.id=claim.source_event_id
                            WHERE claim.module=? AND claim.scope=? AND claim.semantic_key=?
                              AND claim.status IN ('candidate','supported','consolidated')
+                             AND claim.source_event_id<>'' AND length(claim.source_hash)=64
+                             AND claim.source_hash NOT GLOB '*[^0-9a-f]*'
+                             AND claim.source_hash=claim_event.content_hash
                              AND EXISTS (
-                               SELECT 1 FROM projections evidence
+                               SELECT 1
+                               FROM projections evidence
+                               JOIN events evidence_event ON evidence_event.id=evidence.source_event_id
                                WHERE evidence.source_event_id=claim.source_event_id
                                  AND evidence.module='evidence'
                                  AND evidence.reference_only=1
                                  AND evidence.status IN ('candidate','supported','consolidated')
+                                 AND evidence.source_event_id<>'' AND length(evidence.source_hash)=64
+                                 AND evidence.source_hash NOT GLOB '*[^0-9a-f]*'
+                                 AND evidence.source_hash=evidence_event.content_hash
                              )""",
                         (module, scope, semantic_key),
                     ).fetchone()[0])
@@ -717,7 +736,14 @@ class MemoryStore:
                     cursor = self.conn.execute(
                         """UPDATE projections SET status='consolidated',strength=MAX(strength,0.8)
                            WHERE module=? AND scope=? AND semantic_key=?
-                             AND status IN ('candidate','supported','consolidated')""",
+                             AND status IN ('candidate','supported','consolidated')
+                             AND source_event_id<>'' AND length(source_hash)=64
+                             AND source_hash NOT GLOB '*[^0-9a-f]*'
+                             AND EXISTS (
+                               SELECT 1 FROM events source_event
+                               WHERE source_event.id=projections.source_event_id
+                                 AND source_event.content_hash=projections.source_hash
+                             )""",
                         (module, scope, semantic_key),
                     )
                     if cursor.rowcount:
@@ -731,7 +757,14 @@ class MemoryStore:
                 elif source_count >= 2:
                     cursor = self.conn.execute(
                         """UPDATE projections SET status='supported'
-                           WHERE module=? AND scope=? AND semantic_key=? AND status='candidate'""",
+                           WHERE module=? AND scope=? AND semantic_key=? AND status='candidate'
+                             AND source_event_id<>'' AND length(source_hash)=64
+                             AND source_hash NOT GLOB '*[^0-9a-f]*'
+                             AND EXISTS (
+                               SELECT 1 FROM events source_event
+                               WHERE source_event.id=projections.source_event_id
+                                 AND source_event.content_hash=projections.source_hash
+                             )""",
                         (module, scope, semantic_key),
                     )
                     if cursor.rowcount:
