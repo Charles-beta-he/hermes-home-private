@@ -17,7 +17,10 @@ CONSOLIDATABLE_MODULES = ("constraint", "preference", "procedure", "causal", "de
 _SECRET_PATTERNS = (
     re.compile(r"-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----.*?-----END (?:[A-Z0-9 ]+ )?PRIVATE KEY-----", re.DOTALL),
     re.compile(r"(?i)(authorization\s*:\s*bearer\s+)[A-Za-z0-9._~+/=-]{12,}"),
-    re.compile(r"(?i)((?:api[_-]?key|token|secret|password)\s*[:=]\s*)[^\s,;，；]+"),
+    re.compile(
+        r"(?i)((?:api[_-]?key|token|secret|password|aws_access_key_id|session_cookie|cookie|set-cookie|card_number|credit_card|pan)\s*[:=]\s*)[^\s,;，；]+"
+    ),
+    re.compile(r"\bAKIA[A-Z0-9]{16}\b"),
     re.compile(r"\b(?:sk|rk|pk)-[A-Za-z0-9_-]{16,}\b"),
 )
 _SENTENCE_SPLIT = re.compile(r"(?<=[。！？!?；;\n])\s*")
@@ -212,17 +215,21 @@ class MemoryStore:
         event_id = self._event_id(session_id, turn_key, role, cleaned)
         content_hash = digest(cleaned)
         timestamp = iso(observed_at)
+        existing = self.conn.execute(
+            "SELECT id,content_hash,scope FROM events WHERE session_id=? AND turn_key=? AND role=?",
+            (session_id, turn_key, role),
+        ).fetchone()
+        if existing is not None:
+            if existing["content_hash"] != content_hash or existing["scope"] != scope:
+                raise ValueError("turn replay changed immutable event content or scope")
+            return str(existing["id"])
         self.conn.execute(
-            """INSERT OR IGNORE INTO events
+            """INSERT INTO events
                (id, session_id, turn_key, role, scope, observed_at, text_redacted, content_hash, created_at)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (event_id, session_id, turn_key, role, scope, timestamp, cleaned, content_hash, timestamp),
         )
-        row = self.conn.execute(
-            "SELECT id FROM events WHERE session_id=? AND turn_key=? AND role=?",
-            (session_id, turn_key, role),
-        ).fetchone()
-        return str(row["id"])
+        return event_id
 
     def _projection_specs(self, role: str, text: str) -> List[Dict[str, Any]]:
         cleaned = redact(text)
@@ -397,6 +404,7 @@ class MemoryStore:
         sql = """SELECT * FROM projections
                  WHERE status IN ('candidate','supported','consolidated')
                    AND reference_only=1
+                   AND source_event_id<>'' AND length(source_hash)=64
                    AND scope IN (?, 'global')
                    AND (expires_at IS NULL OR expires_at >= ?)"""
         params.append(iso(now or self._now_fn()))
@@ -426,9 +434,13 @@ class MemoryStore:
             placeholders = ",".join("?" for _ in source_ids)
             sibling_rows = self.conn.execute(
                 """SELECT * FROM projections WHERE source_event_id IN (%s)
-                   AND scope IN (?, 'global') AND status IN ('candidate','supported','consolidated')
+                   AND scope IN (?, 'global')
+                   AND status IN ('candidate','supported','consolidated')
+                   AND reference_only=1
+                   AND source_event_id<>'' AND length(source_hash)=64
+                   AND (expires_at IS NULL OR expires_at >= ?)
                    ORDER BY confidence DESC, created_at DESC""" % placeholders,
-                list(sorted(source_ids)) + [current_scope],
+                list(sorted(source_ids)) + [current_scope, iso(current)],
             ).fetchall()
             base_score = selected[-1][0]
             for sibling in sibling_rows:
@@ -473,7 +485,9 @@ class MemoryStore:
 
     def consolidate(self, min_sessions: int = 2) -> Dict[str, int]:
         groups = self.conn.execute(
-            """SELECT module,scope,semantic_key,COUNT(DISTINCT session_id) AS sessions,
+            """SELECT module,scope,semantic_key,
+                      COUNT(DISTINCT session_id) AS sessions,
+                      COUNT(DISTINCT source_event_id) AS sources,
                       GROUP_CONCAT(DISTINCT session_id) AS session_ids
                FROM projections
                WHERE module IN ('constraint','preference','procedure','causal','decision')
@@ -484,13 +498,54 @@ class MemoryStore:
         supported = 0
         with self.conn:
             for group in groups:
-                count = int(group["sessions"])
-                if count >= min_sessions:
+                module = str(group["module"])
+                scope = str(group["scope"])
+                semantic_key = str(group["semantic_key"])
+                active_conflict = self.conn.execute(
+                    """SELECT 1
+                       FROM edges e
+                       JOIN projections source ON source.id=e.source_projection_id
+                       JOIN projections target ON target.id=e.target_projection_id
+                       WHERE e.relation='contradicts'
+                         AND (
+                           (source.module=? AND source.scope=? AND source.semantic_key=?
+                            AND target.status IN ('candidate','supported','consolidated'))
+                           OR
+                           (target.module=? AND target.scope=? AND target.semantic_key=?
+                            AND source.status IN ('candidate','supported','consolidated'))
+                         )
+                       LIMIT 1""",
+                    (module, scope, semantic_key, module, scope, semantic_key),
+                ).fetchone()
+                if active_conflict is not None:
+                    continue
+
+                session_count = int(group["sessions"])
+                source_count = int(group["sources"])
+                evidence_sessions = 0
+                if module in ("procedure", "causal", "decision"):
+                    evidence_sessions = int(self.conn.execute(
+                        """SELECT COUNT(DISTINCT claim.session_id)
+                           FROM projections claim
+                           WHERE claim.module=? AND claim.scope=? AND claim.semantic_key=?
+                             AND claim.status IN ('candidate','supported','consolidated')
+                             AND EXISTS (
+                               SELECT 1 FROM projections evidence
+                               WHERE evidence.source_event_id=claim.source_event_id
+                                 AND evidence.module='evidence'
+                                 AND evidence.reference_only=1
+                                 AND evidence.status IN ('candidate','supported','consolidated')
+                             )""",
+                        (module, scope, semantic_key),
+                    ).fetchone()[0])
+
+                evidence_ok = module not in ("procedure", "causal", "decision") or evidence_sessions >= min_sessions
+                if session_count >= min_sessions and evidence_ok:
                     cursor = self.conn.execute(
                         """UPDATE projections SET status='consolidated',strength=MAX(strength,0.8)
                            WHERE module=? AND scope=? AND semantic_key=?
                              AND status IN ('candidate','supported','consolidated')""",
-                        (group["module"], group["scope"], group["semantic_key"]),
+                        (module, scope, semantic_key),
                     )
                     if cursor.rowcount:
                         consolidated += 1
@@ -498,15 +553,16 @@ class MemoryStore:
                             """INSERT INTO consolidation_receipts
                                (semantic_key,module,scope,action,support_sessions,created_at)
                                VALUES(?,?,?,'consolidated',?,?)""",
-                            (group["semantic_key"], group["module"], group["scope"], group["session_ids"], iso(self._now_fn())),
+                            (semantic_key, module, scope, group["session_ids"], iso(self._now_fn())),
                         )
-                elif count == 1:
+                elif source_count >= 2:
                     cursor = self.conn.execute(
                         """UPDATE projections SET status='supported'
-                           WHERE module=? AND scope=? AND semantic_key=? AND status='candidate' AND access_count>0""",
-                        (group["module"], group["scope"], group["semantic_key"]),
+                           WHERE module=? AND scope=? AND semantic_key=? AND status='candidate'""",
+                        (module, scope, semantic_key),
                     )
-                    supported += max(0, cursor.rowcount)
+                    if cursor.rowcount:
+                        supported += 1
         return {"consolidated": consolidated, "supported": supported}
 
     def decay(
