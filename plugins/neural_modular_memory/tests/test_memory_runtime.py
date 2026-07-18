@@ -407,6 +407,30 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertNotIn("constraint", modules)
         self.assertNotIn("episodic", modules)
 
+    def test_recall_rejects_well_formed_hash_that_does_not_match_source_event(self) -> None:
+        self.store.ingest_turn(
+            "s1",
+            "必须保留来源。",
+            "收到。",
+            scope="project:x",
+            turn_key="mismatched-provenance",
+        )
+        constraint = next(
+            p for p in self.store.list_projections() if p["module"] == "constraint"
+        )
+        self.store.conn.execute(
+            "UPDATE projections SET source_hash=? WHERE id=?",
+            ("a" * 64, constraint["id"]),
+        )
+        self.store.conn.commit()
+
+        packet = self.store.recall(
+            "保留来源",
+            current_scope="project:x",
+            complete_siblings=False,
+        )
+        self.assertNotIn(constraint["id"], {item["id"] for item in packet})
+
     def test_fts_failure_returns_empty_instead_of_scanning_the_scope(self) -> None:
         self.store.ingest_turn(
             "s1",
