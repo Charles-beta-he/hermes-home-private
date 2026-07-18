@@ -9,9 +9,9 @@
 
 ## Deterministic verification
 
-- Hermes venv: 39 tests, 0 failures, 0 errors, 0 skipped.
-- Homebrew Python 3.14.3: 39 tests, 0 failures, 0 errors, 0 skipped.
-- Repeat gate: 100 complete iterations × 39 tests = 3900 tests; 0 failures, 0 errors, 0 skipped; exit 0.
+- Hermes venv: 40 tests, 0 failures, 0 errors, 0 skipped.
+- Homebrew Python 3.14.3: 40 tests, 0 failures, 0 errors, 0 skipped.
+- Repeat gate: 100 complete iterations × 40 tests = 4000 tests; 0 failures, 0 errors, 0 skipped; exit 0.
 - `py_compile`: exit 0 for `store.py`, `provider.py`, and `test_memory_runtime.py`.
 - scoped `git diff --check`: exit 0.
 - production added-lines scan: hardcoded secret, `shell=True`, `eval/exec`, pickle and SQL-fstring findings all 0.
@@ -52,6 +52,7 @@ Runtime closure evidence:
 - receipts never enter events, projections, FTS or normal recall.
 - v1/v2 projections migrate in place with nullable `last_decayed_at`; their existing strength is preserved on the first post-migration decay instead of applying historical age again.
 - fixture v1→v3 migration retains existing L0 events and projection strength.
+- unknown or future schema markers fail closed before migration DDL and remain unchanged on disk.
 
 Live SQLite readback:
 
@@ -83,10 +84,10 @@ This adds the external canonical Local Brain vault to the normal profile-local b
 
 ## Current implementation hashes before scoped commit
 
-- `store.py`: `030c0652b9bdd48be7dad47d497acca6acc409ec280a8fd6cb673c8c43c47042`
+- `store.py`: `5c52ae2ec62bc9a9db202eff8619328bc7b416f7e51ba014c4dde088d3fc2a12`
 - `provider.py`: `c5bd40c1992789674cc7a0f24edf0fe51f3529aa4179618d52c4f0d894303d8a`
-- `test_memory_runtime.py`: `604e146094f350d346c9b58c314bc7122a5ebd03ee9e2b946dd642812a26ead5`
-- `README.md`: `d7dea5a84c2e817924b2e8fe3107469eee9c1f65763f265c882a533dff4f7dea`
+- `test_memory_runtime.py`: `2dc776523fe3324f5f215cc2fdb87b8894bba05c3a259ed068d0931391ba5c55`
+- `README.md`: `f5a2e1eb9a9e44720083c3cd86d5be5987d750766acab825e3fcf63b5772049a`
 
 ## Exact target and rollback
 

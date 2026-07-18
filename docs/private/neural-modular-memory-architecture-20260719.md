@@ -262,14 +262,14 @@ correction: old --superseded_by--> new
 | Local Brain 联邦召回 | `_brain_recall`、`prefetch` | 合法 path/line/hash；timeout/non-zero/invalid JSON/hash/path/line fail-closed | pass |
 | 跨来源去重 | `_suppress_modular_duplicates` | 已注入 canonical excerpt 精确去重；被预算截断而未注入的 Brain hit 不抑制 M³G | pass |
 | 全记忆备份边界 | `backup_paths()`、Hermes backup collector | live collector 读回 `/Users/charles/Documents/brain` 且路径存在 | pass |
-| schema v1/v2→v3 迁移 | `_init_schema`、`last_decayed_at`、`memory_write_receipts` triggers | fixture 原地升级保留 event/strength；旧 projection 首次迁移不重复衰减；实库 integrity/count/trigger 读回 | pass |
+| schema v1/v2→v3 迁移 | `_init_schema`、`last_decayed_at`、`memory_write_receipts` triggers | fixture 原地升级保留 event/strength；旧 projection 首次迁移不重复衰减；未知/未来 schema 拒绝打开且不重写 marker；实库 integrity/count/trigger 读回 | pass |
 | fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；authority-neutral 提示；生产代码静态安全扫描 0 findings | pass |
 
 ### 运行证据（2026-07-19）
 
-- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；39/39，0 failure、0 error、0 skip。
-- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；39/39，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
-- 重复门禁：100 次完整 suite × 39 = 3900 tests；0 failure、0 error、0 skip；exit 0。
+- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；40/40，0 failure、0 error、0 skip。
+- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；40/40，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
+- 重复门禁：100 次完整 suite × 40 = 4000 tests；0 failure、0 error、0 skip；exit 0。
 - 静态门禁：`py_compile`、scoped `git diff --check` exit 0；production added-lines secret/shell/eval/pickle/SQL-fstring scan 均为 0。
 - 配置：`hermes config check` exit 0；活跃 provider 为 `neural_modular_memory`。
 - live backup collector：`BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`，`ALL_EXIST=True`。

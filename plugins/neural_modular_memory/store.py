@@ -11,6 +11,11 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 
 UTC = timezone.utc
 SCHEMA_VERSION = "hermes.neural_modular_memory.v3"
+MIGRATABLE_SCHEMA_VERSIONS = {
+    "hermes.neural_modular_memory.v1",
+    "hermes.neural_modular_memory.v2",
+    SCHEMA_VERSION,
+}
 ACTIVE_STATUSES = ("candidate", "supported", "consolidated")
 CONSOLIDATABLE_MODULES = ("constraint", "preference", "procedure", "causal", "decision")
 
@@ -151,9 +156,24 @@ class MemoryStore:
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA foreign_keys=ON")
-        self._init_schema()
+        try:
+            self._init_schema()
+        except Exception:
+            self.conn.close()
+            raise
 
     def _init_schema(self) -> None:
+        metadata_exists = self.conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='metadata'"
+        ).fetchone()
+        if metadata_exists is not None:
+            version_row = self.conn.execute(
+                "SELECT value FROM metadata WHERE key='schema_version'"
+            ).fetchone()
+            if version_row is not None and str(version_row["value"]) not in MIGRATABLE_SCHEMA_VERSIONS:
+                raise RuntimeError(
+                    "unsupported neural modular memory schema: %s" % version_row["value"]
+                )
         self.conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS metadata (
