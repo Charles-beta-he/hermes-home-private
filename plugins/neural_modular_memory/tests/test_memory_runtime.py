@@ -130,6 +130,40 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertNotIn(cookie_value, serialized)
         self.assertNotIn(card_number, serialized)
 
+    def test_bare_compact_and_spaced_pan_are_redacted_before_persistence(self) -> None:
+        compact = "4111111111111111"
+        spaced = "4111 1111 1111 1111"
+        self.store.ingest_turn(
+            session_id="s1",
+            user_text=f"候选卡号 {compact}，备用格式 {spaced}，必须不要持久化。",
+            assistant_text="收到。",
+            scope="session:s1",
+            turn_key="bare-pan",
+        )
+        serialized = json.dumps(
+            {"events": self.store.list_events(), "projections": self.store.list_projections()},
+            ensure_ascii=False,
+        )
+        self.assertNotIn(compact, serialized)
+        self.assertNotIn(spaced, serialized)
+        self.assertGreaterEqual(serialized.count("[REDACTED]"), 2)
+
+    def test_recall_updates_activation_telemetry_without_changing_strength(self) -> None:
+        self.store.ingest_turn(
+            "s1",
+            "必须保留来源。",
+            "收到。",
+            scope="project:x",
+            turn_key="activation-only",
+        )
+        before = {p["id"]: p for p in self.store.list_projections()}
+        packet = self.store.recall("保留来源", current_scope="project:x")
+        after = {p["id"]: p for p in self.store.list_projections()}
+
+        self.assertTrue(packet)
+        self.assertTrue(any(after[item["id"]]["access_count"] > before[item["id"]]["access_count"] for item in packet))
+        self.assertTrue(all(after[item["id"]]["strength"] == before[item["id"]]["strength"] for item in packet))
+
     def test_recall_enforces_scope_and_budget(self) -> None:
         self.store.ingest_turn("s1", "项目火星必须保留来源。", "确认。", scope="project:mars")
         self.store.ingest_turn("s2", "项目金星必须保留来源。", "确认。", scope="project:venus")

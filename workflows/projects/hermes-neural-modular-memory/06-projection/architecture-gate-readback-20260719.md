@@ -8,9 +8,9 @@
 
 ## Deterministic gate readback
 
-- Hermes venv full suite: `Ran 28 tests ... OK`
-- System Python full suite: `Ran 28 tests ... OK`
-- Repeat gate: 100 complete iterations × 28 tests = 2800 tests; 0 failures, 0 errors; process exit 0
+- Hermes venv full suite: `Ran 30 tests ... OK`
+- System Python full suite: `Ran 30 tests ... OK`
+- Repeat gate: 100 complete iterations × 30 tests = 3000 tests; 0 failures, 0 errors; process exit 0
 - `py_compile`: exit 0 for `store.py`, `provider.py`, `__init__.py`, and the test module
 - `hermes config check`: configuration valid; active readback is `memory.provider=neural_modular_memory`
 - provider discovery: discovered `True`, available `True`, loaded `True`
@@ -18,9 +18,9 @@
 - SQLite: `PRAGMA integrity_check=ok`; 4 events, 10 projections, 16 edges, 12 activations
 - immutable-event triggers: `events_no_delete`, `events_no_update`
 - implementation hashes before scoped commit:
-  - `store.py`: `be432e004f833d36134f1c96906cfadb90878706b12aa11734c785756dd0442d`
+  - `store.py`: `66614b00868839ad07104886a0f22146d1c4c1b757091eb2c0146c416fd100a8`
   - `provider.py`: `f4d30c73c193769963f5ea626d0be81b3096fbba32c7d03e46579b2868c431f3`
-  - `test_memory_runtime.py`: `762b74a11d94855db1359286a5769a751ebd8fb6cb503090b93f93bf74b68963`
+  - `test_memory_runtime.py`: `38bbce6a91cef074a07689ee4a7d9423cb3a930b14f3e669566b5d43792c4ac0`
 
 ## Independent verifier remediation map
 
@@ -39,7 +39,8 @@ The first independent verifier returned `FAIL` against an earlier drifting hash.
 - brainctl timeout, non-zero exit, malformed JSON/hash/path/line fail closed;
 - AWS key, cookie/session, card identifier, token, Authorization, and private-key patterns are redacted;
 - automated test asserts `get_tool_schemas()==[]` and the authority-neutral prompt boundary.
-- bare 13–19 digit payment-card/PAN text is redacted before L0 and projection persistence;
+- Luhn-valid bare compact or space/hyphen-separated 13–19 digit payment-card/PAN text is redacted before L0 and projection persistence;
+- recall updates only activation telemetry and never strengthens a projection merely because it was retrieved;
 - provider-ingested explicit durable preferences derive a non-PII `user:*` scope, consolidate across two real provider sessions, and remain recallable from a third session while episodic projections remain session-scoped;
 - correction suppression requires sufficient overlap with the explicitly replaced subject, preventing shared-token cross-topic suppression;
 - FTS lookup errors and empty candidate sets return no modular recall instead of falling back to a scope-wide scan.
