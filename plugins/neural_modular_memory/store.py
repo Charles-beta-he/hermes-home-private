@@ -456,6 +456,11 @@ class MemoryStore:
                    AND reference_only=1
                    AND source_event_id<>'' AND length(source_hash)=64
                    AND source_hash NOT GLOB '*[^0-9a-f]*'
+                   AND EXISTS (
+                     SELECT 1 FROM events source_event
+                     WHERE source_event.id=projections.source_event_id
+                       AND source_event.content_hash=projections.source_hash
+                   )
                    AND scope IN (%s)
                    AND (expires_at IS NULL OR expires_at >= ?)""" % scope_placeholders
         params.append(iso(now or self._now_fn()))
@@ -489,6 +494,11 @@ class MemoryStore:
                    AND reference_only=1
                    AND source_event_id<>'' AND length(source_hash)=64
                    AND source_hash NOT GLOB '*[^0-9a-f]*'
+                   AND EXISTS (
+                     SELECT 1 FROM events source_event
+                     WHERE source_event.id=projections.source_event_id
+                       AND source_event.content_hash=projections.source_hash
+                   )
                    AND (expires_at IS NULL OR expires_at >= ?)
                    ORDER BY confidence DESC, created_at DESC""" % (placeholders, scope_placeholders),
                 list(sorted(source_ids)) + allowed_scopes + [iso(current)],

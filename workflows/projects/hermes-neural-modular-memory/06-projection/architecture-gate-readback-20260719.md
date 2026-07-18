@@ -8,9 +8,9 @@
 
 ## Deterministic gate readback
 
-- Hermes venv full suite: `Ran 27 tests ... OK`
-- System Python full suite: `Ran 27 tests ... OK`
-- Repeat gate: 100 complete iterations × 27 tests = 2700 tests; 0 failures, 0 errors; process exit 0
+- Hermes venv full suite: `Ran 28 tests ... OK`
+- System Python full suite: `Ran 28 tests ... OK`
+- Repeat gate: 100 complete iterations × 28 tests = 2800 tests; 0 failures, 0 errors; process exit 0
 - `py_compile`: exit 0 for `store.py`, `provider.py`, `__init__.py`, and the test module
 - `hermes config check`: configuration valid; active readback is `memory.provider=neural_modular_memory`
 - provider discovery: discovered `True`, available `True`, loaded `True`
@@ -18,9 +18,9 @@
 - SQLite: `PRAGMA integrity_check=ok`; 4 events, 10 projections, 16 edges, 12 activations
 - immutable-event triggers: `events_no_delete`, `events_no_update`
 - implementation hashes before scoped commit:
-  - `store.py`: `5894d4b98c9168f720bb3cbad34403d12010279c54a0eef6e3493f7daec73efb`
+  - `store.py`: `be432e004f833d36134f1c96906cfadb90878706b12aa11734c785756dd0442d`
   - `provider.py`: `f4d30c73c193769963f5ea626d0be81b3096fbba32c7d03e46579b2868c431f3`
-  - `test_memory_runtime.py`: `03326c19b98a3c78a124ef2b360140cf226c1fe98de7eccd4b0442769bf0fea3`
+  - `test_memory_runtime.py`: `762b74a11d94855db1359286a5769a751ebd8fb6cb503090b93f93bf74b68963`
 
 ## Independent verifier remediation map
 
@@ -31,7 +31,7 @@ The first independent verifier returned `FAIL` against an earlier drifting hash.
 - `procedure`/`causal`/`decision` require direct same-event evidence in every supporting session before consolidation;
 - same-scope unrelated correction regression remains covered;
 - recall telemetry exception is explicit in the SSOT;
-- primary and sibling recall share reference-only, expiry, scope, status, and provenance gates; provenance requires a non-empty event id plus an exact 64-character lowercase hexadecimal SHA-256;
+- primary and sibling recall share reference-only, expiry, scope, status, and provenance gates; provenance requires a non-empty event id plus an exact 64-character lowercase hexadecimal SHA-256 that equals the referenced immutable L0 event hash;
 - high-risk consolidation now compares evidence-bearing session count with the complete supporting-session count, so two evidenced sessions cannot promote an unevidenced third session;
 - Brain + modular recall share one total character budget;
 - repeated `turn_key` with changed content raises `ValueError` instead of silently reusing an event;
