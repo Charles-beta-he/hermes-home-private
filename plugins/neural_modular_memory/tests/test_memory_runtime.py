@@ -14,7 +14,7 @@ PLUGINS_DIR = Path(__file__).resolve().parents[2]
 if str(PLUGINS_DIR) not in sys.path:
     sys.path.insert(0, str(PLUGINS_DIR))
 
-from neural_modular_memory.store import MemoryStore  # noqa: E402
+from neural_modular_memory.store import MemoryStore, _is_valid_pan, redact  # noqa: E402
 from neural_modular_memory.provider import NeuralModularMemoryProvider  # noqa: E402
 from agent.memory_manager import MemoryManager  # noqa: E402
 
@@ -237,6 +237,34 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertNotIn(compact, serialized)
         self.assertNotIn(spaced, serialized)
         self.assertGreaterEqual(serialized.count("[REDACTED]"), 2)
+
+    def test_pan_length_and_separator_boundaries_do_not_partially_redact_longer_numbers(self) -> None:
+        def valid_pan(length: int) -> str:
+            prefix = "4" + "0" * (length - 2)
+            for check_digit in "0123456789":
+                candidate = prefix + check_digit
+                if _is_valid_pan(candidate):
+                    return candidate
+            self.fail("unable to construct a valid PAN fixture")
+
+        for length in range(13, 20):
+            compact = valid_pan(length)
+            variants = (compact, " ".join(compact), "-".join(compact))
+            for variant in variants:
+                self.assertEqual("[REDACTED]", redact(variant), (length, variant))
+
+        short = valid_pan(13)[:12]
+        long = valid_pan(19) + "7"
+        outside_variants = (
+            short,
+            " ".join(short),
+            "-".join(short),
+            long,
+            " ".join(long),
+            "-".join(long),
+        )
+        for variant in outside_variants:
+            self.assertEqual(variant, redact(variant), variant)
 
     def test_recall_updates_activation_telemetry_without_changing_strength(self) -> None:
         self.store.ingest_turn(

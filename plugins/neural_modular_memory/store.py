@@ -28,7 +28,7 @@ _SECRET_PATTERNS = (
     re.compile(r"\bAKIA[A-Z0-9]{16}\b"),
     re.compile(r"\b(?:sk|rk|pk)-[A-Za-z0-9_-]{16,}\b"),
 )
-_PAN_CANDIDATE = re.compile(r"(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)")
+_PAN_CANDIDATE = re.compile(r"(?<!\d)(?<!\d[ -])(?:\d[ -]?){12,18}\d(?![ -]?\d)")
 _SENTENCE_SPLIT = re.compile(r"(?<=[。！？!?；;\n])\s*")
 _CJK = re.compile(r"[\u3400-\u9fff]+")
 _WORD = re.compile(r"[A-Za-z0-9_./:-]{2,}")

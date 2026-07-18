@@ -9,9 +9,9 @@
 
 ## Deterministic verification
 
-- Hermes venv: 40 tests, 0 failures, 0 errors, 0 skipped.
-- Homebrew Python 3.14.3: 40 tests, 0 failures, 0 errors, 0 skipped.
-- Repeat gate: 100 complete iterations × 40 tests = 4000 tests; 0 failures, 0 errors, 0 skipped; exit 0.
+- Hermes venv: 41 tests, 0 failures, 0 errors, 0 skipped.
+- Homebrew Python 3.14.3: 41 tests, 0 failures, 0 errors, 0 skipped.
+- Repeat gate: 100 complete iterations × 41 tests = 4100 tests; 0 failures, 0 errors, 0 skipped; exit 0.
 - `py_compile`: exit 0 for `store.py`, `provider.py`, and `test_memory_runtime.py`.
 - scoped `git diff --check`: exit 0.
 - production added-lines scan: hardcoded secret, `shell=True`, `eval/exec`, pickle and SQL-fstring findings all 0.
@@ -48,6 +48,7 @@ Runtime closure evidence:
 - schema: `hermes.neural_modular_memory.v3`.
 - `memory_write_receipts` supports `add`, `replace`, `remove` for `memory` and `user` targets.
 - receipt content and nested metadata are redacted before persistence.
+- Luhn-valid 13–19 digit PANs are redacted in compact, space-separated, and hyphen-separated forms; compact/separated 12- and 20-digit runs remain intact rather than being partially redacted.
 - receipt update/delete are rejected by SQLite triggers.
 - receipts never enter events, projections, FTS or normal recall.
 - v1/v2 projections migrate in place with nullable `last_decayed_at`; their existing strength is preserved on the first post-migration decay instead of applying historical age again.
@@ -84,10 +85,10 @@ This adds the external canonical Local Brain vault to the normal profile-local b
 
 ## Current implementation hashes before scoped commit
 
-- `store.py`: `5c52ae2ec62bc9a9db202eff8619328bc7b416f7e51ba014c4dde088d3fc2a12`
+- `store.py`: `296ccde3bdbac611f9dae9d845775f2ddb9f1265af27972906bffec55009a9bb`
 - `provider.py`: `c5bd40c1992789674cc7a0f24edf0fe51f3529aa4179618d52c4f0d894303d8a`
-- `test_memory_runtime.py`: `2dc776523fe3324f5f215cc2fdb87b8894bba05c3a259ed068d0931391ba5c55`
-- `README.md`: `f5a2e1eb9a9e44720083c3cd86d5be5987d750766acab825e3fcf63b5772049a`
+- `test_memory_runtime.py`: `558f6cba361f135b2f3c6e5c645d456cd2501282981e38f0c89865ddf3a27364`
+- `README.md`: `a33216897852abf1a7669218d52e872db88ff3cca6a038d4ed5a555519e52f5e`
 
 ## Exact target and rollback
 
