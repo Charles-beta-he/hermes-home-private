@@ -160,6 +160,25 @@ class MemoryStoreTests(unittest.TestCase):
         )
         self.assertEqual(strength_before, strength_after)
 
+    def test_unknown_future_schema_fails_closed_without_rewriting_marker(self) -> None:
+        self.store.conn.execute(
+            "UPDATE metadata SET value='hermes.neural_modular_memory.v999' WHERE key='schema_version'"
+        )
+        self.store.conn.commit()
+        self.store.close()
+
+        with self.assertRaisesRegex(RuntimeError, "unsupported neural modular memory schema"):
+            MemoryStore(self.db)
+
+        conn = sqlite3.connect(self.db)
+        try:
+            version = conn.execute(
+                "SELECT value FROM metadata WHERE key='schema_version'"
+            ).fetchone()[0]
+        finally:
+            conn.close()
+        self.assertEqual("hermes.neural_modular_memory.v999", version)
+
     def test_secrets_are_redacted_before_events_and_projections_are_persisted(self) -> None:
         secret = "sk-abcdefghijklmnopqrstuvwxyz123456"
         key_body = "QUJD" * 32
