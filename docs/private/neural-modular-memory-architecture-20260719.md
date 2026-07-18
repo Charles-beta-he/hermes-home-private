@@ -57,7 +57,7 @@ MemoryProjection = Project(
 - 纠正只压制与“被替换主题”充分匹配的旧投影；共享一个技术词不能触发跨主题压制。
 - 至少两个独立 session 的一致证据才能巩固；单轮推断保持 candidate/reference-only。
 - Provider 的显式稳定用户偏好使用不可逆身份摘要形成的 `user:*` scope，跨 session 可巩固；episodic/普通轮次仍保持 `session:*`。
-- 时间衰减可归档低强度投影，但事件计数不减少。
+- 时间衰减按 projection 的 `last_decayed_at` 增量计算；同一时间戳重复 maintenance 幂等，可归档低强度投影，但事件计数不减少。
 - Local Brain 原有 `brainctl search` 召回仍保留，并与新运行时统一注入。
 - 自动测试覆盖正向、幂等、溯源、作用域、脱敏、冲突、巩固、遗忘、预算、错误关闭。
 
@@ -255,26 +255,26 @@ correction: old --superseded_by--> new
 | 冲突/替代 | `MemoryStore._apply_correction/consolidate` | 同技术词不同主题不误伤；明确替换主题被压制；活跃 contradiction 禁止巩固 | pass |
 | 双速巩固 | `MemoryStore.consolidate`、durable-scope 投影 | 单源不升 supported；双 source/single session 仅 supported；双 session 稳定偏好巩固；高风险 evidence 门禁 | pass |
 | 召回不自强化 | `MemoryStore.recall` activation telemetry | strength 召回前后不变；只增加 access/activation | pass |
-| 遗忘不删 L0 | `MemoryStore.decay`、L0 triggers | 弱 projection 归档且 event 仍在；数据库拒绝 event update/delete | pass |
+| 遗忘不删 L0 | `MemoryStore.decay`、`last_decayed_at`、L0 triggers | 同一时刻重复衰减幂等，后续仅计算新增时间区间；弱 projection 归档且 event 仍在；数据库拒绝 event update/delete | pass |
 | 唯一 provider 控制面 | Hermes loader/`MemoryManager` + `NeuralModularMemoryProvider` | 活跃配置 `memory.provider=neural_modular_memory`；`get_tool_schemas=[]` | pass |
 | built-in 显式记忆闭环 | `record_memory_write`、`on_memory_write`、MemoryManager bridge | committed/non-staged 才追加；receipt 脱敏、不可变、不进入 event/projection/FTS/recall | pass |
 | session/context 生命周期 | `sync_turn` primary gate、`on_session_switch` | child/subagent 不摄取；session switch 后只写新 session | pass |
 | Local Brain 联邦召回 | `_brain_recall`、`prefetch` | 合法 path/line/hash；timeout/non-zero/invalid JSON/hash/path/line fail-closed | pass |
 | 跨来源去重 | `_suppress_modular_duplicates` | 已注入 canonical excerpt 精确去重；被预算截断而未注入的 Brain hit 不抑制 M³G | pass |
 | 全记忆备份边界 | `backup_paths()`、Hermes backup collector | live collector 读回 `/Users/charles/Documents/brain` 且路径存在 | pass |
-| schema v1→v2 迁移 | `_init_schema`、`memory_write_receipts` triggers | fixture 原地升级保留 event；实库 integrity=ok、原计数保留、四个不可变 trigger 存在 | pass |
+| schema v1/v2→v3 迁移 | `_init_schema`、`last_decayed_at`、`memory_write_receipts` triggers | fixture 原地升级保留 event/strength；旧 projection 首次迁移不重复衰减；实库 integrity/count/trigger 读回 | pass |
 | fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；authority-neutral 提示；生产代码静态安全扫描 0 findings | pass |
 
 ### 运行证据（2026-07-19）
 
-- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；38/38，0 failure、0 error、0 skip。
-- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；38/38，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
-- 重复门禁：100 次完整 suite × 38 = 3800 tests；0 failure、0 error、0 skip；exit 0。
+- 解释器 A：`/Users/charles/.hermes/worktrees/hermes-agent-ci-project-base-fix/.venv/bin/python`；39/39，0 failure、0 error、0 skip。
+- 解释器 B：`/opt/homebrew/bin/python3`（3.14.3）；39/39，0 failure、0 error、0 skip。macOS `/usr/bin/python3` 为 3.9.6，低于 Hermes 使用 `X | Y` 类型语法的运行时要求，因此不作为支持解释器门禁。
+- 重复门禁：100 次完整 suite × 39 = 3900 tests；0 failure、0 error、0 skip；exit 0。
 - 静态门禁：`py_compile`、scoped `git diff --check` exit 0；production added-lines secret/shell/eval/pickle/SQL-fstring scan 均为 0。
 - 配置：`hermes config check` exit 0；活跃 provider 为 `neural_modular_memory`。
 - live backup collector：`BACKUP_EXTERNAL_PATHS=['/Users/charles/Documents/brain']`，`ALL_EXIST=True`。
-- 活跃 SQLite：schema `hermes.neural_modular_memory.v2`；4 events、10 projections、16 edges、15 activations、0 memory receipts；`PRAGMA integrity_check=ok`；event/receipt update/delete triggers 均存在。
-- 迁移逃生备份：`/tmp/neural_modular.pre-v2.20260719-023956.sqlite3`，SHA-256 `022e8876434631e784657466e8d906e6ff69683bb05c3bca3451d4972a176b10`，integrity `ok`，迁移前核心计数 4/10/16/15。
+- 活跃 SQLite：schema `hermes.neural_modular_memory.v3`；4 events、10 projections、16 edges、15 activations、0 memory receipts；`last_decayed_at` 已存在且 10 个迁移 projection 初始为 NULL；`PRAGMA integrity_check=ok`；event/receipt update/delete triggers 均存在。
+- v3 迁移逃生备份：`/tmp/neural_modular.pre-v3.20260719-033032.sqlite3`，SHA-256 `558fd1e6dcb2764e56d4b555b3f2216d51a5be0bfead5c2488724943f083352a`，schema v2、integrity `ok`、计数 4/10/16/15/0。更早的 pre-v2 备份及其 SHA-256 `022e8876434631e784657466e8d906e6ff69683bb05c3bca3451d4972a176b10` 继续保留。
 - 回滚：运行时切回 `hermes config set memory.provider localbrain`；代码只 revert 精确 scoped commit；数据库/迁移前备份保留审计，禁止对混合工作区全局 reset/clean。
 - Gate readback：`workflows/projects/hermes-neural-modular-memory/06-projection/architecture-gate-readback-20260719.md`。
 - 认证边界：上述只证明 default profile 的本地实现、迁移与当前验收面；不证明跨设备、长期召回质量、生产恢复演练或全局认证。

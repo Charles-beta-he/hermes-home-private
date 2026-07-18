@@ -9,9 +9,9 @@
 
 ## Deterministic verification
 
-- Hermes venv: 38 tests, 0 failures, 0 errors, 0 skipped.
-- Homebrew Python 3.14.3: 38 tests, 0 failures, 0 errors, 0 skipped.
-- Repeat gate: 100 complete iterations × 38 tests = 3800 tests; 0 failures, 0 errors, 0 skipped; exit 0.
+- Hermes venv: 39 tests, 0 failures, 0 errors, 0 skipped.
+- Homebrew Python 3.14.3: 39 tests, 0 failures, 0 errors, 0 skipped.
+- Repeat gate: 100 complete iterations × 39 tests = 3900 tests; 0 failures, 0 errors, 0 skipped; exit 0.
 - `py_compile`: exit 0 for `store.py`, `provider.py`, and `test_memory_runtime.py`.
 - scoped `git diff --check`: exit 0.
 - production added-lines scan: hardcoded secret, `shell=True`, `eval/exec`, pickle and SQL-fstring findings all 0.
@@ -40,16 +40,18 @@ Runtime closure evidence:
 - exact normalized duplicates prefer the Local Brain canonical citation only when that citation is actually injected; a Brain hit truncated out by budget cannot suppress the M³G claim.
 - all recalled projections remain scope-, expiry-, status-, reference-only- and L0-provenance-gated.
 - recall updates activation telemetry only and does not strengthen knowledge.
+- decay is incremental per projection via `last_decayed_at`; repeated maintenance at one timestamp is idempotent and later runs apply only the new elapsed interval.
 - `get_tool_schemas()==[]`.
 
 ## Built-in memory receipts and schema migration
 
-- schema: `hermes.neural_modular_memory.v2`.
+- schema: `hermes.neural_modular_memory.v3`.
 - `memory_write_receipts` supports `add`, `replace`, `remove` for `memory` and `user` targets.
 - receipt content and nested metadata are redacted before persistence.
 - receipt update/delete are rejected by SQLite triggers.
-- receipts do not enter `events`, `projections`, FTS or ordinary recall.
-- fixture v1→v2 migration retains existing L0 events.
+- receipts never enter events, projections, FTS or normal recall.
+- v1/v2 projections migrate in place with nullable `last_decayed_at`; their existing strength is preserved on the first post-migration decay instead of applying historical age again.
+- fixture v1→v3 migration retains existing L0 events and projection strength.
 
 Live SQLite readback:
 
@@ -59,14 +61,16 @@ Live SQLite readback:
 - edges: 16.
 - activations: 15.
 - memory_write_receipts: 0.
+- `last_decayed_at`: column present; 10 migrated projections are NULL before their first v3 maintenance pass.
 - immutable triggers: `events_no_delete`, `events_no_update`, `memory_write_receipts_no_delete`, `memory_write_receipts_no_update`.
 
 Migration escape hatch:
 
-- backup: `/tmp/neural_modular.pre-v2.20260719-023956.sqlite3`.
-- SHA-256: `022e8876434631e784657466e8d906e6ff69683bb05c3bca3451d4972a176b10`.
-- backup integrity: `ok`.
-- pre-migration counts: 4 events, 10 projections, 16 edges, 15 activations.
+- pre-v3 backup: `/tmp/neural_modular.pre-v3.20260719-033032.sqlite3`.
+- SHA-256: `558fd1e6dcb2764e56d4b555b3f2216d51a5be0bfead5c2488724943f083352a`.
+- backup schema/integrity: `hermes.neural_modular_memory.v2` / `ok`.
+- pre-migration counts: 4 events, 10 projections, 16 edges, 15 activations, 0 memory-write receipts.
+- the earlier verified pre-v2 backup remains retained as a deeper rollback point.
 
 ## Backup integration
 
@@ -79,10 +83,10 @@ This adds the external canonical Local Brain vault to the normal profile-local b
 
 ## Current implementation hashes before scoped commit
 
-- `store.py`: `30615a42ebaf421280fc850ba494a3f87198812a8ef18b6422b4a0fb3f8536be`
+- `store.py`: `030c0652b9bdd48be7dad47d497acca6acc409ec280a8fd6cb673c8c43c47042`
 - `provider.py`: `c5bd40c1992789674cc7a0f24edf0fe51f3529aa4179618d52c4f0d894303d8a`
-- `test_memory_runtime.py`: `479fcc7fde5b0be26bc2f26d2c763f32328b4b1516be5bc7e08b5786818ef85d`
-- `README.md`: `5c05ff65e5838a26569de6f99f6fb5c391f14cac66b32d6dba7045c7a20fdc68`
+- `test_memory_runtime.py`: `604e146094f350d346c9b58c314bc7122a5ebd03ee9e2b946dd642812a26ead5`
+- `README.md`: `d7dea5a84c2e817924b2e8fe3107469eee9c1f65763f265c882a533dff4f7dea`
 
 ## Exact target and rollback
 

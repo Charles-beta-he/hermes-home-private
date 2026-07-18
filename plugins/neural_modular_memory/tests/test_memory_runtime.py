@@ -120,12 +120,17 @@ class MemoryStoreTests(unittest.TestCase):
             )
         self.store.conn.rollback()
 
-    def test_v1_database_opens_in_place_without_losing_existing_events(self) -> None:
-        self.store.ingest_turn("s1", "原始事件。", "确认。", turn_key="before-v2")
+    def test_v1_database_migrates_to_v3_without_losing_existing_events(self) -> None:
+        self.store.ingest_turn("s1", "原始事件。", "确认。", turn_key="before-v3")
         before_ids = {event["id"] for event in self.store.list_events()}
+        projection_id = self.store.list_projections()[0]["id"]
+        strength_before = float(
+            self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
+        )
         self.store.conn.execute("DROP TRIGGER memory_write_receipts_no_update")
         self.store.conn.execute("DROP TRIGGER memory_write_receipts_no_delete")
         self.store.conn.execute("DROP TABLE memory_write_receipts")
+        self.store.conn.execute("ALTER TABLE projections DROP COLUMN last_decayed_at")
         self.store.conn.execute(
             "UPDATE metadata SET value='hermes.neural_modular_memory.v1' WHERE key='schema_version'"
         )
@@ -138,7 +143,22 @@ class MemoryStoreTests(unittest.TestCase):
         version = self.store.conn.execute(
             "SELECT value FROM metadata WHERE key='schema_version'"
         ).fetchone()[0]
-        self.assertEqual("hermes.neural_modular_memory.v2", version)
+        columns = {
+            row["name"] for row in self.store.conn.execute("PRAGMA table_info(projections)").fetchall()
+        }
+        migrated = self.store.conn.execute(
+            "SELECT strength,last_decayed_at FROM projections WHERE id=?", (projection_id,)
+        ).fetchone()
+        self.assertEqual("hermes.neural_modular_memory.v3", version)
+        self.assertIn("last_decayed_at", columns)
+        self.assertIsNone(migrated["last_decayed_at"])
+        self.store.decay(
+            now=datetime(2030, 1, 1, tzinfo=UTC), half_life_days=1, archive_threshold=0.0
+        )
+        strength_after = float(
+            self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
+        )
+        self.assertEqual(strength_before, strength_after)
 
     def test_secrets_are_redacted_before_events_and_projections_are_persisted(self) -> None:
         secret = "sk-abcdefghijklmnopqrstuvwxyz123456"
@@ -422,6 +442,36 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertGreater(result["archived"], 0)
         self.assertEqual(events_before, self.store.stats()["events"])
         self.assertTrue(any(p["status"] == "archived" for p in self.store.list_projections()))
+
+    def test_decay_is_incremental_and_idempotent_at_the_same_timestamp(self) -> None:
+        created = datetime(2025, 1, 1, tzinfo=UTC)
+        self.store.ingest_turn(
+            "s1", "记录普通事项。", "普通响应。", scope="session:s1", turn_key="1", observed_at=created
+        )
+        projection_id = self.store.list_projections()[0]["id"]
+        initial = float(
+            self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
+        )
+
+        first_now = created + timedelta(days=10)
+        self.store.decay(now=first_now, half_life_days=10, archive_threshold=0.0)
+        after_first = float(
+            self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
+        )
+        self.store.decay(now=first_now, half_life_days=10, archive_threshold=0.0)
+        after_repeat = float(
+            self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
+        )
+        self.store.decay(
+            now=created + timedelta(days=20), half_life_days=10, archive_threshold=0.0
+        )
+        after_second_interval = float(
+            self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
+        )
+
+        self.assertAlmostEqual(initial * 0.5, after_first)
+        self.assertAlmostEqual(after_first, after_repeat)
+        self.assertAlmostEqual(initial * 0.25, after_second_interval)
 
     def test_pattern_completion_only_adds_bounded_same_source_siblings(self) -> None:
         result = self.store.ingest_turn(
