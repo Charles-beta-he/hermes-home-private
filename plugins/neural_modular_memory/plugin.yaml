@@ -1,0 +1,7 @@
+name: neural_modular_memory
+version: 1.0.0
+description: Local evidence-linked multi-module memory graph with bounded Local Brain recall
+hooks:
+  - sync_turn
+  - on_pre_compress
+  - on_session_end
