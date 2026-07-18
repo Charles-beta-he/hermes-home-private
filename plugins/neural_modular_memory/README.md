@@ -15,6 +15,7 @@ Properties:
 - the provider keeps episodic/default turn projections in `session:*`, while explicit durable user preferences use a hashed profile/user `user:*` scope so independent sessions can consolidate without exposing a raw identity;
 - provider recall admits only the exact current session, its exact derived durable-user scope, and `global`; Store callers must explicitly supply any additional scope;
 - `procedure`/`causal`/`decision` consolidation requires direct same-event evidence in every supporting session;
+- consolidation validates claim and evidence hashes against immutable source events, and its audit receipts reject update/delete at the SQLite layer;
 - non-destructive incremental decay/archive tracked per projection (`last_decayed_at`), so repeated maintenance at the same timestamp is idempotent; recall only mutates activation telemetry (`access_count`, `last_accessed_at`, `activations`);
 - in-place schema migration from known v1/v2 stores to v3, while unknown or future schema markers fail closed without being rewritten;
 - wraps the existing canonical `brainctl search` path and fails closed on timeout, non-zero exit, malformed JSON or invalid provenance;

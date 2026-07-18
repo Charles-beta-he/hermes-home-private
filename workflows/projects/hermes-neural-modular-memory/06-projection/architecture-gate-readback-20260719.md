@@ -9,9 +9,9 @@
 
 ## Deterministic verification
 
-- Hermes venv: 42 tests, 0 failures, 0 errors, 0 skipped.
-- Homebrew Python 3.14.3: 42 tests, 0 failures, 0 errors, 0 skipped.
-- Repeat gate: 100 complete iterations × 42 tests = 4200 tests; 0 failures, 0 errors, 0 skipped; exit 0.
+- Hermes venv: 45 tests, 0 failures, 0 errors, 0 skipped.
+- Homebrew Python 3.14.3: 45 tests, 0 failures, 0 errors, 0 skipped.
+- Repeat gate: 100 complete iterations × 45 tests = 4500 tests; 0 failures, 0 errors, 0 skipped; exit 0.
 - `py_compile`: exit 0 for `store.py`, `provider.py`, and `test_memory_runtime.py`.
 - scoped `git diff --check`: exit 0.
 - production added-lines scan: hardcoded secret, `shell=True`, `eval/exec`, pickle and SQL-fstring findings all 0.
@@ -51,6 +51,7 @@ Runtime closure evidence:
 - Luhn-valid 13–19 digit PANs are redacted in compact, space-separated, and hyphen-separated forms; compact/separated 12- and 20-digit runs remain intact rather than being partially redacted.
 - receipt update/delete are rejected by SQLite triggers.
 - receipts never enter events, projections, FTS or normal recall.
+- consolidation validates claim/evidence provenance against immutable L0 hashes and its audit receipts reject update/delete through SQLite triggers.
 - v1/v2 projections migrate in place with nullable `last_decayed_at`; their existing strength is preserved on the first post-migration decay instead of applying historical age again.
 - fixture v1→v3 migration retains events, projections, edges, activations, FTS rows and projection strength, and reads back integrity plus immutable trigger inventory.
 - unknown or future schema markers fail closed before migration DDL and remain unchanged on disk.
@@ -85,10 +86,10 @@ This adds the external canonical Local Brain vault to the normal profile-local b
 
 ## Current implementation hashes before scoped commit
 
-- `store.py`: `bb4ab759a0f77e6f90864cc1587cd97742f73071a8d706f3168888c699c8afc6`
+- `store.py`: `d0efb9d78d0ef5fa53f6c25c70461872ae2c5e66edd484c73c51d0f50886af40`
 - `provider.py`: `c5bd40c1992789674cc7a0f24edf0fe51f3529aa4179618d52c4f0d894303d8a`
-- `test_memory_runtime.py`: `9aef6cbfc0e88df11044ff3f6b9469c8a673fc6ba7840de013ebefd7f889c1ff`
-- `README.md`: `baf69aadd7dec1a0529ab0faeb6cf0134a7aec412061112696d2d747d1e15acf`
+- `test_memory_runtime.py`: `14dc4a456f12d7c2d45b330412226edb08d6c572bed20503e111ee6813751c70`
+- `README.md`: `455653bde7c5f56b14a89a9243311134d2dc3b614adac8a68d36eaafd6a256d7`
 
 ## Exact target and rollback
 
