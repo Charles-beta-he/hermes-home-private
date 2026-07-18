@@ -8,9 +8,9 @@
 
 ## Deterministic gate readback
 
-- Hermes venv full suite: `Ran 23 tests ... OK`
-- System Python full suite: `Ran 23 tests ... OK`
-- Repeat gate: 100 complete iterations × 23 tests = 2300 tests; 0 failures, 0 errors
+- Hermes venv full suite: `Ran 26 tests ... OK`
+- System Python full suite: `Ran 26 tests ... OK`
+- Repeat gate: 100 complete iterations × 26 tests = 2600 tests; 0 failures, 0 errors; process exit 0
 - `py_compile`: exit 0 for `store.py`, `provider.py`, `__init__.py`, and the test module
 - `hermes config check`: configuration valid; active readback is `memory.provider=neural_modular_memory`
 - provider discovery: discovered `True`, available `True`, loaded `True`
@@ -18,9 +18,9 @@
 - SQLite: `PRAGMA integrity_check=ok`; 4 events, 10 projections, 16 edges, 12 activations
 - immutable-event triggers: `events_no_delete`, `events_no_update`
 - implementation hashes before scoped commit:
-  - `store.py`: `84d14ab21772406cc0bea1363347060ee2613c9f10a3f8852f25e0bb4a818f0b`
-  - `provider.py`: `20f863ee37c632b7edb8b901e0c4f43c88958c08177bc851f57abbe3b84c606a`
-  - `test_memory_runtime.py`: `fb1e2bdb37331985dc4f399666368b195ceecbc65dcd3e5ac19ad04e3b3c44da`
+  - `store.py`: `37dead328a9fcc02581deaf59d9ad7bfcdf2eafe7a8efd0df9ac4d1ac97c7b6f`
+  - `provider.py`: `f4d30c73c193769963f5ea626d0be81b3096fbba32c7d03e46579b2868c431f3`
+  - `test_memory_runtime.py`: `4078e5294ca02ad8e1443292bb06576fec8893a1038fadb1e3f2aab45cab2627`
 
 ## Independent verifier remediation map
 
@@ -38,8 +38,12 @@ The first independent verifier returned `FAIL` against an earlier drifting hash.
 - brainctl timeout, non-zero exit, malformed JSON/hash/path/line fail closed;
 - AWS key, cookie/session, card identifier, token, Authorization, and private-key patterns are redacted;
 - automated test asserts `get_tool_schemas()==[]` and the authority-neutral prompt boundary.
+- bare 13–19 digit payment-card/PAN text is redacted before L0 and projection persistence;
+- provider-ingested explicit durable preferences derive a non-PII `user:*` scope, consolidate across two real provider sessions, and remain recallable from a third session while episodic projections remain session-scoped;
+- correction suppression requires sufficient overlap with the explicitly replaced subject, preventing shared-token cross-topic suppression;
+- FTS lookup errors and empty candidate sets return no modular recall instead of falling back to a scope-wide scan.
 
-A fresh independent verifier vote against the committed hashes remains required before any wording stronger than `locally_implemented_and_verified`.
+A fresh independent verifier vote against the next exact committed hash remains required before any wording stronger than `locally_implemented_and_verified`. Earlier votes against prior hashes remain historical evidence only.
 
 ## Exact target and rollback
 

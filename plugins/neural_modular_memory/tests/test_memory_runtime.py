@@ -184,6 +184,36 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertTrue(any(edge["relation"] in {"supersedes", "contradicts"} for edge in edges))
         self.assertGreater(self.store.stats()["projections"], before)
 
+    def test_correction_targets_the_replaced_subject_not_any_shared_token(self) -> None:
+        self.store.ingest_turn(
+            "s1",
+            "我偏好 React 函数组件。",
+            "记录为候选。",
+            scope="user:u1",
+            turn_key="react-functions",
+        )
+        self.store.ingest_turn(
+            "s1",
+            "我偏好 React 深色主题。",
+            "记录为候选。",
+            scope="user:u1",
+            turn_key="react-theme",
+        )
+        self.store.ingest_turn(
+            "s1",
+            "纠正：不要 React 深色主题，改用浅色主题。",
+            "已按新要求处理。",
+            scope="user:u1",
+            turn_key="react-theme-correction",
+        )
+        preferences = [p for p in self.store.list_projections() if p["module"] == "preference"]
+        functions = [p for p in preferences if "函数组件" in p["claim"]]
+        dark_theme = [p for p in preferences if "深色主题" in p["claim"]]
+        self.assertTrue(functions)
+        self.assertTrue(dark_theme)
+        self.assertTrue(all(p["status"] != "contradicted" for p in functions))
+        self.assertTrue(all(p["status"] == "contradicted" for p in dark_theme))
+
     def test_consolidation_requires_same_claim_from_two_independent_sessions(self) -> None:
         self.store.ingest_turn("s1", "必须保留来源。", "收到。", scope="project:x", turn_key="1")
         first = self.store.consolidate(min_sessions=2)
@@ -348,8 +378,62 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertIn("constraint", modules)
         self.assertNotIn("episodic", modules)
 
+    def test_fts_failure_returns_empty_instead_of_scanning_the_scope(self) -> None:
+        self.store.ingest_turn(
+            "s1",
+            "必须保留来源。",
+            "收到。",
+            scope="project:x",
+            turn_key="fts-fail-closed",
+        )
+        self.store.conn.execute("DROP TABLE projections_fts")
+        self.store.conn.commit()
+        self.assertEqual([], self.store.recall("保留来源", current_scope="project:x"))
+
 
 class ProviderTests(unittest.TestCase):
+    def test_provider_consolidates_explicit_durable_preference_across_sessions(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            config = {
+                "brainctl_path": str(home / "missing-brainctl.py"),
+                "store_path": str(home / "memory.sqlite3"),
+            }
+            first = NeuralModularMemoryProvider(config)
+            first.initialize("s1", hermes_home=str(home), agent_identity="default")
+            first.sync_turn("我偏好蓝色主题。", "收到。", session_id="s1")
+            first.shutdown()
+
+            second = NeuralModularMemoryProvider(config)
+            second.initialize("s2", hermes_home=str(home), agent_identity="default")
+            second.sync_turn("我偏好蓝色主题。", "再次确认。", session_id="s2")
+            second.on_session_end([])
+            second.shutdown()
+
+            store = MemoryStore(home / "memory.sqlite3")
+            preferences = [p for p in store.list_projections() if p["module"] == "preference"]
+            episodic = [p for p in store.list_projections() if p["module"] == "episodic"]
+            self.assertTrue(preferences)
+            self.assertEqual({"s1", "s2"}, {p["session_id"] for p in preferences})
+            self.assertEqual(1, len({p["scope"] for p in preferences}))
+            self.assertTrue(all(p["scope"].startswith("user:") for p in preferences))
+            self.assertTrue(all("default" not in p["scope"] for p in preferences))
+            self.assertTrue(all(p["status"] == "consolidated" for p in preferences))
+            self.assertEqual({"session:s1", "session:s2"}, {p["scope"] for p in episodic})
+            store.close()
+
+            third = NeuralModularMemoryProvider(config)
+            third.initialize("s3", hermes_home=str(home), agent_identity="default")
+            recalled = third.prefetch("蓝色主题", session_id="s3")
+            self.assertIn("蓝色主题", recalled)
+            self.assertIn("scope=user:", recalled)
+            third.shutdown()
+
+            other_user = NeuralModularMemoryProvider(config)
+            other_user.initialize("s4", hermes_home=str(home), agent_identity="other")
+            self.assertNotIn("蓝色主题", other_user.prefetch("蓝色主题", session_id="s4"))
+            other_user.shutdown()
+
     def test_provider_wraps_brainctl_and_modular_recall_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             home = Path(td)
