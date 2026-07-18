@@ -8,9 +8,9 @@
 
 ## Deterministic gate readback
 
-- Hermes venv full suite: `Ran 26 tests ... OK`
-- System Python full suite: `Ran 26 tests ... OK`
-- Repeat gate: 100 complete iterations × 26 tests = 2600 tests; 0 failures, 0 errors; process exit 0
+- Hermes venv full suite: `Ran 27 tests ... OK`
+- System Python full suite: `Ran 27 tests ... OK`
+- Repeat gate: 100 complete iterations × 27 tests = 2700 tests; 0 failures, 0 errors; process exit 0
 - `py_compile`: exit 0 for `store.py`, `provider.py`, `__init__.py`, and the test module
 - `hermes config check`: configuration valid; active readback is `memory.provider=neural_modular_memory`
 - provider discovery: discovered `True`, available `True`, loaded `True`
@@ -18,9 +18,9 @@
 - SQLite: `PRAGMA integrity_check=ok`; 4 events, 10 projections, 16 edges, 12 activations
 - immutable-event triggers: `events_no_delete`, `events_no_update`
 - implementation hashes before scoped commit:
-  - `store.py`: `37dead328a9fcc02581deaf59d9ad7bfcdf2eafe7a8efd0df9ac4d1ac97c7b6f`
+  - `store.py`: `5894d4b98c9168f720bb3cbad34403d12010279c54a0eef6e3493f7daec73efb`
   - `provider.py`: `f4d30c73c193769963f5ea626d0be81b3096fbba32c7d03e46579b2868c431f3`
-  - `test_memory_runtime.py`: `4078e5294ca02ad8e1443292bb06576fec8893a1038fadb1e3f2aab45cab2627`
+  - `test_memory_runtime.py`: `03326c19b98a3c78a124ef2b360140cf226c1fe98de7eccd4b0442769bf0fea3`
 
 ## Independent verifier remediation map
 
@@ -31,7 +31,8 @@ The first independent verifier returned `FAIL` against an earlier drifting hash.
 - `procedure`/`causal`/`decision` require direct same-event evidence in every supporting session before consolidation;
 - same-scope unrelated correction regression remains covered;
 - recall telemetry exception is explicit in the SSOT;
-- primary and sibling recall share reference-only, expiry, scope, status, and provenance gates;
+- primary and sibling recall share reference-only, expiry, scope, status, and provenance gates; provenance requires a non-empty event id plus an exact 64-character lowercase hexadecimal SHA-256;
+- high-risk consolidation now compares evidence-bearing session count with the complete supporting-session count, so two evidenced sessions cannot promote an unevidenced third session;
 - Brain + modular recall share one total character budget;
 - repeated `turn_key` with changed content raises `ValueError` instead of silently reusing an event;
 - scope isolation covers session/task/project/user/domain plus global;

@@ -455,6 +455,7 @@ class MemoryStore:
                  WHERE status IN ('candidate','supported','consolidated')
                    AND reference_only=1
                    AND source_event_id<>'' AND length(source_hash)=64
+                   AND source_hash NOT GLOB '*[^0-9a-f]*'
                    AND scope IN (%s)
                    AND (expires_at IS NULL OR expires_at >= ?)""" % scope_placeholders
         params.append(iso(now or self._now_fn()))
@@ -487,6 +488,7 @@ class MemoryStore:
                    AND status IN ('candidate','supported','consolidated')
                    AND reference_only=1
                    AND source_event_id<>'' AND length(source_hash)=64
+                   AND source_hash NOT GLOB '*[^0-9a-f]*'
                    AND (expires_at IS NULL OR expires_at >= ?)
                    ORDER BY confidence DESC, created_at DESC""" % (placeholders, scope_placeholders),
                 list(sorted(source_ids)) + allowed_scopes + [iso(current)],
@@ -588,7 +590,7 @@ class MemoryStore:
                         (module, scope, semantic_key),
                     ).fetchone()[0])
 
-                evidence_ok = module not in ("procedure", "causal", "decision") or evidence_sessions >= min_sessions
+                evidence_ok = module not in ("procedure", "causal", "decision") or evidence_sessions == session_count
                 if session_count >= min_sessions and evidence_ok:
                     cursor = self.conn.execute(
                         """UPDATE projections SET status='consolidated',strength=MAX(strength,0.8)

@@ -8,7 +8,7 @@ Properties:
 
 - append-only, redacted L0 turn events;
 - contract-driven multi-module projections from each event;
-- source hash, scope, validity, confidence, applicability and anti-condition metadata;
+- source hash, scope, validity, confidence, applicability and anti-condition metadata; recall admits only exact 64-character lowercase hexadecimal SHA-256 provenance;
 - bounded, fail-closed FTS5 retrieval plus same-source sibling completion, with one combined Brain + modular character budget;
 - explicit supersession/conflict edges; correction only suppresses projections matching the explicitly replaced subject, not any shared token;
 - source-counted `supported` state and cross-session consolidation; active contradiction blocks promotion;
