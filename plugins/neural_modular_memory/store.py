@@ -78,7 +78,7 @@ def redact(text: str) -> str:
 def redact_structure(value: Any) -> Any:
     """Recursively redact string leaves before structured metadata persists."""
     if isinstance(value, dict):
-        return {str(key): redact_structure(item) for key, item in value.items()}
+        return {redact(str(key)): redact_structure(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
         return [redact_structure(item) for item in value]
     if isinstance(value, str):

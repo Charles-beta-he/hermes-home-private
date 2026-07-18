@@ -120,9 +120,33 @@ class MemoryStoreTests(unittest.TestCase):
             )
         self.store.conn.rollback()
 
+    def test_recursive_receipt_redaction_covers_dictionary_keys_and_nested_values(self) -> None:
+        secret = "sk-metadata-key-secret-1234567890"
+        self.store.record_memory_write(
+            action="replace",
+            target="memory",
+            content="safe",
+            metadata={
+                f"api_key={secret}": {
+                    "nested": [
+                        {f"token={secret}": f"password={secret}"},
+                        (f"secret={secret}",),
+                    ]
+                }
+            },
+        )
+        receipts = self.store.list_memory_write_receipts()
+        self.assertEqual(1, len(receipts))
+        serialized = json.dumps(receipts, ensure_ascii=False)
+        self.assertNotIn(secret, serialized)
+        self.assertGreaterEqual(serialized.count("[REDACTED]"), 3)
+
     def test_v1_database_migrates_to_v3_without_losing_existing_events(self) -> None:
         self.store.ingest_turn("s1", "原始事件。", "确认。", turn_key="before-v3")
+        self.assertTrue(self.store.recall("原始事件", current_scope="session:s1"))
         before_ids = {event["id"] for event in self.store.list_events()}
+        before_stats = self.store.stats()
+        before_fts = int(self.store.conn.execute("SELECT COUNT(*) FROM projections_fts").fetchone()[0])
         projection_id = self.store.list_projections()[0]["id"]
         strength_before = float(
             self.store.conn.execute("SELECT strength FROM projections WHERE id=?", (projection_id,)).fetchone()[0]
@@ -140,6 +164,13 @@ class MemoryStoreTests(unittest.TestCase):
         self.store = MemoryStore(self.db)
         self.assertEqual(before_ids, {event["id"] for event in self.store.list_events()})
         self.assertEqual(0, self.store.stats()["memory_write_receipts"])
+        after_stats = self.store.stats()
+        for key in ("events", "projections", "edges", "activations"):
+            self.assertEqual(before_stats[key], after_stats[key], key)
+        self.assertEqual(
+            before_fts,
+            int(self.store.conn.execute("SELECT COUNT(*) FROM projections_fts").fetchone()[0]),
+        )
         version = self.store.conn.execute(
             "SELECT value FROM metadata WHERE key='schema_version'"
         ).fetchone()[0]
@@ -152,6 +183,21 @@ class MemoryStoreTests(unittest.TestCase):
         self.assertEqual("hermes.neural_modular_memory.v3", version)
         self.assertIn("last_decayed_at", columns)
         self.assertIsNone(migrated["last_decayed_at"])
+        self.assertEqual("ok", self.store.conn.execute("PRAGMA integrity_check").fetchone()[0])
+        triggers = {
+            row["name"]
+            for row in self.store.conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='trigger'"
+            ).fetchall()
+        }
+        self.assertTrue(
+            {
+                "events_no_update",
+                "events_no_delete",
+                "memory_write_receipts_no_update",
+                "memory_write_receipts_no_delete",
+            }.issubset(triggers)
+        )
         self.store.decay(
             now=datetime(2030, 1, 1, tzinfo=UTC), half_life_days=1, archive_threshold=0.0
         )
