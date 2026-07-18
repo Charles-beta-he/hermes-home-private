@@ -107,6 +107,8 @@ class NeuralModularMemoryProvider(MemoryProvider):
             excerpt = " ".join(str(hit.get("excerpt", "")).split()).strip()
             if (
                 not source_path
+                or "\x00" in source_path
+                or ".." in Path(source_path).parts
                 or len(content_hash) != 64
                 or any(ch not in "0123456789abcdef" for ch in content_hash)
                 or isinstance(line_start, bool)
@@ -129,32 +131,46 @@ class NeuralModularMemoryProvider(MemoryProvider):
             + "\n".join(rows)
         )
 
+    @staticmethod
+    def _bounded_block(block: str, budget: int) -> str:
+        if budget <= 0 or not block:
+            return ""
+        if len(block) <= budget:
+            return block
+        if budget == 1:
+            return "…"
+        return block[: budget - 1].rstrip() + "…"
+
     def prefetch(self, query: str, *, session_id: str = "") -> str:
         clean = " ".join(str(query or "").split()).strip()
         if not clean:
             return ""
+        max_chars = max(500, min(int(self._config.get("max_chars", 3600)), 8000))
         parts: List[str] = []
         brain = self._brain_recall(clean)
         if brain:
-            parts.append(brain)
+            brain_budget = max_chars if self._store is None else max(200, max_chars // 2)
+            bounded_brain = self._bounded_block(brain, brain_budget)
+            if bounded_brain:
+                parts.append(bounded_brain)
         if self._store is not None:
             try:
                 limit = max(1, min(int(self._config.get("limit", 6)), 12))
-                max_chars = max(500, min(int(self._config.get("max_chars", 3600)), 8000))
-                scope = "session:%s" % (session_id or self._session_id)
+                used = len("\n\n".join(parts))
+                remaining = max_chars - used - (2 if parts else 0)
                 packet = self._store.recall(
                     clean,
-                    current_scope=scope,
+                    current_scope="session:%s" % (session_id or self._session_id),
                     limit=limit,
-                    max_chars=max_chars,
+                    max_chars=max(0, remaining),
                     complete_siblings=True,
                 )
-                rendered = self._store.render_packet(packet, max_chars=max_chars)
+                rendered = self._store.render_packet(packet, max_chars=max(0, remaining))
                 if rendered:
                     parts.append(rendered)
             except Exception:
                 pass
-        return "\n\n".join(parts)
+        return self._bounded_block("\n\n".join(parts), max_chars)
 
     def sync_turn(
         self,

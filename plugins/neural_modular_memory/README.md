@@ -9,10 +9,12 @@ Properties:
 - append-only, redacted L0 turn events;
 - contract-driven multi-module projections from each event;
 - source hash, scope, validity, confidence, applicability and anti-condition metadata;
-- bounded FTS5 retrieval plus same-source sibling completion;
+- bounded FTS5 retrieval plus same-source sibling completion, with one combined Brain + modular character budget;
 - explicit supersession/conflict edges;
-- cross-session consolidation and non-destructive decay/archive;
-- wraps the existing canonical `brainctl search` path;
+- source-counted `supported` state and cross-session consolidation; active contradiction blocks promotion;
+- `procedure`/`causal`/`decision` consolidation requires direct same-event evidence in every supporting session;
+- non-destructive decay/archive; recall only mutates activation telemetry (`access_count`, `last_accessed_at`, `activations`);
+- wraps the existing canonical `brainctl search` path and fails closed on timeout, non-zero exit, malformed JSON or invalid provenance;
 - no network, no external dispatch, no tool schemas, no authority grant.
 
 Activation:

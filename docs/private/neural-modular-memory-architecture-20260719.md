@@ -38,7 +38,7 @@ MemoryProjection = Project(
 1. L0 事件仅追加；投影可降权、归档、替代，但不可改写原始历史。
 2. 每个投影必须包含 `source_event_id/source_hash`、模块、抽象层、作用域、可信度、状态、适用条件、反条件。
 3. 同一事件可产生多个投影；模块契约不同，不以随机改写制造“不同抽象”。
-4. 工作记忆检索为 read-only、authority-neutral、reference-only；不得成为工具权限。
+4. 工作记忆检索为 authority-neutral、reference-only；业务事实与 L0 内容只读，允许仅写入 `access_count`/`last_accessed_at` 激活遥测，但不得改写事实、状态、权限或外部世界。
 5. 快速写入与慢速巩固分离；跨会话重复支持且无冲突才提升强度。
 6. 冲突不静默覆盖；保留 `contradicts/supersedes` 边和旧节点。
 7. L0 永不因遗忘删除；遗忘只影响投影的强度、活跃状态与检索资格。
@@ -201,8 +201,8 @@ correction: old --superseded_by--> new
 ```
 
 - `candidate`：单轮、单来源。
-- `supported`：单来源候选已被任务相关召回或获得附加支持，但仍未满足跨 session 巩固。
-- `consolidated`：至少两个独立 session 支持、无活跃冲突、达到置信/强度门槛。
+- `supported`：至少两个独立 source event 支持（可来自同一 session），但仍未满足跨 session 巩固；召回次数不能替代来源支持。
+- `consolidated`：至少两个独立 session 支持、无活跃冲突、达到置信/强度门槛；procedure/causal/decision 还必须在每个支持 session 具有同源 evidence 投影。
 - `contradicted`：存在未解决反证；默认不注入为稳定知识。
 - `archived`：低强度、过期或长期未用；仍可通过审计接口读取。
 
@@ -219,24 +219,24 @@ correction: old --superseded_by--> new
 | 验收项 | 代码证据 | 测试/运行证据 | 状态 |
 |---|---|---|---|
 | 多模块同源投影 | `store.py:111-169,229-304,331-367` | `test_memory_runtime.py:33`；实库 2 events→5 projections/8 edges | pass |
-| 幂等与溯源 | `store.py:174-228,253-304` | `test_memory_runtime.py:52`；召回读回含 `source_event`+`sha256` | pass |
-| 脱敏与本地隔离 | `store.py:17-24,50-62,103-109` | `test_memory_runtime.py:71`；私钥、token、Authorization 负测 | pass |
-| scope/时效/预算门禁 | `store.py:373-461` | `test_memory_runtime.py:89,136` | pass |
-| 冲突/替代 | `store.py:305-329` | `test_memory_runtime.py:98` | pass |
-| 双速巩固 | `store.py:463-499` | `test_memory_runtime.py:113` | pass |
+| 幂等与溯源 | `MemoryStore._insert_event`、`_project_event` | `test_ingest_is_idempotent_for_same_session_and_turn`、`test_same_turn_key_rejects_changed_content`；召回读回含 `source_event`+`sha256` | pass |
+| 脱敏与本地隔离 | `store.py:_SECRET_PATTERNS`、`redact_text` | 私钥、token、Authorization、AWS key、cookie、card number 负测 | pass |
+| scope/时效/预算门禁 | `MemoryStore.recall`、`NeuralModularMemoryProvider.prefetch` | scope 全矩阵、sibling expiry/reference-only、统一字符预算负测 | pass |
+| 冲突/替代 | `MemoryStore._apply_correction`、`consolidate` | 无关记忆不误伤、活跃 contradiction 禁止巩固 | pass |
+| 双速巩固 | `MemoryStore.consolidate` | 单源召回不升 supported；双 source/single session 仅 supported；双 session + 高风险模块 evidence 门禁 | pass |
 | 遗忘不删 L0 | `store.py:501-526` | `test_memory_runtime.py:123` | pass |
-| brainctl 兼容召回 | `provider.py:69-157` | `test_memory_runtime.py:158`；激活后 live prefetch=`True` | pass |
-| fail-closed/无权限扩张 | `provider.py:50-67,159-206` | `test_memory_runtime.py:194`；`get_tool_schemas=[]` | pass |
+| brainctl 兼容召回 | `NeuralModularMemoryProvider._brain_recall` | 合法 provenance；timeout/non-zero/invalid JSON/hash/line 全部 fail-closed | pass |
+| fail-closed/无权限扩张 | `prefetch`、`sync_turn`、`get_tool_schemas` | storage failure 返回空；`get_tool_schemas=[]`；authority-neutral 提示 | pass |
 | 活跃配置与数据库 | `config.yaml:406-412` | `hermes config check` exit 0；SQLite `integrity_check=ok` | pass |
 
 ### 运行证据（2026-07-19）
 
 - 实际运行解释器：`/Users/charles/.hermes/hermes-agent/venv/bin/python`。
-- focused + full tests：10 tests，全部 `OK`；`py_compile` exit 0。
+- focused + full tests：23 tests，Hermes venv 与 system Python 均全部 `OK`；100 次完整重复共 2300 tests，0 failure/0 error；`py_compile` exit 0。
 - provider discovery：同时发现 `localbrain` 与 `neural_modular_memory`；后者成功实例化且 `is_available=True`。
 - 配置读回：`memory.provider=neural_modular_memory`；`hermes config check` exit 0。
-- live local smoke：`has_modular=True`、`has_provenance=True`、召回包 1616 chars。
-- 实库：2 events、5 projections、8 edges、5 activations；`PRAGMA integrity_check=ok`。
+- live local smoke：`has_modular=True`、`has_provenance=True`、authority boundary=True、`get_tool_schemas=[]`、召回包 598 chars（统一预算内）。
+- 活跃 SQLite：4 events、10 projections、16 edges、12 activations；`PRAGMA integrity_check=ok`；L0 update/delete triggers 存在。
 - 回滚：`hermes config set memory.provider localbrain`；数据库与插件留存供审计。
 - Gate readback：`workflows/projects/hermes-neural-modular-memory/06-projection/architecture-gate-readback-20260719.md`。
 - 认证边界：上述只证明 default profile 本地实现与当前验收面；不证明生物等价、跨设备稳定性、长期质量或全局认证。
