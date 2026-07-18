@@ -15,7 +15,7 @@ Properties:
 - the provider keeps episodic/default turn projections in `session:*`, while explicit durable user preferences use a hashed profile/user `user:*` scope so independent sessions can consolidate without exposing a raw identity;
 - provider recall admits only the exact current session, its exact derived durable-user scope, and `global`; Store callers must explicitly supply any additional scope;
 - `procedure`/`causal`/`decision` consolidation requires direct same-event evidence in every supporting session;
-- non-destructive decay/archive; recall only mutates activation telemetry (`access_count`, `last_accessed_at`, `activations`);
+- non-destructive incremental decay/archive tracked per projection (`last_decayed_at`), so repeated maintenance at the same timestamp is idempotent; recall only mutates activation telemetry (`access_count`, `last_accessed_at`, `activations`);
 - wraps the existing canonical `brainctl search` path and fails closed on timeout, non-zero exit, malformed JSON or invalid provenance;
 - keeps a single active provider control plane: Local Brain remains a read-only canonical-document lane, while M³G owns fast turn events/projections under the same total recall budget; exact normalized cross-lane duplicates prefer the canonical Local Brain citation, without fuzzy semantic collapsing;
 - mirrors successful built-in `MEMORY.md`/`USER.md` mutations only as redacted, append-only `memory_write_receipts`; receipts are not projected or recalled, so explicit canonical memory is not duplicated in the prompt;

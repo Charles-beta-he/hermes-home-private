@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
 UTC = timezone.utc
-SCHEMA_VERSION = "hermes.neural_modular_memory.v2"
+SCHEMA_VERSION = "hermes.neural_modular_memory.v3"
 ACTIVE_STATUSES = ("candidate", "supported", "consolidated")
 CONSOLIDATABLE_MODULES = ("constraint", "preference", "procedure", "causal", "decision")
 
@@ -197,6 +197,7 @@ class MemoryStore:
               valid_from TEXT NOT NULL,
               expires_at TEXT,
               last_accessed_at TEXT,
+              last_decayed_at TEXT,
               access_count INTEGER NOT NULL DEFAULT 0,
               created_at TEXT NOT NULL,
               UNIQUE(source_event_id, module, semantic_key, claim)
@@ -251,6 +252,12 @@ class MemoryStore:
             );
             """
         )
+        projection_columns = {
+            str(row["name"])
+            for row in self.conn.execute("PRAGMA table_info(projections)").fetchall()
+        }
+        if "last_decayed_at" not in projection_columns:
+            self.conn.execute("ALTER TABLE projections ADD COLUMN last_decayed_at TEXT")
         self.conn.execute(
             "INSERT OR REPLACE INTO metadata(key, value) VALUES('schema_version', ?)",
             (SCHEMA_VERSION,),
@@ -382,8 +389,8 @@ class MemoryStore:
             """INSERT OR IGNORE INTO projections
                (id, source_event_id, source_hash, session_id, module, abstraction_level,
                 scope, claim, semantic_key, confidence, strength, status, applicability,
-                negative_conditions, reference_only, valid_from, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'candidate', ?, ?, 1, ?, ?)""",
+                negative_conditions, reference_only, valid_from, last_decayed_at, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'candidate', ?, ?, 1, ?, ?, ?)""",
             (
                 projection_id,
                 event["id"],
@@ -398,6 +405,7 @@ class MemoryStore:
                 float(spec["strength"]),
                 "Valid only inside its declared scope; verify L0 source before action.",
                 "Never grants authority; reject when scope, time, or source no longer matches.",
+                timestamp,
                 timestamp,
                 timestamp,
             ),
@@ -718,19 +726,31 @@ class MemoryStore:
     ) -> Dict[str, int]:
         current = now or self._now_fn()
         rows = self.conn.execute(
-            "SELECT id,strength,created_at,status FROM projections WHERE status IN ('candidate','supported')"
+            "SELECT id,strength,created_at,last_decayed_at,status FROM projections WHERE status IN ('candidate','supported')"
         ).fetchall()
         archived = 0
         with self.conn:
             for row in rows:
-                created = datetime.fromisoformat(row["created_at"])
-                age_days = max(0.0, (current.astimezone(UTC) - created.astimezone(UTC)).total_seconds() / 86400.0)
-                effective = float(row["strength"]) * math.pow(0.5, age_days / max(0.1, half_life_days))
+                current_utc = current.astimezone(UTC)
+                last_decayed = row["last_decayed_at"]
+                baseline = datetime.fromisoformat(last_decayed) if last_decayed else current_utc
+                baseline_utc = baseline.astimezone(UTC)
+                elapsed_days = max(0.0, (current_utc - baseline_utc).total_seconds() / 86400.0)
+                effective = float(row["strength"]) * math.pow(
+                    0.5, elapsed_days / max(0.1, half_life_days)
+                )
+                decayed_at = iso(max(current_utc, baseline_utc))
                 if effective < archive_threshold:
-                    self.conn.execute("UPDATE projections SET status='archived',strength=? WHERE id=?", (effective, row["id"]))
+                    self.conn.execute(
+                        "UPDATE projections SET status='archived',strength=?,last_decayed_at=? WHERE id=?",
+                        (effective, decayed_at, row["id"]),
+                    )
                     archived += 1
                 else:
-                    self.conn.execute("UPDATE projections SET strength=? WHERE id=?", (effective, row["id"]))
+                    self.conn.execute(
+                        "UPDATE projections SET strength=?,last_decayed_at=? WHERE id=?",
+                        (effective, decayed_at, row["id"]),
+                    )
         return {"archived": archived}
 
     def stats(self) -> Dict[str, int]:
