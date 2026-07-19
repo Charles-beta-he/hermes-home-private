@@ -47,7 +47,7 @@ MemoryProjection = Project(
 10. 失败时 fail closed：不注入、不写远端、不阻塞主会话。
 11. `MemoryManager.sync_all()` 在后台线程执行；SQLite 连接必须允许跨线程使用，并以同一进程内的可重入互斥锁串行化完整读写事务，禁止只关闭 SQLite 线程检查而不治理 recall/write 并发。
 12. MemoryManager shutdown 是 terminal 且有界的：submit-vs-shutdown 原子化，已接收任务排空后才关闭 provider，late sync 可观察地拒绝，provider teardown 不得无界等待 SQLite 操作锁；shutdown drain 尚未完成时 `flush_pending()` 不得提前返回成功。
-13. Built-in write bridge 仅接受工具结构化返回的 `success=true && changed=true`，且只镜像实际执行的顶层 ABI 操作；successful no-op 和未执行的请求字段不得生成 receipt。
+13. Built-in write bridge 仅接受工具结构化返回的 `success=true && changed=true`；单操作镜像实际执行的顶层 ABI 操作，batch 只按 canonical `committed_operation_indexes` 镜像实际提交项，并以与 MemoryStore 相同的规范化值写 receipt；successful no-op、未提交 batch 项和未执行请求字段不得生成 receipt。
 
 ### 验收标准
 
@@ -262,7 +262,7 @@ correction: old --superseded_by--> new
 | 召回不自强化 | `MemoryStore.recall` activation telemetry | strength 召回前后不变；只增加 access/activation | pass |
 | 遗忘不删 L0 | `MemoryStore.decay`、`last_decayed_at`、L0 triggers | 同一时刻重复衰减幂等，后续仅计算新增时间区间；弱 projection 归档且 event 仍在；数据库拒绝 event update/delete | pass |
 | 唯一 provider 控制面 | Hermes loader/`MemoryManager` + `NeuralModularMemoryProvider` | 活跃配置 `memory.provider=neural_modular_memory`；`get_tool_schemas=[]` | pass |
-| built-in 显式记忆闭环 | built-in `changed` receipt、`record_memory_write`、`on_memory_write`、MemoryManager bridge | 仅 `success=true && changed=true` 的顶层实际操作追加；duplicate/no-op 与伪 `operations` 字段负测不追加 | pass |
+| built-in 显式记忆闭环 | built-in `changed`/`committed_operation_indexes` receipt、`record_memory_write`、`on_memory_write`、MemoryManager bridge | 单操作仅在 `success=true && changed=true` 时追加；batch 仅镜像 canonical attested committed indexes，并使 `content`/`old_text` receipt 与 MemoryStore 规范化后的提交值一致；duplicate/no-op、未提交项与未执行请求字段不追加 | pass |
 | 后台线程落盘、失败可见性与 shutdown 竞争 | `MemoryStore._conn_lock`、`_serialized_connection`、MemoryManager lifecycle/counters/finisher | 已复现 `FLUSH=True/events=0`、late-sync executor recreation 与超过 drain deadline；修复后真实 manager 落盘、失败注入、late rejection、bounded close 回归通过 | pass |
 | session/context 生命周期 | `sync_turn` primary gate、`on_session_switch` | child/subagent 不摄取；session switch 后只写新 session | pass |
 | Local Brain 联邦召回 | `_brain_recall`、`prefetch` | 合法 path/line/hash；timeout/non-zero/invalid JSON/hash/path/line fail-closed | pass |
