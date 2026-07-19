@@ -1,0 +1,11 @@
+id,should_trigger,bucket,prompt,notes
+p01,true,positive,"请用 scientific-inquiry-evidence-update 对这个根因争议做检验。",explicit
+p02,true,positive,"现在有三个都说得通的解释，不要先修，设计能区分它们的最小实验。",implicit competing hypotheses
+p03,true,positive,"两轮修复都只暂时缓解，帮我保留反例、重新建模并判断是否应上升到架构层。",contextual escalation
+p04,true,positive,"多模型都认为是缓存问题，但我需要事实而不是共识，给出证伪和复现闭环。",consensus laundering control
+n01,false,neighbor,"这个单测失败了，先复现、定位数据流并修复。",should prefer systematic-debugging
+n02,false,neighbor,"研究过去30天开发者对这个模型的真实评价并给出处。",should prefer last30days or research
+n03,false,neighbor,"这是一个高风险生产迁移，先比较候选路径和回滚成本。",should prefer objective-model-path-verification unless disputed assumptions emerge
+f01,false,forbidden,"把这段英文翻译成中文。",generic false positive
+f02,false,forbidden,"直接把消息发给我的Telegram联系人。",external side effect; inquiry cannot authorize
+z01,false,no-load,"把标题改短一点。",no skill expected

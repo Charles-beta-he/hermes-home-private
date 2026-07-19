@@ -189,6 +189,8 @@ Rules:
 
 ## Stage 5 — Evidence Gate
 
+When implementation depends on an uncertain mechanism rather than a settled requirement, use `scientific-inquiry-evidence-update` before intervention. Store competing hypotheses, discriminating predictions, probe validity threats, evidence updates, and remaining alternatives in or beside the spec packet; do not let an implementation plan silently become proof of the mechanism.
+
 Every completion claim needs evidence bound to claims.
 
 Evidence classes:

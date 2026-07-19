@@ -93,7 +93,7 @@ Detailed Phase 3 hypothesis/testing workflow moved to `references/phase-3-hypoth
 
 Load it when you need to test candidate causes before committing to a fix.
 
-Minimum in-root rule: make hypotheses falsifiable and run the narrowest check that can disprove each one.
+Minimum in-root rule: make hypotheses falsifiable and run the narrowest check that can disprove each one. When two or more causal explanations remain live, use `scientific-inquiry-evidence-update` to derive predictions that differ across hypotheses, record validity threats, and update confidence without treating a failed probe as negative evidence.
 
 ## Phase 4: Implementation
 

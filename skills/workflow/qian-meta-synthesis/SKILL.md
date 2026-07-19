@@ -82,6 +82,7 @@ meta_synthesis_session:
 3. Convert qualitative claims into falsifiers:
    - If claim is true, what observation/test should pass?
    - If claim is false, what counterexample would disprove it?
+   - When several explanations remain live, apply `scientific-inquiry-evidence-update` to derive competing predictions and select a discriminating probe; expert agreement alone does not close the claim.
 4. Route engineering gaps to dev only when an artifact is required:
    - script, CLI, connector, browser harness, API/MCP bridge, dashboard, validator, or regression test.
 5. Preserve dissent; do not collapse minority warnings into a “consensus” summary.

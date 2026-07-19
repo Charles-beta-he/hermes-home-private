@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "inquiry_id": "class-level-kernel-example",
+  "mode": "standard",
+  "problem": {
+    "question": "Does a capability library need a distinct class-level inquiry kernel rather than only domain-specific procedures?",
+    "decision_at_stake": "Create a reusable kernel or patch only existing domain procedures.",
+    "scope": "A capability library with several domain workflows; example data only.",
+    "non_goals": ["Replace domain workflows", "Authorize side effects", "Claim universal applicability"],
+    "constraints": ["Avoid asset proliferation", "Require negative routing cases and readback"],
+    "authority_boundary": "This example authorizes no external, destructive, credential, payment, production, or legal/device actions."
+  },
+  "baseline": {
+    "verified": ["Several domain procedures contain partial hypothesis-testing behavior", "No class-level owner is currently indexed"],
+    "reported": [],
+    "inferred": ["The possible gap is a cross-domain reasoning contract"],
+    "missing": ["Fresh model routing evidence"]
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "claim": "A distinct class-level inquiry kernel is justified.",
+      "mechanism": "Domain procedures contain fragments but do not expose one reusable competing-hypothesis, discriminating-probe, calibrated-update, reproduction contract.",
+      "assumptions": ["Cross-domain use recurs", "A narrow trigger avoids neighbor theft"],
+      "applies_when": ["Material uncertainty changes a consequential decision"],
+      "anti_conditions": ["Simple lookup", "Routine execution after uncertainty is resolved"],
+      "predictions": ["P1"],
+      "falsifier": "An existing procedure already supplies the complete cross-domain contract with clear routing boundaries.",
+      "status": "leading"
+    },
+    {
+      "id": "H0",
+      "claim": "Existing domain procedures are sufficient.",
+      "mechanism": "Their composition already produces the required behavior without a separate routing entry.",
+      "assumptions": ["Agents reliably compose all fragments", "No common invariant is needed"],
+      "applies_when": ["The behavior occurs only inside existing domains"],
+      "anti_conditions": ["The same inquiry contract recurs across domains"],
+      "predictions": ["P1"],
+      "falsifier": "A capability matrix shows a stable cross-domain gap and a narrow non-overlapping trigger.",
+      "status": "weakened"
+    }
+  ],
+  "probes": [
+    {
+      "id": "P1",
+      "question": "Does one existing procedure own the complete cross-domain inquiry contract?",
+      "target_variable": "Trigger ownership and workflow coverage in the capability graph",
+      "controlled_variables": ["Separate trigger ownership from incidental mention of falsifiers"],
+      "exact_context": {
+        "artifact": "capability-library-root",
+        "version": "current readback",
+        "environment": "isolated local evaluation",
+        "input": "relevant procedure readbacks and keyword search"
+      },
+      "predicted_results": {
+        "H1": "No existing procedure owns the complete contract; fragments are distributed.",
+        "H0": "One existing procedure already owns the complete contract and adequate routing boundaries."
+      },
+      "validity_threats": ["Unindexed procedures", "Text presence does not prove routing behavior"],
+      "stop_condition": "Stop after named neighbors and a capability-wide search are covered.",
+      "rollback": "Remove the candidate and redirect useful content if review shows duplication.",
+      "evidence_artifact": "Readbacks, search results, routing matrix, and graph report",
+      "result": "Fragments are distributed; no class-level owner was found."
+    }
+  ],
+  "evidence_updates": [
+    {
+      "probe_id": "P1",
+      "observed": "No single neighbor owns the complete cross-domain contract.",
+      "updates": {"H1": "strengthened", "H0": "weakened"},
+      "limits": ["Fresh cross-model routing remains untested"]
+    }
+  ],
+  "intervention": {
+    "decision": "Create a narrow class-level candidate with negative-space routing.",
+    "targeted_mechanism": "Expose the shared inquiry invariant once while leaving domain procedures with their owners.",
+    "reversibility": "New local artifact plus small pointer patches.",
+    "separate_authority_gate": "required for runtime, external, production, destructive, credential, payment, or lifecycle mutation",
+    "verification": ["frontmatter/readback", "validator tests", "routing matrix", "graph check", "independent review"]
+  },
+  "reproduction": {
+    "baseline_failure": "No general inquiry kernel was indexed.",
+    "focused_success": "The candidate exposes the complete contract and a packet validator.",
+    "negative_tests": ["Simple translation stays general", "Ordinary bug fixing stays with debugging", "External send gains no authority"],
+    "independent_readback": "Required before ratification.",
+    "strongest_counterexample": "The candidate may increase route confusion without incremental behavioral value."
+  },
+  "closure": {
+    "state": "provisional",
+    "supported_claims": ["A bounded class-level candidate is justified by the observed capability gap"],
+    "remaining_alternatives": ["Absorb into an existing umbrella if routing evaluation shows neighbor theft"],
+    "known_limits": ["No fresh cross-model routing run", "No runtime prompt integration claimed"],
+    "next_discriminating_probe": "Run structural tests, graph check, and independent overlap/routing review.",
+    "writeback": {
+      "landing_zone": "reusable workflow skill",
+      "applicability": ["Consequential uncertain problems with competing explanations"],
+      "anti_conditions": ["Simple lookups", "Routine one-step execution", "Pure brainstorming without evaluation"],
+      "falsifier": "Routing tests show persistent neighbor theft or no incremental value.",
+      "demotion_path": "Absorb useful references into an existing umbrella and delete the candidate with a redirect."
+    }
+  }
+}

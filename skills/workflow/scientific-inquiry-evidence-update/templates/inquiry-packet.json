@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "inquiry_id": "replace-me",
+  "mode": "standard",
+  "problem": {
+    "question": "Which disputed mechanism or decision must be resolved?",
+    "decision_at_stake": "What action depends on the answer?",
+    "scope": "Exact system, population, artifact, environment, and time boundary",
+    "non_goals": [],
+    "constraints": [],
+    "authority_boundary": "Inquiry does not authorize external, destructive, credential, payment, production, or legal/device actions."
+  },
+  "baseline": {
+    "verified": [],
+    "reported": [],
+    "inferred": [],
+    "missing": []
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "claim": "Leading mechanism",
+      "mechanism": "How the claimed cause produces the observation",
+      "assumptions": [],
+      "applies_when": [],
+      "anti_conditions": [],
+      "predictions": ["P1"],
+      "falsifier": "A valid observation that would weaken or falsify H1",
+      "status": "still_live"
+    },
+    {
+      "id": "H0",
+      "claim": "Null, measurement error, environment mismatch, or wrong representation",
+      "mechanism": "Alternative route that explains the same observation",
+      "assumptions": [],
+      "applies_when": [],
+      "anti_conditions": [],
+      "predictions": ["P1"],
+      "falsifier": "A valid observation that would weaken or falsify H0",
+      "status": "still_live"
+    }
+  ],
+  "probes": [
+    {
+      "id": "P1",
+      "question": "What result distinguishes the live hypotheses?",
+      "target_variable": "Exact variable and owner/consumer boundary",
+      "controlled_variables": [],
+      "exact_context": {
+        "artifact": "",
+        "version": "",
+        "environment": "",
+        "input": ""
+      },
+      "predicted_results": {
+        "H1": "",
+        "H0": ""
+      },
+      "validity_threats": [],
+      "stop_condition": "",
+      "rollback": "",
+      "evidence_artifact": "",
+      "result": "not_run"
+    }
+  ],
+  "evidence_updates": [],
+  "intervention": {
+    "decision": "not_selected",
+    "targeted_mechanism": "",
+    "reversibility": "",
+    "separate_authority_gate": "required",
+    "verification": []
+  },
+  "reproduction": {
+    "baseline_failure": "",
+    "focused_success": "",
+    "negative_tests": [],
+    "independent_readback": "",
+    "strongest_counterexample": ""
+  },
+  "closure": {
+    "state": "inconclusive",
+    "supported_claims": [],
+    "remaining_alternatives": [],
+    "known_limits": [],
+    "next_discriminating_probe": "",
+    "writeback": {
+      "landing_zone": "none",
+      "applicability": [],
+      "anti_conditions": [],
+      "falsifier": "",
+      "demotion_path": ""
+    }
+  }
+}
