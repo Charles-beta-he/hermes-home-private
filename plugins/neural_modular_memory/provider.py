@@ -251,8 +251,11 @@ class NeuralModularMemoryProvider(MemoryProvider):
                 scope="session:%s" % actual_session,
                 durable_scope=self._durable_scope or None,
             )
-        except Exception:
-            return None
+        except Exception as exc:
+            # MemoryManager executes sync_turn off-thread and records provider
+            # failures. Propagate so flush_pending() cannot report a durability
+            # barrier after a silently failed store write.
+            raise RuntimeError("neural modular memory turn sync failed") from exc
         return None
 
     def on_session_switch(

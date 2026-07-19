@@ -5,7 +5,9 @@ import json
 import math
 import re
 import sqlite3
+import threading
 from datetime import datetime, timezone
+from functools import wraps
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
@@ -147,12 +149,27 @@ def correction_target_tokens(text: str) -> set[str]:
     return set()
 
 
+def _serialized_connection(method: Callable[..., Any]) -> Callable[..., Any]:
+    """Serialize access to the store's shared SQLite connection."""
+    @wraps(method)
+    def wrapped(self: "MemoryStore", *args: Any, **kwargs: Any) -> Any:
+        with self._conn_lock:
+            return method(self, *args, **kwargs)
+
+    return wrapped
+
+
 class MemoryStore:
     def __init__(self, path: Path, now_fn: Callable[[], datetime] = utc_now):
         self.path = Path(path).expanduser()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._now_fn = now_fn
-        self.conn = sqlite3.connect(str(self.path), timeout=5.0)
+        self._conn_lock = threading.RLock()
+        self.conn = sqlite3.connect(
+            str(self.path),
+            timeout=5.0,
+            check_same_thread=False,
+        )
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.execute("PRAGMA foreign_keys=ON")
@@ -290,6 +307,7 @@ class MemoryStore:
         )
         self.conn.commit()
 
+    @_serialized_connection
     def close(self) -> None:
         try:
             self.conn.close()
@@ -328,6 +346,7 @@ class MemoryStore:
         )
         return event_id
 
+    @_serialized_connection
     def record_memory_write(
         self,
         action: str,
@@ -501,6 +520,7 @@ class MemoryStore:
                     (new_row["id"], old_row["id"], created_at),
                 )
 
+    @_serialized_connection
     def ingest_turn(
         self,
         session_id: str,
@@ -551,6 +571,7 @@ class MemoryStore:
         except sqlite3.Error:
             return set()
 
+    @_serialized_connection
     def recall(
         self,
         query: str,
@@ -662,6 +683,7 @@ class MemoryStore:
         rendered = "\n".join(lines)
         return rendered if len(lines) > 1 else ""
 
+    @_serialized_connection
     def consolidate(self, min_sessions: int = 2) -> Dict[str, int]:
         groups = self.conn.execute(
             """SELECT claim.module,claim.scope,claim.semantic_key,
@@ -771,6 +793,7 @@ class MemoryStore:
                         supported += 1
         return {"consolidated": consolidated, "supported": supported}
 
+    @_serialized_connection
     def decay(
         self,
         now: Optional[datetime] = None,
@@ -806,6 +829,7 @@ class MemoryStore:
                     )
         return {"archived": archived}
 
+    @_serialized_connection
     def stats(self) -> Dict[str, int]:
         return {
             "events": int(self.conn.execute("SELECT COUNT(*) FROM events").fetchone()[0]),
@@ -817,6 +841,7 @@ class MemoryStore:
             ),
         }
 
+    @_serialized_connection
     def _list(self, table: str, where: str = "", params: Sequence[Any] = ()) -> List[Dict[str, Any]]:
         if table not in {
             "events",

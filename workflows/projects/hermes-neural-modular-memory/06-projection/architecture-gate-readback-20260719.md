@@ -109,6 +109,43 @@ The eight unrelated pre-existing stage-0 blobs must remain byte-identical before
 - database rollback: preserve the active database for audit and restore only from the verified pre-v2 backup under a separate explicit recovery decision.
 - `/tmp/hermes-memory-commit-repair.6B32FC` remains untouched.
 
+## 2026-07-19 post-release amendment: background-thread persistence and bounded runtime dependency
+
+Independent adversarial review of remote commit `4aa5140481cff9f5397a3717f3fcc4331ee619f7` found two P1 blockers. This section supersedes that commit's earlier release gate; it does not retroactively certify it.
+
+Root-cause evidence:
+
+- `MemoryStore` created its SQLite connection on the initialization thread with SQLite's default thread affinity.
+- `MemoryManager.sync_all()` executes `provider.sync_turn()` on its background executor; the provider intentionally catches storage failures to preserve the chat path.
+- Exact RED reproduction returned `flush_pending=True` while a fresh database readback showed `events=0` and `projections=0`.
+- A second RED test concurrently called `recall()` and `ingest_turn()` and raised `sqlite3.ProgrammingError` for cross-thread connection use.
+
+Repair and negative evidence:
+
+- `MemoryStore` now creates the connection with `check_same_thread=False` and owns one `threading.RLock`.
+- Every public connection-bearing operation (`close`, memory receipt write, turn ingest, recall, consolidate, decay, stats and list projection/event access) holds that lock for the full operation/transaction; this is not a thread-check-only workaround.
+- The real `MemoryManager.sync_all() -> flush_pending()` regression reads back two events and at least two projections from a newly opened store.
+- The concurrent recall/write regression completes both futures and reads back four events.
+- Plugin suite after repair: 48 tests, 0 failures/errors; includes the cross-thread persistence, concurrent recall/write, and observable background-failure regressions.
+
+Runtime dependency scope repair:
+
+- The already-published outer baseline points to private runtime `f07ef1b9c5bfbf99478fd2a437cf59df851e5bf9`; the hotfix must not downgrade that dependency to the historical `fff5d19e...` pin.
+- The final runtime hotfix is one commit on top of that live private baseline: `1d0477fb0dc3103ea9f548d2806c14926f6d1037`.
+- The exact range `f07ef1b9...1d0477fb0` changes five memory-lifecycle files: structured `changed` receipts, the `MemoryManager` durability/lifecycle gate, daemon-executor Python 3.14 compatibility, and focused tests. The two built-in memory-tool bridge call sites already exist in the live baseline and were verified against the updated manager contract.
+- Earlier minimal candidates were invalidated by executable review counterexamples: duplicate add emitted a false receipt, an unexecuted request `operations` field overrode the real top-level operation, shutdown could recreate its executor, and provider close could exceed the drain deadline.
+- Remediation requires `success=true && changed=true`, top-level ABI mirroring only, terminal submit-vs-shutdown state, bounded off-thread provider teardown after accepted work drains, rejection/failure counters, and a `flush_pending()` barrier that returns false for newly observed failures, rejected work, or a still-running shutdown drain.
+- Fresh runtime memory-focused suites after remediation: 189 passed. A broader `tests/agent` plus memory-tool run on the exact runtime commit produced 4224 passed, 1 skipped, and 8 failures: four unrelated failures reproduce on the unchanged baseline (three Anthropic keychain mock tests plus reliability-harness distribution), while four vision-routing failures pass when rerun in fresh isolated candidate processes and are full-suite order contamination. No failing test imports or exercises the five-file memory delta.
+- The outer hotfix points its gitlink to the live-baseline hotfix commit, so this repair adds one scoped runtime commit rather than introducing or reverting the pre-existing private runtime history.
+
+Exact rollback:
+
+- Outer code rollback: revert only the hotfix commit after it exists; do not reset/clean the mixed main worktree.
+- Runtime dependency rollback: restore gitlink `f07ef1b9c5bfbf99478fd2a437cf59df851e5bf9`; this removes the hotfix durability/error semantics and must only be used together with disabling `memory.provider=neural_modular_memory`.
+- Operational disable: `hermes config set memory.provider localbrain`.
+
+This amendment is deterministic local evidence. Push remains blocked until the minimal runtime commit is reachable from the private runtime remote, the exact outer candidate has clean full regression evidence, and an independent hash-bound verifier returns no P0/P1 blocker.
+
 ## Certification boundary
 
 This packet supports local implementation and deterministic verification only until a new immutable commit is created and an independent verifier returns a hash-bound verdict. Earlier verifier votes are historical and cannot certify this integration slice. Even a new PASS will not establish global certification, production recovery readiness, cross-device durability or long-horizon retrieval quality.

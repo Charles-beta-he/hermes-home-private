@@ -45,6 +45,9 @@ MemoryProjection = Project(
 8. profile、session、task、project、user、domain、global 作用域必须可判定；默认 session。
 9. 任何召回包都有字符预算、条目上限、来源锚点和明确边界。
 10. 失败时 fail closed：不注入、不写远端、不阻塞主会话。
+11. `MemoryManager.sync_all()` 在后台线程执行；SQLite 连接必须允许跨线程使用，并以同一进程内的可重入互斥锁串行化完整读写事务，禁止只关闭 SQLite 线程检查而不治理 recall/write 并发。
+12. MemoryManager shutdown 是 terminal 且有界的：submit-vs-shutdown 原子化，已接收任务排空后才关闭 provider，late sync 可观察地拒绝，provider teardown 不得无界等待 SQLite 操作锁；shutdown drain 尚未完成时 `flush_pending()` 不得提前返回成功。
+13. Built-in write bridge 仅接受工具结构化返回的 `success=true && changed=true`，且只镜像实际执行的顶层 ABI 操作；successful no-op 和未执行的请求字段不得生成 receipt。
 
 ### 验收标准
 
@@ -60,6 +63,7 @@ MemoryProjection = Project(
 - 时间衰减按 projection 的 `last_decayed_at` 增量计算；同一时间戳重复 maintenance 幂等，可归档低强度投影，但事件计数不减少。
 - Local Brain 原有 `brainctl search` 召回仍保留，并与新运行时统一注入。
 - 自动测试覆盖正向、幂等、溯源、作用域、脱敏、冲突、巩固、遗忘、预算、错误关闭。
+- 真实 `MemoryManager.sync_all() -> flush_pending()` 后必须读回两条 L0 事件；并发 recall/write 不抛出跨线程异常且事件计数一致。
 
 ### 风险与回滚
 
@@ -189,6 +193,7 @@ score = lexical_relevance
 - 新库位于 `$HERMES_HOME/memory/neural_modular.sqlite3`，profile 自动隔离。
 - Provider 默认允许精确当前 `session:*`、由 gateway user/profile identity 单向摘要得到的精确 `user:*`、以及 `global`；原始 identity 不进入 scope。仅显式稳定 preference 和显式 correction 投影进入 durable user scope，普通 episodic/turn 投影不提升。
 - `sync_turn` 只做本地、确定性、快速写入；不调用 LLM、网络或工具。
+- `sync_turn` 由 `MemoryManager` 后台单工作线程调度；`MemoryStore` 共享连接使用 `check_same_thread=False` 配合 `RLock` 对每个公开数据库操作的完整事务串行化，`close()` 同样受锁保护。
 - `prefetch` 输出 authority-neutral/reference-only 记忆包；不会增加工具 schema，不改变 prompt cache 静态前缀。
 - built-in memory、USER、skills、project profiles 仍按现有治理工具显式写入；插件只提供候选证据，不自动提升。
 
@@ -257,7 +262,8 @@ correction: old --superseded_by--> new
 | 召回不自强化 | `MemoryStore.recall` activation telemetry | strength 召回前后不变；只增加 access/activation | pass |
 | 遗忘不删 L0 | `MemoryStore.decay`、`last_decayed_at`、L0 triggers | 同一时刻重复衰减幂等，后续仅计算新增时间区间；弱 projection 归档且 event 仍在；数据库拒绝 event update/delete | pass |
 | 唯一 provider 控制面 | Hermes loader/`MemoryManager` + `NeuralModularMemoryProvider` | 活跃配置 `memory.provider=neural_modular_memory`；`get_tool_schemas=[]` | pass |
-| built-in 显式记忆闭环 | `record_memory_write`、`on_memory_write`、MemoryManager bridge | committed/non-staged 才追加；receipt 脱敏、不可变、不进入 event/projection/FTS/recall | pass |
+| built-in 显式记忆闭环 | built-in `changed` receipt、`record_memory_write`、`on_memory_write`、MemoryManager bridge | 仅 `success=true && changed=true` 的顶层实际操作追加；duplicate/no-op 与伪 `operations` 字段负测不追加 | pass |
+| 后台线程落盘、失败可见性与 shutdown 竞争 | `MemoryStore._conn_lock`、`_serialized_connection`、MemoryManager lifecycle/counters/finisher | 已复现 `FLUSH=True/events=0`、late-sync executor recreation 与超过 drain deadline；修复后真实 manager 落盘、失败注入、late rejection、bounded close 回归通过 | pass |
 | session/context 生命周期 | `sync_turn` primary gate、`on_session_switch` | child/subagent 不摄取；session switch 后只写新 session | pass |
 | Local Brain 联邦召回 | `_brain_recall`、`prefetch` | 合法 path/line/hash；timeout/non-zero/invalid JSON/hash/path/line fail-closed | pass |
 | 跨来源去重 | `_suppress_modular_duplicates` | 已注入 canonical excerpt 精确去重；被预算截断而未注入的 Brain hit 不抑制 M³G | pass |

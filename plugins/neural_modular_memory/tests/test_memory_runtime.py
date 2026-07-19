@@ -6,6 +6,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -70,6 +71,33 @@ class MemoryStoreTests(unittest.TestCase):
             for p in self.store.list_projections()
         }
         self.assertEqual(len(unique), self.store.stats()["projections"])
+
+    def test_store_serializes_concurrent_recall_and_write_across_threads(self) -> None:
+        self.store.ingest_turn(
+            session_id="seed",
+            user_text="User prefers concise replies.",
+            assistant_text="Preference recorded.",
+            scope="session:seed",
+        )
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            recall_future = executor.submit(
+                self.store.recall,
+                "concise replies",
+                "session:seed",
+            )
+            write_future = executor.submit(
+                self.store.ingest_turn,
+                "next",
+                "User needs local storage.",
+                "Local storage selected.",
+                "session:next",
+            )
+            recalled = recall_future.result(timeout=5)
+            write_future.result(timeout=5)
+
+        self.assertTrue(recalled)
+        self.assertEqual(4, self.store.stats()["events"])
 
     def test_same_turn_key_rejects_changed_content(self) -> None:
         self.store.ingest_turn(
@@ -786,15 +814,27 @@ class ProviderTests(unittest.TestCase):
             manager = MemoryManager()
             manager.add_provider(provider)
             manager.notify_memory_tool_write(
-                json.dumps({"success": True}),
+                json.dumps({"success": True, "changed": True}),
                 {
+                    "action": "replace",
                     "target": "memory",
-                    "operations": [
-                        {"action": "replace", "content": "new value", "old_text": "old value"},
-                        {"action": "remove", "old_text": "obsolete value"},
-                    ],
+                    "content": "new value",
+                    "old_text": "old value",
                 },
                 build_metadata=lambda: {"session_id": "s1", "write_origin": "memory_tool"},
+            )
+            manager.notify_memory_tool_write(
+                json.dumps({"success": True, "changed": True}),
+                {
+                    "action": "remove",
+                    "target": "memory",
+                    "old_text": "obsolete value",
+                },
+                build_metadata=lambda: {"session_id": "s1", "write_origin": "memory_tool"},
+            )
+            manager.notify_memory_tool_write(
+                json.dumps({"success": True, "changed": False}),
+                {"action": "add", "target": "memory", "content": "no-op must not be mirrored"},
             )
             manager.notify_memory_tool_write(
                 json.dumps({"success": False}),
@@ -809,6 +849,66 @@ class ProviderTests(unittest.TestCase):
             self.assertIn("obsolete value", receipts[1]["metadata_redacted"])
             self.assertNotIn("must not be mirrored", json.dumps(receipts))
             store.close()
+
+    def test_memory_manager_background_sync_persists_turn(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            store_path = home / "memory.sqlite3"
+            provider = NeuralModularMemoryProvider(
+                {
+                    "brainctl_path": str(home / "missing-brainctl.py"),
+                    "store_path": str(store_path),
+                }
+            )
+            provider.initialize(
+                "s1",
+                hermes_home=str(home),
+                agent_context="primary",
+                agent_identity="default",
+            )
+            manager = MemoryManager()
+            manager.add_provider(provider)
+
+            manager.sync_all(
+                "User prefers concise replies.",
+                "Acknowledged and recorded.",
+                session_id="s1",
+            )
+            self.assertTrue(manager.flush_pending(timeout=5))
+            provider.shutdown()
+
+            store = MemoryStore(store_path)
+            self.assertEqual(2, store.stats()["events"])
+            self.assertGreaterEqual(store.stats()["projections"], 2)
+            store.close()
+
+    def test_memory_manager_background_sync_failure_is_observable(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            provider = NeuralModularMemoryProvider(
+                {
+                    "brainctl_path": str(home / "missing-brainctl.py"),
+                    "store_path": str(home / "memory.sqlite3"),
+                }
+            )
+            provider.initialize(
+                "s1",
+                hermes_home=str(home),
+                agent_context="primary",
+                agent_identity="default",
+            )
+            manager = MemoryManager()
+            manager.add_provider(provider)
+            store_handle = provider._store
+            self.assertIsNotNone(store_handle)
+            if store_handle is None:
+                self.fail("provider store was not initialized")
+
+            with patch.object(store_handle, "ingest_turn", side_effect=RuntimeError("injected")):
+                self.assertTrue(manager.sync_all("must fail", "response", session_id="s1"))
+                self.assertFalse(manager.flush_pending(timeout=5))
+            self.assertEqual(1, manager.background_status()["failures"])
+            manager.shutdown_all()
 
     def test_provider_skips_non_primary_turn_writes_and_tracks_session_switch(self) -> None:
         with tempfile.TemporaryDirectory() as td:
