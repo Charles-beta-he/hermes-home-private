@@ -164,6 +164,39 @@ class InquiryPacketValidatorTests(unittest.TestCase):
         packet["closure"]["writeback"].pop("demotion_path")
         self.assertIn("closure.writeback.demotion_path must be non-empty", validator.validate(packet))
 
+    def test_closure_supported_claim_ids_reject_unknown_id(self) -> None:
+        packet = example()
+        packet["closure"]["supported_claim_ids"] = ["H9"]
+        self.assertTrue(any("supported_claim_ids has unknown hypotheses" in e for e in validator.validate(packet)))
+
+    def test_closure_supported_claim_ids_reject_duplicates(self) -> None:
+        packet = example()
+        packet["closure"]["supported_claim_ids"] = ["H1", "H1"]
+        self.assertIn("closure.supported_claim_ids must contain unique values", validator.validate(packet))
+
+    def test_ratified_requires_nonempty_supported_claim_ids(self) -> None:
+        packet = example()
+        packet["closure"]["state"] = "ratified"
+        packet["closure"]["supported_claim_ids"] = []
+        packet["evidence_ledger"][0]["freshness"] = "fresh"
+        self.assertIn("ratified closure requires non-empty supported_claim_ids", validator.validate(packet))
+
+    def test_ratified_requires_evidence_for_each_supported_claim(self) -> None:
+        packet = example()
+        packet["closure"]["state"] = "ratified"
+        packet["closure"]["supported_claim_ids"] = ["H1", "H0"]
+        packet["evidence_ledger"][0]["claim_ids"] = ["H1"]
+        packet["evidence_ledger"][0]["freshness"] = "fresh"
+        packet["evidence_updates"][0]["updates"] = {"H1": "strengthened"}
+        self.assertTrue(any("supported claims lack qualifying reproduction evidence" in e for e in validator.validate(packet)))
+
+    def test_ratified_accepts_claim_complete_reproduction_evidence(self) -> None:
+        packet = example()
+        packet["closure"]["state"] = "ratified"
+        packet["closure"]["supported_claim_ids"] = ["H1", "H0"]
+        packet["evidence_ledger"][0]["freshness"] = "fresh"
+        self.assertEqual([], validator.validate(packet))
+
     def test_ratified_requires_fresh_verified_reproduction_evidence(self) -> None:
         packet = example()
         packet["closure"]["state"] = "ratified"

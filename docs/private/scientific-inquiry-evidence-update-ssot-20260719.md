@@ -2,7 +2,7 @@
 
 Date: 2026-07-19
 Scope: local Hermes skill ecosystem only
-Status: v1.1 second amendment implemented and locally verified after independent re-review found residual evidence/probe relation gaps; final independent re-review pending; full multi-model certification remains degraded by planner quorum
+Status: v1.2 third amendment implemented and locally verified after exact-HEAD review found ratified-claim evidence laundering; final independent ratification pending; full multi-model certification remains degraded by planner quorum
 
 ## Goal
 
@@ -72,9 +72,9 @@ Closure requires fresh evidence for:
 
 ## Current evidence
 
-- Validator unit tests: 28 passed after schema 1.1 migration and adversarial evidence/probe relation repair.
-- Valid schema 1.1 example: accepted with zero errors.
-- Incomplete schema 1.1 template: rejected with 21 structural/provenance errors until populated.
+- Validator unit tests: 33 passed after schema 1.2 migration and adversarial claim/probe/evidence relation repair.
+- Valid schema 1.2 example: accepted with zero errors.
+- Incomplete schema 1.2 template remains fail-closed until populated.
 - Routing matrix: 10 cases, IDs unique, required fields present; actual cross-model routing remains advisory/unexercised.
 - Scoped graph projection: no cycle, excessive depth, missing dependency, or ambiguous dependency involving the new skill.
 - Global graph still reports unrelated pre-existing depth/missing/ambiguous violations; this task does not claim global graph health.
@@ -85,7 +85,8 @@ Closure requires fresh evidence for:
 - Final review artifacts: `tick-20260719-042324-575821-p65939-24ede8ed-53e9c2ae/discussion_result.json` and `tick-20260719-042324-575821-p65939-24ede8ed-53e9c2ae/final/certification_manifest.json`.
 - A delayed pre-implementation architecture audit preferred a `research` reference over a new class-level skill until independent triggers and routing evidence exist. Projected onto the completed artifact, its useful promotion criteria are now represented by 4 positive, 3 neighbor, 2 forbidden, and 1 no-load static cases plus explicit neighbor boundaries. The dissent remains material because the fresh skill-loader/model routing harness has not run; failure of that harness, route stealing, or evidence that the artifact adds no behavior beyond `research` is the explicit demotion/absorption trigger.
 - Delayed independent terminal review `deleg_d4078b85` returned `AMEND / 暂不 ratify` with 0 P0, 4 P1, and 4 P2. The first v1.1 amendment addressed mode cardinality, schema/enums/basic cross-references, the provenance ledger, freshness, wording, and safe P2 items. Metadata dependency edges were intentionally not added because one-way body pointers preserve the already-verified scoped acyclic graph.
-- Independent re-review `deleg_d1f720ab` found no new P0/P1 but correctly demonstrated two residual fail-open paths: cross-probe evidence could update hypotheses whose claims it did not cover, and fresh verified evidence from an `invalid_probe` could ratify closure. The second amendment now requires every update evidence item to match the update probe, the cited claim union to cover all updated hypotheses, hypothesis updates to use a `valid_result` probe, and ratification evidence to come from a `valid_result` probe. Two adversarial classes plus the ratification message regression are covered in the 28-test suite. Final independent re-review remains required before ratification.
+- Independent re-review `deleg_d1f720ab` found no new P0/P1 but correctly demonstrated two residual fail-open paths: cross-probe evidence could update hypotheses whose claims it did not cover, and fresh verified evidence from an `invalid_probe` could ratify closure. The second amendment requires every update evidence item to match the update probe, the cited claim union to cover all updated hypotheses, hypothesis updates to use a `valid_result` probe, and ratification evidence to come from a `valid_result` probe.
+- Exact-HEAD review `deleg_39269a72` confirmed those residuals closed but found one remaining P1-3 laundering path: ratification accepted empty or unrelated human-readable `supported_claims`. Schema 1.2 adds machine-linkable, unique `closure.supported_claim_ids`; ratification now requires a non-empty known-ID set and qualifying fresh verified reproduction evidence from a valid probe for every supported hypothesis. Empty, unknown, duplicate, partial-coverage, and positive claim-complete cases are covered in the 33-test suite. Final independent ratification remains required.
 
 ## Open limits
 
