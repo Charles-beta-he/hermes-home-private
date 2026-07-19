@@ -18,6 +18,7 @@ class NeuralModularMemoryProvider(MemoryProvider):
     def __init__(self, config: Optional[dict] = None):
         self._config = config or self._load_config()
         self._store: Optional[MemoryStore] = None
+        self._store_error: Optional[BaseException] = None
         self._session_id = ""
         self._hermes_home: Optional[Path] = None
         self._durable_scope = ""
@@ -80,10 +81,21 @@ class NeuralModularMemoryProvider(MemoryProvider):
             platform = str(kwargs.get("platform") or "local")
             scope_key = hashlib.sha256((platform + "\x1f" + identity).encode("utf-8")).hexdigest()[:20]
             self._durable_scope = "user:" + scope_key
+        self._store_error = None
         try:
             self._store = MemoryStore(self._store_path())
-        except Exception:
+        except Exception as exc:
             self._store = None
+            self._store_error = exc
+
+    def _writable_store(self) -> Optional[MemoryStore]:
+        if self._agent_context != "primary":
+            return None
+        if self._store is not None:
+            return self._store
+        if self._store_error is not None:
+            raise RuntimeError("neural modular memory store initialization failed") from self._store_error
+        return None
 
     def system_prompt_block(self) -> str:
         return (
@@ -240,11 +252,12 @@ class NeuralModularMemoryProvider(MemoryProvider):
         messages: Optional[List[Dict[str, Any]]] = None,
     ) -> None:
         del messages
-        if self._store is None or self._agent_context != "primary":
+        store = self._writable_store()
+        if store is None:
             return None
         actual_session = str(session_id or self._session_id or "unknown")
         try:
-            self._store.ingest_turn(
+            store.ingest_turn(
                 actual_session,
                 str(user_content or ""),
                 str(assistant_content or ""),
@@ -277,12 +290,13 @@ class NeuralModularMemoryProvider(MemoryProvider):
         content: str,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
-        if self._store is None or self._agent_context != "primary":
+        store = self._writable_store()
+        if store is None:
             return
         receipt_metadata = dict(metadata or {})
         receipt_metadata.setdefault("session_id", self._session_id)
         try:
-            self._store.record_memory_write(
+            store.record_memory_write(
                 action=action,
                 target=target,
                 content=content,

@@ -1287,12 +1287,27 @@ class ProviderTests(unittest.TestCase):
             provider = NeuralModularMemoryProvider({"brain_vault_path": str(vault)})
             self.assertEqual([str(vault.resolve())], provider.backup_paths())
 
-    def test_provider_returns_empty_instead_of_raising_when_storage_is_unavailable(self) -> None:
+    def test_provider_recalls_fail_soft_but_writes_fail_closed_when_storage_is_unavailable(self) -> None:
         provider = NeuralModularMemoryProvider({"store_path": "/dev/null/not-possible.sqlite3"})
         provider.initialize("s1", hermes_home=tempfile.gettempdir())
         self.assertEqual("", provider.prefetch("anything", session_id="s1"))
-        self.assertIsNone(provider.sync_turn("u", "a", session_id="s1"))
-        provider.shutdown()
+        with self.assertRaisesRegex(RuntimeError, "store initialization failed"):
+            provider.sync_turn("u", "a", session_id="s1")
+        with self.assertRaisesRegex(RuntimeError, "store initialization failed"):
+            provider.on_memory_write("add", "memory", "must persist")
+
+        manager = MemoryManager()
+        manager.add_provider(provider)
+        self.assertFalse(
+            manager.notify_memory_tool_write(
+                json.dumps({"success": True, "changed": True}),
+                {"action": "add", "target": "memory", "content": "must persist"},
+            )
+        )
+        manager.sync_all("u", "a", session_id="s1")
+        self.assertFalse(manager.flush_pending(timeout=1))
+        self.assertEqual(2, manager.background_status()["failures"])
+        manager.shutdown_all()
 
 
 if __name__ == "__main__":
