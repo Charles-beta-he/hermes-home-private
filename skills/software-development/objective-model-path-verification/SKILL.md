@@ -115,6 +115,7 @@ When the user wants concise output, perform the gate internally and final only t
 
 - For self-evolution or durable learning, combine with `agent-boundary-audit` and classify outputs into memory, skill, SSOT doc, taskpool candidate, or do-not-do.
 - For software changes, combine with `test-driven-development`, `systematic-debugging`, and `project-evidence-grounding`; this skill does not replace tests.
+- When a candidate path depends on disputed causal assumptions or several explanations fit the same evidence, use `scientific-inquiry-evidence-update` inside the situation model: keep alternatives live, derive discriminating predictions, run the smallest valid probe, and update confidence before selecting an intervention.
 - For taskpool/control-plane work, combine with `taskpool-control-plane`; task records and evidence ledgers remain canonical.
 - For user-facing UI work, add visual/UI verification and avoid mock-only acceptance.
 

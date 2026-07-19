@@ -487,6 +487,8 @@ search_files("similar_pattern", path="src/", file_glob="*.py")
 
 **Scientific method:**
 
+Minimum in-root rule: make hypotheses falsifiable and run the narrowest check that can disprove each one. When two or more causal explanations remain live, use `scientific-inquiry-evidence-update` to derive predictions that differ across hypotheses, record validity threats, and update confidence without treating a failed probe as negative evidence.
+
 ### 1. Form a Single Hypothesis
 
 - State clearly: "I think X is the root cause because Y"
