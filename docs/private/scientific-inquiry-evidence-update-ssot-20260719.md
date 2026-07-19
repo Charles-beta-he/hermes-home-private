@@ -2,7 +2,7 @@
 
 Date: 2026-07-19
 Scope: local Hermes skill ecosystem only
-Status: implementation complete; local verification passed; truth-grounded review completed; full multi-model certification degraded by planner quorum; scoped commit and readback complete
+Status: v1.1 amendment implemented and locally verified after delayed independent AMEND review; independent re-review pending; full multi-model certification remains degraded by planner quorum
 
 ## Goal
 
@@ -72,9 +72,9 @@ Closure requires fresh evidence for:
 
 ## Current evidence
 
-- Validator unit tests: 7 passed.
-- Valid example: accepted with zero errors.
-- Incomplete template: rejected with 15 structural errors until populated.
+- Validator unit tests: 25 passed after schema 1.1 migration.
+- Valid schema 1.1 example: accepted with zero errors.
+- Incomplete schema 1.1 template: rejected with 21 structural/provenance errors until populated.
 - Routing matrix: 10 cases, IDs unique, required fields present; actual cross-model routing remains advisory/unexercised.
 - Scoped graph projection: no cycle, excessive depth, missing dependency, or ambiguous dependency involving the new skill.
 - Global graph still reports unrelated pre-existing depth/missing/ambiguous violations; this task does not claim global graph health.
@@ -84,6 +84,7 @@ Closure requires fresh evidence for:
 - The final certification manifest remains `degraded_not_certified`: only 1/3 planner calls completed successfully, below the 2-planner minimum, even though all three discussion participants approved the constrained truth-grounded/no-action package. This is an infrastructure/quorum boundary, not a full multi-model certification pass.
 - Final review artifacts: `tick-20260719-042324-575821-p65939-24ede8ed-53e9c2ae/discussion_result.json` and `tick-20260719-042324-575821-p65939-24ede8ed-53e9c2ae/final/certification_manifest.json`.
 - A delayed pre-implementation architecture audit preferred a `research` reference over a new class-level skill until independent triggers and routing evidence exist. Projected onto the completed artifact, its useful promotion criteria are now represented by 4 positive, 3 neighbor, 2 forbidden, and 1 no-load static cases plus explicit neighbor boundaries. The dissent remains material because the fresh skill-loader/model routing harness has not run; failure of that harness, route stealing, or evidence that the artifact adds no behavior beyond `research` is the explicit demotion/absorption trigger.
+- Delayed independent terminal review `deleg_d4078b85` returned `AMEND / 暂不 ratify` with 0 P0, 4 P1, and 4 P2. The v1.1 amendment addresses the four P1 classes: mode-specific hypothesis cardinality and Lite justification; fail-closed schema/enums/cross-references; claim-linked provenance ledger plus fresh verified reproduction evidence for ratification; and corrected invalid-probe wording. Safe P2 corrections narrow the routing description, remove ambiguous causal-proof language, define accessory load policy, and replace unsupported scalar confidence in `qian-meta-synthesis`. Metadata dependency edges were intentionally not added because one-way body pointers preserve the already-verified scoped acyclic graph. Independent re-review is required before ratification.
 
 ## Open limits
 

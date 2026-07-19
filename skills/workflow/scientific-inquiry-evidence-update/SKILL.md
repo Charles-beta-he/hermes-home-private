@@ -1,7 +1,7 @@
 ---
 name: scientific-inquiry-evidence-update
-description: "Use when a consequential or uncertain problem needs competing hypotheses, discriminating tests, falsifiers, calibrated evidence updates, and reproducible closure across research, engineering, product, architecture, or agent governance. Do not use for simple lookups, obvious one-step actions, or routine execution where no material uncertainty must be resolved."
-version: 1.0.0
+description: "Use when the primary deliverable is a cross-domain inquiry packet for consequential empirical uncertainty: competing mechanism hypotheses, predictions that differ, validity-aware probes, calibrated updates, and scoped reproduction. Use as a nested kernel inside debugging, research, planning, meta-synthesis, or SDD when disputed assumptions remain. Do not use as the primary route for ordinary bug fixing, source discovery, execution-path comparison without disputed mechanisms, multi-agent ownership coordination, simple lookups, or routine implementation."
+version: 1.1.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -33,7 +33,7 @@ Use when one or more are true:
 - The cause, mechanism, ownership, or best path is materially uncertain.
 - A wrong conclusion would make implementation, release, architecture, product, policy, or research work costly.
 - Several plausible explanations fit the same observations.
-- The user asks for `大胆假设、小心求证`, scientific inquiry, strong inference, competing hypotheses, falsification, causal proof, or evidence-calibrated decisions.
+- The user asks for `大胆假设、小心求证`, scientific inquiry, strong inference, competing hypotheses, falsification, causal-mechanism discrimination, bounded causal-evidence assessment, or evidence-calibrated decisions.
 - Repeated local fixes suggest the current representation or architecture may be wrong.
 - Multi-model or expert discussion must be converted into objective evidence rather than consensus prose.
 - A reusable claim needs applicability, anti-conditions, falsifiers, and reproduction evidence before promotion.
@@ -65,7 +65,7 @@ This skill selects and tests explanations. It does not choose human values, inve
 
 | Mode | Trigger | Minimum record |
 |---|---|---|
-| Lite | low-cost uncertainty, one bounded decision | observation, 2 hypotheses or justified single hypothesis, discriminator, result |
+| Lite | low-cost uncertainty, one bounded decision | observation, 2 hypotheses or one hypothesis plus `problem.hypothesis_space_constraint`, valid probe, result |
 | Standard | consequential multi-step work | inquiry packet, evidence ledger, update decision, reproduction |
 | Strong inference | several live explanations or high confirmation-bias risk | 3+ alternatives, prediction matrix, decisive test sequence |
 | Meta-synthesis | heterogeneous evidence, experts/models, qualitative + quantitative work | source, dissent, engineering ledgers + arbitration |
@@ -97,6 +97,8 @@ Capture exact scope, version, environment, input, comparison baseline, and curre
 - `missing`: needed but not yet obtained.
 
 Historical sessions, model outputs, summaries, and prior PASS reports are leads until bound to the current target and read back again.
+
+For Standard or stronger packets, baseline `verified`, `reported`, and `inferred` entries are evidence IDs, not free text. Each ID must resolve through the top-level `evidence_ledger` to a hypothesis, probe, exact source reference, observation time, scope, freshness, bounded result, and status. `verified` requires direct readback or an authoritative primary source; the validator checks the provenance contract and links, but cannot authenticate the outside source.
 
 ### 3. Generate competing hypotheses
 
@@ -147,7 +149,7 @@ Use a real system boundary when the claim concerns real runtime behavior. Mocks 
 
 ### 6. Execute without moving the goalposts
 
-Run one discriminating change or observation at a time where feasible. Preserve raw output before interpretation. If the probe fails to execute, record `invalid_probe` rather than treating it as evidence for or against a hypothesis.
+Run one discriminating change or observation at a time where feasible. Preserve raw output before interpretation. If the probe fails to execute, record `invalid_probe` rather than treating it as evidence for or against a hypothesis. Probe result state is one of `not_run | valid_result | invalid_probe | blocked`; the observation itself belongs in claim-linked evidence, not in the result enum.
 
 Do not silently redefine success after seeing the result. If the spec or problem representation was wrong, create an explicit revision and rerun the relevant gate.
 
@@ -266,15 +268,15 @@ Do not duplicate domain procedures here. The kernel supplies the invariant reaso
 
 ## Required Inquiry Packet
 
-For Standard or stronger mode, use `templates/inquiry-packet.json` and validate it with:
+For Standard or stronger mode, use schema `1.1` from `templates/inquiry-packet.json`. Every evidence update must cite evidence IDs, and `ratified` closure requires fresh verified evidence referenced by reproduction. Validate with:
 
 ```bash
 python3 ~/.hermes/skills/workflow/scientific-inquiry-evidence-update/scripts/validate_inquiry_packet.py packet.json
 ```
 
-The validator checks structural completeness only. It cannot determine truth, experimental validity, authority, or evidence authenticity.
+The validator fail-closes schema shape, enums, provenance fields, and cross-references. It cannot determine truth, experimental validity, outside-world freshness, authority, or evidence authenticity.
 
-Load `references/theory-to-engineering-map.md` only when theoretical provenance, method selection, or core works are directly relevant. Routine application should not pay that context cost.
+Load `references/theory-to-engineering-map.md` only when theoretical provenance, method selection, or core works are directly relevant. Routine application should not pay that context cost. `assets/example-inquiry-packet.json` is example/evaluator-only and must not be loaded for ordinary inquiry. `scripts/test_validate_inquiry_packet.py` is maintainer-only and must run after validator or schema changes.
 
 ## Definition of Done
 

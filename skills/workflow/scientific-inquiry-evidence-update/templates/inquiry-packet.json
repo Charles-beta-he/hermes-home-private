@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "inquiry_id": "replace-me",
   "mode": "standard",
   "problem": {
@@ -8,6 +8,7 @@
     "scope": "Exact system, population, artifact, environment, and time boundary",
     "non_goals": [],
     "constraints": [],
+    "hypothesis_space_constraint": "",
     "authority_boundary": "Inquiry does not authorize external, destructive, credential, payment, production, or legal/device actions."
   },
   "baseline": {
@@ -63,6 +64,7 @@
       "result": "not_run"
     }
   ],
+  "evidence_ledger": [],
   "evidence_updates": [],
   "intervention": {
     "decision": "not_selected",
@@ -76,7 +78,8 @@
     "focused_success": "",
     "negative_tests": [],
     "independent_readback": "",
-    "strongest_counterexample": ""
+    "strongest_counterexample": "",
+    "evidence_ids": []
   },
   "closure": {
     "state": "inconclusive",
