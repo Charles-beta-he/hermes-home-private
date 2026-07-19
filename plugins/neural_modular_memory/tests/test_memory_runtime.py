@@ -850,6 +850,52 @@ class ProviderTests(unittest.TestCase):
             self.assertNotIn("must not be mirrored", json.dumps(receipts))
             store.close()
 
+    def test_real_batch_receipt_mirrors_only_committed_operation_to_provider(self) -> None:
+        import importlib
+
+        builtin_memory_tool = importlib.import_module("tools.memory_tool")
+        BuiltinMemoryStore = builtin_memory_tool.MemoryStore
+        memory_tool = builtin_memory_tool.memory_tool
+
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            with patch.dict(os.environ, {"HERMES_HOME": str(home)}):
+                builtin_store = BuiltinMemoryStore()
+                builtin_store.load_from_disk()
+                self.assertTrue(builtin_store.add("memory", "existing fact")["changed"])
+                args = {
+                    "target": "memory",
+                    "operations": [
+                        {"action": "add", "content": "existing fact"},
+                        {"action": "add", "content": "new batch fact"},
+                    ],
+                }
+                result = memory_tool(store=builtin_store, **args)
+
+            provider = NeuralModularMemoryProvider(
+                {
+                    "brainctl_path": str(home / "missing-brainctl.py"),
+                    "store_path": str(home / "memory.sqlite3"),
+                }
+            )
+            provider.initialize(
+                "s1",
+                hermes_home=str(home),
+                agent_context="primary",
+                agent_identity="default",
+            )
+            manager = MemoryManager()
+            manager.add_provider(provider)
+            self.assertTrue(manager.notify_memory_tool_write(result, args))
+            provider.shutdown()
+
+            store = MemoryStore(home / "memory.sqlite3")
+            receipts = store.list_memory_write_receipts()
+            self.assertEqual(1, len(receipts))
+            self.assertEqual("add", receipts[0]["action"])
+            self.assertEqual("new batch fact", receipts[0]["content_redacted"])
+            store.close()
+
     def test_memory_manager_background_sync_persists_turn(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             home = Path(td)
