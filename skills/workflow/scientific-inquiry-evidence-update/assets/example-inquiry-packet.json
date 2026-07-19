@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "inquiry_id": "class-level-kernel-example",
   "mode": "standard",
   "problem": {
@@ -8,12 +8,13 @@
     "scope": "A capability library with several domain workflows; example data only.",
     "non_goals": ["Replace domain workflows", "Authorize side effects", "Claim universal applicability"],
     "constraints": ["Avoid asset proliferation", "Require negative routing cases and readback"],
+    "hypothesis_space_constraint": "",
     "authority_boundary": "This example authorizes no external, destructive, credential, payment, production, or legal/device actions."
   },
   "baseline": {
-    "verified": ["Several domain procedures contain partial hypothesis-testing behavior", "No class-level owner is currently indexed"],
+    "verified": ["E1"],
     "reported": [],
-    "inferred": ["The possible gap is a cross-domain reasoning contract"],
+    "inferred": [],
     "missing": ["Fresh model routing evidence"]
   },
   "hypotheses": [
@@ -59,13 +60,28 @@
       "validity_threats": ["Unindexed procedures", "Text presence does not prove routing behavior"],
       "stop_condition": "Stop after named neighbors and a capability-wide search are covered.",
       "rollback": "Remove the candidate and redirect useful content if review shows duplication.",
-      "evidence_artifact": "Readbacks, search results, routing matrix, and graph report",
-      "result": "Fragments are distributed; no class-level owner was found."
+      "evidence_artifact": "E1",
+      "result": "valid_result"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "id": "E1",
+      "claim_ids": ["H1"],
+      "probe_id": "P1",
+      "source_type": "file",
+      "source_ref": "evals/baseline.md and the scoped capability-graph readback",
+      "observed_at": "2026-07-19T12:00:00+08:00",
+      "scope": "The current local skill ecosystem at the recorded review slice",
+      "freshness": "historical",
+      "result": "Named neighbors exposed fragments, but no existing class-level owner exposed the complete inquiry contract.",
+      "status": "verified"
     }
   ],
   "evidence_updates": [
     {
       "probe_id": "P1",
+      "evidence_ids": ["E1"],
       "observed": "No single neighbor owns the complete cross-domain contract.",
       "updates": {"H1": "strengthened", "H0": "weakened"},
       "limits": ["Fresh cross-model routing remains untested"]
@@ -83,7 +99,8 @@
     "focused_success": "The candidate exposes the complete contract and a packet validator.",
     "negative_tests": ["Simple translation stays general", "Ordinary bug fixing stays with debugging", "External send gains no authority"],
     "independent_readback": "Required before ratification.",
-    "strongest_counterexample": "The candidate may increase route confusion without incremental behavioral value."
+    "strongest_counterexample": "The candidate may increase route confusion without incremental behavioral value.",
+    "evidence_ids": ["E1"]
   },
   "closure": {
     "state": "provisional",

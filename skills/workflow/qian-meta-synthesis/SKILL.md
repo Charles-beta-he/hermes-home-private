@@ -25,7 +25,7 @@ Use this skill when:
 
 ## Core principle
 
-Do not treat “multi-model agreement” as truth. 钱学森式综合集成 requires three separated ledgers:
+Do not treat “multi-model agreement” as truth. Numeric probability remains null unless a defensible prior/likelihood model or calibration history is recorded in `probability_basis`. 钱学森式综合集成 requires three separated ledgers:
 1. Source/evidence ledger — what is verified, uncertain, or missing.
 2. Expert/model dissent ledger — what each brain/model believes and where it disagrees.
 3. Engineering verification ledger — what dev/hermes-core actually tested or instrumented.
@@ -56,7 +56,10 @@ meta_synthesis_session:
   qualitative_hypotheses:
     - claim: "..."
       owner_brain: research|main|domain
-      confidence: 0.0
+      confidence:
+        state: unsupported|weakened|still_live|leading|strongly_supported|falsified
+        numeric_probability: null
+        probability_basis: null
       falsifier: "..."
   quantitative_checks:
     - owner_brain: dev|hermes-core|mlops

@@ -13,6 +13,8 @@
 - `templates/inquiry-packet.json`: conditionally-read for Standard or stronger mode, or when a durable packet is requested.
 - `scripts/validate_inquiry_packet.py`: conditionally-run after creating or editing a JSON inquiry packet.
 - `references/theory-to-engineering-map.md`: defer-safe; load only for theoretical provenance, method selection, or core-work questions.
+- `assets/example-inquiry-packet.json`: example/evaluator-only; normal inquiry must not load it.
+- `scripts/test_validate_inquiry_packet.py`: maintainer-only; run after validator or schema changes.
 - `evals/prompts.csv`: evaluator-only; not part of normal execution.
 
 ## Expected counts
