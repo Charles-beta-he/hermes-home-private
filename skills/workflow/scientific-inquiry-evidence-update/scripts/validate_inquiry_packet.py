@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed structural validator for Scientific Inquiry packet schema 1.1.
+"""Fail-closed structural validator for Scientific Inquiry packet schema 1.2.
 
 This validates shape, enums, provenance fields, and cross-references only. It
 does not certify truth, experimental validity, evidence authenticity, freshness
@@ -64,7 +64,7 @@ def validate(packet: dict) -> list[str]:
         if key not in packet:
             errors.append(f"missing top-level field: {key}")
 
-    if packet.get("schema_version") != "1.1":
+    if packet.get("schema_version") != "1.2":
         errors.append(f"unsupported schema_version: {packet.get('schema_version')!r}")
     if not nonempty(packet.get("inquiry_id")):
         errors.append("inquiry_id must be non-empty")
@@ -345,6 +345,7 @@ def validate(packet: dict) -> list[str]:
 
     closure = packet.get("closure", {})
     closure_state = None
+    supported_claim_ids: list[str] = []
     if not isinstance(closure, dict):
         errors.append("closure must be an object")
     else:
@@ -354,6 +355,16 @@ def validate(packet: dict) -> list[str]:
         for key in ("supported_claims", "remaining_alternatives", "known_limits"):
             if not isinstance(closure.get(key), list):
                 errors.append(f"closure.{key} must be a list")
+        claim_refs = closure.get("supported_claim_ids")
+        if not string_list(claim_refs):
+            errors.append("closure.supported_claim_ids must be a string list")
+        else:
+            supported_claim_ids = claim_refs
+            if len(set(claim_refs)) != len(claim_refs):
+                errors.append("closure.supported_claim_ids must contain unique values")
+            unknown = set(claim_refs) - hypothesis_ids
+            if unknown:
+                errors.append(f"closure.supported_claim_ids has unknown hypotheses: {sorted(unknown)}")
         if not nonempty(closure.get("next_discriminating_probe")):
             errors.append("closure.next_discriminating_probe must be non-empty")
         writeback = closure.get("writeback")
@@ -368,15 +379,27 @@ def validate(packet: dict) -> list[str]:
                     errors.append(f"closure.writeback.{key} must be a list")
 
     if closure_state == "ratified":
-        fresh_verified_reproduction = any(
-            evidence_id in evidence_by_id
+        if not supported_claim_ids:
+            errors.append("ratified closure requires non-empty supported_claim_ids")
+        qualifying_reproduction = [
+            evidence_by_id[evidence_id]
+            for evidence_id in reproduction_evidence_ids
+            if evidence_id in evidence_by_id
             and evidence_by_id[evidence_id].get("status") == "verified"
             and evidence_by_id[evidence_id].get("freshness") == "fresh"
             and probe_result_by_id.get(evidence_by_id[evidence_id].get("probe_id")) == "valid_result"
-            for evidence_id in reproduction_evidence_ids
-        )
-        if not fresh_verified_reproduction:
+        ]
+        if not qualifying_reproduction:
             errors.append("ratified closure requires fresh verified reproduction evidence from a valid probe")
+        uncovered_supported_claims = {
+            claim_id for claim_id in supported_claim_ids
+            if not any(claim_id in item.get("claim_ids", []) for item in qualifying_reproduction)
+        }
+        if uncovered_supported_claims:
+            errors.append(
+                "ratified supported claims lack qualifying reproduction evidence: "
+                f"{sorted(uncovered_supported_claims)}"
+            )
 
     return errors
 

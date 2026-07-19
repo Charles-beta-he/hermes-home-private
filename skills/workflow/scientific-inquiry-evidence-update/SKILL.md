@@ -1,7 +1,7 @@
 ---
 name: scientific-inquiry-evidence-update
 description: "Use when the primary deliverable is a cross-domain inquiry packet for consequential empirical uncertainty: competing mechanism hypotheses, predictions that differ, validity-aware probes, calibrated updates, and scoped reproduction. Use as a nested kernel inside debugging, research, planning, meta-synthesis, or SDD when disputed assumptions remain. Do not use as the primary route for ordinary bug fixing, source discovery, execution-path comparison without disputed mechanisms, multi-agent ownership coordination, simple lookups, or routine implementation."
-version: 1.1.0
+version: 1.2.0
 author: Hermes Agent
 license: MIT
 metadata:
@@ -200,7 +200,7 @@ Independent model agreement without direct evidence is expert signal, not reprod
 
 Close with one state:
 
-- `ratified`: claim is supported at the declared scope with reproduction evidence;
+- `ratified`: every ID in non-empty `closure.supported_claim_ids` names a known hypothesis and is covered by fresh verified reproduction evidence from a `valid_result` probe at the declared scope;
 - `provisional`: sufficient for a reversible decision, not general truth;
 - `inconclusive`: live alternatives remain and evidence would still change the decision;
 - `falsified`: prediction failed under a valid probe;
@@ -268,7 +268,7 @@ Do not duplicate domain procedures here. The kernel supplies the invariant reaso
 
 ## Required Inquiry Packet
 
-For Standard or stronger mode, use schema `1.1` from `templates/inquiry-packet.json`. Every evidence update must cite same-probe, claim-covering evidence IDs from a `valid_result` probe, and `ratified` closure requires fresh verified reproduction evidence from a `valid_result` probe. Validate with:
+For Standard or stronger mode, use schema `1.2` from `templates/inquiry-packet.json`. Every evidence update must cite same-probe, claim-covering evidence IDs from a `valid_result` probe, and `ratified` closure requires fresh verified reproduction evidence from a `valid_result` probe. Validate with:
 
 ```bash
 python3 ~/.hermes/skills/workflow/scientific-inquiry-evidence-update/scripts/validate_inquiry_packet.py packet.json
@@ -299,6 +299,7 @@ Load `references/theory-to-engineering-map.md` only when theoretical provenance,
 10. **Endless inquiry**: continuing after evidence value falls below cost or the remaining question is normative/authority-bound.
 11. **Hypothesis churn**: inventing a new explanation after every result without preserving prior predictions and why they failed.
 12. **Fix-as-proof**: a symptom disappearing after a change does not by itself establish the claimed root cause.
+13. **Existence-only evidence joins**: checking that evidence, probe, and claim IDs exist is insufficient. Fail closed when evidence belongs to a different probe, does not cover every updated claim, or comes from an invalid/blocked probe; use adversarial fixtures whose IDs are individually valid but relationally incompatible.
 
 ## Verification Checklist
 
@@ -308,6 +309,7 @@ Load `references/theory-to-engineering-map.md` only when theoretical provenance,
 - [ ] Each material hypothesis has mechanism, prediction, assumptions, and falsifier.
 - [ ] At least one probe discriminates among live hypotheses.
 - [ ] Probe validity threats and exact environment are recorded.
+- [ ] Evidence IDs exist and their probe ownership, claim coverage, probe validity state, and promotion/ratification use are relationally consistent.
 - [ ] Evidence updates confidence without erasing dissent or alternatives.
 - [ ] Intervention has a separate authority/safety gate.
 - [ ] Reproduction and negative evidence match the claim's risk and scope.

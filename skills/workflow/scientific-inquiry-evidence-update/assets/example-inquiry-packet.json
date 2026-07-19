@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "inquiry_id": "class-level-kernel-example",
   "mode": "standard",
   "problem": {
@@ -104,6 +104,7 @@
   },
   "closure": {
     "state": "provisional",
+    "supported_claim_ids": ["H1"],
     "supported_claims": ["A bounded class-level candidate is justified by the observed capability gap"],
     "remaining_alternatives": ["Absorb into an existing umbrella if routing evaluation shows neighbor theft"],
     "known_limits": ["No fresh cross-model routing run", "No runtime prompt integration claimed"],

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "inquiry_id": "replace-me",
   "mode": "standard",
   "problem": {
@@ -83,6 +83,7 @@
   },
   "closure": {
     "state": "inconclusive",
+    "supported_claim_ids": [],
     "supported_claims": [],
     "remaining_alternatives": [],
     "known_limits": [],
