@@ -288,8 +288,11 @@ class NeuralModularMemoryProvider(MemoryProvider):
                 content=content,
                 metadata=receipt_metadata,
             )
-        except Exception:
-            return
+        except Exception as exc:
+            # MemoryManager records provider-hook failures in its observable
+            # barrier. Do not turn a missing durable receipt into a successful
+            # mirror acknowledgement.
+            raise RuntimeError("neural modular memory receipt write failed") from exc
 
     def on_pre_compress(self, messages: List[Dict[str, Any]]) -> str:
         del messages

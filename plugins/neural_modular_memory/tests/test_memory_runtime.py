@@ -896,6 +896,54 @@ class ProviderTests(unittest.TestCase):
             self.assertEqual("new batch fact", receipts[0]["content_redacted"])
             store.close()
 
+    def test_real_provider_receipt_failure_is_observable(self) -> None:
+        import importlib
+
+        builtin_memory_tool = importlib.import_module("tools.memory_tool")
+        BuiltinMemoryStore = builtin_memory_tool.MemoryStore
+        memory_tool = builtin_memory_tool.memory_tool
+
+        with tempfile.TemporaryDirectory() as td:
+            home = Path(td)
+            with patch.dict(os.environ, {"HERMES_HOME": str(home)}):
+                builtin_store = BuiltinMemoryStore()
+                builtin_store.load_from_disk()
+                args = {
+                    "action": "add",
+                    "target": "memory",
+                    "content": "receipt failure must be visible",
+                }
+                result = memory_tool(store=builtin_store, **args)
+
+            provider = NeuralModularMemoryProvider(
+                {
+                    "brainctl_path": str(home / "missing-brainctl.py"),
+                    "store_path": str(home / "memory.sqlite3"),
+                }
+            )
+            provider.initialize(
+                "s1",
+                hermes_home=str(home),
+                agent_context="primary",
+                agent_identity="default",
+            )
+            manager = MemoryManager()
+            manager.add_provider(provider)
+            store_handle = provider._store
+            self.assertIsNotNone(store_handle)
+            if store_handle is None:
+                self.fail("provider store was not initialized")
+
+            with patch.object(
+                store_handle,
+                "record_memory_write",
+                side_effect=OSError("injected durable receipt failure"),
+            ):
+                self.assertFalse(manager.notify_memory_tool_write(result, args))
+                self.assertFalse(manager.flush_pending(timeout=1))
+            self.assertEqual(1, manager.background_status()["failures"])
+            manager.shutdown_all()
+
     def test_memory_manager_background_sync_persists_turn(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             home = Path(td)
