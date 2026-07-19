@@ -41,6 +41,7 @@ This umbrella skill is the routing surface for mcp. Use it to choose the most sp
 - Prefer the narrowest child skill that matches the user request, platform, and desired artifact.
 - Stay at the umbrella level only for routing, taxonomy, or category-wide orientation.
 - If the request spans multiple subskills, use this umbrella to map the lane first, then hand off to the specific workflow that will do the real work.
+- When the task is to discover or compare unknown external MCP/agent capabilities, consult `references/mcp-so-external-discovery.md`; treat the directory as advisory discovery only and independently verify canonical upstream identity, permissions, maintenance, and local behavior before any installation or promotion.
 
 ## 边界条件
 
