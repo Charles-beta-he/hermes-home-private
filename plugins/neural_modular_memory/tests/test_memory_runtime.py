@@ -5,6 +5,7 @@ import os
 import sqlite3
 import sys
 import tempfile
+import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
@@ -15,7 +16,7 @@ PLUGINS_DIR = Path(__file__).resolve().parents[2]
 if str(PLUGINS_DIR) not in sys.path:
     sys.path.insert(0, str(PLUGINS_DIR))
 
-from neural_modular_memory.store import MemoryStore, _is_valid_pan, redact  # noqa: E402
+from neural_modular_memory.store import MemoryStore, SCHEMA_VERSION, _is_valid_pan, redact  # noqa: E402
 from neural_modular_memory.provider import NeuralModularMemoryProvider  # noqa: E402
 from agent.memory_manager import MemoryManager  # noqa: E402
 
@@ -98,6 +99,27 @@ class MemoryStoreTests(unittest.TestCase):
 
         self.assertTrue(recalled)
         self.assertEqual(4, self.store.stats()["events"])
+
+    def test_store_serializes_schema_initialization_across_connections(self) -> None:
+        for round_index in range(10):
+            database = Path(self.tmp.name) / f"concurrent-{round_index}.sqlite3"
+            barrier = threading.Barrier(8)
+
+            def open_store() -> str:
+                barrier.wait(timeout=5)
+                store = MemoryStore(database)
+                try:
+                    row = store.conn.execute(
+                        "SELECT value FROM metadata WHERE key='schema_version'"
+                    ).fetchone()
+                    return str(row["value"])
+                finally:
+                    store.close()
+
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                versions = list(executor.map(lambda _: open_store(), range(8)))
+
+            self.assertEqual([SCHEMA_VERSION] * 8, versions)
 
     def test_same_turn_key_rejects_changed_content(self) -> None:
         self.store.ingest_turn(

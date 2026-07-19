@@ -6,6 +6,7 @@ import math
 import re
 import sqlite3
 import threading
+import time
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
@@ -171,7 +172,8 @@ class MemoryStore:
             check_same_thread=False,
         )
         self.conn.row_factory = sqlite3.Row
-        self.conn.execute("PRAGMA journal_mode=WAL")
+        self.conn.execute("PRAGMA busy_timeout=5000")
+        self._retry_locked(lambda: self.conn.execute("PRAGMA journal_mode=WAL").fetchone())
         self.conn.execute("PRAGMA foreign_keys=ON")
         try:
             self._init_schema()
@@ -179,7 +181,45 @@ class MemoryStore:
             self.conn.close()
             raise
 
+    def _retry_locked(self, operation: Callable[[], Any]) -> Any:
+        delay = 0.01
+        for attempt in range(6):
+            try:
+                return operation()
+            except sqlite3.OperationalError as exc:
+                message = str(exc).lower()
+                if not ("locked" in message or "busy" in message) or attempt == 5:
+                    raise
+                if self.conn.in_transaction:
+                    self.conn.rollback()
+                time.sleep(delay)
+                delay = min(delay * 2, 0.2)
+        raise AssertionError("unreachable SQLite retry state")
+
+    def _execute_script(self, script: str) -> None:
+        pending: List[str] = []
+        for line in script.splitlines():
+            pending.append(line)
+            statement = "\n".join(pending).strip()
+            if statement and sqlite3.complete_statement(statement):
+                self.conn.execute(statement)
+                pending = []
+        if "\n".join(pending).strip():
+            raise RuntimeError("incomplete neural modular memory schema statement")
+
     def _init_schema(self) -> None:
+        self._retry_locked(self._init_schema_locked)
+
+    def _init_schema_locked(self) -> None:
+        self.conn.execute("BEGIN IMMEDIATE")
+        try:
+            self._create_or_migrate_schema()
+            self.conn.commit()
+        except Exception:
+            self.conn.rollback()
+            raise
+
+    def _create_or_migrate_schema(self) -> None:
         metadata_exists = self.conn.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='metadata'"
         ).fetchone()
@@ -191,7 +231,7 @@ class MemoryStore:
                 raise RuntimeError(
                     "unsupported neural modular memory schema: %s" % version_row["value"]
                 )
-        self.conn.executescript(
+        self._execute_script(
             """
             CREATE TABLE IF NOT EXISTS metadata (
               key TEXT PRIMARY KEY,
@@ -305,7 +345,6 @@ class MemoryStore:
             "INSERT OR REPLACE INTO metadata(key, value) VALUES('schema_version', ?)",
             (SCHEMA_VERSION,),
         )
-        self.conn.commit()
 
     @_serialized_connection
     def close(self) -> None:
