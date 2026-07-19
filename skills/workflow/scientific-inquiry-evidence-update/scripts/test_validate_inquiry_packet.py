@@ -34,6 +34,7 @@ class InquiryPacketValidatorTests(unittest.TestCase):
         packet["problem"]["hypothesis_space_constraint"] = "Only one mechanism remains after authoritative elimination of alternatives."
         packet["hypotheses"] = packet["hypotheses"][:1]
         packet["probes"][0]["predicted_results"] = {"H1": "bounded result"}
+        packet["evidence_ledger"][0]["claim_ids"] = ["H1"]
         packet["evidence_updates"][0]["updates"] = {"H1": "strengthened"}
         self.assertEqual([], validator.validate(packet))
 
@@ -129,6 +130,20 @@ class InquiryPacketValidatorTests(unittest.TestCase):
         packet["evidence_updates"][0]["updates"]["H9"] = "strengthened"
         self.assertTrue(any("updates has unknown hypotheses" in e for e in validator.validate(packet)))
 
+    def test_evidence_update_requires_same_probe_as_evidence(self) -> None:
+        packet = example()
+        p2 = copy.deepcopy(packet["probes"][0])
+        p2["id"] = "P2"
+        packet["probes"].append(p2)
+        packet["evidence_updates"][0]["probe_id"] = "P2"
+        self.assertTrue(any("references evidence from a different probe" in e for e in validator.validate(packet)))
+
+    def test_evidence_update_claims_must_be_covered_by_evidence(self) -> None:
+        packet = example()
+        packet["evidence_ledger"][0]["claim_ids"] = ["H1"]
+        packet["evidence_updates"][0]["updates"] = {"H0": "weakened"}
+        self.assertTrue(any("updated hypotheses not covered by evidence" in e for e in validator.validate(packet)))
+
     def test_intervention_must_be_object(self) -> None:
         packet = example()
         packet["intervention"] = "bad"
@@ -153,7 +168,14 @@ class InquiryPacketValidatorTests(unittest.TestCase):
         packet = example()
         packet["closure"]["state"] = "ratified"
         packet["evidence_ledger"][0]["freshness"] = "historical"
-        self.assertIn("ratified closure requires fresh verified reproduction evidence", validator.validate(packet))
+        self.assertIn("ratified closure requires fresh verified reproduction evidence from a valid probe", validator.validate(packet))
+
+    def test_ratified_rejects_invalid_probe_evidence(self) -> None:
+        packet = example()
+        packet["closure"]["state"] = "ratified"
+        packet["evidence_ledger"][0]["freshness"] = "fresh"
+        packet["probes"][0]["result"] = "invalid_probe"
+        self.assertIn("ratified closure requires fresh verified reproduction evidence from a valid probe", validator.validate(packet))
 
 
 if __name__ == "__main__":

@@ -98,7 +98,7 @@ Capture exact scope, version, environment, input, comparison baseline, and curre
 
 Historical sessions, model outputs, summaries, and prior PASS reports are leads until bound to the current target and read back again.
 
-For Standard or stronger packets, baseline `verified`, `reported`, and `inferred` entries are evidence IDs, not free text. Each ID must resolve through the top-level `evidence_ledger` to a hypothesis, probe, exact source reference, observation time, scope, freshness, bounded result, and status. `verified` requires direct readback or an authoritative primary source; the validator checks the provenance contract and links, but cannot authenticate the outside source.
+For Standard or stronger packets, baseline `verified`, `reported`, and `inferred` entries are evidence IDs, not free text. Each ID must resolve through the top-level `evidence_ledger` to a hypothesis, probe, exact source reference, observation time, scope, freshness, bounded result, and status. `verified` requires direct readback or an authoritative primary source; the validator checks the provenance contract and links, but cannot authenticate the outside source. A hypothesis update may cite only evidence from the same `valid_result` probe, and the cited evidence claims must cover every updated hypothesis.
 
 ### 3. Generate competing hypotheses
 
@@ -268,7 +268,7 @@ Do not duplicate domain procedures here. The kernel supplies the invariant reaso
 
 ## Required Inquiry Packet
 
-For Standard or stronger mode, use schema `1.1` from `templates/inquiry-packet.json`. Every evidence update must cite evidence IDs, and `ratified` closure requires fresh verified evidence referenced by reproduction. Validate with:
+For Standard or stronger mode, use schema `1.1` from `templates/inquiry-packet.json`. Every evidence update must cite same-probe, claim-covering evidence IDs from a `valid_result` probe, and `ratified` closure requires fresh verified reproduction evidence from a `valid_result` probe. Validate with:
 
 ```bash
 python3 ~/.hermes/skills/workflow/scientific-inquiry-evidence-update/scripts/validate_inquiry_packet.py packet.json

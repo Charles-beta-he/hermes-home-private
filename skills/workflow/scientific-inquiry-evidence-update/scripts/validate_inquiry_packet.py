@@ -140,6 +140,7 @@ def validate(packet: dict) -> list[str]:
         errors.append("probes must be a non-empty list")
         probes = []
     probe_ids: set[str] = set()
+    probe_result_by_id: dict[str, object] = {}
     for index, probe in enumerate(probes):
         prefix = f"probes[{index}]"
         if not isinstance(probe, dict):
@@ -152,6 +153,7 @@ def validate(packet: dict) -> list[str]:
             errors.append(f"duplicate probe id: {probe_id}")
         else:
             probe_ids.add(probe_id)
+            probe_result_by_id[probe_id] = probe.get("result")
         for key in ("question", "target_variable", "stop_condition", "rollback", "evidence_artifact"):
             if not nonempty(probe.get(key)):
                 errors.append(f"{prefix}.{key} must be non-empty")
@@ -263,8 +265,11 @@ def validate(packet: dict) -> list[str]:
             if not isinstance(update, dict):
                 errors.append(f"{prefix} must be an object")
                 continue
-            if update.get("probe_id") not in probe_ids:
+            update_probe_id = update.get("probe_id")
+            if update_probe_id not in probe_ids:
                 errors.append(f"{prefix}.probe_id references an unknown probe")
+            elif probe_result_by_id.get(update_probe_id) != "valid_result":
+                errors.append(f"{prefix} cannot update hypotheses from a non-valid probe")
             update_evidence_ids = update.get("evidence_ids")
             if not string_list(update_evidence_ids) or not update_evidence_ids:
                 errors.append(f"{prefix}.evidence_ids must be a non-empty string list")
@@ -272,6 +277,15 @@ def validate(packet: dict) -> list[str]:
                 unknown = set(update_evidence_ids) - evidence_ids
                 if unknown:
                     errors.append(f"{prefix}.evidence_ids has unknown evidence ids: {sorted(unknown)}")
+                mismatched = {
+                    evidence_id for evidence_id in update_evidence_ids
+                    if evidence_id in evidence_by_id
+                    and evidence_by_id[evidence_id].get("probe_id") != update_probe_id
+                }
+                if mismatched:
+                    errors.append(
+                        f"{prefix} references evidence from a different probe: {sorted(mismatched)}"
+                    )
             if not nonempty(update.get("observed")):
                 errors.append(f"{prefix}.observed must be non-empty")
             updates = update.get("updates")
@@ -284,6 +298,19 @@ def validate(packet: dict) -> list[str]:
                 for hypothesis_id, direction in updates.items():
                     if direction not in ALLOWED_UPDATE_DIRECTIONS:
                         errors.append(f"{prefix}.updates[{hypothesis_id!r}] is invalid")
+                if string_list(update_evidence_ids):
+                    covered_claims = {
+                        claim_id
+                        for evidence_id in update_evidence_ids
+                        if evidence_id in evidence_by_id
+                        for claim_id in evidence_by_id[evidence_id].get("claim_ids", [])
+                        if isinstance(claim_id, str)
+                    }
+                    uncovered = set(updates) - covered_claims
+                    if uncovered:
+                        errors.append(
+                            f"{prefix} has updated hypotheses not covered by evidence: {sorted(uncovered)}"
+                        )
             if not isinstance(update.get("limits"), list):
                 errors.append(f"{prefix}.limits must be a list")
 
@@ -345,10 +372,11 @@ def validate(packet: dict) -> list[str]:
             evidence_id in evidence_by_id
             and evidence_by_id[evidence_id].get("status") == "verified"
             and evidence_by_id[evidence_id].get("freshness") == "fresh"
+            and probe_result_by_id.get(evidence_by_id[evidence_id].get("probe_id")) == "valid_result"
             for evidence_id in reproduction_evidence_ids
         )
         if not fresh_verified_reproduction:
-            errors.append("ratified closure requires fresh verified reproduction evidence")
+            errors.append("ratified closure requires fresh verified reproduction evidence from a valid probe")
 
     return errors
 

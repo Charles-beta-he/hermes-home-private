@@ -67,7 +67,7 @@
   "evidence_ledger": [
     {
       "id": "E1",
-      "claim_ids": ["H1"],
+      "claim_ids": ["H1", "H0"],
       "probe_id": "P1",
       "source_type": "file",
       "source_ref": "evals/baseline.md and the scoped capability-graph readback",
